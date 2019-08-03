@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/VarargedTypeNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TypeListNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TypeListNode.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TypeListNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypeListNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TypeNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypeNode.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -23,8 +23,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Tokenizer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="489">
-              <caret line="71" column="62" selection-start-line="68" selection-start-column="27" selection-end-line="71" selection-end-column="62" />
+            <state relative-caret-position="928">
+              <caret line="60" column="31" lean-forward="true" selection-start-line="60" selection-start-column="31" selection-end-line="60" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -41,8 +41,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Parser.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-6348">
-              <caret line="1383" column="38" lean-forward="true" selection-start-line="1383" selection-start-column="38" selection-end-line="1383" selection-end-column="38" />
+            <state relative-caret-position="329">
+              <caret line="1122" column="33" selection-start-line="1122" selection-start-column="33" selection-end-line="1122" selection-end-column="33" />
               <folding>
                 <element signature="e#0#62414#0" expanded="true" />
                 <element signature="e#3217#3218#0" expanded="true" />
@@ -66,7 +66,7 @@
         <entry file="file://$PROJECT_DIR$/src/TypeListNode.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="80">
-              <caret line="5" column="5" lean-forward="true" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
+              <caret line="5" column="5" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
               <folding>
                 <element signature="e#137#138#0" expanded="true" />
                 <element signature="e#171#172#0" expanded="true" />
@@ -87,8 +87,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Compiler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="320">
-              <caret line="20" selection-start-line="20" selection-end-line="20" />
+            <state relative-caret-position="256">
+              <caret line="16" column="9" selection-start-line="16" selection-start-column="9" selection-end-line="16" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -97,7 +97,7 @@
         <entry file="file://$PROJECT_DIR$/src/TypeNode.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="384">
-              <caret line="28" selection-start-line="28" selection-end-line="28" />
+              <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
               <folding>
                 <element signature="e#591#592#0" expanded="true" />
                 <element signature="e#623#624#0" expanded="true" />
@@ -117,9 +117,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>\\|\\|</find>
-      <find>functioncall</find>
-      <find>comprehension</find>
       <find>dict</find>
       <find>literal</find>
       <find>assignmentnode</find>
@@ -147,6 +144,9 @@
       <find>else_stmt</find>
       <find>is_vararg</find>
       <find>gen</find>
+      <find>typedargumentnode</find>
+      <find>typelist</find>
+      <find>type\(\)</find>
     </findStrings>
     <replaceStrings>
       <replace>fn_body</replace>
@@ -166,7 +166,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/AssertStatementnOde.java" />
         <option value="$PROJECT_DIR$/src/AssertStatementNode.java" />
         <option value="$PROJECT_DIR$/src/DeleteStatementNode.java" />
         <option value="$PROJECT_DIR$/src/RaiseStatementNode.java" />
@@ -191,7 +190,6 @@
         <option value="$PROJECT_DIR$/src/ComprehensionNode.java" />
         <option value="$PROJECT_DIR$/src/LiteralNode.java" />
         <option value="$PROJECT_DIR$/src/SliceNode.java" />
-        <option value="$PROJECT_DIR$/src/Compiler.java" />
         <option value="$PROJECT_DIR$/src/InterfaceBodyNode.java" />
         <option value="$PROJECT_DIR$/src/TypedArgumentListNode.java" />
         <option value="$PROJECT_DIR$/src/ClassBodyNode.java" />
@@ -207,7 +205,6 @@
         <option value="$PROJECT_DIR$/src/DotimesStatementNode.java" />
         <option value="$PROJECT_DIR$/src/WhileStatementNode.java" />
         <option value="$PROJECT_DIR$/src/NobreakStatementNode.java" />
-        <option value="$PROJECT_DIR$/src/TypeNode.java" />
         <option value="$PROJECT_DIR$/src/TypedArgumentNode.java" />
         <option value="$PROJECT_DIR$/src/ClassDefinitionNode.java" />
         <option value="$PROJECT_DIR$/src/DefinitionNode.java" />
@@ -216,6 +213,9 @@
         <option value="$PROJECT_DIR$/src/VarargedTypeNode.java" />
         <option value="$PROJECT_DIR$/src/Test.newlang" />
         <option value="$PROJECT_DIR$/src/TypeListNode.java" />
+        <option value="$PROJECT_DIR$/src/Compiler.java" />
+        <option value="$PROJECT_DIR$/src/hi.newlang" />
+        <option value="$PROJECT_DIR$/src/TypeNode.java" />
         <option value="$PROJECT_DIR$/src/Parser.java" />
       </list>
     </option>
@@ -259,7 +259,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Custom" />
+    <property name="settings.editor.selected.configurable" value="preferences.fileTypes" />
   </component>
   <component name="RunAnythingCache">
     <option name="myCommands">
@@ -313,18 +313,26 @@
       <workItem from="1563365266641" duration="34000" />
       <workItem from="1563365317461" duration="35000" />
       <workItem from="1563365367055" duration="32697000" />
-      <workItem from="1563558435904" duration="143677000" />
+      <workItem from="1563558435904" duration="145342000" />
     </task>
+    <task id="LOCAL-00001" summary="Added VarargedTypeNode">
+      <created>1564829594325</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1564829594325</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="176443000" />
+    <option name="totallyTimeSpent" value="178108000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="974" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49885583" visible="true" weight="0.25274727" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49885583" visible="true" weight="0.25274727" />
       <window_info id="Structure" order="1" sideWeight="0.5011442" side_tool="true" weight="0.25274727" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -341,7 +349,7 @@
       <window_info anchor="bottom" id="Database Changes" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32951945" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32951945" />
-      <window_info anchor="bottom" id="Version Control" order="10" />
+      <window_info anchor="bottom" id="Version Control" order="10" weight="0.32951945" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Messages" order="12" weight="0.32951945" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -357,6 +365,10 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added VarargedTypeNode" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added VarargedTypeNode" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -449,19 +461,6 @@ tokens.get(1);</expression-string>
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/IncrementNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="8" column="8" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="24" />
-          <folding>
-            <element signature="e#148#149#0" expanded="true" />
-            <element signature="e#167#168#0" expanded="true" />
-            <element signature="e#229#230#0" expanded="true" />
-            <element signature="e#260#261#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/DecrementNode.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="128">
@@ -826,17 +825,6 @@ tokens.get(1);</expression-string>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TypeNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="384">
-          <caret line="28" selection-start-line="28" selection-end-line="28" />
-          <folding>
-            <element signature="e#591#592#0" expanded="true" />
-            <element signature="e#623#624#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/regex/Pattern.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="164">
@@ -848,13 +836,6 @@ tokens.get(1);</expression-string>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="624">
           <caret line="39" column="19" selection-start-line="39" selection-start-column="19" selection-end-line="39" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TypedArgumentNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="18" selection-start-column="18" selection-end-column="18" />
         </state>
       </provider>
     </entry>
@@ -871,20 +852,6 @@ tokens.get(1);</expression-string>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Tokenizer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="489">
-          <caret line="71" column="62" selection-start-line="68" selection-start-column="27" selection-end-line="71" selection-end-column="62" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TryStatementNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="30" selection-start-line="30" selection-end-line="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Test.newlang">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="746">
@@ -895,7 +862,7 @@ tokens.get(1);</expression-string>
     <entry file="file://$PROJECT_DIR$/src/TypeListNode.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
-          <caret line="5" column="5" lean-forward="true" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
+          <caret line="5" column="5" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
           <folding>
             <element signature="e#137#138#0" expanded="true" />
             <element signature="e#171#172#0" expanded="true" />
@@ -903,17 +870,56 @@ tokens.get(1);</expression-string>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/hi.newlang">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Compiler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="20" selection-start-line="20" selection-end-line="20" />
+        <state relative-caret-position="256">
+          <caret line="16" column="9" selection-start-line="16" selection-start-column="9" selection-end-line="16" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Tokenizer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="928">
+          <caret line="60" column="31" lean-forward="true" selection-start-line="60" selection-start-column="31" selection-end-line="60" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TryStatementNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="30" selection-start-line="30" selection-end-line="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TypedArgumentNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="13" selection-start-column="13" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TypeNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="384">
+          <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
+          <folding>
+            <element signature="e#591#592#0" expanded="true" />
+            <element signature="e#623#624#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Parser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-6348">
-          <caret line="1383" column="38" lean-forward="true" selection-start-line="1383" selection-start-column="38" selection-end-line="1383" selection-end-column="38" />
+        <state relative-caret-position="329">
+          <caret line="1122" column="33" selection-start-line="1122" selection-start-column="33" selection-end-line="1122" selection-end-column="33" />
           <folding>
             <element signature="e#0#62414#0" expanded="true" />
             <element signature="e#3217#3218#0" expanded="true" />

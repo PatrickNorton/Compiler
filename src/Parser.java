@@ -1,7 +1,6 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO? bitwise operators
 // TODO: Reduce/remove nulls
-// TODO: Improve varargs from parallel arrays (TypeList, Type, TypedArgumentNode, etc.)
 
 
 import java.math.BigInteger;
@@ -1100,10 +1099,10 @@ public class Parser {
     }
 
     private TypeNode type() {
-        return type(false);
+        return type(false, false);
     }
 
-    private TypeNode type(boolean allow_empty) {
+    private TypeNode type(boolean allow_empty, boolean is_vararg) {
         String main;
         if (!lookahead.is(Token.VARIABLE, Token.SELF_CLS)) {
             if (allow_empty && lookahead.is("[")) {
@@ -1120,15 +1119,15 @@ public class Parser {
         }
         NextToken(true);
         LinkedList<TypeNode> subtypes = new LinkedList<>();
-        LinkedList<Boolean> is_vararg = new LinkedList<>();
         while (!lookahead.is("]")) {
+            boolean subcls_vararg;
             if (lookahead.is("*", "**")) {
-                is_vararg.add(true);
+                subcls_vararg = true;
                 NextToken(true);
             } else {
-                is_vararg.add(false);
+                subcls_vararg = false;
             }
-            subtypes.add(type(true));
+            subtypes.add(type(true, subcls_vararg));
             if (lookahead.is(Token.COMMA)) {
                 NextToken(true);
                 continue;
@@ -1139,7 +1138,7 @@ public class Parser {
             }
         }
         NextToken();
-        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), is_vararg.toArray(new Boolean[0]));
+        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), is_vararg);
     }
 
     private TypedVariableNode[] for_vars() {
