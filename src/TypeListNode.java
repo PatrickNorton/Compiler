@@ -1,17 +1,11 @@
 public class TypeListNode implements BaseNode {
-    private TypeNode[] types;
-    private Boolean[] is_vararg;
+    private VarargedTypeNode[] types;
 
-    public TypeListNode(TypeNode[] types, Boolean[] is_vararg) {
+    public TypeListNode(VarargedTypeNode[] types) {
         this.types = types;
-        this.is_vararg = is_vararg;
     }
 
-    public TypeNode[] getTypes() {
+    public VarargedTypeNode[] getTypes() {
         return types;
-    }
-
-    public Boolean[] getIs_vararg() {
-        return is_vararg;
     }
 }
