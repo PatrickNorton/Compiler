@@ -1768,7 +1768,7 @@ public class Parser {
                     fn_name = variable();
                     op_name = null;
                 }
-                TypeListNode args = gen_args();
+                TypeListNode args = generic_args();
                 TypeNode[] retvals = null;
                 if (lookahead.is("->")) {
                     retvals = fn_retval();
@@ -1796,21 +1796,21 @@ public class Parser {
         }
     }
 
-    private TypeListNode gen_args() {
-        LinkedList<TypeNode> types = new LinkedList<>();
-        LinkedList<Boolean> is_vararg = new LinkedList<>();
+    private TypeListNode generic_args() {
+        LinkedList<VarargedTypeNode> types = new LinkedList<>();
         if (!lookahead.is("(")) {
             throw new ParserException("Expected (, got "+lookahead.sequence);
         }
         NextToken();
         while (!lookahead.is(")")) {
+            boolean vararg;
             if (lookahead.is("*")) {
-                is_vararg.add(true);
+                vararg = true;
                 NextToken(true);
             } else {
-                is_vararg.add(false);
+                vararg = false;
             }
-            types.add(type());
+            types.add(new VarargedTypeNode(vararg, type()));
             if (lookahead.is(")")) {
                 break;
             }
@@ -1820,6 +1820,6 @@ public class Parser {
             NextToken(true);
         }
         NextToken();
-        return new TypeListNode(types.toArray(new TypeNode[0]), is_vararg.toArray(new Boolean[0]));
+        return new TypeListNode(types.toArray(new VarargedTypeNode[0]));
     }
 }
