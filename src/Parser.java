@@ -1,6 +1,6 @@
 // TODO! Rename getName() to not conflict with standard name
-// TODO? bitwise operators
 // TODO: Reduce/remove nulls
+// TODO: Casting
 
 
 import java.math.BigInteger;
@@ -1009,8 +1009,12 @@ public class Parser {
                 return nodes.get(0);
             }
             parseExpression(nodes, "**");
-            parseExpression(nodes, "*", "/");
+            parseExpression(nodes, "~");
+            parseExpression(nodes, "*", "/", "//", "%");
             parseExpression(nodes,"+", "-");
+            parseExpression(nodes, "<<", ">>");
+            parseExpression(nodes, "&");
+            parseExpression(nodes, "^", "|");
             parseExpression(nodes, "<", "<=", ">", ">=", "!=", "==");
             parseExpression(nodes, "in");
             parseExpression(nodes, "not");
@@ -1035,7 +1039,7 @@ public class Parser {
                 }
                 String operator = ((OperatorNode) node).getOperator();
                 if (Arrays.asList(expr).contains(operator)) {
-                    if (operator.matches("\\+\\+|--|not")) {
+                    if (operator.matches("\\+\\+|--|not|~")) {
                         parseUnaryOp(nodes, nodeNumber);
                     } else {
                         parseOperator(nodes, nodeNumber);
