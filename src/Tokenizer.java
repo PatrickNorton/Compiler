@@ -26,9 +26,9 @@ public class Tokenizer {
         tokens = new LinkedList<>();
     }
 
-    public void add(String regex, int token) {
+    public void add(Pattern regex, int token) {
         tokenInfos.add(
-                new TokenInfo(Pattern.compile("^("+regex+")"), token)
+                new TokenInfo(regex, token)
         );
     }
 
@@ -60,55 +60,55 @@ public class Tokenizer {
     public static Tokenizer parse(String str) {
         Tokenizer tokenizer = new Tokenizer();
         // Comments and whitespace
-        tokenizer.add("#\\|(((?!\\|#).|\\n))*\\|#|#.*| +|\\\\\\n", 0);
+        tokenizer.add(Pattern.compile("^(#\\|((?!\\|#).|\\n)*\\|#|#.*| +|\\\\\\n)"), 0);
         // Newlines
-        tokenizer.add("\\n", 1);
+        tokenizer.add(Pattern.compile("^\\R"), 1);
         // Descriptors, e.g. private, etc.
-        tokenizer.add("\\b(private|const|final|pubget|static)\\b", 2);
+        tokenizer.add(Pattern.compile("^\\b(private|const|final|pubget|static)\\b"), 2);
         // Other keywords, such as for control flow or typeget
-        tokenizer.add("\\b(if|for|else|do|func|class|method|while|in|from|(im|ex)port"
+        tokenizer.add(Pattern.compile("^\\b(if|for|else|do|func|class|method|while|in|from|(im|ex)port"
                                +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
                                +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
-                               +"|raise|typedef|some|interface)\\b", 3);
+                               +"|raise|typedef|some|interface)\\b"), 3);
         // The self and cls keywords
         // TODO? Move this into variable section
-        tokenizer.add("\\b(self|cls)((\\.[_a-zA-Z][_a-zA-Z0-9\\.]*))?\\b", 4);
+        tokenizer.add(Pattern.compile("^\\b(self|cls)(\\.[_a-zA-Z][_a-zA-Z0-9.]*)?\\b"), 4);
         // Opening braces
-        tokenizer.add("[\\[({]", 5);
+        tokenizer.add(Pattern.compile("^[\\[({]"), 5);
         // Closing braces
-        tokenizer.add("[\\])}]", 6);
+        tokenizer.add(Pattern.compile("^[])}]"), 6);
         // The comma
-        tokenizer.add(",", 7);
-        // Assignment operators
+        tokenizer.add(Pattern.compile("^,"), 7);
+        // Augmented assignment operators
         // These are separate from other operators because they act differently,
         // and thus need to be parsed separately
-        tokenizer.add("([+\\-]|[*/]{1,2})=", 8);
+        tokenizer.add(Pattern.compile("^([+\\-%]|([*/])\\2?|<<|>>|[&|^~])="), 8);
         // Normal operators
         // Operators in their natural habitat, not masquerading as anything else
         // TODO? Move arrow operator to its own section
-        tokenizer.add("->|==|!=|[+\\-*/]{1,2}", 9);
+        tokenizer.add(Pattern.compile("^(->|==|!=|([+\\-*/])\\2?|<<|>>|[&|^~%])"), 9);
         // Assignment operators
-        tokenizer.add(":?=", 10);
+        tokenizer.add(Pattern.compile("^:?="), 10);
         // String literals
         // These are token-ed separately, so they don't mess with the syntax of everything else
-        tokenizer.add("[rfb]?\"([^\"]|\\n)+\"", 11);
+        tokenizer.add(Pattern.compile("^[rfb]?\"([^\"]|\\n)+\""), 11);
         // Boolean operators
-        tokenizer.add("and|or|not|xor", 12);
+        tokenizer.add(Pattern.compile("^and|or|not|xor"), 12);
         // Digits, incl. those in other bases
-        tokenizer.add("(0[xob])?[0-9]+", 13);
+        tokenizer.add(Pattern.compile("^(0[xob])?[0-9]+"), 13);
         // The crazy operator syntax
-        tokenizer.add("\\b(operator *(r?(==|!=|[+\\-*/]{1,2}|[><]=?)|\\[\\]=?|\\(\\)" +
-                             "|u-|iter|new|in|missing|del|str|repr|bool|del(\\[\\])?))", 14);
+        tokenizer.add(Pattern.compile("^\\b(operator *(r?(==|!=|([+\\-*/])\\4?|[><]=?)|\\[]=?|\\(\\)" +
+                             "|u-|iter|new|in|missing|del|str|repr|bool|del(\\[])?|<<|>>|[&|^~%]))"), 14);
         // Variable names
         // Includes a check to make sure operator never shows up as a variable,
         // because it is a keyword, even though it doesn't show up in the keyword check
-        tokenizer.add("\\b(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9\\.]*\\b", 15);
+        tokenizer.add(Pattern.compile("^\\b(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9.]*\\b"), 15);
         // Operator-functions
-        tokenizer.add("\\\\(//|==|!=|r?[+\\-*/]{1,2}|u-)", 16);
+        tokenizer.add(Pattern.compile("^\\\\(==|!=|r?[+\\-*/]{1,2}|u-|<<|>>|[&|^~%])"), 16);
         // Colons, for slice syntax and others
-        tokenizer.add("::?", 17);
+        tokenizer.add(Pattern.compile("^::?"), 17);
         // The ellipsis
-        tokenizer.add("\\.\\.\\.", 18);
+        tokenizer.add(Pattern.compile("^\\.{3}"), 18);
         try {
             tokenizer.tokenize(str);
         } catch (RuntimeException e) {
