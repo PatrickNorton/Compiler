@@ -29,4 +29,8 @@ public class VariableNode implements AtomicNode {
     public boolean isDotted() {
         return names.length > 1;
     }
+
+    public boolean isEmpty() {
+        return names.length > 0;
+    }
 }

@@ -1,6 +1,7 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
 // TODO: Casting
+// TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
 
 
 import java.math.BigInteger;
@@ -593,7 +594,7 @@ public class Parser {
             StatementBodyNode elif_body = fn_body();
             elifs.add(new ElifStatementNode(elif_test, elif_body));
         }
-        StatementBodyNode else_stmt = null;
+        StatementBodyNode else_stmt = new StatementBodyNode();
         if (lookahead.is("else")) {
             NextToken();
             else_stmt = fn_body();
@@ -612,7 +613,7 @@ public class Parser {
         NextToken();
         TestNode[] iterables = for_iterables();
         StatementBodyNode body = fn_body();
-        StatementBodyNode nobreak = null;
+        StatementBodyNode nobreak = new StatementBodyNode();
         if (lookahead.is("nobreak")) {
             NextToken();
             nobreak = new StatementBodyNode(fn_body());
@@ -639,7 +640,7 @@ public class Parser {
         NextToken();
         TestNode iterations = test();
         StatementBodyNode body = fn_body();
-        StatementBodyNode nobreak = null;
+        StatementBodyNode nobreak = new StatementBodyNode();
         if (lookahead.is("nobreak")) {
             NextToken();
             nobreak = new StatementBodyNode(fn_body());
@@ -664,7 +665,7 @@ public class Parser {
         NextToken();
         TestNode cond = test();
         StatementBodyNode body = fn_body();
-        StatementBodyNode nobreak = null;
+        StatementBodyNode nobreak = new StatementBodyNode();
         if (lookahead.is("nobreak")) {
             NextToken();
             nobreak = new StatementBodyNode(fn_body());
@@ -696,7 +697,7 @@ public class Parser {
     }
 
     private TypegetStatementNode typeget_stmt() {
-        VariableNode from = null;
+        VariableNode from = new VariableNode();
         if (lookahead.is("from")) {
             NextToken();
             from = variable();
@@ -1424,7 +1425,7 @@ public class Parser {
     private ContextDefinitionNode context_def() {
         assert lookahead.is("context");
         NextToken();
-        VariableNode name = null;
+        VariableNode name = new VariableNode();
         if (lookahead.is(Token.VARIABLE)) {
             name = variable(false);
         }
@@ -1432,8 +1433,8 @@ public class Parser {
             throw new ParserException("Context managers must be followed by a curly brace");
         }
         NextToken(true);
-        StatementBodyNode enter = null;
-        StatementBodyNode exit = null;
+        StatementBodyNode enter = new StatementBodyNode();
+        StatementBodyNode exit = new StatementBodyNode();
         if (lookahead.is("enter")) {
             enter = fn_body();
         }
@@ -1446,10 +1447,10 @@ public class Parser {
         }
         NextToken();
         Newline();
-        if (enter == null) {
+        if (enter.isEmpty()) {
             enter = new StatementBodyNode();
         }
-        if (exit == null) {
+        if (exit.isEmpty()) {
             exit = new StatementBodyNode();
         }
         Newline();
@@ -1460,12 +1461,18 @@ public class Parser {
         assert lookahead.is("try");
         NextToken();
         StatementBodyNode body = fn_body();
-        StatementBodyNode except = null;
-        StatementBodyNode else_stmt = null;
-        StatementBodyNode finally_stmt = null;
+        StatementBodyNode except = new StatementBodyNode();
+        VariableNode[] excepted = new VariableNode[0];
+        VariableNode as_var = new VariableNode();
+        StatementBodyNode else_stmt = new StatementBodyNode();
+        StatementBodyNode finally_stmt = new StatementBodyNode();
         if (lookahead.is("except")) {
             NextToken();
-            VariableNode[] excepted = var_list(true, false);
+            excepted = var_list(true, false);
+            if (lookahead.is("as")) {
+                NextToken();
+                as_var = variable(false);
+            }
             except = fn_body();
             if (lookahead.is("else")) {
                 NextToken();
@@ -1476,11 +1483,11 @@ public class Parser {
             NextToken();
             finally_stmt = fn_body();
         }
-        if (except == null && finally_stmt == null) {
+        if (except.isEmpty() && finally_stmt.isEmpty()) {
             throw new ParserException("Try statement must either have an except or finally clause");
         }
         Newline();
-        return new TryStatementNode(body, except, else_stmt, finally_stmt);  // FIXME: Add excepted vars to node
+        return new TryStatementNode(body, except, excepted, as_var, else_stmt, finally_stmt);
     }
 
     private WithStatementNode with_stmt() {
@@ -1581,7 +1588,7 @@ public class Parser {
         }
         LinkedList<ArgumentNode> args = new LinkedList<>();
         while (true) {
-            VariableNode var = null;
+            VariableNode var = new VariableNode();
             if (tokens.get(sizeOfVariable()).is("=")) {
                 var = variable(false);
                 NextToken(true);
