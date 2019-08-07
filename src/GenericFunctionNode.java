@@ -1,10 +1,10 @@
 public class GenericFunctionNode implements InterfaceStatementNode {
     private VariableNode name;
-    private TypeListNode args;
+    private TypedArgumentListNode args;
     private TypeNode[] retvals;
     private DescriptorNode[] descriptors;
 
-    public GenericFunctionNode(VariableNode name, TypeListNode args, TypeNode... retvals) {
+    public GenericFunctionNode(VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
         this.name = name;
         this.args = args;
         this.retvals = retvals;
@@ -14,7 +14,7 @@ public class GenericFunctionNode implements InterfaceStatementNode {
         return name;
     }
 
-    public TypeListNode getArgs() {
+    public TypedArgumentListNode getArgs() {
         return args;
     }
 
