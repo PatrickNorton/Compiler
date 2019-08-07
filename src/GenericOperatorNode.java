@@ -1,10 +1,10 @@
 public class GenericOperatorNode implements InterfaceStatementNode {
     private String op_code;
-    private TypeListNode args;
+    private TypedArgumentListNode args;
     private TypeNode[] retvals;
     private DescriptorNode[] descriptors;
 
-    public GenericOperatorNode(String op_code, TypeListNode args, TypeNode... retvals) {
+    public GenericOperatorNode(String op_code, TypedArgumentListNode args, TypeNode... retvals) {
         this.op_code = op_code;
         this.args = args;
         this.retvals = retvals;
@@ -14,7 +14,7 @@ public class GenericOperatorNode implements InterfaceStatementNode {
         return op_code;
     }
 
-    public TypeListNode getArgs() {
+    public TypedArgumentListNode getArgs() {
         return args;
     }
 

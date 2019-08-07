@@ -1778,7 +1778,7 @@ public class Parser {
                     fn_name = variable();
                     op_name = null;
                 }
-                TypeListNode args = generic_args();
+                TypedArgumentListNode args = fn_args();
                 TypeNode[] retvals = null;
                 if (lookahead.is("->")) {
                     retvals = fn_retval();
@@ -1804,32 +1804,5 @@ public class Parser {
         } else {
             throw new ParserException("Illegal statement");
         }
-    }
-
-    private TypeListNode generic_args() {
-        LinkedList<VarargedTypeNode> types = new LinkedList<>();
-        if (!lookahead.is("(")) {
-            throw new ParserException("Expected (, got "+lookahead.sequence);
-        }
-        NextToken();
-        while (!lookahead.is(")")) {
-            boolean vararg;
-            if (lookahead.is("*")) {
-                vararg = true;
-                NextToken(true);
-            } else {
-                vararg = false;
-            }
-            types.add(new VarargedTypeNode(vararg, type()));
-            if (lookahead.is(")")) {
-                break;
-            }
-            if (!lookahead.is(Token.COMMA)) {
-                throw new ParserException("Expected comma, got "+lookahead.sequence);
-            }
-            NextToken(true);
-        }
-        NextToken();
-        return new TypeListNode(types.toArray(new VarargedTypeNode[0]));
     }
 }
