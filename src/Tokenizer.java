@@ -1,8 +1,7 @@
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.File;
-import java.util.Scanner;
+
 
 // TODO? Remove self_cls tokens
 public class Tokenizer {
@@ -86,7 +85,7 @@ public class Tokenizer {
         // Normal operators
         // Operators in their natural habitat, not masquerading as anything else
         // TODO? Move arrow operator to its own section
-        tokenizer.add(Pattern.compile("^(->|==|!=|([+\\-*/])\\2?|<<|>>|[&|^~%])"), 9);
+        tokenizer.add(Pattern.compile("^(->|==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%])"), 9);
         // Assignment operators
         tokenizer.add(Pattern.compile("^:?="), 10);
         // String literals
@@ -104,7 +103,7 @@ public class Tokenizer {
         // because it is a keyword, even though it doesn't show up in the keyword check
         tokenizer.add(Pattern.compile("^\\b(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9.]*\\b"), 15);
         // Operator-functions
-        tokenizer.add(Pattern.compile("^\\\\(==|!=|r?[+\\-*/]{1,2}|u-|<<|>>|[&|^~%])"), 16);
+        tokenizer.add(Pattern.compile("^\\\\(==|!=|[><]=?|r?[+\\-*/]{1,2}|u-|<<|>>|[&|^~%])"), 16);
         // Colons, for slice syntax and others
         tokenizer.add(Pattern.compile("^::?"), 17);
         // The ellipsis

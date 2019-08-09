@@ -153,7 +153,7 @@ public class Parser {
         return size;
     }
 
-    private void NextToken(Boolean ignore_newline) {
+    private void NextToken(boolean ignore_newline) {
         tokens.pop();
         if (ignore_newline) {
             passNewlines();
@@ -881,7 +881,7 @@ public class Parser {
         return types.toArray(new TypeNode[0]);
     }
 
-    private TestNode test(Boolean ignore_newline) {
+    private TestNode test(boolean ignore_newline) {
         SubTestNode if_true = test_no_ternary(ignore_newline);
         if (lookahead.is("if")) {
             NextToken(ignore_newline);
@@ -1214,7 +1214,7 @@ public class Parser {
     }
 
     private TypedArgumentNode typed_argument() {
-        Boolean is_vararg = lookahead.is("*", "**");
+        boolean is_vararg = lookahead.is("*", "**");
         String vararg_type;
         if (lookahead.is("*", "**")) {
             vararg_type = lookahead.sequence;
@@ -1310,7 +1310,7 @@ public class Parser {
                 break;
             }
         }
-        if (!lookahead.is(Token.CLOSE_BRACE)) {  // FIXME: Close braces must match open braces
+        if (brace_type != null && !lookahead.is(matching_brace(brace_type))) {
             throw new ParserException("Expected close brace");
         }
         NextToken();
@@ -1318,24 +1318,24 @@ public class Parser {
         return new ComprehensionNode(brace_type, variables, builder, looped_array);
     }
 
+    private String matching_brace(String brace) {
+        switch (brace) {
+            case "(":
+                return ")";
+            case "[":
+                return "]";
+            case "{":
+                return "}";
+            default:
+                throw new RuntimeException("Unknown brace "+brace);
+        }
+    }
+
     private LiteralNode literal() {
         assert lookahead.is(Token.OPEN_BRACE);
         String brace_type = lookahead.sequence;
-        String balanced_brace;
-        switch (brace_type) {
-            case "(":
-                balanced_brace = ")";
-                break;
-            case "[":
-                balanced_brace = "]";
-                break;
-            case "{":
-                balanced_brace = "}";
-                break;
-            default:
-                throw new RuntimeException("Unknown brace "+brace_type);
-        }
         NextToken(true);
+        String balanced_brace = matching_brace(brace_type);
         LinkedList<TestNode> tokens = new LinkedList<>();
         LinkedList<Boolean> is_splat = new LinkedList<>();
         while (true) {
