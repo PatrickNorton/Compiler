@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
+    <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="Added string prefix support">
+      <change afterPath="$PROJECT_DIR$/src/CastNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/GenericFunctionNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/GenericFunctionNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/GenericOperatorNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/GenericOperatorNode.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/StringNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/StringNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -103,7 +103,8 @@
       <workItem from="1563365367055" duration="32697000" />
       <workItem from="1563558435904" duration="159670000" />
       <workItem from="1565305437498" duration="33000" />
-      <workItem from="1565305496089" duration="2778000" />
+      <workItem from="1565305496089" duration="4655000" />
+      <workItem from="1565360199485" duration="9002000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -140,7 +141,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565180091956</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Added support for matching braces in comprehensions">
+      <created>1565309228580</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1565309228580</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -160,7 +168,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
@@ -172,7 +182,8 @@
     <MESSAGE value="Added bitwise operator support" />
     <MESSAGE value="Removed many nulls, fixed try statement not using except" />
     <MESSAGE value="Changed generics to use names in arglist" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed generics to use names in arglist" />
+    <MESSAGE value="Added support for matching braces in comprehensions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added support for matching braces in comprehensions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

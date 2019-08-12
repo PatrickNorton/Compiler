@@ -2,12 +2,14 @@
 // TODO: Reduce/remove nulls
 // TODO: Casting
 // TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
+// TODO: String tokens, f-strings
 
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 
 public class Parser {
     private LinkedList<Token> tokens;
@@ -325,7 +327,7 @@ public class Parser {
     }
 
     private BaseNode openBrace() {
-        // Types of brace statement: comprehension, literal, grouping paren
+        // Types of brace statement: comprehension, literal, grouping paren, TODO: casting
         if (lookahead.is("(")) {
             if (braceContains("for")) {
                 return comprehension();
@@ -483,7 +485,14 @@ public class Parser {
     }
 
     private StringNode string() {
-        return new StringNode(lookahead.sequence.replaceFirst("\"", ""));
+        String contents = lookahead.sequence;
+        NextToken();
+        String inside = contents.replaceAll("(^[rfb]*)|(?<!\\\\)\"", "");
+        if (contents.matches("^[rfb]+")) {
+            String prefixes = Pattern.compile("^[rfb]+").matcher(contents).group(1);
+            return new StringNode(inside, prefixes.toCharArray());
+        }
+        return new StringNode(contents);
     }
 
     private OperatorNode left_bool_op(boolean ignore_newline) {
