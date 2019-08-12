@@ -1,14 +1,17 @@
 public class StringNode implements AtomicNode {
     private String contents;
+    private char[] prefixes;
 
-    public StringNode(String contents) {
-        if (contents.startsWith("\"") && contents.endsWith("\"")) {
-            contents = contents.substring(1, contents.length()-1);
-            this.contents = contents;
-        }
+    public StringNode(String contents, char... prefixes) {
+        this.contents = contents;
+        this.prefixes = prefixes;
     }
 
     public String getContents() {
         return contents;
+    }
+
+    public char[] getPrefixes() {
+        return prefixes;
     }
 }
