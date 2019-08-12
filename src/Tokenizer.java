@@ -1,3 +1,4 @@
+import javax.management.relation.RoleUnresolved;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +69,7 @@ public class Tokenizer {
         tokenizer.add(Pattern.compile("^\\b(if|for|else|do|func|class|method|while|in|from|(im|ex)port"
                                +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
                                +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
-                               +"|raise|typedef|some|interface)\\b"), 3);
+                               +"|raise|typedef|some|interface|cast(ed)?|to)\\b"), 3);
         // The self and cls keywords
         // TODO? Move this into variable section
         tokenizer.add(Pattern.compile("^\\b(self|cls)(\\.[_a-zA-Z][_a-zA-Z0-9.]*)?\\b"), 4);
@@ -103,17 +104,17 @@ public class Tokenizer {
         // Variable names
         // Includes a check to make sure operator never shows up as a variable,
         // because it is a keyword, even though it doesn't show up in the keyword check
-        tokenizer.add(Pattern.compile("^\\b(?!operator\\b)[_a-zA-Z](\\.[_a-zA-Z0-9]+)*\\b"), 15);
+        tokenizer.add(Pattern.compile("^\\b(?!operator\\b)\\.?[_a-zA-Z]+(\\.[_a-zA-Z0-9]+)*\\b"), 15);
         // Operator-functions
         tokenizer.add(Pattern.compile("^\\\\(==|!=|[><]=?|r?[+\\-*/]{1,2}|u-|<<|>>|[&|^~%])"), 16);
         // Colons, for slice syntax and others
-        tokenizer.add(Pattern.compile("^::?"), 17);
+        tokenizer.add(Pattern.compile("^:"), 17);
         // The ellipsis
         tokenizer.add(Pattern.compile("^\\.{3}"), 18);
         try {
             tokenizer.tokenize(str);
         } catch (RuntimeException e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
         return tokenizer;
     }

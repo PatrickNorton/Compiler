@@ -3,6 +3,7 @@
 // TODO: Casting
 // TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
 // TODO: String tokens, f-strings
+// TODO: Post-parenthetical dotted vars: (a + b).foo()
 
 
 import java.math.BigInteger;
@@ -21,6 +22,7 @@ public class Parser {
         TopNode topNode = new TopNode();
         while (!lookahead.is(Token.EPSILON)) {
             topNode.add(statement());
+            passNewlines();
         }
         return topNode;
     }
@@ -248,8 +250,9 @@ public class Parser {
                 return method_def();
             case "while":
                 return while_stmt();
+            case "casted":
             case "in":
-                throw new ParserException("in must have a preceding token");
+                throw new ParserException(lookahead.sequence+" must have a preceding token");
             case "from":
                 return left_from();
             case "import":
@@ -299,6 +302,8 @@ public class Parser {
                 return some_op();
             case "interface":
                 return interface_def();
+            case "cast":
+                return cast_stmt();
             default:
                 throw new RuntimeException("Keyword mismatch");
         }
@@ -1000,8 +1005,8 @@ public class Parser {
                     case Token.COMMA:
                         break while_loop;
                     case Token.KEYWORD:
-                        if (lookahead.is("in")) {
-                            nodes.add(new OperatorNode("in"));
+                        if (lookahead.is("in", "casted")) {
+                            nodes.add(new OperatorNode(lookahead.sequence));
                             NextToken();
                             break;
                         } else if (lookahead.is("if", "else")) {
@@ -1030,6 +1035,7 @@ public class Parser {
             parseExpression(nodes, "not");
             parseExpression(nodes, "and");
             parseExpression(nodes, "or");
+            parseExpression(nodes, "casted");
             if (nodes.size() > 1) {
                 throw new ParserException("Too many tokens");
             }
@@ -1813,5 +1819,25 @@ public class Parser {
         } else {
             throw new ParserException("Illegal statement");
         }
+    }
+
+    private CastStatementNode cast_stmt() {
+        assert lookahead.is("cast");
+        NextToken();
+        VariableNode casted = variable();
+        if (!lookahead.is("to")) {
+            throw new ParserException("Expected to, got "+lookahead.sequence);
+        }
+        NextToken();
+        TypeNode type = type();
+        VariableNode new_name;
+        if (lookahead.is("as")) {
+            NextToken();
+            new_name = variable(false);
+        } else {
+            new_name = new VariableNode();
+        }
+        Newline();
+        return new CastStatementNode(casted, type, new_name);
     }
 }
