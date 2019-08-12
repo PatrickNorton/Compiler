@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="Added string prefix support">
-      <change afterPath="$PROJECT_DIR$/src/CastNode.java" afterDir="false" />
+    <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/META-INF/Compiler.kotlin_module" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/StringNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/StringNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CastNode.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/StringNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/StringNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -47,7 +50,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="preferences.intentionPowerPack" />
   </component>
   <component name="RunAnythingCache">
     <option name="myCommands">
@@ -104,7 +107,7 @@
       <workItem from="1563558435904" duration="159670000" />
       <workItem from="1565305437498" duration="33000" />
       <workItem from="1565305496089" duration="4655000" />
-      <workItem from="1565360199485" duration="9002000" />
+      <workItem from="1565360199485" duration="14161000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -148,7 +151,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565309228580</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Added string prefix support">
+      <created>1565569682897</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1565569682897</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -183,7 +193,8 @@
     <MESSAGE value="Removed many nulls, fixed try statement not using except" />
     <MESSAGE value="Changed generics to use names in arglist" />
     <MESSAGE value="Added support for matching braces in comprehensions" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added support for matching braces in comprehensions" />
+    <MESSAGE value="Added string prefix support" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added string prefix support" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
