@@ -2,14 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/FormattedStringNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/META-INF/Compiler.kotlin_module" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/StringNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/StringNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CastNode.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -107,7 +103,9 @@
       <workItem from="1563558435904" duration="159670000" />
       <workItem from="1565305437498" duration="33000" />
       <workItem from="1565305496089" duration="4655000" />
-      <workItem from="1565360199485" duration="14161000" />
+      <workItem from="1565360199485" duration="22783000" />
+      <workItem from="1565692514517" duration="526000" />
+      <workItem from="1565693310646" duration="2777000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -158,17 +156,15 @@
       <option name="project" value="LOCAL" />
       <updated>1565569682897</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Fixed error on end-of-file">
+      <created>1565617402758</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1565617402758</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
-  </component>
-  <component name="TodoView" selected-index="4">
-    <todo-panel id="selected-file">
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-    <todo-panel id="all">
-      <are-packages-shown value="true" />
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -194,7 +190,8 @@
     <MESSAGE value="Changed generics to use names in arglist" />
     <MESSAGE value="Added support for matching braces in comprehensions" />
     <MESSAGE value="Added string prefix support" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added string prefix support" />
+    <MESSAGE value="Fixed error on end-of-file" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed error on end-of-file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -203,6 +200,16 @@
           <url>file://$PROJECT_DIR$/src/Compiler.java</url>
           <line>20</line>
           <option name="timeStamp" value="83" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/Parser.java</url>
+          <line>951</line>
+          <option name="timeStamp" value="92" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/Parser.java</url>
+          <line>370</line>
+          <option name="timeStamp" value="96" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -213,76 +220,5 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
-  </component>
-  <component name="debuggerHistoryManager">
-    <expressions id="evaluateCodeFragment">
-      <expression>
-        <expression-string>lineContains(Token.OPERATOR);</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>lineContains(Token.BOOL_OP);</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>LinkedList&lt;Integer&gt; a = new LinkedList&lt;&gt;();
-a.add(1);
-a.add(2);
-a.add(3);
-for (int i = 0; i &lt; a.size(); i++) {
-    System.out.println(a.get(i));
-    a.removeLast();
-}</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>sizeOfVariable();</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>lookahead.is(&quot;*&quot;, &quot;**&quot;);</expression-string>
-        <language-id>JAVA</language-id>
-        <custom-info>Parser</custom-info>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>lookahead.is(&quot;*&quot;);</expression-string>
-        <language-id>JAVA</language-id>
-        <custom-info>Parser</custom-info>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>sizeOfVariable();
-tokens.get(1);</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-    </expressions>
-    <expressions id="breakpointCondition">
-      <expression>
-        <expression-string>tokens.size() &lt; 490</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>tokens.size() &lt; 875</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>nodes.size() == 7</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>nodes.size() &gt; 1</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
   </component>
 </project>
