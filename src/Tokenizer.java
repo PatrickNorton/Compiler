@@ -91,7 +91,7 @@ public class Tokenizer {
         tokenizer.add(Pattern.compile("^:?="), 10);
         // String literals
         // These are token-ed separately, so they don't mess with the syntax of everything else
-        tokenizer.add(Pattern.compile("^[rfb]?\"([^\"]|\\n)+\""), 11);
+        tokenizer.add(Pattern.compile("^[rfb]?\"([^\"]|\\\\\"|\n)+(?<!\\\\)\""), 11);
         // Boolean operators
         tokenizer.add(Pattern.compile("^\\b(and|or|not|xor)\\b"), 12);
         // Digits, incl. those in other bases

@@ -501,11 +501,22 @@ public class Parser {
             if (prefixes.contains("f")) {
                 LinkedList<String> strs = new LinkedList<>();
                 LinkedList<TestNode> tests = new LinkedList<>();
-                Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{]+|\\1)?})").matcher(inside);
+                Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?)|}").matcher(inside);  // FIXME: Recursive regex
                 int index = 0;
+                int start, end = 0;
                 while (m.find()) {  // TODO: Find better way of handling this
-                    strs.add(inside.substring(index, m.start() - 1));
-                    String to_test = m.group();
+                    start = m.start();
+                    strs.add(inside.substring(index, start - 1));
+                    StringBuilder to_test = new StringBuilder();
+                    int netBraces = 0;
+                    do {
+                        String a = m.group();
+                        to_test.append(a);
+                        if (a.startsWith("{")) netBraces++;
+                        if (a.endsWith("}")) netBraces--;
+                        if (netBraces == 0) break;
+                    } while (m.find());
+                    end = m.end();
                     LinkedList<Token> oldTokens = tokens;
                     tokens = Tokenizer.parse(to_test.substring(1, to_test.length() - 1)).getTokens();
                     tokens.add(new Token(Token.EPSILON, ""));
@@ -516,10 +527,10 @@ public class Parser {
                     }
                     tokens = oldTokens;
                     lookahead = tokens.get(0);
-                    index = m.end() + 1;
+                    index = end + 1;
                 }
-                if (index != inside.length()) {
-                    strs.add(inside);
+                if (index <= inside.length()) {
+                    strs.add(inside.substring(end));
                 }
                 return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]));
             }
@@ -1031,6 +1042,7 @@ public class Parser {
                         nodes.add(op_func());
                         break;
                     case Token.EPSILON:
+                    case Token.COLON:
                     case Token.COMMA:
                         break while_loop;
                     case Token.KEYWORD:
