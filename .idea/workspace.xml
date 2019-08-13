@@ -3,6 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DictComprehensionNode.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -102,7 +107,7 @@
       <workItem from="1565305496089" duration="4655000" />
       <workItem from="1565360199485" duration="22783000" />
       <workItem from="1565692514517" duration="526000" />
-      <workItem from="1565693310646" duration="3916000" />
+      <workItem from="1565693310646" duration="8659000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -167,7 +172,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565696184413</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Renamed dict comp -&gt; literal">
+      <created>1565697431896</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1565697431896</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -196,7 +208,8 @@
     <MESSAGE value="Added string prefix support" />
     <MESSAGE value="Fixed error on end-of-file" />
     <MESSAGE value="Added f-string support" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added f-string support" />
+    <MESSAGE value="Renamed dict comp -&gt; literal" />
+    <option name="LAST_COMMIT_MESSAGE" value="Renamed dict comp -&gt; literal" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
