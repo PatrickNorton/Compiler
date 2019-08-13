@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
@@ -489,12 +490,39 @@ public class Parser {
         return new OperatorNode("-", next);
     }
 
-    private StringNode string() {
+    private AtomicNode string() {
+        assert lookahead.is(Token.STRING);
         String contents = lookahead.sequence;
         NextToken();
         String inside = contents.replaceAll("(^[rfb]*)|(?<!\\\\)\"", "");
-        if (contents.matches("^[rfb]+")) {
-            String prefixes = Pattern.compile("^[rfb]+").matcher(contents).group(1);
+        Matcher regex = Pattern.compile("^[rfb]+").matcher(contents);
+        if (regex.find()) {
+            String prefixes = regex.group();
+            if (prefixes.contains("f")) {
+                LinkedList<String> strs = new LinkedList<>();
+                LinkedList<TestNode> tests = new LinkedList<>();
+                Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{]+|\\1)?})").matcher(inside);
+                int index = 0;
+                while (m.find()) {  // TODO: Find better way of handling this
+                    strs.add(inside.substring(index, m.start() - 1));
+                    String to_test = m.group();
+                    LinkedList<Token> oldTokens = tokens;
+                    tokens = Tokenizer.parse(to_test.substring(1, to_test.length() - 1)).getTokens();
+                    tokens.add(new Token(Token.EPSILON, ""));
+                    lookahead = tokens.get(0);
+                    tests.add(test());
+                    if (!lookahead.is(Token.EPSILON)) {
+                        throw new ParserException("Unexpected " + lookahead.sequence);
+                    }
+                    tokens = oldTokens;
+                    lookahead = tokens.get(0);
+                    index = m.end() + 1;
+                }
+                if (index != inside.length()) {
+                    strs.add(inside);
+                }
+                return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]));
+            }
             return new StringNode(inside, prefixes.toCharArray());
         }
         return new StringNode(contents);
@@ -1002,6 +1030,7 @@ public class Parser {
                     case Token.OP_FUNC:
                         nodes.add(op_func());
                         break;
+                    case Token.EPSILON:
                     case Token.COMMA:
                         break while_loop;
                     case Token.KEYWORD:
