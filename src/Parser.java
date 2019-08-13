@@ -358,7 +358,7 @@ public class Parser {
             if (braceContains("for")) {
                 return comprehension();
             } else if (braceContains(":")) {
-                return dict_comprehension();
+                return dict_literal();
             } else {
                 return literal();
             }
@@ -1439,7 +1439,7 @@ public class Parser {
         return variables.toArray(new VariableNode[0]);
     }
 
-    private DictComprehensionNode dict_comprehension() {  // FIXME: This is a literal, not a comprehension
+    private DictLiteralNode dict_literal() {
         assert lookahead.is("{");
         NextToken(true);
         LinkedList<TestNode> keys = new LinkedList<>();
@@ -1463,7 +1463,7 @@ public class Parser {
             throw new ParserException("Unmatched brace");
         }
         NextToken();
-        return new DictComprehensionNode(keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));
+        return new DictLiteralNode(keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));
     }
 
     private ContextDefinitionNode context_def() {
