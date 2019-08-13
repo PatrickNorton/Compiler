@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/FormattedStringNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -105,7 +102,7 @@
       <workItem from="1565305496089" duration="4655000" />
       <workItem from="1565360199485" duration="22783000" />
       <workItem from="1565692514517" duration="526000" />
-      <workItem from="1565693310646" duration="2777000" />
+      <workItem from="1565693310646" duration="3916000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -163,7 +160,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565617402758</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Added f-string support">
+      <created>1565696184413</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1565696184413</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -191,7 +195,8 @@
     <MESSAGE value="Added support for matching braces in comprehensions" />
     <MESSAGE value="Added string prefix support" />
     <MESSAGE value="Fixed error on end-of-file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed error on end-of-file" />
+    <MESSAGE value="Added f-string support" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added f-string support" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -200,11 +205,6 @@
           <url>file://$PROJECT_DIR$/src/Compiler.java</url>
           <line>20</line>
           <option name="timeStamp" value="83" />
-        </line-breakpoint>
-        <line-breakpoint type="java-line">
-          <url>file://$PROJECT_DIR$/src/Parser.java</url>
-          <line>951</line>
-          <option name="timeStamp" value="92" />
         </line-breakpoint>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/Parser.java</url>
