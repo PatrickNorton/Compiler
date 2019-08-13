@@ -1,8 +1,8 @@
-public class DictComprehensionNode implements SubTestNode {
+public class DictLiteralNode implements SubTestNode {
     private TestNode[] keys;
     private TestNode[] values;
 
-    public DictComprehensionNode(TestNode[] keys, TestNode[] values) {
+    public DictLiteralNode(TestNode[] keys, TestNode[] values) {
         this.keys = keys;
         this.values = values;
     }
