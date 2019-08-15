@@ -501,7 +501,7 @@ public class Parser {
             if (prefixes.contains("f")) {
                 LinkedList<String> strs = new LinkedList<>();
                 LinkedList<TestNode> tests = new LinkedList<>();
-                Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?)|}").matcher(inside);  // FIXME: Recursive regex
+                Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})").matcher(inside);
                 int index = 0;
                 int start, end = 0;
                 while (m.find()) {  // TODO: Find better way of handling this
@@ -771,28 +771,58 @@ public class Parser {
         int loops;
         if (lookahead.is(Token.INTEGER)) {
             loops = Integer.parseInt(lookahead.sequence);
-        } else if (lookahead.is(Token.NEWLINE)) {
+            NextToken();
+        } else if (lookahead.is(Token.NEWLINE) || lookahead.is("if")) {
             loops = 0;
         } else {
             throw new ParserException("Break statement must not be followed by anything");
         }
+        TestNode cond = null;
+        if (lookahead.is("if")) {
+            NextToken();
+            cond = test();
+        }
         Newline();
-        return new BreakStatementNode(loops);
+        return new BreakStatementNode(loops, cond);
     }
 
     private ContinueStatementNode continue_stmt() {
         assert lookahead.is("continue");
         NextToken();
+        TestNode cond = null;
+        if (lookahead.is("if")) {
+            NextToken();
+            cond = test();
+        }
         Newline();
-        return new ContinueStatementNode();
+        return new ContinueStatementNode(cond);
     }
 
     private ReturnStatementNode return_stmt() {
         assert lookahead.is("return");
         NextToken();
-        TestNode[] returned = test_list(false);
+        boolean is_conditional = false;
+        if (lookahead.is("(") && tokens.get(sizeOfBrace(0) + 1).is("if")
+                && !lineContains("else")) {
+            NextToken();
+            is_conditional = true;
+        }
+        TestNode[] returned;
+        if (!lookahead.is(Token.NEWLINE) && !lookahead.is("if")) {
+            returned = test_list(false);
+        } else {
+            returned = new TestNode[0];
+        }
+        TestNode cond = null;
+        if (is_conditional) {
+            if (!lookahead.is(")")) {
+                throw new ParserException("Expected ), got " + lookahead.sequence);
+            }
+            NextToken();
+            cond = test();
+        }
         Newline();
-        return new ReturnStatementNode(returned);
+        return new ReturnStatementNode(returned, cond);
     }
 
     private BaseNode descriptor_keyword(ArrayList<DescriptorNode> descriptors) {
