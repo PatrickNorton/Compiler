@@ -176,7 +176,7 @@ public class Parser {
 
     private void Newline() {
         if (!lookahead.is(Token.NEWLINE)) {
-            throw new ParserException("Expected newline, got "+lookahead.sequence);
+            throw new ParserException("Expected newline, got "+lookahead);
         }
         NextToken();
     }
@@ -372,12 +372,12 @@ public class Parser {
         if (node instanceof SubTestNode) {
             return (SubTestNode) node;
         }
-        throw new ParserException("Unexpected " + lookahead.sequence);
+        throw new ParserException("Unexpected " + lookahead);
     }
 
     private VariableNode variable(boolean allow_dotted) {
         if (!lookahead.is(Token.VARIABLE) && !lookahead.is(Token.SELF_CLS)) {
-            throw new ParserException("Expected variable, got " + lookahead.sequence);
+            throw new ParserException("Expected variable, got " + lookahead);
         }
         if (!allow_dotted && lookahead.sequence.contains(".")) {
             throw new ParserException("Dotted variables are not allowed here");
@@ -405,7 +405,7 @@ public class Parser {
         } else if (lineContains(Token.AUG_ASSIGN)) {
             VariableNode var = var_or_index();
             if (!lookahead.is(Token.AUG_ASSIGN)) {
-                throw new ParserException("Expected augmented assignment, got " + lookahead.sequence);
+                throw new ParserException("Expected augmented assignment, got " + lookahead);
             }
             OperatorNode op = new OperatorNode(lookahead.sequence.replaceAll("=$", ""));
             NextToken();
@@ -437,7 +437,7 @@ public class Parser {
                     break;
                 }
                 if (!lookahead.is(Token.COMMA)) {
-                    throw new ParserException("Expected comma, got " + lookahead.sequence);
+                    throw new ParserException("Expected comma, got " + lookahead);
                 }
                 NextToken();
             } else {
@@ -447,7 +447,7 @@ public class Parser {
                     break;
                 }
                 if (!lookahead.is(Token.COMMA)) {
-                    throw new ParserException("Expected comma, got " + lookahead.sequence);
+                    throw new ParserException("Expected comma, got " + lookahead);
                 }
                 NextToken();
             }
@@ -523,7 +523,7 @@ public class Parser {
                     lookahead = tokens.get(0);
                     tests.add(test());
                     if (!lookahead.is(Token.EPSILON)) {
-                        throw new ParserException("Unexpected " + lookahead.sequence);
+                        throw new ParserException("Unexpected " + lookahead);
                     }
                     tokens = oldTokens;
                     lookahead = tokens.get(0);
@@ -547,7 +547,7 @@ public class Parser {
             case "and":
             case "or":
             case "xor":
-                throw new ParserException(lookahead.sequence+" must be in between statements");
+                throw new ParserException(lookahead+" must be in between statements");
             default:
                 throw new RuntimeException("Unknown boolean operator");
         }
@@ -661,7 +661,7 @@ public class Parser {
         NextToken();
         TypedVariableNode[] vars = for_vars();
         if (!lookahead.is("in")) {
-            throw new ParserException("Expected in, got "+lookahead.sequence);
+            throw new ParserException("Expected in, got "+lookahead);
         }
         NextToken();
         TestNode[] iterables = for_iterables();
@@ -816,7 +816,7 @@ public class Parser {
         TestNode cond = null;
         if (is_conditional) {
             if (!lookahead.is(")")) {
-                throw new ParserException("Expected ), got " + lookahead.sequence);
+                throw new ParserException("Expected ), got " + lookahead);
             }
             NextToken();
             cond = test();
@@ -853,7 +853,7 @@ public class Parser {
             case "break":
             case "continue":
             case "return":
-                throw new ParserException("Expected descriptor-usable keyword, got "+lookahead.sequence);
+                throw new ParserException("Expected descriptor-usable keyword, got "+lookahead);
             default:
                 throw new RuntimeException("Keyword mismatch");
         }
@@ -1088,7 +1088,7 @@ public class Parser {
                             break while_loop;
                         }
                     default:
-                        throw new ParserException("Unexpected "+lookahead.sequence);
+                        throw new ParserException("Unexpected "+lookahead);
                 }
             }
             if (nodes.size() == 1) {
@@ -1168,7 +1168,7 @@ public class Parser {
     private VariableNode var_index() {
         VariableNode var = variable();
         if (!lookahead.is("[")) {
-            throw new ParserException("Expected [, got " + lookahead.sequence);
+            throw new ParserException("Expected [, got " + lookahead);
         }
         ArrayList<TestNode[]> vars = new ArrayList<>();
         while (lookahead.is("[")) {
@@ -1199,7 +1199,7 @@ public class Parser {
             if (allow_empty && lookahead.is("[")) {
                 main = "";
             } else {
-                throw new ParserException("Expected type name, got " + lookahead.sequence);
+                throw new ParserException("Expected type name, got " + lookahead);
             }
         } else {
             main = lookahead.sequence;
@@ -1236,7 +1236,7 @@ public class Parser {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (!lookahead.is("in")) {
             if (!lookahead.is(Token.VARIABLE)) {
-                throw new ParserException("Expected variable, got " + lookahead.sequence);
+                throw new ParserException("Expected variable, got " + lookahead);
             }
             vars.add(typed_variable());
             if (lookahead.is(Token.COMMA)) {
@@ -1294,7 +1294,7 @@ public class Parser {
             }
         }
         if (!ignore_newlines && !lookahead.is(Token.NEWLINE)) {
-            throw new ParserException("Expected newline, got "+lookahead.token);
+            throw new ParserException("Expected newline, got "+lookahead);
         }
         return tests.toArray(new TestNode[0]);
     }
@@ -1323,13 +1323,13 @@ public class Parser {
         if (stmt instanceof ClassStatementNode) {
             return (ClassStatementNode) stmt;
         }
-        throw new ParserException(lookahead.sequence+" is not a valid class statement");
+        throw new ParserException(lookahead+" is not a valid class statement");
     }
 
     private FunctionCallNode function_call() {
         VariableNode caller = var_or_index();
         if (!lookahead.is("(")) {
-            throw new ParserException("Expected function call, got "+lookahead.sequence);
+            throw new ParserException("Expected function call, got "+lookahead);
         }
         ArgumentNode[] args = fn_call_args();
         return new FunctionCallNode(caller, args);
@@ -1585,7 +1585,7 @@ public class Parser {
             if (lookahead.is(Token.COMMA)) {
                 NextToken();
             } else if (!lookahead.is("as")) {
-                throw new ParserException("Expected comma or as, got "+lookahead.sequence);
+                throw new ParserException("Expected comma or as, got "+lookahead);
             }
         }
         VariableNode[] vars = var_list(false, false);
@@ -1692,7 +1692,7 @@ public class Parser {
                 break;
             }
             if (!lookahead.is(",")) {
-                throw new ParserException("Expected comma, got "+lookahead.sequence);
+                throw new ParserException("Expected comma, got "+lookahead);
             }
             NextToken(true);
         }
@@ -1705,11 +1705,11 @@ public class Parser {
         NextToken();
         TestNode contained = test();
         if (!(contained instanceof OperatorNode)) {
-            throw new ParserException("Expected an in, got "+lookahead.sequence);
+            throw new ParserException("Expected an in, got "+lookahead);
         }
         OperatorNode in_stmt = (OperatorNode) contained;
         if (!in_stmt.getOperator().equals("in")) {
-            throw new ParserException("Expected an in, got "+lookahead.sequence);
+            throw new ParserException("Expected an in, got "+lookahead);
         }
         TestNode[] operands = in_stmt.getOperands();
         return new SomeStatementNode(operands[0], operands[1]);
@@ -1735,7 +1735,7 @@ public class Parser {
     private IncrementNode increment() {
         VariableNode var = var_or_index();
         if (!lookahead.is("++")) {
-            throw new RuntimeException("Expected ++, got "+lookahead.sequence);
+            throw new RuntimeException("Expected ++, got "+lookahead);
         }
         NextToken();
         return new IncrementNode(var);
@@ -1744,7 +1744,7 @@ public class Parser {
     private DecrementNode decrement() {
         VariableNode var = var_or_index();
         if (!lookahead.is("--")) {
-            throw new RuntimeException("Expected --, got "+lookahead.sequence);
+            throw new RuntimeException("Expected --, got "+lookahead);
         }
         NextToken();
         return new DecrementNode(var);
@@ -1758,7 +1758,7 @@ public class Parser {
                 break;
             }
             if (!lookahead.is(",")) {
-                throw new ParserException("Unexpected "+lookahead.sequence);
+                throw new ParserException("Unexpected "+lookahead);
             }
             NextToken();
         }
@@ -1785,7 +1785,7 @@ public class Parser {
         }
         TestNode step = slice_test();
         if (!lookahead.is("]")) {
-            throw new ParserException("Expected ], got "+lookahead.sequence);
+            throw new ParserException("Expected ], got "+lookahead);
         }
         NextToken();
         return new SliceNode(start, end, step);
@@ -1793,7 +1793,7 @@ public class Parser {
 
     private TestNode slice_test() {
         if (!lookahead.is(":")) {
-            throw new ParserException("Expected :, got "+lookahead.sequence);
+            throw new ParserException("Expected :, got "+lookahead);
         }
         NextToken(true);
         if (lookahead.is(":", "]")) {
@@ -1897,7 +1897,7 @@ public class Parser {
         NextToken();
         VariableNode casted = variable();
         if (!lookahead.is("to")) {
-            throw new ParserException("Expected to, got "+lookahead.sequence);
+            throw new ParserException("Expected to, got "+lookahead);
         }
         NextToken();
         TypeNode type = type();
