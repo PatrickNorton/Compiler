@@ -45,4 +45,8 @@ public class Token {
         }
         return false;
     }
+
+    public String toString() {
+        return this.sequence;
+    }
 }
