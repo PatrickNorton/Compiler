@@ -1,8 +1,6 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
-// TODO: Casting
 // TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
-// TODO: String tokens, f-strings
 // TODO: Post-parenthetical dotted vars: (a + b).foo()
 
 
@@ -253,7 +251,7 @@ public class Parser {
                 return while_stmt();
             case "casted":
             case "in":
-                throw new ParserException(lookahead.sequence+" must have a preceding token");
+                throw new ParserException(lookahead+" must have a preceding token");
             case "from":
                 return left_from();
             case "import":
@@ -333,7 +331,7 @@ public class Parser {
     }
 
     private BaseNode openBrace() {
-        // Types of brace statement: comprehension, literal, grouping paren, TODO: casting
+        // Types of brace statement: comprehension, literal, grouping paren, casting
         if (lookahead.is("(")) {
             if (braceContains("for")) {
                 return comprehension();
@@ -356,7 +354,7 @@ public class Parser {
             }
         } else if (lookahead.is("{")) {
             if (braceContains("for")) {
-                return comprehension();
+                return braceContains(":") ? dict_comprehension() : comprehension();
             } else if (braceContains(":")) {
                 return dict_literal();
             } else {
@@ -1402,6 +1400,32 @@ public class Parser {
         NextToken();
         TestNode[] looped_array = looped.toArray(new TestNode[0]);
         return new ComprehensionNode(brace_type, variables, builder, looped_array);
+    }
+
+    private DictComprehensionNode dict_comprehension() {
+        assert lookahead.is("{");
+        NextToken(true);
+        TestNode key = test(true);
+        if (!lookahead.is(":")) {
+            throw new ParserException("Expected :, got "+lookahead);
+        }
+        NextToken(true);
+        TestNode val = test(true);
+        if (!lookahead.is("for")) {
+            throw new ParserException("Expected for, got "+lookahead);
+        }
+        NextToken();
+        TypedVariableNode[] vars = comp_params();
+        if (!lookahead.is("in")) {
+            throw new ParserException("Expected in, got "+lookahead);
+        }
+        NextToken();
+        TestNode[] looped = test_list(true);
+        if (!lookahead.is("}")) {
+            throw new ParserException("Expected }, got "+lookahead);
+        }
+        NextToken();
+        return new DictComprehensionNode(key, val, vars, looped);
     }
 
     private String matching_brace(String brace) {
