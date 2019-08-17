@@ -26,4 +26,8 @@ public class ComprehensionNode implements SubTestNode {
     public TestNode[] getLooped() {
         return looped;
     }
+
+    public boolean hasBraces() {
+        return !brace_type.isEmpty();
+    }
 }
