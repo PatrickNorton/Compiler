@@ -2,9 +2,10 @@
 // TODO: Reduce/remove nulls
 // TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
 // TODO: Post-parenthetical dotted vars: (a + b).foo()
+// TODO: Decimals
 
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -237,8 +238,8 @@ public class Parser {
                 return string();
             case Token.BOOL_OP:
                 return left_bool_op(false);
-            case Token.INTEGER:
-                return integer();
+            case Token.NUMBER:
+                return number();
             case Token.OPERATOR_SP:
                 return operator_sp();
             case Token.OP_FUNC:
@@ -599,10 +600,44 @@ public class Parser {
         return new OperatorDefinitionNode(op_code, retval, args, body);
     }
 
-    private IntegerNode integer() {
-        BigInteger val = new BigInteger(lookahead.sequence);
+    private NumberNode number() {
+        String value = lookahead.sequence;
         NextToken();
-        return new IntegerNode(val);
+        if (value.length() < 2) {
+            return new NumberNode(new BigDecimal(value));
+        }
+        int digit_size;
+        switch (value.charAt(1)) {
+            case 'x':
+                digit_size = 16;
+                break;
+            case 'b':
+                digit_size = 2;
+                break;
+            case 'o':
+                digit_size = 8;
+                break;
+            default:
+                return new NumberNode(new BigDecimal(value));
+        }
+        BigDecimal val = parse_int(value.substring(2), "0123465789abcdef".substring(0, digit_size));
+        return new NumberNode(val);
+    }
+
+    private BigDecimal parse_int(String value, String digits) {
+        int dot = value.indexOf('.');
+        int exp_size = dot >= 0 ? dot : value.length() - 1;
+        value = value.replaceAll("\\.", "");
+        BigDecimal val = new BigDecimal(0);
+        for (int i = 0; i < value.length(); i++) {
+            char digit = value.charAt(i);
+            if (digits.indexOf(digit) == -1) {
+                throw new ParserException(digit + " is not a valid digit");
+            }
+            BigDecimal digit_val = BigDecimal.valueOf(digits.indexOf(digit));
+            val = val.add(BigDecimal.valueOf(digits.length()).pow(exp_size - i).multiply(digit_val));
+        }
+        return val;
     }
 
     private SubTestNode op_func() {
@@ -775,7 +810,7 @@ public class Parser {
         assert lookahead.is("break");
         NextToken();
         int loops;
-        if (lookahead.is(Token.INTEGER)) {
+        if (lookahead.is(Token.NUMBER)) {
             loops = Integer.parseInt(lookahead.sequence);
             NextToken();
         } else if (lookahead.is(Token.NEWLINE) || lookahead.is("if")) {
@@ -982,8 +1017,8 @@ public class Parser {
                 return subtest_openBrace();
             case Token.BOOL_OP:
                 return left_bool_op(ignore_newline);
-            case Token.INTEGER:
-                return integer();
+            case Token.NUMBER:
+                return number();
             case Token.OP_FUNC:
                 return op_func();
             case Token.ELLIPSIS:
@@ -1043,8 +1078,8 @@ public class Parser {
                             nodes.add(var_or_index());
                         }
                         break;
-                    case Token.INTEGER:
-                        nodes.add(integer());
+                    case Token.NUMBER:
+                        nodes.add(number());
                         break;
                     case Token.BOOL_OP:
                         nodes.add(new OperatorNode(lookahead.sequence));

@@ -12,7 +12,7 @@ public class Token {
     public static final int ASSIGN = 10;
     public static final int STRING = 11;
     public static final int BOOL_OP = 12;
-    public static final int INTEGER = 13;
+    public static final int NUMBER = 13;
     public static final int OPERATOR_SP = 14;
     public static final int VARIABLE = 15;
     public static final int OP_FUNC = 16;

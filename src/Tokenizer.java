@@ -95,7 +95,7 @@ public class Tokenizer {
         // Boolean operators
         tokenizer.add(Pattern.compile("^\\b(and|or|not|xor)\\b"), 12);
         // Digits, incl. those in other bases
-        tokenizer.add(Pattern.compile("^(0[xob])?[0-9]+"), 13);
+        tokenizer.add(Pattern.compile("^(0x[0-9a-f]+(\\.[0-9a-f]+)?|(0[ob])?[0-9]+(\\.[0-9]+)?)\\b"), 13);
         // The crazy operator syntax
         tokenizer.add(Pattern.compile("^\\b(operator *(r?(==|!=|([+\\-*/])\\4?|[><]=?)|\\[]=?|\\(\\)" +
                              "|u-|iter|new|in|missing|del|str|repr|bool|del(\\[])?|<<|>>|[&|^~%]))"), 14);
