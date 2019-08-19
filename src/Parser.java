@@ -1,7 +1,6 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
 // TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
-// TODO: Post-parenthetical dotted vars: (a + b).foo()
 // TODO: Keyword-only arguments
 
 
@@ -248,6 +247,8 @@ public class Parser {
                 throw new ParserException("Unexpected colon");
             case Token.ELLIPSIS:
                 return ellipsis();
+            case Token.DOTTED_VAR:
+                throw new ParserException("Unexpected dot");
             default:
                 throw new RuntimeException("Nonexistent token found");
         }
@@ -480,7 +481,7 @@ public class Parser {
         TestNode[] assignments = test_list(false);
         Newline();
         TypeNode[] type_array = var_type.toArray(new TypeNode[0]);
-        VariableNode[] vars_array = vars.toArray(new VariableNode[0]);
+        NameNode[] vars_array = vars.toArray(new NameNode[0]);
         boolean is_declared = false;
         for (TypeNode type : var_type) {
             if (!type.getName().isEmpty()) {
@@ -635,7 +636,8 @@ public class Parser {
 
     private BigDecimal parse_int(String value, String digits) {
         int dot = value.indexOf('.');
-        int exp_size = dot >= 0 ? dot : value.length() - 1;
+        int exp_size = dot >= 0 ? dot - 1 : value.length() - 1;
+        BigDecimal base = BigDecimal.valueOf(digits.length());
         value = value.replaceAll("\\.", "");
         BigDecimal val = new BigDecimal(0);
         for (int i = 0; i < value.length(); i++) {
@@ -644,7 +646,11 @@ public class Parser {
                 throw new ParserException(digit + " is not a valid digit");
             }
             BigDecimal digit_val = BigDecimal.valueOf(digits.indexOf(digit));
-            val = val.add(BigDecimal.valueOf(digits.length()).pow(exp_size - i).multiply(digit_val));
+            if (exp_size - i >= 0) {
+                val = val.add(base.pow(exp_size - i).multiply(digit_val));
+            } else {
+                val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size)).multiply(digit_val));
+            }
         }
         return val;
     }

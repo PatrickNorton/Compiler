@@ -1,11 +1,11 @@
 public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode {
     private Boolean is_colon;
     private TypeNode[] type;
-    private VariableNode[] name;
+    private NameNode[] name;
     private TestNode[] value;
     private DescriptorNode[] descriptors;
 
-    public DeclaredAssignmentNode(Boolean is_colon, TypeNode[] type, VariableNode[] name, TestNode[] value) {
+    public DeclaredAssignmentNode(Boolean is_colon, TypeNode[] type, NameNode[] name, TestNode[] value) {
         this.is_colon = is_colon;
         this.type = type;
         this.name = name;
@@ -20,7 +20,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         return type;
     }
 
-    public SubTestNode[] getName() {
+    public NameNode[] getName() {
         return name;
     }
 
