@@ -18,6 +18,7 @@ public class Token {
     public static final int OP_FUNC = 16;
     public static final int COLON = 17;
     public static final int ELLIPSIS = 18;
+    public static final int DOTTED_VAR = 19;
 
     public final int token;
     public final String sequence;

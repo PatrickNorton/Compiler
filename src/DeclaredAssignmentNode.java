@@ -20,7 +20,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         return type;
     }
 
-    public VariableNode[] getName() {
+    public SubTestNode[] getName() {
         return name;
     }
 

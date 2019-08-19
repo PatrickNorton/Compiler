@@ -1,11 +1,11 @@
 public class IncrementNode implements SimpleStatementNode {
-    private VariableNode variable;
+    private NameNode variable;
 
-    public IncrementNode(VariableNode variable) {
+    public IncrementNode(NameNode variable) {
         this.variable = variable;
     }
 
-    public VariableNode getVariable() {
+    public NameNode getVariable() {
         return variable;
     }
 }
