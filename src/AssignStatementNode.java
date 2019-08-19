@@ -1,3 +1,3 @@
 public interface AssignStatementNode extends SimpleStatementNode {
-    SubTestNode[] getName();
+    NameNode[] getName();
 }

@@ -1,9 +1,9 @@
 public class AssignmentNode implements AssignStatementNode {
     private Boolean is_colon;
-    private VariableNode[] name;
+    private NameNode[] name;
     private TestNode[] value;
 
-    public AssignmentNode(Boolean is_colon, VariableNode[] name, TestNode[] value) {
+    public AssignmentNode(Boolean is_colon, NameNode[] name, TestNode[] value) {
         this.is_colon = is_colon;
         this.name = name;
         this.value = value;
@@ -13,7 +13,7 @@ public class AssignmentNode implements AssignStatementNode {
         return is_colon;
     }
 
-    public SubTestNode[] getName() {
+    public NameNode[] getName() {
         return name;
     }
 
