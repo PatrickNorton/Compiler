@@ -19,14 +19,14 @@ public class Parser {
         this.tokens = new LinkedList<>(tokens);
         this.lookahead = tokens.getFirst();
         TopNode topNode = new TopNode();
-        while (!lookahead.is(Token.EPSILON)) {
+        while (!lookahead.is(TokenType.EPSILON)) {
             topNode.add(statement());
             passNewlines();
         }
         return topNode;
     }
 
-    private boolean contains(boolean braces, int... question) {
+    private boolean contains(boolean braces, TokenType... question) {
         if (braces) {
             return braceContains(question);
         } else {
@@ -42,15 +42,15 @@ public class Parser {
         }
     }
 
-    private boolean lineContains(int... question) {
+    private boolean lineContains(TokenType... question) {
         int netBraces = 0;
         for (Token token : tokens) {
-            if (token.is(Token.OPEN_BRACE)) {
+            if (token.is(TokenType.OPEN_BRACE)) {
                 netBraces++;
-            } else if (token.is(Token.CLOSE_BRACE)) {
+            } else if (token.is(TokenType.CLOSE_BRACE)) {
                 netBraces--;
             }
-            if (netBraces == 0 && token.is(Token.NEWLINE)) {
+            if (netBraces == 0 && token.is(TokenType.NEWLINE)) {
                 return false;
             }
             if (netBraces == 0 && token.is(question)) {
@@ -62,7 +62,7 @@ public class Parser {
 
     private boolean lineContains(String... question) {
         for (Token token : tokens) {
-            if (token.is(Token.NEWLINE)) {
+            if (token.is(TokenType.NEWLINE)) {
                 return false;
             }
             if (token.is(question)) {
@@ -74,18 +74,18 @@ public class Parser {
 
     private LinkedList<Token> firstLevel() {
         LinkedList<Token> tokens = new LinkedList<>();
-        int netBraces = lookahead.is(Token.OPEN_BRACE) ? 0 : 1;
+        int netBraces = lookahead.is(TokenType.OPEN_BRACE) ? 0 : 1;
         for (Token token : this.tokens) {
-            if (token.is(Token.OPEN_BRACE)) {
+            if (token.is(TokenType.OPEN_BRACE)) {
                 netBraces++;
             }
-            if (token.is(Token.CLOSE_BRACE)) {
+            if (token.is(TokenType.CLOSE_BRACE)) {
                 netBraces--;
             }
             if (netBraces == 0) {
                 return tokens;
             }
-            if (token.is(Token.EPSILON)) {
+            if (token.is(TokenType.EPSILON)) {
                 throw new ParserException("Unmatched brace");
             }
             if (netBraces == 1) {
@@ -95,7 +95,7 @@ public class Parser {
         throw new RuntimeException("You shouldn't have ended up here");
     }
 
-    private boolean braceContains(int... question) {
+    private boolean braceContains(TokenType... question) {
         for (Token token : firstLevel()) {
             if (token.is(question)) {
                 return true;
@@ -118,17 +118,17 @@ public class Parser {
     }
 
     private int sizeOfVariable(int offset) {
-        assert lookahead.is(Token.VARIABLE);
+        assert lookahead.is(TokenType.VARIABLE);
         if (tokens.get(offset + 1).is("[")) {
             int netBraces = 1;
             int numTokens = offset + 2;
             while (netBraces != 0) {
                 Token token = tokens.get(numTokens);
-                if (token.is(Token.OPEN_BRACE)) {
+                if (token.is(TokenType.OPEN_BRACE)) {
                     netBraces++;
-                } else if (token.is(Token.CLOSE_BRACE)) {
+                } else if (token.is(TokenType.CLOSE_BRACE)) {
                     netBraces--;
-                } else if (token.is(Token.EPSILON)) {
+                } else if (token.is(TokenType.EPSILON)) {
                     throw new ParserException("Unexpected EOF while parsing");
                 }
                 numTokens++;
@@ -143,9 +143,9 @@ public class Parser {
         int netBraces = 0;
         int size = offset;
         for (Token token : tokens) {
-            if (token.is(Token.OPEN_BRACE)) {
+            if (token.is(TokenType.OPEN_BRACE)) {
                 netBraces++;
-            } else if (token.is(Token.CLOSE_BRACE)) {
+            } else if (token.is(TokenType.CLOSE_BRACE)) {
                 netBraces--;
             }
             size++;
@@ -162,7 +162,7 @@ public class Parser {
             passNewlines();
         }
         if (tokens.isEmpty()) {
-            lookahead = new Token(Token.EPSILON, "");
+            lookahead = new Token(TokenType.EPSILON, "");
         } else {
             lookahead = tokens.getFirst();
         }
@@ -173,14 +173,14 @@ public class Parser {
     }
 
     private void Newline() {
-        if (!lookahead.is(Token.NEWLINE)) {
+        if (!lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Expected newline, got "+lookahead);
         }
         NextToken();
     }
 
     private void passNewlines() {
-        while (!tokens.isEmpty() && tokens.getFirst().is(Token.NEWLINE)) {
+        while (!tokens.isEmpty() && tokens.getFirst().is(TokenType.NEWLINE)) {
             NextToken(false);
         }
     }
@@ -189,7 +189,7 @@ public class Parser {
         mustToken(message, parser, true, false, tokens);
     }
 
-    private void mustToken(String message, boolean parser, int... tokens) {
+    private void mustToken(String message, boolean parser, TokenType... tokens) {
         mustToken(message, parser, true, false, tokens);
     }
 
@@ -202,7 +202,7 @@ public class Parser {
         }
     }
 
-    private void mustToken(String message, boolean parser, boolean nextToken, boolean ignore_newline, int... tokens) {
+    private void mustToken(String message, boolean parser, boolean nextToken, boolean ignore_newline, TokenType... tokens) {
         if (!lookahead.is(tokens)) {
             throw (parser ? new ParserException(message) : new RuntimeException(message));
         }
@@ -214,40 +214,40 @@ public class Parser {
     private BaseNode statement() {
         passNewlines();
         switch (lookahead.token) {
-            case Token.KEYWORD:
+            case KEYWORD:
                 return keyword();
-            case Token.DESCRIPTOR:
+            case DESCRIPTOR:
                 return descriptor();
-            case Token.OPEN_BRACE:
+            case OPEN_BRACE:
                 return openBrace();
-            case Token.CLOSE_BRACE:
+            case CLOSE_BRACE:
                 throw new ParserException("Unmatched close brace");
-            case Token.SELF_CLS:
-            case Token.VARIABLE:
+            case SELF_CLS:
+            case VARIABLE:
                 return left_variable();
-            case Token.COMMA:
+            case COMMA:
                 throw new ParserException("Unexpected comma");
-            case Token.AUG_ASSIGN:
+            case AUG_ASSIGN:
                 throw new ParserException("Unexpected operator");
-            case Token.OPERATOR:
+            case OPERATOR:
                 return left_operator(false);
-            case Token.ASSIGN:
+            case ASSIGN:
                 throw new ParserException("Unexpected assignment");
-            case Token.STRING:
+            case STRING:
                 return string();
-            case Token.BOOL_OP:
+            case BOOL_OP:
                 return left_bool_op(false);
-            case Token.NUMBER:
+            case NUMBER:
                 return number();
-            case Token.OPERATOR_SP:
+            case OPERATOR_SP:
                 return operator_sp();
-            case Token.OP_FUNC:
+            case OP_FUNC:
                 return op_func();
-            case Token.COLON:
+            case COLON:
                 throw new ParserException("Unexpected colon");
-            case Token.ELLIPSIS:
+            case ELLIPSIS:
                 return ellipsis();
-            case Token.DOTTED_VAR:
+            case DOTTED_VAR:
                 throw new ParserException("Unexpected dot");
             default:
                 throw new RuntimeException("Nonexistent token found");
@@ -257,7 +257,7 @@ public class Parser {
     private BaseNode keyword() {
         switch (lookahead.sequence) {
             case "class":
-                if (tokens.get(1).is(Token.DESCRIPTOR, Token.KEYWORD)) {
+                if (tokens.get(1).is(TokenType.DESCRIPTOR, TokenType.KEYWORD)) {
                     return descriptor();
                 }
                 return class_def();
@@ -342,16 +342,16 @@ public class Parser {
             descriptors.add(new DescriptorNode("class"));
             NextToken();
         }
-        while (lookahead.is(Token.DESCRIPTOR)) {
+        while (lookahead.is(TokenType.DESCRIPTOR)) {
             descriptors.add(new DescriptorNode(lookahead.sequence));
             NextToken();
         }
         switch (lookahead.token) {
-            case Token.KEYWORD:
+            case KEYWORD:
                 return descriptor_keyword(descriptors);
-            case Token.OPERATOR:
+            case OPERATOR:
                 return descriptor_op_sp(descriptors);
-            case Token.VARIABLE:
+            case VARIABLE:
                 return descriptor_var(descriptors);
             default:
                 throw new ParserException("Invalid descriptor placement");
@@ -392,7 +392,7 @@ public class Parser {
         } else {
             throw new RuntimeException("Some unknown brace was found");
         }
-        if (lookahead.is(Token.DOTTED_VAR)) {
+        if (lookahead.is(TokenType.DOTTED_VAR)) {
             return dotted_var(stmt);
         } else {
             return stmt;
@@ -409,7 +409,7 @@ public class Parser {
 
     private VariableNode variable(boolean allow_dotted) {
         mustToken("Expected variable, got " + lookahead, true, false,
-                false, Token.VARIABLE, Token.SELF_CLS);
+                false, TokenType.VARIABLE, TokenType.SELF_CLS);
         if (!allow_dotted && lookahead.sequence.contains(".")) {
             throw new ParserException("Dotted variables are not allowed here");
         }
@@ -431,12 +431,12 @@ public class Parser {
         // Assignment
         // Lone expression
         Token after_var = tokens.get(sizeOfVariable());
-        if (lineContains(Token.ASSIGN)) {
+        if (lineContains(TokenType.ASSIGN)) {
             return assignment();
-        } else if (lineContains(Token.AUG_ASSIGN)) {
+        } else if (lineContains(TokenType.AUG_ASSIGN)) {
             NameNode var = var_name();
             mustToken("Expected augmented assignment, got " + lookahead, true,
-                    false, false, Token.AUG_ASSIGN);
+                    false, false, TokenType.AUG_ASSIGN);
             OperatorNode op = new OperatorNode(lookahead.sequence.replaceAll("=$", ""));
             NextToken();
             TestNode assignment = test();
@@ -445,9 +445,9 @@ public class Parser {
             return function_call();
         } else if (after_var.is("++", "--")) {
             return inc_or_dec();
-        } else if (lineContains(Token.BOOL_OP, Token.OPERATOR)) {
+        } else if (lineContains(TokenType.BOOL_OP, TokenType.OPERATOR)) {
             return test();
-        } else if (after_var.is(Token.VARIABLE, Token.SELF_CLS)) {
+        } else if (after_var.is(TokenType.VARIABLE, TokenType.SELF_CLS)) {
             return declaration();
         } else {
             NameNode var = var_name();
@@ -459,21 +459,21 @@ public class Parser {
     private AssignStatementNode assignment() {
         ArrayList<TypeNode> var_type = new ArrayList<>();
         ArrayList<NameNode> vars = new ArrayList<>();
-        while (!lookahead.is(Token.ASSIGN)) {
-            if (!tokens.get(sizeOfVariable()).is(Token.ASSIGN, Token.COMMA)) {
+        while (!lookahead.is(TokenType.ASSIGN)) {
+            if (!tokens.get(sizeOfVariable()).is(TokenType.ASSIGN, TokenType.COMMA)) {
                 var_type.add(type());
                 vars.add(var_name());
-                if (lookahead.is(Token.ASSIGN)) {
+                if (lookahead.is(TokenType.ASSIGN)) {
                     break;
                 }
-                mustToken("Expected comma, got " + lookahead, true, Token.COMMA);
+                mustToken("Expected comma, got " + lookahead, true, TokenType.COMMA);
             } else {
                 var_type.add(new TypeNode(""));
                 vars.add(var_name());
-                if (lookahead.is(Token.ASSIGN)) {
+                if (lookahead.is(TokenType.ASSIGN)) {
                     break;
                 }
-                mustToken("Expected comma, got " + lookahead, true, Token.COMMA);
+                mustToken("Expected comma, got " + lookahead, true, TokenType.COMMA);
             }
         }
         boolean is_colon = lookahead.is(":=");
@@ -505,14 +505,14 @@ public class Parser {
     }
 
     private SubTestNode left_operator(boolean ignore_newline) {
-        assert lookahead.is(Token.OPERATOR);
+        assert lookahead.is(TokenType.OPERATOR);
         mustToken("- is the only unary operator", true, "-");
         TestNode next = test(ignore_newline);
         return new OperatorNode("-", next);
     }
 
     private AtomicNode string() {
-        assert lookahead.is(Token.STRING);
+        assert lookahead.is(TokenType.STRING);
         String contents = lookahead.sequence;
         NextToken();
         String inside = contents.replaceAll("(^[rfb]*)|(?<!\\\\)\"", "");
@@ -543,11 +543,11 @@ public class Parser {
                     end = m.end();
                     LinkedList<Token> oldTokens = tokens;
                     tokens = Tokenizer.parse(to_test.substring(1, to_test.length() - 1)).getTokens();
-                    tokens.add(new Token(Token.EPSILON, ""));
+                    tokens.add(new Token(TokenType.EPSILON, ""));
                     lookahead = tokens.get(0);
                     tests.add(test());
                     mustToken("Unexpected " + lookahead, true,
-                            false, false, Token.EPSILON);
+                            false, false, TokenType.EPSILON);
                     tokens = oldTokens;
                     lookahead = tokens.get(0);
                     index = end + 1;
@@ -579,14 +579,14 @@ public class Parser {
     private OperatorDefinitionNode operator_sp() {
         String op_code = lookahead.sequence.replaceFirst("operator +", "");
         NextToken();
-        if (lookahead.is(Token.ASSIGN)) {
+        if (lookahead.is(TokenType.ASSIGN)) {
             NextToken();
-            if (lookahead.is(Token.OPERATOR_SP)) {
+            if (lookahead.is(TokenType.OPERATOR_SP)) {
                 OperatorTypeNode op = new OperatorTypeNode(lookahead.sequence);
                 NextToken();
                 Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(op));
-            } else if (lookahead.is(Token.VARIABLE, Token.SELF_CLS)) {
+            } else if (lookahead.is(TokenType.VARIABLE, TokenType.SELF_CLS)) {
                 NameNode var = var_name();
                 Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(var));
@@ -666,7 +666,7 @@ public class Parser {
     }
 
     private VariableNode ellipsis() {
-        assert lookahead.is(Token.ELLIPSIS);
+        assert lookahead.is(TokenType.ELLIPSIS);
         NextToken();
         return new VariableNode("...");
     }
@@ -674,7 +674,7 @@ public class Parser {
     private ClassDefinitionNode class_def() {
         assert lookahead.is("class");
         NextToken();
-        if (!lookahead.is(Token.VARIABLE) && !lookahead.is("from")) {
+        if (!lookahead.is(TokenType.VARIABLE) && !lookahead.is("from")) {
             throw new ParserException("class keyword must be followed by class name");
         }
         TypeNode name = type();
@@ -786,7 +786,7 @@ public class Parser {
     private ImportStatementNode import_stmt() {
         assert lookahead.is("import");
         NextToken();
-        if (lookahead.is(Token.NEWLINE)) {
+        if (lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Empty import statements are illegal");
         }
         VariableNode[] imports = var_list(true, false);
@@ -797,7 +797,7 @@ public class Parser {
     private ExportStatementNode export_stmt() {
         assert lookahead.is("export");
         NextToken();
-        if (lookahead.is(Token.NEWLINE)) {
+        if (lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Empty export statements are illegal");
         }
         VariableNode[] exports = var_list(true,false);
@@ -813,7 +813,7 @@ public class Parser {
         }
         assert lookahead.is("typeget");
         NextToken();
-        if (lookahead.is(Token.NEWLINE)) {
+        if (lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Empty typeget statements are illegal");
         }
         VariableNode[] typegets = var_list(true, false);
@@ -825,10 +825,10 @@ public class Parser {
         assert lookahead.is("break");
         NextToken();
         int loops;
-        if (lookahead.is(Token.NUMBER)) {
+        if (lookahead.is(TokenType.NUMBER)) {
             loops = Integer.parseInt(lookahead.sequence);
             NextToken();
-        } else if (lookahead.is(Token.NEWLINE) || lookahead.is("if")) {
+        } else if (lookahead.is(TokenType.NEWLINE) || lookahead.is("if")) {
             loops = 0;
         } else {
             throw new ParserException("Break statement must not be followed by anything");
@@ -864,7 +864,7 @@ public class Parser {
             is_conditional = true;
         }
         TestNode[] returned;
-        if (!lookahead.is(Token.NEWLINE) && !lookahead.is("if")) {
+        if (!lookahead.is(TokenType.NEWLINE) && !lookahead.is("if")) {
             returned = test_list(false);
         } else {
             returned = new TestNode[0];
@@ -879,7 +879,7 @@ public class Parser {
     }
 
     private BaseNode descriptor_keyword(ArrayList<DescriptorNode> descriptors) {
-        assert lookahead.is(Token.KEYWORD);
+        assert lookahead.is(TokenType.KEYWORD);
         ClassStatementNode node;
         switch (lookahead.sequence) {
             case "class":
@@ -915,16 +915,16 @@ public class Parser {
     }
 
     private BaseNode descriptor_op_sp(ArrayList<DescriptorNode> descriptors) {
-        assert lookahead.is(Token.OPERATOR_SP);
+        assert lookahead.is(TokenType.OPERATOR_SP);
         OperatorDefinitionNode op_sp = operator_sp();
         op_sp.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
         return op_sp;
     }
 
     private ClassStatementNode descriptor_var(ArrayList<DescriptorNode> descriptors) {
-        assert lookahead.is(Token.VARIABLE);
+        assert lookahead.is(TokenType.VARIABLE);
         ClassStatementNode stmt;
-        if (lineContains(Token.ASSIGN)) {
+        if (lineContains(TokenType.ASSIGN)) {
             stmt = decl_assignment();
         } else {
             stmt = declaration();
@@ -938,14 +938,14 @@ public class Parser {
         ArrayList<TypedArgumentNode> args = new ArrayList<>();
         while (!lookahead.is(")")) {
             args.add(typed_argument());
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken();
-                if (lookahead.is(Token.NEWLINE)) {
+                if (lookahead.is(TokenType.NEWLINE)) {
                     NextToken();
                 }
                 continue;
             }
-            if (lookahead.is(Token.NEWLINE)) {
+            if (lookahead.is(TokenType.NEWLINE)) {
                 NextToken();
             }
             mustToken("Comma must separate arguments", true, false, false, ")");
@@ -996,7 +996,7 @@ public class Parser {
         }
         mustToken("Return value must use arrow operator", true, "->");
         LinkedList<TypeNode> types = new LinkedList<>();
-        while (!lookahead.is("{") && !lookahead.is(Token.NEWLINE)) {
+        while (!lookahead.is("{") && !lookahead.is(TokenType.NEWLINE)) {
             types.add(type());
             if (lookahead.is(",")) {
                 NextToken();
@@ -1025,22 +1025,22 @@ public class Parser {
 
     private SubTestNode test_no_ternary(boolean ignore_newline) {
         switch (lookahead.token) {
-            case Token.SELF_CLS:
-            case Token.VARIABLE:
+            case SELF_CLS:
+            case VARIABLE:
                 return test_left_variable(ignore_newline);
-            case Token.OPEN_BRACE:
+            case OPEN_BRACE:
                 return subtest_openBrace();
-            case Token.BOOL_OP:
+            case BOOL_OP:
                 return left_bool_op(ignore_newline);
-            case Token.NUMBER:
+            case NUMBER:
                 return number();
-            case Token.OP_FUNC:
+            case OP_FUNC:
                 return op_func();
-            case Token.ELLIPSIS:
+            case ELLIPSIS:
                 return ellipsis();
-            case Token.OPERATOR:
+            case OPERATOR:
                 return left_operator(ignore_newline);
-            case Token.KEYWORD:
+            case KEYWORD:
                 if (lookahead.is("lambda")) {
                     return lambda();
                 } else if (lookahead.is("some")) {
@@ -1069,52 +1069,52 @@ public class Parser {
         // X Assignment
         // X Assignment to function call
         // Lone expression
-        if (lineContains(Token.ASSIGN)) {
+        if (lineContains(TokenType.ASSIGN)) {
             throw new ParserException("Illegal assignment");
-        } else if (contains(ignore_newline, Token.AUG_ASSIGN)) {
+        } else if (contains(ignore_newline, TokenType.AUG_ASSIGN)) {
             throw new ParserException("Illegal augmented assignment");
         } else {
             LinkedList<SubTestNode> nodes = new LinkedList<>();
             while_loop:
-            while (!lookahead.is(Token.NEWLINE)) {
+            while (!lookahead.is(TokenType.NEWLINE)) {
                 switch (lookahead.token) {
-                    case Token.OPEN_BRACE:
+                    case OPEN_BRACE:
                         SubTestNode last_node = nodes.peekLast();
                         if (last_node instanceof OperatorNode) {
                             nodes.add(subtest_openBrace());
                             break;
                         }
                         break while_loop;
-                    case Token.SELF_CLS:
-                    case Token.VARIABLE:
+                    case SELF_CLS:
+                    case VARIABLE:
                         if (tokens.get(sizeOfVariable()).is("(")) {
                             nodes.add(function_call());
                         } else {
                             nodes.add(var_name());
                         }
                         break;
-                    case Token.NUMBER:
+                    case NUMBER:
                         nodes.add(number());
                         break;
-                    case Token.BOOL_OP:
+                    case BOOL_OP:
                         nodes.add(new OperatorNode(lookahead.sequence));
                         NextToken();
                         break;
-                    case Token.OPERATOR:
+                    case OPERATOR:
                         if (lookahead.is("->")) {
                             throw new ParserException("Unexpected ->");
                         }
                         nodes.add(new OperatorNode(lookahead.sequence));
                         NextToken();
                         break;
-                    case Token.OP_FUNC:
+                    case OP_FUNC:
                         nodes.add(op_func());
                         break;
-                    case Token.EPSILON:
-                    case Token.COLON:
-                    case Token.COMMA:
+                    case EPSILON:
+                    case COLON:
+                    case COMMA:
                         break while_loop;
-                    case Token.KEYWORD:
+                    case KEYWORD:
                         if (lookahead.is("in", "casted")) {
                             nodes.add(new OperatorNode(lookahead.sequence));
                             NextToken();
@@ -1122,7 +1122,7 @@ public class Parser {
                         } else if (lookahead.is("if", "else")) {
                             break while_loop;
                         }  // Lack of breaks here is intentional
-                    case Token.CLOSE_BRACE:
+                    case CLOSE_BRACE:
                         if (ignore_newline) {
                             break while_loop;
                         }
@@ -1222,7 +1222,7 @@ public class Parser {
     private NameNode var_name() {
         if (tokens.get(1).is("[")) {
             VariableNode var = var_index();
-            if (lookahead.is(Token.DOTTED_VAR)) {
+            if (lookahead.is(TokenType.DOTTED_VAR)) {
                 return dotted_var(var);
             } else {
                 return var;
@@ -1238,7 +1238,7 @@ public class Parser {
 
     private TypeNode type(boolean allow_empty, boolean is_vararg) {
         String main;
-        if (!lookahead.is(Token.VARIABLE, Token.SELF_CLS)) {
+        if (!lookahead.is(TokenType.VARIABLE, TokenType.SELF_CLS)) {
             if (allow_empty && lookahead.is("[")) {
                 main = "";
             } else {
@@ -1262,7 +1262,7 @@ public class Parser {
                 subcls_vararg = false;
             }
             subtypes.add(type(true, subcls_vararg));
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken(true);
                 continue;
             }
@@ -1278,11 +1278,11 @@ public class Parser {
     private TypedVariableNode[] for_vars() {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (!lookahead.is("in")) {
-            if (!lookahead.is(Token.VARIABLE)) {
+            if (!lookahead.is(TokenType.VARIABLE)) {
                 throw new ParserException("Expected variable, got " + lookahead);
             }
             vars.add(typed_variable());
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken();
             }
         }
@@ -1290,13 +1290,13 @@ public class Parser {
     }
 
     private TestNode[] for_iterables() {
-        if (lookahead.is(Token.NEWLINE)) {
+        if (lookahead.is(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
         LinkedList<TestNode> tests = new LinkedList<>();
         while (!lookahead.is("{")) {
             tests.add(test());
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken();
                 continue;
             }
@@ -1310,7 +1310,7 @@ public class Parser {
     private TestNode[] test_list(boolean ignore_newlines) {
         if (lookahead.is("(") && !braceContains("in") && !braceContains("for")) {
             int brace_size = sizeOfBrace(0);
-            if (!tokens.get(brace_size).is(Token.COMMA)) {
+            if (!tokens.get(brace_size).is(TokenType.COMMA)) {
                 NextToken();
                 TestNode[] vars = test_list(true);
                 if (!lookahead.is(")")) {
@@ -1320,23 +1320,23 @@ public class Parser {
                 return vars;
             }
         }
-        if (!ignore_newlines && lookahead.is(Token.NEWLINE)) {
+        if (!ignore_newlines && lookahead.is(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
         LinkedList<TestNode> tests = new LinkedList<>();
-        while (!lookahead.is(Token.NEWLINE)) {
+        while (!lookahead.is(TokenType.NEWLINE)) {
             tests.add(test(ignore_newlines));
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken(ignore_newlines);
                 continue;
             }
-            if (!ignore_newlines && !lookahead.is(Token.NEWLINE)) {
+            if (!ignore_newlines && !lookahead.is(TokenType.NEWLINE)) {
                 throw new ParserException("Comma must separate values");
             } else if (ignore_newlines) {
                 break;
             }
         }
-        if (!ignore_newlines && !lookahead.is(Token.NEWLINE)) {
+        if (!ignore_newlines && !lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Expected newline, got "+lookahead);
         }
         return tests.toArray(new TestNode[0]);
@@ -1375,7 +1375,7 @@ public class Parser {
             throw new ParserException("Expected function call, got "+lookahead);
         }
         ArgumentNode[] args = fn_call_args();
-        if (lookahead.is(Token.DOTTED_VAR)) {
+        if (lookahead.is(TokenType.DOTTED_VAR)) {
             return dotted_var(new FunctionCallNode(caller, args));
         }
         return new FunctionCallNode(caller, args);
@@ -1414,7 +1414,7 @@ public class Parser {
 
     private ComprehensionNode comprehension() {
         String brace_type;
-        if (!lookahead.is(Token.OPEN_BRACE)) {  // Comprehensions in function calls
+        if (!lookahead.is(TokenType.OPEN_BRACE)) {  // Comprehensions in function calls
             brace_type = "";
         } else {
             brace_type = lookahead.sequence;
@@ -1490,7 +1490,7 @@ public class Parser {
     }
 
     private LiteralNode literal() {
-        assert lookahead.is(Token.OPEN_BRACE);
+        assert lookahead.is(TokenType.OPEN_BRACE);
         String brace_type = lookahead.sequence;
         NextToken(true);
         String balanced_brace = matching_brace(brace_type);
@@ -1499,7 +1499,7 @@ public class Parser {
         while (true) {
             if (lookahead.is(balanced_brace)) {
                 break;
-            } else if (lookahead.is(Token.CLOSE_BRACE)) {
+            } else if (lookahead.is(TokenType.CLOSE_BRACE)) {
                 throw new ParserException("Unmatched braces");
             }
             if (lookahead.is("*")) {
@@ -1537,10 +1537,10 @@ public class Parser {
             return vars;
         }
         while (true) {
-            if (!lookahead.is(Token.VARIABLE)) {
+            if (!lookahead.is(TokenType.VARIABLE)) {
                 break;
             }
-            if (lookahead.is(Token.CLOSE_BRACE)) {
+            if (lookahead.is(TokenType.CLOSE_BRACE)) {
                 throw new ParserException("Unmatched braces");
             }
             variables.add(variable(allow_dotted));
@@ -1584,7 +1584,7 @@ public class Parser {
         assert lookahead.is("context");
         NextToken();
         VariableNode name = new VariableNode();
-        if (lookahead.is(Token.VARIABLE)) {
+        if (lookahead.is(TokenType.VARIABLE)) {
             name = variable(false);
         }
         if (!lookahead.is("{")) {
@@ -1654,7 +1654,7 @@ public class Parser {
         LinkedList<TestNode> managed = new LinkedList<>();
         while (!lookahead.is("as")) {
             managed.add(test());
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken();
             } else if (!lookahead.is("as")) {
                 throw new ParserException("Expected comma or as, got "+lookahead);
@@ -1690,13 +1690,13 @@ public class Parser {
             NextToken();
         }
         LinkedList<TestNode> yields = new LinkedList<>();
-        while (!lookahead.is(Token.NEWLINE)) {
+        while (!lookahead.is(TokenType.NEWLINE)) {
             yields.add(test());
-            if (lookahead.is(Token.COMMA)) {
+            if (lookahead.is(TokenType.COMMA)) {
                 NextToken();
                 continue;
             }
-            if (!lookahead.is(Token.NEWLINE)) {
+            if (!lookahead.is(TokenType.NEWLINE)) {
                 throw new ParserException("Comma must separate yields");
             }
         }
@@ -1903,20 +1903,20 @@ public class Parser {
     }
 
     private InterfaceStatementNode interface_stmt() {  // TODO: Clean up method
-        if (lookahead.is(Token.OPERATOR_SP, Token.DESCRIPTOR) || lookahead.is("method")
-              || (lookahead.is("class") && tokens.get(1).is(Token.DESCRIPTOR, Token.KEYWORD))) {
+        if (lookahead.is(TokenType.OPERATOR_SP, TokenType.DESCRIPTOR) || lookahead.is("method")
+              || (lookahead.is("class") && tokens.get(1).is(TokenType.DESCRIPTOR, TokenType.KEYWORD))) {
             LinkedList<DescriptorNode> descriptors = new LinkedList<>();
             if (lookahead.is("class")) {
                 descriptors.add(new DescriptorNode("class"));
                 NextToken();
             }
-            while (lookahead.is(Token.DESCRIPTOR)) {
+            while (lookahead.is(TokenType.DESCRIPTOR)) {
                 descriptors.add(new DescriptorNode(lookahead.sequence));
                 NextToken();
             }
             int line_size = 0;
             for (Token token : tokens) {
-                if (token.is(Token.NEWLINE)) {
+                if (token.is(TokenType.NEWLINE)) {
                     break;
                 }
                 line_size++;
@@ -1925,7 +1925,7 @@ public class Parser {
                 boolean is_operator;
                 VariableNode fn_name;
                 String op_name;
-                if (lookahead.is(Token.OPERATOR_SP)) {
+                if (lookahead.is(TokenType.OPERATOR_SP)) {
                     is_operator = true;
                     op_name = lookahead.sequence;
                     fn_name = new VariableNode();
@@ -1985,12 +1985,12 @@ public class Parser {
     }
 
     private DottedVariableNode dotted_var(TestNode preDot) {
-        assert lookahead.is(Token.DOTTED_VAR);
+        assert lookahead.is(TokenType.DOTTED_VAR);
         NameNode postDot;
         if (tokens.get(sizeOfVariable()).is("(")) {
             postDot = function_call();
         } else {
-            tokens.set(0, new Token(Token.VARIABLE, lookahead.sequence.substring(1)));
+            tokens.set(0, new Token(TokenType.VARIABLE, lookahead.sequence.substring(1)));
             lookahead = tokens.get(0);
             postDot = var_name();
         }

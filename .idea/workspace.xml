@@ -2,19 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/TokenType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/AssignStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/AssignStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/AssignmentNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/AssignmentNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/AugmentedAssignmentNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/AugmentedAssignmentNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DeclarationNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DeclarationNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DeclaredAssignmentNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DeclaredAssignmentNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Compiler.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Compiler.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AssignStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/AssignStatementNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AssignmentNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/AssignmentNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AugmentedAssignmentNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/AugmentedAssignmentNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/DeclarationNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DeclarationNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/DeclaredAssignmentNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DeclaredAssignmentNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Token.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Token.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer$TokenInfo.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Token.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Token.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,6 +27,7 @@
       <list>
         <option value="Class" />
         <option value="Interface" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -50,13 +48,18 @@
   <component name="ProjectId" id="1PA8EQulEIdnzKl7KJfQkkQ5Re9" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="Downloaded.Files.Path.Enabled" value="false" />
+    <property name="Repository.Attach.Annotations" value="false" />
+    <property name="Repository.Attach.JavaDocs" value="false" />
+    <property name="Repository.Attach.Sources" value="false" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
+    <property name="last.edited.regexp" value="Sample Text" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.intentionPowerPack" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RunAnythingCache">
     <option name="myCommands">
@@ -116,7 +119,7 @@
       <workItem from="1565360199485" duration="22783000" />
       <workItem from="1565692514517" duration="526000" />
       <workItem from="1565693310646" duration="9303000" />
-      <workItem from="1565778403048" duration="39823000" />
+      <workItem from="1565778403048" duration="43818000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -244,7 +247,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566174025944</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Fixed decimal literals">
+      <created>1566219748381</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1566219748381</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -281,7 +291,8 @@
     <MESSAGE value="Removed nulls and refactored some of the variable checks" />
     <MESSAGE value="Added non-base-10 number parsing, decimal support" />
     <MESSAGE value="Added dotted variable support" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added dotted variable support" />
+    <MESSAGE value="Fixed decimal literals" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed decimal literals" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
