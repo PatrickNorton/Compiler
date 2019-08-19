@@ -12,8 +12,8 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
         return type;
     }
 
-    public VariableNode[] getName() {
-        return new VariableNode[] {name};
+    public SubTestNode[] getName() {
+        return new SubTestNode[] {name};
     }
 
     public DescriptorNode[] getDescriptors() {

@@ -100,11 +100,11 @@ public class Tokenizer {
         tokenizer.add(Pattern.compile("^\\b(operator *(r?(==|!=|([+\\-*/])\\4?|[><]=?)|\\[]=?|\\(\\)" +
                              "|u-|iter|new|in|missing|del|str|repr|bool|del(\\[])?|<<|>>|[&|^~%]))"), 14);
         // Dotted variable names
-        tokenizer.add(Pattern.compile("^\\b(\\.[_a-zA-Z]+)+\\b"), 19);
+        tokenizer.add(Pattern.compile("^(?!operator\\b)\\.[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*\\b"), 19);
         // Variable names
         // Includes a check to make sure operator never shows up as a variable,
         // because it is a keyword, even though it doesn't show up in the keyword check
-        tokenizer.add(Pattern.compile("^\\b(?!operator\\b)\\.?[_a-zA-Z]+(\\.[_a-zA-Z0-9]+)*\\b"), 15);
+        tokenizer.add(Pattern.compile("^\\b(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]+)*\\b"), 15);
         // Operator-functions
         tokenizer.add(Pattern.compile("^\\\\(==|!=|[><]=?|r?[+\\-*/]{1,2}|u-|<<|>>|[&|^~%])"), 16);
         // Colons, for slice syntax and others

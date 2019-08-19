@@ -13,7 +13,7 @@ public class AssignmentNode implements AssignStatementNode {
         return is_colon;
     }
 
-    public VariableNode[] getName() {
+    public SubTestNode[] getName() {
         return name;
     }
 

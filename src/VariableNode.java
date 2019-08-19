@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class VariableNode implements AtomicNode {
+public class VariableNode implements NameNode {
     private String[] names;
     private ArrayList<TestNode[]> indices;
 

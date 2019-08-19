@@ -1,13 +1,13 @@
-public class FunctionCallNode implements SubTestNode {
-    private VariableNode caller;
+public class FunctionCallNode implements NameNode {
+    private TestNode caller;
     private ArgumentNode[] parameters;
 
-    public FunctionCallNode(VariableNode caller, ArgumentNode[] parameters) {
+    public FunctionCallNode(TestNode caller, ArgumentNode[] parameters) {
         this.caller = caller;
         this.parameters = parameters;
     }
 
-    public VariableNode getCaller() {
+    public TestNode getCaller() {
         return caller;
     }
 

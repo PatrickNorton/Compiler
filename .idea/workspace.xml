@@ -2,17 +2,33 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/NumberNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/ComprehensionNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/ComprehensionNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/IntegerNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/IntegerNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/AssignStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/AssignStatementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/AssignmentNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/AssignmentNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/AugmentedAssignmentNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/AugmentedAssignmentNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DeclarationNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DeclarationNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DeclaredAssignmentNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DeclaredAssignmentNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DecrementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DecrementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DottedVariableNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DottedVariableNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/FunctionCallNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/FunctionCallNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/IncrementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/IncrementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/IntegerNode.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Token.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Token.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/IntegerNode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/VariableNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/VariableNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/AssignStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/AssignStatementNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/AssignmentNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/AssignmentNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/AugmentedAssignmentNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/AugmentedAssignmentNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DeclarationNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DeclarationNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DeclaredAssignmentNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DeclaredAssignmentNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DecrementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DecrementNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/FunctionCallNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/FunctionCallNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/IncrementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/IncrementNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Token.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Token.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/VariableNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/VariableNode.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,6 +43,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -113,7 +130,7 @@
       <workItem from="1565360199485" duration="22783000" />
       <workItem from="1565692514517" duration="526000" />
       <workItem from="1565693310646" duration="9303000" />
-      <workItem from="1565778403048" duration="27380000" />
+      <workItem from="1565778403048" duration="34004000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -220,7 +237,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566042341513</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Added non-base-10 number parsing, decimal support">
+      <created>1566082405405</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1566082405405</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -255,7 +279,8 @@
     <MESSAGE value="Changed lookahead to use toString" />
     <MESSAGE value="Added support for dict comprehensions" />
     <MESSAGE value="Removed nulls and refactored some of the variable checks" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed nulls and refactored some of the variable checks" />
+    <MESSAGE value="Added non-base-10 number parsing, decimal support" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added non-base-10 number parsing, decimal support" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
