@@ -1,11 +1,11 @@
 public class DecrementNode implements SimpleStatementNode {
-    private VariableNode variable;
+    private NameNode variable;
 
-    public DecrementNode(VariableNode variable) {
+    public DecrementNode(NameNode variable) {
         this.variable = variable;
     }
 
-    public VariableNode getVariable() {
+    public NameNode getVariable() {
         return variable;
     }
 }

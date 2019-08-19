@@ -2,7 +2,7 @@
 // TODO: Reduce/remove nulls
 // TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
 // TODO: Post-parenthetical dotted vars: (a + b).foo()
-// TODO: Decimals
+// TODO: Keyword-only arguments
 
 
 import java.math.BigDecimal;
@@ -357,35 +357,44 @@ public class Parser {
         }
     }
 
-    private BaseNode openBrace() {
+    private TestNode openBrace() {
         // Types of brace statement: comprehension, literal, grouping paren, casting
+        TestNode stmt;
         if (lookahead.is("(")) {
             if (braceContains("for")) {
-                return comprehension();
+                stmt = comprehension();
             } else if (braceContains(",")) {
-                return literal();
+                stmt = literal();
             } else {
                 NextToken(true);
                 TestNode contained = test(true);
                 mustToken("Unmatched brace", true, ")");
-                return contained;
+                stmt = contained;
+            }
+            if (lookahead.is("(")) {
+                stmt = new FunctionCallNode(stmt, fn_call_args());
             }
         } else if (lookahead.is("[")) {
             if (braceContains("for")) {
-                return comprehension();
+                stmt = comprehension();
             } else {
-                return literal();
+                stmt = literal();
             }
         } else if (lookahead.is("{")) {
             if (braceContains("for")) {
-                return braceContains(":") ? dict_comprehension() : comprehension();
+                stmt = braceContains(":") ? dict_comprehension() : comprehension();
             } else if (braceContains(":")) {
-                return dict_literal();
+                stmt = dict_literal();
             } else {
-                return literal();
+                stmt = literal();
             }
         } else {
             throw new RuntimeException("Some unknown brace was found");
+        }
+        if (lookahead.is(Token.DOTTED_VAR)) {
+            return dotted_var(stmt);
+        } else {
+            return stmt;
         }
     }
 
@@ -424,7 +433,7 @@ public class Parser {
         if (lineContains(Token.ASSIGN)) {
             return assignment();
         } else if (lineContains(Token.AUG_ASSIGN)) {
-            VariableNode var = var_or_index();
+            NameNode var = var_name();
             mustToken("Expected augmented assignment, got " + lookahead, true,
                     false, false, Token.AUG_ASSIGN);
             OperatorNode op = new OperatorNode(lookahead.sequence.replaceAll("=$", ""));
@@ -440,7 +449,7 @@ public class Parser {
         } else if (after_var.is(Token.VARIABLE, Token.SELF_CLS)) {
             return declaration();
         } else {
-            VariableNode var = var_or_index();
+            NameNode var = var_name();
             Newline();
             return var;
         }
@@ -448,18 +457,18 @@ public class Parser {
 
     private AssignStatementNode assignment() {
         ArrayList<TypeNode> var_type = new ArrayList<>();
-        ArrayList<VariableNode> vars = new ArrayList<>();
+        ArrayList<NameNode> vars = new ArrayList<>();
         while (!lookahead.is(Token.ASSIGN)) {
             if (!tokens.get(sizeOfVariable()).is(Token.ASSIGN, Token.COMMA)) {
                 var_type.add(type());
-                vars.add(var_or_index());
+                vars.add(var_name());
                 if (lookahead.is(Token.ASSIGN)) {
                     break;
                 }
                 mustToken("Expected comma, got " + lookahead, true, Token.COMMA);
             } else {
                 var_type.add(new TypeNode(""));
-                vars.add(var_or_index());
+                vars.add(var_name());
                 if (lookahead.is(Token.ASSIGN)) {
                     break;
                 }
@@ -577,7 +586,7 @@ public class Parser {
                 Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(op));
             } else if (lookahead.is(Token.VARIABLE, Token.SELF_CLS)) {
-                VariableNode var = var_or_index();
+                NameNode var = var_name();
                 Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(var));
             } else {
@@ -1075,7 +1084,7 @@ public class Parser {
                         if (tokens.get(sizeOfVariable()).is("(")) {
                             nodes.add(function_call());
                         } else {
-                            nodes.add(var_or_index());
+                            nodes.add(var_name());
                         }
                         break;
                     case Token.NUMBER:
@@ -1204,9 +1213,14 @@ public class Parser {
         return new VariableNode(var.getNames(), vars);
     }
 
-    private VariableNode var_or_index() {
+    private NameNode var_name() {
         if (tokens.get(1).is("[")) {
-            return var_index();
+            VariableNode var = var_index();
+            if (lookahead.is(Token.DOTTED_VAR)) {
+                return dotted_var(var);
+            } else {
+                return var;
+            }
         } else {
             return variable();
         }
@@ -1349,12 +1363,15 @@ public class Parser {
         throw new ParserException(lookahead+" is not a valid class statement");
     }
 
-    private FunctionCallNode function_call() {
-        VariableNode caller = var_or_index();
+    private NameNode function_call() {
+        NameNode caller = var_name();
         if (!lookahead.is("(")) {
             throw new ParserException("Expected function call, got "+lookahead);
         }
         ArgumentNode[] args = fn_call_args();
+        if (lookahead.is(Token.DOTTED_VAR)) {
+            return dotted_var(new FunctionCallNode(caller, args));
+        }
         return new FunctionCallNode(caller, args);
     }
 
@@ -1782,7 +1799,7 @@ public class Parser {
     }
 
     private IncrementNode increment() {
-        VariableNode var = var_or_index();
+        NameNode var = var_name();
         if (!lookahead.is("++")) {
             throw new RuntimeException("Expected ++, got "+lookahead);
         }
@@ -1791,7 +1808,7 @@ public class Parser {
     }
 
     private DecrementNode decrement() {
-        VariableNode var = var_or_index();
+        NameNode var = var_name();
         if (!lookahead.is("--")) {
             throw new RuntimeException("Expected --, got "+lookahead);
         }
@@ -1959,5 +1976,18 @@ public class Parser {
         }
         Newline();
         return new CastStatementNode(casted, type, new_name);
+    }
+
+    private DottedVariableNode dotted_var(TestNode preDot) {
+        assert lookahead.is(Token.DOTTED_VAR);
+        NameNode postDot;
+        if (tokens.get(sizeOfVariable()).is("(")) {
+            postDot = function_call();
+        } else {
+            tokens.set(0, new Token(Token.VARIABLE, lookahead.sequence.substring(1)));
+            lookahead = tokens.get(0);
+            postDot = var_name();
+        }
+        return new DottedVariableNode(preDot, postDot);
     }
 }

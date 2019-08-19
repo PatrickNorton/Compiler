@@ -1,9 +1,9 @@
 public class AugmentedAssignmentNode implements AssignStatementNode {
     private OperatorNode operator;
-    private VariableNode name;
+    private AtomicNode name;
     private TestNode value;
 
-    public AugmentedAssignmentNode(OperatorNode operator, VariableNode name, TestNode value) {
+    public AugmentedAssignmentNode(OperatorNode operator, AtomicNode name, TestNode value) {
         this.operator = operator;
         this.name = name;
         this.value = value;
@@ -13,8 +13,8 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
         return operator;
     }
 
-    public VariableNode[] getName() {
-        return new VariableNode[] {name};
+    public SubTestNode[] getName() {
+        return new SubTestNode[] {name};
     }
 
     public TestNode getValue() {
