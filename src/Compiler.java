@@ -4,7 +4,7 @@ import java.io.FileReader;
 public class Compiler {
     public static void main(String[] args) throws java.io.IOException {
         String everything;
-        String filename = "/Users/Patricknorton/Projects/Python files/CAS.txt";
+        String filename = "/Users/Patricknorton/Projects/Python files/CAS.newlang";
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();

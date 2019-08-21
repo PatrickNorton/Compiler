@@ -1986,31 +1986,29 @@ public class Parser {
         NextToken();
         LinkedList<NameNode> postDot = new LinkedList<>();
         while (lookahead.is(TokenType.NAME)) {
-            NameNode name = name();
-            while (lookahead.is(TokenType.OPEN_BRACE)) {
-                if (lookahead.is("(")) {
-                    ArgumentNode[] args = fn_call_args();
-                    name = new FunctionCallNode(name, args);
-                } else if (lookahead.is("[")) {
-                    name = new IndexNode(name, var_index());
-                } else if (lookahead.is("{")) {
-                    break;
-                } else {
-                    throw new ParserException("Unexpected " + lookahead);
-                }
+            postDot.add(var_braced());
+            if (!lookahead.is(TokenType.DOT)) {
+                break;
             }
-            if (lookahead.is(TokenType.DOT)) {
-                postDot.add(name);
-                NextToken();
-            }
+            NextToken();
         }
         return new DottedVariableNode(preDot, postDot.toArray(new NameNode[0]));
     }
 
     private DottedVariableNode left_name() {
         assert lookahead.is(TokenType.NAME);
+        NameNode name = var_braced();
+        if (lookahead.is(TokenType.DOT)) {
+            return dotted_var(name);
+        } else {
+            return new DottedVariableNode(name);
+        }
+    }
+
+    private NameNode var_braced() {
+        assert lookahead.is(TokenType.NAME);
         NameNode name = name();
-        while_loop:
+        while_brace:
         while (lookahead.is(TokenType.OPEN_BRACE)) {
             switch (lookahead.sequence) {
                 case "(":
@@ -2024,16 +2022,12 @@ public class Parser {
                     }
                     break;
                 case "{":
-                    break while_loop;
+                    break while_brace;
                 default:
                     throw new RuntimeException("Unexpected brace");
             }
         }
-        if (lookahead.is(TokenType.DOT)) {
-            return dotted_var(name);
-        } else {
-            return new DottedVariableNode(name);
-        }
+        return name;
     }
 
     private DottedVariableNode dotted_name() {
