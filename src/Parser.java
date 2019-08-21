@@ -329,8 +329,6 @@ public class Parser {
                 return some_op();
             case "interface":
                 return interface_def();
-            case "cast":
-                return cast_stmt();
             default:
                 throw new RuntimeException("Keyword mismatch");
         }
@@ -1125,7 +1123,7 @@ public class Parser {
                     case CLOSE_BRACE:
                         if (ignore_newline) {
                             break while_loop;
-                        }
+                        }  // Lack of breaks here intentional too
                     default:
                         throw new ParserException("Unexpected "+lookahead);
                 }
@@ -1962,26 +1960,6 @@ public class Parser {
         } else {
             throw new ParserException("Illegal statement");
         }
-    }
-
-    private CastStatementNode cast_stmt() {
-        assert lookahead.is("cast");
-        NextToken();
-        VariableNode casted = variable();
-        if (!lookahead.is("to")) {
-            throw new ParserException("Expected to, got "+lookahead);
-        }
-        NextToken();
-        TypeNode type = type();
-        VariableNode new_name;
-        if (lookahead.is("as")) {
-            NextToken();
-            new_name = variable(false);
-        } else {
-            new_name = new VariableNode();
-        }
-        Newline();
-        return new CastStatementNode(casted, type, new_name);
     }
 
     private DottedVariableNode dotted_var(TestNode preDot) {
