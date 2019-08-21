@@ -288,8 +288,9 @@ public class Parser {
                 return if_stmt();
             case "for":
                 return for_stmt();
+            case "elif":
             case "else":
-                throw new ParserException("else must have a preceding if");
+                throw new ParserException(lookahead+" must have a preceding if");
             case "do":
                 return do_stmt();
             case "dotimes":

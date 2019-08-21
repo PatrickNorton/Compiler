@@ -13,7 +13,7 @@ public enum TokenType {
     // Matches list of descriptor words (const, private, etc.)
     DESCRIPTOR("^\\b(private|const|final|pubget|static)\\b"),
     // Matches keywords (if, else, class, do, etc.)
-    KEYWORD("^\\b(if|for|else|do|func|class|method|while|in|from|(im|ex)port"
+    KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
             +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
             +"|raise|typedef|some|interface|cast(ed)?|to)\\b"),
