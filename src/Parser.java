@@ -1985,7 +1985,13 @@ public class Parser {
         assert lookahead.is(TokenType.DOT);
         NextToken();
         LinkedList<NameNode> postDot = new LinkedList<>();
-        while (lookahead.is(TokenType.NAME)) {
+        while (lookahead.is(TokenType.NAME, TokenType.OPERATOR_SP)) {
+            if (lookahead.is(TokenType.OPERATOR_SP)) {
+                String op_type = lookahead.sequence.replaceFirst("operator *",  "");
+                NextToken();
+                postDot.add(new SpecialOpNameNode(new OperatorTypeNode(op_type)));
+                break;
+            }
             postDot.add(var_braced());
             if (!lookahead.is(TokenType.DOT)) {
                 break;

@@ -5,13 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TryStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TryStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/WithStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/WithStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Compiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Compiler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -126,7 +119,7 @@
       <workItem from="1565693310646" duration="9303000" />
       <workItem from="1565778403048" duration="53225000" />
       <workItem from="1566298393833" duration="13575000" />
-      <workItem from="1566400516916" duration="3340000" />
+      <workItem from="1566400516916" duration="3655000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -282,7 +275,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566386067893</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Removed redundancies in variable parsing">
+      <created>1566409527673</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1566409527673</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -323,7 +323,8 @@
     <MESSAGE value="Turned token types into an enum" />
     <MESSAGE value="Changed parsing of dotted variables" />
     <MESSAGE value="Changed with statement to use name instead of left_name" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed with statement to use name instead of left_name" />
+    <MESSAGE value="Removed redundancies in variable parsing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed redundancies in variable parsing" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
