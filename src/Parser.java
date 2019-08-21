@@ -801,7 +801,7 @@ public class Parser {
         if (lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Empty import statements are illegal");
         }
-        DottedVariableNode[] imports = var_list(true, false);
+        DottedVariableNode[] imports = var_list(false);
         Newline();
         return new ImportStatementNode(imports);
     }
@@ -812,7 +812,7 @@ public class Parser {
         if (lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Empty export statements are illegal");
         }
-        DottedVariableNode[] exports = var_list(true,false);
+        DottedVariableNode[] exports = var_list(false);
         Newline();
         return new ExportStatementNode(exports);
     }
@@ -828,7 +828,7 @@ public class Parser {
         if (lookahead.is(TokenType.NEWLINE)) {
             throw new ParserException("Empty typeget statements are illegal");
         }
-        DottedVariableNode[] typegets = var_list(true, false);
+        DottedVariableNode[] typegets = var_list(false);
         Newline();
         return new TypegetStatementNode(typegets, from);
     }
@@ -1489,14 +1489,14 @@ public class Parser {
         return new LiteralNode(brace_type, tokens.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
     }
 
-    private DottedVariableNode[] var_list(boolean allow_dotted, boolean ignore_newlines) {
+    private DottedVariableNode[] var_list(boolean ignore_newlines) {
         LinkedList<DottedVariableNode> variables = new LinkedList<>();
         if (ignore_newlines) {
             passNewlines();
         }
         if (lookahead.is("(") && !braceContains("in") && !braceContains("for")) {
             NextToken();
-            DottedVariableNode[] vars = var_list(allow_dotted, true);
+            DottedVariableNode[] vars = var_list(true);
             if (!lookahead.is(")")) {
                 throw new ParserException("Unmatched braces");
             }
@@ -1517,6 +1517,36 @@ public class Parser {
             }
         }
         return variables.toArray(new DottedVariableNode[0]);
+    }
+
+    private VariableNode[] name_list(boolean ignore_newlines) {
+        LinkedList<VariableNode> variables = new LinkedList<>();
+        if (ignore_newlines) {
+            passNewlines();
+        }
+        if (lookahead.is("(") && !braceContains("in") && !braceContains("for")) {
+            NextToken();
+            VariableNode[] vars = name_list(true);
+            if (!lookahead.is(")")) {
+                throw new ParserException("Unmatched braces");
+            }
+            return vars;
+        }
+        while (true) {
+            if (!lookahead.is(TokenType.NAME)) {
+                break;
+            }
+            if (lookahead.is(TokenType.CLOSE_BRACE)) {
+                throw new ParserException("Unmatched braces");
+            }
+            variables.add(name());
+            if (lookahead.is(",")) {
+                NextToken(ignore_newlines);
+            } else {
+                break;
+            }
+        }
+        return variables.toArray(new VariableNode[0]);
     }
 
     private DictLiteralNode dict_literal() {
@@ -1586,13 +1616,13 @@ public class Parser {
         NextToken();
         StatementBodyNode body = fn_body();
         StatementBodyNode except = new StatementBodyNode();
-        DottedVariableNode[] excepted = new DottedVariableNode[0];
+        VariableNode[] excepted = new VariableNode[0];
         VariableNode as_var = new VariableNode();
         StatementBodyNode else_stmt = new StatementBodyNode();
         StatementBodyNode finally_stmt = new StatementBodyNode();
         if (lookahead.is("except")) {
             NextToken();
-            excepted = var_list(true, false);
+            excepted = name_list( false);
             if (lookahead.is("as")) {
                 NextToken();
                 as_var = name();
@@ -1626,7 +1656,7 @@ public class Parser {
                 throw new ParserException("Expected comma or as, got "+lookahead);
             }
         }
-        DottedVariableNode[] vars = var_list(false, false);
+        VariableNode[] vars = name_list( false);
         StatementBodyNode body = fn_body();
         Newline();
         return new WithStatementNode(managed.toArray(new TestNode[0]), vars, body);

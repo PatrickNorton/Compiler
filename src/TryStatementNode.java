@@ -1,12 +1,12 @@
 public class TryStatementNode implements ComplexStatementNode {
     private StatementBodyNode body;
     private StatementBodyNode except;
-    private DottedVariableNode[] excepted;
+    private VariableNode[] excepted;
     private VariableNode as_var;
     private StatementBodyNode else_stmt;
     private StatementBodyNode finally_stmt;
 
-    public TryStatementNode(StatementBodyNode body, StatementBodyNode except, DottedVariableNode[] excepted,
+    public TryStatementNode(StatementBodyNode body, StatementBodyNode except, VariableNode[] excepted,
                             VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
         this.body = body;
         this.except = except;
@@ -25,7 +25,7 @@ public class TryStatementNode implements ComplexStatementNode {
         return except;
     }
 
-    public DottedVariableNode[] getExcepted() {
+    public VariableNode[] getExcepted() {
         return excepted;
     }
 
