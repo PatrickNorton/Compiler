@@ -9,7 +9,6 @@
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -160,24 +159,6 @@ public class Parser {
                     }
             }
         }
-//        if (tokens.get(offset + 1).is("[")) {
-//            int netBraces = 1;
-//            int numTokens = offset + 2;
-//            while (netBraces != 0) {
-//                Token token = tokens.get(numTokens);
-//                if (token.is(TokenType.OPEN_BRACE)) {
-//                    netBraces++;
-//                } else if (token.is(TokenType.CLOSE_BRACE)) {
-//                    netBraces--;
-//                } else if (token.is(TokenType.EPSILON)) {
-//                    throw new ParserException("Unexpected EOF while parsing");
-//                }
-//                numTokens++;
-//            }
-//            return numTokens - offset;
-//        } else {
-//            return 1;
-//        }
     }
 
     private int sizeOfBrace(int offset) {
@@ -454,21 +435,6 @@ public class Parser {
         NextToken();
         return new VariableNode(name);
     }
-
-//    private VariableNode variable(boolean allow_dotted) {
-//        mustToken("Expected variable, got " + lookahead, true, false,
-//                false, TokenType.NAME);
-//        if (!allow_dotted && lookahead.sequence.contains(".")) {
-//            throw new ParserException("Dotted variables are not allowed here");
-//        }
-//        String[] tokens = lookahead.sequence.split("\\.");
-//        NextToken();
-//        return new VariableNode(tokens);
-//    }
-
-//    private VariableNode variable() {
-//        return variable(true);
-//    }
 
     private BaseNode left_variable() {
         // Things starting with a variable token:
@@ -1379,18 +1345,6 @@ public class Parser {
             return (ClassStatementNode) stmt;
         }
         throw new ParserException(lookahead+" is not a valid class statement");
-    }
-
-    private NameNode function_call() {
-        NameNode caller = left_name();
-        if (!lookahead.is("(")) {
-            throw new ParserException("Expected function call, got "+lookahead);
-        }
-        ArgumentNode[] args = fn_call_args();
-        if (lookahead.is(TokenType.NAME)) {
-            return dotted_var(new FunctionCallNode(caller, args));
-        }
-        return new FunctionCallNode(caller, args);
     }
 
     private DeclarationNode declaration() {

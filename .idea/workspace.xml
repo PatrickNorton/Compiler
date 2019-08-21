@@ -5,30 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/IndexNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DottedVariableNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DottedVariableNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/ExportStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/ExportStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/ImportStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/ImportStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/OperatorDefinitionNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/OperatorDefinitionNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TryStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TryStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TypeNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TypeNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TypegetStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TypegetStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/VariableNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/VariableNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/WithStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/WithStatementNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Compiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Compiler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/DottedVariableNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DottedVariableNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ExportStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ExportStatementNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ImportStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ImportStatementNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TokenType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TokenType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TryStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TryStatementNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TypeNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypeNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TypegetStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypegetStatementNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/VariableNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/VariableNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/WithStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/WithStatementNode.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -141,7 +119,7 @@
       <workItem from="1565692514517" duration="526000" />
       <workItem from="1565693310646" duration="9303000" />
       <workItem from="1565778403048" duration="53225000" />
-      <workItem from="1566298393833" duration="13041000" />
+      <workItem from="1566298393833" duration="13575000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -283,7 +261,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566225079725</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Changed parsing of dotted variables">
+      <created>1566384390960</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1566384390960</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -322,7 +307,8 @@
     <MESSAGE value="Added dotted variable support" />
     <MESSAGE value="Fixed decimal literals" />
     <MESSAGE value="Turned token types into an enum" />
-    <option name="LAST_COMMIT_MESSAGE" value="Turned token types into an enum" />
+    <MESSAGE value="Changed parsing of dotted variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed parsing of dotted variables" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
