@@ -1,24 +1,22 @@
-import java.util.Optional;
-
 public class ImportStatementNode implements ImportExportNode {
-    private VariableNode[] imports;
-    private VariableNode from;
+    private DottedVariableNode[] imports;
+    private DottedVariableNode from;
 
-    public ImportStatementNode(VariableNode[] imports, VariableNode from) {
+    public ImportStatementNode(DottedVariableNode[] imports, DottedVariableNode from) {
         this.imports = imports;
         this.from = from;
     }
 
-    public ImportStatementNode(VariableNode[] imports) {
+    public ImportStatementNode(DottedVariableNode[] imports) {
         this.imports = imports;
         this.from = null;
     }
 
-    public VariableNode[] getImports() {
+    public DottedVariableNode[] getImports() {
         return imports;
     }
 
-    public VariableNode getFrom() {
+    public DottedVariableNode getFrom() {
         return from;
     }
 }
