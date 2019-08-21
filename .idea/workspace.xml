@@ -7,6 +7,8 @@
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TryStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TryStatementNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/WithStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/WithStatementNode.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
