@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TokenType.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TokenType.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TokenType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TokenType.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -119,7 +123,7 @@
       <workItem from="1565693310646" duration="9303000" />
       <workItem from="1565778403048" duration="53225000" />
       <workItem from="1566298393833" duration="13575000" />
-      <workItem from="1566400516916" duration="3655000" />
+      <workItem from="1566400516916" duration="4219000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -282,7 +286,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566409527673</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="Added support for operator access from variable">
+      <created>1566409873686</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1566409873686</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -324,7 +335,8 @@
     <MESSAGE value="Changed parsing of dotted variables" />
     <MESSAGE value="Changed with statement to use name instead of left_name" />
     <MESSAGE value="Removed redundancies in variable parsing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed redundancies in variable parsing" />
+    <MESSAGE value="Added support for operator access from variable" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added support for operator access from variable" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
