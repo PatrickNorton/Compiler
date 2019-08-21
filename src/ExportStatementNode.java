@@ -1,11 +1,11 @@
 public class ExportStatementNode implements ImportExportNode {
-    private VariableNode[] exports;
+    private DottedVariableNode[] exports;
 
-    public ExportStatementNode(VariableNode[] exports) {
+    public ExportStatementNode(DottedVariableNode[] exports) {
         this.exports = exports;
     }
 
-    public VariableNode[] getExports() {
+    public DottedVariableNode[] getExports() {
         return exports;
     }
 }

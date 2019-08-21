@@ -1,9 +1,9 @@
 public class WithStatementNode implements ComplexStatementNode {
     private TestNode[] managed;
-    private VariableNode[] vars;
+    private DottedVariableNode[] vars;
     private StatementBodyNode body;
 
-    public WithStatementNode(TestNode[] managed, VariableNode[] vars, StatementBodyNode body) {
+    public WithStatementNode(TestNode[] managed, DottedVariableNode[] vars, StatementBodyNode body) {
         this.managed = managed;
         this.vars = vars;
         this.body = body;
@@ -13,7 +13,7 @@ public class WithStatementNode implements ComplexStatementNode {
         return managed;
     }
 
-    public VariableNode[] getVars() {
+    public DottedVariableNode[] getVars() {
         return vars;
     }
 
