@@ -11,7 +11,7 @@ public enum TokenType {
     // Matches newlines of all types
     NEWLINE("^\\R"),
     // Matches list of descriptor words (const, private, etc.)
-    DESCRIPTOR("^\\b(private|const|final|pubget|static)\\b"),
+    DESCRIPTOR("^\\b(private|const|final|pubget|static|generator)\\b"),
     // Matches keywords (if, else, class, do, etc.)
     KEYWORD("^\\b(if|for|else|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
@@ -47,7 +47,7 @@ public enum TokenType {
     // Regular variables
     VARIABLE("^(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*\\b"),
     // operator functions, like \+
-    OP_FUNC("^\\\\(==|!=|[><]=?|r?[+\\-*/]{1,2}|u-|<<|>>|[&|^~%])"),
+    OP_FUNC("^\\\\(==|!=|[><]=?|r?([+\\-*/])\\2?|u-|<<|>>|[&|^~%])"),
     // Colons, for slicing syntax etc.
     COLON("^:"),
     // The ellipsis unicorn
