@@ -1,17 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/TokenType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/IndexNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Compiler.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Compiler.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/DottedVariableNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/DottedVariableNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/ExportStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/ExportStatementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/ImportStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/ImportStatementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/OperatorDefinitionNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/OperatorDefinitionNode.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Token.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Token.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer$TokenInfo.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Tokenizer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TryStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TryStatementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TypeNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TypeNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TypegetStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TypegetStatementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/VariableNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/VariableNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/WithStatementNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/WithStatementNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Compiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Compiler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DottedVariableNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/DottedVariableNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ExportStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ExportStatementNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ImportStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ImportStatementNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Token.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Token.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tokenizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokenizer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TokenType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TokenType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TryStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TryStatementNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TypeNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypeNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TypegetStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypegetStatementNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/VariableNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/VariableNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/WithStatementNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/WithStatementNode.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -25,19 +42,19 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Interface" />
         <option value="Enum" />
+        <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="Finish-todos" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="66" />
@@ -59,6 +76,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RunAnythingCache">
@@ -97,6 +115,9 @@
       <list>
         <item itemvalue="Application.Compiler" />
         <item itemvalue="Application.Tokenizer" />
+        <item itemvalue="Application.Tokenizer" />
+        <item itemvalue="Application.Compiler" />
+        <item itemvalue="Application.Tokenizer" />
       </list>
     </recent_temporary>
   </component>
@@ -119,7 +140,8 @@
       <workItem from="1565360199485" duration="22783000" />
       <workItem from="1565692514517" duration="526000" />
       <workItem from="1565693310646" duration="9303000" />
-      <workItem from="1565778403048" duration="43818000" />
+      <workItem from="1565778403048" duration="53225000" />
+      <workItem from="1566298393833" duration="13041000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -254,7 +276,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566219748381</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Turned token types into an enum">
+      <created>1566225079725</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1566225079725</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -292,7 +321,8 @@
     <MESSAGE value="Added non-base-10 number parsing, decimal support" />
     <MESSAGE value="Added dotted variable support" />
     <MESSAGE value="Fixed decimal literals" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed decimal literals" />
+    <MESSAGE value="Turned token types into an enum" />
+    <option name="LAST_COMMIT_MESSAGE" value="Turned token types into an enum" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -301,7 +331,7 @@
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/Compiler.java</url>
           <line>20</line>
-          <option name="timeStamp" value="83" />
+          <option name="timeStamp" value="121" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

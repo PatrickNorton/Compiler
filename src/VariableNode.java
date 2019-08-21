@@ -1,36 +1,19 @@
-import java.util.ArrayList;
-
 public class VariableNode implements NameNode {
-    private String[] names;
-    private ArrayList<TestNode[]> indices;
+    private String name;
 
-    public VariableNode(String... names) {
-        this.names = names;
-        this.indices = new ArrayList<>();
+    public VariableNode(String names) {
+        this.name = names;
     }
 
-    public VariableNode(String[] names, ArrayList<TestNode[]> indices) {
-        this.names = names;
-        this.indices = indices;
+    public VariableNode() {
+        this.name = "";
     }
 
-    public String[] getNames() {
-        return names;
-    }
-
-    public ArrayList<TestNode[]> getIndices() {
-        return indices;
-    }
-
-    public boolean isIndexed() {
-        return indices.size() > 0;
-    }
-
-    public boolean isDotted() {
-        return names.length > 1;
+    public String getName() {
+        return name;
     }
 
     public boolean isEmpty() {
-        return names.length > 0;
+        return this.name.isEmpty();
     }
 }
