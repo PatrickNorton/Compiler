@@ -397,14 +397,6 @@ public class Parser {
         }
     }
 
-    private SubTestNode subtest_openBrace() {
-        BaseNode node = openBrace();
-        if (node instanceof SubTestNode) {
-            return (SubTestNode) node;
-        }
-        throw new ParserException("Unexpected " + lookahead);
-    }
-
     private VariableNode variable(boolean allow_dotted) {
         mustToken("Expected variable, got " + lookahead, true, false,
                 false, TokenType.VARIABLE, TokenType.SELF_CLS);
@@ -1004,10 +996,10 @@ public class Parser {
     }
 
     private TestNode test(boolean ignore_newline) {
-        SubTestNode if_true = test_no_ternary(ignore_newline);
+        TestNode if_true = test_no_ternary(ignore_newline);
         if (lookahead.is("if")) {
             NextToken(ignore_newline);
-            SubTestNode statement = test_no_ternary(ignore_newline);
+            TestNode statement = test_no_ternary(ignore_newline);
             mustToken("Ternary must have an else", true,
                     true, ignore_newline, "else");
             TestNode if_false = test(ignore_newline);
@@ -1021,13 +1013,13 @@ public class Parser {
         return test(false);
     }
 
-    private SubTestNode test_no_ternary(boolean ignore_newline) {
+    private TestNode test_no_ternary(boolean ignore_newline) {
         switch (lookahead.token) {
             case SELF_CLS:
             case VARIABLE:
                 return test_left_variable(ignore_newline);
             case OPEN_BRACE:
-                return subtest_openBrace();
+                return openBrace();
             case BOOL_OP:
                 return left_bool_op(ignore_newline);
             case NUMBER:
@@ -1058,7 +1050,7 @@ public class Parser {
         return new LambdaNode(args, body);
     }
 
-    private SubTestNode test_left_variable(boolean ignore_newline) {
+    private TestNode test_left_variable(boolean ignore_newline) {
         // Things starting with a variable token (besides ternary):
         // Function call
         // Lone variable, just sitting there
@@ -1072,14 +1064,14 @@ public class Parser {
         } else if (contains(ignore_newline, TokenType.AUG_ASSIGN)) {
             throw new ParserException("Illegal augmented assignment");
         } else {
-            LinkedList<SubTestNode> nodes = new LinkedList<>();
+            LinkedList<TestNode> nodes = new LinkedList<>();
             while_loop:
             while (!lookahead.is(TokenType.NEWLINE)) {
                 switch (lookahead.token) {
                     case OPEN_BRACE:
-                        SubTestNode last_node = nodes.peekLast();
+                        TestNode last_node = nodes.peekLast();
                         if (last_node instanceof OperatorNode) {
-                            nodes.add(subtest_openBrace());
+                            nodes.add(openBrace());
                             break;
                         }
                         break while_loop;
@@ -1151,12 +1143,12 @@ public class Parser {
         }
     }
 
-    private void parseExpression(LinkedList<SubTestNode> nodes, String... expr) {
+    private void parseExpression(LinkedList<TestNode> nodes, String... expr) {
         if (nodes.size() == 1) {
             return;
         }
         for (int nodeNumber = 0; nodeNumber < nodes.size(); nodeNumber++) {
-            SubTestNode node = nodes.get(nodeNumber);
+            TestNode node = nodes.get(nodeNumber);
             if (node instanceof OperatorNode) {
                 if (((OperatorNode) node).getOperands().length != 0) {
                     continue;
@@ -1174,11 +1166,11 @@ public class Parser {
         }
     }
 
-    private void parseOperator(LinkedList<SubTestNode> nodes, int nodeNumber) {
-        SubTestNode node = nodes.get(nodeNumber);
-        SubTestNode previous = nodes.get(nodeNumber - 1);
-        SubTestNode next = nodes.get(nodeNumber + 1);
-        SubTestNode op;
+    private void parseOperator(LinkedList<TestNode> nodes, int nodeNumber) {
+        TestNode node = nodes.get(nodeNumber);
+        TestNode previous = nodes.get(nodeNumber - 1);
+        TestNode next = nodes.get(nodeNumber + 1);
+        TestNode op;
         if (node instanceof OperatorNode) {
             op = new OperatorNode(((OperatorNode) node).getOperator(), previous, next);
         } else {
@@ -1189,10 +1181,10 @@ public class Parser {
         nodes.remove(nodeNumber - 1);
     }
 
-    private void parseUnaryOp(LinkedList<SubTestNode> nodes, int nodeNumber) {
-        SubTestNode node = nodes.get(nodeNumber);
-        SubTestNode next = nodes.get(nodeNumber + 1);
-        SubTestNode op;
+    private void parseUnaryOp(LinkedList<TestNode> nodes, int nodeNumber) {
+        TestNode node = nodes.get(nodeNumber);
+        TestNode next = nodes.get(nodeNumber + 1);
+        TestNode op;
         if (node instanceof OperatorTypeNode) {
             op = new OperatorNode(((OperatorTypeNode) node), next);
         }  else {
