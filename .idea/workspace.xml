@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="2bbe5eb7-3f60-4b3c-8c07-73cd75bd69dc" name="Default Changelist" comment="Revert &quot;Added.gitignore&quot;&#10;&#10;This reverts commit a9aa8cd8">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="673d7456-e34f-4640-bb3a-90a202c34637" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TokenType.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TokenType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TokenType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TokenType.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,19 +23,19 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Interface" />
         <option value="Enum" />
+        <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="Finish-todos" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="66" />
@@ -50,7 +57,8 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.textmate.bundles" />
   </component>
   <component name="RunAnythingCache">
     <option name="myCommands">
@@ -88,6 +96,9 @@
       <list>
         <item itemvalue="Application.Compiler" />
         <item itemvalue="Application.Tokenizer" />
+        <item itemvalue="Application.Tokenizer" />
+        <item itemvalue="Application.Compiler" />
+        <item itemvalue="Application.Tokenizer" />
       </list>
     </recent_temporary>
   </component>
@@ -110,7 +121,9 @@
       <workItem from="1565360199485" duration="22783000" />
       <workItem from="1565692514517" duration="526000" />
       <workItem from="1565693310646" duration="9303000" />
-      <workItem from="1565778403048" duration="43818000" />
+      <workItem from="1565778403048" duration="53225000" />
+      <workItem from="1566298393833" duration="13575000" />
+      <workItem from="1566400516916" duration="4219000" />
     </task>
     <task id="LOCAL-00001" summary="Added VarargedTypeNode">
       <created>1564829594325</created>
@@ -245,14 +258,42 @@
       <option name="project" value="LOCAL" />
       <updated>1566219748381</updated>
     </task>
-    <task id="LOCAL-00020" summary="Allowed more nested ternaries">
-      <created>1566559670097</created>
+    <task id="LOCAL-00020" summary="Turned token types into an enum">
+      <created>1566225079725</created>
       <option name="number" value="00020" />
       <option name="presentableId" value="LOCAL-00020" />
       <option name="project" value="LOCAL" />
-      <updated>1566559670097</updated>
+      <updated>1566225079725</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Changed parsing of dotted variables">
+      <created>1566384390960</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1566384390960</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Changed with statement to use name instead of left_name">
+      <created>1566386067893</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1566386067893</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Removed redundancies in variable parsing">
+      <created>1566409527673</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1566409527673</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Added support for operator access from variable">
+      <created>1566409873686</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1566409873686</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -290,8 +331,12 @@
     <MESSAGE value="Added non-base-10 number parsing, decimal support" />
     <MESSAGE value="Added dotted variable support" />
     <MESSAGE value="Fixed decimal literals" />
-    <MESSAGE value="Allowed more nested ternaries" />
-    <option name="LAST_COMMIT_MESSAGE" value="Allowed more nested ternaries" />
+    <MESSAGE value="Turned token types into an enum" />
+    <MESSAGE value="Changed parsing of dotted variables" />
+    <MESSAGE value="Changed with statement to use name instead of left_name" />
+    <MESSAGE value="Removed redundancies in variable parsing" />
+    <MESSAGE value="Added support for operator access from variable" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added support for operator access from variable" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -300,7 +345,7 @@
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/Compiler.java</url>
           <line>20</line>
-          <option name="timeStamp" value="83" />
+          <option name="timeStamp" value="121" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
