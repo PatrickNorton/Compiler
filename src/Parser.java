@@ -1,7 +1,7 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
 // TODO? Remove SubTestNode & replace with something more meaningful
-// FIXME: Turn var_list(false...) into name_list
+// TODO: operator + = (something)
 // FIXME: Allow self/cls declarations
 
 
@@ -124,7 +124,7 @@ public class Parser {
     }
 
     private int sizeOfVariable(int offset) {
-        assert lookahead.is(TokenType.NAME);
+        assert tokens.get(offset).is(TokenType.NAME);
         int netBraces = 0;
         boolean wasVar = false;
         for (int size = offset;; size++) {
@@ -1752,7 +1752,9 @@ public class Parser {
         LinkedList<ArgumentNode> args = new LinkedList<>();
         while (true) {
             VariableNode var = new VariableNode();
-            if (tokens.get(sizeOfVariable()).is("=")) {
+            int offset = lookahead.is("*", "**") ? 1 : 0;
+            if (tokens.get(offset).is(TokenType.NAME)
+                    && tokens.get(sizeOfVariable(offset)).is("=")) {
                 var = name();
                 NextToken(true);
             }
