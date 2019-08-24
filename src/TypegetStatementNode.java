@@ -1,22 +1,22 @@
 public class TypegetStatementNode implements ImportExportNode {
-    private VariableNode[] typegets;
-    private VariableNode from;
+    private DottedVariableNode[] typegets;
+    private DottedVariableNode from;
 
-    public TypegetStatementNode(VariableNode[] imports, VariableNode from) {
+    public TypegetStatementNode(DottedVariableNode[] imports, DottedVariableNode from) {
         this.typegets = imports;
         this.from = from;
     }
 
-    public TypegetStatementNode(VariableNode[] imports) {
+    public TypegetStatementNode(DottedVariableNode[] imports) {
         this.typegets = imports;
         this.from = null;
     }
 
-    public VariableNode[] getTypegets() {
+    public DottedVariableNode[] getTypegets() {
         return typegets;
     }
 
-    public VariableNode getFrom() {
+    public DottedVariableNode getFrom() {
         return from;
     }
 }
