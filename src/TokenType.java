@@ -3,7 +3,6 @@ import org.intellij.lang.annotations.Language;
 import java.util.regex.Pattern;
 
 public enum TokenType {
-    // TODO? Turn dot into its own token
     // Whitespace. Matches comments, spaces, and escaped newlines
     WHITESPACE("^(#\\|((?!\\|#).|\n)*\\|#|#.*| +|\\\\\n)"),
     // Matches when input is empty
@@ -26,8 +25,10 @@ public enum TokenType {
     // Augmented assignment, e.g. +=
     // Parsed separately from standard operators because of their different use
     AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|[&|^~])="),
+    // The magical arrow unicorn
+    ARROW("^->"),
     // Standard, boring operators, + - **
-    OPERATOR("^(->|==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%])"),
+    OPERATOR("^(==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%])"),
     // Assignment, and dynamic assignment (:=)
     ASSIGN("^:?="),
     // String literals, including f-strings
