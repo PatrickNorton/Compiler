@@ -1,5 +1,6 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
+// TODO? Remove SubTestNode & replace with something more meaningful
 // FIXME: Turn var_list(false...) into name_list
 // FIXME: Allow self/cls declarations
 
@@ -248,6 +249,8 @@ public class Parser {
                 throw new ParserException("Unexpected comma");
             case AUG_ASSIGN:
                 throw new ParserException("Unexpected operator");
+            case ARROW:
+                throw new ParserException("Unexpected ->");
             case OPERATOR:
                 return left_operator(false);
             case ASSIGN:
@@ -602,7 +605,7 @@ public class Parser {
             args = new TypedArgumentListNode();
         }
         TypeNode[] retval;
-        if (lookahead.is("->")) {
+        if (lookahead.is(TokenType.ARROW)) {
             retval = fn_retval();
         } else {
             retval = new TypeNode[0];
@@ -1005,7 +1008,7 @@ public class Parser {
         if (lookahead.is("{")) {
             return new TypeNode[0];
         }
-        mustToken("Return value must use arrow operator", true, "->");
+        mustToken("Return value must use arrow operator", true, TokenType.ARROW);
         LinkedList<TypeNode> types = new LinkedList<>();
         while (!lookahead.is("{") && !lookahead.is(TokenType.NEWLINE)) {
             types.add(type());
@@ -1101,14 +1104,10 @@ public class Parser {
                     case NUMBER:
                         nodes.add(number());
                         break;
+                    case ARROW:
+                        throw new ParserException("Unexpected " + lookahead);
                     case BOOL_OP:
-                        nodes.add(new OperatorNode(lookahead.sequence));
-                        NextToken();
-                        break;
                     case OPERATOR:
-                        if (lookahead.is("->")) {
-                            throw new ParserException("Unexpected ->");
-                        }
                         nodes.add(new OperatorNode(lookahead.sequence));
                         NextToken();
                         break;
@@ -1944,7 +1943,7 @@ public class Parser {
                 }
                 TypedArgumentListNode args = fn_args();
                 TypeNode[] retvals = new TypeNode[0];
-                if (lookahead.is("->")) {
+                if (lookahead.is(TokenType.ARROW)) {
                     retvals = fn_retval();
                 }
                 if (is_operator) {
