@@ -1,7 +1,5 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
-// TODO? Replace StatementBodyNode with BaseNode[] (and equivalents)
-// TODO: Keyword-only arguments
 
 
 import java.math.BigDecimal;
@@ -924,24 +922,45 @@ public class Parser {
     }
 
     private TypedArgumentListNode fn_args() {
+        boolean has_posArgs = braceContains("/");
         mustToken("Argument lists must start with an open-paren", true, "(");
+        ArrayList<TypedArgumentNode> posArgs = new ArrayList<>();
         ArrayList<TypedArgumentNode> args = new ArrayList<>();
-        while (!lookahead.is(")")) {
-            args.add(typed_argument());
-            if (lookahead.is(TokenType.COMMA)) {
-                NextToken();
-                if (lookahead.is(TokenType.NEWLINE)) {
-                    NextToken();
+        ArrayList<TypedArgumentNode> kwArgs = new ArrayList<>();
+        if (has_posArgs) {
+            while (!lookahead.is("/")) {
+                posArgs.add(typed_argument());
+                if (lookahead.is(TokenType.COMMA)) {
+                    NextToken(true);
+                    continue;
                 }
+            }
+            NextToken();
+            if (lookahead.is(TokenType.COMMA)) {
+                NextToken(true);
+            } else if (!lookahead.is(TokenType.CLOSE_BRACE)) {
+                throw new ParserException("Unexpected " + lookahead);
+            }
+        }
+        ArrayList<TypedArgumentNode> which_args = args;
+        while (!lookahead.is(")")) {
+            if (lookahead.is("*") && tokens.get(1).is(",", ")")) {
+                which_args = kwArgs;
+                NextToken(true);
+                NextToken(true);
                 continue;
             }
-            if (lookahead.is(TokenType.NEWLINE)) {
-                NextToken();
+            which_args.add(typed_argument());
+            passNewlines();
+            if (lookahead.is(TokenType.COMMA)) {
+                NextToken(true);
+                continue;
             }
             mustToken("Comma must separate arguments", true, false, false, ")");
         }
         NextToken();
-        return new TypedArgumentListNode(args.toArray(new TypedArgumentNode[0]));
+        return new TypedArgumentListNode(posArgs.toArray(new TypedArgumentNode[0]), args.toArray(new TypedArgumentNode[0]),
+                kwArgs.toArray(new TypedArgumentNode[0]));
     }
 
     private StatementBodyNode fn_body() {

@@ -3,12 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="2bbe5eb7-3f60-4b3c-8c07-73cd75bd69dc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/CastStatementNode.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Compiler.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Compiler/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/Parser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Compiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Compiler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TernaryNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TernaryNode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Compiler/TypedArgumentListNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Compiler/TypedArgumentListNode.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TernaryNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TernaryNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TypedArgumentListNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TypedArgumentListNode.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -251,7 +250,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566219748381</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Allowed more nested ternaries">
+      <created>1566559670097</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1566559670097</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -289,7 +295,8 @@
     <MESSAGE value="Added non-base-10 number parsing, decimal support" />
     <MESSAGE value="Added dotted variable support" />
     <MESSAGE value="Fixed decimal literals" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed decimal literals" />
+    <MESSAGE value="Allowed more nested ternaries" />
+    <option name="LAST_COMMIT_MESSAGE" value="Allowed more nested ternaries" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="true" />
   </component>
   <component name="XDebuggerManager">
