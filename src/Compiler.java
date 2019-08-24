@@ -14,7 +14,6 @@ public class Compiler {
                 line = br.readLine();
             }
         }
-        assert false;
         Tokenizer tokens = Tokenizer.parse(everything.toString());
         BaseNode base = Parser.parse(tokens.getTokens());
     }
