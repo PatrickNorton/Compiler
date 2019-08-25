@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 public enum TokenType {
     // Whitespace. Matches comments, spaces, and escaped newlines
-    WHITESPACE("^(#\\|((?!\\|#).|\n)*\\|#|#.*| +|\\\\\n)"),
+    WHITESPACE("^(#\\|((?!\\|#).|\n)*\\|#|#.*|[\t ]+|\\\\\n)"),
     // Matches when input is empty
     EPSILON("^\\z"),
     // Matches newlines of all types
