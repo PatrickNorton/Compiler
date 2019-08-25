@@ -3,6 +3,7 @@
 // TODO? Remove SubTestNode & replace with something more meaningful
 // TODO: operator + = (something)
 // FIXME: Allow self/cls declarations
+// TODO: Annotations
 
 
 import java.math.BigDecimal;
@@ -1349,6 +1350,10 @@ public class Parser {
     }
 
     private ClassStatementNode class_statement() {
+        if (lookahead.is("static") && tokens.get(1).is("{")) {
+            NextToken();
+            return new StaticBlockNode(fn_body());
+        }
         BaseNode stmt = statement();
         if (stmt instanceof ClassStatementNode) {
             return (ClassStatementNode) stmt;
