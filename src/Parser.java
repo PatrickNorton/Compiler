@@ -1053,6 +1053,8 @@ public class Parser {
                 return ellipsis();
             case OPERATOR:
                 return left_operator(ignore_newline);
+            case STRING:
+                return string();
             case KEYWORD:
                 if (lookahead.is("lambda")) {
                     return lambda();
