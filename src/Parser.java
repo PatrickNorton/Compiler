@@ -949,7 +949,6 @@ public class Parser {
                 posArgs.add(typed_argument());
                 if (lookahead.is(TokenType.COMMA)) {
                     NextToken(true);
-                    continue;
                 }
             }
             NextToken();
@@ -1207,18 +1206,6 @@ public class Parser {
         }
         nodes.set(nodeNumber, op);
         nodes.remove(nodeNumber + 1);
-    }
-
-    private TestNode[] var_index() {
-        mustToken("Expected [, got " + lookahead, true,
-                false, false, "[");
-        TestNode[] vars;
-        if (braceContains(":")) {
-            vars = new TestNode[]{slice()};
-        } else {
-            vars = literal().getBuilders();
-        }
-        return vars;
     }
 
     private TypeNode type() {
