@@ -4,9 +4,11 @@
 // TODO: operator + = (something)
 // FIXME: Allow self/cls declarations
 // TODO: Annotations
+// TODO: Refactor and split up
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -722,7 +724,7 @@ public class Parser {
             if (exp_size - i >= 0) {
                 val = val.add(base.pow(exp_size - i).multiply(digit_val));
             } else {
-                val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size)).multiply(digit_val));
+                val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size), RoundingMode.UNNECESSARY).multiply(digit_val));
             }
         }
         return val;
