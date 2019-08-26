@@ -520,10 +520,13 @@ public class Parser {
         assert lookahead.is(TokenType.STRING);
         String contents = lookahead.sequence;
         NextToken();
-        String inside = contents.replaceAll("(^[rfb]*)|(?<!\\\\)\"", "");
+        String inside = contents.replaceAll("(^[rfb]*\")|(?<!\\\\)\"", "");
         Matcher regex = Pattern.compile("^[rfb]+").matcher(contents);
         if (regex.find()) {
             String prefixes = regex.group();
+            if (!prefixes.contains("r")) {
+                inside = process_escapes(inside);
+            }
             if (prefixes.contains("f")) {
                 LinkedList<String> strs = new LinkedList<>();
                 LinkedList<TestNode> tests = new LinkedList<>();
@@ -564,7 +567,72 @@ public class Parser {
             }
             return new StringNode(inside, prefixes.toCharArray());
         }
-        return new StringNode(contents);
+        inside = process_escapes(inside);
+        return new StringNode(inside);
+    }
+
+    private String process_escapes(String str) {
+        StringBuilder sb = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            char chr = str.charAt(i);
+            if (chr != '\\') {
+                sb.append(chr);
+                continue;
+            }
+            char chr2 = str.charAt(i+1);
+            switch (chr2) {
+                case '\\':
+                    sb.append('\\');
+                    break;
+                case '"':
+                    sb.append('"');
+                    break;
+                case '\'':
+                    sb.append('\'');
+                    break;
+                case 'a':
+                    sb.append('\7');
+                    break;
+                case 'b':
+                    sb.append('\b');
+                    break;
+                case 'f':
+                    sb.append('\f');
+                    break;
+                case 'n':
+                    sb.append('\n');
+                    break;
+                case 'r':
+                    sb.append('\r');
+                    break;
+                case 't':
+                    sb.append('\t');
+                    break;
+                case 'v':
+                    sb.append('\013');
+                    break;
+                case 'o':
+                    sb.append(Integer.parseInt(str.substring(i + 2, i + 4), 8));
+                    i += 3;
+                    break;
+                case 'x':
+                    sb.append(Integer.parseInt(str.substring(i + 2, i + 3), 16));
+                    i += 2;
+                    break;
+                case 'u':
+                    sb.append(Integer.parseInt(str.substring(i + 2, i + 5), 16));
+                    i += 4;
+                    break;
+                case 'U':
+                    sb.append(Integer.parseInt(str.substring(i + 2, i + 9), 16));
+                    i += 8;
+                    break;
+                default:
+                    throw new ParserException("Unknown escape sequence " + str.substring(i, i+1));
+            }
+            i++;
+        }
+        return sb.toString();
     }
 
     private OperatorNode left_bool_op(boolean ignore_newline) {
