@@ -28,6 +28,7 @@ public class Tokenizer {
             }
             if (!match) throw new RuntimeException(s);
         }
+        tokens.add(new Token(TokenType.EPSILON, ""));
     }
 
     public LinkedList<Token> getTokens() {
