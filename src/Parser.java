@@ -939,6 +939,7 @@ public class Parser {
     }
 
     private TypedArgumentListNode fn_args() {
+        assert lookahead.is("(");
         boolean has_posArgs = braceContains("/");
         mustToken("Argument lists must start with an open-paren", true, "(");
         ArrayList<TypedArgumentNode> posArgs = new ArrayList<>();
