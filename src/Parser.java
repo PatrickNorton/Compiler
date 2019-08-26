@@ -27,168 +27,9 @@ public class Parser {
         TopNode topNode = new TopNode();
         while (!parser.tokens.tokenIs(TokenType.EPSILON)) {
             topNode.add(parser.statement());
-            parser.passNewlines();
+            parser.tokens.passNewlines();
         }
         return topNode;
-    }
-
-    private boolean contains(boolean braces, TokenType... question) {
-        if (braces) {
-            return braceContains(question);
-        } else {
-            return lineContains(question);
-        }
-    }
-
-    private boolean contains(boolean braces, String... question) {
-        if (braces) {
-            return braceContains(question);
-        } else {
-            return lineContains(question);
-        }
-    }
-
-    private boolean lineContains(TokenType... question) {
-        int netBraces = 0;
-        for (Token token : tokens) {
-            if (token.is(TokenType.OPEN_BRACE)) {
-                netBraces++;
-            } else if (token.is(TokenType.CLOSE_BRACE)) {
-                netBraces--;
-            }
-            if (netBraces == 0 && token.is(TokenType.NEWLINE)) {
-                return false;
-            }
-            if (netBraces == 0 && token.is(question)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean lineContains(String... question) {
-        for (Token token : tokens) {
-            if (token.is(TokenType.NEWLINE)) {
-                return false;
-            }
-            if (token.is(question)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private LinkedList<Token> firstLevel() {
-        LinkedList<Token> tokens = new LinkedList<>();
-        int netBraces = this.tokens.tokenIs(TokenType.OPEN_BRACE) ? 0 : 1;
-        for (Token token : this.tokens) {
-            switch (token.token) {
-                case OPEN_BRACE:
-                    netBraces++;
-                    break;
-                case CLOSE_BRACE:
-                    netBraces--;
-                    break;
-                case EPSILON:
-                    throw new ParserException("Unmatched brace");
-            }
-            if (netBraces == 0) {
-                return tokens;
-            }
-            if (netBraces == 1) {
-                tokens.add(token);
-            }
-        }
-        throw new RuntimeException("You shouldn't have ended up here");
-    }
-
-    private boolean braceContains(TokenType... question) {
-        for (Token token : firstLevel()) {
-            if (token.is(question)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean braceContains(String... question) {
-        for (Token token : firstLevel()) {
-            if (token.is(question)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private int sizeOfVariable() {
-        return sizeOfVariable(0);
-    }
-
-    private int sizeOfVariable(int offset) {
-        assert tokens.tokenIs(offset, TokenType.NAME);
-        int netBraces = 0;
-        boolean wasVar = false;
-        for (int size = offset;; size++) {
-            Token token = tokens.getToken(size);
-            switch (token.token) {
-                case OPEN_BRACE:
-                    netBraces++;
-                    break;
-                case CLOSE_BRACE:
-                    if (netBraces == 0) {
-                        return size;
-                    }
-                    netBraces--;
-                    break;
-                case NAME:
-                    if (wasVar && netBraces == 0) {
-                        return size;
-                    }
-                    wasVar = true;
-                    break;
-                case DOT:
-                    wasVar = false;
-                    break;
-                case EPSILON:
-                    if (netBraces > 0) {
-                        throw new ParserException("Unmatched brace");
-                    }
-                default:
-                    if (netBraces == 0) {
-                        return size;
-                    }
-            }
-        }
-    }
-
-    private int sizeOfBrace(int offset) {
-        int netBraces = 0;
-        int size = offset;
-        for (Token token : tokens) {
-            if (token.is(TokenType.OPEN_BRACE)) {
-                netBraces++;
-            } else if (token.is(TokenType.CLOSE_BRACE)) {
-                netBraces--;
-            }
-            size++;
-            if (netBraces == 0) {
-                break;
-            }
-        }
-        return size;
-    }
-
-    private void Newline() {
-        if (!tokens.tokenIs(TokenType.NEWLINE)) {
-            throw new ParserException("Expected newline, got "+tokens.getFirst());
-        }
-        tokens.nextToken();
-    }
-
-    private void passNewlines() {
-        while (!tokens.isEmpty() && tokens.tokenIs(TokenType.NEWLINE)) {
-            tokens.nextToken(false);
-        }
     }
 
     private void mustToken(String message, boolean parser, String... tokens) {
@@ -218,7 +59,7 @@ public class Parser {
     }
 
     private BaseNode statement() {
-        passNewlines();
+        tokens.passNewlines();
         switch (tokens.getFirst().token) {
             case KEYWORD:
                 return keyword();
@@ -368,9 +209,9 @@ public class Parser {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         TestNode stmt;
         if (tokens.tokenIs("(")) {
-            if (braceContains("for")) {
+            if (tokens.braceContains("for")) {
                 stmt = comprehension();
-            } else if (braceContains(",")) {
+            } else if (tokens.braceContains(",")) {
                 stmt = literal();
             } else {
                 tokens.nextToken(true);
@@ -382,15 +223,15 @@ public class Parser {
                 stmt = new FunctionCallNode(stmt, fn_call_args());
             }
         } else if (tokens.tokenIs("[")) {
-            if (braceContains("for")) {
+            if (tokens.braceContains("for")) {
                 stmt = comprehension();
             } else {
                 stmt = literal();
             }
         } else if (tokens.tokenIs("{")) {
-            if (braceContains("for")) {
-                stmt = braceContains(":") ? dict_comprehension() : comprehension();
-            } else if (braceContains(":")) {
+            if (tokens.braceContains("for")) {
+                stmt = tokens.braceContains(":") ? dict_comprehension() : comprehension();
+            } else if (tokens.braceContains(":")) {
                 stmt = dict_literal();
             } else {
                 stmt = literal();
@@ -421,10 +262,10 @@ public class Parser {
         // Declared assignment
         // Assignment
         // Lone expression
-        Token after_var = tokens.getToken(sizeOfVariable());
-        if (lineContains(TokenType.ASSIGN)) {
+        Token after_var = tokens.getToken(tokens.sizeOfVariable());
+        if (tokens.lineContains(TokenType.ASSIGN)) {
             return assignment();
-        } else if (lineContains(TokenType.AUG_ASSIGN)) {
+        } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
             DottedVariableNode var = left_name();
             mustToken("Expected augmented assignment, got " + tokens.getFirst(), true,
                     false, false, TokenType.AUG_ASSIGN);
@@ -434,13 +275,13 @@ public class Parser {
             return new AugmentedAssignmentNode(op, var, assignment);
         } else if (after_var.is("++", "--")) {
             return inc_or_dec();
-        } else if (lineContains(TokenType.BOOL_OP, TokenType.OPERATOR)) {
+        } else if (tokens.lineContains(TokenType.BOOL_OP, TokenType.OPERATOR)) {
             return test();
         } else if (after_var.is(TokenType.NAME)) {
             return declaration();
         } else {
             DottedVariableNode var = left_name();
-            Newline();
+            tokens.Newline();
             return var;
         }
     }
@@ -449,7 +290,7 @@ public class Parser {
         ArrayList<TypeNode> var_type = new ArrayList<>();
         ArrayList<NameNode> vars = new ArrayList<>();
         while (!tokens.tokenIs(TokenType.ASSIGN)) {
-            if (!tokens.getToken(sizeOfVariable()).is(TokenType.ASSIGN, TokenType.COMMA)) {
+            if (!tokens.getToken(tokens.sizeOfVariable()).is(TokenType.ASSIGN, TokenType.COMMA)) {
                 var_type.add(type());
                 vars.add(name());
                 if (tokens.tokenIs(TokenType.ASSIGN)) {
@@ -468,7 +309,7 @@ public class Parser {
         boolean is_colon = tokens.tokenIs(":=");
         tokens.nextToken();
         TestNode[] assignments = test_list(false);
-        Newline();
+        tokens.Newline();
         TypeNode[] type_array = var_type.toArray(new TypeNode[0]);
         NameNode[] vars_array = vars.toArray(new NameNode[0]);
         boolean is_declared = false;
@@ -640,11 +481,11 @@ public class Parser {
             if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
                 OperatorTypeNode op = new OperatorTypeNode(tokens.getFirst().sequence);
                 tokens.nextToken();
-                Newline();
+                tokens.Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(op));
             } else if (tokens.tokenIs(TokenType.NAME)) {
                 NameNode var = left_name();
-                Newline();
+                tokens.Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(var));
             } else {
                 throw new ParserException("Operator equivalence must be done to another var or op");
@@ -749,7 +590,7 @@ public class Parser {
         TypedArgumentListNode args = fn_args();
         TypeNode[] retval = fn_retval();
         StatementBodyNode body = fn_body();
-        Newline();
+        tokens.Newline();
         return new FunctionDefinitionNode(name, args, retval, body);
     }
 
@@ -770,7 +611,7 @@ public class Parser {
             tokens.nextToken();
             else_stmt = fn_body();
         }
-        Newline();
+        tokens.Newline();
         return new IfStatementNode(test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
     }
 
@@ -786,7 +627,7 @@ public class Parser {
             tokens.nextToken();
             nobreak = new StatementBodyNode(fn_body());
         }
-        Newline();
+        tokens.Newline();
         return new ForStatementNode(vars, iterables, body, nobreak);
     }
 
@@ -796,7 +637,7 @@ public class Parser {
         StatementBodyNode body = fn_body();
         mustToken("Do statements must have a corresponding while", true, "while");
         TestNode conditional = test();
-        Newline();
+        tokens.Newline();
         return new DoStatementNode(body, conditional);
     }
 
@@ -810,7 +651,7 @@ public class Parser {
             tokens.nextToken();
             nobreak = new StatementBodyNode(fn_body());
         }
-        Newline();
+        tokens.Newline();
         return new DotimesStatementNode(iterations, body, nobreak);
     }
 
@@ -821,7 +662,7 @@ public class Parser {
         TypedArgumentListNode args = fn_args();
         TypeNode[] retval = fn_retval();
         StatementBodyNode body = fn_body();
-        Newline();
+        tokens.Newline();
         return new MethodDefinitionNode(name, args, retval, body);
     }
 
@@ -835,7 +676,7 @@ public class Parser {
             tokens.nextToken();
             nobreak = new StatementBodyNode(fn_body());
         }
-        Newline();
+        tokens.Newline();
         return new WhileStatementNode(cond, body, nobreak);
     }
 
@@ -846,7 +687,7 @@ public class Parser {
             throw new ParserException("Empty import statements are illegal");
         }
         DottedVariableNode[] imports = var_list(false);
-        Newline();
+        tokens.Newline();
         return new ImportStatementNode(imports);
     }
 
@@ -857,7 +698,7 @@ public class Parser {
             throw new ParserException("Empty export statements are illegal");
         }
         DottedVariableNode[] exports = var_list(false);
-        Newline();
+        tokens.Newline();
         return new ExportStatementNode(exports);
     }
 
@@ -873,7 +714,7 @@ public class Parser {
             throw new ParserException("Empty typeget statements are illegal");
         }
         DottedVariableNode[] typegets = var_list(false);
-        Newline();
+        tokens.Newline();
         return new TypegetStatementNode(typegets, from);
     }
 
@@ -894,7 +735,7 @@ public class Parser {
             tokens.nextToken();
             cond = test();
         }
-        Newline();
+        tokens.Newline();
         return new BreakStatementNode(loops, cond);
     }
 
@@ -906,7 +747,7 @@ public class Parser {
             tokens.nextToken();
             cond = test();
         }
-        Newline();
+        tokens.Newline();
         return new ContinueStatementNode(cond);
     }
 
@@ -914,8 +755,8 @@ public class Parser {
         assert tokens.tokenIs("return");
         tokens.nextToken();
         boolean is_conditional = false;
-        if (tokens.tokenIs("(") && tokens.getToken(sizeOfBrace(0) + 1).is("if")
-                && !lineContains("else")) {
+        if (tokens.tokenIs("(") && tokens.getToken(tokens.sizeOfBrace(0) + 1).is("if")
+                && !tokens.lineContains("else")) {
             tokens.nextToken();
             is_conditional = true;
         }
@@ -930,7 +771,7 @@ public class Parser {
             mustToken("Expected ), got " + tokens.getFirst(), true, ")");
             cond = test();
         }
-        Newline();
+        tokens.Newline();
         return new ReturnStatementNode(returned, cond);
     }
 
@@ -980,7 +821,7 @@ public class Parser {
     private ClassStatementNode descriptor_var(ArrayList<DescriptorNode> descriptors) {
         assert tokens.tokenIs(TokenType.NAME);
         ClassStatementNode stmt;
-        if (lineContains(TokenType.ASSIGN)) {
+        if (tokens.lineContains(TokenType.ASSIGN)) {
             stmt = decl_assignment();
         } else {
             stmt = declaration();
@@ -991,7 +832,7 @@ public class Parser {
 
     private TypedArgumentListNode fn_args() {
         assert tokens.tokenIs("(");
-        boolean has_posArgs = braceContains("/");
+        boolean has_posArgs = tokens.braceContains("/");
         mustToken("Argument lists must start with an open-paren", true, "(");
         ArrayList<TypedArgumentNode> posArgs = new ArrayList<>();
         ArrayList<TypedArgumentNode> args = new ArrayList<>();
@@ -1019,7 +860,7 @@ public class Parser {
                 continue;
             }
             which_args.add(typed_argument());
-            passNewlines();
+            tokens.passNewlines();
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
                 continue;
@@ -1037,7 +878,7 @@ public class Parser {
         ArrayList<BaseNode> statements = new ArrayList<>();
         while (!tokens.tokenIs("}")) {
             statements.add(statement());
-            passNewlines();
+            tokens.passNewlines();
         }
         tokens.nextToken();
         return new StatementBodyNode(statements.toArray(new BaseNode[0]));
@@ -1049,10 +890,10 @@ public class Parser {
         ArrayList<ClassStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs("}")) {
             statements.add(class_statement());
-            passNewlines();
+            tokens.passNewlines();
         }
         tokens.nextToken();
-        Newline();
+        tokens.Newline();
         return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
     }
 
@@ -1136,9 +977,9 @@ public class Parser {
         // X Assignment
         // X Assignment to function call
         // Lone expression
-        if (lineContains(TokenType.ASSIGN)) {
+        if (tokens.lineContains(TokenType.ASSIGN)) {
             throw new ParserException("Illegal assignment");
-        } else if (contains(ignore_newline, TokenType.AUG_ASSIGN)) {
+        } else if (tokens.contains(ignore_newline, TokenType.AUG_ASSIGN)) {
             throw new ParserException("Illegal augmented assignment");
         } else {
             LinkedList<TestNode> nodes = new LinkedList<>();
@@ -1295,7 +1136,7 @@ public class Parser {
                 tokens.nextToken(true);
                 continue;
             }
-            passNewlines();
+            tokens.passNewlines();
             if (!tokens.tokenIs("]")) {
                 throw new ParserException("Comma must separate subtypes");
             }
@@ -1337,8 +1178,8 @@ public class Parser {
     }
 
     private TestNode[] test_list(boolean ignore_newlines) {
-        if (tokens.tokenIs("(") && !braceContains("in") && !braceContains("for")) {
-            int brace_size = sizeOfBrace(0);
+        if (tokens.tokenIs("(") && !tokens.braceContains("in") && !tokens.braceContains("for")) {
+            int brace_size = tokens.sizeOfBrace(0);
             if (!tokens.getToken(brace_size).is(TokenType.COMMA)) {
                 tokens.nextToken();
                 TestNode[] vars = test_list(true);
@@ -1424,12 +1265,12 @@ public class Parser {
             set_args = fn_args();
             set = fn_body();
         }
-        passNewlines();
+        tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Only set and get are allowed in context statements");
         }
         tokens.nextToken();
-        Newline();
+        tokens.Newline();
         return new PropertyDefinitionNode(name, get, set_args, set);
     }
 
@@ -1547,9 +1388,9 @@ public class Parser {
     private DottedVariableNode[] var_list(boolean ignore_newlines) {
         LinkedList<DottedVariableNode> variables = new LinkedList<>();
         if (ignore_newlines) {
-            passNewlines();
+            tokens.passNewlines();
         }
-        if (tokens.tokenIs("(") && !braceContains("in") && !braceContains("for")) {
+        if (tokens.tokenIs("(") && !tokens.braceContains("in", "for")) {
             tokens.nextToken();
             DottedVariableNode[] vars = var_list(true);
             if (!tokens.tokenIs(")")) {
@@ -1577,9 +1418,9 @@ public class Parser {
     private VariableNode[] name_list(boolean ignore_newlines) {
         LinkedList<VariableNode> variables = new LinkedList<>();
         if (ignore_newlines) {
-            passNewlines();
+            tokens.passNewlines();
         }
-        if (tokens.tokenIs("(") && !braceContains("in") && !braceContains("for")) {
+        if (tokens.tokenIs("(") && !tokens.braceContains("in", "for")) {
             tokens.nextToken();
             VariableNode[] vars = name_list(true);
             if (!tokens.tokenIs(")")) {
@@ -1650,19 +1491,19 @@ public class Parser {
         if (tokens.tokenIs("exit")) {
             exit = fn_body();
         }
-        passNewlines();
+        tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Context manager must end with close curly brace");
         }
         tokens.nextToken();
-        Newline();
+        tokens.Newline();
         if (enter.isEmpty()) {
             enter = new StatementBodyNode();
         }
         if (exit.isEmpty()) {
             exit = new StatementBodyNode();
         }
-        Newline();
+        tokens.Newline();
         return new ContextDefinitionNode(name, enter, exit);
     }
 
@@ -1695,7 +1536,7 @@ public class Parser {
         if (except.isEmpty() && finally_stmt.isEmpty()) {
             throw new ParserException("Try statement must either have an except or finally clause");
         }
-        Newline();
+        tokens.Newline();
         return new TryStatementNode(body, except, excepted, as_var, else_stmt, finally_stmt);
     }
 
@@ -1713,7 +1554,7 @@ public class Parser {
         }
         VariableNode[] vars = name_list( false);
         StatementBodyNode body = fn_body();
-        Newline();
+        tokens.Newline();
         return new WithStatementNode(managed.toArray(new TestNode[0]), vars, body);
     }
 
@@ -1721,7 +1562,7 @@ public class Parser {
         assert tokens.tokenIs("assert");
         tokens.nextToken();
         TestNode assertion = test();
-        Newline();
+        tokens.Newline();
         return new AssertStatementNode(assertion);
     }
 
@@ -1729,7 +1570,7 @@ public class Parser {
         assert tokens.tokenIs("del");
         tokens.nextToken();
         TestNode deletion = test();
-        Newline();
+        tokens.Newline();
         return new DeleteStatementNode(deletion);
     }
 
@@ -1758,17 +1599,17 @@ public class Parser {
         assert tokens.tokenIs("raise");
         tokens.nextToken();
         TestNode raised = test();
-        Newline();
+        tokens.Newline();
         return new RaiseStatementNode(raised);
     }
 
     private ImportExportNode left_from() {
         assert tokens.tokenIs("from");
-        if (lineContains("import")) {
+        if (tokens.lineContains("import")) {
             return import_stmt();
-        } else if (lineContains("export")) {
+        } else if (tokens.lineContains("export")) {
             return export_stmt();
-        } else if (lineContains("typeget")) {
+        } else if (tokens.lineContains("typeget")) {
             return typeget_stmt();
         } else {
             throw new ParserException("from does not begin a statement");
@@ -1782,7 +1623,7 @@ public class Parser {
         assert tokens.tokenIs("as");
         tokens.nextToken();
         TypeNode type = type();
-        Newline();
+        tokens.Newline();
         return new TypedefStatementNode(name, type);
     }
 
@@ -1800,7 +1641,7 @@ public class Parser {
             VariableNode var = new VariableNode();
             int offset = tokens.tokenIs("*", "**") ? 1 : 0;
             if (tokens.getToken(offset).is(TokenType.NAME)
-                    && tokens.getToken(sizeOfVariable(offset)).is("=")) {
+                    && tokens.getToken(tokens.sizeOfVariable(offset)).is("=")) {
                 var = name();
                 tokens.nextToken(true);
             }
@@ -1847,7 +1688,7 @@ public class Parser {
     }
 
     private SimpleStatementNode inc_or_dec() {
-        Token amount = tokens.getToken(sizeOfVariable());
+        Token amount = tokens.getToken(tokens.sizeOfVariable());
         if (amount.is("++")) {
             return increment();
         } else if (amount.is("--")) {
@@ -1948,10 +1789,10 @@ public class Parser {
         ArrayList<InterfaceStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs("}")) {
             statements.add(interface_stmt());
-            passNewlines();
+            tokens.passNewlines();
         }
         tokens.nextToken();
-        Newline();
+        tokens.Newline();
         return new InterfaceBodyNode(statements.toArray(new InterfaceStatementNode[0]));
     }
 
@@ -2057,7 +1898,7 @@ public class Parser {
                     name = new FunctionCallNode(name, fn_call_args());
                     break;
                 case "[":
-                    if (braceContains(":")) {
+                    if (tokens.braceContains(":")) {
                         name = new IndexNode(name, slice());
                     } else {
                         name = new IndexNode(name, literal().getBuilders());
