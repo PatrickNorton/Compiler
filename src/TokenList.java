@@ -10,10 +10,6 @@ public class TokenList implements Iterable<Token> {
         this.tokens = tokens;
     }
 
-    public LinkedList<Token> getTokens() {
-        return tokens;
-    }
-
     public Token getToken(int index) {
         return tokens.get(index);
     }
