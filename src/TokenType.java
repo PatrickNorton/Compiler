@@ -15,7 +15,7 @@ public enum TokenType {
     KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
             +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
-            +"|raise|typedef|some|interface|cast(ed)?|to)\\b"),
+            +"|raise|typedef|some|interface|casted)\\b"),
     // Matches open braces
     OPEN_BRACE("^[\\[({]"),
     // Matches close braces
@@ -32,7 +32,7 @@ public enum TokenType {
     // Assignment, and dynamic assignment (:=)
     ASSIGN("^:?="),
     // String literals, including f-strings
-    STRING("^[refb]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\""),
+    STRING("^([efb]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")"),
     // Boolean operators
     BOOL_OP("^\\b(and|or|not|xor)\\b"),
     // Numbers, from 123 to 0xab4f6.245
