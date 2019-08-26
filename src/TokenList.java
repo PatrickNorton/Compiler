@@ -160,7 +160,7 @@ public class TokenList implements Iterable<Token> {
     }
 
     public void passNewlines() {
-        while (isEmpty() && tokenIs(TokenType.NEWLINE)) {
+        while (!isEmpty() && tokenIs(TokenType.NEWLINE)) {
             nextToken(false);
         }
     }
