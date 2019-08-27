@@ -657,7 +657,7 @@ public class Parser {
         if (lookahead.is(TokenType.ASSIGN)) {
             NextToken();
             if (lookahead.is(TokenType.OPERATOR_SP)) {
-                OperatorTypeNode op = new OperatorTypeNode(lookahead.sequence);
+                OperatorTypeNode op = OperatorTypeNode.find_op(op_code);
                 NextToken();
                 Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(op));
@@ -724,7 +724,7 @@ public class Parser {
             if (exp_size - i >= 0) {
                 val = val.add(base.pow(exp_size - i).multiply(digit_val));
             } else {
-                val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size), RoundingMode.UNNECESSARY).multiply(digit_val));
+                val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size)).multiply(digit_val));
             }
         }
         return val;
@@ -736,7 +736,7 @@ public class Parser {
         if (lookahead.is("(")) {
             return new OperatorNode(op_code, fn_args());
         } else {
-            return new OperatorTypeNode(op_code);
+            return OperatorTypeNode.find_op(op_code);
         }
     }
 
@@ -1240,7 +1240,7 @@ public class Parser {
                 if (((OperatorNode) node).getOperands().length != 0) {
                     continue;
                 }
-                String operator = ((OperatorNode) node).getOperator();
+                String operator = ((OperatorNode) node).getOperator().name;
                 if (Arrays.asList(expr).contains(operator)) {
                     if (operator.matches("\\+\\+|--|not|~")) {
                         parseUnaryOp(nodes, nodeNumber);
@@ -1852,7 +1852,7 @@ public class Parser {
             throw new ParserException("Expected an in, got "+lookahead);
         }
         OperatorNode in_stmt = (OperatorNode) contained;
-        if (!in_stmt.getOperator().equals("in")) {
+        if (in_stmt.getOperator() != OperatorTypeNode.IN) {
             throw new ParserException("Expected an in, got "+lookahead);
         }
         TestNode[] operands = in_stmt.getOperands();
@@ -2044,7 +2044,7 @@ public class Parser {
             if (lookahead.is(TokenType.OPERATOR_SP)) {
                 String op_type = lookahead.sequence.replaceFirst("operator *",  "");
                 NextToken();
-                postDot.add(new SpecialOpNameNode(new OperatorTypeNode(op_type)));
+                postDot.add(new SpecialOpNameNode(OperatorTypeNode.find_op(op_type)));
                 break;
             }
             postDot.add(var_braced());

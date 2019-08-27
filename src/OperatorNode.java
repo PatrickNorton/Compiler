@@ -1,23 +1,23 @@
 public class OperatorNode implements SubTestNode {
-    private String operator;
+    private OperatorTypeNode operator;
     private TestNode[] operands;
 
     public OperatorNode(String operator, TestNode... operands) {
-        this.operator = operator;
+        this.operator = OperatorTypeNode.find_op(operator);
         this.operands = operands;
     }
 
     public OperatorNode(String operator, TypedArgumentListNode operands) {
-        this.operator = operator;
+        this.operator = OperatorTypeNode.find_op(operator);
         this.operands = operands.getArgs();
     }
 
     public OperatorNode(OperatorTypeNode operator, TestNode... operands) {
-        this.operator = operator.getName();
+        this.operator = operator;
         this.operands = operands;
     }
 
-    public String getOperator() {
+    public OperatorTypeNode getOperator() {
         return operator;
     }
 
