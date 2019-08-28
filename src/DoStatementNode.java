@@ -16,7 +16,7 @@ public class DoStatementNode implements FlowStatementNode {
         return conditional;
     }
 
-    static DoStatementNode parse(TokenList tokens) {  // REFACTORED: DoStatementNode.parse
+    static DoStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("do");
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);

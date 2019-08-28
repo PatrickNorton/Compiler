@@ -15,7 +15,7 @@ public class BreakStatementNode implements SimpleFlowNode {
         return cond;
     }
 
-    static BreakStatementNode parse(TokenList tokens) {  // REFACTORED: BreakStatementNode.parse
+    static BreakStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("break");
         tokens.nextToken();
         int loops;

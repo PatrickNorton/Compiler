@@ -15,7 +15,7 @@ public class SomeStatementNode implements SubTestNode {
         return container;
     }
 
-    static SomeStatementNode parse(TokenList tokens) {  // REFACTORED: SomeStatementNode.parse
+    static SomeStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("some");
         tokens.nextToken();
         TestNode contained = TestNode.parse(tokens);

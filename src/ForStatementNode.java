@@ -30,7 +30,7 @@ public class ForStatementNode implements FlowStatementNode {
         return nobreak;
     }
 
-    static ForStatementNode parse(TokenList tokens) {  // REFACTORED: ForStatementNode.parse
+    static ForStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("for");
         tokens.nextToken();
         TypedVariableNode[] vars = TypedVariableNode.parseForVars(tokens);

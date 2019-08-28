@@ -9,7 +9,7 @@ public class DecrementNode implements SimpleStatementNode {
         return variable;
     }
 
-    static DecrementNode parse(TokenList tokens) {  // REFACTORED: DecrementNode.parse
+    static DecrementNode parse(TokenList tokens) {
         NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs("--")) {
             throw new RuntimeException("Expected --, got "+tokens.getFirst());
