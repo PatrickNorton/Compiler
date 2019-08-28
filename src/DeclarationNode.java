@@ -25,7 +25,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
         this.descriptors = nodes;
     }
 
-    static DeclarationNode parse(TokenList tokens) {  // REFACTORED: DeclarationNode.parse
+    static DeclarationNode parse(TokenList tokens) {
         TypeNode type = TypeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);
         return new DeclarationNode(type, var);

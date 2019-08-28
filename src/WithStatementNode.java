@@ -24,7 +24,7 @@ public class WithStatementNode implements ComplexStatementNode {
         return body;
     }
 
-    static WithStatementNode parse(TokenList tokens) {  // REFACTORED: WithStatementNode.parse
+    static WithStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("with");
         tokens.nextToken();
         LinkedList<TestNode> managed = new LinkedList<>();

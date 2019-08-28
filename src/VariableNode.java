@@ -34,7 +34,7 @@ public class VariableNode implements NameNode {
         return new VariableNode("...");
     }
 
-    static VariableNode[] parseList(TokenList tokens, boolean ignore_newlines) {  // REFACTORED: VariableNode.parseList
+    static VariableNode[] parseList(TokenList tokens, boolean ignore_newlines) {
         LinkedList<VariableNode> variables = new LinkedList<>();
         if (ignore_newlines) {
             tokens.passNewlines();

@@ -32,7 +32,7 @@ public class ContextDefinitionNode implements DefinitionNode {
         return enter;
     }
 
-    static ContextDefinitionNode parse(TokenList tokens) {  // REFACTORED: ContextDefinitionNode.parse
+    static ContextDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs("context");
         tokens.nextToken();
         VariableNode name = new VariableNode();

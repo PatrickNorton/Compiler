@@ -15,7 +15,7 @@ public class TypedefStatementNode implements SimpleStatementNode {
         return type;
     }
 
-    static TypedefStatementNode parse(TokenList tokens) {  // REFACTORED: TypedefStatementNode.parse
+    static TypedefStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("typedef");
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
