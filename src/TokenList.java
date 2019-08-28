@@ -219,4 +219,17 @@ public class TokenList implements Iterable<Token> {
     public int size() {
         return tokens.size();
     }
+
+    static String matchingBrace(String brace) {
+        switch (brace) {
+            case "(":
+                return ")";
+            case "[":
+                return "]";
+            case "{":
+                return "}";
+            default:
+                throw new RuntimeException("Unknown brace "+brace);
+        }
+    }
 }

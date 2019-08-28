@@ -27,4 +27,15 @@ public class FunctionDefinitionNode implements DefinitionNode {
     public StatementBodyNode getBody() {
         return body;
     }
+
+    static FunctionDefinitionNode parse(TokenList tokens) {
+        assert tokens.tokenIs("func");
+        tokens.nextToken();
+        VariableNode name = VariableNode.parse(tokens);
+        TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
+        TypeNode[] retval = TypeNode.parseRetVal(tokens);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        tokens.Newline();
+        return new FunctionDefinitionNode(name, args, retval, body);
+    }
 }

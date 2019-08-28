@@ -32,4 +32,23 @@ public class TypedArgumentNode implements SubTestNode {
     public String getVararg_type() {
         return vararg_type;
     }
+
+    static TypedArgumentNode parse(TokenList tokens) {
+        boolean is_vararg = tokens.tokenIs("*", "**");
+        String vararg_type;
+        if (tokens.tokenIs("*", "**")) {
+            vararg_type = tokens.getFirst().sequence;
+            tokens.nextToken();
+        } else {
+            vararg_type = "";
+        }
+        TypeNode type = TypeNode.parse(tokens);
+        VariableNode var = VariableNode.parse(tokens);
+        TestNode default_value = null;
+        if (tokens.tokenIs("=")) {
+            tokens.nextToken();
+            default_value = TestNode.parse(tokens, true);
+        }
+        return new TypedArgumentNode(type, var, default_value, is_vararg, vararg_type);
+    }
 }
