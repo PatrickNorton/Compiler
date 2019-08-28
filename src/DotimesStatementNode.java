@@ -21,4 +21,18 @@ public class DotimesStatementNode implements FlowStatementNode {
     public StatementBodyNode getNobreak() {
         return nobreak;
     }
+
+    static DotimesStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("dotimes");
+        tokens.nextToken();
+        TestNode iterations = TestNode.parse(tokens);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        StatementBodyNode nobreak = new StatementBodyNode();
+        if (tokens.tokenIs("nobreak")) {
+            tokens.nextToken();
+            nobreak = StatementBodyNode.parse(tokens);
+        }
+        tokens.Newline();
+        return new DotimesStatementNode(iterations, body, nobreak);
+    }
 }

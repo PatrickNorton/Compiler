@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 public class Tokenizer {
     private LinkedList<Token> tokens;
 
-    public Tokenizer() {
+    private Tokenizer() {
         tokens = new LinkedList<>();
     }
 
-    public void tokenize(String str) {
+    private void tokenize(String str) {
         String s = str;
         tokens.clear();
         while (!s.equals("")) {

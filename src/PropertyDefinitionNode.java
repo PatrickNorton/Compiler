@@ -48,4 +48,29 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     public StatementBodyNode getBody() {
         return get;
     }
+
+    static PropertyDefinitionNode parse(TokenList tokens) {
+        VariableNode name = new VariableNode();
+        if (!tokens.tokenIs("{")) {
+            name = VariableNode.parse(tokens);
+        }
+        tokens.nextToken(true);
+        StatementBodyNode get = new StatementBodyNode();
+        StatementBodyNode set = new StatementBodyNode();
+        TypedArgumentListNode set_args = new TypedArgumentListNode();
+        if (tokens.tokenIs("get")) {
+            get = StatementBodyNode.parse(tokens);
+        }
+        if (tokens.tokenIs("set")) {
+            set_args = TypedArgumentListNode.parse(tokens);
+            set = StatementBodyNode.parse(tokens);
+        }
+        tokens.passNewlines();
+        if (!tokens.tokenIs("}")) {
+            throw new ParserException("Only set and get are allowed in context statements");
+        }
+        tokens.nextToken();
+        tokens.Newline();
+        return new PropertyDefinitionNode(name, get, set_args, set);
+    }
 }
