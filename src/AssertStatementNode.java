@@ -9,7 +9,7 @@ public class AssertStatementNode implements SimpleStatementNode {
         return assertion;
     }
 
-    static AssertStatementNode parse(TokenList tokens) {  // REFACTORED: AssertStatementNode.parse
+    static AssertStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("assert");
         tokens.nextToken();
         TestNode assertion = TestNode.parse(tokens);

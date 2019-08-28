@@ -12,7 +12,7 @@ public class InterfaceBodyNode extends StatementBodyNode {
         return statements;
     }
 
-    static InterfaceBodyNode parse(TokenList tokens) {  // REFACTORED: InterfaceBodyNode.parse
+    static InterfaceBodyNode parse(TokenList tokens) {
         if (!tokens.tokenIs("{")) {
             throw new ParserException("The body of a class must be enclosed in curly brackets");
         }

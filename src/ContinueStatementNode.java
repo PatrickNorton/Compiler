@@ -9,7 +9,7 @@ public class ContinueStatementNode implements SimpleFlowNode {
         return cond;
     }
 
-    static ContinueStatementNode parse(TokenList tokens) {  // REFACTORED: ContinueStatementNode.parse
+    static ContinueStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("continue");
         tokens.nextToken();
         TestNode cond = null;

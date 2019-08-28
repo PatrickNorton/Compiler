@@ -53,7 +53,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         return new VariableNode(op_code);
     }
 
-    static OperatorDefinitionNode parse(TokenList tokens) {  // REFACTORED: OperatorDefinitionNode.parse
+    static OperatorDefinitionNode parse(TokenList tokens) {
         String op_code = tokens.getFirst().sequence.replaceFirst("operator *", "");
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.ASSIGN)) {

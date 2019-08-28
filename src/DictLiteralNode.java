@@ -17,7 +17,7 @@ public class DictLiteralNode implements SubTestNode {
         return values;
     }
 
-    static DictLiteralNode parse(TokenList tokens) {  // REFACTORED: DictLiteralNode.parse
+    static DictLiteralNode parse(TokenList tokens) {
         assert tokens.tokenIs("{");
         tokens.nextToken(true);
         LinkedList<TestNode> keys = new LinkedList<>();

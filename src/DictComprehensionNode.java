@@ -27,7 +27,7 @@ public class DictComprehensionNode implements SubTestNode {
         return looped;
     }
 
-    static DictComprehensionNode parse(TokenList tokens) {  // REFACTORED: DictComprehensionNode.parse
+    static DictComprehensionNode parse(TokenList tokens) {
         assert tokens.tokenIs("{");
         tokens.nextToken(true);
         TestNode key = TestNode.parse(tokens, true);

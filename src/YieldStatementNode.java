@@ -17,7 +17,7 @@ public class YieldStatementNode implements SimpleStatementNode {
         return is_from;
     }
 
-    static YieldStatementNode parse(TokenList tokens) {  // REFACTORED: YieldStatementNode.parse
+    static YieldStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("yield");
         tokens.nextToken();
         boolean is_from = tokens.tokenIs("from");
