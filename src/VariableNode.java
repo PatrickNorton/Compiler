@@ -19,6 +19,14 @@ public class VariableNode implements NameNode {
         return this.name.isEmpty();
     }
 
+    static VariableNode parseOnToken(TokenList tokens, TokenType... types) {
+        if (tokens.tokenIs(types)) {
+            return VariableNode.parse(tokens);
+        } else {
+            return new VariableNode();
+        }
+    }
+
     static VariableNode parse(TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw new ParserException("Expected name. got " + tokens.getFirst());

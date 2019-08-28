@@ -15,6 +15,15 @@ public class StatementBodyNode implements BaseNode {
         return statements.length > 0;
     }
 
+    static StatementBodyNode parseOnToken(TokenList tokens, String... types) {
+        if (tokens.tokenIs(types)) {
+            tokens.nextToken();
+            return StatementBodyNode.parse(tokens);
+        } else {
+            return new StatementBodyNode();
+        }
+    }
+
     static StatementBodyNode parse(TokenList tokens) {
         if (!tokens.tokenIs("{")) {
             throw new ParserException("The body of a function must be enclosed in curly brackets");

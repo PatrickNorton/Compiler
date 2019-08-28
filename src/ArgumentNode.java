@@ -40,7 +40,7 @@ public class ArgumentNode implements BaseNode {
         while (true) {
             VariableNode var = new VariableNode();
             int offset = tokens.tokenIs("*", "**") ? 1 : 0;
-            if (tokens.getToken(offset).is(TokenType.NAME)
+            if (tokens.tokenIs(offset, TokenType.NAME)
                     && tokens.getToken(tokens.sizeOfVariable(offset)).is("=")) {
                 var = VariableNode.parse(tokens);
                 tokens.nextToken(true);
