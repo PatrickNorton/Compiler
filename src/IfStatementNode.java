@@ -42,11 +42,7 @@ public class IfStatementNode implements FlowStatementNode {
             StatementBodyNode elif_body = StatementBodyNode.parse(tokens);
             elifs.add(new ElifStatementNode(elif_test, elif_body));
         }
-        StatementBodyNode else_stmt = new StatementBodyNode();
-        if (tokens.tokenIs("else")) {
-            tokens.nextToken();
-            else_stmt = StatementBodyNode.parse(tokens);
-        }
+        StatementBodyNode else_stmt = StatementBodyNode.parseOnToken(tokens, "else");
         tokens.Newline();
         return new IfStatementNode(test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
     }
