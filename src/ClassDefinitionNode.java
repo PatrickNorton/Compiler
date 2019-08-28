@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private TypeNode name;
     private TypeNode[] superclasses;
@@ -34,5 +36,20 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
 
     public DescriptorNode[] getDescriptors() {
         return descriptors;
+    }
+
+    static ClassDefinitionNode parse(TokenList tokens) {
+        assert tokens.tokenIs("class");
+        tokens.nextToken();
+        if (!tokens.tokenIs(TokenType.NAME) && !tokens.tokenIs("from")) {
+            throw new ParserException("class keyword must be followed by class name");
+        }
+        TypeNode name = TypeNode.parse(tokens);
+        LinkedList<TypeNode> superclasses = new LinkedList<>();
+        while (tokens.tokenIs("from")) {
+            tokens.nextToken();
+            superclasses.add(TypeNode.parse(tokens));
+        }
+        return new ClassDefinitionNode(name, superclasses.toArray(new TypeNode[0]), ClassBodyNode.parse(tokens));
     }
 }

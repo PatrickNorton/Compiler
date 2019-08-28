@@ -14,4 +14,12 @@ public class LambdaNode implements SubTestNode {
     public TypedArgumentListNode getArgs() {
         return args;
     }
+
+    static LambdaNode parse(TokenList tokens) {
+        assert tokens.tokenIs("lambda");
+        tokens.nextToken();
+        TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        return new LambdaNode(args, body);
+    }
 }

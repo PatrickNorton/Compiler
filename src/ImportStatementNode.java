@@ -19,4 +19,15 @@ public class ImportStatementNode implements ImportExportNode {
     public DottedVariableNode getFrom() {
         return from;
     }
+
+    static ImportStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("import");
+        tokens.nextToken();
+        if (tokens.tokenIs(TokenType.NEWLINE)) {
+            throw new ParserException("Empty import statements are illegal");
+        }
+        DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
+        tokens.Newline();
+        return new ImportStatementNode(imports);
+    }
 }

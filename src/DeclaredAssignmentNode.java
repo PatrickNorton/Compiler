@@ -36,4 +36,12 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
     }
+
+    static DeclaredAssignmentNode parse(TokenList tokens) {
+        AssignStatementNode assign = AssignStatementNode.parse(tokens);
+        if (assign instanceof DeclaredAssignmentNode) {
+            return (DeclaredAssignmentNode) assign;
+        }
+        throw new ParserException("Expected declared assignment, got normal assignment");
+    }
 }
