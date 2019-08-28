@@ -71,12 +71,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
                 throw new ParserException("Operator equivalence must be done to another var or op");
             }
         }
-        TypedArgumentListNode args;
-        if (tokens.tokenIs("(")) {
-            args = TypedArgumentListNode.parse(tokens);
-        } else {
-            args = new TypedArgumentListNode();
-        }
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
         TypeNode[] retval;
         if (tokens.tokenIs(TokenType.ARROW)) {
             retval = TypeNode.parseRetVal(tokens);

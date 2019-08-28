@@ -40,11 +40,7 @@ public class ForStatementNode implements FlowStatementNode {
         tokens.nextToken();
         TestNode[] iterables = TestNode.parseForIterables(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        StatementBodyNode nobreak = new StatementBodyNode();
-        if (tokens.tokenIs("nobreak")) {
-            tokens.nextToken();
-            nobreak = StatementBodyNode.parse(tokens);
-        }
+        StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
         tokens.Newline();
         return new ForStatementNode(vars, iterables, body, nobreak);
     }

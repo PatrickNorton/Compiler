@@ -31,6 +31,14 @@ public class TypedArgumentListNode implements BaseNode {
         return normalArgs[index];
     }
 
+    static TypedArgumentListNode parseOnToken( TokenList tokens, String... tester) {
+        if (tokens.tokenIs(tester)) {
+            return parse(tokens);
+        } else {
+            return new TypedArgumentListNode();
+        }
+    }
+
     static TypedArgumentListNode parse(TokenList tokens) {
         assert tokens.tokenIs("(");
         boolean has_posArgs = tokens.braceContains("/");

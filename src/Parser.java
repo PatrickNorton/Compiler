@@ -14,8 +14,12 @@ public class Parser {
 
     private TokenList tokens;
 
-    public Parser(LinkedList<Token> tokens) {
+    private Parser(LinkedList<Token> tokens) {
         this.tokens = new TokenList(tokens);
+    }
+
+    public TokenList getTokens() {
+        return tokens;
     }
 
     public static TopNode parse(LinkedList<Token> tokens) {

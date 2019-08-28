@@ -35,34 +35,18 @@ public class ContextDefinitionNode implements DefinitionNode {
     static ContextDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs("context");
         tokens.nextToken();
-        VariableNode name = new VariableNode();
-        if (tokens.tokenIs(TokenType.NAME)) {
-            name = VariableNode.parse(tokens);
-        }
+        VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
         if (!tokens.tokenIs("{")) {
             throw new ParserException("Context managers must be followed by a curly brace");
         }
         tokens.nextToken(true);
-        StatementBodyNode enter = new StatementBodyNode();
-        StatementBodyNode exit = new StatementBodyNode();
-        if (tokens.tokenIs("enter")) {
-            enter = StatementBodyNode.parse(tokens);
-        }
-        if (tokens.tokenIs("exit")) {
-            exit = StatementBodyNode.parse(tokens);
-        }
+        StatementBodyNode enter = StatementBodyNode.parseOnToken(tokens, "enter");
+        StatementBodyNode exit = StatementBodyNode.parseOnToken(tokens, "exit");
         tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Context manager must end with close curly brace");
         }
         tokens.nextToken();
-        tokens.Newline();
-        if (enter.isEmpty()) {
-            enter = new StatementBodyNode();
-        }
-        if (exit.isEmpty()) {
-            exit = new StatementBodyNode();
-        }
         tokens.Newline();
         return new ContextDefinitionNode(name, enter, exit);
     }
