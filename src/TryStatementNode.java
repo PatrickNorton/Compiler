@@ -40,4 +40,37 @@ public class TryStatementNode implements ComplexStatementNode {
     public StatementBodyNode getFinally_stmt() {
         return finally_stmt;
     }
+
+    static TryStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("try");
+        tokens.nextToken();
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        StatementBodyNode except = new StatementBodyNode();
+        VariableNode[] excepted = new VariableNode[0];
+        VariableNode as_var = new VariableNode();
+        StatementBodyNode else_stmt = new StatementBodyNode();
+        StatementBodyNode finally_stmt = new StatementBodyNode();
+        if (tokens.tokenIs("except")) {
+            tokens.nextToken();
+            excepted = VariableNode.parseList(tokens,  false);
+            if (tokens.tokenIs("as")) {
+                tokens.nextToken();
+                as_var = VariableNode.parse(tokens);
+            }
+            except = StatementBodyNode.parse(tokens);
+            if (tokens.tokenIs("else")) {
+                tokens.nextToken();
+                else_stmt = StatementBodyNode.parse(tokens);
+            }
+        }
+        if (tokens.tokenIs("finally")) {
+            tokens.nextToken();
+            finally_stmt = StatementBodyNode.parse(tokens);
+        }
+        if (except.isEmpty() && finally_stmt.isEmpty()) {
+            throw new ParserException("Try statement must either have an except or finally clause");
+        }
+        tokens.Newline();
+        return new TryStatementNode(body, except, excepted, as_var, else_stmt, finally_stmt);
+    }
 }

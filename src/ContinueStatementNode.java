@@ -8,4 +8,16 @@ public class ContinueStatementNode implements SimpleFlowNode {
     public TestNode getCond() {
         return cond;
     }
+
+    static ContinueStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("continue");
+        tokens.nextToken();
+        TestNode cond = null;
+        if (tokens.tokenIs("if")) {
+            tokens.nextToken();
+            cond = TestNode.parse(tokens);
+        }
+        tokens.Newline();
+        return new ContinueStatementNode(cond);
+    }
 }

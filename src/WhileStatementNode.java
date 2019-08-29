@@ -21,4 +21,14 @@ public class WhileStatementNode implements ComplexStatementNode {
     public StatementBodyNode getNobreak() {
         return nobreak;
     }
+
+    static WhileStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("while");
+        tokens.nextToken();
+        TestNode cond = TestNode.parse(tokens);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
+        tokens.Newline();
+        return new WhileStatementNode(cond, body, nobreak);
+    }
 }

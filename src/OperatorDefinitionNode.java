@@ -52,4 +52,33 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     public VariableNode getName() {
         return new VariableNode(op_code);
     }
+
+    static OperatorDefinitionNode parse(TokenList tokens) {
+        String op_code = tokens.getFirst().sequence.replaceFirst("operator *", "");
+        tokens.nextToken();
+        if (tokens.tokenIs(TokenType.ASSIGN)) {
+            tokens.nextToken();
+            if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
+                OperatorTypeNode op = new OperatorTypeNode(tokens.getFirst().sequence);
+                tokens.nextToken();
+                tokens.Newline();
+                return new OperatorDefinitionNode(op_code, new StatementBodyNode(op));
+            } else if (tokens.tokenIs(TokenType.NAME)) {
+                NameNode var = NameNode.parse(tokens);
+                tokens.Newline();
+                return new OperatorDefinitionNode(op_code, new StatementBodyNode(var));
+            } else {
+                throw new ParserException("Operator equivalence must be done to another var or op");
+            }
+        }
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
+        TypeNode[] retval;
+        if (tokens.tokenIs(TokenType.ARROW)) {
+            retval = TypeNode.parseRetVal(tokens);
+        } else {
+            retval = new TypeNode[0];
+        }
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        return new OperatorDefinitionNode(op_code, retval, args, body);
+    }
 }
