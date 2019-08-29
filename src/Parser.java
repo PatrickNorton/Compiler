@@ -4,8 +4,6 @@
 // TODO: operator + = (something)
 // FIXME: Allow self/cls declarations
 // TODO: Annotations
-// TODO: Refactor and split up
-// TODO: Add parseIf methods to some statements
 
 
 import java.util.LinkedList;
