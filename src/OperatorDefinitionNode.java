@@ -59,7 +59,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         if (tokens.tokenIs(TokenType.ASSIGN)) {
             tokens.nextToken();
             if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
-                OperatorTypeNode op = new OperatorTypeNode(tokens.getFirst().sequence);
+                OperatorTypeNode op = OperatorTypeNode.find_op(tokens.getFirst().sequence);
                 tokens.nextToken();
                 tokens.Newline();
                 return new OperatorDefinitionNode(op_code, new StatementBodyNode(op));
