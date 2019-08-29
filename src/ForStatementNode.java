@@ -29,4 +29,19 @@ public class ForStatementNode implements FlowStatementNode {
     public StatementBodyNode getNobreak() {
         return nobreak;
     }
+
+    static ForStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("for");
+        tokens.nextToken();
+        TypedVariableNode[] vars = TypedVariableNode.parseForVars(tokens);
+        if (!tokens.tokenIs("in")) {
+            throw new ParserException("Expected in, got "+tokens.getFirst());
+        }
+        tokens.nextToken();
+        TestNode[] iterables = TestNode.parseForIterables(tokens);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
+        tokens.Newline();
+        return new ForStatementNode(vars, iterables, body, nobreak);
+    }
 }

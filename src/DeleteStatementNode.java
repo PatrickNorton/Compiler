@@ -8,4 +8,12 @@ public class DeleteStatementNode implements SimpleStatementNode {
     public TestNode getDeleted() {
         return deleted;
     }
+
+    static DeleteStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("del");
+        tokens.nextToken();
+        TestNode deletion = TestNode.parse(tokens);
+        tokens.Newline();
+        return new DeleteStatementNode(deletion);
+    }
 }

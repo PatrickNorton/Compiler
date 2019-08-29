@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class StatementBodyNode implements BaseNode {
     private BaseNode[] statements;
 
@@ -11,5 +13,28 @@ public class StatementBodyNode implements BaseNode {
 
     public boolean isEmpty() {
         return statements.length > 0;
+    }
+
+    static StatementBodyNode parseOnToken(TokenList tokens, String... types) {
+        if (tokens.tokenIs(types)) {
+            tokens.nextToken();
+            return StatementBodyNode.parse(tokens);
+        } else {
+            return new StatementBodyNode();
+        }
+    }
+
+    static StatementBodyNode parse(TokenList tokens) {
+        if (!tokens.tokenIs("{")) {
+            throw new ParserException("The body of a function must be enclosed in curly brackets");
+        }
+        tokens.nextToken(true);
+        ArrayList<BaseNode> statements = new ArrayList<>();
+        while (!tokens.tokenIs("}")) {
+            statements.add(BaseNode.parse(tokens));
+            tokens.passNewlines();
+        }
+        tokens.nextToken();
+        return new StatementBodyNode(statements.toArray(new BaseNode[0]));
     }
 }
