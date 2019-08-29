@@ -146,7 +146,7 @@ public interface TestNode extends BaseNode {
                 if (((OperatorNode) node).getOperands().length != 0) {
                     continue;
                 }
-                String operator = ((OperatorNode) node).getOperator();
+                String operator = ((OperatorNode) node).getOperator().name;
                 if (Arrays.asList(expr).contains(operator)) {
                     if (operator.matches("\\+\\+|--|not|~")) {
                         parseUnaryOp(nodes, nodeNumber);
@@ -272,10 +272,10 @@ public interface TestNode extends BaseNode {
         if (tokens.tokenIs("(")) {
             return new OperatorNode(op_code, TypedArgumentListNode.parse(tokens));
         } else {
-            return new OperatorTypeNode(op_code);
+            return OperatorTypeNode.find_op(op_code);
         }
     }
-    
+
     static TestNode[] parseForIterables(TokenList tokens) {
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
