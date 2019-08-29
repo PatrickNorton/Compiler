@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 public class WithStatementNode implements ComplexStatementNode {
     private TestNode[] managed;
     private VariableNode[] vars;
@@ -20,5 +22,23 @@ public class WithStatementNode implements ComplexStatementNode {
     @Override
     public StatementBodyNode getBody() {
         return body;
+    }
+
+    static WithStatementNode parse(TokenList tokens) {
+        assert tokens.tokenIs("with");
+        tokens.nextToken();
+        LinkedList<TestNode> managed = new LinkedList<>();
+        while (!tokens.tokenIs("as")) {
+            managed.add(TestNode.parse(tokens));
+            if (tokens.tokenIs(TokenType.COMMA)) {
+                tokens.nextToken();
+            } else if (!tokens.tokenIs("as")) {
+                throw new ParserException("Expected comma or as, got "+tokens.getFirst());
+            }
+        }
+        VariableNode[] vars = VariableNode.parseList(tokens,  false);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        tokens.Newline();
+        return new WithStatementNode(managed.toArray(new TestNode[0]), vars, body);
     }
 }

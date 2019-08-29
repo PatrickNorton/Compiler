@@ -38,4 +38,15 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
     }
+
+    static MethodDefinitionNode parse(TokenList tokens) {
+        assert tokens.tokenIs("method");
+        tokens.nextToken();
+        VariableNode name = VariableNode.parse(tokens);
+        TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
+        TypeNode[] retval = TypeNode.parseRetVal(tokens);
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        tokens.Newline();
+        return new MethodDefinitionNode(name, args, retval, body);
+    }
 }

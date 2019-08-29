@@ -26,4 +26,30 @@ public class DictComprehensionNode implements SubTestNode {
     public TestNode[] getLooped() {
         return looped;
     }
+
+    static DictComprehensionNode parse(TokenList tokens) {
+        assert tokens.tokenIs("{");
+        tokens.nextToken(true);
+        TestNode key = TestNode.parse(tokens, true);
+        if (!tokens.tokenIs(":")) {
+            throw new ParserException("Expected :, got "+tokens.getFirst());
+        }
+        tokens.nextToken(true);
+        TestNode val = TestNode.parse(tokens, true);
+        if (!tokens.tokenIs("for")) {
+            throw new ParserException("Expected for, got "+tokens.getFirst());
+        }
+        tokens.nextToken();
+        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens);
+        if (!tokens.tokenIs("in")) {
+            throw new ParserException("Expected in, got "+tokens.getFirst());
+        }
+        tokens.nextToken();
+        TestNode[] looped = TestNode.parseList(tokens, true);
+        if (!tokens.tokenIs("}")) {
+            throw new ParserException("Expected }, got "+tokens.getFirst());
+        }
+        tokens.nextToken();
+        return new DictComprehensionNode(key, val, vars, looped);
+    }
 }
