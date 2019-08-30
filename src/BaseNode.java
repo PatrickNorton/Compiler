@@ -1,6 +1,23 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The base for all nodes.
+ * <p>
+ *     This class has two purposes: to function as a base for all other nodes,
+ *     and to hold the delegator methods which are to call other parsing
+ *     methods.
+ * </p>
+ * @author Patrick Norton
+ */
 public interface BaseNode {
-    // void add(BaseNode node);
-    static BaseNode parse(TokenList tokens) {
+    /**
+     * Parse any node at all from the list of tokens given.
+     * @param tokens The list of tokens which is to be parsed
+     * @return The parsed node
+     */
+    @Contract("_ -> new")
+    static BaseNode parse(@NotNull TokenList tokens) {
         tokens.passNewlines();
         switch (tokens.getFirst().token) {
             case KEYWORD:
@@ -44,7 +61,14 @@ public interface BaseNode {
         }
     }
 
-    private static BaseNode parseKeyword(TokenList tokens) {
+    /**
+     * Parse any token, given that the first item in the list is a keyword.
+     * @param tokens The token list to be parsed
+     * @return The parsed node
+     */
+    @Contract("_ -> new")
+    private static BaseNode parseKeyword(@NotNull TokenList tokens) {
+        // FIXME: Add assertion here
         switch (tokens.getFirst().sequence) {
             case "class":
                 if (tokens.tokenIs(1, TokenType.DESCRIPTOR, TokenType.KEYWORD)) {
@@ -125,14 +149,24 @@ public interface BaseNode {
         }
     }
 
-    private static BaseNode parseLeftVariable(TokenList tokens) {
-        // Things starting with a variable token:
-        // Function call
-        // Lone variable, just sitting there
-        // Declaration
-        // Declared assignment
-        // Assignment
-        // Lone expression
+    /**
+     * Parse a node, given that it starts with a variable token.
+     * <p>
+     *     Things starting with a variable token:
+     *     <ul>
+     *      <li>Function call
+     *      <li>Lone variable, just sitting there
+     *      <li>Declaration
+     *      <li>Declared assignment
+     *      <li>Assignment
+     *      <li>Lone expression
+     *     </ul>
+     * </p>
+     * @param tokens List of tokens to be parsed
+     * @return The parsed token
+     */
+    private static BaseNode parseLeftVariable(@NotNull TokenList tokens) {
+        // FIXME: Assert that it actually is a variable
         Token after_var = tokens.getToken(tokens.sizeOfVariable());
         if (tokens.lineContains(TokenType.ASSIGN)) {
             return AssignStatementNode.parse(tokens);
