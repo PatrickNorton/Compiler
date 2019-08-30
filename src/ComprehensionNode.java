@@ -1,11 +1,28 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
+/**
+ * The class representing a non-dictionary comprehension
+ * @author Patrick Norton
+ * @see DictComprehensionNode
+ */
 public class ComprehensionNode implements SubTestNode {
     private String brace_type;
     private TypedVariableNode[] variables;
     private TestNode builder;
     private TestNode[] looped;
 
+    /**
+     * Create a new instance of ComprehensionNode.
+     * @param brace_type The type of brace used in the comprehension
+     * @param variables The variables being looped over in the loop
+     * @param builder What is actually forming the values that go into the
+     *                built object
+     * @param looped The iterable being looped over
+     */
+    @Contract(pure = true)
     public ComprehensionNode(String brace_type, TypedVariableNode[] variables, TestNode builder, TestNode[] looped) {
         this.brace_type = brace_type;
         this.variables = variables;
@@ -33,8 +50,20 @@ public class ComprehensionNode implements SubTestNode {
         return !brace_type.isEmpty();
     }
 
-    static ComprehensionNode parse(TokenList tokens) {
-        String brace_type;
+    /**
+     * Parse a new ComprehensionNode from a list of tokens.
+     * <p>
+     *     The syntax for a comprehension is: <code>OPEN_BRACE {@link TestNode}
+     *     "for" *{@link TypedVariableNode} "in" *{@link TestNode} CLOSE_BRACE
+     *     </code>.
+     * </p>
+     * @param tokens The tokens which are operated destructively on to parse
+     * @return The newly parsed comprehension
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static ComprehensionNode parse(@NotNull TokenList tokens) {
+        String brace_type;  // FIXME: Opening brace in a function-call comprehension will fail
         if (!tokens.tokenIs(TokenType.OPEN_BRACE)) {  // Comprehensions in function calls
             brace_type = "";
         } else {
