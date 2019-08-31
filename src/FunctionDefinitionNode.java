@@ -1,9 +1,17 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The class representing a function definition.
+ * @author Patrick Norton
+ */
 public class FunctionDefinitionNode implements DefinitionNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retval;
     private StatementBodyNode body;
 
+    @Contract(pure = true)
     public FunctionDefinitionNode(VariableNode name, TypedArgumentListNode args, TypeNode[] retval, StatementBodyNode body) {
         this.name = name;
         this.args = args;
@@ -11,6 +19,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
         this.body = body;
     }
 
+    @Override
     public VariableNode getName() {
         return name;
     }
@@ -28,7 +37,19 @@ public class FunctionDefinitionNode implements DefinitionNode {
         return body;
     }
 
-    static FunctionDefinitionNode parse(TokenList tokens) {
+    /**
+     * Parse a FunctionDefinitionNode from a list of tokens.
+     * <p>
+     *     The syntax for a function definition is: <code>"func" {@link
+     *     VariableNode} {@link TypedArgumentListNode} ["->" {@link TypeNode}
+     *     *("," {@link TypeNode}) [","]] {@link StatementBodyNode}</code>.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The newly parsed FunctionDefinitionNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static FunctionDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("func");
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
