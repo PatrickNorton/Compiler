@@ -1,9 +1,22 @@
+import org.jetbrains.annotations.Contract;
+
+/**
+ * The class representing a generic function.
+ * <p>
+ *     This class is only valid within an interface definition, and thus has no
+ *     parse method, as it is not meant to be constructed separately.
+ * </p>
+ * @author Patrick Norton
+ * @see InterfaceStatementNode
+ * @see GenericOperatorNode
+ */
 public class GenericFunctionNode implements InterfaceStatementNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
     private DescriptorNode[] descriptors;
 
+    @Contract(pure = true)
     public GenericFunctionNode(VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
         this.name = name;
         this.args = args;
