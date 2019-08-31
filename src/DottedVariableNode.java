@@ -1,14 +1,39 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
+/**
+ * The class representing a dotted variable.
+ * <p>
+ *     This class represents any time there is or could be a variable containing
+ *     dots, such as {@code foo.bar.baz}. Not to be confused with its
+ *     sub-component cousin, {@link VariableNode}.
+ * </p>
+ * @author Patrick Norton
+ * @see NameNode
+ * @see VariableNode
+ */
 public class DottedVariableNode implements NameNode {
     private TestNode preDot;
     private NameNode[] postDots;
 
+    /**
+     * Create a new instance of DottedVariableNode.
+     * @param preDot The token leading off before the first dot
+     * @param postDot The tokens which come after the first dot
+     */
+    @Contract(pure = true)
     public DottedVariableNode(TestNode preDot, NameNode... postDot) {
         this.preDot = preDot;
         this.postDots = postDot;
     }
 
+    /**
+     * The constructor for an empty DottedVariableNode, which can be used in
+     * certain situations where some code might require it.
+     */
+    @Contract(pure = true)
     public DottedVariableNode() {
         this.preDot = new VariableNode();
         this.postDots = new NameNode[0];
@@ -26,7 +51,18 @@ public class DottedVariableNode implements NameNode {
         return (preDot instanceof VariableNode) && ((VariableNode) preDot).isEmpty();
     }
 
-    static DottedVariableNode parse(TokenList tokens) {  // FIXME: parse ought to be replaced with parseName
+    /**
+     * Parse a new DottedVariableNode from a list of tokens.
+     * <p>
+     *     This method may or may not be depreciated, <b>do not use</b> until
+     *     I've actually figured out which one will parse things correctly
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed DottedVariableNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static DottedVariableNode parse(@NotNull TokenList tokens) {  // FIXME: parse ought to be replaced with parseName
         LinkedList<VariableNode> names = new LinkedList<>();
         while (tokens.tokenIs(TokenType.NAME)) {
             names.add(VariableNode.parse(tokens));
@@ -38,7 +74,19 @@ public class DottedVariableNode implements NameNode {
         return new DottedVariableNode(names.removeFirst(), names.toArray(new VariableNode[0]));
     }
 
-    static DottedVariableNode parseName(TokenList tokens) {  // FIXME? Equivalent to .parse
+    /**
+     * Parse a new DottedVariableNode from a list of tokens.
+     * <p>
+     *     This method also may or may not work, but it seems to do so better
+     *     than {@link DottedVariableNode#parse} at the moment, so we'll see.
+     *     Syntax for this is: <code>{@link TestNode} *("." {@link
+     *     VariableNode})</code>.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed DottedVariableNode
+     */
+    @NotNull
+    static DottedVariableNode parseName(@NotNull TokenList tokens) {  // FIXME? Equivalent to .parse
         assert tokens.tokenIs(TokenType.NAME);
         NameNode name = NameNode.parse(tokens);
         if (tokens.tokenIs(TokenType.DOT)) {
@@ -48,7 +96,20 @@ public class DottedVariableNode implements NameNode {
         }
     }
 
-    static DottedVariableNode fromExpr(TokenList tokens, TestNode preDot) {
+    /**
+     * Given a variable, parses the rest of the dotted vars after it.
+     * <p>
+     *     The syntax for what may be parsed here is: <code>"." {@link
+     *     VariableNode} *("." {@link VariableNode})</code>. The first token in
+     *     the list must be a dot.
+     * </p>
+     * @param tokens The list of tokens to be parsed
+     * @param preDot The node which comes before the dot
+     * @return The freshly parsed node
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    static DottedVariableNode fromExpr(@NotNull TokenList tokens, TestNode preDot) {
         assert tokens.tokenIs(TokenType.DOT);
         tokens.nextToken();
         LinkedList<NameNode> postDot = new LinkedList<>();
@@ -68,6 +129,17 @@ public class DottedVariableNode implements NameNode {
         return new DottedVariableNode(preDot, postDot.toArray(new NameNode[0]));
     }
 
+    /**
+     * Given a list of tokens, parses out a list of dotted variables.
+     * <p>
+     *     The syntax for this is: <code>{@link DottedVariableNode} *(","
+     *     {@link DottedVariableNode} [","]</code>. Newlines may or may not be
+     *     ignored.
+     * </p>
+     * @param tokens The list of tokens to parse
+     * @param ignore_newlines Whether or not newlines should be ignored
+     * @return The freshly parsed array of DottedVariableNodes
+     */
     static DottedVariableNode[] parseList(TokenList tokens, boolean ignore_newlines) {
         LinkedList<DottedVariableNode> variables = new LinkedList<>();
         if (ignore_newlines) {

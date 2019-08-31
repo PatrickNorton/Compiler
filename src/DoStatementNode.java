@@ -1,7 +1,23 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The node representing a do-while statement.
+ * <p>
+ *     This node is interesting in that the conditional comes after the loop,
+ *     not before, and therefore ought to be parsed as such.
+ * </p>
+ */
 public class DoStatementNode implements FlowStatementNode {
     public StatementBodyNode body;
     public TestNode conditional;
 
+    /**
+     * Instantiate new instance of DoStatementNode.
+     * @param body The body of the loop
+     * @param conditional The conditional tested for.
+     */
+    @Contract(pure = true)
     public DoStatementNode(StatementBodyNode body, TestNode conditional) {
         this.body = body;
         this.conditional = conditional;
@@ -16,6 +32,20 @@ public class DoStatementNode implements FlowStatementNode {
         return conditional;
     }
 
+    /**
+     * Parse a DoStatementNode from a list of tokens.
+     * <p>
+     *     The syntax of a do-while statement is: <code>"do" {@link
+     *     StatementBodyNode} "while" {@link TestNode}</code>. The passed
+     *     TokenList must have its first token as "do" in order to parse
+     *     correctly.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively. Must begin
+     *               with a TokenType.KEYWORD with text "do".
+     * @return The newly parsed DoStatementNode
+     */
+    @NotNull
+    @Contract("_ -> new")
     static DoStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs("do");
         tokens.nextToken();
