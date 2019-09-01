@@ -1,9 +1,27 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
+/**
+ * The class representing an interface statement.
+ * @author Patrick Norton
+ */
 public interface InterfaceStatementNode extends BaseNode {
     void addDescriptor(DescriptorNode[] nodes);
 
-    static InterfaceStatementNode parse(TokenList tokens) {  // TODO: Clean up method
+    /**
+     * Parse an interface statement from a list of tokens.
+     * <p>
+     *     An interface statement is simply any statement which inherits from
+     *     this, and that is how it is parsed, with the special case that
+     *     generic functions and operators are parsed specially here.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed interface statement
+     */
+    // TODO: Static blocks in interfaces
+    @NotNull
+    static InterfaceStatementNode parse(@NotNull TokenList tokens) {  // TODO: Clean up method and/or factor out
         if (tokens.tokenIs(TokenType.OPERATOR_SP, TokenType.DESCRIPTOR) || tokens.tokenIs("method")
               || (tokens.tokenIs("class") && tokens.getToken(1).is(TokenType.DESCRIPTOR, TokenType.KEYWORD))) {
             LinkedList<DescriptorNode> descriptors = new LinkedList<>();
