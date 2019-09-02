@@ -1,7 +1,20 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The class representing a return statement.
+ * @author Patrick Norton
+ */
 public class ReturnStatementNode implements SimpleFlowNode {
     private TestNode[] returned;
     private TestNode cond;
 
+    /**
+     * Construct a new instance of ReturnStatementNode.
+     * @param returned The list of tokens that are returned
+     * @param cond The condition as to whether or not there is a return
+     */
+    @Contract(pure = true)
     public ReturnStatementNode(TestNode[] returned, TestNode cond) {
         this.returned = returned;
         this.cond = cond;
@@ -16,7 +29,19 @@ public class ReturnStatementNode implements SimpleFlowNode {
         return cond;
     }
 
-    static ReturnStatementNode parse(TokenList tokens) {
+    /**
+     * Parse a new return statement from a list of tokens.
+     * <p>
+     *     The syntax for a return statement is: <code>"return" [{@link
+     *     TestNode} *("," {@link TestNode}) [","]] ["if" {@link
+     *     TestNode}]</code>. The list of tokens must begin with "return".
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The newly parsed ReturnStatementNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static ReturnStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("return");
         tokens.nextToken();
         boolean is_conditional = false;
