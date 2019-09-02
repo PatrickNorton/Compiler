@@ -1,3 +1,10 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The class representing a property definition.
+ * @author Patrick Norton
+ */
 public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
     public VariableNode name;
     public StatementBodyNode get;
@@ -5,6 +12,14 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     public StatementBodyNode set;
     public DescriptorNode[] descriptors;
 
+    /**
+     * Create a new instance of PropertyDefinitionNode.
+     * @param name The name of the property
+     * @param get The getter attribute for the property
+     * @param set_args The arguments for setting the property
+     * @param set The setter attribute for the property
+     */
+    @Contract(pure = true)
     public PropertyDefinitionNode(VariableNode name, StatementBodyNode get, TypedArgumentListNode set_args, StatementBodyNode set) {
         this.name = name;
         this.get = get;
@@ -12,19 +27,23 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         this.set = set;
     }
 
+    @Contract(pure = true)
     public PropertyDefinitionNode(StatementBodyNode get) {
         this.get = get;
     }
 
+    @Contract(pure = true)
     public PropertyDefinitionNode(TypedArgumentListNode set_args, StatementBodyNode set) {
         this.set_args = set_args;
         this.set = set;
     }
 
+    @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
     }
 
+    @Override
     public VariableNode getName() {
         return name;
     }
@@ -45,11 +64,25 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         return descriptors;
     }
 
+    @Override
     public StatementBodyNode getBody() {
         return get;
     }
 
-    static PropertyDefinitionNode parse(TokenList tokens) {
+    /**
+     * Parse a new PropertyDefinitionNode from a list of tokens.
+     * <p>
+     *     The syntax of a property definition is: <code>*({@link
+     *     DescriptorNode}) "property" [{@link NameNode}] "{" ["get" {@link
+     *     StatementBodyNode}] ["set" {@link TypedArgumentListNode} {@link
+     *     StatementBodyNode}] "}"</code>.
+     * </p>
+     * @param tokens The list of tokens to be parsed
+     * @return The freshly parsed PropertyDefinitionNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static PropertyDefinitionNode parse(@NotNull TokenList tokens) {
         VariableNode name = new VariableNode();
         if (!tokens.tokenIs("{")) {
             name = VariableNode.parse(tokens);

@@ -1,5 +1,24 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The interface for any sort of name, such as a function call, index, or
+ * variable.
+ * @author Patrick Norton
+ */
 public interface NameNode extends AtomicNode {
-    static NameNode parse(TokenList tokens) {
+    /**
+     * Parse a name from a list of tokens.
+     * <p>
+     *     The syntax for a NameNode is made up of its constituent subclasses.
+     *     The list of tokens must begin with a NAME token.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed NameNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static NameNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME);
         NameNode name = VariableNode.parse(tokens);
         while_brace:
