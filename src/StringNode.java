@@ -1,11 +1,24 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The class representing a string literal.
+ * <p>
+ *     This does not represent formatted strings, as they require special
+ *     syntax. For those, see {@link FormattedStringNode}.
+ * </p>
+ * @author Patrick Norton
+ * @see FormattedStringNode
+ */
 public class StringNode implements AtomicNode {
     private String contents;
-    private char[] prefixes;
+    private char[] prefixes;  // TODO? Enumerate string prefixes
 
+    @Contract(pure = true)
     public StringNode(String contents, char... prefixes) {
         this.contents = contents;
         this.prefixes = prefixes;
@@ -19,7 +32,18 @@ public class StringNode implements AtomicNode {
         return prefixes;
     }
 
-    static AtomicNode parse(TokenList tokens) {
+    /**
+     * Parse a StringNode from a list of tokens.
+     * <p>
+     *     String nodes consist only of a string token, and thus have only the
+     *     requirement that the first node of the token list is of type STRING.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed string literal
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static AtomicNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.STRING);
         String contents = tokens.getFirst().sequence;
         tokens.nextToken();
@@ -36,7 +60,7 @@ public class StringNode implements AtomicNode {
                 Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})").matcher(inside);
                 int index = 0;
                 int start, end = 0;
-                while (m.find()) {  // TODO: Find better way of handling this
+                while (m.find()) {  // TODO: Find better way of handling this and/or refactor into FormattedStringNode
                     start = m.start();
                     strs.add(inside.substring(index, start - 1));
                     StringBuilder to_test = new StringBuilder();
@@ -72,7 +96,13 @@ public class StringNode implements AtomicNode {
         return new StringNode(inside);
     }
 
-    private static String processEscapes(String str) {
+    /**
+     * Process the escape sequences for the string.
+     * @param str The string to be processed
+     * @return The escaped string
+     */
+    @NotNull
+    private static String processEscapes(@NotNull String str) {
         StringBuilder sb = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
             char chr = str.charAt(i);
