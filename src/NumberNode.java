@@ -1,8 +1,21 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigDecimal;
 
+/**
+ * The class representing a numeric literal.
+ * @author Patrick Norton
+ */
 public class NumberNode implements AtomicNode {
+    // TODO: Rename to something better
     private BigDecimal integer;
 
+    /**
+     * Create a new instance of BigDecimal.
+     * @param integer The value of the decimal
+     */
+    @Contract(pure = true)
     public NumberNode(BigDecimal integer) {
         this.integer = integer;
     }
@@ -11,7 +24,14 @@ public class NumberNode implements AtomicNode {
         return integer;
     }
 
-    static NumberNode parse(TokenList tokens) {
+    /**
+     * Parse a NumberNode from a list of tokens.
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed NumberNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static NumberNode parse(@NotNull TokenList tokens) {
         String value = tokens.getFirst().sequence;
         tokens.nextToken();
         if (value.length() < 2) {
@@ -35,7 +55,13 @@ public class NumberNode implements AtomicNode {
         return new NumberNode(val);
     }
 
-    private static BigDecimal parseInt(String value, String digits) {
+    /**
+     * Parse the BigDecimal value of the string given, in non-base-10.
+     * @param value The string value of the digit to be parsed
+     * @param digits The valid digits that can be used
+     * @return The value of the string
+     */
+    private static BigDecimal parseInt(@NotNull String value, @NotNull String digits) {
         int dot = value.indexOf('.');
         int exp_size = dot >= 0 ? dot - 1 : value.length() - 1;
         BigDecimal base = BigDecimal.valueOf(digits.length());
@@ -50,6 +76,7 @@ public class NumberNode implements AtomicNode {
             if (exp_size - i >= 0) {
                 val = val.add(base.pow(exp_size - i).multiply(digit_val));
             } else {
+                // TODO: Call divide with scale and RoundingMode
                 val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size)).multiply(digit_val));
             }
         }

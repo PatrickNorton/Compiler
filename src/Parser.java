@@ -4,6 +4,7 @@
 // TODO: operator + = (something)
 // FIXME: Allow self/cls declarations
 // TODO: Annotations
+// TODO: "is" operator
 
 
 import java.util.LinkedList;

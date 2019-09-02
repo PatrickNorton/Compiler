@@ -1,6 +1,10 @@
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Every type of operator that is valid.
+ * @author Patrick Norton
+ */
 public enum OperatorTypeNode implements AtomicNode {
     ADD("+"),
     R_ADD("r+"),
@@ -62,16 +66,25 @@ public enum OperatorTypeNode implements AtomicNode {
 
     private static Map<String, OperatorTypeNode> values = new HashMap<>();
 
+    /**
+     * Create new instance of OperatorTypeNode.
+     * @param name The sequence of the operator
+     */
     OperatorTypeNode(String name) {
         this.name = name;
     }
 
-    static {
+    static {  // Initialise the map
         for (OperatorTypeNode op : OperatorTypeNode.values()) {
             values.put(op.name, op);
         }
     }
 
+    /**
+     * Find an operator in the enum.
+     * @param name The sequence of the operator
+     * @return The actual operator enum
+     */
     static OperatorTypeNode find_op(String name) {
         if (values.containsKey(name)) {
             return values.get(name);
