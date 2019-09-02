@@ -1,8 +1,16 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
+/**
+ * The class representing the body of a statement.
+ * @author Patrick Norton
+ */
 public class StatementBodyNode implements BaseNode {
     private BaseNode[] statements;
 
+    @Contract(pure = true)
     public StatementBodyNode(BaseNode... statements) {
         this.statements = statements;
     }
@@ -15,7 +23,18 @@ public class StatementBodyNode implements BaseNode {
         return statements.length > 0;
     }
 
-    static StatementBodyNode parseOnToken(TokenList tokens, String... types) {
+    /**
+     * Parse a StatementBodyNode iff the next token matches those passed.
+     * <p>
+     *     This method will parse the token it is testing for if it matches.
+     * </p>
+     * @param tokens
+     * @param types
+     * @return
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    static StatementBodyNode parseOnToken(@NotNull TokenList tokens, String... types) {
         if (tokens.tokenIs(types)) {
             tokens.nextToken();
             return StatementBodyNode.parse(tokens);
@@ -24,7 +43,18 @@ public class StatementBodyNode implements BaseNode {
         }
     }
 
-    static StatementBodyNode parse(TokenList tokens) {
+    /**
+     * Parse a StatementBodyNode from a list of tokens.
+     * <p>
+     *     The syntax for a StatementBodyNode is: <code>"{" {@link BaseNode}
+     *     *(NEWLINE {@link BaseNode}) [NEWLINE] "}"</code>
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed StatementBodyNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static StatementBodyNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs("{")) {
             throw new ParserException("The body of a function must be enclosed in curly brackets");
         }

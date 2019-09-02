@@ -1,7 +1,13 @@
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The class representing a static block in a class/interface definition.
+ * @author Patrick Norton
+ */
 public class StaticBlockNode implements ClassStatementNode {
     private BaseNode[] stmts;
 
-    public StaticBlockNode(StatementBodyNode stmts) {
+    public StaticBlockNode(@NotNull StatementBodyNode stmts) {
         this.stmts = stmts.getStatements();
     }
 

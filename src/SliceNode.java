@@ -1,8 +1,24 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * The class representing a slice an in index.
+ * @author Patrick Norton
+ * @see IndexNode
+ */
 public class SliceNode implements SubTestNode {
     private TestNode start;
     private TestNode end;
     private TestNode step;
 
+    /**
+     * Construct a new instance of SliceNode
+     * @param start The start of the slice
+     * @param end The end of the slice
+     * @param step The step amount
+     */
+    @Contract(pure = true)
     public SliceNode(TestNode start, TestNode end, TestNode step) {
         this.start = start;
         this.end = end;
@@ -21,7 +37,18 @@ public class SliceNode implements SubTestNode {
         return step;
     }
 
-    static SliceNode parse(TokenList tokens) {
+    /**
+     * Parse a new instance of SliceNode.
+     * <p>
+     *     The syntax for a slice is: <code>[{@link TestNode}] ":" [{@link
+     *     TestNode}] [":" [{@link TestNode}]]</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed node
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static SliceNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("[");
         tokens.nextToken(true);
         TestNode start;
@@ -47,7 +74,13 @@ public class SliceNode implements SubTestNode {
         return new SliceNode(start, end, step);
     }
 
-    private static TestNode sliceTest(TokenList tokens) {
+    /**
+     * Parse a specific piece of a slice.
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The parsed TestNode
+     */
+    @Nullable
+    private static TestNode sliceTest(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(":")) {
             throw new ParserException("Expected :, got "+tokens.getFirst());
         }

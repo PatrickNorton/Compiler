@@ -1,7 +1,20 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The class representing a some statement.
+ * @author Patrick Norton
+ */
 public class SomeStatementNode implements SubTestNode {
     private TestNode contained;
     private TestNode container;
 
+    /**
+     * Create a new instance of SomeStatementNode.
+     * @param contained The node which is contained
+     * @param container The node which being tested if contained is a member
+     */
+    @Contract(pure = true)
     public SomeStatementNode(TestNode contained, TestNode container) {
         this.contained = contained;
         this.container = container;
@@ -15,7 +28,19 @@ public class SomeStatementNode implements SubTestNode {
         return container;
     }
 
-    static SomeStatementNode parse(TokenList tokens) {
+    /**
+     * Parse a SomeStatementNode from a list of tokens.
+     * <p>
+     *     The syntax for a some statement is: <code>"some" {@link TestNode}
+     *     "in" {@link TestNode}</code>. The list of tokens must begin with
+     *     "some" when passed.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The newly parsed SomeStatementNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static SomeStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("some");
         tokens.nextToken();
         TestNode contained = TestNode.parse(tokens);
@@ -23,7 +48,7 @@ public class SomeStatementNode implements SubTestNode {
             throw new ParserException("Expected an in, got "+tokens.getFirst());
         }
         OperatorNode in_stmt = (OperatorNode) contained;
-        if (!in_stmt.getOperator().equals("in")) {
+        if (in_stmt.getOperator() != OperatorTypeNode.IN) {
             throw new ParserException("Expected an in, got "+tokens.getFirst());
         }
         TestNode[] operands = in_stmt.getOperands();
