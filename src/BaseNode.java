@@ -68,7 +68,7 @@ public interface BaseNode {
      */
     @Contract("_ -> new")
     private static BaseNode parseKeyword(@NotNull TokenList tokens) {
-        // FIXME: Add assertion here
+        assert tokens.tokenIs(TokenType.KEYWORD);
         switch (tokens.getFirst().sequence) {
             case "class":
                 if (tokens.tokenIs(1, TokenType.DESCRIPTOR, TokenType.KEYWORD)) {
@@ -166,7 +166,7 @@ public interface BaseNode {
      * @return The parsed token
      */
     private static BaseNode parseLeftVariable(@NotNull TokenList tokens) {
-        // FIXME: Assert that it actually is a variable
+        assert tokens.tokenIs(TokenType.NAME);
         Token after_var = tokens.getToken(tokens.sizeOfVariable());
         if (tokens.lineContains(TokenType.ASSIGN)) {
             return AssignStatementNode.parse(tokens);
