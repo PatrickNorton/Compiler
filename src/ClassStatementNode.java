@@ -64,7 +64,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
             descriptors.add(new DescriptorNode(tokens.getFirst().sequence));
             tokens.nextToken();
         }
-        // FIXME: Assert for the fact that there was at least one keyword
+        assert descriptors.size() > 0;
         switch (tokens.getFirst().token) {
             case KEYWORD:
                 return parseDescriptorKeyword(tokens, descriptors);

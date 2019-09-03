@@ -66,7 +66,7 @@ public class OperatorNode implements SubTestNode {
     @NotNull
     @Contract("_, _ -> new")
     static OperatorNode parseBoolOp(@NotNull TokenList tokens, boolean ignore_newline) {
-        // FIXME: Add assert statement
+        assert tokens.tokenIs(TokenType.BOOL_OP);
         switch (tokens.getFirst().sequence) {
             case "not":
                 tokens.nextToken(ignore_newline);

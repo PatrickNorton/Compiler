@@ -12,13 +12,13 @@ import org.jetbrains.annotations.NotNull;
 public class TryStatementNode implements ComplexStatementNode {
     private StatementBodyNode body;
     private StatementBodyNode except;
-    private VariableNode[] excepted;
+    private DottedVariableNode[] excepted;
     private VariableNode as_var;
     private StatementBodyNode else_stmt;
     private StatementBodyNode finally_stmt;
 
     @Contract(pure = true)
-    public TryStatementNode(StatementBodyNode body, StatementBodyNode except, VariableNode[] excepted,
+    public TryStatementNode(StatementBodyNode body, StatementBodyNode except, DottedVariableNode[] excepted,
                             VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
         this.body = body;
         this.except = except;
@@ -37,7 +37,7 @@ public class TryStatementNode implements ComplexStatementNode {
         return except;
     }
 
-    public VariableNode[] getExcepted() {
+    public DottedVariableNode[] getExcepted() {
         return excepted;
     }
 
@@ -73,13 +73,13 @@ public class TryStatementNode implements ComplexStatementNode {
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
-        VariableNode[] excepted = new VariableNode[0];  // FIXME: DottedVariableNode
+        DottedVariableNode[] excepted = new DottedVariableNode[0];  // FIXME: DottedVariableNode
         VariableNode as_var = new VariableNode();
         StatementBodyNode else_stmt = new StatementBodyNode();
         StatementBodyNode finally_stmt = new StatementBodyNode();
         if (tokens.tokenIs("except")) {
             tokens.nextToken();
-            excepted = VariableNode.parseList(tokens,  false);
+            excepted = DottedVariableNode.parseList(tokens,  false);
             if (tokens.tokenIs("as")) {
                 tokens.nextToken();
                 as_var = VariableNode.parse(tokens);
