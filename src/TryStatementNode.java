@@ -1,3 +1,14 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * The class representing the try-except-finally statement.
+ * <p>
+ *     This is a relatively complex class data-wise, as it has a lot of
+ *     component statements.
+ * </p>
+ * @author Patrick Norton
+ */
 public class TryStatementNode implements ComplexStatementNode {
     private StatementBodyNode body;
     private StatementBodyNode except;
@@ -6,6 +17,7 @@ public class TryStatementNode implements ComplexStatementNode {
     private StatementBodyNode else_stmt;
     private StatementBodyNode finally_stmt;
 
+    @Contract(pure = true)
     public TryStatementNode(StatementBodyNode body, StatementBodyNode except, VariableNode[] excepted,
                             VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
         this.body = body;
@@ -41,12 +53,27 @@ public class TryStatementNode implements ComplexStatementNode {
         return finally_stmt;
     }
 
-    static TryStatementNode parse(TokenList tokens) {
+    /**
+     * Parse a try statement from a list of tokens.
+     * <p>
+     *     The syntax for a try statement is: <code>"try" {@link
+     *     StatementBodyNode} ["except" {@link VariableNode} [[","] {@link
+     *     VariableNode}] [","] ["as" {@link VariableNode} ["else" {@link
+     *     StatementBodyNode}]] ["finally" {@link StatementBodyNode}]</code>.
+     *     The list of tokens passed must begin with a "try", and there must be
+     *     either an "except" or a "finally" in the statement.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed TryStatementNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static TryStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("try");
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
-        VariableNode[] excepted = new VariableNode[0];
+        VariableNode[] excepted = new VariableNode[0];  // FIXME: DottedVariableNode
         VariableNode as_var = new VariableNode();
         StatementBodyNode else_stmt = new StatementBodyNode();
         StatementBodyNode finally_stmt = new StatementBodyNode();

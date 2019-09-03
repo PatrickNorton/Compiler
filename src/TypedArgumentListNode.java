@@ -1,14 +1,24 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
+/**
+ * The class representing a typed argument list.
+ * @author Patrick Norton
+ * @see TypedArgumentNode
+ */
 public class TypedArgumentListNode implements BaseNode {
     private TypedArgumentNode[] positionArgs;
     private TypedArgumentNode[] normalArgs;
     private TypedArgumentNode[] nameArgs;
 
+    @Contract(pure = true)
     public TypedArgumentListNode(TypedArgumentNode... args) {
         this.normalArgs = args;
     }
 
+    @Contract(pure = true)
     public TypedArgumentListNode(TypedArgumentNode[] positionArgs, TypedArgumentNode[] normalArgs, TypedArgumentNode[] nameArgs) {
         this.normalArgs = normalArgs;
         this.positionArgs = positionArgs;
@@ -31,7 +41,20 @@ public class TypedArgumentListNode implements BaseNode {
         return normalArgs[index];
     }
 
-    static TypedArgumentListNode parseOnToken( TokenList tokens, String... tester) {
+    /**
+     * Parse a typed argument list if and only if the next token is of the type
+     * specified.
+     * <p>
+     *     This will <i>not</i> parse the token given, as it is currently
+     *     in use as an open-paren tester. This <b>may</b> change in the future.
+     *     For the grammar, see {@link TypedArgumentListNode#parse}
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param tester The values to test for
+     * @return The freshly parsed TypedArgumentListNode
+     */
+    @NotNull
+    static TypedArgumentListNode parseOnToken(@NotNull TokenList tokens, String... tester) {
         if (tokens.tokenIs(tester)) {
             return parse(tokens);
         } else {
@@ -39,7 +62,20 @@ public class TypedArgumentListNode implements BaseNode {
         }
     }
 
-    static TypedArgumentListNode parse(TokenList tokens) {
+    /**
+     * Parse a TypedArgumentListNode from a list of tokens.
+     * <p>
+     *     The syntax for a list of typed arguments is: <code>"(" {@link
+     *     TypedArgumentNode} *("," {@link TypedArgumentNode}) ["," "/"] *(","
+     *     {@link TypedArgumentNode}) ["," "*"] *("," {@link
+     *     TypedArgumentNode}) [","] ")"</code>.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed TypedArgumentListNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static TypedArgumentListNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("(");
         boolean has_posArgs = tokens.braceContains("/");
         if (!tokens.tokenIs("(")) {

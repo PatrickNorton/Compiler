@@ -1,8 +1,15 @@
+import org.jetbrains.annotations.Contract;
+
+/**
+ * The class representing a ternary statement.
+ * @author Patrick Norton
+ */
 public class TernaryNode implements TestNode {
     private TestNode if_true;
     private TestNode statement;
     private TestNode if_false;
 
+    @Contract(pure = true)
     public TernaryNode(TestNode if_true, TestNode statement, TestNode if_false) {
         this.if_true = if_true;
         this.statement = statement;

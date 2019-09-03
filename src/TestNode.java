@@ -1,12 +1,41 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 
+/**
+ * The interface representing all expressions, e.g. everything that isn't a
+ * statement.
+ * @author Patrick Norton
+ */
 public interface TestNode extends BaseNode {
+    /**
+     * Parse a TestNode from a list of statements.
+     * <p>
+     *     A TestNode is simply defined as the union of its subclasses, and so
+     *     this is what this function does, it delegates to that.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed TestNode
+     */
+    @NotNull
     static TestNode parse(TokenList tokens) {
         return parse(tokens, false);
     }
 
-    static TestNode parse(TokenList tokens, boolean ignore_newline) {
+    /**
+     * Parse a TestNode from a list of statements, with or without newlines
+     * ignored.
+     * <p>
+     *     A TestNode is simply defined as the union of its subclasses, and so
+     *     this is what this function does, it delegates to that.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignore_newline Whether or not to ignore newlines
+     * @return The freshly parsed TestNode
+     */
+    @NotNull
+    static TestNode parse(@NotNull TokenList tokens, boolean ignore_newline) {
         TestNode if_true = parseNoTernary(tokens, ignore_newline);
         if (tokens.tokenIs("if")) {
             tokens.nextToken(ignore_newline);
@@ -22,7 +51,19 @@ public interface TestNode extends BaseNode {
         }
     }
 
-    private static TestNode parseNoTernary(TokenList tokens, boolean ignore_newline) {
+    /**
+     * Parse the non-ternary portion of a TestNode.
+     * <p>
+     *     This is necessary so that when TestNode parses everything else, which
+     *     can be part of a {@link TernaryNode ternary}, it does not try to eat
+     *     the ternary and go into an infinite recursive loop.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignore_newline Whether or not to ignore newlines
+     * @return The freshly parsed TestNode
+     */
+    @NotNull
+    private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
         switch (tokens.getFirst().token) {
             case NAME:
                 return parseLeftVariable(tokens, ignore_newline);
@@ -52,15 +93,26 @@ public interface TestNode extends BaseNode {
         }
     }
 
-        private static TestNode parseLeftVariable(TokenList tokens, boolean ignore_newline) {
-        // Things starting with a variable token (besides ternary):
-        // Function call
-        // Lone variable, just sitting there
-        // X Declaration
-        // X Declared assignment
-        // X Assignment
-        // X Assignment to function call
-        // Lone expression
+    /**
+     * Parses an expression starting with a variable from a list of tokens.
+     * <p>
+     *     <ul>
+     *         <lh>Things beginning with a variable token (besides ternary):
+     *         </lh>
+     *         <li>Function call</li>
+     *         <li><s>Declaration</s></li>
+     *         <li><s>Declared assignment</s></li>
+     *         <li><s>Assignment</s></li>
+     *         <li>Lone expression</li>
+     *     </ul>
+     *     The list of tokens passed must begin with a variable token.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignore_newline Whether or not to ignore newlines
+     * @return The parsed TestNode
+     */
+    @NotNull
+    private static TestNode parseLeftVariable(@NotNull TokenList tokens, boolean ignore_newline) {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             throw new ParserException("Illegal assignment");
         } else if (tokens.contains(ignore_newline, TokenType.AUG_ASSIGN)) {
@@ -110,7 +162,7 @@ public interface TestNode extends BaseNode {
                             break while_loop;
                         }  // Lack of breaks here intentional too
                     default:
-                        throw new ParserException("Unexpected "+tokens.getFirst());
+                        throw new ParserException("Unexpected " + tokens.getFirst());
                 }
             }
             if (nodes.size() == 1) {
@@ -119,7 +171,7 @@ public interface TestNode extends BaseNode {
             parseExpression(nodes, "**");
             parseExpression(nodes, "~");
             parseExpression(nodes, "*", "/", "//", "%");
-            parseExpression(nodes,"+", "-");
+            parseExpression(nodes, "+", "-");
             parseExpression(nodes, "<<", ">>");
             parseExpression(nodes, "&");
             parseExpression(nodes, "^", "|");
@@ -136,7 +188,12 @@ public interface TestNode extends BaseNode {
         }
     }
 
-    private static void parseExpression(LinkedList<TestNode> nodes, String... expr) {
+    /**
+     * Parse an expression out of a list of nodes.
+     * @param nodes The list of nodes to be recombined
+     * @param expr The expressions to parse together
+     */
+    private static void parseExpression(@NotNull LinkedList<TestNode> nodes, String... expr) {
         if (nodes.size() == 1) {
             return;
         }
@@ -159,7 +216,12 @@ public interface TestNode extends BaseNode {
         }
     }
 
-    private static void parseOperator(LinkedList<TestNode> nodes, int nodeNumber) {
+    /**
+     * Parse out the operator from the LinkedList of nodes.
+     * @param nodes The nodes to have the operator parsed out of them
+     * @param nodeNumber The number giving the location of the operator
+     */
+    private static void parseOperator(@NotNull LinkedList<TestNode> nodes, int nodeNumber) {
         TestNode node = nodes.get(nodeNumber);
         TestNode previous = nodes.get(nodeNumber - 1);
         TestNode next = nodes.get(nodeNumber + 1);
@@ -174,7 +236,12 @@ public interface TestNode extends BaseNode {
         nodes.remove(nodeNumber - 1);
     }
 
-    private static void parseUnaryOp(LinkedList<TestNode> nodes, int nodeNumber) {
+    /**
+     * Parse out a unary operator from a list of nodes.
+     * @param nodes The nodes to have the operator parsed out
+     * @param nodeNumber The number giving the location of the operator
+     */
+    private static void parseUnaryOp(@NotNull LinkedList<TestNode> nodes, int nodeNumber) {
         TestNode node = nodes.get(nodeNumber);
         TestNode next = nodes.get(nodeNumber + 1);
         TestNode op;
@@ -187,7 +254,13 @@ public interface TestNode extends BaseNode {
         nodes.remove(nodeNumber + 1);
     }
 
-    private static TestNode parseOpenBrace(TokenList tokens) {
+    /**
+     * Parse an open brace from a list of tokens.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed TestNode
+     */
+    @NotNull
+    private static TestNode parseOpenBrace(@NotNull TokenList tokens) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         TestNode stmt;
         if (tokens.tokenIs("(")) {
@@ -231,7 +304,14 @@ public interface TestNode extends BaseNode {
         }
     }
 
-    static TestNode[] parseList(TokenList tokens, boolean ignore_newlines) {
+    /**
+     * Parse a list of TestNodes from a list of tokens.
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignore_newlines Whether or not to ignore newlines
+     * @return The list of TestNodes
+     */
+    @NotNull
+    static TestNode[] parseList(@NotNull TokenList tokens, boolean ignore_newlines) {
         if (tokens.tokenIs("(") && !tokens.braceContains("in") && !tokens.braceContains("for")) {
             int brace_size = tokens.sizeOfBrace(0);
             if (!tokens.getToken(brace_size).is(TokenType.COMMA)) {
@@ -266,7 +346,12 @@ public interface TestNode extends BaseNode {
         return tests.toArray(new TestNode[0]);
     }
 
-    static SubTestNode parseOpFunc(TokenList tokens) {  // FIXME: Move this somewhere more reasonable
+    /**
+     * Parse an operator function from a list of tokens.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The parsed operator function
+     */
+    static SubTestNode parseOpFunc(@NotNull TokenList tokens) {  // FIXME: Move this somewhere more reasonable
         String op_code = tokens.getFirst().sequence.replaceFirst("\\\\", "");
         tokens.nextToken();
         if (tokens.tokenIs("(")) {
@@ -276,7 +361,13 @@ public interface TestNode extends BaseNode {
         }
     }
 
-    static TestNode[] parseForIterables(TokenList tokens) {
+    /**
+     * Parse the iterables in a for loop.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed list of TestNodes
+     */
+    @NotNull
+    static TestNode[] parseForIterables(@NotNull TokenList tokens) {
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
