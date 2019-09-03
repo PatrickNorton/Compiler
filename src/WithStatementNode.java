@@ -1,10 +1,18 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
+/**
+ * The class representing a context statement.
+ * @author Patrick Norton
+ */
 public class WithStatementNode implements ComplexStatementNode {
     private TestNode[] managed;
     private VariableNode[] vars;
     private StatementBodyNode body;
 
+    @Contract(pure = true)
     public WithStatementNode(TestNode[] managed, VariableNode[] vars, StatementBodyNode body) {
         this.managed = managed;
         this.vars = vars;
@@ -24,7 +32,20 @@ public class WithStatementNode implements ComplexStatementNode {
         return body;
     }
 
-    static WithStatementNode parse(TokenList tokens) {
+    /**
+     * Parse a WithStatementNode from a list of tokens.
+     * <p>
+     *     The syntax for a WithStatementNode is: <code>"with" {@link TestNode}
+     *     *("," {@link TestNode}) [","] "as" {@link VariableNode} *(","
+     *     {@link TestNode}) [","] {@link StatementBodyNode}</code>. The list
+     *     of tokens must begin with "with" when passed.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed WithStatementNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static WithStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("with");
         tokens.nextToken();
         LinkedList<TestNode> managed = new LinkedList<>();
