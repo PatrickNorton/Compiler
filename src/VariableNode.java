@@ -1,12 +1,21 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
+/**
+ * The class representing a name token.
+ * @author Patrick Norton
+ */
 public class VariableNode implements NameNode {
     private String name;
 
+    @Contract(pure = true)
     public VariableNode(String names) {
         this.name = names;
     }
 
+    @Contract(pure = true)
     public VariableNode() {
         this.name = "";
     }
@@ -19,7 +28,15 @@ public class VariableNode implements NameNode {
         return this.name.isEmpty();
     }
 
-    static VariableNode parseOnToken(TokenList tokens, TokenType... types) {
+    /**
+     * Parse a VariableNode if and only if the first token in the list matches
+     * one of the ones given.
+     * @param tokens The list of tokens to destructively parse
+     * @param types The list of types to check against
+     * @return The freshly parsed VariableNode
+     */
+    @NotNull
+    static VariableNode parseOnToken(@NotNull TokenList tokens, TokenType... types) {
         if (tokens.tokenIs(types)) {
             return VariableNode.parse(tokens);
         } else {
@@ -27,7 +44,17 @@ public class VariableNode implements NameNode {
         }
     }
 
-    static VariableNode parse(TokenList tokens) {
+    /**
+     * Parse a VariableNode from a list of tokens.
+     * <p>
+     *     The syntax for a VariableNode is: {@code NAME}.
+     * </p>
+     * @param tokens The list of tokens to destructively parse
+     * @return The freshly parsed VariableNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static VariableNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw new ParserException("Expected name. got " + tokens.getFirst());
         }
@@ -36,12 +63,28 @@ public class VariableNode implements NameNode {
         return new VariableNode(name);
     }
 
-    static VariableNode parseEllipsis(TokenList tokens) {
+    /**
+     * Parse the ellipsis unicorn from a list of tokens.
+     * <p>
+     *     The first item in the list passed must be an {@code ELLIPSIS}.
+     * </p>
+     * @param tokens The list of tokens to be parsed
+     * @return The freshly parsed ellipsis
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static VariableNode parseEllipsis(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.ELLIPSIS);
         tokens.nextToken();
         return new VariableNode("...");
     }
 
+    /**
+     * Parse a list of VariableNodes.
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignore_newlines Whether or not to ignore newlines
+     * @return The freshly parsed VariableNode array
+     */
     static VariableNode[] parseList(TokenList tokens, boolean ignore_newlines) {
         LinkedList<VariableNode> variables = new LinkedList<>();
         if (ignore_newlines) {

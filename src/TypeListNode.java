@@ -1,3 +1,8 @@
+/**
+ * The (unused) TypeListNode
+ * @author Patrick Norton
+ */
+// TODO: Remove me
 public class TypeListNode implements BaseNode {
     private VarargedTypeNode[] types;
 
