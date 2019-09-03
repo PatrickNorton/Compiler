@@ -77,13 +77,12 @@ public class DictComprehensionNode implements SubTestNode {
         if (!tokens.tokenIs("for")) {
             throw new ParserException("Expected for, got "+tokens.getFirst());
         }
-        // FIXME: Tokens should be parsed with ignore_newlines
-        tokens.nextToken();
+        tokens.nextToken(true);
         TypedVariableNode[] vars = TypedVariableNode.parseList(tokens);
         if (!tokens.tokenIs("in")) {
             throw new ParserException("Expected in, got "+tokens.getFirst());
         }
-        tokens.nextToken();
+        tokens.nextToken(true);
         TestNode[] looped = TestNode.parseList(tokens, true);
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Expected }, got "+tokens.getFirst());
