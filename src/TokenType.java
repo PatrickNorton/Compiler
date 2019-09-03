@@ -2,6 +2,9 @@ import org.intellij.lang.annotations.Language;
 
 import java.util.regex.Pattern;
 
+/**
+ * The possible types for a token to be.
+ */
 public enum TokenType {
     // Whitespace. Matches comments, spaces, and escaped newlines
     WHITESPACE("^(#\\|((?!\\|#).|\n)*\\|#|#.*|[\t ]+|\\\\\n)"),
@@ -32,6 +35,7 @@ public enum TokenType {
     // Assignment, and dynamic assignment (:=)
     ASSIGN("^:?="),
     // String literals, including f-strings
+    // TODO: Single-quoted strings
     STRING("^([efb]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")"),
     // Boolean operators
     BOOL_OP("^\\b(and|or|not|xor)\\b"),

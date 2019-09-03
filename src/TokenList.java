@@ -1,11 +1,24 @@
+// TODO? Lazy-loading (incl. use of Scanner.findWithinHorizon)
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 
+/**
+ * The list of tokens.
+ * @author Patrick Norton
+ */
 public class TokenList implements Iterable<Token> {
     private LinkedList<Token> tokens;
 
+    /**
+     * Test if either a brace or a line contains something of the types.
+     * @param braces Whether or not to check within the brace or the line
+     * @param question The questions to test for
+     * @return Whether or not the token was found
+     */
     public boolean contains(boolean braces, TokenType... question) {
         if (braces) {
             return braceContains(question);
@@ -14,6 +27,12 @@ public class TokenList implements Iterable<Token> {
         }
     }
 
+    /**
+     * Test if either a brace or a line contains something of the types.
+     * @param braces Whether or not to check within the brace or the line
+     * @param question The questions to test for
+     * @return Whether or not the token was found
+     */
     public boolean contains(boolean braces, String... question) {
         if (braces) {
             return braceContains(question);
@@ -22,6 +41,11 @@ public class TokenList implements Iterable<Token> {
         }
     }
 
+    /**
+     * Test if a line contains a certain type of token.
+     * @param question The questions to test if the line contains
+     * @return If the line contains that token
+     */
     public boolean lineContains(TokenType... question) {
         int netBraces = 0;
         for (Token token : tokens) {
@@ -40,6 +64,11 @@ public class TokenList implements Iterable<Token> {
         return false;
     }
 
+    /**
+     * Test if a line contains a certain type of token.
+     * @param question The questions to test if the line contains
+     * @return If the line contains that token
+     */
     public boolean lineContains(String... question) {
         for (Token token : tokens) {
             if (token.is(TokenType.NEWLINE)) {
@@ -52,6 +81,11 @@ public class TokenList implements Iterable<Token> {
         return false;
     }
 
+    /**
+     * The list of tokens within the first brace found
+     * @return
+     */
+    // TODO: Make into an iterator
     private LinkedList<Token> firstLevel() {
         LinkedList<Token> tokens = new LinkedList<>();
         int netBraces = this.tokenIs(TokenType.OPEN_BRACE) ? 0 : 1;
@@ -76,6 +110,11 @@ public class TokenList implements Iterable<Token> {
         throw new RuntimeException("You shouldn't have ended up here");
     }
 
+    /**
+     * Check whether or not the open brace contains a token of a certain type.
+     * @param question The token types to test for
+     * @return Whether or not that token is contained in the brace
+     */
     public boolean braceContains(TokenType... question) {
         for (Token token : firstLevel()) {
             if (token.is(question)) {
@@ -85,6 +124,11 @@ public class TokenList implements Iterable<Token> {
         return false;
     }
 
+    /**
+     * Check whether or not the open brace contains a token of a certain type.
+     * @param question The token types to test for
+     * @return Whether or not that token is contained in the brace
+     */
     public boolean braceContains(String... question) {
         for (Token token : firstLevel()) {
             if (token.is(question)) {
@@ -94,10 +138,19 @@ public class TokenList implements Iterable<Token> {
         return false;
     }
 
+    /**
+     * Get the size of the variable at the start of the list of tokens.
+     * @return The size of the variable
+     */
     public int sizeOfVariable() {
         return sizeOfVariable(0);
     }
 
+    /**
+     * Get the size of the variable at the start of the list of tokens.
+     * @param offset The place to start at
+     * @return The size of the variable
+     */
     public int sizeOfVariable(int offset) {
         assert tokenIs(offset, TokenType.NAME);
         int netBraces = 0;
@@ -135,6 +188,11 @@ public class TokenList implements Iterable<Token> {
         }
     }
 
+    /**
+     * The size of the brace beginning at the specified offset.
+     * @param offset The offset to start at
+     * @return The size of the brace
+     */
     public int sizeOfBrace(int offset) {
         int netBraces = 0;
         int size = offset;
@@ -152,6 +210,9 @@ public class TokenList implements Iterable<Token> {
         return size;
     }
 
+    /**
+     * Expect and parse a newline from the beginning of the list.
+     */
     public void Newline() {
         if (!tokenIs(TokenType.NEWLINE)) {
             throw new ParserException("Expected newline, got "+getFirst());
@@ -159,12 +220,16 @@ public class TokenList implements Iterable<Token> {
         nextToken();
     }
 
+    /**
+     * Remove all leading newlines from the list.
+     */
     public void passNewlines() {
         while (!isEmpty() && tokenIs(TokenType.NEWLINE)) {
             nextToken(false);
         }
     }
 
+    @Contract(pure = true)
     public TokenList(LinkedList<Token> tokens) {
         this.tokens = tokens;
     }
@@ -220,7 +285,9 @@ public class TokenList implements Iterable<Token> {
         return tokens.size();
     }
 
-    static String matchingBrace(String brace) {
+    @NotNull
+    @Contract(pure = true)
+    static String matchingBrace(@NotNull String brace) {
         switch (brace) {
             case "(":
                 return ")";
