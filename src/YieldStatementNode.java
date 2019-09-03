@@ -1,9 +1,17 @@
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 
+/**
+ * The class representing a yield statement.
+ * @author Patrick Norton
+ */
 public class YieldStatementNode implements SimpleStatementNode {
     private boolean is_from;
     private TestNode[] yielded;
 
+    @Contract(pure = true)
     public YieldStatementNode(boolean is_from, TestNode... yielded) {
         this.is_from = is_from;
         this.yielded = yielded;
@@ -17,7 +25,19 @@ public class YieldStatementNode implements SimpleStatementNode {
         return is_from;
     }
 
-    static YieldStatementNode parse(TokenList tokens) {
+    /**
+     * Given a list of tokens, parse a YieldStatementNode.
+     * <p>
+     *     The syntax for a yield statement is: <code>"yield" ["from"] {@link
+     *     TestNode} *("," {@link TestNode}) [",']</code>. The passed list must
+     *     begin with "yield" when passed.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed YieldStatementNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static YieldStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("yield");
         tokens.nextToken();
         boolean is_from = tokens.tokenIs("from");
