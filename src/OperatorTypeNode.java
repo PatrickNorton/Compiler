@@ -55,6 +55,7 @@ public enum OperatorTypeNode implements AtomicNode {
     ITER("iter"),
     NEW("new"),
     IN("in"),
+    NOT_IN("not in"),
     MISSING("missing"),
     DEL("del"),
     DEL_ATTR("del[]"),
@@ -62,6 +63,8 @@ public enum OperatorTypeNode implements AtomicNode {
     REPR("repr"),
     BOOL("bool"),
     CASTED("casted"),
+    IS("is"),
+    IS_NOT("is not"),
     ;
     public final String name;
 
