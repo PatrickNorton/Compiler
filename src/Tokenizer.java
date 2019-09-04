@@ -1,8 +1,11 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -10,56 +13,73 @@ import java.util.regex.Matcher;
  * @author Patrick Norton
  */
 public class Tokenizer {
-    private LinkedList<Token> tokens;
+    private Scanner file;
+    private static Pattern delimiter = Pattern.compile(
+            "(?=#\\|((?!#\\|).|\n)*#\\||#(?!\\|).*|(?<![bfre])[bfre]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\"|(?<!\\\\)\\R)", Pattern.MULTILINE);
+    private String next;
 
     @Contract(pure = true)
-    private Tokenizer() {
-        tokens = new LinkedList<>();
+    private Tokenizer(File name) throws FileNotFoundException {
+        file = new Scanner(name).useDelimiter(delimiter);
+        next = file.next();
     }
 
-    /**
-     * Lex a string into a list of tokens.
-     * @param str The string to lex
-     */
-    private void tokenize(String str) {
-        String s = str;
-        tokens.clear();
-        while (!s.equals("")) {
-            boolean match = false;
-            for (TokenType info : TokenType.values()) {
-                Matcher m = info.regex.matcher(s);
-                if (m.find()) {
-                    match = true;
-                    if (info != TokenType.WHITESPACE) {
-                        String tok = m.group();
-                        tokens.add(new Token(info, tok));
+    Tokenizer(String str) {
+        file = new Scanner(str).useDelimiter(delimiter);
+        next = file.next();
+    }
+
+    Token tokenizeNext() {
+        while (next.isEmpty()) {
+            if (file.hasNext()) {
+                next = file.next();
+                String a = "";
+            } else {
+                return new Token(TokenType.EPSILON, "");
+            }
+        }
+        for (TokenType info : TokenType.values()) {
+            Matcher match = info.regex.matcher(next);
+            if (match.find()) {
+                if (info == TokenType.WHITESPACE) {
+                    do {
+                        next = next.substring(match.end());
+                        match = info.regex.matcher(next);
+                    } while (match.find());
+                } else if (info == TokenType.EPSILON) {
+                    if (file.hasNext()) {
+                        next = file.next();
+                        return tokenizeNext();
+                    } else {
+                        return new Token(TokenType.EPSILON, "");
                     }
-                    s = m.replaceFirst("");
-                    break;
+                } else {
+                    next = next.substring(match.end());
+                    return new Token(info, match.group());
                 }
             }
-            if (!match) throw new RuntimeException(s);
         }
-        tokens.add(new Token(TokenType.EPSILON, ""));
-    }
-
-    public LinkedList<Token> getTokens() {
-        return tokens;
+        throw new ParserException("Syntax error");
     }
 
     /**
      * Parse the string passed.
-     * @param str The string to lex
+     * @param f The file to pass
      * @return The tokenizer with the list of tokens
      */
+    @Contract("_ -> new")
     @NotNull
-    public static Tokenizer parse(String str) {
-        Tokenizer tokenizer = new Tokenizer();
+    public static TokenList parse(File f) {
+        Tokenizer tokenizer;
         try {
-            tokenizer.tokenize(str);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+            tokenizer = new Tokenizer(f);
+        } catch (FileNotFoundException e) {
+            throw new ParserException("File not found");
         }
-        return tokenizer;
+        return new TokenList(tokenizer);
+    }
+
+    public static TokenList parse(String str) {
+        return new TokenList(new Tokenizer(str));
     }
 }

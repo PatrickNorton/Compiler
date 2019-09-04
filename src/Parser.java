@@ -13,15 +13,15 @@ public class Parser {
 
     private TokenList tokens;
 
-    private Parser(LinkedList<Token> tokens) {
-        this.tokens = new TokenList(tokens);
+    private Parser(TokenList tokens) {
+        this.tokens = tokens;
     }
 
     public TokenList getTokens() {
         return tokens;
     }
 
-    public static TopNode parse(LinkedList<Token> tokens) {
+    public static TopNode parse(TokenList tokens) {
         Parser parser = new Parser(tokens);
         TopNode topNode = new TopNode();
         while (!parser.tokens.tokenIs(TokenType.EPSILON)) {

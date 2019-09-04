@@ -1,20 +1,9 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
 
 public class Compiler {
-    public static void main(String[] args) throws java.io.IOException {
-        StringBuilder everything;
+    public static void main(String[] args) {
         String filename = "/Users/Patricknorton/Projects/Python files/CAS.newlang";
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            everything = new StringBuilder();
-            String line = br.readLine();
-            while (line != null) {
-                everything.append(line);
-                everything.append("\n");
-                line = br.readLine();
-            }
-        }
-        Tokenizer tokens = Tokenizer.parse(everything.toString());
-        BaseNode base = Parser.parse(tokens.getTokens());
+        TokenList tokens = Tokenizer.parse(new File(filename));
+        BaseNode base = Parser.parse(tokens);
     }
 }

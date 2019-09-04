@@ -95,11 +95,12 @@ public class OperatorNode implements SubTestNode {
     @Contract("_, _ -> new")
     static OperatorNode parse(@NotNull TokenList tokens, boolean ignore_newline) {
         assert tokens.tokenIs(TokenType.OPERATOR);
-        if (!tokens.tokenIs("-")) {
+        if (!tokens.tokenIs("-", "~")) {
             throw new ParserException("- is the only unary operator");
         }
+        Token operator = tokens.getFirst();
         tokens.nextToken(ignore_newline);
         TestNode next = TestNode.parse(tokens, ignore_newline);
-        return new OperatorNode(tokens.getFirst().sequence, next);
+        return new OperatorNode(operator.sequence, next);
     }
 }

@@ -91,7 +91,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     @NotNull
     @Contract("_ -> new")
     static OperatorDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.OPERATOR);
+        assert tokens.tokenIs(TokenType.OPERATOR_SP);
         String op_code = tokens.getFirst().sequence.replaceFirst("operator *", "");
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.ASSIGN)) {
