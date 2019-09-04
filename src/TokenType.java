@@ -31,7 +31,7 @@ public enum TokenType {
     // The magical arrow unicorn
     ARROW("^->"),
     // Standard, boring operators, + - **
-    OPERATOR("^(==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%])"),
+    OPERATOR("^(==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%]|\\bis( not)?\\b)"),
     // Assignment, and dynamic assignment (:=)
     ASSIGN("^:?="),
     // String literals, including f-strings
