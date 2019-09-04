@@ -1,5 +1,9 @@
 import org.jetbrains.annotations.Contract;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 // TODO: Make me an enum
 
 /**
@@ -14,15 +18,38 @@ import org.jetbrains.annotations.Contract;
  * @see InterfaceStatementNode
  * @see ClassStatementNode
  */
-public class DescriptorNode implements AtomicNode {
-    public String name;
+public enum DescriptorNode implements AtomicNode {
+    PUBLIC("public"),
+    PRIVATE("private"),
+    PUBGET("pubget"),
+    STATIC("static"),
+    CONST("const"),
+    CLASS("class"),
+    FINAL("final"),
+    GENERATOR("generator"),
+    ;
+    public final String name;
+
+    private static Map<String, DescriptorNode> values;
+
+    static {
+        Map<String, DescriptorNode> temp = new HashMap<>();
+        for (DescriptorNode d : DescriptorNode.values()) {
+            temp.put(d.name, d);
+        }
+        values = Collections.unmodifiableMap(temp);
+    }
 
     @Contract(pure = true)
-    public DescriptorNode(String name) {
+    DescriptorNode(String name) {
         this.name = name;
     }
 
     public String getName() {
         return name;
+    }
+
+    public static DescriptorNode find(String type) {
+        return values.get(type);
     }
 }

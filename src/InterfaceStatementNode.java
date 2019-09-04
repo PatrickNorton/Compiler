@@ -26,11 +26,11 @@ public interface InterfaceStatementNode extends BaseNode {
               || (tokens.tokenIs("class") && tokens.getToken(1).is(TokenType.DESCRIPTOR, TokenType.KEYWORD))) {
             LinkedList<DescriptorNode> descriptors = new LinkedList<>();
             if (tokens.tokenIs("class")) {
-                descriptors.add(new DescriptorNode("class"));
+                descriptors.add(DescriptorNode.find("class"));
                 tokens.nextToken();
             }
             while (tokens.tokenIs(TokenType.DESCRIPTOR)) {
-                descriptors.add(new DescriptorNode(tokens.getFirst().sequence));
+                descriptors.add(DescriptorNode.find(tokens.getFirst().sequence));
                 tokens.nextToken();
             }
             int line_size = 0;
