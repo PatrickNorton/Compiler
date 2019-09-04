@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  */
 public enum TokenType {
     // Whitespace. Matches comments, spaces, and escaped newlines
-    WHITESPACE("^(#\\|((?!\\|#).|\n)*\\|#|#.*|[\t ]+|\\\\\n)"),
+    WHITESPACE("^(#\\|((?!\\|#).|\\R)*\\|#|#.*|[\t ]+|\\\\\\R)"),
     // Matches when input is empty
     EPSILON("^\\z"),
     // Matches newlines of all types
@@ -36,7 +36,7 @@ public enum TokenType {
     ASSIGN("^:?="),
     // String literals, including f-strings
     // TODO: Single-quoted strings
-    STRING("^([efb]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")"),
+    STRING("^([refb]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")"),
     // Boolean operators
     BOOL_OP("^\\b(and|or|not|xor)\\b"),
     // Numbers, from 123 to 0xab4f6.245

@@ -5,13 +5,27 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Scanner;
 
 /**
  * The list of tokens.
  * @author Patrick Norton
  */
 public class TokenList implements Iterable<Token> {
-    private LinkedList<Token> tokens;
+    private LinkedList<Token> buffer;
+    private Tokenizer tokenizer;
+
+    @Contract(pure = true)
+    public TokenList(LinkedList<Token> buffer) {
+        this.buffer = buffer;
+        this.tokenizer = new Tokenizer("");
+    }
+
+    public TokenList(Tokenizer tokenizer) {
+        this.buffer = new LinkedList<>();
+        this.tokenizer = tokenizer;
+    }
 
     /**
      * Test if either a brace or a line contains something of the types.
@@ -19,7 +33,7 @@ public class TokenList implements Iterable<Token> {
      * @param question The questions to test for
      * @return Whether or not the token was found
      */
-    public boolean contains(boolean braces, TokenType... question) {
+    boolean contains(boolean braces, TokenType... question) {
         if (braces) {
             return braceContains(question);
         } else {
@@ -33,7 +47,7 @@ public class TokenList implements Iterable<Token> {
      * @param question The questions to test for
      * @return Whether or not the token was found
      */
-    public boolean contains(boolean braces, String... question) {
+    boolean contains(boolean braces, String... question) {
         if (braces) {
             return braceContains(question);
         } else {
@@ -46,9 +60,9 @@ public class TokenList implements Iterable<Token> {
      * @param question The questions to test if the line contains
      * @return If the line contains that token
      */
-    public boolean lineContains(TokenType... question) {
+    boolean lineContains(TokenType... question) {
         int netBraces = 0;
-        for (Token token : tokens) {
+        for (Token token : this) {
             if (token.is(TokenType.OPEN_BRACE)) {
                 netBraces++;
             } else if (token.is(TokenType.CLOSE_BRACE)) {
@@ -69,8 +83,8 @@ public class TokenList implements Iterable<Token> {
      * @param question The questions to test if the line contains
      * @return If the line contains that token
      */
-    public boolean lineContains(String... question) {
-        for (Token token : tokens) {
+    boolean lineContains(String... question) {
+        for (Token token : this) {
             if (token.is(TokenType.NEWLINE)) {
                 return false;
             }
@@ -83,13 +97,13 @@ public class TokenList implements Iterable<Token> {
 
     /**
      * The list of tokens within the first brace found
-     * @return
+     * @return The list of tokens
      */
     // TODO: Make into an iterator
     private LinkedList<Token> firstLevel() {
         LinkedList<Token> tokens = new LinkedList<>();
         int netBraces = this.tokenIs(TokenType.OPEN_BRACE) ? 0 : 1;
-        for (Token token : this.tokens) {
+        for (Token token : this) {
             switch (token.token) {
                 case OPEN_BRACE:
                     netBraces++;
@@ -115,7 +129,7 @@ public class TokenList implements Iterable<Token> {
      * @param question The token types to test for
      * @return Whether or not that token is contained in the brace
      */
-    public boolean braceContains(TokenType... question) {
+    boolean braceContains(TokenType... question) {
         for (Token token : firstLevel()) {
             if (token.is(question)) {
                 return true;
@@ -129,7 +143,7 @@ public class TokenList implements Iterable<Token> {
      * @param question The token types to test for
      * @return Whether or not that token is contained in the brace
      */
-    public boolean braceContains(String... question) {
+    boolean braceContains(String... question) {
         for (Token token : firstLevel()) {
             if (token.is(question)) {
                 return true;
@@ -142,7 +156,7 @@ public class TokenList implements Iterable<Token> {
      * Get the size of the variable at the start of the list of tokens.
      * @return The size of the variable
      */
-    public int sizeOfVariable() {
+    int sizeOfVariable() {
         return sizeOfVariable(0);
     }
 
@@ -151,7 +165,7 @@ public class TokenList implements Iterable<Token> {
      * @param offset The place to start at
      * @return The size of the variable
      */
-    public int sizeOfVariable(int offset) {
+    int sizeOfVariable(int offset) {
         assert tokenIs(offset, TokenType.NAME);
         int netBraces = 0;
         boolean wasVar = false;
@@ -193,10 +207,10 @@ public class TokenList implements Iterable<Token> {
      * @param offset The offset to start at
      * @return The size of the brace
      */
-    public int sizeOfBrace(int offset) {
+    int sizeOfBrace(int offset) {
         int netBraces = 0;
         int size = offset;
-        for (Token token : tokens) {
+        for (Token token : this) {
             if (token.is(TokenType.OPEN_BRACE)) {
                 netBraces++;
             } else if (token.is(TokenType.CLOSE_BRACE)) {
@@ -224,65 +238,96 @@ public class TokenList implements Iterable<Token> {
      * Remove all leading newlines from the list.
      */
     public void passNewlines() {
-        while (!isEmpty() && tokenIs(TokenType.NEWLINE)) {
-            nextToken(false);
+        while (tokenIs(TokenType.NEWLINE)) {
+            nextToken();
         }
     }
 
-    @Contract(pure = true)
-    public TokenList(LinkedList<Token> tokens) {
-        this.tokens = tokens;
-    }
-
     public Token getToken(int index) {
-        return tokens.get(index);
+        while (buffer.size() <= index) {
+            buffer.add(tokenizer.tokenizeNext());
+        }
+        return buffer.get(index);
     }
 
     public Token getFirst() {
-        return tokens.getFirst();
+        if (buffer.isEmpty()) {
+            buffer.add(tokenizer.tokenizeNext());
+        }
+        return buffer.getFirst();
     }
 
     public boolean tokenIs(TokenType... types) {
-        return tokens.getFirst().is(types);
+        return getFirst().is(types);
     }
 
     public boolean tokenIs(String... types) {
-        return tokens.getFirst().is(types);
+        return getFirst().is(types);
     }
 
     public boolean tokenIs(int index, TokenType... types) {
-        return tokens.get(index).is(types);
+        return getToken(index).is(types);
     }
 
     public boolean tokenIs(int index, String... types) {
-        return tokens.get(index).is(types);
-    }
-
-    public boolean isEmpty() {
-        return tokens.isEmpty();
+        return getToken(index).is(types);
     }
 
     public void nextToken() {
-        nextToken(false);
+        if (buffer.size() >= 1) {
+            buffer.pop();
+        } else {
+            tokenizer.tokenizeNext();
+        }
     }
 
     public void nextToken(boolean ignore_newlines) {
-        tokens.pop();
+        nextToken();
         if (ignore_newlines) {
-            while (tokens.getFirst().is(TokenType.NEWLINE)) {
-                tokens.pop();
+            while (getFirst().is(TokenType.NEWLINE)) {
+                nextToken();
             }
+        }
+    }
+
+    private class TokenIterator implements Iterator<Token> {
+        private ListIterator<Token> bufferIterator = buffer.listIterator();
+        private Token next = null;
+
+//        private TokenIterator() {
+//            buffer();
+//        }
+
+        @Override
+        public boolean hasNext() {
+            if (bufferIterator.hasNext()) {
+                return true;
+            }
+            if (next == null) {
+                buffer();
+            }
+            return !next.is(TokenType.EPSILON);
+        }
+
+        @Override
+        public Token next() {
+            if (!bufferIterator.hasNext()) {
+                buffer();
+            }
+            return bufferIterator.next();
+        }
+
+        private void buffer() {
+            next = tokenizer.tokenizeNext();
+            bufferIterator.add(next);
+            bufferIterator.previous();
         }
     }
 
     @NotNull
     @Override
     public Iterator<Token> iterator() {
-        return tokens.iterator();
-    }
-
-    public int size() {
-        return tokens.size();
+        return new TokenIterator();
     }
 
     @NotNull

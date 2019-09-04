@@ -54,6 +54,11 @@ public class ImportStatementNode implements ImportExportNode {
     @Contract("_ -> new")
     static ImportStatementNode parse(@NotNull TokenList tokens) {
         // FIXME: Does not parse "from" statements properly
+        DottedVariableNode from = new DottedVariableNode();
+        if (tokens.tokenIs("from")) {
+            tokens.nextToken();
+            from = DottedVariableNode.parse(tokens);
+        }
         assert tokens.tokenIs("import");
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
@@ -61,6 +66,6 @@ public class ImportStatementNode implements ImportExportNode {
         }
         DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
         tokens.Newline();
-        return new ImportStatementNode(imports);
+        return new ImportStatementNode(imports, from);
     }
 }
