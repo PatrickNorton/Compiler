@@ -1,3 +1,4 @@
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,7 +65,7 @@ public enum OperatorTypeNode implements AtomicNode {
     ;
     public final String name;
 
-    private static Map<String, OperatorTypeNode> values = new HashMap<>();
+    private static Map<String, OperatorTypeNode> values;
 
     /**
      * Create new instance of OperatorTypeNode.
@@ -75,9 +76,11 @@ public enum OperatorTypeNode implements AtomicNode {
     }
 
     static {  // Initialise the map
+        Map<String, OperatorTypeNode> temp = new HashMap<>();
         for (OperatorTypeNode op : OperatorTypeNode.values()) {
-            values.put(op.name, op);
+            temp.put(op.name, op);
         }
+        values = Collections.unmodifiableMap(temp);
     }
 
     /**
