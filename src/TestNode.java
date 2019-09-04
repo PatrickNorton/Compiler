@@ -176,8 +176,8 @@ public interface TestNode extends BaseNode {
             parseExpression(nodes, "&");
             parseExpression(nodes, "^", "|");
             parseExpression(nodes, "<", "<=", ">", ">=", "!=", "==");
-            parseExpression(nodes, "in");
             parseExpression(nodes, "not");
+            parseExpression(nodes, "in");
             parseExpression(nodes, "and");
             parseExpression(nodes, "or");
             parseExpression(nodes, "casted");
@@ -245,8 +245,8 @@ public interface TestNode extends BaseNode {
         TestNode node = nodes.get(nodeNumber);
         TestNode next = nodes.get(nodeNumber + 1);
         TestNode op;
-        if (node instanceof OperatorTypeNode) {
-            op = new OperatorNode(((OperatorTypeNode) node), next);
+        if (node instanceof OperatorNode) {
+            op = new OperatorNode(((OperatorNode) node).getOperator(), next);
         }  else {
             throw new ParserException("Unexpected node for parseOperator");
         }

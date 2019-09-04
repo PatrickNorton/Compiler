@@ -76,12 +76,10 @@ public class StringNode implements AtomicNode {
                         throw new ParserException("Unmatched braces in "+tokens.getFirst().sequence);
                     }
                     end = m.end();
-                    LinkedList<Token> tokenList = Tokenizer.parse(to_test.substring(1, to_test.length() - 1)).getTokens();
-                    tokenList.add(new Token(TokenType.EPSILON, ""));
-                    TokenList newTokens = new TokenList(tokenList);
-                    tests.add(TestNode.parse(newTokens));
-                    if (!newTokens.tokenIs(TokenType.EPSILON)) {
-                        throw new ParserException("Unexpected " + newTokens.getFirst());
+                    TokenList tokenList = Tokenizer.parse(to_test.substring(1, to_test.length() - 1));
+                    tests.add(TestNode.parse(tokenList));
+                    if (!tokenList.tokenIs(TokenType.EPSILON)) {
+                        throw new ParserException("Unexpected " + tokenList.getFirst());
                     }
                     index = end + 1;
                 }
