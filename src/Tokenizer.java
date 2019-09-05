@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class Tokenizer {
     private Scanner file;
     private static Pattern delimiter = Pattern.compile(
-            "(?=#\\|((?!#\\|).|\n)*#\\||#(?!\\|).*|(?<![bfre])[bfre]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\"|(?<!\\\\)\\R)", Pattern.MULTILINE);
+            "(?=#\\|((?!#\\|).|\n)*#\\||#(?!\\|).*|(?<![bfre])[bfre]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\"|(?<!\\\\)\\R)");
     private String next;
 
     @Contract(pure = true)
@@ -29,11 +29,14 @@ public class Tokenizer {
         next = file.next();
     }
 
+    /**
+     * Get the next token from the tokenized file.
+     * @return The next token
+     */
     Token tokenizeNext() {
         while (next.isEmpty()) {
             if (file.hasNext()) {
                 next = file.next();
-                String a = "";
             } else {
                 return new Token(TokenType.EPSILON, "");
             }
@@ -79,6 +82,8 @@ public class Tokenizer {
         return new TokenList(tokenizer);
     }
 
+    @NotNull
+    @Contract("_ -> new")
     public static TokenList parse(String str) {
         return new TokenList(new Tokenizer(str));
     }
