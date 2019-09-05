@@ -4,15 +4,17 @@
 // TODO: operator + = (something)
 // FIXME: Allow self/cls declarations
 // TODO: Annotations
-// TODO: "is" operator
+// TODO: Enums
 
 
-import java.util.LinkedList;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public class Parser {
 
     private TokenList tokens;
 
+    @Contract(pure = true)
     private Parser(TokenList tokens) {
         this.tokens = tokens;
     }
@@ -21,6 +23,7 @@ public class Parser {
         return tokens;
     }
 
+    @NotNull
     public static TopNode parse(TokenList tokens) {
         Parser parser = new Parser(tokens);
         TopNode topNode = new TopNode();
