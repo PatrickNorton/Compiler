@@ -22,6 +22,7 @@ public class TokenList implements Iterable<Token> {
         this.tokenizer = new Tokenizer("");
     }
 
+    @Contract(pure = true)
     public TokenList(Tokenizer tokenizer) {
         this.buffer = new LinkedList<>();
         this.tokenizer = tokenizer;
@@ -60,7 +61,7 @@ public class TokenList implements Iterable<Token> {
      * @param question The questions to test if the line contains
      * @return If the line contains that token
      */
-    boolean lineContains(TokenType... question) {
+    boolean lineContains(TokenType... question) {  // FIXME: Don't parse entire block if used on conditional
         int netBraces = 0;
         for (Token token : this) {
             if (token.is(TokenType.OPEN_BRACE)) {
@@ -73,6 +74,9 @@ public class TokenList implements Iterable<Token> {
             }
             if (netBraces == 0 && token.is(question)) {
                 return true;
+            }
+            if (netBraces < 0) {
+                return false;
             }
         }
         return false;
@@ -193,7 +197,7 @@ public class TokenList implements Iterable<Token> {
                 case EPSILON:
                     if (netBraces > 0) {
                         throw new ParserException("Unmatched brace");
-                    }
+                    }  // Intentional fallthrough here
                 default:
                     if (netBraces == 0) {
                         return size;
@@ -243,6 +247,11 @@ public class TokenList implements Iterable<Token> {
         }
     }
 
+    /**
+     * Get the token at an index.
+     * @param index The index to get the token at
+     * @return The token at the index
+     */
     public Token getToken(int index) {
         while (buffer.size() <= index) {
             buffer.add(tokenizer.tokenizeNext());
@@ -250,6 +259,10 @@ public class TokenList implements Iterable<Token> {
         return buffer.get(index);
     }
 
+    /**
+     * Get the first token in the queue.
+     * @return The first token
+     */
     public Token getFirst() {
         if (buffer.isEmpty()) {
             buffer.add(tokenizer.tokenizeNext());
@@ -257,22 +270,47 @@ public class TokenList implements Iterable<Token> {
         return buffer.getFirst();
     }
 
+    /**
+     * Test if the first token is one of a series of types.
+     * @param types The types to check against
+     * @return Whether or not the token is of that type
+     */
     public boolean tokenIs(TokenType... types) {
         return getFirst().is(types);
     }
 
+    /**
+     * Test if the first token is one of a series of values.
+     * @param types The values to check against
+     * @return Whether or not the token is of that value
+     */
     public boolean tokenIs(String... types) {
         return getFirst().is(types);
     }
 
+    /**
+     * Test if the token at the index is one of a certain set of types.
+     * @param index The index to check for type
+     * @param types The types to check against
+     * @return Whether the token is of those types
+     */
     public boolean tokenIs(int index, TokenType... types) {
         return getToken(index).is(types);
     }
 
+    /**
+     * Test if the token at the index is one of a certain set of values.
+     * @param index The index to check for value
+     * @param types The values to check against
+     * @return Whether the token is of those values
+     */
     public boolean tokenIs(int index, String... types) {
         return getToken(index).is(types);
     }
 
+    /**
+     * Pop the first token and move on.
+     */
     public void nextToken() {
         if (buffer.size() >= 1) {
             buffer.pop();
@@ -281,6 +319,10 @@ public class TokenList implements Iterable<Token> {
         }
     }
 
+    /**
+     * Pop the first token and move on, possibly ignoring newlines.
+     * @param ignore_newlines Whether or not to ignore newlines
+     */
     public void nextToken(boolean ignore_newlines) {
         nextToken();
         if (ignore_newlines) {
@@ -293,10 +335,6 @@ public class TokenList implements Iterable<Token> {
     private class TokenIterator implements Iterator<Token> {
         private ListIterator<Token> bufferIterator = buffer.listIterator();
         private Token next = null;
-
-//        private TokenIterator() {
-//            buffer();
-//        }
 
         @Override
         public boolean hasNext() {
