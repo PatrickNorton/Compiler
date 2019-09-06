@@ -176,7 +176,7 @@ public interface TestNode extends BaseNode {
             parseExpression(nodes, "&");
             parseExpression(nodes, "^", "|");
             parseExpression(nodes, "<", "<=", ">", ">=", "!=", "==");
-            parseExpression(nodes, "in", "is", "is not");
+            parseExpression(nodes, "in", "is", "is not", "not in");
             parseExpression(nodes, "not");
             parseExpression(nodes, "and");
             parseExpression(nodes, "or");
