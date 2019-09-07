@@ -175,7 +175,8 @@ public interface BaseNode {
             if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
                 throw new ParserException("Expected augmented assignment, got " + tokens.getFirst());
             }
-            OperatorNode op = new OperatorNode(tokens.getFirst().sequence.replaceAll("=$", ""));
+            String op_name = tokens.getFirst().sequence.replaceAll("=$", "");
+            OperatorTypeNode op = OperatorTypeNode.findOp(op_name, OperatorTypeNode.Use.AUG_ASSIGN);
             tokens.nextToken();
             TestNode assignment = TestNode.parse(tokens);
             return new AugmentedAssignmentNode(op, var, assignment);
