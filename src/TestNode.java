@@ -365,12 +365,12 @@ public interface TestNode extends BaseNode {
      * @return The parsed operator function
      */
     static SubTestNode parseOpFunc(@NotNull TokenList tokens) {  // FIXME: Move this somewhere more reasonable
-        String op_code = tokens.getFirst().sequence.replaceFirst("\\\\", "");
-        tokens.nextToken();
+        assert tokens.tokenIs(TokenType.OP_FUNC);
+        OperatorTypeNode op_code = OperatorTypeNode.parse(tokens);
         if (tokens.tokenIs("(")) {
             return new OperatorNode(op_code, TypedArgumentListNode.parse(tokens));
         } else {
-            return OperatorTypeNode.findOp(op_code, OperatorTypeNode.Use.OP_FUNC);
+            return op_code;
         }
     }
 

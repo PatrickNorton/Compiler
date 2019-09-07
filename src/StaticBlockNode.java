@@ -16,6 +16,11 @@ public class StaticBlockNode implements ClassStatementNode {
     }
 
     @Override
+    public DescriptorNode[] getDescriptors() {
+        return new DescriptorNode[0];
+    }
+
+    @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         throw new ParserException("Unexpected descriptor in static block");
     }
