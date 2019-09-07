@@ -117,7 +117,7 @@ public class DottedVariableNode implements NameNode {
             if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
                 String op_type = tokens.getFirst().sequence.replaceFirst("operator *",  "");
                 tokens.nextToken();
-                postDot.add(new SpecialOpNameNode(OperatorTypeNode.find_op(op_type)));
+                postDot.add(new SpecialOpNameNode(OperatorTypeNode.findOp(op_type, OperatorTypeNode.Use.OPERATOR_SP)));
                 break;
             }
             postDot.add(NameNode.parse(tokens));

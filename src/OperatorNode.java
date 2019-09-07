@@ -16,19 +16,8 @@ public class OperatorNode implements SubTestNode {
      * @param operands The operands of the operator
      */
     @Contract(pure = true)
-    public OperatorNode(String operator, TestNode... operands) {
-        this.operator = OperatorTypeNode.find_op(operator);
-        this.operands = operands;
-    }
-
-    /**
-     * Construct a new instance of OperatorNode.
-     * @param operator The operator itself
-     * @param operands The operands of the operator
-     */
-    @Contract(pure = true)
     public OperatorNode(String operator, @NotNull TypedArgumentListNode operands) {
-        this.operator = OperatorTypeNode.find_op(operator);
+        this.operator = OperatorTypeNode.findOp(operator);
         this.operands = operands.getArgs();
     }
 
@@ -41,6 +30,16 @@ public class OperatorNode implements SubTestNode {
     public OperatorNode(OperatorTypeNode operator, TestNode... operands) {
         this.operator = operator;
         this.operands = operands;
+    }
+
+    /**
+     * Construct a new instance of OperatorNode.
+     * @param operator The operator of the operand
+     * @param op_types The types of the operator being used
+     */
+    public OperatorNode(String operator, OperatorTypeNode.Use... op_types) {
+        this.operator = OperatorTypeNode.findOp(operator, op_types);
+        this.operands = new TestNode[0];
     }
 
     public OperatorTypeNode getOperator() {
@@ -70,7 +69,7 @@ public class OperatorNode implements SubTestNode {
         switch (tokens.getFirst().sequence) {
             case "not":
                 tokens.nextToken(ignore_newline);
-                return new OperatorNode("not", TestNode.parse(tokens));
+                return new OperatorNode(OperatorTypeNode.BOOL_NOT, TestNode.parse(tokens));
             case "and":
             case "or":
             case "xor":
@@ -101,6 +100,7 @@ public class OperatorNode implements SubTestNode {
         Token operator = tokens.getFirst();
         tokens.nextToken(ignore_newline);
         TestNode next = TestNode.parse(tokens, ignore_newline);
-        return new OperatorNode(operator.sequence, next);
+        OperatorTypeNode op = OperatorTypeNode.findOp(operator.sequence, OperatorTypeNode.Use.STANDARD, OperatorTypeNode.Use.UNARY);
+        return new OperatorNode(op, next);
     }
 }
