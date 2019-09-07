@@ -148,6 +148,10 @@ public interface BaseNode {
                 return SomeStatementNode.parse(tokens);
             case "interface":
                 return InterfaceDefinitionNode.parse(tokens);
+            case "switch":
+                return SwitchStatementNode.parse(tokens);
+            case "case":
+                throw new ParserException("Unexpected case");
             default:
                 throw new RuntimeException("Keyword mismatch");
         }
