@@ -3,6 +3,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 
+/**
+ * The class representing a switch statement.
+ * @author Patrick Norton
+ * @see CaseStatementNode
+ */
 public class SwitchStatementNode implements StatementNode {
     private TestNode switched;
     private CaseStatementNode[] cases;
@@ -21,6 +26,17 @@ public class SwitchStatementNode implements StatementNode {
         return cases;
     }
 
+    /**
+     * Parse a switch statement from a list of tokens.
+     * <p>
+     *     The syntax for a switch statement is: <code>"switch" "{" *{@link
+     *     CaseStatementNode} "}"</code>. The list of tokens passed must begin
+     *     with "switch", and all case statements must be of the same
+     *     fallthrough type.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed SwitchStatementNode.
+     */
     @NotNull
     @Contract("_ -> new")
     public static SwitchStatementNode parse(@NotNull TokenList tokens) {
