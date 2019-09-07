@@ -1,10 +1,9 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
 // TODO? Remove SubTestNode & replace with something more meaningful
-// TODO: operator + = (something)
-// FIXME: Allow self/cls declarations
 // TODO: Annotations
 // TODO: Enums
+// TODO: Switch
 
 
 import org.jetbrains.annotations.Contract;

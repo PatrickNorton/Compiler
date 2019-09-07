@@ -47,7 +47,11 @@ public interface BaseNode {
             case NUMBER:
                 return NumberNode.parse(tokens);
             case OPERATOR_SP:
-                return OperatorDefinitionNode.parse(tokens);
+                if (tokens.tokenIs(1, "=")) {
+                    return SpecialOpAssignmentNode.parse(tokens);
+                } else {
+                    return OperatorDefinitionNode.parse(tokens);
+                }
             case OP_FUNC:
                 return TestNode.parseOpFunc(tokens);
             case COLON:
@@ -175,9 +179,7 @@ public interface BaseNode {
             if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
                 throw new ParserException("Expected augmented assignment, got " + tokens.getFirst());
             }
-            String op_name = tokens.getFirst().sequence.replaceAll("=$", "");
-            OperatorTypeNode op = OperatorTypeNode.findOp(op_name, OperatorTypeNode.Use.AUG_ASSIGN);
-            tokens.nextToken();
+            OperatorTypeNode op = OperatorTypeNode.parse(tokens);
             TestNode assignment = TestNode.parse(tokens);
             return new AugmentedAssignmentNode(op, var, assignment);
         } else if (after_var.is("++", "--")) {
