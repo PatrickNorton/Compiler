@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Contract;
  * </p>
  */
 public class AugmentedAssignmentNode implements AssignStatementNode {
-    private OperatorNode operator;
+    private OperatorTypeNode operator;
     private NameNode name;
     private TestNode value;
 
@@ -20,13 +20,13 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
      * @param value the value to which it is being augmented and then assigned
      */
     @Contract(pure = true)
-    public AugmentedAssignmentNode(OperatorNode operator, NameNode name, TestNode value) {
+    public AugmentedAssignmentNode(OperatorTypeNode operator, NameNode name, TestNode value) {
         this.operator = operator;
         this.name = name;
         this.value = value;
     }
 
-    public OperatorNode getOperator() {
+    public OperatorTypeNode getOperator() {
         return operator;
     }
 

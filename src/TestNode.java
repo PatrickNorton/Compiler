@@ -139,7 +139,7 @@ public interface TestNode extends BaseNode {
                         throw new ParserException("Unexpected " + tokens.getFirst());
                     case BOOL_OP:
                     case OPERATOR:
-                        nodes.add(new OperatorNode(tokens.getFirst().sequence));
+                        nodes.add(new OperatorNode(tokens.getFirst().sequence, OperatorTypeNode.Use.STANDARD));
                         tokens.nextToken();
                         break;
                     case OP_FUNC:
@@ -151,7 +151,7 @@ public interface TestNode extends BaseNode {
                         break while_loop;
                     case KEYWORD:
                         if (tokens.tokenIs("in", "casted")) {
-                            nodes.add(new OperatorNode(tokens.getFirst().sequence));
+                            nodes.add(new OperatorNode(tokens.getFirst().sequence, OperatorTypeNode.Use.STANDARD));
                             tokens.nextToken();
                             break;
                         } else if (tokens.tokenIs("if", "else")) {
@@ -203,9 +203,22 @@ public interface TestNode extends BaseNode {
                 if (((OperatorNode) node).getOperands().length != 0) {
                     continue;
                 }
-                String operator = ((OperatorNode) node).getOperator().name;
-                if (Arrays.asList(expr).contains(operator)) {
-                    if (operator.matches("\\+\\+|--|not|~")) {
+                OperatorTypeNode operator = ((OperatorNode) node).getOperator();
+                if (Arrays.asList(expr).contains(operator.name)) {
+                    if (operator == OperatorTypeNode.SUBTRACT) {
+                        TestNode nodePrevious = nodes.get(nodeNumber - 1);
+                        if (nodePrevious instanceof OperatorNode) {
+                            if (((OperatorNode) nodePrevious).getOperands().length == 0) {
+                                parseUnaryOp(nodes, nodeNumber);
+                            } else {
+                                parseOperator(nodes, nodeNumber);
+                                nodeNumber--;
+                            }
+                            parseOperator(nodes, nodeNumber);
+                        }
+                        continue;
+                    }
+                    if (operator.isUse(OperatorTypeNode.Use.UNARY)) {
                         parseUnaryOp(nodes, nodeNumber);
                     } else {
                         parseOperator(nodes, nodeNumber);
@@ -357,7 +370,7 @@ public interface TestNode extends BaseNode {
         if (tokens.tokenIs("(")) {
             return new OperatorNode(op_code, TypedArgumentListNode.parse(tokens));
         } else {
-            return OperatorTypeNode.find_op(op_code);
+            return OperatorTypeNode.findOp(op_code, OperatorTypeNode.Use.OP_FUNC);
         }
     }
 
