@@ -8,6 +8,7 @@ import java.util.LinkedList;
  */
 public interface InterfaceStatementNode extends BaseNode {
     void addDescriptor(DescriptorNode[] nodes);
+    DescriptorNode[] getDescriptors();
 
     /**
      * Parse an interface statement from a list of tokens.

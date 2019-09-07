@@ -143,7 +143,12 @@ public interface ClassStatementNode extends InterfaceStatementNode {
     @NotNull
     private static ClassStatementNode parseDescriptorOpSp(@NotNull TokenList tokens, @NotNull ArrayList<DescriptorNode> descriptors) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
-        OperatorDefinitionNode op_sp = OperatorDefinitionNode.parse(tokens);
+        ClassStatementNode op_sp;
+        if (tokens.tokenIs(1, "=")) {
+            op_sp = SpecialOpAssignmentNode.parse(tokens);
+        } else {
+            op_sp = OperatorDefinitionNode.parse(tokens);
+        }
         op_sp.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
         return op_sp;
     }

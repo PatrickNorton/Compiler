@@ -165,4 +165,26 @@ public enum OperatorTypeNode implements AtomicNode {
             throw new ParserException("Illegal operator "+op.name);
         }
     }
+
+    /**
+     * Parse an OperatorTypeNode from a list of tokens.
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed OperatorTypeNode
+     */
+    @NotNull
+    static OperatorTypeNode parse(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.OPERATOR, TokenType.OP_FUNC, TokenType.AUG_ASSIGN);
+        Token tok = tokens.getFirst();
+        tokens.nextToken();
+        switch (tok.token) {
+            case OPERATOR:
+                return findOp(tok.sequence, Use.STANDARD);
+            case OP_FUNC:
+                return findOp(tok.sequence.replaceFirst("^\\\\", ""), Use.OP_FUNC);
+            case AUG_ASSIGN:
+                return findOp(tok.sequence.replaceFirst("=$", ""), Use.AUG_ASSIGN);
+            default:
+                throw new RuntimeException("Illegal TokenType for OperatorTypeNode.parse "+tok);
+        }
+    }
 }

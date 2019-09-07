@@ -16,8 +16,8 @@ public class OperatorNode implements SubTestNode {
      * @param operands The operands of the operator
      */
     @Contract(pure = true)
-    public OperatorNode(String operator, @NotNull TypedArgumentListNode operands) {
-        this.operator = OperatorTypeNode.findOp(operator);
+    public OperatorNode(OperatorTypeNode operator, @NotNull TypedArgumentListNode operands) {
+        this.operator = operator;
         this.operands = operands.getArgs();
     }
 
