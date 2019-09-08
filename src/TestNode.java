@@ -351,6 +351,7 @@ public interface TestNode extends BaseNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The parsed operator function
      */
+    @NotNull
     static SubTestNode parseOpFunc(@NotNull TokenList tokens) {  // FIXME: Move this somewhere more reasonable
         assert tokens.tokenIs(TokenType.OP_FUNC);
         OperatorTypeNode op_code = OperatorTypeNode.parse(tokens);

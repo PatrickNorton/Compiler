@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  * @see FormattedStringNode
  */
-public class StringNode implements AtomicNode {
+public class StringNode implements StringLikeNode {
     private String contents;
     private StringPrefix[] prefixes;
 
@@ -47,50 +47,19 @@ public class StringNode implements AtomicNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static AtomicNode parse(@NotNull TokenList tokens) {
+    static StringLikeNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.STRING);
         String contents = tokens.getFirst().sequence;
         tokens.nextToken();
-        String inside = contents.replaceAll("(^[rfb]*\")|(?<!\\\\)\"", "");
-        Matcher regex = Pattern.compile("^[rfb]+").matcher(contents);
+        String inside = contents.replaceAll("(^[refb]*\")|(?<!\\\\)\"", "");
+        Matcher regex = Pattern.compile("^[refb]+").matcher(contents);
         if (regex.find()) {
             String prefixes = regex.group();
             if (!prefixes.contains("r")) {
                 inside = processEscapes(inside);
             }
             if (prefixes.contains("f")) {
-                LinkedList<String> strs = new LinkedList<>();
-                LinkedList<TestNode> tests = new LinkedList<>();
-                Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})").matcher(inside);
-                int index = 0;
-                int start, end = 0;
-                while (m.find()) {  // TODO: Find better way of handling this and/or refactor into FormattedStringNode
-                    start = m.start();
-                    strs.add(inside.substring(index, start - 1));
-                    StringBuilder to_test = new StringBuilder();
-                    int netBraces = 0;
-                    do {
-                        String a = m.group();
-                        to_test.append(a);
-                        if (a.startsWith("{")) netBraces++;
-                        if (a.endsWith("}")) netBraces--;
-                        if (netBraces == 0) break;
-                    } while (m.find());
-                    if (netBraces > 0) {
-                        throw new ParserException("Unmatched braces in "+tokens.getFirst().sequence);
-                    }
-                    end = m.end();
-                    TokenList tokenList = Tokenizer.parse(to_test.substring(1, to_test.length() - 1));
-                    tests.add(TestNode.parse(tokenList));
-                    if (!tokenList.tokenIs(TokenType.EPSILON)) {
-                        throw new ParserException("Unexpected " + tokenList.getFirst());
-                    }
-                    index = end + 1;
-                }
-                if (index <= inside.length()) {
-                    strs.add(inside.substring(end));
-                }
-                return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]));
+                return FormattedStringNode.parse(tokens, contents);
             }
             return new StringNode(inside, prefixes.toCharArray());
         }
