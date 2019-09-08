@@ -63,13 +63,9 @@ public class ComprehensionNode implements SubTestNode {
     @NotNull
     @Contract("_ -> new")
     static ComprehensionNode parse(@NotNull TokenList tokens) {
-        String brace_type;  // FIXME: Opening brace in a function-call comprehension will fail
-        if (!tokens.tokenIs(TokenType.OPEN_BRACE)) {  // Comprehensions in function calls
-            brace_type = "";
-        } else {
-            brace_type = tokens.getFirst().sequence;
-            tokens.nextToken(true);
-        }
+        assert tokens.tokenIs(TokenType.OPEN_BRACE);
+        String brace_type = tokens.getFirst().sequence;
+        tokens.nextToken(true);
         TestNode builder = TestNode.parse(tokens, true);
         if (!tokens.tokenIs("for")) {
             throw new ParserException("Invalid start to comprehension");

@@ -36,6 +36,12 @@ public class ArgumentNode implements BaseNode {
         this.argument = argument;
     }
 
+    public ArgumentNode(TestNode argument) {
+        this.variable = new VariableNode();
+        this.vararg = "";
+        this.argument = argument;
+    }
+
     public VariableNode getVariable() {
         return variable;
     }
@@ -73,6 +79,9 @@ public class ArgumentNode implements BaseNode {
         if (tokens.tokenIs(")")) {
             tokens.nextToken();
             return new ArgumentNode[0];
+        }
+        if (tokens.braceContains("for")) {
+            return new ArgumentNode[] {new ArgumentNode(ComprehensionNode.parse(tokens))};
         }
         LinkedList<ArgumentNode> args = new LinkedList<>();
         while (true) {
