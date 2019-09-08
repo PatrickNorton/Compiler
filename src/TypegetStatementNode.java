@@ -47,7 +47,7 @@ public class TypegetStatementNode implements ImportExportNode {
         DottedVariableNode from = new DottedVariableNode();
         if (tokens.tokenIs("from")) {
             tokens.nextToken();
-            from = DottedVariableNode.parse(tokens);
+            from = DottedVariableNode.parseName(tokens);
         }
         assert tokens.tokenIs("typeget");
         tokens.nextToken();

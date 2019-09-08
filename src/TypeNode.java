@@ -68,7 +68,7 @@ public class TypeNode implements AtomicNode {
                 throw new ParserException("Expected type name, got " + tokens.getFirst());
             }
         } else {
-            main = DottedVariableNode.parse(tokens);
+            main = DottedVariableNode.parseNamesOnly(tokens);
         }
         if (!tokens.tokenIs("[")) {
             return new TypeNode(main);
