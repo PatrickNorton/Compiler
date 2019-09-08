@@ -28,9 +28,9 @@ public class StatementBodyNode implements BaseNode {
      * <p>
      *     This method will parse the token it is testing for if it matches.
      * </p>
-     * @param tokens
-     * @param types
-     * @return
+     * @param tokens The list of tokens to be destructively parsed
+     * @param types The tokens to parse on
+     * @return The freshly parsed StatementBodyNode
      */
     @NotNull
     @Contract("_, _ -> new")
@@ -58,13 +58,31 @@ public class StatementBodyNode implements BaseNode {
         if (!tokens.tokenIs("{")) {
             throw new ParserException("The body of a function must be enclosed in curly brackets");
         }
-        tokens.nextToken(true);
+        StatementBodyNode st = parseUntilToken(tokens, "}");
+        assert tokens.tokenIs("}");
+        tokens.nextToken();
+        return st;
+    }
+
+    /**
+     * Parse the statements in a fallthrough-allowed switch clause.
+     * @param tokens The list of tokens to parse destructively
+     * @return The freshly parsed StatementBodyNode
+     */
+    @NotNull
+    @Contract("_ -> new")
+    static StatementBodyNode parseSwitch(@NotNull TokenList tokens) {
+        return parseUntilToken(tokens, "case");
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    private static StatementBodyNode parseUntilToken(@NotNull TokenList tokens, String... values) {
         ArrayList<BaseNode> statements = new ArrayList<>();
-        while (!tokens.tokenIs("}")) {
+        while (!tokens.tokenIs(values)) {
             statements.add(BaseNode.parse(tokens));
             tokens.passNewlines();
         }
-        tokens.nextToken();
         return new StatementBodyNode(statements.toArray(new BaseNode[0]));
     }
 }

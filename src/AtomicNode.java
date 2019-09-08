@@ -1,8 +1,9 @@
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedList;
+
 /**
  * The interface for atomics, e.g. literals, names, and operators.
- *
  * @author Patrick Norton
  */
 public interface AtomicNode extends SubTestNode {
@@ -18,7 +19,28 @@ public interface AtomicNode extends SubTestNode {
             case STRING:
                 return StringNode.parse(tokens);
             default:
-                throw new ParserException("Expected valid label, got "+tokens.getFirst());
+                throw new ParserException("Invalid label "+tokens.getFirst());
         }
+    }
+
+    /**
+     * Parse a list of labels for a switch statement.
+     * @param tokens The list of tokens to be parsed
+     * @return The freshly parsed AtomicNode
+     */
+    @NotNull
+    static AtomicNode[] parseLabelList(@NotNull TokenList tokens) {
+        LinkedList<AtomicNode> nodes = new LinkedList<>();
+        while (true) {
+            nodes.add(parseLabel(tokens));
+            if (!tokens.tokenIs(TokenType.COMMA)) {
+                break;
+            }
+            tokens.nextToken();
+            if (tokens.tokenIs(TokenType.COLON) || tokens.tokenIs("{")) {
+                break;
+            }
+        }
+        return nodes.toArray(new AtomicNode[0]);
     }
 }
