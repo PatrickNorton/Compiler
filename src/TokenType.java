@@ -35,8 +35,7 @@ public enum TokenType {
     // Assignment, and dynamic assignment (:=)
     ASSIGN("^:?="),
     // String literals, including f-strings
-    // TODO: Single-quoted strings
-    STRING("^([refb]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")"),
+    STRING("^([refb]*([\"'])([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\\2)"),
     // Boolean operators
     BOOL_OP("^\\b(and|or|not|xor)\\b"),
     // Numbers, from 123 to 0xab4f6.245
