@@ -66,9 +66,8 @@ public interface TestNode extends BaseNode {
     private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
         switch (tokens.getFirst().token) {
             case NAME:
-                return parseLeftVariable(tokens, ignore_newline);
             case OPEN_BRACE:
-                return parseOpenBrace(tokens);
+                return parseLeftVariable(tokens, ignore_newline);
             case BOOL_OP:
                 return OperatorNode.parseBoolOp(tokens, ignore_newline);
             case NUMBER:
@@ -122,9 +121,9 @@ public interface TestNode extends BaseNode {
             while_loop:
             while (!tokens.tokenIs(TokenType.NEWLINE)) {
                 switch (tokens.getFirst().token) {
-                    case OPEN_BRACE:  // FIXME: Will not parse open brace followed by operator correctly
+                    case OPEN_BRACE:
                         TestNode last_node = nodes.peekLast();
-                        if (last_node instanceof OperatorNode) {
+                        if (last_node instanceof OperatorNode || last_node == null) {
                             nodes.add(parseOpenBrace(tokens));
                             break;
                         }
@@ -325,18 +324,6 @@ public interface TestNode extends BaseNode {
      */
     @NotNull
     static TestNode[] parseList(@NotNull TokenList tokens, boolean ignore_newlines) {
-        if (tokens.tokenIs("(") && !tokens.braceContains("in") && !tokens.braceContains("for")) {
-            int brace_size = tokens.sizeOfBrace(0);
-            if (!tokens.getToken(brace_size).is(TokenType.COMMA)) {
-                tokens.nextToken();
-                TestNode[] vars = parseList(tokens, true);
-                if (!tokens.tokenIs(")")) {
-                    throw new ParserException("Unmatched braces");
-                }
-                tokens.nextToken();
-                return vars;
-            }
-        }
         if (!ignore_newlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
