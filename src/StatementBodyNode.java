@@ -58,6 +58,7 @@ public class StatementBodyNode implements BaseNode {
         if (!tokens.tokenIs("{")) {
             throw new ParserException("The body of a function must be enclosed in curly brackets");
         }
+        tokens.nextToken(true);
         StatementBodyNode st = parseUntilToken(tokens, "}");
         assert tokens.tokenIs("}");
         tokens.nextToken();
@@ -72,7 +73,7 @@ public class StatementBodyNode implements BaseNode {
     @NotNull
     @Contract("_ -> new")
     static StatementBodyNode parseSwitch(@NotNull TokenList tokens) {
-        return parseUntilToken(tokens, "case");
+        return parseUntilToken(tokens, "case", "}");
     }
 
     @NotNull
