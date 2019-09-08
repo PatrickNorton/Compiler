@@ -80,9 +80,15 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         LinkedList<TypeNode> superclasses = new LinkedList<>();
-        while (tokens.tokenIs("from")) {  // FIXME: Doesn't parse "from" correctly
+        if (tokens.tokenIs("from")) {
             tokens.nextToken();
-            superclasses.add(TypeNode.parse(tokens));
+            while (!tokens.tokenIs("{")) {
+                superclasses.add(TypeNode.parse(tokens));
+                if (!tokens.tokenIs(TokenType.COMMA)) {
+                    break;
+                }
+                tokens.nextToken();
+            }
         }
         return new InterfaceDefinitionNode(name, superclasses.toArray(new TypeNode[0]), InterfaceBodyNode.parse(tokens));
     }
