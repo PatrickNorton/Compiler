@@ -16,19 +16,23 @@ import java.util.regex.Pattern;
  */
 public class StringNode implements AtomicNode {
     private String contents;
-    private char[] prefixes;  // TODO? Enumerate string prefixes
+    private StringPrefix[] prefixes;
 
     @Contract(pure = true)
-    public StringNode(String contents, char... prefixes) {
+    public StringNode(String contents, @NotNull char... prefixes) {
         this.contents = contents;
-        this.prefixes = prefixes;
+        LinkedList<StringPrefix> stringPrefixes = new LinkedList<>();
+        for (char c : prefixes) {
+            stringPrefixes.add(StringPrefix.getPrefix(c));
+        }
+        this.prefixes = stringPrefixes.toArray(new StringPrefix[0]);
     }
 
     public String getContents() {
         return contents;
     }
 
-    public char[] getPrefixes() {
+    public StringPrefix[] getPrefixes() {
         return prefixes;
     }
 

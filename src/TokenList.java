@@ -1,5 +1,3 @@
-// TODO? Lazy-loading (incl. use of Scanner.findWithinHorizon)
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

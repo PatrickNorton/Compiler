@@ -122,7 +122,7 @@ public interface TestNode extends BaseNode {
             while_loop:
             while (!tokens.tokenIs(TokenType.NEWLINE)) {
                 switch (tokens.getFirst().token) {
-                    case OPEN_BRACE:
+                    case OPEN_BRACE:  // FIXME: Will not parse open brace followed by operator correctly
                         TestNode last_node = nodes.peekLast();
                         if (last_node instanceof OperatorNode) {
                             nodes.add(parseOpenBrace(tokens));
