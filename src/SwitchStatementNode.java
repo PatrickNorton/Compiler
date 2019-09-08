@@ -11,15 +11,21 @@ import java.util.LinkedList;
 public class SwitchStatementNode implements StatementNode {
     private TestNode switched;
     private CaseStatementNode[] cases;
+    private boolean fallthrough;
 
     @Contract(pure = true)
-    public SwitchStatementNode(TestNode switched, CaseStatementNode... cases) {
+    public SwitchStatementNode(TestNode switched, boolean fallthrough, CaseStatementNode... cases) {
         this.switched = switched;
+        this.fallthrough = fallthrough;
         this.cases = cases;
     }
 
     public TestNode getSwitched() {
         return switched;
+    }
+
+    public boolean hasFallthrough() {
+        return fallthrough;
     }
 
     public CaseStatementNode[] getCases() {
@@ -56,11 +62,12 @@ public class SwitchStatementNode implements StatementNode {
             } else {
                 cases.add(CaseStatementNode.parse(tokens, fallthrough));
             }
+            tokens.passNewlines();
         }
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken();
-        return new SwitchStatementNode(switched, cases.toArray(new CaseStatementNode[0]));
+        return new SwitchStatementNode(switched, fallthrough, cases.toArray(new CaseStatementNode[0]));
     }
 }
