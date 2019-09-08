@@ -58,10 +58,19 @@ public class TokenList implements Iterable<Token> {
      * @param question The questions to test if the line contains
      * @return If the line contains that token
      */
-    boolean lineContains(TokenType... question) {  // FIXME: Don't parse entire block if used on conditional
+    boolean lineContains(TokenType... question) {
         int netBraces = 0;
+        Token previous = null;
         for (Token token : this) {
             if (token.is(TokenType.OPEN_BRACE)) {
+                // Don't parse entire conditional block if that's reached
+                // NOTE: This doesn't care about invalid sequences, b/c syntax
+                // errors will fail elsewhere
+                if (token.is("{") && previous != null && netBraces == 0 &&
+                        previous.is(TokenType.NAME, TokenType.ELLIPSIS, TokenType.STRING,
+                                TokenType.NUMBER, TokenType.OPERATOR_SP, TokenType.CLOSE_BRACE)) {
+                    return false;
+                }
                 netBraces++;
             } else if (token.is(TokenType.CLOSE_BRACE)) {
                 netBraces--;
@@ -75,6 +84,7 @@ public class TokenList implements Iterable<Token> {
             if (netBraces < 0) {
                 return false;
             }
+            previous = token;
         }
         return false;
     }
