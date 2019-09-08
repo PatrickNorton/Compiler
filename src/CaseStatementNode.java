@@ -1,26 +1,24 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-
 /**
  * The class representing the "case" clause in a switch statement.
  * @author Patrick Norton
  * @see SwitchStatementNode
  */
 public class CaseStatementNode {
-    private AtomicNode label;
+    private AtomicNode[] label;
     private StatementBodyNode body;
     private boolean fallthrough;
 
     @Contract(pure = true)
-    public CaseStatementNode(AtomicNode label, StatementBodyNode body, boolean fallthrough) {
+    public CaseStatementNode(AtomicNode[] label, StatementBodyNode body, boolean fallthrough) {
         this.label = label;
         this.body = body;
         this.fallthrough = fallthrough;
     }
 
-    public AtomicNode getLabel() {
+    public AtomicNode[] getLabel() {
         return label;
     }
 
@@ -68,18 +66,14 @@ public class CaseStatementNode {
     public static CaseStatementNode parse(@NotNull TokenList tokens, boolean fallthrough) {
         assert tokens.tokenIs("case");
         tokens.nextToken();
-        AtomicNode label = AtomicNode.parseLabel(tokens);  // FIXME: parse list if !fallthrough
+        AtomicNode[] label = fallthrough ? new AtomicNode[]{AtomicNode.parseLabel(tokens)} : AtomicNode.parseLabelList(tokens);
         StatementBodyNode body;
-        if (fallthrough) {  // TODO: Turn into StatementBodyNode.parseSwitch
+        if (fallthrough) {
             if (!tokens.tokenIs(":")) {
                 throw new ParserException("Expected :, got " + tokens.getFirst());
             }
             tokens.nextToken(true);
-            LinkedList<BaseNode> statements = new LinkedList<>();
-            while (!tokens.tokenIs("case")) {
-                statements.add(BaseNode.parse(tokens));
-            }
-            body = new StatementBodyNode(statements.toArray(new BaseNode[0]));
+            body = StatementBodyNode.parseSwitch(tokens);
         } else {
             body = StatementBodyNode.parse(tokens);
         }
