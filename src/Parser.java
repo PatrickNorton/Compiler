@@ -1,9 +1,6 @@
 // TODO! Rename getName() to not conflict with standard name
 // TODO: Reduce/remove nulls
 // TODO? Remove SubTestNode & replace with something more meaningful
-// TODO: Annotations
-// TODO: Enums
-// TODO: Switch
 
 
 import org.jetbrains.annotations.Contract;

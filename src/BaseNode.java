@@ -60,6 +60,8 @@ public interface BaseNode {
                 return VariableNode.parseEllipsis(tokens);
             case DOT:
                 throw new ParserException("Unexpected dot");
+            case AT:
+                return DecoratableNode.parseLeftDecorator(tokens);
             default:
                 throw new RuntimeException("Nonexistent token found");
         }
