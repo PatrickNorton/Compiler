@@ -56,7 +56,13 @@ public class FormattedStringNode extends StringLikeNode {
     @Contract("_, _ -> new")
     static FormattedStringNode parse(TokenList tokens, @NotNull String contents) {
         String inside = contentPattern.matcher(contents).replaceAll("");
-        String prefixes = prefixPattern.matcher(contents).group();
+        Matcher prefixMatcher = prefixPattern.matcher(contents);
+        String prefixes;
+        if (prefixMatcher.find()) {
+            prefixes = prefixMatcher.group();
+        } else {
+            throw new ParserException("Match should not have failed");
+        }
         LinkedList<String> strs = new LinkedList<>();
         LinkedList<TestNode> tests = new LinkedList<>();
         Matcher m = bracePattern.matcher(inside);
