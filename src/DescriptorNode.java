@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: Make me an enum
-
 /**
  * The node representing all descriptors.
  * <p>
@@ -45,6 +43,7 @@ public enum DescriptorNode implements AtomicNode {
         this.name = name;
     }
 
+    @Contract(pure = true)
     public String getName() {
         return name;
     }

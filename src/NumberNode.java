@@ -8,7 +8,6 @@ import java.math.BigDecimal;
  * @author Patrick Norton
  */
 public class NumberNode implements AtomicNode {
-    // TODO: Rename to something better
     private BigDecimal integer;
 
     /**

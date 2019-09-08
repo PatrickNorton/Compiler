@@ -19,7 +19,6 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param args The arguments the operator takes
      * @param body The body of the operator definition
      */
-    // TODO: Change op_code to SpecialOpNameNode
     @Contract(pure = true)
     public OperatorDefinitionNode(SpecialOpNameNode op_code, TypeNode[] ret_type, TypedArgumentListNode args, StatementBodyNode body) {
         this.op_code = op_code;
