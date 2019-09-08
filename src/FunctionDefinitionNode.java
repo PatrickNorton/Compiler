@@ -5,11 +5,12 @@ import org.jetbrains.annotations.NotNull;
  * The class representing a function definition.
  * @author Patrick Norton
  */
-public class FunctionDefinitionNode implements DefinitionNode {
+public class FunctionDefinitionNode implements DefinitionNode, DecoratableNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retval;
     private StatementBodyNode body;
+    private NameNode[] decorators;
 
     @Contract(pure = true)
     public FunctionDefinitionNode(VariableNode name, TypedArgumentListNode args, TypeNode[] retval, StatementBodyNode body) {
@@ -35,6 +36,16 @@ public class FunctionDefinitionNode implements DefinitionNode {
     @Override
     public StatementBodyNode getBody() {
         return body;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
     }
 
     /**
