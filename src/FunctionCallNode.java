@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Contract;
  *     by {@link NameNode#parse}.
  * </p>
  */
-public class FunctionCallNode implements NameNode {
+public class FunctionCallNode implements NameNode, EnumKeywordNode {
     private TestNode caller;
     private ArgumentNode[] parameters;
 
