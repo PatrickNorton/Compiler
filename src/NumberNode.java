@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * The class representing a numeric literal.
@@ -75,8 +76,9 @@ public class NumberNode implements AtomicNode {
             if (exp_size - i >= 0) {
                 val = val.add(base.pow(exp_size - i).multiply(digit_val));
             } else {
-                // TODO: Call divide with scale and RoundingMode
-                val = val.add(BigDecimal.ONE.divide(base.pow(i - exp_size)).multiply(digit_val));
+                BigDecimal placeValue = BigDecimal.ONE.divide(base.pow(i - exp_size),
+                        3*(value.length() - exp_size), RoundingMode.UNNECESSARY);
+                val = val.add(placeValue.multiply(digit_val));
             }
         }
         return val;
