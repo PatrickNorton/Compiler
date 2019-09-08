@@ -62,7 +62,7 @@ public class DottedVariableNode implements NameNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static DottedVariableNode parse(@NotNull TokenList tokens) {  // FIXME: parse ought to be replaced with parseName
+    static DottedVariableNode parseNamesOnly(@NotNull TokenList tokens) {
         LinkedList<VariableNode> names = new LinkedList<>();
         while (tokens.tokenIs(TokenType.NAME)) {
             names.add(VariableNode.parse(tokens));
@@ -78,7 +78,7 @@ public class DottedVariableNode implements NameNode {
      * Parse a new DottedVariableNode from a list of tokens.
      * <p>
      *     This method also may or may not work, but it seems to do so better
-     *     than {@link DottedVariableNode#parse} at the moment, so we'll see.
+     *     than {@link DottedVariableNode#parseNamesOnly} at the moment, so we'll see.
      *     Syntax for this is: <code>{@link TestNode} *("." {@link
      *     VariableNode})</code>.
      * </p>
@@ -86,7 +86,7 @@ public class DottedVariableNode implements NameNode {
      * @return The freshly parsed DottedVariableNode
      */
     @NotNull
-    static DottedVariableNode parseName(@NotNull TokenList tokens) {  // FIXME? Equivalent to .parse
+    static DottedVariableNode parseName(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME);
         NameNode name = NameNode.parse(tokens);
         if (tokens.tokenIs(TokenType.DOT)) {
@@ -158,7 +158,7 @@ public class DottedVariableNode implements NameNode {
             if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
                 throw new ParserException("Unmatched braces");
             }
-            variables.add(DottedVariableNode.parseName(tokens));
+            variables.add(parseName(tokens));
             if (tokens.tokenIs(",")) {
                 tokens.nextToken(ignore_newlines);
             } else {
