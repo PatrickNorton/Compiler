@@ -43,7 +43,7 @@ public interface AssignStatementNode extends SimpleStatementNode {
         while (!tokens.tokenIs(TokenType.ASSIGN)) {
             if (!tokens.getToken(tokens.sizeOfVariable()).is(TokenType.ASSIGN, TokenType.COMMA)) {
                 var_type.add(TypeNode.parse(tokens));
-                vars.add(DottedVariableNode.parse(tokens));
+                vars.add(DottedVariableNode.parseName(tokens));
                 if (tokens.tokenIs(TokenType.ASSIGN)) {
                     break;
                 }

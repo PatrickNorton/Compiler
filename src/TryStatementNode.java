@@ -73,7 +73,7 @@ public class TryStatementNode implements ComplexStatementNode {
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
-        DottedVariableNode[] excepted = new DottedVariableNode[0];  // FIXME: DottedVariableNode
+        DottedVariableNode[] excepted = new DottedVariableNode[0];
         VariableNode as_var = new VariableNode();
         StatementBodyNode else_stmt = new StatementBodyNode();
         StatementBodyNode finally_stmt = new StatementBodyNode();
