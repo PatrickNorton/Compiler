@@ -3,11 +3,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 
-public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementNode {
+public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementNode, DecoratableNode {
     private TypeNode types;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
     private DescriptorNode[] descriptors;
+    private NameNode[] decorators;
 
     @Contract(pure = true)
     public EnumDefinitionNode(TypeNode types, EnumKeywordNode[] names, ClassBodyNode body) {
@@ -37,6 +38,16 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
     @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
     }
 
     @NotNull

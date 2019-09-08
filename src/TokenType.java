@@ -52,7 +52,10 @@ public enum TokenType {
     // The ellipsis unicorn
     ELLIPSIS("^\\.{3}"),
     // Dots, when they don't match ellipsis
-    DOT("^\\.");
+    DOT("^\\."),
+    // The at symbol, for decorators
+    AT("^@"),
+    ;
 
     final Pattern regex;
 

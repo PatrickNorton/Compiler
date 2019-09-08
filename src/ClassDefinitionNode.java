@@ -8,11 +8,12 @@ import java.util.LinkedList;
  *
  * @author
  */
-public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, DecoratableNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;
     private DescriptorNode[] descriptors;
+    private NameNode[] decorators;
 
     /**
      * Create new instance of ClassDefinitionNode
@@ -46,8 +47,19 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
         return body;
     }
 
+    @Override
     public DescriptorNode[] getDescriptors() {
         return descriptors;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
     }
 
     /**
