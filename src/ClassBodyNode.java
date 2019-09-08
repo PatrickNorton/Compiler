@@ -41,13 +41,40 @@ public class ClassBodyNode extends StatementBodyNode {
             throw new ParserException("The body of a class must be enclosed in curly brackets");
         }
         tokens.nextToken(true);
+        ClassBodyNode cb = parseUntilToken(tokens, "}");
+        assert tokens.tokenIs("}");
+        tokens.nextToken();
+        tokens.Newline();
+        return cb;
+    }
+
+    /**
+     * Parse the ClassBodyNode of an enum from a list of tokens.
+     * <p>
+     *     This is functionally identical to the normal parse method, except
+     *     there is no check for the opening brace, as that will have already
+     *     been parsed before the constants were enumerated.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed ClassBodyNode
+     */
+    @NotNull
+    static ClassBodyNode parseEnum(@NotNull TokenList tokens) {
+        ClassBodyNode cb = parseUntilToken(tokens, "}");
+        assert tokens.tokenIs("}");
+        tokens.nextToken();
+        tokens.Newline();
+        return cb;
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    private static ClassBodyNode parseUntilToken(@NotNull TokenList tokens, String... sentinels) {
         ArrayList<ClassStatementNode> statements = new ArrayList<>();
-        while (!tokens.tokenIs("}")) {
+        while (!tokens.tokenIs(sentinels)) {
             statements.add(ClassStatementNode.parse(tokens));
             tokens.passNewlines();
         }
-        tokens.nextToken();
-        tokens.Newline();
         return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
     }
 }

@@ -152,6 +152,8 @@ public interface BaseNode {
                 return SwitchStatementNode.parse(tokens);
             case "case":
                 throw new ParserException("Unexpected case");
+            case "enum":
+                return EnumDefinitionNode.parse(tokens);
             default:
                 throw new RuntimeException("Keyword mismatch");
         }

@@ -7,7 +7,7 @@ import java.util.LinkedList;
  * The class representing a name token.
  * @author Patrick Norton
  */
-public class VariableNode implements NameNode {
+public class VariableNode implements NameNode, EnumKeywordNode {
     private String name;
 
     @Contract(pure = true)
