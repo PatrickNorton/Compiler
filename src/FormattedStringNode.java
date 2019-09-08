@@ -17,10 +17,12 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  * @see StringNode
  */
-public class FormattedStringNode implements StringLikeNode {
+public class FormattedStringNode extends StringLikeNode {
     private String[] strs;
     private TestNode[] tests;
     private StringPrefix[] prefixes;
+
+    private static final Pattern bracePattern = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})");
 
     /**
      * Construct a new FormattedStringNode.
@@ -53,11 +55,11 @@ public class FormattedStringNode implements StringLikeNode {
     @NotNull
     @Contract("_, _ -> new")
     static FormattedStringNode parse(TokenList tokens, @NotNull String contents) {
-        String inside = contents.replaceAll("(^[refb]*\")|(?<!\\\\)\"", "");
-        String prefixes = Pattern.compile("^[refb]*").matcher(contents).group();
+        String inside = contentPattern.matcher(contents).replaceAll("");
+        String prefixes = prefixPattern.matcher(contents).group();
         LinkedList<String> strs = new LinkedList<>();
         LinkedList<TestNode> tests = new LinkedList<>();
-        Matcher m = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})").matcher(inside);
+        Matcher m = bracePattern.matcher(inside);
         int index = 0;
         int start, end = 0;
         while (m.find()) {

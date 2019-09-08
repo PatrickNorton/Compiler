@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  * @see FormattedStringNode
  */
-public class StringNode implements StringLikeNode {
+public class StringNode extends StringLikeNode {
     private String contents;
     private StringPrefix[] prefixes;
 
@@ -51,8 +51,8 @@ public class StringNode implements StringLikeNode {
         assert tokens.tokenIs(TokenType.STRING);
         String contents = tokens.getFirst().sequence;
         tokens.nextToken();
-        String inside = contents.replaceAll("(^[refb]*\")|(?<!\\\\)\"", "");
-        Matcher regex = Pattern.compile("^[refb]+").matcher(contents);
+        String inside = contentPattern.matcher(contents).replaceAll("");
+        Matcher regex = prefixPattern.matcher(contents);
         if (regex.find()) {
             String prefixes = regex.group();
             if (!prefixes.contains("r")) {
