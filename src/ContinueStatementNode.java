@@ -27,4 +27,13 @@ public class ContinueStatementNode implements SimpleFlowNode {
         tokens.Newline();
         return new ContinueStatementNode(cond);
     }
+
+    @Override
+    public String toString() {
+        if (cond != null) {
+            return "continue " + cond;
+        } else {
+            return "continue";
+        }
+    }
 }

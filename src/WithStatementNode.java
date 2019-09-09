@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 /**
  * The class representing a context statement.
@@ -61,5 +62,19 @@ public class WithStatementNode implements ComplexStatementNode {
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         tokens.Newline();
         return new WithStatementNode(managed.toArray(new TestNode[0]), vars, body);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (TestNode t : managed) {
+            sj.add(t.toString());
+        }
+        String managed = sj.toString();
+        sj = new StringJoiner(", ");
+        for (VariableNode v : vars) {
+            sj.add(v.toString());
+        }
+        return "with " + managed + " as " + sj + " " + body;
     }
 }

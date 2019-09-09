@@ -114,4 +114,8 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         }
         return variables.toArray(new VariableNode[0]);
     }
+
+    public String toString() {
+        return this.name;
+    }
 }

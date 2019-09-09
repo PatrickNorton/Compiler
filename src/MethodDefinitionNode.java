@@ -26,6 +26,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         this.args = args;
         this.retval = retval;
         this.body = body;
+        this.descriptors = new DescriptorNode[0];
     }
 
     @Override
@@ -78,5 +79,15 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         tokens.Newline();
         return new MethodDefinitionNode(name, args, retval, body);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            sb.append(d);
+            sb.append(" ");
+        }
+        return sb + "method " + name + args;
     }
 }

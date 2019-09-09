@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing the try-except-finally statement.
  * <p>
@@ -99,5 +101,20 @@ public class TryStatementNode implements ComplexStatementNode {
         }
         tokens.Newline();
         return new TryStatementNode(body, except, excepted, as_var, else_stmt, finally_stmt);
+    }
+
+    @Override
+    public String toString() {
+        if (!except.isEmpty()) {
+            StringJoiner sj = new StringJoiner(", ");
+            for (DottedVariableNode d : excepted) {
+                sj.add(d.toString());
+            }
+            return "try " + body + " except " + sj + (as_var.isEmpty() ? "" : " as " + as_var);
+        } else if (!finally_stmt.isEmpty()) {
+            return "try " + body + " finally " + finally_stmt;
+        } else {
+            return "try " + body;
+        }
     }
 }

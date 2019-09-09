@@ -71,4 +71,13 @@ public class DictLiteralNode implements SubTestNode {
         tokens.nextToken();
         return new DictLiteralNode(keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));
     }
+
+    @Override
+    public String toString() {
+        if (keys.length == 0) {
+            return "{}";
+        } else {
+            return "{" + keys[1] + ": " + values[1] + ", ...}";
+        }
+    }
 }

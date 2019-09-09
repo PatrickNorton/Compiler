@@ -1,5 +1,7 @@
 import org.jetbrains.annotations.Contract;
 
+import java.util.StringJoiner;
+
 /**
  * The node representing a generic operator definition.
  * <p>
@@ -44,5 +46,20 @@ public class GenericOperatorNode implements InterfaceStatementNode {
     @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
+    }
+
+    @Override
+    public String toString() {
+        String ops;
+        if (descriptors.length > 0) {
+            StringJoiner sj = new StringJoiner(" ");
+            for (DescriptorNode d : descriptors) {
+                sj.add(d.toString());
+            }
+            ops = sj + " ";
+        } else {
+            ops = "";
+        }
+        return ops + "operator " + op_code + " " + args;
     }
 }

@@ -54,4 +54,9 @@ public class SomeStatementNode implements SubTestNode {
         TestNode[] operands = in_stmt.getOperands();
         return new SomeStatementNode(operands[0], operands[1]);
     }
+
+    @Override
+    public String toString() {
+        return "some " + contained + " in " + container;
+    }
 }

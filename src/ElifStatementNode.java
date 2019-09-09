@@ -33,4 +33,9 @@ public class ElifStatementNode implements FlowStatementNode {
     public StatementBodyNode getBody() {
         return body;
     }
+
+    @Override
+    public String toString() {
+        return "elif " + test + " " + body;
+    }
 }

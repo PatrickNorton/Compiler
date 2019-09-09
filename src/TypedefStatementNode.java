@@ -50,4 +50,9 @@ public class TypedefStatementNode implements SimpleStatementNode {
         tokens.Newline();
         return new TypedefStatementNode(name, type);
     }
+
+    @Override
+    public String toString() {
+        return "typedef " + name + " as " + type;
+    }
 }

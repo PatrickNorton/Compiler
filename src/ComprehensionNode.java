@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 /**
  * The class representing a non-dictionary comprehension
@@ -94,5 +95,19 @@ public class ComprehensionNode implements SubTestNode {
         tokens.nextToken();
         TestNode[] looped_array = looped.toArray(new TestNode[0]);
         return new ComprehensionNode(brace_type, variables, builder, looped_array);
+    }
+
+    public String toString() {
+        String string = brace_type;
+        StringJoiner sj = new StringJoiner(", ");
+        for (TypedVariableNode t : variables) {
+            sj.add(t.toString());
+        }
+        string += sj + " for " + builder + " in ";
+        sj = new StringJoiner(", ");
+        for (TestNode t : looped) {
+            sj.add(t.toString());
+        }
+        return string + sj + TokenList.matchingBrace(brace_type);
     }
 }

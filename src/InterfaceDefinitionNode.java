@@ -92,4 +92,14 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
         }
         return new InterfaceDefinitionNode(name, superclasses.toArray(new TypeNode[0]), InterfaceBodyNode.parse(tokens));
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            sb.append(d);
+            sb.append(' ');
+        }
+        return "interface " + name + " " + body;
+    }
 }

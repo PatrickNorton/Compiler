@@ -36,4 +36,9 @@ public class DeleteStatementNode implements SimpleStatementNode {
         tokens.Newline();
         return new DeleteStatementNode(deletion);
     }
+
+    @Override
+    public String toString() {
+        return "del " + deleted;
+    }
 }

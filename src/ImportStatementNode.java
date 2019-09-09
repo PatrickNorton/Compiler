@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The node representing an import statement.
  * @author Patrick Norton
@@ -66,5 +68,14 @@ public class ImportStatementNode implements ImportExportNode {
         DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
         tokens.Newline();
         return new ImportStatementNode(imports, from);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (DottedVariableNode d : imports) {
+            sj.add(d.toString());
+        }
+        return (from.isEmpty() ? "" : from + " ") + "import " + sj;
     }
 }

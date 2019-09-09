@@ -13,6 +13,7 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
     public SpecialOpAssignmentNode(SpecialOpNameNode name, TestNode assignment) {
         this.name = name;
         this.assignment = assignment;
+        this.descriptors = new DescriptorNode[0];
     }
 
     public SpecialOpNameNode getName() {
@@ -58,5 +59,15 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
             assignment = TestNode.parse(tokens);
         }
         return new SpecialOpAssignmentNode(name, assignment);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            sb.append(d);
+            sb.append(" ");
+        }
+        return sb + "" + name + " = " + assignment;
     }
 }

@@ -27,4 +27,9 @@ public class TernaryNode implements TestNode {
     public TestNode getIf_false() {
         return if_false;
     }
+
+    @Override
+    public String toString() {
+        return if_true + " if " + statement + " else " + if_false;
+    }
 }

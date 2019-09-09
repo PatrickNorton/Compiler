@@ -40,4 +40,9 @@ public class IncrementNode implements SimpleStatementNode {
         tokens.nextToken();
         return new IncrementNode(var);
     }
+
+    @Override
+    public String toString() {
+        return variable + "++";
+    }
 }

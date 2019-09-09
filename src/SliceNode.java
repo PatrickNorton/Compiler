@@ -91,4 +91,9 @@ public class SliceNode implements SubTestNode {
             return TestNode.parse(tokens, true);
         }
     }
+
+    @Override
+    public String toString() {
+        return (start != null ? start : "") + ":" + (end != null ? end : "") + (step != null ? ":" + step : "");
+    }
 }

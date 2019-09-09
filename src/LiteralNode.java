@@ -82,4 +82,13 @@ public class LiteralNode implements SubTestNode {
         }
         return new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
     }
+
+    @Override
+    public String toString() {
+        if (builders.length == 0) {
+            return brace_type + TokenList.matchingBrace(brace_type);
+        } else {
+            return brace_type + (is_splats[0] ? "*" : "") + TokenList.matchingBrace(brace_type);
+        }
+    }
 }

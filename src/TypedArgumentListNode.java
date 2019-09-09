@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.StringJoiner;
 
 /**
  * The class representing a typed argument list.
@@ -39,6 +40,10 @@ public class TypedArgumentListNode implements BaseNode {
 
     public TypedArgumentNode get(int index) {
         return normalArgs[index];
+    }
+
+    public boolean isEmpty() {
+        return positionArgs.length + nameArgs.length + normalArgs.length > 0;
     }
 
     /**
@@ -120,5 +125,38 @@ public class TypedArgumentListNode implements BaseNode {
         tokens.nextToken();
         return new TypedArgumentListNode(posArgs.toArray(new TypedArgumentNode[0]), args.toArray(new TypedArgumentNode[0]),
                 kwArgs.toArray(new TypedArgumentNode[0]));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (positionArgs.length > 0) {
+            StringJoiner sj = new StringJoiner(", ", "", ", /,");
+            for (TypedArgumentNode t : positionArgs) {
+                sj.add(t.toString());
+            }
+            sb.append(sj);
+        }
+        if (normalArgs.length > 0) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            StringJoiner sj = new StringJoiner(", ");
+            for (TypedArgumentNode t : normalArgs) {
+                sj.add(t.toString());
+            }
+            sb.append(sj);
+        }
+        if (nameArgs.length > 0) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            StringJoiner sj = new StringJoiner(", ", "*, ", "");
+            for (TypedArgumentNode t : nameArgs) {
+                sj.add(t.toString());
+            }
+            sb.append(sj);
+        }
+        return "(" + sb + ")";
     }
 }

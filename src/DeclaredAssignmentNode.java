@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing a declaration and assignment rolled into one.
  *
@@ -78,5 +80,25 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
             return (DeclaredAssignmentNode) assign;
         }
         throw new ParserException("Expected declared assignment, got normal assignment");
+    }
+
+    @Override
+    public String toString() {
+        String string;
+        StringJoiner sj = new StringJoiner(" ");
+        for (DescriptorNode d : descriptors) {
+            sj.add(d.toString());
+        }
+        string = sj + " ";
+        sj = new StringJoiner(", ");
+        for (int i = 0; i < name.length; i++) {
+            sj.add(type[i] + " " + name[i]);
+        }
+        string += sj + (is_colon ? " := " : " = ");
+        sj = new StringJoiner(", ");
+        for (TestNode v : value) {
+            sj.add(v.toString());
+        }
+        return string + sj;
     }
 }
