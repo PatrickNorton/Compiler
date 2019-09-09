@@ -23,6 +23,9 @@ public interface InterfaceStatementNode extends BaseNode {
     // TODO: Static blocks in interfaces
     @NotNull
     static InterfaceStatementNode parse(@NotNull TokenList tokens) {  // TODO: Clean up method and/or factor out
+        if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {
+            return StaticBlockNode.parse(tokens);
+        }
         if (tokens.tokenIs(TokenType.OPERATOR_SP, TokenType.DESCRIPTOR) || tokens.tokenIs("method")
               || (tokens.tokenIs("class") && tokens.getToken(1).is(TokenType.DESCRIPTOR, TokenType.KEYWORD))) {
             LinkedList<DescriptorNode> descriptors = new LinkedList<>();
