@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing a variable declaration without assignment.
  *
@@ -21,6 +23,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     public DeclarationNode(TypeNode type, VariableNode name) {
         this.type = type;
         this.name = name;
+        this.descriptors = new DescriptorNode[0];
     }
 
     public TypeNode getType() {
@@ -32,6 +35,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
         return new NameNode[] {name};
     }
 
+    @Override
     public DescriptorNode[] getDescriptors() {
         return descriptors;
     }
@@ -58,5 +62,14 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
         TypeNode type = TypeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);
         return new DeclarationNode(type, var);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(" ");
+        for (DescriptorNode d : descriptors) {
+            sj.add(d.toString());
+        }
+        return sj + " " + type + " " + name;
     }
 }

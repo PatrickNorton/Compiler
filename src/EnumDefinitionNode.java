@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementNode, DecoratableNode {
     private TypeNode types;
@@ -15,6 +16,8 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
         this.types = types;
         this.names = names;
         this.body = body;
+        this.descriptors = new DescriptorNode[0];
+        this.decorators = new NameNode[0];
     }
 
     public TypeNode getTypes() {
@@ -72,5 +75,14 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
         tokens.passNewlines();
         ClassBodyNode body = ClassBodyNode.parseEnum(tokens);
         return new EnumDefinitionNode(name, names.toArray(new EnumKeywordNode[0]), body);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(" ", "", "");
+        for (DescriptorNode d : descriptors) {
+            sj.add(d.toString());
+        }
+        return (sj.length() > 0 ? sj + " " : "") + "enum " + types + " " + body;
     }
 }

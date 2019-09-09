@@ -45,4 +45,9 @@ public class InterfaceBodyNode extends StatementBodyNode {
         tokens.Newline();
         return new InterfaceBodyNode(statements.toArray(new InterfaceStatementNode[0]));
     }
+
+    @Override
+    public String toString() {
+        return "{...}";
+    }
 }

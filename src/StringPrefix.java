@@ -1,4 +1,5 @@
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,5 +30,12 @@ public enum StringPrefix {
 
     public static StringPrefix getPrefix(char c) {
         return vals.get(c);
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public String toString() {
+        return Character.toString(value);
     }
 }

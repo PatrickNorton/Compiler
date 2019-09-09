@@ -75,4 +75,9 @@ public class IfStatementNode implements FlowStatementNode {
         tokens.Newline();
         return new IfStatementNode(test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
     }
+
+    @Override
+    public String toString() {
+        return "if " + conditional + " " + body;
+    }
 }

@@ -43,12 +43,13 @@ public enum DescriptorNode implements AtomicNode {
         this.name = name;
     }
 
-    @Contract(pure = true)
-    public String getName() {
-        return name;
-    }
-
     public static DescriptorNode find(String type) {
         return values.get(type);
+    }
+
+    @Contract(pure = true)
+    @Override
+    public String toString() {
+        return name;
     }
 }

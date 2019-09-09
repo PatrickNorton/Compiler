@@ -103,4 +103,15 @@ public class OperatorNode implements SubTestNode {
         OperatorTypeNode op = OperatorTypeNode.findOp(operator.sequence, OperatorTypeNode.Use.STANDARD, OperatorTypeNode.Use.UNARY);
         return new OperatorNode(op, next);
     }
+
+    @Override
+    public String toString() {
+        if (operands.length == 1) {
+            return operator + " " + operands[0];
+        } else if (operands.length == 2) {
+            return operands[0] + " " + operator + " " + operands[1];
+        } else {
+            return "\\" + operator + "(" + operands[0] + ", ...)";
+        }
+    }
 }

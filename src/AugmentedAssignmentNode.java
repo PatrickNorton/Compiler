@@ -38,4 +38,9 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
     public TestNode getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return name + " " + operator.toString() + "= " + value;
+    }
 }

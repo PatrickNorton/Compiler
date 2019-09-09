@@ -29,6 +29,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
             this.args = new TypedArgumentListNode();
         }
         this.body = body;
+        this.descriptors = new DescriptorNode[0];
     }
 
     @Override
@@ -89,5 +90,19 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         }
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new OperatorDefinitionNode(op_code, retval, args, body);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            sb.append(d);
+            sb.append(" ");
+        }
+        sb.append(op_code);
+        if (!args.isEmpty()) {
+            sb.append(args);
+        }
+        return sb.toString();
     }
 }

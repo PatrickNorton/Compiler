@@ -1,5 +1,7 @@
 import org.jetbrains.annotations.Contract;
 
+import java.util.StringJoiner;
+
 /**
  * The class for an assignment, such as {@code a = f(b)}.
  * <p>
@@ -48,5 +50,14 @@ public class AssignmentNode implements AssignStatementNode {
 
     public TestNode[] getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner joiner = new StringJoiner(", ");
+        for (NameNode i : name) {
+            joiner.add(i.toString());
+        }
+        return joiner + " " + (is_colon ? ":=" : '=') + " ...";
     }
 }

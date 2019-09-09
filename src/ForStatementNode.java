@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing a for-statement.
  * @author Patrick Norton
@@ -70,5 +72,19 @@ public class ForStatementNode implements FlowStatementNode {
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
         tokens.Newline();
         return new ForStatementNode(vars, iterables, body, nobreak);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (TypedVariableNode t : vars) {
+            sj.add(t.toString());
+        }
+        String vars = sj.toString();
+        sj = new StringJoiner(", ");
+        for (TestNode t : iterables) {
+            sj.add(t.toString());
+        }
+        return "for " + vars + " in " + sj + " " + body;
     }
 }

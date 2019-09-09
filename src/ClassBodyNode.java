@@ -77,4 +77,9 @@ public class ClassBodyNode extends StatementBodyNode {
         }
         return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
     }
+
+    @Override
+    public String toString() {
+        return "{...}";
+    }
 }

@@ -62,4 +62,9 @@ public class DotimesStatementNode implements FlowStatementNode {
         tokens.Newline();
         return new DotimesStatementNode(iterations, body, nobreak);
     }
+
+    @Override
+    public String toString() {
+        return "dotimes " + iterations;
+    }
 }

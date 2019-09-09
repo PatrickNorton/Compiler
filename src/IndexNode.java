@@ -1,5 +1,7 @@
 import org.jetbrains.annotations.Contract;
 
+import java.util.StringJoiner;
+
 /**
  * The node for a variable index.
  * @author Patrick Norton
@@ -25,5 +27,14 @@ public class IndexNode implements NameNode {
 
     public TestNode[] getIndices() {
         return indices;
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (TestNode t : indices) {
+            sj.add(t.toString());
+        }
+        return var + "[" + sj + "]";
     }
 }

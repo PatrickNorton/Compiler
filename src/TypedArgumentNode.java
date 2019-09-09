@@ -79,4 +79,20 @@ public class TypedArgumentNode implements SubTestNode {
         }
         return new TypedArgumentNode(type, var, default_value, is_vararg, vararg_type);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (is_vararg) {
+            sb.append(vararg_type);
+        }
+        sb.append(type);
+        sb.append(" ");
+        sb.append(name);
+        if (defaultval != null) {
+            sb.append("=");
+            sb.append(defaultval);
+        }
+        return sb.toString();
+    }
 }

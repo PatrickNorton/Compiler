@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing a typeget statement.
  * @author Patrick Norton
@@ -57,5 +59,18 @@ public class TypegetStatementNode implements ImportExportNode {
         DottedVariableNode[] typegets = DottedVariableNode.parseList(tokens, false);
         tokens.Newline();
         return new TypegetStatementNode(typegets, from);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (DottedVariableNode d : typegets) {
+            sj.add(d.toString());
+        }
+        if (!from.isEmpty()) {
+            return "from " + from + " typeget " + sj;
+        } else {
+            return "typeget " + sj;
+        }
     }
 }

@@ -5,13 +5,13 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class StaticBlockNode implements ClassStatementNode {
-    private BaseNode[] stmts;
+    private StatementBodyNode stmts;
 
     public StaticBlockNode(@NotNull StatementBodyNode stmts) {
-        this.stmts = stmts.getStatements();
+        this.stmts = stmts;
     }
 
-    public BaseNode[] getStmts() {
+    public StatementBodyNode getStmts() {
         return this.stmts;
     }
 
@@ -23,5 +23,10 @@ public class StaticBlockNode implements ClassStatementNode {
     @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         throw new ParserException("Unexpected descriptor in static block");
+    }
+
+    @Override
+    public String toString() {
+        return "static " + stmts;
     }
 }

@@ -57,4 +57,9 @@ public class DoStatementNode implements FlowStatementNode {
         tokens.Newline();
         return new DoStatementNode(body, conditional);
     }
+
+    @Override
+    public String toString() {
+        return "do " + body + " while " + conditional;
+    }
 }

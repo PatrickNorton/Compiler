@@ -70,4 +70,9 @@ public class FunctionDefinitionNode implements DefinitionNode, DecoratableNode {
         tokens.Newline();
         return new FunctionDefinitionNode(name, args, retval, body);
     }
+
+    @Override
+    public String toString() {
+        return "func " + name + args;
+    }
 }

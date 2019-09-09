@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing a dictionary comprehension.
  * <p>
@@ -89,5 +91,19 @@ public class DictComprehensionNode implements SubTestNode {
         }
         tokens.nextToken();
         return new DictComprehensionNode(key, val, vars, looped);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (TypedVariableNode t : vars) {
+            sj.add(t.toString());
+        }
+        String vars = sj.toString();
+        sj = new StringJoiner(", ");
+        for (TestNode t : looped) {
+            sj.add(t.toString());
+        }
+        return "{" + key + ": " + val + " for " + vars + " in " + sj;
     }
 }
