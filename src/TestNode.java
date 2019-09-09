@@ -88,7 +88,7 @@ public interface TestNode extends BaseNode {
                 }
                 // Lack of final return very much intentional here
             default:
-                throw new ParserException(""); // TODO: Error messages
+                throw new ParserException("Unexpected "+tokens.getFirst());
         }
     }
 

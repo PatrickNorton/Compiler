@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 /**
  * The list of tokens.
@@ -59,32 +60,10 @@ public class TokenList implements Iterable<Token> {
      * @return If the line contains that token
      */
     boolean lineContains(TokenType... question) {
-        int netBraces = 0;
-        Token previous = null;
-        for (Token token : this) {
-            if (token.is(TokenType.OPEN_BRACE)) {
-                // Don't parse entire conditional block if that's reached
-                // NOTE: This doesn't care about invalid sequences, b/c syntax
-                // errors will fail elsewhere
-                if (token.is("{") && previous != null && netBraces == 0 &&
-                        previous.is(TokenType.NAME, TokenType.ELLIPSIS, TokenType.STRING,
-                                TokenType.NUMBER, TokenType.OPERATOR_SP, TokenType.CLOSE_BRACE)) {
-                    return false;
-                }
-                netBraces++;
-            } else if (token.is(TokenType.CLOSE_BRACE)) {
-                netBraces--;
-            }
-            if (netBraces == 0 && token.is(TokenType.NEWLINE)) {
-                return false;
-            }
-            if (netBraces == 0 && token.is(question)) {
+        for (Token token : this.lineIterator()) {
+            if (token.is(question)) {
                 return true;
             }
-            if (netBraces < 0) {
-                return false;
-            }
-            previous = token;
         }
         return false;
     }
@@ -95,10 +74,7 @@ public class TokenList implements Iterable<Token> {
      * @return If the line contains that token
      */
     boolean lineContains(String... question) {
-        for (Token token : this) {
-            if (token.is(TokenType.NEWLINE)) {
-                return false;
-            }
+        for (Token token : this.lineIterator()) {
             if (token.is(question)) {
                 return true;
             }
@@ -106,15 +82,45 @@ public class TokenList implements Iterable<Token> {
         return false;
     }
 
-    /**
-     * The list of tokens within the first brace found
-     * @return The list of tokens
-     */
-    // TODO: Make into an iterator
-    private LinkedList<Token> firstLevel() {
-        LinkedList<Token> tokens = new LinkedList<>();
-        int netBraces = this.tokenIs(TokenType.OPEN_BRACE) ? 0 : 1;
-        for (Token token : this) {
+    @NotNull
+    @Contract(pure = true)
+    private Iterable<Token> lineIterator() {
+        return LineIterator::new;
+    }
+
+    private class LineIterator implements Iterator<Token> {
+        private int netBraces = 0;
+        private Iterator<Token> iterator = TokenList.this.iterator();
+        private Token next = iterator.next();
+
+        @Override
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        @Override
+        public Token next() {
+            if (next == null) {
+                throw new NoSuchElementException();
+            }
+            Token toReturn;
+            do {
+                toReturn = next;
+                if (!iterator.hasNext()) {
+                    next = null;
+                    break;
+                } else {
+                    next = iterator.next();
+                }
+                adjustBraces(toReturn);
+            } while (next != null && netBraces > 0);
+            if (next == null && netBraces > 0) {
+                throw new ParserException("Unmatched braces");
+            }
+            return toReturn;
+        }
+
+        private void adjustBraces(@NotNull Token token) {
             switch (token.token) {
                 case OPEN_BRACE:
                     netBraces++;
@@ -123,16 +129,32 @@ public class TokenList implements Iterable<Token> {
                     netBraces--;
                     break;
                 case EPSILON:
-                    throw new ParserException("Unmatched brace");
+                    if (netBraces > 0) {
+                        throw new ParserException("Unmatched brace");
+                    }
             }
-            if (netBraces == 0) {
-                return tokens;
+            if (next.is("{") && netBraces == 0 &&
+                        token.is(TokenType.NAME, TokenType.ELLIPSIS, TokenType.STRING,
+                                TokenType.NUMBER, TokenType.OPERATOR_SP, TokenType.CLOSE_BRACE)) {
+                next = null;
             }
-            if (netBraces == 1) {
-                tokens.add(token);
+            if (token.is(TokenType.NEWLINE) && netBraces == 0) {
+                next = null;
+            }
+            if (netBraces < 0) {
+                next = null;
             }
         }
-        throw new RuntimeException("You shouldn't have ended up here");
+    }
+
+    /**
+     * The list of tokens within the first brace found
+     * @return The list of tokens
+     */
+    @NotNull
+    @Contract(pure = true)
+    private Iterable<Token> firstLevel() {
+        return FirstLevelIterator::new;
     }
 
     /**
@@ -366,6 +388,41 @@ public class TokenList implements Iterable<Token> {
             next = tokenizer.tokenizeNext();
             bufferIterator.add(next);
             bufferIterator.previous();
+        }
+    }
+
+    private class FirstLevelIterator implements Iterator<Token> {
+        private int netBraces = 0;
+        private boolean beginning = true;
+        private Iterator<Token> iterator = TokenList.this.iterator();
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext() && (beginning || netBraces > 0);
+        }
+
+        @Override
+        public Token next() {
+            beginning = false;
+            Token next;
+            do {
+                next = iterator.next();
+                adjustBraces(next);
+            } while (netBraces > 1);
+            return next;
+        }
+
+        private void adjustBraces(@NotNull Token token) {
+            switch (token.token) {
+                case OPEN_BRACE:
+                    netBraces++;
+                    break;
+                case CLOSE_BRACE:
+                    netBraces--;
+                    break;
+                case EPSILON:
+                    throw new ParserException("Unmatched brace");
+            }
         }
     }
 
