@@ -30,9 +30,8 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      */
     @NotNull
     static ClassStatementNode parse(@NotNull TokenList tokens) {
-        if (tokens.tokenIs("static") && tokens.getToken(1).is("{")) {
-            tokens.nextToken();
-            return new StaticBlockNode(StatementBodyNode.parse(tokens));  // TODO? StaticBlockNode.parse
+        if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {
+            return StaticBlockNode.parse(tokens);
         }
         BaseNode stmt = BaseNode.parse(tokens);
         if (stmt instanceof ClassStatementNode) {

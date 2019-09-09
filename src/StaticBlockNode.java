@@ -1,3 +1,4 @@
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -7,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class StaticBlockNode implements ClassStatementNode {
     private StatementBodyNode stmts;
 
+    @Contract(pure = true)
     public StaticBlockNode(@NotNull StatementBodyNode stmts) {
         this.stmts = stmts;
     }
@@ -23,6 +25,14 @@ public class StaticBlockNode implements ClassStatementNode {
     @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         throw new ParserException("Unexpected descriptor in static block");
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    public static StaticBlockNode parse(@NotNull TokenList tokens) {
+        assert tokens.tokenIs("static") && tokens.tokenIs(1, "{");
+        tokens.nextToken();
+        return new StaticBlockNode(StatementBodyNode.parse(tokens));
     }
 
     @Override
