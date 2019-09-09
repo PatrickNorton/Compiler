@@ -23,7 +23,6 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      * @param assigned The variables being assigned to
      * @param value The values being assigned
      */
-    // TODO: Refactor such that types and names are in a TypedVariableNode instead
     @Contract(pure = true)
     public DeclaredAssignmentNode(Boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
         this.is_colon = is_colon;
