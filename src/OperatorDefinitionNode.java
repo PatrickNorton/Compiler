@@ -103,6 +103,6 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         if (!args.isEmpty()) {
             sb.append(args);
         }
-        return sb.toString();
+        return sb + " " + body;
     }
 }

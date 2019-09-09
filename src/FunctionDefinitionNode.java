@@ -73,6 +73,6 @@ public class FunctionDefinitionNode implements DefinitionNode, DecoratableNode {
 
     @Override
     public String toString() {
-        return "func " + name + args;
+        return "func " + name + args + " " + body;
     }
 }
