@@ -55,7 +55,7 @@ public class ContextDefinitionNode implements DefinitionNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static ContextDefinitionNode parse(TokenList tokens) {
+    static ContextDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("context");
         tokens.nextToken();
         VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
@@ -72,5 +72,14 @@ public class ContextDefinitionNode implements DefinitionNode {
         tokens.nextToken();
         tokens.Newline();
         return new ContextDefinitionNode(name, enter, exit);
+    }
+
+    @Override
+    public String toString() {
+        if (name.isEmpty()) {
+            return "context";
+        } else {
+            return "context " + name;
+        }
     }
 }

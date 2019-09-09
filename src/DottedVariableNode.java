@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 /**
  * The class representing a dotted variable.
@@ -166,5 +167,15 @@ public class DottedVariableNode implements NameNode {
             }
         }
         return variables.toArray(new DottedVariableNode[0]);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(".");
+        sj.add(preDot.toString());
+        for (NameNode n : postDots) {
+            sj.add(n.toString());
+        }
+        return sj.toString();
     }
 }

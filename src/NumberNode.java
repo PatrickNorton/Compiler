@@ -83,4 +83,9 @@ public class NumberNode implements AtomicNode {
         }
         return val;
     }
+
+    @Override
+    public String toString() {
+        return integer.toString();
+    }
 }

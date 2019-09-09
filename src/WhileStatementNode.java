@@ -53,4 +53,9 @@ public class WhileStatementNode implements ComplexStatementNode {
         tokens.Newline();
         return new WhileStatementNode(cond, body, nobreak);
     }
+
+    @Override
+    public String toString() {
+        return "while " + cond + " " + body;
+    }
 }

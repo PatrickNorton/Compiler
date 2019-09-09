@@ -26,4 +26,9 @@ public class SpecialOpNameNode implements NameNode {
         tokens.nextToken();
         return new SpecialOpNameNode(op);
     }
+
+    @Override
+    public String toString() {
+        return "operator " + operator;
+    }
 }

@@ -1,6 +1,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The node representing an export statement.
  * @author Patrick Norton
@@ -43,5 +45,14 @@ public class ExportStatementNode implements ImportExportNode {
         DottedVariableNode[] exports = DottedVariableNode.parseList(tokens, false);
         tokens.Newline();
         return new ExportStatementNode(exports);
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (DottedVariableNode d : exports) {
+            sj.add(d.toString());
+        }
+        return "export " + sj;
     }
 }

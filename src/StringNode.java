@@ -3,7 +3,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The class representing a string literal.
@@ -135,5 +134,14 @@ public class StringNode extends StringLikeNode {
             i++;
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (StringPrefix s : prefixes) {
+            sb.append(s);
+        }
+        return sb + contents;
     }
 }

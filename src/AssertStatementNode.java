@@ -43,4 +43,9 @@ public class AssertStatementNode implements SimpleStatementNode {
         tokens.Newline();
         return new AssertStatementNode(assertion);
     }
+
+    @Override
+    public String toString() {
+        return "assert " + assertion;
+    }
 }

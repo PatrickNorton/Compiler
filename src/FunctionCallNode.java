@@ -1,5 +1,7 @@
 import org.jetbrains.annotations.Contract;
 
+import java.util.StringJoiner;
+
 /**
  * The class representing a function call.
  * <p>
@@ -25,5 +27,14 @@ public class FunctionCallNode implements NameNode, EnumKeywordNode {
 
     public ArgumentNode[] getParameters() {
         return parameters;
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (ArgumentNode a : parameters) {
+            sj.add(a.toString());
+        }
+        return caller + "(" + sj + ")";
     }
 }

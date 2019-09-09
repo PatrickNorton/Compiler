@@ -46,4 +46,9 @@ public class LambdaNode implements SubTestNode {
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new LambdaNode(args, body);
     }
+
+    @Override
+    public String toString() {
+        return "lambda " + args + body;
+    }
 }

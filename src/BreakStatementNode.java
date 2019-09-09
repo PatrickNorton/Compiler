@@ -65,4 +65,16 @@ public class BreakStatementNode implements SimpleFlowNode {
         tokens.Newline();
         return new BreakStatementNode(loops, cond);
     }
+
+    @Override
+    public String toString() {
+        String string = "break";
+        if (loops > 0) {
+            string += " " + loops;
+        }
+        if (cond != null) {
+            string += " if " + cond;
+        }
+        return string;
+    }
 }

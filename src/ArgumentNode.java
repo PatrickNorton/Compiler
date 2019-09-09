@@ -112,4 +112,14 @@ public class ArgumentNode implements BaseNode {
         tokens.nextToken();
         return args.toArray(new ArgumentNode[0]);
     }
+
+    @Override
+    public String toString() {
+        String string = this.vararg;
+        if (!this.variable.isEmpty()) {
+            string += this.variable + "=";
+        }
+        string += this.argument;
+        return string;
+    }
 }

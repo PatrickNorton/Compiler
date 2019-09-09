@@ -96,4 +96,26 @@ public class FormattedStringNode extends StringLikeNode {
         }
         return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes.toCharArray());
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (StringPrefix s : prefixes) {
+            sb.append(s.value);
+        }
+        sb.append('"');
+        for (int i = 0; i < tests.length; i++) {
+            sb.append(strs[i]);
+            sb.append('{');
+            sb.append(tests[i]);
+            sb.append('}');
+        }
+        if (strs.length > tests.length) {
+            for (int i = tests.length; i < strs.length; i++) {
+                sb.append(strs[i]);
+            }
+        }
+        sb.append('"');
+        return sb.toString();
+    }
 }

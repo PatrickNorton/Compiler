@@ -82,4 +82,9 @@ public class TypedVariableNode implements SubTestNode {
         }
         return vars.toArray(new TypedVariableNode[0]);
     }
+
+    @Override
+    public String toString() {
+        return type + " " + var;
+    }
 }

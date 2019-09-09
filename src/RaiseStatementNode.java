@@ -39,4 +39,9 @@ public class RaiseStatementNode implements SimpleStatementNode {
         tokens.Newline();
         return new RaiseStatementNode(raised);
     }
+
+    @Override
+    public String toString() {
+        return "raise " + raised;
+    }
 }

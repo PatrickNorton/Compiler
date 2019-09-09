@@ -43,4 +43,9 @@ public class GenericFunctionNode implements InterfaceStatementNode {
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
     }
+
+    @Override
+    public String toString() {
+        return "func " + name + args;
+    }
 }

@@ -42,4 +42,9 @@ public class DecrementNode implements SimpleStatementNode {
         tokens.nextToken();
         return new DecrementNode(var);
     }
+
+    @Override
+    public String toString() {
+        return variable + "--";
+    }
 }

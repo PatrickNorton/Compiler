@@ -187,4 +187,10 @@ public enum OperatorTypeNode implements AtomicNode {
                 throw new RuntimeException("Illegal TokenType for OperatorTypeNode.parse "+tok);
         }
     }
+
+    @Contract(pure = true)
+    @Override
+    public String toString() {
+        return name;
+    }
 }

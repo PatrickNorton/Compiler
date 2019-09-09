@@ -86,4 +86,13 @@ public class StatementBodyNode implements BaseNode {
         }
         return new StatementBodyNode(statements.toArray(new BaseNode[0]));
     }
+
+    @Override
+    public String toString() {
+        if (statements.length > 0) {
+            return "{...}";
+        } else {
+            return "{}";
+        }
+    }
 }

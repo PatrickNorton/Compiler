@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 /**
  * The node representing a class definition
@@ -26,6 +27,8 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
         this.name = name;
         this.superclasses = superclasses;
         this.body = body;
+        this.descriptors = new DescriptorNode[0];
+        this.decorators = new NameNode[0];
     }
 
     @Override
@@ -90,5 +93,26 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
             superclasses.add(TypeNode.parse(tokens));
         }
         return new ClassDefinitionNode(name, superclasses.toArray(new TypeNode[0]), ClassBodyNode.parse(tokens));
+    }
+
+    @Override
+    public String toString() {
+        String string = "";
+        if (descriptors.length > 0) {
+            StringJoiner sj = new StringJoiner(" ", "", " ");
+            for (DescriptorNode d : descriptors) {
+                sj.add(d.toString());
+            }
+            string += sj;
+        }
+        string += "class " + name + " ";
+        if (superclasses.length > 0) {
+            StringJoiner sj = new StringJoiner(", ", "from ", " ");
+            for (TypeNode t : superclasses) {
+                sj.add(t.toString());
+            }
+            string += sj;
+        }
+        return string + body;
     }
 }

@@ -25,6 +25,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         this.get = get;
         this.set_args = set_args;
         this.set = set;
+        this.descriptors = new DescriptorNode[0];
     }
 
     @Contract(pure = true)
@@ -105,5 +106,15 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         tokens.nextToken();
         tokens.Newline();
         return new PropertyDefinitionNode(name, get, set_args, set);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            sb.append(d);
+            sb.append(" ");
+        }
+        return sb + "property " + name + get;
     }
 }
