@@ -40,6 +40,9 @@ public interface NameNode extends AtomicNode {
                     throw new RuntimeException("Unexpected brace");
             }
         }
+        if (tokens.tokenIs(TokenType.DOT)) {
+            name = DottedVariableNode.fromExpr(tokens, name);
+        }
         return name;
     }
 }

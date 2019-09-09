@@ -20,7 +20,6 @@ public interface InterfaceStatementNode extends BaseNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed interface statement
      */
-    // TODO: Static blocks in interfaces
     @NotNull
     static InterfaceStatementNode parse(@NotNull TokenList tokens) {  // TODO: Clean up method and/or factor out
         if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {

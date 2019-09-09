@@ -1,5 +1,7 @@
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedList;
 import java.util.StringJoiner;
 
 /**
@@ -50,6 +52,23 @@ public class AssignmentNode implements AssignStatementNode {
 
     public TestNode[] getValue() {
         return value;
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    public static AssignmentNode parse(@NotNull TokenList tokens) {
+        LinkedList<NameNode> name = new LinkedList<>();
+        while (!tokens.tokenIs(TokenType.ASSIGN)) {
+            name.add(NameNode.parse(tokens));
+            if (!tokens.tokenIs(TokenType.COMMA)) {
+                break;
+            }
+            tokens.nextToken();
+        }
+        boolean is_colon = tokens.tokenIs(":=");
+        tokens.nextToken();
+        TestNode[] value = TestNode.parseList(tokens, false);
+        return new AssignmentNode(is_colon, name.toArray(new NameNode[0]), value);
     }
 
     @Override

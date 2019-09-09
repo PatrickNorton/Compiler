@@ -1,6 +1,7 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.StringJoiner;
 
 /**
@@ -12,24 +13,21 @@ import java.util.StringJoiner;
  */
 public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode {
     private Boolean is_colon;
-    private TypeNode[] type;
-    private NameNode[] name;
+    private TypedVariableNode[] assigned;
     private TestNode[] value;
     private DescriptorNode[] descriptors;
 
     /**
      * Create new instance of DeclaredAssignmentNode.
      * @param is_colon Whether the assignment is dynamic (true) or static (false)
-     * @param type The types of the assigned variables
-     * @param name The names of those variables
+     * @param assigned The variables being assigned to
      * @param value The values being assigned
      */
     // TODO: Refactor such that types and names are in a TypedVariableNode instead
     @Contract(pure = true)
-    public DeclaredAssignmentNode(Boolean is_colon, TypeNode[] type, NameNode[] name, TestNode[] value) {
+    public DeclaredAssignmentNode(Boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
         this.is_colon = is_colon;
-        this.type = type;
-        this.name = name;
+        this.assigned = assigned;
         this.value = value;
     }
 
@@ -37,17 +35,17 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         return is_colon;
     }
 
-    public TypeNode[] getType() {
-        return type;
-    }
-
     @Override
     public NameNode[] getName() {
-        return name;
+        ArrayList<NameNode> name = new ArrayList<>();
+        for (TypedVariableNode t : assigned) {
+            name.add(t.getVar());
+        }
+        return name.toArray(new NameNode[0]);
     }
 
-    public TestNode[] getValue() {
-        return value;
+    public TypedVariableNode[] getAssigned() {
+        return assigned;
     }
 
     public DescriptorNode[] getDescriptors() {
@@ -65,9 +63,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      *     The syntax for a DeclaredAssignmentNode is: <code>{@link TypeNode}
      *     {@link VariableNode} *["," [{@link TypeNode}] {@link VariableNode}]
      *     [","] ("=" | ":=") {@link TestNode} *["," {@link TestNode}] [","]
-     *     </code>. This code is simply a delegate-and-check to
-     *     {@link AssignStatementNode#parse}, simply because it is easier to
-     *     do it that way rather than the other way around.
+     *     </code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed DeclaredAssignmentNode
@@ -75,11 +71,14 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @NotNull
     @Contract("_ -> new")
     static DeclaredAssignmentNode parse(TokenList tokens) {
-        AssignStatementNode assign = AssignStatementNode.parse(tokens);
-        if (assign instanceof DeclaredAssignmentNode) {
-            return (DeclaredAssignmentNode) assign;
+        TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
+        if (!tokens.tokenIs(TokenType.ASSIGN)) {
+            throw new ParserException("Unexpected "+tokens.getFirst());
         }
-        throw new ParserException("Expected declared assignment, got normal assignment");
+        boolean is_colon = tokens.tokenIs(":=");
+        tokens.nextToken();
+        TestNode[] value = TestNode.parseList(tokens, false);
+        return new DeclaredAssignmentNode(is_colon, assigned, value);
     }
 
     @Override
@@ -91,8 +90,8 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         }
         string = sj + " ";
         sj = new StringJoiner(", ");
-        for (int i = 0; i < name.length; i++) {
-            sj.add(type[i] + " " + name[i]);
+        for (TypedVariableNode t : assigned) {
+            sj.add(t.toString());
         }
         string += sj + (is_colon ? " := " : " = ");
         sj = new StringJoiner(", ");

@@ -42,6 +42,7 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
         return body;
     }
 
+    @Override
     public DescriptorNode[] getDescriptors() {
         return descriptors;
     }
@@ -100,6 +101,6 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
             sb.append(d);
             sb.append(' ');
         }
-        return "interface " + name + " " + body;
+        return sb + "interface " + name + " " + body;
     }
 }
