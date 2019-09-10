@@ -108,7 +108,7 @@ public class TypedArgumentListNode implements BaseNode {
         }
         ArrayList<TypedArgumentNode> which_args = args;
         while (!tokens.tokenIs(")")) {
-            if (tokens.tokenIs("*") && tokens.getToken(1).is(",", ")")) {
+            if (tokens.tokenIs("*") && tokens.tokenIs(1, ",", ")")) {
                 which_args = kwArgs;
                 tokens.nextToken(true);
                 tokens.nextToken(true);

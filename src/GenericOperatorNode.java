@@ -1,4 +1,5 @@
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.StringJoiner;
 
@@ -15,19 +16,20 @@ import java.util.StringJoiner;
  * @see GenericFunctionNode
  */
 public class GenericOperatorNode implements InterfaceStatementNode {
-    private String op_code;
+    private SpecialOpNameNode op_code;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
     private DescriptorNode[] descriptors;
 
     @Contract(pure = true)
-    public GenericOperatorNode(String op_code, TypedArgumentListNode args, TypeNode... retvals) {
+    public GenericOperatorNode(SpecialOpNameNode op_code, TypedArgumentListNode args, TypeNode... retvals) {
         this.op_code = op_code;
         this.args = args;
         this.retvals = retvals;
+        this.descriptors = new DescriptorNode[0];
     }
 
-    public String getOp_code() {
+    public SpecialOpNameNode getOp_code() {
         return op_code;
     }
 
@@ -46,6 +48,33 @@ public class GenericOperatorNode implements InterfaceStatementNode {
     @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
+    }
+
+    static boolean isGeneric(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.OPERATOR_SP);
+        int endPtr = 1;
+        if (tokens.tokenIs(endPtr, "(")) {
+            endPtr = tokens.sizeOfBrace(endPtr);
+        }
+        if (tokens.tokenIs(endPtr, TokenType.ARROW)) {
+            endPtr = tokens.sizeOfReturn(endPtr);
+        }
+        return !tokens.tokenIs(endPtr, "{");
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    public static GenericOperatorNode parse(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.OPERATOR_SP);
+        SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
+        TypeNode[] retvals;
+        if (tokens.tokenIs(TokenType.ARROW)) {
+            retvals = TypeNode.parseRetVal(tokens);
+        } else {
+            retvals = new TypeNode[0];
+        }
+        return new GenericOperatorNode(op_code, args, retvals);
     }
 
     @Override

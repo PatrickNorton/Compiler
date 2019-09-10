@@ -244,7 +244,7 @@ public class TokenList implements Iterable<Token> {
     int sizeOfBrace(int offset) {
         int netBraces = 0;
         int size = offset;
-        for (Token token : this) {
+        for (Token token : this.iteratorFrom(offset)) {
             if (token.is(TokenType.OPEN_BRACE)) {
                 netBraces++;
             } else if (token.is(TokenType.CLOSE_BRACE)) {
@@ -252,6 +252,21 @@ public class TokenList implements Iterable<Token> {
             }
             size++;
             if (netBraces == 0) {
+                break;
+            }
+        }
+        return size;
+    }
+
+    int sizeOfReturn(int offset) {
+        int size = offset;
+        assert tokenIs(offset, TokenType.ARROW);
+        size++;
+        while (tokenIs(size, TokenType.NAME)) {
+            size = sizeOfVariable(size);
+            if (tokenIs(size, TokenType.COMMA)) {
+                size++;
+            } else {
                 break;
             }
         }
@@ -338,6 +353,10 @@ public class TokenList implements Iterable<Token> {
         return getToken(index).is(types);
     }
 
+    public boolean tokenIs(TokenType type1, String type2) {
+        return getFirst().is(type1) || getFirst().is(type2);
+    }
+
     /**
      * Pop the first token and move on.
      */
@@ -363,8 +382,17 @@ public class TokenList implements Iterable<Token> {
     }
 
     private class TokenIterator implements Iterator<Token> {
-        private ListIterator<Token> bufferIterator = buffer.listIterator();
+        private ListIterator<Token> bufferIterator;
         private Token next = null;
+
+        TokenIterator() {
+            bufferIterator = buffer.listIterator();
+        }
+
+        TokenIterator(int i) {
+            TokenList.this.getToken(i);  // Ensure the buffer is large enough
+            bufferIterator = buffer.listIterator(i);
+        }
 
         @Override
         public boolean hasNext() {
@@ -431,6 +459,10 @@ public class TokenList implements Iterable<Token> {
     @Override
     public Iterator<Token> iterator() {
         return new TokenIterator();
+    }
+
+    public Iterable<Token> iteratorFrom(int i) {
+        return () -> new TokenIterator(i);
     }
 
     @NotNull
