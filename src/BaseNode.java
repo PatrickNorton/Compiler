@@ -75,97 +75,15 @@ public interface BaseNode {
     @Contract("_ -> new")
     private static BaseNode parseKeyword(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.KEYWORD);
-        switch (tokens.getFirst().sequence) {
-            case "class":
-                if (tokens.tokenIs(1, TokenType.DESCRIPTOR, TokenType.KEYWORD)) {
-                    return ClassStatementNode.parseDescriptor(tokens);
-                }
-                return ClassDefinitionNode.parse(tokens);
-            case "func":
-                return FunctionDefinitionNode.parse(tokens);
-            case "if":
-                return IfStatementNode.parse(tokens);
-            case "for":
-                return ForStatementNode.parse(tokens);
-            case "elif":
-            case "else":
-                throw new ParserException(tokens.getFirst() + " must have a preceding if");
-            case "do":
-                return DoStatementNode.parse(tokens);
-            case "dotimes":
-                return DotimesStatementNode.parse(tokens);
-            case "method":
-                return MethodDefinitionNode.parse(tokens);
-            case "while":
-                return WhileStatementNode.parse(tokens);
-            case "casted":
-            case "in":
-                throw new ParserException(tokens.getFirst() + " must have a preceding token");
-            case "from":
-                return ImportExportNode.parse(tokens);
-            case "import":
-                return ImportStatementNode.parse(tokens);
-            case "export":
-                return ExportStatementNode.parse(tokens);
-            case "typeget":
-                return TypegetStatementNode.parse(tokens);
-            case "break":
-                return BreakStatementNode.parse(tokens);
-            case "continue":
-                return ContinueStatementNode.parse(tokens);
-            case "return":
-                return ReturnStatementNode.parse(tokens);
-            case "property":
-                return PropertyDefinitionNode.parse(tokens);
-            case "get":
-            case "set":
-                throw new ParserException("get and set must be in a property block");
-            case "lambda":
-                return TestNode.parse(tokens);
-            case "context":
-                return ContextDefinitionNode.parse(tokens);
-            case "enter":
-            case "exit":
-                throw new ParserException("enter and exit must be in a context block");
-            case "try":
-                return TryStatementNode.parse(tokens);
-            case "except":
-            case "finally":
-                throw new ParserException("except and finally must come after a try");
-            case "with":
-                return WithStatementNode.parse(tokens);
-            case "as":
-                throw new ParserException("as must come in a with statement");
-            case "assert":
-                return AssertStatementNode.parse(tokens);
-            case "del":
-                return DeleteStatementNode.parse(tokens);
-            case "yield":
-                return YieldStatementNode.parse(tokens);
-            case "raise":
-                return RaiseStatementNode.parse(tokens);
-            case "typedef":
-                return TypedefStatementNode.parse(tokens);
-            case "some":
-                return SomeStatementNode.parse(tokens);
-            case "interface":
-                return InterfaceDefinitionNode.parse(tokens);
-            case "switch":
-                return SwitchStatementNode.parse(tokens);
-            case "case":
-                throw new ParserException("Unexpected case");
-            case "enum":
-                return EnumDefinitionNode.parse(tokens);
-            default:
-                throw new RuntimeException("Keyword mismatch");
-        }
+        Keyword kw = Keyword.find(tokens.getFirst().sequence);
+        return kw.parseLeft(tokens);
     }
 
     /**
      * Parse a node, given that it starts with a variable token.
      * <p>
-     *     Things starting with a variable token:
      *     <ul>
+     *         <lh>Things starting with a variable token:</lh>
      *      <li>Function call
      *      <li>Lone variable, just sitting there
      *      <li>Declaration
