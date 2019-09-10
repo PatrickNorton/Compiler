@@ -26,7 +26,7 @@ public interface InterfaceStatementNode extends BaseNode {
             return StaticBlockNode.parse(tokens);
         }
         if (tokens.tokenIs(TokenType.OPERATOR_SP, TokenType.DESCRIPTOR) || tokens.tokenIs("method")
-              || (tokens.tokenIs("class") && tokens.getToken(1).is(TokenType.DESCRIPTOR, TokenType.KEYWORD))) {
+              || (tokens.tokenIs("class") && tokens.tokenIs(1, TokenType.DESCRIPTOR, TokenType.KEYWORD))) {
             LinkedList<DescriptorNode> descriptors = new LinkedList<>();
             if (tokens.tokenIs("class")) {
                 descriptors.add(DescriptorNode.find("class"));

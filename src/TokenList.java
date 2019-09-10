@@ -133,15 +133,16 @@ public class TokenList implements Iterable<Token> {
                         throw new ParserException("Unmatched brace");
                     }
             }
+            if (next == null) {
+                return;
+            }
             if (next.is("{") && netBraces == 0 &&
                         token.is(TokenType.NAME, TokenType.ELLIPSIS, TokenType.STRING,
                                 TokenType.NUMBER, TokenType.OPERATOR_SP, TokenType.CLOSE_BRACE)) {
                 next = null;
-            }
-            if (token.is(TokenType.NEWLINE) && netBraces == 0) {
+            } else if (token.is(TokenType.NEWLINE) && netBraces == 0) {
                 next = null;
-            }
-            if (netBraces < 0) {
+            } else if (netBraces < 0) {
                 next = null;
             }
         }

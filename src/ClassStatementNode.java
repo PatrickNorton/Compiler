@@ -93,39 +93,14 @@ public interface ClassStatementNode extends InterfaceStatementNode {
     @Contract("_, _ -> new")
     private static ClassStatementNode parseDescriptorKeyword(@NotNull TokenList tokens, @NotNull ArrayList<DescriptorNode> descriptors) {
         assert tokens.tokenIs(TokenType.KEYWORD);
-        ClassStatementNode node;
-        switch (tokens.getFirst().sequence) {
-            case "class":
-                node = ClassDefinitionNode.parse(tokens);
-                break;
-            case "method":
-                node = MethodDefinitionNode.parse(tokens);
-                break;
-            case "interface":
-                node = InterfaceDefinitionNode.parse(tokens);
-                break;
-            case "func":
-            case "if":
-            case "for":
-            case "elif":
-            case "else":
-            case "do":
-            case "dotimes":
-            case "while":
-            case "in":
-            case "from":
-            case "import":
-            case "export":
-            case "typeget":
-            case "break":
-            case "continue":
-            case "return":
-                throw new ParserException("Expected descriptor-usable keyword, got "+tokens.getFirst());
-            default:
-                throw new RuntimeException("Keyword mismatch");
+        BaseNode node = BaseNode.parse(tokens);
+        if (node instanceof ClassStatementNode) {
+            ClassStatementNode classNode = (ClassStatementNode) node;
+            classNode.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
+            return classNode;
+        } else {
+            throw new ParserException("Invalid statement in class body");
         }
-        node.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
-        return node;
     }
 
     /**
