@@ -32,6 +32,16 @@ public enum Keyword {
     CONTINUE("continue", ContinueStatementNode::parse),
     RETURN("return", ReturnStatementNode::parse),
     PROPERTY("property", PropertyDefinitionNode::parse),
+    ENTER("enter", " must be in a property block", TokenPlace.LEFT),
+    EXIT("exit", " must be in a property block", TokenPlace.LEFT),
+    TRY("try", TryStatementNode::parse),
+    EXCEPT("except", " must be in a try-statement", TokenPlace.LEFT),
+    FINALLY("finally", " must be in a try statement", TokenPlace.LEFT),
+    WITH("with", WithStatementNode::parse),
+    AS("as", " must be with an if", TokenPlace.LEFT),
+    ASSERT("assert", AssertStatementNode::parse),
+    DEL("del", DeleteStatementNode::parse),
+    YIELD("yield", YieldStatementNode::parse),
     GET("get", " must be in a property block", TokenPlace.LEFT),
     SET("set", " must be in a property block", TokenPlace.LEFT),
     LAMBDA("lambda", TestNode::parse),
@@ -86,7 +96,12 @@ public enum Keyword {
     }
 
     static Keyword find(String value) {
-        return values.get(value);
+        Keyword val = values.get(value);
+        if (val == null) {
+            throw new RuntimeException("Unknown keyword");
+        } else {
+            return val;
+        }
     }
 
     BaseNode parseLeft(TokenList tokens) {
