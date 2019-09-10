@@ -88,7 +88,7 @@ public class ArgumentNode implements BaseNode {
             VariableNode var = new VariableNode();
             int offset = tokens.tokenIs("*", "**") ? 1 : 0;
             if (tokens.tokenIs(offset, TokenType.NAME)
-                    && tokens.getToken(tokens.sizeOfVariable(offset)).is("=")) {
+                    && tokens.tokenIs(tokens.sizeOfVariable(offset), "=")) {
                 var = VariableNode.parse(tokens);
                 tokens.nextToken(true);
             }

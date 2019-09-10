@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class Tokenizer {
     private Scanner file;
     private static Pattern delimiter = Pattern.compile(
-            "(?=#\\|((?!#\\|).|\n)*#\\||#(?!\\|).*|(?<![bfre])[bfre]*\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\"|(?<!\\\\)\\R)");
+            "(?=(?<!\\\\)\\R|#\\|((?!\\|#).|\n)*\\|#|#(?!\\|).*\\R|(?<![bfre])[bfre]*?\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")");
     private String next;
 
     @Contract(pure = true)
