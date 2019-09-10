@@ -35,7 +35,7 @@ public class InterfaceBodyNode extends StatementBodyNode {
         if (!tokens.tokenIs("{")) {
             throw new ParserException("The body of a class must be enclosed in curly brackets");
         }
-        tokens.nextToken(false);
+        tokens.nextToken(true);
         ArrayList<InterfaceStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs("}")) {
             statements.add(InterfaceStatementNode.parse(tokens));
