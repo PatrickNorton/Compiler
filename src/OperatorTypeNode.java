@@ -1,9 +1,7 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Every type of operator that is valid.
@@ -98,7 +96,9 @@ public enum OperatorTypeNode implements AtomicNode {
     public final String name;
     private final int usages;
 
-    private static Map<String, OperatorTypeNode> values;
+    private static final Map<String, OperatorTypeNode> values;
+
+    private static final LinkedList<OperatorTypeNode[]> operations;
 
     /**
      * Create new instance of OperatorTypeNode.
@@ -120,6 +120,24 @@ public enum OperatorTypeNode implements AtomicNode {
             temp.put(op.name, op);
         }
         values = Collections.unmodifiableMap(temp);
+    }
+
+    static {  // FIXME? Better way to initialise this?
+        operations = new LinkedList<>();
+        operations.add(new OperatorTypeNode[]{POWER});
+        operations.add(new OperatorTypeNode[]{BITWISE_NOT});
+        operations.add(new OperatorTypeNode[]{MULTIPLY, DIVIDE, FLOOR_DIV, MODULO});
+        operations.add(new OperatorTypeNode[]{ADD, SUBTRACT});
+        operations.add(new OperatorTypeNode[]{LEFT_BITSHIFT, RIGHT_BITSHIFT});
+        operations.add(new OperatorTypeNode[]{BITWISE_AND});
+        operations.add(new OperatorTypeNode[]{BITWISE_XOR, BITWISE_OR});
+        operations.add(new OperatorTypeNode[]{LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS});
+        operations.add(new OperatorTypeNode[]{IN, NOT_IN, IS, IS_NOT});
+        operations.add(new OperatorTypeNode[]{BOOL_NOT});
+        operations.add(new OperatorTypeNode[]{BOOL_AND});
+        operations.add(new OperatorTypeNode[]{BOOL_OR});
+        operations.add(new OperatorTypeNode[]{BOOL_XOR});
+        operations.add(new OperatorTypeNode[]{CASTED});
     }
 
     /**
@@ -164,6 +182,11 @@ public enum OperatorTypeNode implements AtomicNode {
         } else {
             throw new ParserException("Illegal operator "+op.name);
         }
+    }
+
+    @Contract(pure = true)
+    static Iterable<OperatorTypeNode[]> orderOfOperations() {
+        return operations;
     }
 
     /**

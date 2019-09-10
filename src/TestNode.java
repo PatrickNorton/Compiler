@@ -167,19 +167,9 @@ public interface TestNode extends BaseNode {
             if (nodes.size() == 1) {
                 return nodes.get(0);
             }
-            parseExpression(nodes, "**");
-            parseExpression(nodes, "~");
-            parseExpression(nodes, "*", "/", "//", "%");
-            parseExpression(nodes, "+", "-");
-            parseExpression(nodes, "<<", ">>");
-            parseExpression(nodes, "&");
-            parseExpression(nodes, "^", "|");
-            parseExpression(nodes, "<", "<=", ">", ">=", "!=", "==");
-            parseExpression(nodes, "in", "is", "is not", "not in");
-            parseExpression(nodes, "not");
-            parseExpression(nodes, "and");
-            parseExpression(nodes, "or");
-            parseExpression(nodes, "casted");
+            for (OperatorTypeNode[] operators : OperatorTypeNode.orderOfOperations()) {
+                parseExpression(nodes, operators);
+            }
             if (nodes.size() > 1) {
                 throw new ParserException("Too many tokens");
             }
@@ -192,7 +182,7 @@ public interface TestNode extends BaseNode {
      * @param nodes The list of nodes to be recombined
      * @param expr The expressions to parse together
      */
-    private static void parseExpression(@NotNull LinkedList<TestNode> nodes, String... expr) {
+    private static void parseExpression(@NotNull LinkedList<TestNode> nodes, OperatorTypeNode... expr) {
         if (nodes.size() == 1) {
             return;
         }
@@ -203,7 +193,7 @@ public interface TestNode extends BaseNode {
                     continue;
                 }
                 OperatorTypeNode operator = ((OperatorNode) node).getOperator();
-                if (Arrays.asList(expr).contains(operator.name)) {
+                if (Arrays.asList(expr).contains(operator)) {
                     if (operator == OperatorTypeNode.SUBTRACT) {
                         TestNode nodePrevious = nodes.get(nodeNumber - 1);
                         if (nodePrevious instanceof OperatorNode) {
