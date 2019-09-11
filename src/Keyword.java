@@ -95,6 +95,7 @@ public enum Keyword {
         values = Collections.unmodifiableMap(temp);
     }
 
+    @NotNull
     static Keyword find(String value) {
         Keyword val = values.get(value);
         if (val == null) {
