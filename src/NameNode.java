@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * variable.
  * @author Patrick Norton
  */
-public interface NameNode extends AtomicNode {
+public interface NameNode extends AtomicNode, PostDottableNode {
     /**
      * Parse a name from a list of tokens.
      * <p>

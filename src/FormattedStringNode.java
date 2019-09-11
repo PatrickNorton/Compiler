@@ -54,7 +54,7 @@ public class FormattedStringNode extends StringLikeNode {
 
     @NotNull
     @Contract("_, _ -> new")
-    static AtomicNode parse(TokenList tokens, @NotNull String contents) {
+    static FormattedStringNode parse(TokenList tokens, @NotNull String contents) {
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher prefixMatcher = prefixPattern.matcher(contents);
         String prefixes;
@@ -94,13 +94,7 @@ public class FormattedStringNode extends StringLikeNode {
         if (index <= inside.length()) {
             strs.add(inside.substring(end));
         }
-        FormattedStringNode fString = new FormattedStringNode(strs.toArray(new String[0]),
-                tests.toArray(new TestNode[0]), prefixes.toCharArray());
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, fString);
-        } else {
-            return fString;
-        }
+        return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes.toCharArray());
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see DictLiteralNode
  */
-public class LiteralNode implements SubTestNode {
+public class LiteralNode implements SubTestNode, PostDottableNode {
     private String brace_type;
     private TestNode[] builders;
     private Boolean[] is_splats;
@@ -49,7 +49,7 @@ public class LiteralNode implements SubTestNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static SubTestNode parse(@NotNull TokenList tokens) {
+    static LiteralNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
         tokens.nextToken(true);
@@ -80,12 +80,8 @@ public class LiteralNode implements SubTestNode {
         } else {
             throw new ParserException("Unmatched braces");
         }
-        LiteralNode node = new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, node);
-        } else {
-            return node;
-        }
+        return new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
+
     }
 
     @Override
