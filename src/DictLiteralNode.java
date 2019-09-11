@@ -14,7 +14,7 @@ import java.util.LinkedList;
  * @see LiteralNode
  * @see DictComprehensionNode
  */
-public class DictLiteralNode implements SubTestNode {
+public class DictLiteralNode implements SubTestNode, PostDottableNode {
     private TestNode[] keys;
     private TestNode[] values;
 
@@ -45,7 +45,7 @@ public class DictLiteralNode implements SubTestNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static SubTestNode parse(@NotNull TokenList tokens) {
+    static DictLiteralNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("{");
         tokens.nextToken(true);
         LinkedList<TestNode> keys = new LinkedList<>();
@@ -69,12 +69,7 @@ public class DictLiteralNode implements SubTestNode {
             throw new ParserException("Unmatched brace");
         }
         tokens.nextToken();
-        DictLiteralNode d = new DictLiteralNode(keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, d);
-        } else {
-            return d;
-        }
+        return new DictLiteralNode(keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));
     }
 
     @Override

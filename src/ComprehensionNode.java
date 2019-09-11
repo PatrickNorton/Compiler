@@ -9,7 +9,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  * @see DictComprehensionNode
  */
-public class ComprehensionNode implements SubTestNode {
+public class ComprehensionNode implements SubTestNode, PostDottableNode {
     private String brace_type;
     private TypedVariableNode[] variables;
     private TestNode builder;
@@ -63,7 +63,7 @@ public class ComprehensionNode implements SubTestNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static SubTestNode parse(@NotNull TokenList tokens) {
+    static ComprehensionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
         tokens.nextToken(true);
@@ -94,12 +94,7 @@ public class ComprehensionNode implements SubTestNode {
         }
         tokens.nextToken();
         TestNode[] looped_array = looped.toArray(new TestNode[0]);
-        ComprehensionNode comp = new ComprehensionNode(brace_type, variables, builder, looped_array);
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, comp);
-        } else {
-            return comp;
-        }
+        return new ComprehensionNode(brace_type, variables, builder, looped_array);
     }
 
     public String toString() {

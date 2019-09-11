@@ -1,3 +1,4 @@
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -64,31 +65,46 @@ public interface TestNode extends BaseNode {
      */
     @NotNull
     private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
+        TestNode node;
         switch (tokens.getFirst().token) {
             case NAME:
             case OPEN_BRACE:
-                return parseLeftVariable(tokens, ignore_newline);
+                node = parseLeftVariable(tokens, ignore_newline);
+                break;
             case BOOL_OP:
-                return OperatorNode.parseBoolOp(tokens, ignore_newline);
+                node = OperatorNode.parseBoolOp(tokens, ignore_newline);
+                break;
             case NUMBER:
-                return NumberNode.parse(tokens);
+                node = NumberNode.parse(tokens);
+                break;
             case OP_FUNC:
-                return parseOpFunc(tokens);
+                node = parseOpFunc(tokens);
+                break;
             case ELLIPSIS:
-                return VariableNode.parseEllipsis(tokens);
+                node = VariableNode.parseEllipsis(tokens);
+                break;
             case OPERATOR:
-                return OperatorNode.parse(tokens, ignore_newline);
+                node = OperatorNode.parse(tokens, ignore_newline);
+                break;
             case STRING:
-                return StringNode.parse(tokens);
+                node = StringNode.parse(tokens);
+                break;
             case KEYWORD:
                 if (tokens.tokenIs("lambda")) {
-                    return LambdaNode.parse(tokens);
+                    node = LambdaNode.parse(tokens);
+                    break;
                 } else if (tokens.tokenIs("some")) {
-                    return SomeStatementNode.parse(tokens);
+                    node = SomeStatementNode.parse(tokens);
+                    break;
                 }
-                // Lack of final return very much intentional here
+                // Intentional fallthrough here
             default:
                 throw new ParserException("Unexpected "+tokens.getFirst());
+        }
+        if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, node);
+        } else {
+            return node;
         }
     }
 
