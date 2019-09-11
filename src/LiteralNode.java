@@ -49,7 +49,7 @@ public class LiteralNode implements SubTestNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static LiteralNode parse(@NotNull TokenList tokens) {
+    static SubTestNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
         tokens.nextToken(true);
@@ -80,7 +80,12 @@ public class LiteralNode implements SubTestNode {
         } else {
             throw new ParserException("Unmatched braces");
         }
-        return new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
+        LiteralNode node = new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
+        if (tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, node);
+        } else {
+            return node;
+        }
     }
 
     @Override

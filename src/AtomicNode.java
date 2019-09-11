@@ -37,7 +37,7 @@ public interface AtomicNode extends SubTestNode {
                 break;
             }
             tokens.nextToken();
-            if (tokens.tokenIs(TokenType.COLON) || tokens.tokenIs("{")) {
+            if (tokens.tokenIs(TokenType.COLON, "{")) {
                 break;
             }
         }

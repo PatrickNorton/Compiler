@@ -63,7 +63,7 @@ public class ComprehensionNode implements SubTestNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static ComprehensionNode parse(@NotNull TokenList tokens) {
+    static SubTestNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
         tokens.nextToken(true);
@@ -94,7 +94,12 @@ public class ComprehensionNode implements SubTestNode {
         }
         tokens.nextToken();
         TestNode[] looped_array = looped.toArray(new TestNode[0]);
-        return new ComprehensionNode(brace_type, variables, builder, looped_array);
+        ComprehensionNode comp = new ComprehensionNode(brace_type, variables, builder, looped_array);
+        if (tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, comp);
+        } else {
+            return comp;
+        }
     }
 
     public String toString() {
