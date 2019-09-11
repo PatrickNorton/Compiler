@@ -31,7 +31,7 @@ public class NumberNode implements AtomicNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static AtomicNode parse(@NotNull TokenList tokens) {
+    static NumberNode parse(@NotNull TokenList tokens) {
         String value = tokens.getFirst().sequence;
         tokens.nextToken();
         if (value.length() < 2) {
@@ -52,11 +52,7 @@ public class NumberNode implements AtomicNode {
                 return new NumberNode(new BigDecimal(value));
         }
         BigDecimal val = parseInt(value.substring(2), "0123465789abcdef".substring(0, digit_size));
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, new NumberNode(val));
-        } else {
-            return new NumberNode(val);
-        }
+        return new NumberNode(val);
     }
 
     /**
