@@ -36,7 +36,7 @@ public class TypedVariableNode implements SubTestNode {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (true) {
             vars.add(TypedVariableNode.parse(tokens));
-            if (tokens.tokenIs("in") || tokens.tokenIs(TokenType.ASSIGN)) {
+            if (tokens.tokenIs(TokenType.ASSIGN, "in")) {
                 break;
             }
             if (!tokens.tokenIs(",")) {

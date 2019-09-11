@@ -67,7 +67,7 @@ public class DictComprehensionNode implements SubTestNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static DictComprehensionNode parse(@NotNull TokenList tokens) {
+    static SubTestNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("{");
         tokens.nextToken(true);
         TestNode key = TestNode.parse(tokens, true);
@@ -90,7 +90,12 @@ public class DictComprehensionNode implements SubTestNode {
             throw new ParserException("Expected }, got "+tokens.getFirst());
         }
         tokens.nextToken();
-        return new DictComprehensionNode(key, val, vars, looped);
+        DictComprehensionNode dComp = new DictComprehensionNode(key, val, vars, looped);
+        if (tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, dComp);
+        } else {
+            return dComp;
+        }
     }
 
     @Override

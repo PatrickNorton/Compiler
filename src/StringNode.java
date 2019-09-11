@@ -46,24 +46,30 @@ public class StringNode extends StringLikeNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static StringLikeNode parse(@NotNull TokenList tokens) {
+    static AtomicNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.STRING);
         String contents = tokens.getFirst().sequence;
         tokens.nextToken();
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher regex = prefixPattern.matcher(contents);
+        StringLikeNode node;
         if (regex.find()) {
             String prefixes = regex.group();
             if (!prefixes.contains("r")) {
                 inside = processEscapes(inside);
             }
             if (prefixes.contains("f")) {
-                return FormattedStringNode.parse(tokens, contents);
+                node = FormattedStringNode.parse(tokens, contents);
             }
-            return new StringNode(inside, prefixes.toCharArray());
+            node = new StringNode(inside, prefixes.toCharArray());
         }
         inside = processEscapes(inside);
-        return new StringNode(inside);
+        node = new StringNode(inside);
+        if (tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, node);
+        } else {
+            return node;
+        }
     }
 
     /**
