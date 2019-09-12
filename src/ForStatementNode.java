@@ -70,7 +70,6 @@ public class ForStatementNode implements FlowStatementNode {
         TestNode[] iterables = TestNode.parseForIterables(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
-        tokens.Newline();
         return new ForStatementNode(vars, iterables, body, nobreak);
     }
 

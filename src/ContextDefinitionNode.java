@@ -70,7 +70,6 @@ public class ContextDefinitionNode implements DefinitionNode {
             throw new ParserException("Context manager must end with close curly brace");
         }
         tokens.nextToken();
-        tokens.Newline();
         return new ContextDefinitionNode(name, enter, exit);
     }
 

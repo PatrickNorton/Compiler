@@ -43,7 +43,6 @@ public class ExportStatementNode implements ImportExportNode {
             throw new ParserException("Empty export statements are illegal");
         }
         DottedVariableNode[] exports = DottedVariableNode.parseList(tokens, false);
-        tokens.Newline();
         return new ExportStatementNode(exports);
     }
 

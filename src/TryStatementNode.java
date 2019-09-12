@@ -99,7 +99,6 @@ public class TryStatementNode implements ComplexStatementNode {
         if (except.isEmpty() && finally_stmt.isEmpty()) {
             throw new ParserException("Try statement must either have an except or finally clause");
         }
-        tokens.Newline();
         return new TryStatementNode(body, except, excepted, as_var, else_stmt, finally_stmt);
     }
 

@@ -72,7 +72,6 @@ public class IfStatementNode implements FlowStatementNode {
             elifs.add(new ElifStatementNode(elif_test, elif_body));
         }
         StatementBodyNode else_stmt = StatementBodyNode.parseOnToken(tokens, "else");
-        tokens.Newline();
         return new IfStatementNode(test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
     }
 

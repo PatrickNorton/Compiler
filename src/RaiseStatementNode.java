@@ -36,7 +36,6 @@ public class RaiseStatementNode implements SimpleStatementNode {
         assert tokens.tokenIs("raise");
         tokens.nextToken();
         TestNode raised = TestNode.parse(tokens);
-        tokens.Newline();
         return new RaiseStatementNode(raised);
     }
 

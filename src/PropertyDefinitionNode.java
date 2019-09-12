@@ -104,7 +104,6 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
             throw new ParserException("Only set and get are allowed in context statements");
         }
         tokens.nextToken();
-        tokens.Newline();
         return new PropertyDefinitionNode(name, get, set_args, set);
     }
 

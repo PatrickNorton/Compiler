@@ -59,7 +59,6 @@ public class DotimesStatementNode implements FlowStatementNode {
         TestNode iterations = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
-        tokens.Newline();
         return new DotimesStatementNode(iterations, body, nobreak);
     }
 
