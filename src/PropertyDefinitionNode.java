@@ -6,11 +6,11 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
-    public VariableNode name;
-    public StatementBodyNode get;
-    public TypedArgumentListNode set_args;
-    public StatementBodyNode set;
-    public DescriptorNode[] descriptors;
+    private VariableNode name;
+    private StatementBodyNode get;
+    private TypedArgumentListNode set_args;
+    private StatementBodyNode set;
+    private DescriptorNode[] descriptors;
 
     /**
      * Create a new instance of PropertyDefinitionNode.
