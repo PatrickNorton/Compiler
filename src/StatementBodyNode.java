@@ -82,7 +82,9 @@ public class StatementBodyNode implements BaseNode {
         ArrayList<BaseNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(values)) {
             statements.add(BaseNode.parse(tokens));
-            tokens.passNewlines();
+            if (!tokens.tokenIs(values)) {
+                tokens.Newline();
+            }
         }
         return new StatementBodyNode(statements.toArray(new BaseNode[0]));
     }

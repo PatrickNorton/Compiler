@@ -120,7 +120,6 @@ public interface BaseNode {
             return DeclarationNode.parse(tokens);
         } else {
             DottedVariableNode var = DottedVariableNode.parseName(tokens);
-            tokens.Newline();
             return var;
         }
     }

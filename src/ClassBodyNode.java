@@ -44,7 +44,6 @@ public class ClassBodyNode extends StatementBodyNode {
         ClassBodyNode cb = parseUntilToken(tokens, "}");
         assert tokens.tokenIs("}");
         tokens.nextToken();
-        tokens.Newline();
         return cb;
     }
 
@@ -73,7 +72,9 @@ public class ClassBodyNode extends StatementBodyNode {
         ArrayList<ClassStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(sentinels)) {
             statements.add(ClassStatementNode.parse(tokens));
-            tokens.passNewlines();
+            if (!tokens.tokenIs(sentinels)) {
+                tokens.Newline();
+            }
         }
         return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
     }

@@ -39,10 +39,11 @@ public class InterfaceBodyNode extends StatementBodyNode {
         ArrayList<InterfaceStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs("}")) {
             statements.add(InterfaceStatementNode.parse(tokens));
-            tokens.passNewlines();
+            if (!tokens.tokenIs("}")) {
+                tokens.Newline();
+            }
         }
         tokens.nextToken();
-        tokens.Newline();
         return new InterfaceBodyNode(statements.toArray(new InterfaceStatementNode[0]));
     }
 

@@ -47,7 +47,6 @@ public class TypedefStatementNode implements SimpleStatementNode {
         assert tokens.tokenIs("as");
         tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
-        tokens.Newline();
         return new TypedefStatementNode(name, type);
     }
 

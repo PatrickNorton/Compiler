@@ -12,7 +12,6 @@ public interface DecoratableNode extends BaseNode {
         while (tokens.tokenIs(TokenType.AT)) {
             tokens.nextToken();
             decorators.add(NameNode.parse(tokens));
-            tokens.Newline();
         }
         DecoratableNode stmt = DecoratableNode.parse(tokens);
         stmt.addDecorators(decorators.toArray(new NameNode[0]));

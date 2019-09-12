@@ -50,7 +50,6 @@ public class WhileStatementNode implements ComplexStatementNode {
         TestNode cond = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
-        tokens.Newline();
         return new WhileStatementNode(cond, body, nobreak);
     }
 

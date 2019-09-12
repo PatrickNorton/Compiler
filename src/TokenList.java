@@ -280,7 +280,7 @@ public class TokenList implements Iterable<Token> {
         if (!tokenIs(TokenType.NEWLINE)) {
             throw new ParserException("Expected newline, got "+getFirst());
         }
-        nextToken();
+        nextToken(true);
     }
 
     /**

@@ -62,7 +62,6 @@ public class BreakStatementNode implements SimpleFlowNode {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }
-        tokens.Newline();
         return new BreakStatementNode(loops, cond);
     }
 

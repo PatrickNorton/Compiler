@@ -60,7 +60,6 @@ public class WithStatementNode implements ComplexStatementNode {
         }
         VariableNode[] vars = VariableNode.parseList(tokens,  false);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        tokens.Newline();
         return new WithStatementNode(managed.toArray(new TestNode[0]), vars, body);
     }
 

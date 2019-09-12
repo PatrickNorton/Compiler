@@ -65,7 +65,6 @@ public class ReturnStatementNode implements SimpleFlowNode {
             }
             cond = TestNode.parse(tokens);
         }
-        tokens.Newline();
         return new ReturnStatementNode(returned, cond);
     }
 
