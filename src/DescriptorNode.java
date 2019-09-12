@@ -28,7 +28,7 @@ public enum DescriptorNode implements AtomicNode {
     ;
     public final String name;
 
-    private static Map<String, DescriptorNode> values;
+    private static final Map<String, DescriptorNode> values;
 
     static {
         Map<String, DescriptorNode> temp = new HashMap<>();
