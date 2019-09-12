@@ -278,7 +278,7 @@ public interface TestNode extends BaseNode {
      * @return The freshly parsed TestNode
      */
     @NotNull
-    private static TestNode parseOpenBrace(@NotNull TokenList tokens) {
+    static TestNode parseOpenBrace(@NotNull TokenList tokens) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         TestNode stmt;
         if (tokens.tokenIs("(")) {
