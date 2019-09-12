@@ -77,7 +77,6 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         TypeNode[] retval = TypeNode.parseRetVal(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        tokens.Newline();
         return new MethodDefinitionNode(name, args, retval, body);
     }
 

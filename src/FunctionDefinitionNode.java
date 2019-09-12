@@ -67,7 +67,6 @@ public class FunctionDefinitionNode implements DefinitionNode, DecoratableNode {
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         TypeNode[] retval = TypeNode.parseRetVal(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        tokens.Newline();
         return new FunctionDefinitionNode(name, args, retval, body);
     }
 

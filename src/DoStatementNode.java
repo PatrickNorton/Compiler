@@ -54,7 +54,6 @@ public class DoStatementNode implements FlowStatementNode {
             throw new ParserException("Do statements must have a corresponding while");
         }
         TestNode conditional = TestNode.parse(tokens);
-        tokens.Newline();
         return new DoStatementNode(body, conditional);
     }
 

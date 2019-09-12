@@ -57,7 +57,6 @@ public class TypegetStatementNode implements ImportExportNode {
             throw new ParserException("Empty typeget statements are illegal");
         }
         DottedVariableNode[] typegets = DottedVariableNode.parseList(tokens, false);
-        tokens.Newline();
         return new TypegetStatementNode(typegets, from);
     }
 

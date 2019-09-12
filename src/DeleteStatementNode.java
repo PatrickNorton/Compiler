@@ -33,7 +33,6 @@ public class DeleteStatementNode implements SimpleStatementNode {
         assert tokens.tokenIs("del");
         tokens.nextToken();
         TestNode deletion = TestNode.parse(tokens);
-        tokens.Newline();
         return new DeleteStatementNode(deletion);
     }
 

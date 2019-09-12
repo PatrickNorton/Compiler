@@ -45,7 +45,7 @@ public class TypedArgumentListNode implements BaseNode {
     }
 
     public boolean isEmpty() {
-        return positionArgs.length + nameArgs.length + normalArgs.length > 0;
+        return positionArgs.length + nameArgs.length + normalArgs.length == 0;
     }
 
     /**

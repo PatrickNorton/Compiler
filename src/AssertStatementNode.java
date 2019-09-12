@@ -40,7 +40,6 @@ public class AssertStatementNode implements SimpleStatementNode {
         assert tokens.tokenIs("assert");
         tokens.nextToken();
         TestNode assertion = TestNode.parse(tokens);
-        tokens.Newline();
         return new AssertStatementNode(assertion);
     }
 

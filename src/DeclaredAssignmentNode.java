@@ -28,6 +28,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         this.is_colon = is_colon;
         this.assigned = assigned;
         this.value = value;
+        this.descriptors = new DescriptorNode[0];
     }
 
     public Boolean getIs_colon() {

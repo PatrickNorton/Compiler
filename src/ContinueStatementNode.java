@@ -24,7 +24,6 @@ public class ContinueStatementNode implements SimpleFlowNode {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }
-        tokens.Newline();
         return new ContinueStatementNode(cond);
     }
 

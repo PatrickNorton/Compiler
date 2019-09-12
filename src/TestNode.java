@@ -163,19 +163,16 @@ public interface TestNode extends BaseNode {
                     case EPSILON:
                     case COLON:
                     case COMMA:
+                    case CLOSE_BRACE:
                         break while_loop;
                     case KEYWORD:
                         if (tokens.tokenIs("in", "casted")) {
                             nodes.add(new OperatorNode(tokens.getFirst().sequence, OperatorTypeNode.Use.STANDARD));
                             tokens.nextToken();
                             break;
-                        } else if (tokens.tokenIs("if", "else")) {
+                        } else if (tokens.tokenIs("if", "else", "for")) {
                             break while_loop;
                         }  // Lack of breaks here is intentional
-                    case CLOSE_BRACE:
-                        if (ignore_newline) {
-                            break while_loop;
-                        }  // Lack of breaks here intentional too
                     default:
                         throw new ParserException("Unexpected " + tokens.getFirst());
                 }
@@ -334,19 +331,19 @@ public interface TestNode extends BaseNode {
             return new TestNode[0];
         }
         LinkedList<TestNode> tests = new LinkedList<>();
-        while (!tokens.tokenIs(TokenType.NEWLINE)) {
+        while (!tokens.tokenIs(TokenType.NEWLINE, "}")) {
             tests.add(parse(tokens, ignore_newlines));
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(ignore_newlines);
                 continue;
             }
-            if (!ignore_newlines && !tokens.tokenIs(TokenType.NEWLINE)) {
+            if (!ignore_newlines && !tokens.tokenIs(TokenType.NEWLINE, "}")) {
                 throw new ParserException("Comma must separate values");
             } else if (ignore_newlines) {
                 break;
             }
         }
-        if (!ignore_newlines && !tokens.tokenIs(TokenType.NEWLINE)) {
+        if (!ignore_newlines && !tokens.tokenIs(TokenType.NEWLINE, "}")) {
             throw new ParserException("Expected newline, got "+tokens.getFirst());
         }
         return tests.toArray(new TestNode[0]);
