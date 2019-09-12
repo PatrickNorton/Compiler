@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
  * </p>
  */
 public class DoStatementNode implements FlowStatementNode {
-    public StatementBodyNode body;
-    public TestNode conditional;
+    private StatementBodyNode body;
+    private TestNode conditional;
 
     /**
      * Instantiate new instance of DoStatementNode.

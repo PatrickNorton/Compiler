@@ -13,7 +13,7 @@ public enum StringPrefix {
     ;
 
     public final char value;
-    private static Map<Character, StringPrefix> vals;
+    private static final Map<Character, StringPrefix> values;
 
     @Contract(pure = true)
     StringPrefix(char c) {
@@ -25,11 +25,11 @@ public enum StringPrefix {
         for (StringPrefix s : StringPrefix.values()) {
             temp.put(s.value, s);
         }
-        vals = Collections.unmodifiableMap(temp);
+        values = Collections.unmodifiableMap(temp);
     }
 
     public static StringPrefix getPrefix(char c) {
-        return vals.get(c);
+        return values.get(c);
     }
 
     @NotNull
