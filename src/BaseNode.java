@@ -25,7 +25,11 @@ public interface BaseNode {
             case DESCRIPTOR:
                 return ClassStatementNode.parseDescriptor(tokens);
             case OPEN_BRACE:
-                return TestNode.parse(tokens);
+                if (tokens.lineContains(TokenType.ASSIGN)) {
+                    return AssignStatementNode.parse(tokens);
+                } else {
+                    return TestNode.parse(tokens);
+                }
             case CLOSE_BRACE:
                 throw new ParserException("Unmatched close brace");
             case NAME:

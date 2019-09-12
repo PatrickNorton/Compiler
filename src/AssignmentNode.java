@@ -24,7 +24,7 @@ public class AssignmentNode implements AssignStatementNode {
      * they are assigned
      */
     private Boolean is_colon;
-    private NameNode[] name;
+    private AssignableNode[] name;
     private TestNode[] value;
 
     /**
@@ -35,7 +35,7 @@ public class AssignmentNode implements AssignStatementNode {
      * @param value The values to which they are assigned
      */
     @Contract(pure = true)
-    public AssignmentNode(Boolean is_colon, NameNode[] name, TestNode[] value) {
+    public AssignmentNode(Boolean is_colon, AssignableNode[] name, TestNode[] value) {
         this.is_colon = is_colon;
         this.name = name;
         this.value = value;
@@ -46,7 +46,7 @@ public class AssignmentNode implements AssignStatementNode {
     }
 
     @Override
-    public NameNode[] getName() {
+    public AssignableNode[] getName() {
         return name;
     }
 
@@ -57,9 +57,9 @@ public class AssignmentNode implements AssignStatementNode {
     @NotNull
     @Contract("_ -> new")
     public static AssignmentNode parse(@NotNull TokenList tokens) {
-        LinkedList<NameNode> name = new LinkedList<>();
+        LinkedList<AssignableNode> name = new LinkedList<>();
         while (!tokens.tokenIs(TokenType.ASSIGN)) {
-            name.add(NameNode.parse(tokens));
+            name.add(AssignableNode.parse(tokens));
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
             }
@@ -68,13 +68,13 @@ public class AssignmentNode implements AssignStatementNode {
         boolean is_colon = tokens.tokenIs(":=");
         tokens.nextToken();
         TestNode[] value = TestNode.parseList(tokens, false);
-        return new AssignmentNode(is_colon, name.toArray(new NameNode[0]), value);
+        return new AssignmentNode(is_colon, name.toArray(new AssignableNode[0]), value);
     }
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(", ");
-        for (NameNode i : name) {
+        for (AssignableNode i : name) {
             joiner.add(i.toString());
         }
         return joiner + " " + (is_colon ? ":=" : '=') + " ...";

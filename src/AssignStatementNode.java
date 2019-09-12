@@ -20,7 +20,7 @@ public interface AssignStatementNode extends SimpleStatementNode {
      * AssignStatementNodes must have something that is assigned to them
      * @return list of assigned names
      */
-    NameNode[] getName();
+    AssignableNode[] getName();
 
     /**
      * Parse an assignment statement from a list of tokens.
@@ -30,6 +30,9 @@ public interface AssignStatementNode extends SimpleStatementNode {
      */
     @NotNull
     static AssignStatementNode parse(@NotNull TokenList tokens) {
+        if (!tokens.tokenIs(TokenType.NAME)) {
+            return AssignmentNode.parse(tokens);
+        }
         if (tokens.tokenIs(tokens.sizeOfVariable(), TokenType.ASSIGN, TokenType.COMMA)) {
             return AssignmentNode.parse(tokens);
         } else {
