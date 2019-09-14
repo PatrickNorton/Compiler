@@ -11,13 +11,15 @@ import java.util.LinkedList;
 public class SwitchStatementNode implements StatementNode {
     private TestNode switched;
     private CaseStatementNode[] cases;
+    private DefaultStatementNode defaultStatement;
     private boolean fallthrough;
 
     @Contract(pure = true)
-    public SwitchStatementNode(TestNode switched, boolean fallthrough, CaseStatementNode... cases) {
+    public SwitchStatementNode(TestNode switched, boolean fallthrough, CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
         this.switched = switched;
         this.fallthrough = fallthrough;
         this.cases = cases;
+        this.defaultStatement = defaultStatement;
     }
 
     public TestNode getSwitched() {
@@ -30,6 +32,10 @@ public class SwitchStatementNode implements StatementNode {
 
     public CaseStatementNode[] getCases() {
         return cases;
+    }
+
+    public DefaultStatementNode getDefaultStatement() {
+        return defaultStatement;
     }
 
     /**
@@ -64,11 +70,23 @@ public class SwitchStatementNode implements StatementNode {
             }
             tokens.passNewlines();
         }
+        DefaultStatementNode defaultStatement;
+        if (tokens.tokenIs("default")) {
+            if (cases.isEmpty()) {
+                defaultStatement = DefaultStatementNode.parse(tokens);
+                fallthrough = cases.getLast().hasFallthrough();
+            } else {
+                defaultStatement = DefaultStatementNode.parse(tokens, fallthrough);
+            }
+        } else {
+            defaultStatement = new DefaultStatementNode(fallthrough);
+        }
+        tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken();
-        return new SwitchStatementNode(switched, fallthrough, cases.toArray(new CaseStatementNode[0]));
+        return new SwitchStatementNode(switched, fallthrough, cases.toArray(new CaseStatementNode[0]), defaultStatement);
     }
 
     @Override
