@@ -41,6 +41,9 @@ public interface AtomicNode extends SubTestNode {
                 break;
             }
         }
+        if (nodes.isEmpty()) {
+            throw new ParserException("Cannot have zero labels");
+        }
         return nodes.toArray(new AtomicNode[0]);
     }
 }

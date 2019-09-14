@@ -52,6 +52,7 @@ public enum Keyword {
     SWITCH("switch", SwitchStatementNode::parse),
     CASE("case", "Unexpected ", TokenPlace.RIGHT),
     ENUM("enum", EnumDefinitionNode::parse),
+    DEFAULT("default", "Unexpected ", TokenPlace.RIGHT),
     ;
     public final String name;
     private final Function<TokenList, BaseNode> parseLeft;
