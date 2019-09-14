@@ -13,5 +13,5 @@ public interface ComplexStatementNode extends StatementNode {
      * method.
      * @return The body of the statement
      */
-    StatementBodyNode getBody();
+    BodyNode getBody();
 }
