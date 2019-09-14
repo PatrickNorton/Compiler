@@ -49,6 +49,12 @@ public class Token {
         return false;
     }
 
+    @NotNull
+    @Contract(value = " -> new", pure = true)
+    public static Token Epsilon() {
+        return new Token(TokenType.EPSILON, "");
+    }
+
     public String toString() {
         return this.sequence;
     }

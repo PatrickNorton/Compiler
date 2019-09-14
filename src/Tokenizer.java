@@ -38,7 +38,7 @@ public class Tokenizer {
             if (file.hasNext()) {
                 next = file.next();
             } else {
-                return new Token(TokenType.EPSILON, "");
+                return Token.Epsilon();
             }
         }
         for (TokenType info : TokenType.values()) {
@@ -54,7 +54,7 @@ public class Tokenizer {
                         next = file.next();
                         return tokenizeNext();
                     } else {
-                        return new Token(TokenType.EPSILON, "");
+                        return Token.Epsilon();
                     }
                 } else {
                     next = next.substring(match.end());
