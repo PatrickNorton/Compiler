@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * The class representing the body of a statement.
  * @author Patrick Norton
  */
-public class StatementBodyNode implements BaseNode {
+public class StatementBodyNode implements BodyNode {
     private BaseNode[] statements;
 
     @Contract(pure = true)
@@ -91,7 +91,7 @@ public class StatementBodyNode implements BaseNode {
 
     @Override
     public String toString() {
-        if (statements.length > 0) {
+        if (isEmpty()) {
             return "{...}";
         } else {
             return "{}";
