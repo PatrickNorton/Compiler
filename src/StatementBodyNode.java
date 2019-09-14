@@ -73,7 +73,7 @@ public class StatementBodyNode implements BodyNode {
     @NotNull
     @Contract("_ -> new")
     static StatementBodyNode parseSwitch(@NotNull TokenList tokens) {
-        return parseUntilToken(tokens, "case", "}");
+        return parseUntilToken(tokens, "case", "default", "}");
     }
 
     @NotNull
