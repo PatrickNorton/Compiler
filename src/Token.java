@@ -55,6 +55,12 @@ public class Token {
         return new Token(TokenType.EPSILON, "");
     }
 
+    @NotNull
+    @Contract(value = " -> new", pure = true)
+    public static Token Newline() {
+        return new Token(TokenType.NEWLINE, "\n");
+    }
+
     public String toString() {
         return this.sequence;
     }
