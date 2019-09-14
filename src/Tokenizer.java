@@ -3,7 +3,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,20 +16,22 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  */
 public class Tokenizer {
-    private Scanner file;
-    private static Pattern delimiter = Pattern.compile(
-            "(?=(?<!\\\\)\\R|#\\|((?!\\|#).|\n)*\\|#|#(?!\\|).*\\R|(?<![bfre])[bfre]*?\"([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\")");
+    private LineNumberReader file;
     private String next;
+    private static Pattern openComment = Pattern.compile("#\\|((?!\\|#).)*$");
+    private static Pattern closeComment = Pattern.compile("^.*?\\|#");
+    private static Pattern openString = Pattern.compile("\"((?<!\\\\)\\\\{2}\"|[^\"])*$");
+    private static Pattern closeString = Pattern.compile("^((?<!\\\\)\\\\{2}\"|[^\"])*\"");
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
-        file = new Scanner(name).useDelimiter(delimiter);
-        next = file.next();
+        file = new LineNumberReader(new FileReader(name));
+        next = readLine();
     }
 
     Tokenizer(String str) {
-        file = new Scanner(str).useDelimiter(delimiter);
-        next = file.next();
+        file = new LineNumberReader(new StringReader(str));
+        next = readLine();
     }
 
     /**
@@ -34,12 +39,8 @@ public class Tokenizer {
      * @return The next token
      */
     Token tokenizeNext() {
-        while (next.isEmpty()) {
-            if (file.hasNext()) {
-                next = file.next();
-            } else {
-                return Token.Epsilon();
-            }
+        if (next.isEmpty()) {
+            return emptyLine();
         }
         for (TokenType info : TokenType.values()) {
             Matcher match = info.regex.matcher(next);
@@ -49,20 +50,52 @@ public class Tokenizer {
                         next = next.substring(match.end());
                         match = info.regex.matcher(next);
                     } while (match.find());
-                } else if (info == TokenType.EPSILON) {
-                    if (file.hasNext()) {
-                        next = file.next();
-                        return tokenizeNext();
-                    } else {
-                        return Token.Epsilon();
-                    }
                 } else {
                     next = next.substring(match.end());
                     return new Token(info, match.group());
                 }
             }
         }
-        throw new ParserException("Syntax error");
+        throw new ParserException("Syntax error on line " + file.getLineNumber());
+    }
+
+    private Token emptyLine() {
+        String nextLine = readLine();
+        if (nextLine == null) {
+            return Token.Epsilon();
+        } else {
+            Matcher openComment = Tokenizer.openComment.matcher(nextLine);
+            final boolean isOpenComment = openComment.find();
+            Matcher openString = Tokenizer.openString.matcher(nextLine);
+            boolean isOpenString = openString.find();
+            boolean commentFirst;
+            if (isOpenComment && isOpenString) {
+                commentFirst = openComment.start() < openString.start();
+            } else if (isOpenComment || isOpenString) {
+                commentFirst = isOpenComment;
+            } else {
+                next = nextLine;
+                return Token.Newline();
+            }
+            StringBuilder nextBuilder = new StringBuilder(nextLine);
+            Pattern closeMatcher = commentFirst ? closeComment : closeString;
+            String next;
+            do {
+                next = readLine();
+                nextBuilder.append("\n");
+                nextBuilder.append(next);
+            } while (!closeMatcher.matcher(next).find());
+            this.next = nextBuilder.toString();
+            return Token.Newline();
+        }
+    }
+
+    private String readLine() {
+        try {
+            return file.readLine();
+        } catch (IOException e) {
+            throw new RuntimeException("File was deleted in mid-parse");
+        }
     }
 
     /**
