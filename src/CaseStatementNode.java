@@ -45,8 +45,10 @@ public class CaseStatementNode {
     @NotNull
     @Contract("_ -> new")
     public static CaseStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("case");
-        if (tokens.tokenIs(1, TokenType.NAME)) {
+        assert tokens.tokenIs("case", "default");
+        if (tokens.tokenIs("default")) {
+            return parse(tokens, tokens.tokenIs(1, ":"));
+        } else if (tokens.tokenIs(1, TokenType.NAME)) {
             return parse(tokens, tokens.tokenIs(tokens.sizeOfVariable(1), ":"));
         } else {
             return parse(tokens, tokens.tokenIs(2, ":"));
