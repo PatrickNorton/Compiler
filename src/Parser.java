@@ -2,7 +2,6 @@
 // TODO: Reduce/remove nulls
 // TODO? Remove SubTestNode & replace with something more meaningful
 // TODO? Annotations
-// TODO: Improve parsing of post-dots
 
 
 import org.jetbrains.annotations.Contract;
