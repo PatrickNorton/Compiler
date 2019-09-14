@@ -1,35 +1,33 @@
-public class Token {
-    public static final int EPSILON = 0;
-    public static final int NEWLINE = 1;
-    public static final int DESCRIPTOR = 2;
-    public static final int KEYWORD = 3;
-    public static final int SELF_CLS = 4;
-    public static final int OPEN_BRACE = 5;
-    public static final int CLOSE_BRACE = 6;
-    public static final int COMMA = 7;
-    public static final int AUG_ASSIGN = 8;
-    public static final int OPERATOR = 9;
-    public static final int ASSIGN = 10;
-    public static final int STRING = 11;
-    public static final int BOOL_OP = 12;
-    public static final int INTEGER = 13;
-    public static final int OPERATOR_SP = 14;
-    public static final int VARIABLE = 15;
-    public static final int OP_FUNC = 16;
-    public static final int COLON = 17;
-    public static final int ELLIPSIS = 18;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
-    public final int token;
+/**
+ * The class representing a lexer token.
+ * @author Patrick Norton
+ */
+public class Token {
+    public final TokenType token;
     public final String sequence;
 
-    public Token(int token, String sequence) {
+    /**
+     * Create a new instance of Token.
+     * @param token The type of token which this is
+     * @param sequence The sequence of text the token belongs to
+     */
+    @Contract(pure = true)
+    public Token(@NotNull TokenType token, @NotNull String sequence) {
         super();
         this.token = token;
         this.sequence = sequence;
     }
 
-    public boolean is(int... tokens) {
-        for (int token : tokens) {
+    /**
+     * Test whether or not the token is one of a certain number of token types.
+     * @param tokens The list of token types to test if this is a member of
+     * @return Whether or not this is one of those types
+     */
+    public boolean is(@NotNull TokenType... tokens) {
+        for (TokenType token : tokens) {
             if (this.token == token) {
                 return true;
             }
@@ -37,12 +35,21 @@ public class Token {
         return false;
     }
 
-    public boolean is(String... sequences) {
+    /**
+     * Test whether or not the token has one of certain sequences.
+     * @param sequences The sequences to be tested
+     * @return Whether or not this is one of those sequences
+     */
+    public boolean is(@NotNull String... sequences) {
         for (String sequence : sequences) {
             if (this.sequence.equals(sequence)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public String toString() {
+        return this.sequence;
     }
 }
