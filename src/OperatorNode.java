@@ -82,9 +82,9 @@ public class OperatorNode implements SubTestNode {
     /**
      * Parse a left-starting operator from a list of tokens.
      * <p>
-     *     The only valid left-operator is {@code -}, so others will throw a
-     *     {@link ParserException}. The first token in the list must be an
-     *     operator.
+     *     The only valid left-operators are {@code -} and {@code ~}, so others
+     *     will throw a {@link ParserException}. The first token in the list
+     *     must be an operator.
      * </p>
      * @param tokens The list of tokens to be parsed
      * @param ignore_newline Whether or not to ignore newlines
@@ -106,12 +106,15 @@ public class OperatorNode implements SubTestNode {
 
     @Override
     public String toString() {
-        if (operands.length == 1) {
-            return operator + " " + operands[0];
-        } else if (operands.length == 2) {
-            return operands[0] + " " + operator + " " + operands[1];
-        } else {
-            return "\\" + operator + "(" + operands[0] + ", ...)";
+        switch (operands.length) {
+            case 0:
+                return "\\" + operator;
+            case 1:
+                return operator + " " + operands[0];
+            case 2:
+                return operands[0] + " " + operator + " " + operands[1];
+            default:
+                return "\\" + operator + "(" + operands[0] + ", ...)";
         }
     }
 }
