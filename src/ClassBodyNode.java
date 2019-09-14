@@ -9,9 +9,10 @@ import java.util.ArrayList;
  * @author Patrick Norton
  * @see StatementBodyNode
  */
-public class ClassBodyNode extends StatementBodyNode {
+public class ClassBodyNode implements BodyNode {
     private ClassStatementNode[] statements;
 
+    @Contract(pure = true)
     public ClassBodyNode(ClassStatementNode... statements) {
         this.statements = statements;
     }
@@ -19,6 +20,11 @@ public class ClassBodyNode extends StatementBodyNode {
     @Override
     public ClassStatementNode[] getStatements() {
         return statements;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return statements.length > 0;
     }
 
     /**
@@ -81,6 +87,6 @@ public class ClassBodyNode extends StatementBodyNode {
 
     @Override
     public String toString() {
-        return "{...}";
+        return isEmpty() ? "{}" : "{...}";
     }
 }
