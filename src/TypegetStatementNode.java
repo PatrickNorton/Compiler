@@ -12,17 +12,18 @@ import java.util.StringJoiner;
 public class TypegetStatementNode implements ImportExportNode {
     private DottedVariableNode[] typegets;
     private DottedVariableNode from;
+    private DottedVariableNode[] as;
 
     @Contract(pure = true)
     public TypegetStatementNode(DottedVariableNode[] imports, DottedVariableNode from) {
-        this.typegets = imports;
-        this.from = from;
+        this(imports, from, new DottedVariableNode[0]);
     }
 
     @Contract(pure = true)
-    public TypegetStatementNode(DottedVariableNode[] imports) {
+    public TypegetStatementNode(DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
         this.typegets = imports;
-        this.from = null;
+        this.from = from;
+        this.as = as;
     }
 
     public DottedVariableNode[] getTypegets() {
@@ -31,6 +32,10 @@ public class TypegetStatementNode implements ImportExportNode {
 
     public DottedVariableNode getFrom() {
         return from;
+    }
+
+    public DottedVariableNode[] getAs() {
+        return as;
     }
 
     /**
@@ -57,6 +62,11 @@ public class TypegetStatementNode implements ImportExportNode {
             throw new ParserException("Empty typeget statements are illegal");
         }
         DottedVariableNode[] typegets = DottedVariableNode.parseList(tokens, false);
+        if (tokens.tokenIs("as")) {
+            tokens.nextToken();
+            DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
+            return new TypegetStatementNode(typegets, from, as);
+        }
         return new TypegetStatementNode(typegets, from);
     }
 
