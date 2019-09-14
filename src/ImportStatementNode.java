@@ -11,6 +11,7 @@ import java.util.StringJoiner;
 public class ImportStatementNode implements ImportExportNode {
     private DottedVariableNode[] imports;
     private DottedVariableNode from;
+    private DottedVariableNode[] as;
 
     /**
      * Create a new instance of ImportStatementNode.
@@ -19,8 +20,7 @@ public class ImportStatementNode implements ImportExportNode {
      */
     @Contract(pure = true)
     public ImportStatementNode(DottedVariableNode[] imports, DottedVariableNode from) {
-        this.imports = imports;
-        this.from = from;
+        this(imports, from, new DottedVariableNode[0]);
     }
 
     /**
@@ -28,9 +28,10 @@ public class ImportStatementNode implements ImportExportNode {
      * @param imports Tne list of imported names, all top-level
      */
     @Contract(pure = true)
-    public ImportStatementNode(DottedVariableNode[] imports) {
+    public ImportStatementNode(DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
         this.imports = imports;
-        this.from = new DottedVariableNode();
+        this.from = from;
+        this.as = as;
     }
 
     public DottedVariableNode[] getImports() {
@@ -39,6 +40,10 @@ public class ImportStatementNode implements ImportExportNode {
 
     public DottedVariableNode getFrom() {
         return from;
+    }
+
+    public DottedVariableNode[] getAs() {
+        return as;
     }
 
     /**
@@ -66,6 +71,10 @@ public class ImportStatementNode implements ImportExportNode {
             throw new ParserException("Empty import statements are illegal");
         }
         DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
+        if (tokens.tokenIs("as")) {
+            DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
+            return new ImportStatementNode(imports, from, as);
+        }
         return new ImportStatementNode(imports, from);
     }
 

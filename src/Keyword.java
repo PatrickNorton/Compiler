@@ -38,7 +38,7 @@ public enum Keyword {
     EXCEPT("except", " must be in a try-statement", TokenPlace.LEFT),
     FINALLY("finally", " must be in a try statement", TokenPlace.LEFT),
     WITH("with", WithStatementNode::parse),
-    AS("as", " must be with an if", TokenPlace.LEFT),
+    AS("as", " must be with a with or import/typeget", TokenPlace.LEFT),
     ASSERT("assert", AssertStatementNode::parse),
     DEL("del", DeleteStatementNode::parse),
     YIELD("yield", YieldStatementNode::parse),
