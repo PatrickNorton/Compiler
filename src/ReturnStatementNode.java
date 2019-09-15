@@ -49,20 +49,20 @@ public class ReturnStatementNode implements SimpleFlowNode {
         boolean is_conditional = false;
         if (tokens.tokenIs("(") && tokens.tokenIs(tokens.sizeOfBrace(0),"if")
                 && !tokens.lineContains("else")) {
-            tokens.nextToken();
             is_conditional = true;
         }
         TestNode[] returned;
-        if (!tokens.tokenIs(TokenType.NEWLINE) && !tokens.tokenIs("if")) {
+        if (is_conditional && !tokens.tokenIs("if")) {
+            returned = LiteralNode.parse(tokens).getBuilders();
+        } else if (!tokens.tokenIs(TokenType.NEWLINE)) {
             returned = TestNode.parseList(tokens, false);
         } else {
             returned = new TestNode[0];
         }
         TestNode cond = null;
         if (is_conditional) {
-            if (!tokens.tokenIs(")")) {
-                throw new ParserException("Expected ), got " + tokens.getFirst());
-            }
+            assert tokens.tokenIs("if");
+            tokens.nextToken();
             cond = TestNode.parse(tokens);
         }
         return new ReturnStatementNode(returned, cond);
