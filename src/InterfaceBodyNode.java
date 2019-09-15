@@ -22,7 +22,7 @@ public class InterfaceBodyNode implements BodyNode {
 
     @Override
     public boolean isEmpty() {
-        return statements.length > 0;
+        return statements.length == 0;
     }
 
     /**
