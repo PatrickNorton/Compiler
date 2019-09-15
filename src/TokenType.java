@@ -25,7 +25,7 @@ public enum TokenType {
     CLOSE_BRACE("^[])}]"),
     // The comma in between list items
     COMMA("^,"),
-    // Augmented assignment, e.g. +=
+    // Augmented assignment, e.g.  +=
     // Parsed separately from standard operators because of their different use
     AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|[&|^~])="),
     // The magical arrow unicorn
@@ -43,6 +43,7 @@ public enum TokenType {
     // That special operator definition syntax
     OPERATOR_SP("^\\b(operator *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
             + "|\\[]=?|\\(\\)|~|u-|iter|new|in|missing|str|repr|bool|del(\\[])?))"),
+    // The name of a variable
     NAME("^\\b[_a-zA-Z][_a-zA-Z0-9]*\\b"),
     // operator functions, like \+
     OP_FUNC("^\\\\(==|!=|[><]=?|r?([+\\-*/])\\2?|u-|<<|>>|[&|^~%])"),
