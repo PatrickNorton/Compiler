@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * @see InterfaceStatementNode
  * @see GenericOperatorNode
  */
-public class GenericFunctionNode implements InterfaceStatementNode {
+public class GenericFunctionNode implements GenericDefinitionNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
@@ -47,8 +47,12 @@ public class GenericFunctionNode implements InterfaceStatementNode {
     }
 
     static boolean isGeneric(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("method");
-        int endPtr = 1;
+        return isGeneric(tokens, 0);
+    }
+
+    static boolean isGeneric(TokenList tokens, int start) {
+        assert tokens.tokenIs(start, "method");
+        int endPtr = start + 1;
         assert tokens.tokenIs(endPtr, TokenType.NAME);
         // NOTE: sizeOfVariable also consumes the open-paren in the argument list,
         // so there is no need to add size to that separately.

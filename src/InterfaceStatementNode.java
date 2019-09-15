@@ -1,7 +1,5 @@
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-
 /**
  * The class representing an interface statement.
  * @author Patrick Norton
@@ -30,6 +28,19 @@ public interface InterfaceStatementNode extends BaseNode {
         }
         if (tokens.tokenIs("method") && GenericFunctionNode.isGeneric(tokens)) {
             return GenericFunctionNode.parse(tokens);
+        }
+        if (tokens.tokenIs(TokenType.DESCRIPTOR) && GenericDefinitionNode.isGeneric(tokens)) {
+            DescriptorNode[] descriptors = DescriptorNode.parseList(tokens);
+            GenericDefinitionNode op;
+            if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
+                op = GenericOperatorNode.parse(tokens);
+                op.addDescriptor(descriptors);
+                return op;
+            } else if (tokens.tokenIs("method")) {
+                op = GenericFunctionNode.parse(tokens);
+                op.addDescriptor(descriptors);
+                return op;
+            }
         }
         BaseNode stmt = BaseNode.parse(tokens);
         if (stmt instanceof InterfaceStatementNode) {
