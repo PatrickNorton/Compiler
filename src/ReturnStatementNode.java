@@ -47,7 +47,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs("return");
         tokens.nextToken();
         boolean is_conditional = false;
-        if (tokens.tokenIs("(") && tokens.tokenIs(tokens.sizeOfBrace(0) + 1,"if")
+        if (tokens.tokenIs("(") && tokens.tokenIs(tokens.sizeOfBrace(0),"if")
                 && !tokens.lineContains("else")) {
             tokens.nextToken();
             is_conditional = true;

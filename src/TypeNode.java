@@ -117,7 +117,7 @@ public class TypeNode implements AtomicNode {
         }
         tokens.nextToken();
         LinkedList<TypeNode> types = new LinkedList<>();
-        while (!tokens.tokenIs("{") && !tokens.tokenIs(TokenType.NEWLINE)) {
+        while (!tokens.tokenIs(TokenType.NEWLINE, "{")) {
             types.add(TypeNode.parse(tokens));
             if (tokens.tokenIs(",")) {
                 tokens.nextToken();
