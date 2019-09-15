@@ -15,7 +15,7 @@ import java.util.StringJoiner;
  * @see InterfaceStatementNode
  * @see GenericFunctionNode
  */
-public class GenericOperatorNode implements InterfaceStatementNode {
+public class GenericOperatorNode implements GenericDefinitionNode {
     private SpecialOpNameNode op_code;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
@@ -51,8 +51,12 @@ public class GenericOperatorNode implements InterfaceStatementNode {
     }
 
     static boolean isGeneric(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.OPERATOR_SP);
-        int endPtr = 1;
+        return isGeneric(tokens, 0);
+    }
+
+    static boolean isGeneric(@NotNull TokenList tokens, int start) {
+        assert tokens.tokenIs(start, TokenType.OPERATOR_SP);
+        int endPtr = start + 1;
         if (tokens.tokenIs(endPtr, "(")) {
             endPtr = tokens.sizeOfBrace(endPtr);
         }
