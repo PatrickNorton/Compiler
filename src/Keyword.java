@@ -7,12 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public enum Keyword {
-    CLASS("class", (TokenList tokens) -> {
-        if (tokens.tokenIs(1, TokenType.DESCRIPTOR, TokenType.KEYWORD)) {
-            return ClassStatementNode.parseDescriptor(tokens);
-        }
-        return ClassDefinitionNode.parse(tokens);
-    }),
+    CLASS("class", ClassDefinitionNode::parse),
     FUNC("func", FunctionDefinitionNode::parse),
     IF("if", IfStatementNode::parse),
     FOR("for", ForStatementNode::parse),
