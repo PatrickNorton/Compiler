@@ -53,7 +53,6 @@ public interface ClassStatementNode extends InterfaceStatementNode {
     @NotNull
     static ClassStatementNode parseDescriptor(@NotNull TokenList tokens) {
         DescriptorNode[] descriptors = DescriptorNode.parseList(tokens);
-        tokens.nextToken();
         assert descriptors.length > 0;
         switch (tokens.getFirst().token) {
             case KEYWORD:
