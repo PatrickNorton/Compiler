@@ -18,10 +18,11 @@ import java.util.regex.Pattern;
 public class Tokenizer {
     private LineNumberReader file;
     private String next;
-    private static Pattern openComment = Pattern.compile("#\\|((?!\\|#).)*$");
-    private static Pattern closeComment = Pattern.compile("^.*?\\|#");
-    private static Pattern openString = Pattern.compile("\"((?<!\\\\)\\\\{2}\"|[^\"])*$");
-    private static Pattern closeString = Pattern.compile("^((?<!\\\\)\\\\{2}\"|[^\"])*\"");
+    private static final Pattern openComment = Pattern.compile("#\\|((?!\\|#).)*$");
+    private static final Pattern closeComment = Pattern.compile("^.*?\\|#");
+    private static final Pattern openString = Pattern.compile("(['\"])((?<!\\\\)\\\\{2}\\1|(?!\\1).)*$");
+    private static final Pattern closeString = Pattern.compile("^((?<!\\\\)\\\\{2}\"|[^\"])*\"");
+    private static final Pattern closeSingleString = Pattern.compile("^((?<!\\\\)\\\\{2}'|[^'])*'");
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
@@ -80,6 +81,9 @@ public class Tokenizer {
             }
             StringBuilder nextBuilder = new StringBuilder(nextLine);
             Pattern closeMatcher = commentFirst ? closeComment : closeString;
+            if (!commentFirst) {
+                closeMatcher = nextLine.startsWith("'") ? closeSingleString : closeString;
+            }
             String next;
             do {
                 next = readLine();
