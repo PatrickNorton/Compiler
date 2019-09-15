@@ -65,6 +65,14 @@ public enum DescriptorNode implements AtomicNode {
         return descriptors.toArray(new DescriptorNode[0]);
     }
 
+    public static int count(@NotNull TokenList tokens) {
+        int number = 0;
+        while (tokens.tokenIs(number, TokenType.DESCRIPTOR)) {
+            number++;
+        }
+        return number;
+    }
+
     @Contract(pure = true)
     @Override
     public String toString() {
