@@ -29,7 +29,8 @@ public class Tokenizer {
         next = readLine();
     }
 
-    Tokenizer(String str) {
+    @Contract(pure = true)
+    private Tokenizer(String str) {
         file = new LineNumberReader(new StringReader(str));
         next = readLine();
     }
@@ -99,7 +100,7 @@ public class Tokenizer {
     }
 
     /**
-     * Parse the string passed.
+     * Parse the file passed.
      * @param f The file to pass
      * @return The tokenizer with the list of tokens
      */
@@ -115,9 +116,24 @@ public class Tokenizer {
         return new TokenList(tokenizer);
     }
 
+    /**
+     * Parse the string passed.
+     * @param str The string to parse
+     * @return The tokenizer with the list of tokens
+     */
     @NotNull
     @Contract("_ -> new")
     public static TokenList parse(String str) {
         return new TokenList(new Tokenizer(str));
+    }
+
+    /**
+     * Create a new empty Tokenizer
+     * @return The newly parsed Tokenizer
+     */
+    @NotNull
+    @Contract(" -> new")
+    public static Tokenizer empty() {
+        return new Tokenizer("");
     }
 }

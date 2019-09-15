@@ -66,6 +66,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     static ComprehensionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
+        String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
         TestNode builder = TestNode.parse(tokens, true);
         if (!tokens.tokenIs("for")) {
@@ -89,7 +90,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
                 break;
             }
         }
-        if (!brace_type.isEmpty() && !tokens.tokenIs(TokenList.matchingBrace(brace_type))) {
+        if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
             throw new ParserException("Expected close brace");
         }
         tokens.nextToken();

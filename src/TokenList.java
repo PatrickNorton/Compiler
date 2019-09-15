@@ -17,7 +17,7 @@ public class TokenList implements Iterable<Token> {
     @Contract(pure = true)
     public TokenList(LinkedList<Token> buffer) {
         this.buffer = buffer;
-        this.tokenizer = new Tokenizer("");
+        this.tokenizer = Tokenizer.empty();
     }
 
     @Contract(pure = true)
@@ -353,6 +353,12 @@ public class TokenList implements Iterable<Token> {
         return getToken(index).is(types);
     }
 
+    /**
+     * Test if the token at the index is one of a certain set of values.
+     * @param type1 The TokenType value to check
+     * @param type2 The String value to check
+     * @return Whether the token is of those values
+     */
     public boolean tokenIs(TokenType type1, String type2) {
         return getFirst().is(type1) || getFirst().is(type2);
     }
@@ -385,11 +391,11 @@ public class TokenList implements Iterable<Token> {
         private ListIterator<Token> bufferIterator;
         private Token next = null;
 
-        TokenIterator() {
+        private TokenIterator() {
             bufferIterator = buffer.listIterator();
         }
 
-        TokenIterator(int i) {
+        private TokenIterator(int i) {
             TokenList.this.getToken(i);  // Ensure the buffer is large enough
             bufferIterator = buffer.listIterator(i);
         }
@@ -463,6 +469,11 @@ public class TokenList implements Iterable<Token> {
 
     public Iterable<Token> iteratorFrom(int i) {
         return () -> new TokenIterator(i);
+    }
+
+    public String matchingBrace() {
+        assert tokenIs(TokenType.OPEN_BRACE);
+        return TokenList.matchingBrace(getFirst().sequence);
     }
 
     @NotNull
