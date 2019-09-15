@@ -83,7 +83,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
     static ClassDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("class");
         tokens.nextToken();
-        if (!tokens.tokenIs(TokenType.NAME) && !tokens.tokenIs("from")) {
+        if (!tokens.tokenIs(TokenType.NAME)) {
             throw new ParserException("class keyword must be followed by class name");
         }
         TypeNode name = TypeNode.parse(tokens);
