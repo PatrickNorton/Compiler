@@ -8,7 +8,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  * @see SwitchStatementNode
  */
-public class CaseStatementNode {
+public class CaseStatementNode implements BaseNode {
     private AtomicNode[] label;
     private StatementBodyNode body;
     private boolean fallthrough;
