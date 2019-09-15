@@ -52,8 +52,8 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
     static LiteralNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
+        String balanced_brace = tokens.matchingBrace();
         tokens.nextToken(true);
-        String balanced_brace = TokenList.matchingBrace(brace_type);
         LinkedList<TestNode> values = new LinkedList<>();
         LinkedList<Boolean> is_splat = new LinkedList<>();
         while (true) {
