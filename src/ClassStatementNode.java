@@ -1,8 +1,6 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-
 /**
  * The interface for statements which are valid in a class body.
  * <p>
@@ -54,16 +52,9 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      */
     @NotNull
     static ClassStatementNode parseDescriptor(@NotNull TokenList tokens) {
-        ArrayList<DescriptorNode> descriptors = new ArrayList<>();
-        if (tokens.tokenIs("class")) {
-            descriptors.add(DescriptorNode.find("class"));
-            tokens.nextToken();
-        }
-        while (tokens.tokenIs(TokenType.DESCRIPTOR)) {
-            descriptors.add(DescriptorNode.find(tokens.getFirst().sequence));
-            tokens.nextToken();
-        }
-        assert descriptors.size() > 0;
+        DescriptorNode[] descriptors = DescriptorNode.parseList(tokens);
+        tokens.nextToken();
+        assert descriptors.length > 0;
         switch (tokens.getFirst().token) {
             case KEYWORD:
                 return parseDescriptorKeyword(tokens, descriptors);
@@ -91,12 +82,12 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      */
     @NotNull
     @Contract("_, _ -> new")
-    private static ClassStatementNode parseDescriptorKeyword(@NotNull TokenList tokens, @NotNull ArrayList<DescriptorNode> descriptors) {
+    private static ClassStatementNode parseDescriptorKeyword(@NotNull TokenList tokens, @NotNull DescriptorNode[] descriptors) {
         assert tokens.tokenIs(TokenType.KEYWORD);
         BaseNode node = BaseNode.parse(tokens);
         if (node instanceof ClassStatementNode) {
             ClassStatementNode classNode = (ClassStatementNode) node;
-            classNode.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
+            classNode.addDescriptor(descriptors);
             return classNode;
         } else {
             throw new ParserException("Invalid statement in class body");
@@ -115,7 +106,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      * @return The descriptor-added node
      */
     @NotNull
-    private static ClassStatementNode parseDescriptorOpSp(@NotNull TokenList tokens, @NotNull ArrayList<DescriptorNode> descriptors) {
+    private static ClassStatementNode parseDescriptorOpSp(@NotNull TokenList tokens, @NotNull DescriptorNode[] descriptors) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         ClassStatementNode op_sp;
         if (tokens.tokenIs(1, "=")) {
@@ -123,7 +114,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
         } else {
             op_sp = OperatorDefinitionNode.parse(tokens);
         }
-        op_sp.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
+        op_sp.addDescriptor(descriptors);
         return op_sp;
     }
 
@@ -140,7 +131,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      * @return The statement with added descriptors
      */
     @NotNull
-    private static ClassStatementNode parseDescriptorVar(@NotNull TokenList tokens, @NotNull ArrayList<DescriptorNode> descriptors) {
+    private static ClassStatementNode parseDescriptorVar(@NotNull TokenList tokens, @NotNull DescriptorNode[] descriptors) {
         assert tokens.tokenIs(TokenType.NAME);
         ClassStatementNode stmt;
         if (tokens.lineContains(TokenType.ASSIGN)) {
@@ -148,7 +139,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
         } else {
             stmt = DeclarationNode.parse(tokens);
         }
-        stmt.addDescriptor(descriptors.toArray(new DescriptorNode[0]));
+        stmt.addDescriptor(descriptors);
         return stmt;
     }
 }
