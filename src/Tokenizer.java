@@ -20,7 +20,9 @@ public class Tokenizer {
     private String next;
     private static final Pattern openComment = Pattern.compile("#\\|((?!\\|#).)*$");
     private static final Pattern closeComment = Pattern.compile("^.*?\\|#");
+    private static final Pattern lineComment = Pattern.compile("#.*$");
     private static final Pattern openString = Pattern.compile("(['\"])((?<!\\\\)\\\\{2}\\1|(?!\\1).)*$");
+    private static final Pattern fullString = Pattern.compile("(([\"'])([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\\2)");
     private static final Pattern closeString = Pattern.compile("^((?<!\\\\)\\\\{2}\"|[^\"])*\"");
     private static final Pattern closeSingleString = Pattern.compile("^((?<!\\\\)\\\\{2}'|[^'])*'");
 
@@ -50,6 +52,9 @@ public class Tokenizer {
                 if (info == TokenType.WHITESPACE) {
                     do {
                         next = next.substring(match.end());
+                        if (next.isEmpty()) {
+                            return emptyLine();
+                        }
                         match = info.regex.matcher(next);
                     } while (match.find());
                 } else {
@@ -67,9 +72,26 @@ public class Tokenizer {
             return Token.Epsilon();
         } else {
             Matcher openComment = Tokenizer.openComment.matcher(nextLine);
-            final boolean isOpenComment = openComment.find();
+            boolean isOpenComment = openComment.find();
+            int endOfString = 0;
+            Matcher fullString = Tokenizer.fullString.matcher(nextLine);
+            while (fullString.find()) {
+                endOfString = fullString.end();
+            }
             Matcher openString = Tokenizer.openString.matcher(nextLine);
-            boolean isOpenString = openString.find();
+            boolean isOpenString = endOfString < nextLine.length() && openString.find(endOfString + 1);
+            if (isOpenString) {
+                Matcher m = lineComment.matcher(nextLine);
+                if (m.find() && m.start() < openString.start()) {
+                    isOpenString = false;
+                }
+            }
+            if (isOpenComment) {
+                Matcher m = lineComment.matcher(nextLine);
+                if (m.find() && m.start() < openString.start()) {
+                    isOpenComment = false;
+                }
+            }
             boolean commentFirst;
             if (isOpenComment && isOpenString) {
                 commentFirst = openComment.start() < openString.start();
