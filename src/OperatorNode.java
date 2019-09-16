@@ -32,14 +32,11 @@ public class OperatorNode implements SubTestNode {
         this.operands = operands;
     }
 
-    /**
-     * Construct a new instance of OperatorNode.
-     * @param operator The operator of the operand
-     * @param op_types The types of the operator being used
-     */
-    public OperatorNode(String operator, OperatorTypeNode.Use... op_types) {
-        this.operator = OperatorTypeNode.findOp(operator, op_types);
-        this.operands = new TestNode[0];
+    @NotNull
+    @Contract("_ -> new")
+    public static OperatorNode empty(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.OPERATOR, TokenType.BOOL_OP, TokenType.KEYWORD);
+        return new OperatorNode(OperatorTypeNode.fromToken(tokens.getFirst()));
     }
 
     public OperatorTypeNode getOperator() {

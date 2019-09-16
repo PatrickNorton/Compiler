@@ -153,7 +153,7 @@ public interface TestNode extends BaseNode {
                         throw new ParserException("Unexpected " + tokens.getFirst());
                     case BOOL_OP:
                     case OPERATOR:
-                        nodes.add(new OperatorNode(tokens.getFirst().sequence, OperatorTypeNode.Use.STANDARD));
+                        nodes.add(OperatorNode.empty(tokens));
                         tokens.nextToken();
                         break;
                     case OP_FUNC:
@@ -166,7 +166,7 @@ public interface TestNode extends BaseNode {
                         break while_loop;
                     case KEYWORD:
                         if (tokens.tokenIs("in", "casted")) {
-                            nodes.add(new OperatorNode(tokens.getFirst().sequence, OperatorTypeNode.Use.STANDARD));
+                            nodes.add(OperatorNode.empty(tokens));
                             tokens.nextToken();
                             break;
                         } else if (tokens.tokenIs("if", "else", "for")) {
@@ -219,7 +219,7 @@ public interface TestNode extends BaseNode {
                         }
                         continue;
                     }
-                    if (operator.isUse(OperatorTypeNode.Use.UNARY)) {
+                    if (operator.isUnary()) {
                         parseUnaryOp(nodes, nodeNumber);
                     } else {
                         parseOperator(nodes, nodeNumber);
