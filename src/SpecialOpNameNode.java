@@ -21,9 +21,7 @@ public class SpecialOpNameNode implements NameNode {
     @Contract("_ -> new")
     public static SpecialOpNameNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
-        String op_type = tokens.getFirst().sequence.replaceFirst("^operator *",  "");
-        OperatorTypeNode op = OperatorTypeNode.findOp(op_type, OperatorTypeNode.Use.OPERATOR_SP);
-        tokens.nextToken();
+        OperatorTypeNode op = OperatorTypeNode.parse(tokens);
         return new SpecialOpNameNode(op);
     }
 

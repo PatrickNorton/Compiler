@@ -66,6 +66,8 @@ public interface BaseNode {
                 throw new ParserException("Unexpected dot");
             case AT:
                 return DecoratableNode.parseLeftDecorator(tokens);
+            case EPSILON:
+                throw new ParserException("Unexpected EOF");
             default:
                 throw new RuntimeException("Nonexistent token found");
         }
