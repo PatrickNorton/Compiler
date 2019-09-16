@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.Map;
 public enum OperatorTypeNode implements AtomicNode {
     ADD("+", Use.TYPICAL),
     R_ADD("r+", Use.R_TYPICAL),
-    SUBTRACT("-", Use.TYPICAL, Use.UNARY),
+    SUBTRACT("-", Use.U_TYPICAL),
     R_SUBTRACT("r-", Use.R_TYPICAL),
     UNARY_MINUS("u-", Use.U_TYPICAL),
     MULTIPLY("*", Use.TYPICAL),
@@ -100,7 +101,6 @@ public enum OperatorTypeNode implements AtomicNode {
     private final int usages;
 
     private static final Map<String, OperatorTypeNode> values;
-
     private static final LinkedList<OperatorTypeNode[]> operations;
 
     /**
@@ -158,6 +158,11 @@ public enum OperatorTypeNode implements AtomicNode {
         return true;
     }
 
+    @Contract(pure = true)
+    public boolean isUnary() {
+        return this.isUse(Use.UNARY);
+    }
+
     /**
      * Find an operator in the enum.
      * @param name The sequence of the operator
@@ -199,18 +204,28 @@ public enum OperatorTypeNode implements AtomicNode {
      */
     @NotNull
     static OperatorTypeNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.OPERATOR, TokenType.OP_FUNC, TokenType.AUG_ASSIGN);
-        Token tok = tokens.getFirst();
+        OperatorTypeNode op = fromToken(tokens.getFirst());
         tokens.nextToken();
-        switch (tok.token) {
+        return op;
+    }
+
+    @NotNull
+    static OperatorTypeNode fromToken(@NotNull Token token) {
+        assert token.is(TokenType.OPERATOR, TokenType.KEYWORD, TokenType.BOOL_OP,
+                TokenType.OP_FUNC, TokenType.AUG_ASSIGN, TokenType.OPERATOR_SP);
+        switch (token.token) {
+            case KEYWORD:
+            case BOOL_OP:
             case OPERATOR:
-                return findOp(tok.sequence, Use.STANDARD);
+                return findOp(token.sequence, Use.STANDARD);
             case OP_FUNC:
-                return findOp(tok.sequence.replaceFirst("^\\\\", ""), Use.OP_FUNC);
+                return findOp(token.sequence.replaceFirst("^\\\\", ""), Use.OP_FUNC);
             case AUG_ASSIGN:
-                return findOp(tok.sequence.replaceFirst("=$", ""), Use.AUG_ASSIGN);
+                return findOp(token.sequence.replaceFirst("=$", ""), Use.AUG_ASSIGN);
+            case OPERATOR_SP:
+                return findOp(token.sequence.replaceFirst("operator *", ""), Use.OPERATOR_SP);
             default:
-                throw new RuntimeException("Illegal TokenType for OperatorTypeNode.parse "+tok);
+                throw new RuntimeException("Illegal TokenType for OperatorTypeNode.parse "+token);
         }
     }
 
