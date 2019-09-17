@@ -1,6 +1,5 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The class representing a slice an in index.
@@ -53,18 +52,18 @@ public class SliceNode implements SubTestNode {
         tokens.nextToken(true);
         TestNode start;
         if (tokens.tokenIs(":")) {
-            start = null;
+            start = TestNode.empty();
         } else {
             start = TestNode.parse(tokens, true);
         }
         if (tokens.tokenIs("]")) {
             tokens.nextToken();
-            return new SliceNode(start, null, null);
+            return new SliceNode(start, TestNode.empty(), TestNode.empty());
         }
         TestNode end = sliceTest(tokens);
         if (tokens.tokenIs("]")) {
             tokens.nextToken();
-            return new SliceNode(start, end, null);
+            return new SliceNode(start, end, TestNode.empty());
         }
         TestNode step = sliceTest(tokens);
         if (!tokens.tokenIs("]")) {
@@ -79,14 +78,14 @@ public class SliceNode implements SubTestNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The parsed TestNode
      */
-    @Nullable
+    @NotNull
     private static TestNode sliceTest(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(":")) {
             throw new ParserException("Expected :, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
         if (tokens.tokenIs(":", "]")) {
-            return null;
+            return TestNode.empty();
         } else {
             return TestNode.parse(tokens, true);
         }
@@ -94,6 +93,6 @@ public class SliceNode implements SubTestNode {
 
     @Override
     public String toString() {
-        return (start != null ? start : "") + ":" + (end != null ? end : "") + (step != null ? ":" + step : "");
+        return (!start.isEmpty() ? start : "") + ":" + (!end.isEmpty() ? end : "") + (!step.isEmpty() ? ":" + step : "");
     }
 }

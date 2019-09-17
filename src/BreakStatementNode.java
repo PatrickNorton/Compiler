@@ -57,7 +57,7 @@ public class BreakStatementNode implements SimpleFlowNode {
         } else {
             throw new ParserException("Break statement must not be followed by anything");
         }
-        TestNode cond = null;
+        TestNode cond = TestNode.empty();
         if (tokens.tokenIs("if")) {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
@@ -71,7 +71,7 @@ public class BreakStatementNode implements SimpleFlowNode {
         if (loops > 0) {
             string += " " + loops;
         }
-        if (cond != null) {
+        if (!cond.isEmpty()) {
             string += " if " + cond;
         }
         return string;
