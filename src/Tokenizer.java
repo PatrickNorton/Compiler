@@ -18,11 +18,10 @@ import java.util.regex.Pattern;
 public class Tokenizer {
     private LineNumberReader file;
     private String next;
-    private static final Pattern openComment = Pattern.compile("#\\|((?!\\|#).)*$");
+    private static final Pattern openComment = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern closeComment = Pattern.compile("^.*?\\|#");
-    private static final Pattern lineComment = Pattern.compile("#.*$");
-    private static final Pattern openString = Pattern.compile("(['\"])((?<!\\\\)\\\\{2}\\1|(?!\\1).)*$");
-    private static final Pattern fullString = Pattern.compile("(([\"'])([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\\2)");
+    private static final Pattern openString = Pattern.compile("^[refb]*\"([^\"]|(?<!\\\\)(\\\\{2})*\\\\\"|\n)+$");
+    private static final Pattern openSingleString = Pattern.compile("^[refb]*'([^']|(?<!\\\\)(\\\\{2})*\\\\'|\n)+$");
     private static final Pattern closeString = Pattern.compile("^((?<!\\\\)\\\\{2}\"|[^\"])*\"");
     private static final Pattern closeSingleString = Pattern.compile("^((?<!\\\\)\\\\{2}'|[^'])*'");
 
@@ -46,6 +45,7 @@ public class Tokenizer {
         if (next.isEmpty()) {
             return emptyLine();
         }
+        adjustForMultiline();
         for (TokenType info : TokenType.values()) {
             Matcher match = info.regex.matcher(next);
             if (match.find()) {
@@ -55,6 +55,7 @@ public class Tokenizer {
                         if (next.isEmpty()) {
                             return emptyLine();
                         }
+                        adjustForMultiline();
                         match = info.regex.matcher(next);
                     } while (match.find());
                 } else {
@@ -71,50 +72,37 @@ public class Tokenizer {
         if (nextLine == null) {
             return Token.Epsilon();
         } else {
-            Matcher openComment = Tokenizer.openComment.matcher(nextLine);
-            boolean isOpenComment = openComment.find();
-            int endOfString = 0;
-            Matcher fullString = Tokenizer.fullString.matcher(nextLine);
-            while (fullString.find()) {
-                endOfString = fullString.end();
-            }
-            Matcher openString = Tokenizer.openString.matcher(nextLine);
-            boolean isOpenString = endOfString < nextLine.length() && openString.find(endOfString + 1);
-            if (isOpenString) {
-                Matcher m = lineComment.matcher(nextLine);
-                if (m.find() && m.start() < openString.start()) {
-                    isOpenString = false;
-                }
-            }
-            if (isOpenComment) {
-                Matcher m = lineComment.matcher(nextLine);
-                if (m.find() && m.start() < openString.start()) {
-                    isOpenComment = false;
-                }
-            }
-            boolean commentFirst;
-            if (isOpenComment && isOpenString) {
-                commentFirst = openComment.start() < openString.start();
-            } else if (isOpenComment || isOpenString) {
-                commentFirst = isOpenComment;
-            } else {
-                next = nextLine;
-                return Token.Newline();
-            }
-            StringBuilder nextBuilder = new StringBuilder(nextLine);
-            Pattern closeMatcher = commentFirst ? closeComment : closeString;
-            if (!commentFirst) {
-                closeMatcher = nextLine.startsWith("'") ? closeSingleString : closeString;
-            }
-            String next;
-            do {
-                next = readLine();
-                nextBuilder.append("\n");
-                nextBuilder.append(next);
-            } while (!closeMatcher.matcher(next).find());
-            this.next = nextBuilder.toString();
+            next = nextLine;
             return Token.Newline();
         }
+    }
+
+    private void adjustForMultiline() {
+        Matcher m = openComment.matcher(next);
+        if (m.find()) {
+            concatLines(closeComment);
+            return;
+        }
+        m = openString.matcher(next);
+        if (m.find()) {
+            concatLines(closeString);
+            return;
+        }
+        m = openSingleString.matcher(next);
+        if (m.find()) {
+            concatLines(closeSingleString);
+        }
+    }
+
+    private void concatLines(@NotNull Pattern tillMatch) {
+        String next;
+        StringBuilder nextBuilder = new StringBuilder(this.next);
+        do {
+            next = readLine();
+            nextBuilder.append('\n');
+            nextBuilder.append(next);
+        } while (!tillMatch.matcher(next).find());
+        this.next = nextBuilder.toString();
     }
 
     private String readLine() {
