@@ -1,3 +1,4 @@
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -9,6 +10,16 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public interface TestNode extends IndependentNode {
+    default boolean isEmpty() {
+        return false;
+    }
+
+    @NotNull
+    @Contract(value = " -> new", pure = true)
+    static TestNode empty() {
+        return new EmptyTestNode();
+    }
+
     /**
      * Parse a TestNode from a list of statements.
      * <p>

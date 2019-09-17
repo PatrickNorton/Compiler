@@ -59,7 +59,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         } else {
             returned = new TestNode[0];
         }
-        TestNode cond = null;
+        TestNode cond = TestNode.empty();
         if (is_conditional) {
             assert tokens.tokenIs("if");
             tokens.nextToken();
@@ -74,6 +74,6 @@ public class ReturnStatementNode implements SimpleFlowNode {
         for (TestNode t : returned) {
             sj.add(t.toString());
         }
-        return "return " + sj + (cond != null ? "if " + cond : "");
+        return "return " + sj + (!cond.isEmpty() ? "if " + cond : "");
     }
 }
