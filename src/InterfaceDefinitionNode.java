@@ -26,7 +26,7 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
         this.name = name;
         this.superclasses = superclasses;
         this.body = body;
-        this.descriptors = null;
+        this.descriptors = new DescriptorNode[0];
     }
 
     public TypeNode getName() {

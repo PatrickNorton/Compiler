@@ -19,7 +19,7 @@ public class ContinueStatementNode implements SimpleFlowNode {
     static ContinueStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("continue");
         tokens.nextToken();
-        TestNode cond = null;
+        TestNode cond = TestNode.empty();
         if (tokens.tokenIs("if")) {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
@@ -29,7 +29,7 @@ public class ContinueStatementNode implements SimpleFlowNode {
 
     @Override
     public String toString() {
-        if (cond != null) {
+        if (!cond.isEmpty()) {
             return "continue " + cond;
         } else {
             return "continue";

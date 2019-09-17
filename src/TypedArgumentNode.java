@@ -72,7 +72,7 @@ public class TypedArgumentNode implements SubTestNode {
         }
         TypeNode type = TypeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);
-        TestNode default_value = null;
+        TestNode default_value = TestNode.empty();
         if (tokens.tokenIs("=")) {
             tokens.nextToken();
             default_value = TestNode.parse(tokens, true);
@@ -89,7 +89,7 @@ public class TypedArgumentNode implements SubTestNode {
         sb.append(type);
         sb.append(" ");
         sb.append(name);
-        if (defaultval != null) {
+        if (!defaultval.isEmpty()) {
             sb.append("=");
             sb.append(defaultval);
         }

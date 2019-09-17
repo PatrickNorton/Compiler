@@ -20,14 +20,11 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param body The body of the operator definition
      */
     @Contract(pure = true)
-    public OperatorDefinitionNode(SpecialOpNameNode op_code, TypeNode[] ret_type, TypedArgumentListNode args, StatementBodyNode body) {
+    public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeNode[] ret_type,
+                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
         this.op_code = op_code;
         this.ret_type = ret_type;
-        if (args != null) {
-            this.args = args;
-        } else {
-            this.args = new TypedArgumentListNode();
-        }
+        this.args = args;
         this.body = body;
         this.descriptors = new DescriptorNode[0];
     }
