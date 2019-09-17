@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
  * The lexer of a file, separates it into a list of tokens.
  * @author Patrick Norton
  */
-public class Tokenizer {
-    private LineNumberReader file;
+public final class Tokenizer {
+    private final LineNumberReader file;
     private String next;
     private static final Pattern openComment = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern closeComment = Pattern.compile("^.*?\\|#");
@@ -68,6 +68,7 @@ public class Tokenizer {
     }
 
     private Token emptyLine() {
+        assert next.isEmpty();
         String nextLine = readLine();
         if (nextLine == null) {
             return Token.Epsilon();
