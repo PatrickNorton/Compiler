@@ -34,10 +34,10 @@ public class DottedVariableNode implements NameNode {
      * The constructor for an empty DottedVariableNode, which can be used in
      * certain situations where some code might require it.
      */
-    @Contract(pure = true)
-    public DottedVariableNode() {
-        this.preDot = new VariableNode();
-        this.postDots = new NameNode[0];
+    @NotNull
+    @Contract(value = " -> new", pure = true)
+    public static DottedVariableNode empty() {
+        return new DottedVariableNode(TestNode.empty());
     }
 
     public TestNode getPreDot() {
@@ -49,7 +49,7 @@ public class DottedVariableNode implements NameNode {
     }
 
     public boolean isEmpty() {
-        return (preDot instanceof VariableNode) && ((VariableNode) preDot).isEmpty();
+        return preDot.isEmpty();
     }
 
     /**

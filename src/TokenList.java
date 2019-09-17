@@ -14,12 +14,27 @@ public final class TokenList implements Iterable<Token> {
     private final LinkedList<Token> buffer;
     private final Tokenizer tokenizer;
 
+    /**
+     * Construct a new instance of TokenList.
+     * <p>
+     *     This constructs from a buffer of tokens, instead of using a file.
+     * </p>
+     * @param buffer The tokens to be a list of
+     */
     @Contract(pure = true)
     public TokenList(LinkedList<Token> buffer) {
         this.buffer = buffer;
         this.tokenizer = Tokenizer.empty();
     }
 
+    /**
+     * Construct a new instance of TokenList.
+     * <p>
+     *     This takes a {@link Tokenizer} as input and slowly parses that until
+     *     there are no tokens left.
+     * </p>
+     * @param tokenizer The tokenizer to collect from
+     */
     @Contract(pure = true)
     public TokenList(Tokenizer tokenizer) {
         this.buffer = new LinkedList<>();
@@ -82,6 +97,10 @@ public final class TokenList implements Iterable<Token> {
         return false;
     }
 
+    /**
+     * Create an iterable for a line of the code.
+     * @return The iterable for the line
+     */
     @NotNull
     @Contract(pure = true)
     private Iterable<Token> lineIterator() {
@@ -387,6 +406,9 @@ public final class TokenList implements Iterable<Token> {
         }
     }
 
+    /**
+     * The iterator for a TokenList.
+     */
     private class TokenIterator implements Iterator<Token> {
         private final ListIterator<Token> bufferIterator;
         private Token next = null;
@@ -419,6 +441,9 @@ public final class TokenList implements Iterable<Token> {
             return bufferIterator.next();
         }
 
+        /**
+         * Buffer the iterator if next is unknown
+         */
         private void buffer() {
             next = tokenizer.tokenizeNext();
             bufferIterator.add(next);
@@ -468,18 +493,32 @@ public final class TokenList implements Iterable<Token> {
         return new TokenIterator();
     }
 
+    /**
+     * Get the iterator from a certain point instead of 0.
+     * @param i The number of spots from the beginning to start at
+     * @return The new iterable
+     */
     @NotNull
     @Contract(pure = true)
     public Iterable<Token> iteratorFrom(int i) {
         return () -> new TokenIterator(i);
     }
 
+    /**
+     * Get the matching brace of the first token in the list.
+     * @return The matching brace
+     */
     @NotNull
     public String matchingBrace() {
         assert tokenIs(TokenType.OPEN_BRACE);
         return TokenList.matchingBrace(getFirst().sequence);
     }
 
+    /**
+     * Get the matching brace of a string.
+     * @param brace The brace to match
+     * @return The matched brace
+     */
     @NotNull
     @Contract(pure = true)
     static String matchingBrace(@NotNull String brace) {

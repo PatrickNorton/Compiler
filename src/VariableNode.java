@@ -15,13 +15,14 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         this.name = names;
     }
 
-    @Contract(pure = true)
-    public VariableNode() {
-        this.name = "";
-    }
-
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    @Contract(value = " -> new", pure = true)
+    public static VariableNode empty() {
+        return new VariableNode("");
     }
 
     public boolean isEmpty() {
@@ -40,7 +41,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         if (tokens.tokenIs(types)) {
             return VariableNode.parse(tokens);
         } else {
-            return new VariableNode();
+            return VariableNode.empty();
         }
     }
 
