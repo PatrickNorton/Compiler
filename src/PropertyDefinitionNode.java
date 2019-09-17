@@ -84,7 +84,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     @NotNull
     @Contract("_ -> new")
     static PropertyDefinitionNode parse(@NotNull TokenList tokens) {
-        VariableNode name = new VariableNode();
+        VariableNode name = VariableNode.empty();
         if (!tokens.tokenIs("{")) {
             name = VariableNode.parse(tokens);
         }

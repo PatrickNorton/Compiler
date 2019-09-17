@@ -64,7 +64,7 @@ public class TypeNode implements AtomicNode {
         DottedVariableNode main;
         if (!tokens.tokenIs(TokenType.NAME)) {
             if (allow_empty && tokens.tokenIs("[")) {
-                main = new DottedVariableNode();
+                main = DottedVariableNode.empty();
             } else {
                 throw new ParserException("Expected type name, got " + tokens.getFirst());
             }
