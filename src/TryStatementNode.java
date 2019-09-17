@@ -76,7 +76,7 @@ public class TryStatementNode implements ComplexStatementNode {
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
         DottedVariableNode[] excepted = new DottedVariableNode[0];
-        VariableNode as_var = new VariableNode();
+        VariableNode as_var = VariableNode.empty();
         StatementBodyNode else_stmt = new StatementBodyNode();
         StatementBodyNode finally_stmt = new StatementBodyNode();
         if (tokens.tokenIs("except")) {

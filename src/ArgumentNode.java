@@ -36,8 +36,9 @@ public class ArgumentNode implements BaseNode {
         this.argument = argument;
     }
 
+    @Contract(pure = true)
     public ArgumentNode(TestNode argument) {
-        this.variable = new VariableNode();
+        this.variable = VariableNode.empty();
         this.vararg = "";
         this.argument = argument;
     }
@@ -85,7 +86,7 @@ public class ArgumentNode implements BaseNode {
         }
         LinkedList<ArgumentNode> args = new LinkedList<>();
         while (true) {
-            VariableNode var = new VariableNode();
+            VariableNode var = VariableNode.empty();
             int offset = tokens.tokenIs("*", "**") ? 1 : 0;
             if (tokens.tokenIs(offset, TokenType.NAME)
                     && tokens.tokenIs(tokens.sizeOfVariable(offset), "=")) {

@@ -10,10 +10,18 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public interface TestNode extends IndependentNode {
+    /**
+     * Whether or not the TestNode is empty.
+     * @return if it is empty
+     */
     default boolean isEmpty() {
         return false;
     }
 
+    /**
+     * Construct a new empty TestNode.
+     * @return The empty node
+     */
     @NotNull
     @Contract(value = " -> new", pure = true)
     static TestNode empty() {

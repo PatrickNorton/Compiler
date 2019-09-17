@@ -60,7 +60,7 @@ public class ImportStatementNode implements ImportExportNode {
     @NotNull
     @Contract("_ -> new")
     static ImportStatementNode parse(@NotNull TokenList tokens) {
-        DottedVariableNode from = new DottedVariableNode();
+        DottedVariableNode from = DottedVariableNode.empty();
         if (tokens.tokenIs("from")) {
             tokens.nextToken();
             from = DottedVariableNode.parseNamesOnly(tokens);

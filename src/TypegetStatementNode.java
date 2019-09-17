@@ -51,7 +51,7 @@ public class TypegetStatementNode implements ImportExportNode {
     @NotNull
     @Contract("_ -> new")
     static TypegetStatementNode parse(@NotNull TokenList tokens) {
-        DottedVariableNode from = new DottedVariableNode();
+        DottedVariableNode from = DottedVariableNode.empty();
         if (tokens.tokenIs("from")) {
             tokens.nextToken();
             from = DottedVariableNode.parseName(tokens);
