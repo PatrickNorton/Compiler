@@ -8,7 +8,7 @@ import java.util.LinkedList;
  * statement.
  * @author Patrick Norton
  */
-public interface TestNode extends BaseNode {
+public interface TestNode extends IndependentNode {
     /**
      * Parse a TestNode from a list of statements.
      * <p>

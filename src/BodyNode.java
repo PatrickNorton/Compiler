@@ -1,4 +1,4 @@
 public interface BodyNode extends BaseNode {
-    BaseNode[] getStatements();
+    IndependentNode[] getStatements();
     boolean isEmpty();
 }

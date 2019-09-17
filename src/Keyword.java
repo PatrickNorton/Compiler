@@ -51,11 +51,11 @@ public enum Keyword {
     GOTO("goto", "This language does not support goto, go use C++", TokenPlace.NONE),
     ;
     public final String name;
-    private final Function<TokenList, BaseNode> parseLeft;
+    private final Function<TokenList, IndependentNode> parseLeft;
     private static final Map<String, Keyword> values;
 
     @Contract(pure = true)
-    Keyword(String name, Function<TokenList, BaseNode> fn) {
+    Keyword(String name, Function<TokenList, IndependentNode> fn) {
         this.name = name;
         this.parseLeft = fn;
     }
@@ -102,7 +102,7 @@ public enum Keyword {
         }
     }
 
-    BaseNode parseLeft(TokenList tokens) {
+    IndependentNode parseLeft(TokenList tokens) {
         return this.parseLeft.apply(tokens);
     }
 }
