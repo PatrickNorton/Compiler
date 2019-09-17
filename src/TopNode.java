@@ -8,10 +8,10 @@ import java.util.LinkedList;
  * @see StatementBodyNode
  */
 public class TopNode implements BaseNode {
-    private LinkedList<BaseNode> nodes;
+    private LinkedList<IndependentNode> nodes;
 
     @Contract(pure = true)
-    public TopNode(LinkedList<BaseNode> nodes) {
+    public TopNode(LinkedList<IndependentNode> nodes) {
         this.nodes = nodes;
     }
 
@@ -20,11 +20,11 @@ public class TopNode implements BaseNode {
         this.nodes = new LinkedList<>();
     }
 
-    public void add(BaseNode operand) {
+    public void add(IndependentNode operand) {
         nodes.add(operand);
     }
 
-    public LinkedList<BaseNode> getNodes() {
+    public LinkedList<IndependentNode> getNodes() {
         return nodes;
     }
 }

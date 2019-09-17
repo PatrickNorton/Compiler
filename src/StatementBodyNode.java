@@ -8,14 +8,14 @@ import java.util.ArrayList;
  * @author Patrick Norton
  */
 public class StatementBodyNode implements BodyNode {
-    private BaseNode[] statements;
+    private IndependentNode[] statements;
 
     @Contract(pure = true)
-    public StatementBodyNode(BaseNode... statements) {
+    public StatementBodyNode(IndependentNode... statements) {
         this.statements = statements;
     }
 
-    public BaseNode[] getStatements() {
+    public IndependentNode[] getStatements() {
         return statements;
     }
 
@@ -79,14 +79,14 @@ public class StatementBodyNode implements BodyNode {
     @NotNull
     @Contract("_, _ -> new")
     private static StatementBodyNode parseUntilToken(@NotNull TokenList tokens, String... values) {
-        ArrayList<BaseNode> statements = new ArrayList<>();
+        ArrayList<IndependentNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(values)) {
-            statements.add(BaseNode.parse(tokens));
+            statements.add(IndependentNode.parse(tokens));
             if (!tokens.tokenIs(values)) {
                 tokens.Newline();
             }
         }
-        return new StatementBodyNode(statements.toArray(new BaseNode[0]));
+        return new StatementBodyNode(statements.toArray(new IndependentNode[0]));
     }
 
     @Override
