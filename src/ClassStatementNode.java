@@ -31,7 +31,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
         if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {
             return StaticBlockNode.parse(tokens);
         }
-        BaseNode stmt = BaseNode.parse(tokens);
+        BaseNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof ClassStatementNode) {
             return (ClassStatementNode) stmt;
         }
@@ -83,7 +83,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
     @Contract("_, _ -> new")
     private static ClassStatementNode parseDescriptorKeyword(@NotNull TokenList tokens, @NotNull DescriptorNode[] descriptors) {
         assert tokens.tokenIs(TokenType.KEYWORD);
-        BaseNode node = BaseNode.parse(tokens);
+        BaseNode node = IndependentNode.parse(tokens);
         if (node instanceof ClassStatementNode) {
             ClassStatementNode classNode = (ClassStatementNode) node;
             classNode.addDescriptor(descriptors);

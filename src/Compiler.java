@@ -4,6 +4,6 @@ public class Compiler {
     public static void main(String[] args) {
         String filename = "/Users/Patricknorton/Projects/Python files/CAS.newlang";
         TokenList tokens = Tokenizer.parse(new File(filename));
-        BaseNode base = Parser.parse(tokens);
+        TopNode topNode = Parser.parse(tokens);
     }
 }

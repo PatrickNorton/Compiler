@@ -2,7 +2,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 
-public interface DecoratableNode extends BaseNode {
+public interface DecoratableNode extends IndependentNode {
     void addDecorators(NameNode... decorators);
     NameNode[] getDecorators();
 
@@ -20,7 +20,7 @@ public interface DecoratableNode extends BaseNode {
 
     @NotNull
     static DecoratableNode parse(TokenList tokens) {
-        BaseNode stmt = BaseNode.parse(tokens);
+        IndependentNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof DecoratableNode) {
             return (DecoratableNode) stmt;
         } else {

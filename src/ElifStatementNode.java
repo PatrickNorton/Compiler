@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Contract;
  * @author Patrick Norton
  * @see IfStatementNode
  */
-public class ElifStatementNode implements FlowStatementNode {
+public class ElifStatementNode implements BaseNode {
     private TestNode test;
     private StatementBodyNode body;
 
@@ -29,7 +29,6 @@ public class ElifStatementNode implements FlowStatementNode {
         return test;
     }
 
-    @Override
     public StatementBodyNode getBody() {
         return body;
     }
