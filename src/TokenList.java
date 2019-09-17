@@ -10,9 +10,9 @@ import java.util.NoSuchElementException;
  * The list of tokens.
  * @author Patrick Norton
  */
-public class TokenList implements Iterable<Token> {
-    private LinkedList<Token> buffer;
-    private Tokenizer tokenizer;
+public final class TokenList implements Iterable<Token> {
+    private final LinkedList<Token> buffer;
+    private final Tokenizer tokenizer;
 
     @Contract(pure = true)
     public TokenList(LinkedList<Token> buffer) {
@@ -90,7 +90,7 @@ public class TokenList implements Iterable<Token> {
 
     private class LineIterator implements Iterator<Token> {
         private int netBraces = 0;
-        private Iterator<Token> iterator = TokenList.this.iterator();
+        private final Iterator<Token> iterator = TokenList.this.iterator();
         private Token next = iterator.next();
 
         @Override
@@ -388,7 +388,7 @@ public class TokenList implements Iterable<Token> {
     }
 
     private class TokenIterator implements Iterator<Token> {
-        private ListIterator<Token> bufferIterator;
+        private final ListIterator<Token> bufferIterator;
         private Token next = null;
 
         private TokenIterator() {
@@ -429,7 +429,7 @@ public class TokenList implements Iterable<Token> {
     private class FirstLevelIterator implements Iterator<Token> {
         private int netBraces = 0;
         private boolean beginning = true;
-        private Iterator<Token> iterator = TokenList.this.iterator();
+        private final Iterator<Token> iterator = TokenList.this.iterator();
 
         @Override
         public boolean hasNext() {
@@ -461,16 +461,20 @@ public class TokenList implements Iterable<Token> {
         }
     }
 
+    @Contract(" -> new")
     @NotNull
     @Override
     public Iterator<Token> iterator() {
         return new TokenIterator();
     }
 
+    @NotNull
+    @Contract(pure = true)
     public Iterable<Token> iteratorFrom(int i) {
         return () -> new TokenIterator(i);
     }
 
+    @NotNull
     public String matchingBrace() {
         assert tokenIs(TokenType.OPEN_BRACE);
         return TokenList.matchingBrace(getFirst().sequence);
