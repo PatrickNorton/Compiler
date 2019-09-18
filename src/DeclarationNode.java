@@ -12,7 +12,7 @@ import java.util.StringJoiner;
 public class DeclarationNode implements AssignStatementNode, ClassStatementNode {
     private TypeNode type;
     private VariableNode name;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     /**
      * Create a new instance of DeclarationNode.
@@ -23,7 +23,6 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     public DeclarationNode(TypeNode type, VariableNode name) {
         this.type = type;
         this.name = name;
-        this.descriptors = new DescriptorNode[0];
     }
 
     public TypeNode getType() {

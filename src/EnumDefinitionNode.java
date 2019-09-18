@@ -8,7 +8,7 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
     private TypeNode types;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
 
@@ -17,7 +17,6 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
         this.types = types;
         this.names = names;
         this.body = body;
-        this.descriptors = new DescriptorNode[0];
     }
 
     public TypeNode getTypes() {

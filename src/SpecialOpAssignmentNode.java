@@ -7,13 +7,12 @@ import org.jetbrains.annotations.NotNull;
 public class SpecialOpAssignmentNode implements ClassStatementNode {
     private SpecialOpNameNode name;
     private TestNode assignment;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     @Contract(pure = true)
     public SpecialOpAssignmentNode(SpecialOpNameNode name, TestNode assignment) {
         this.name = name;
         this.assignment = assignment;
-        this.descriptors = new DescriptorNode[0];
     }
 
     public SpecialOpNameNode getName() {
