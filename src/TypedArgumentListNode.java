@@ -16,9 +16,7 @@ public class TypedArgumentListNode implements BaseNode {
 
     @Contract(pure = true)
     public TypedArgumentListNode(TypedArgumentNode... args) {
-        this.normalArgs = args;
-        this.positionArgs = new TypedArgumentNode[0];
-        this.nameArgs = new TypedArgumentNode[0];
+        this(new TypedArgumentNode[0], args, new TypedArgumentNode[0]);
     }
 
     @Contract(pure = true)

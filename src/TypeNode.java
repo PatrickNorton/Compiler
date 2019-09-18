@@ -11,8 +11,7 @@ public class TypeNode implements AtomicNode {
 
     @Contract(pure = true)
     public TypeNode(DottedVariableNode name) {
-        this.name = name;
-        this.subtypes = new TypeNode[0];
+        this(name, new TypeNode[0], false);
     }
 
     @Contract(pure = true)
