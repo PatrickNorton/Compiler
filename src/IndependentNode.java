@@ -32,13 +32,12 @@ public interface IndependentNode extends BaseNode {
             case ARROW:
                 throw new ParserException("Unexpected ->");
             case OPERATOR:
-                return OperatorNode.parse(tokens, false);
+            case BOOL_OP:
+                return TestNode.parse(tokens);
             case ASSIGN:
                 throw new ParserException("Unexpected assignment");
             case STRING:
                 return StringNode.parse(tokens);
-            case BOOL_OP:
-                return OperatorNode.parseBoolOp(tokens, false);
             case NUMBER:
                 return NumberNode.parse(tokens);
             case OPERATOR_SP:
