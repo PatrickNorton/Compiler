@@ -17,7 +17,25 @@ public interface ImportExportNode extends SimpleStatementNode {
      */
     @Contract("_ -> new")
     @NotNull
-    static ImportExportNode parse(@NotNull TokenList tokens) {  // TODO: Change to parse all import/export nodes
+    static ImportExportNode parse(@NotNull TokenList tokens) {
+        if (tokens.tokenIs("from")) {
+            return parseFrom(tokens);
+        } else {
+            switch (tokens.getFirst().sequence) {
+                case "import":
+                    return ImportStatementNode.parse(tokens);
+                case "export":
+                    return ExportStatementNode.parse(tokens);
+                case "typeget":
+                    return TypegetStatementNode.parse(tokens);
+                default:
+                    throw new RuntimeException("Unknown ImportExportNode");
+            }
+        }
+    }
+
+    @NotNull
+    private static ImportExportNode parseFrom(@NotNull TokenList tokens) {
         assert tokens.tokenIs("from");
         if (tokens.lineContains("import")) {
             return ImportStatementNode.parse(tokens);

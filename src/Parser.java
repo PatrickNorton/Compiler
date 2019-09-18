@@ -1,5 +1,4 @@
 // TODO! Rename getName() to not conflict with standard name
-// TODO: Reduce/remove nulls
 // TODO? Remove SubTestNode & replace with something more meaningful
 // TODO? Annotations
 
