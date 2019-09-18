@@ -3,4 +3,9 @@ public class EmptyTestNode implements TestNode {
     public boolean isEmpty() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "";
+    }
 }

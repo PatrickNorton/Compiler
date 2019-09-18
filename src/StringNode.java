@@ -17,6 +17,11 @@ public class StringNode extends StringLikeNode {
     private String contents;
     private StringPrefix[] prefixes;
 
+    /**
+     * Create a new instance of StringNode.
+     * @param contents The contents of the string
+     * @param prefixes The prefixes thereof
+     */
     @Contract(pure = true)
     public StringNode(String contents, @NotNull char... prefixes) {
         this.contents = contents;
@@ -52,7 +57,6 @@ public class StringNode extends StringLikeNode {
         tokens.nextToken();
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher regex = prefixPattern.matcher(contents);
-        StringNode node;
         if (regex.find()) {
             String prefixes = regex.group();
             if (!prefixes.contains("r")) {
