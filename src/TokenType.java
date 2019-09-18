@@ -55,6 +55,8 @@ public enum TokenType {
     DOT("^\\."),
     // The at symbol, for decorators
     AT("^@"),
+    // The dollar sign, for annotations
+    DOLLAR("^\\$"),
     ;
 
     final Pattern regex;
