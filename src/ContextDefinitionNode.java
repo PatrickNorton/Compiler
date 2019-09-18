@@ -1,3 +1,5 @@
+// TODO: Non-local variables in context definition
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -7,24 +9,30 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ContextDefinitionNode implements DefinitionNode {
     private VariableNode name;
+    private TypedArgumentListNode args;
     private StatementBodyNode enter;
     private StatementBodyNode exit;
 
     @Contract(pure = true)
     public ContextDefinitionNode(StatementBodyNode enter, StatementBodyNode exit) {
-        this(VariableNode.empty(), enter, exit);
+        this(VariableNode.empty(), new TypedArgumentListNode(), enter, exit);
     }
 
     @Contract(pure = true)
-    public ContextDefinitionNode(VariableNode name, StatementBodyNode enter, StatementBodyNode exit) {
+    public ContextDefinitionNode(VariableNode name, TypedArgumentListNode args, StatementBodyNode enter, StatementBodyNode exit) {
         this.name = name;
+        this.args = args;
         this.enter = enter;
         this.exit = exit;
     }
 
     @Override
-    public VariableNode getName() {
+    public NameNode getName() {
         return name;
+    }
+
+    public TypedArgumentListNode getArgs() {
+        return args;
     }
 
     public StatementBodyNode getEnter() {
@@ -58,26 +66,30 @@ public class ContextDefinitionNode implements DefinitionNode {
         assert tokens.tokenIs("context");
         tokens.nextToken();
         VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
         if (!tokens.tokenIs("{")) {
             throw new ParserException("Context managers must be followed by a curly brace");
         }
         tokens.nextToken(true);
         StatementBodyNode enter = StatementBodyNode.parseOnToken(tokens, "enter");
+        tokens.passNewlines();
         StatementBodyNode exit = StatementBodyNode.parseOnToken(tokens, "exit");
         tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Context manager must end with close curly brace");
         }
         tokens.nextToken();
-        return new ContextDefinitionNode(name, enter, exit);
+        return new ContextDefinitionNode(name, args, enter, exit);
     }
 
     @Override
     public String toString() {
         if (name.isEmpty()) {
             return "context";
-        } else {
+        } else if (args.isEmpty()) {
             return "context " + name;
+        } else {
+            return "context " + name + args;
         }
     }
 }
