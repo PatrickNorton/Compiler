@@ -19,14 +19,13 @@ public class GenericOperatorNode implements GenericDefinitionNode {
     private SpecialOpNameNode op_code;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     @Contract(pure = true)
     public GenericOperatorNode(SpecialOpNameNode op_code, TypedArgumentListNode args, TypeNode... retvals) {
         this.op_code = op_code;
         this.args = args;
         this.retvals = retvals;
-        this.descriptors = new DescriptorNode[0];
     }
 
     public SpecialOpNameNode getOp_code() {

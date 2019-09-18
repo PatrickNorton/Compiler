@@ -12,7 +12,7 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
     private TypeNode name;
     private TypeNode[] superclasses;
     private InterfaceBodyNode body;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
 
@@ -27,7 +27,6 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
         this.name = name;
         this.superclasses = superclasses;
         this.body = body;
-        this.descriptors = new DescriptorNode[0];
     }
 
     public TypeNode getName() {

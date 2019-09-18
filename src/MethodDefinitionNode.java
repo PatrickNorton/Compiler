@@ -11,7 +11,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     private TypedArgumentListNode args;
     private TypeNode[] retval;
     private StatementBodyNode body;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     /**
      * Create a new instance of MethodDefinitionNode.
@@ -26,7 +26,6 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         this.args = args;
         this.retval = retval;
         this.body = body;
-        this.descriptors = new DescriptorNode[0];
     }
 
     @Override

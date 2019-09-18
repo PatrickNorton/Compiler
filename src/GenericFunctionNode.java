@@ -15,14 +15,13 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     @Contract(pure = true)
     public GenericFunctionNode(VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
         this.name = name;
         this.args = args;
         this.retvals = retvals;
-        this.descriptors = new DescriptorNode[0];
     }
 
     public VariableNode getName() {
