@@ -133,7 +133,7 @@ public class TypedArgumentListNode implements BaseNode {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (positionArgs.length > 0) {
-            StringJoiner sj = new StringJoiner(", ", "", ", /,");
+            StringJoiner sj = new StringJoiner(", ", "", ", /");
             for (TypedArgumentNode t : positionArgs) {
                 sj.add(t.toString());
             }
