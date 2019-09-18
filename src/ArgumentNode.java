@@ -38,9 +38,16 @@ public class ArgumentNode implements BaseNode {
 
     @Contract(pure = true)
     public ArgumentNode(TestNode argument) {
-        this.variable = VariableNode.empty();
-        this.vararg = "";
-        this.argument = argument;
+        this(VariableNode.empty(), "", argument);
+    }
+
+    @NotNull
+    public static ArgumentNode[] fromTestNodes(@NotNull TestNode... testNodes) {
+        LinkedList<ArgumentNode> args = new LinkedList<>();
+        for (TestNode t : testNodes) {
+            args.add(new ArgumentNode(t));
+        }
+        return args.toArray(new ArgumentNode[0]);
     }
 
     public VariableNode getVariable() {
