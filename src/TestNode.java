@@ -87,10 +87,9 @@ public interface TestNode extends IndependentNode {
         switch (tokens.getFirst().token) {
             case NAME:
             case OPEN_BRACE:
-                node = parseLeftVariable(tokens, ignore_newline);
-                break;
             case BOOL_OP:
-                node = OperatorNode.parseBoolOp(tokens, ignore_newline);
+            case OPERATOR:
+                node = parseLeftVariable(tokens, ignore_newline);
                 break;
             case NUMBER:
                 node = NumberNode.parse(tokens);
@@ -100,9 +99,6 @@ public interface TestNode extends IndependentNode {
                 break;
             case ELLIPSIS:
                 node = VariableNode.parseEllipsis(tokens);
-                break;
-            case OPERATOR:
-                node = OperatorNode.parse(tokens, ignore_newline);
                 break;
             case STRING:
                 node = StringNode.parse(tokens);
@@ -220,21 +216,27 @@ public interface TestNode extends IndependentNode {
         for (int nodeNumber = 0; nodeNumber < nodes.size(); nodeNumber++) {
             TestNode node = nodes.get(nodeNumber);
             if (node instanceof OperatorNode) {
-                if (((OperatorNode) node).getOperands().length != 0) {
+                if (!node.isEmpty()) {
                     continue;
                 }
                 OperatorTypeNode operator = ((OperatorNode) node).getOperator();
                 if (Arrays.asList(expr).contains(operator)) {
                     if (operator == OperatorTypeNode.SUBTRACT) {
+                        if (nodeNumber == 0) {
+                            if (!operator.isUnary()) {
+                                throw new ParserException("Unexpected operator " + operator);
+                            }
+                            parseUnaryOp(nodes, nodeNumber);
+                            continue;
+                        }
                         TestNode nodePrevious = nodes.get(nodeNumber - 1);
                         if (nodePrevious instanceof OperatorNode) {
-                            if (((OperatorNode) nodePrevious).getOperands().length == 0) {
+                            if (nodePrevious.isEmpty()) {
                                 parseUnaryOp(nodes, nodeNumber);
                             } else {
                                 parseOperator(nodes, nodeNumber);
                                 nodeNumber--;
                             }
-                            parseOperator(nodes, nodeNumber);
                         }
                         continue;
                     }
@@ -280,7 +282,7 @@ public interface TestNode extends IndependentNode {
         TestNode op;
         if (node instanceof OperatorNode) {
             op = new OperatorNode(((OperatorNode) node).getOperator(), next);
-        }  else {
+        } else {
             throw new ParserException("Unexpected node for parseOperator");
         }
         nodes.set(nodeNumber, op);
