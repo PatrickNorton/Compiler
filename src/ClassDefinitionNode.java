@@ -9,12 +9,13 @@ import java.util.StringJoiner;
  *
  * @author
  */
-public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, DecoratableNode {
+public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, DecoratableNode, AnnotatableNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;
     private DescriptorNode[] descriptors;
-    private NameNode[] decorators;
+    private NameNode[] decorators = new NameNode[0];
+    private NameNode[] annotations = new NameNode[0];
 
     /**
      * Create new instance of ClassDefinitionNode
@@ -28,7 +29,6 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
         this.superclasses = superclasses;
         this.body = body;
         this.descriptors = new DescriptorNode[0];
-        this.decorators = new NameNode[0];
     }
 
     @Override
@@ -63,6 +63,16 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
     @Override
     public void addDecorators(NameNode... decorators) {
         this.decorators = decorators;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
     }
 
     /**

@@ -8,12 +8,13 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see ClassDefinitionNode
  */
-public class InterfaceDefinitionNode implements ComplexStatementNode, ClassStatementNode, DecoratableNode {
+public class InterfaceDefinitionNode implements ComplexStatementNode, ClassStatementNode, DecoratableNode, AnnotatableNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private InterfaceBodyNode body;
     private DescriptorNode[] descriptors;
-    private NameNode[] decorators;
+    private NameNode[] decorators = new NameNode[0];
+    private NameNode[] annotations = new NameNode[0];
 
     /**
      * Construct a new instance of InterfaceDefinitionNode.
@@ -60,6 +61,16 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
     @Override
     public void addDecorators(NameNode... decorators) {
         this.decorators = decorators;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
     }
 
     /**

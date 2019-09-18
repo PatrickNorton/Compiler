@@ -4,12 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedList;
 import java.util.StringJoiner;
 
-public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementNode, DecoratableNode {
+public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementNode, DecoratableNode, AnnotatableNode {
     private TypeNode types;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
     private DescriptorNode[] descriptors;
-    private NameNode[] decorators;
+    private NameNode[] decorators = new NameNode[0];
+    private NameNode[] annotations = new NameNode[0];
 
     @Contract(pure = true)
     public EnumDefinitionNode(TypeNode types, EnumKeywordNode[] names, ClassBodyNode body) {
@@ -17,7 +18,6 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
         this.names = names;
         this.body = body;
         this.descriptors = new DescriptorNode[0];
-        this.decorators = new NameNode[0];
     }
 
     public TypeNode getTypes() {
@@ -51,6 +51,16 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
     @Override
     public void addDecorators(NameNode... decorators) {
         this.decorators = decorators;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
     }
 
     @NotNull

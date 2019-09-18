@@ -56,6 +56,8 @@ public interface IndependentNode extends BaseNode {
                 throw new ParserException("Unexpected dot");
             case AT:
                 return DecoratableNode.parseLeftDecorator(tokens);
+            case DOLLAR:
+                return AnnotatableNode.parseLeftAnnotation(tokens);
             case EPSILON:
                 throw new ParserException("Unexpected EOF");
             default:
