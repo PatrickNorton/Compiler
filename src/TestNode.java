@@ -223,9 +223,6 @@ public interface TestNode extends IndependentNode {
                 if (Arrays.asList(expr).contains(operator)) {
                     if (operator == OperatorTypeNode.SUBTRACT) {
                         if (nodeNumber == 0) {
-                            if (!operator.isUnary()) {
-                                throw new ParserException("Unexpected operator " + operator);
-                            }
                             parseUnaryOp(nodes, nodeNumber);
                             continue;
                         }
@@ -257,12 +254,15 @@ public interface TestNode extends IndependentNode {
      * @param nodeNumber The number giving the location of the operator
      */
     private static void parseOperator(@NotNull LinkedList<TestNode> nodes, int nodeNumber) {
+        if (nodeNumber == 0 || nodeNumber + 1 == nodes.size()) {
+            throw new ParserException("Unexpected operator" + nodes.get(nodeNumber));
+        }
         TestNode node = nodes.get(nodeNumber);
         TestNode previous = nodes.get(nodeNumber - 1);
         TestNode next = nodes.get(nodeNumber + 1);
         TestNode op;
         if (node instanceof OperatorNode) {
-            op = new OperatorNode(((OperatorNode) node).getOperator(), previous, next);
+            op = OperatorNode.fromEmpty((OperatorNode) node, previous, next);
         } else {
             throw new ParserException("Unexpected node for parseOperator");
         }
@@ -277,11 +277,14 @@ public interface TestNode extends IndependentNode {
      * @param nodeNumber The number giving the location of the operator
      */
     private static void parseUnaryOp(@NotNull LinkedList<TestNode> nodes, int nodeNumber) {
+        if (nodeNumber + 1 == nodes.size()) {
+            throw new ParserException("Unexpected operator " + nodes.get(nodeNumber));
+        }
         TestNode node = nodes.get(nodeNumber);
         TestNode next = nodes.get(nodeNumber + 1);
         TestNode op;
         if (node instanceof OperatorNode) {
-            op = new OperatorNode(((OperatorNode) node).getOperator(), next);
+            op = OperatorNode.fromEmpty((OperatorNode) node, next);
         } else {
             throw new ParserException("Unexpected node for parseOperator");
         }
@@ -379,7 +382,7 @@ public interface TestNode extends IndependentNode {
         assert tokens.tokenIs(TokenType.OP_FUNC);
         OperatorTypeNode op_code = OperatorTypeNode.parse(tokens);
         if (tokens.tokenIs("(")) {
-            return new OperatorNode(op_code, TypedArgumentListNode.parse(tokens));
+            return new OperatorNode(op_code, ArgumentNode.parseList(tokens));
         } else {
             return op_code;
         }

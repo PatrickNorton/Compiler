@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  * @see TypedArgumentListNode
  */
-public class TypedArgumentNode implements SubTestNode {
+public class TypedArgumentNode implements BaseNode {
     private TypeNode type;
     private VariableNode name;
     private TestNode defaultval;
