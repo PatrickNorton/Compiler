@@ -12,8 +12,7 @@ public class ContextDefinitionNode implements DefinitionNode {
 
     @Contract(pure = true)
     public ContextDefinitionNode(StatementBodyNode enter, StatementBodyNode exit) {
-        this.enter = enter;
-        this.exit = exit;
+        this(VariableNode.empty(), enter, exit);
     }
 
     @Contract(pure = true)
