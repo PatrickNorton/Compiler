@@ -51,8 +51,8 @@ public class SomeStatementNode implements SubTestNode {
         if (in_stmt.getOperator() != OperatorTypeNode.IN) {
             throw new ParserException("Expected an in, got "+tokens.getFirst());
         }
-        TestNode[] operands = in_stmt.getOperands();
-        return new SomeStatementNode(operands[0], operands[1]);
+        ArgumentNode[] operands = in_stmt.getOperands();
+        return new SomeStatementNode(operands[0].getArgument(), operands[1].getArgument());
     }
 
     @Override
