@@ -91,6 +91,6 @@ public class SwitchStatementNode implements StatementNode {
 
     @Override
     public String toString() {
-        return "switch " + switched + (cases.length > 0 ? "{...}" : "{}");
+        return "switch " + switched + (cases.length > 0 ? " {...}" : " {}");
     }
 }
