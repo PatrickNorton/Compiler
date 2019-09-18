@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class OperatorNode implements SubTestNode {
     private OperatorTypeNode operator;
-    private TestNode[] operands;
+    private ArgumentNode[] operands;
 
     /**
      * Construct a new instance of OperatorNode.
@@ -16,9 +16,9 @@ public class OperatorNode implements SubTestNode {
      * @param operands The operands of the operator
      */
     @Contract(pure = true)
-    public OperatorNode(OperatorTypeNode operator, @NotNull TypedArgumentListNode operands) {
+    public OperatorNode(OperatorTypeNode operator, @NotNull ArgumentNode... operands) {
         this.operator = operator;
-        this.operands = operands.getArgs();
+        this.operands = operands;
     }
 
     /**
@@ -28,22 +28,27 @@ public class OperatorNode implements SubTestNode {
      */
     @Contract(pure = true)
     public OperatorNode(OperatorTypeNode operator, TestNode... operands) {
-        this.operator = operator;
-        this.operands = operands;
+        this(operator, ArgumentNode.fromTestNodes(operands));
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    public static OperatorNode fromEmpty(@NotNull OperatorNode empty, TestNode... operands) {
+        return new OperatorNode(empty.getOperator(), operands);
     }
 
     @NotNull
     @Contract("_ -> new")
     public static OperatorNode empty(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR, TokenType.BOOL_OP, TokenType.KEYWORD);
-        return new OperatorNode(OperatorTypeNode.fromToken(tokens.getFirst()));
+        return new OperatorNode(OperatorTypeNode.fromToken(tokens.getFirst()), new ArgumentNode[0]);
     }
 
     public OperatorTypeNode getOperator() {
         return operator;
     }
 
-    public TestNode[] getOperands() {
+    public ArgumentNode[] getOperands() {
         return operands;
     }
 
