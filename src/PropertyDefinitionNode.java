@@ -25,18 +25,6 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         this.get = get;
         this.set_args = set_args;
         this.set = set;
-        this.descriptors = new DescriptorNode[0];
-    }
-
-    @Contract(pure = true)
-    public PropertyDefinitionNode(StatementBodyNode get) {
-        this.get = get;
-    }
-
-    @Contract(pure = true)
-    public PropertyDefinitionNode(TypedArgumentListNode set_args, StatementBodyNode set) {
-        this.set_args = set_args;
-        this.set = set;
     }
 
     @Override
