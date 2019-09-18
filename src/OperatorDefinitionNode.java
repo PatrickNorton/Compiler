@@ -10,7 +10,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private TypeNode[] ret_type;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     /**
      * Construct a new instance of OperatorDefinitionNode.
@@ -26,7 +26,6 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         this.ret_type = ret_type;
         this.args = args;
         this.body = body;
-        this.descriptors = new DescriptorNode[0];
     }
 
     @Override

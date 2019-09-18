@@ -10,7 +10,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     private StatementBodyNode get;
     private TypedArgumentListNode set_args;
     private StatementBodyNode set;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
 
     /**
      * Create a new instance of PropertyDefinitionNode.

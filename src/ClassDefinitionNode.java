@@ -13,7 +13,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;
-    private DescriptorNode[] descriptors;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
 
@@ -28,7 +28,6 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
         this.name = name;
         this.superclasses = superclasses;
         this.body = body;
-        this.descriptors = new DescriptorNode[0];
     }
 
     @Override
