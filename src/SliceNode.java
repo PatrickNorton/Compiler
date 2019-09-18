@@ -24,6 +24,23 @@ public class SliceNode implements SubTestNode {
         this.step = step;
     }
 
+    /**
+     * Construct a new instance of SliceNode
+     * @param start The start of the slice
+     * @param end The end of the slice
+     */
+    public SliceNode(TestNode start, TestNode end) {
+        this(start, end, TestNode.empty());
+    }
+
+    /**
+     * Construct a new instance of SliceNode
+     * @param start The start of the slice
+     */
+    public SliceNode(TestNode start) {
+        this(start, TestNode.empty(), TestNode.empty());
+    }
+
     public TestNode getStart() {
         return start;
     }
@@ -58,12 +75,12 @@ public class SliceNode implements SubTestNode {
         }
         if (tokens.tokenIs("]")) {
             tokens.nextToken();
-            return new SliceNode(start, TestNode.empty(), TestNode.empty());
+            return new SliceNode(start);
         }
         TestNode end = sliceTest(tokens);
         if (tokens.tokenIs("]")) {
             tokens.nextToken();
-            return new SliceNode(start, end, TestNode.empty());
+            return new SliceNode(start, end);
         }
         TestNode step = sliceTest(tokens);
         if (!tokens.tokenIs("]")) {
