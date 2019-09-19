@@ -5,6 +5,8 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+
 public class Parser {
 
     private TokenList tokens;
@@ -27,5 +29,10 @@ public class Parser {
             parser.tokens.passNewlines();
         }
         return topNode;
+    }
+
+    @NotNull
+    public static TopNode parse(File f) {
+        return parse(Tokenizer.parse(f));
     }
 }
