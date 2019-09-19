@@ -2,6 +2,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * The class representing the body of a class.
@@ -82,6 +83,10 @@ public class ClassBodyNode implements BodyNode {
                 tokens.Newline();
             }
         }
+        return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
+    }
+
+    static ClassBodyNode fromList(LinkedList<ClassStatementNode> statements) {
         return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
     }
 

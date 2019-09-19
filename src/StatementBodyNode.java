@@ -20,7 +20,7 @@ public class StatementBodyNode implements BodyNode {
     }
 
     public boolean isEmpty() {
-        return statements.length > 0;
+        return statements.length == 0;
     }
 
     /**

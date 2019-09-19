@@ -3,6 +3,9 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedList;
+import java.util.regex.Pattern;
+
 /**
  * The class representing a context statement.
  * @author Patrick Norton
@@ -12,18 +15,23 @@ public class ContextDefinitionNode implements DefinitionNode {
     private TypedArgumentListNode args;
     private StatementBodyNode enter;
     private StatementBodyNode exit;
+    private ArgumentNode[] exitArgs;
+    private ClassBodyNode others;
 
     @Contract(pure = true)
     public ContextDefinitionNode(StatementBodyNode enter, StatementBodyNode exit) {
-        this(VariableNode.empty(), new TypedArgumentListNode(), enter, exit);
+        this(VariableNode.empty(), new TypedArgumentListNode(), enter, exit, new ArgumentNode[0], new ClassBodyNode());
     }
 
     @Contract(pure = true)
-    public ContextDefinitionNode(VariableNode name, TypedArgumentListNode args, StatementBodyNode enter, StatementBodyNode exit) {
+    public ContextDefinitionNode(VariableNode name, TypedArgumentListNode args, StatementBodyNode enter,
+                                 StatementBodyNode exit, ArgumentNode[] exitArgs, ClassBodyNode others) {
         this.name = name;
         this.args = args;
         this.enter = enter;
         this.exit = exit;
+        this.exitArgs = exitArgs;
+        this.others = others;
     }
 
     @Override
@@ -46,6 +54,14 @@ public class ContextDefinitionNode implements DefinitionNode {
     @Override
     public StatementBodyNode getBody() {
         return enter;
+    }
+
+    public ArgumentNode[] getExitArgs() {
+        return exitArgs;
+    }
+
+    public ClassBodyNode getOthers() {
+        return others;
     }
 
     /**
@@ -71,15 +87,44 @@ public class ContextDefinitionNode implements DefinitionNode {
             throw new ParserException("Context managers must be followed by a curly brace");
         }
         tokens.nextToken(true);
-        StatementBodyNode enter = StatementBodyNode.parseOnToken(tokens, "enter");
-        tokens.passNewlines();
-        StatementBodyNode exit = StatementBodyNode.parseOnToken(tokens, "exit");
-        tokens.passNewlines();
+        StatementBodyNode enter = new StatementBodyNode();
+        StatementBodyNode exit = new StatementBodyNode();
+        ArgumentNode[] exitArgs = new ArgumentNode[0];
+        LinkedList<ClassStatementNode> others = new LinkedList<>();
+        while (!tokens.tokenIs("}")) {
+            if (tokens.tokenIs("enter")) {
+                tokens.nextToken();
+                if (enter.isEmpty()) {
+                    enter = StatementBodyNode.parse(tokens);
+                } else {
+                    throw new ParserException("Cannot have multiple definitions of enter");
+                }
+            } else if (tokens.tokenIs("exit")) {
+                tokens.nextToken();
+                if (tokens.tokenIs("(")) {
+                    exitArgs = ArgumentNode.parseList(tokens);
+                }
+                if (exit.isEmpty()) {
+                    exit = StatementBodyNode.parse(tokens);
+                } else {
+                    throw new ParserException("Exit cannot be defined multiple times");
+                }
+            } else {
+                IndependentNode stmt = IndependentNode.parse(tokens);
+                tokens.Newline();
+                if (stmt instanceof ClassStatementNode) {
+                    others.add((ClassStatementNode) stmt);
+                } else {
+                    throw new ParserException("Illegal statement");
+                }
+            }
+            tokens.passNewlines();
+        }
         if (!tokens.tokenIs("}")) {
             throw new ParserException("Context manager must end with close curly brace");
         }
         tokens.nextToken();
-        return new ContextDefinitionNode(name, args, enter, exit);
+        return new ContextDefinitionNode(name, args, enter, exit, exitArgs, ClassBodyNode.fromList(others));
     }
 
     @Override
