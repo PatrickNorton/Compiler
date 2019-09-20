@@ -1,4 +1,5 @@
-package Parser;// TODO: Non-local variables in context definition
+package Parser;
+// TODO: Non-local variables in context definition
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
