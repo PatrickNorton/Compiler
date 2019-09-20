@@ -90,10 +90,11 @@ public class EnumDefinitionNode implements ClassStatementNode, ComplexStatementN
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(" ", "", "");
+        StringBuilder sb = new StringBuilder();
         for (DescriptorNode d : descriptors) {
-            sj.add(d.toString());
+            sb.append(d);
+            sb.append(' ');
         }
-        return (sj.length() > 0 ? sj + " " : "") + "enum " + types + " " + body;
+        return sb + "enum " + types + " " + body;
     }
 }
