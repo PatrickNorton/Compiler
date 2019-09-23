@@ -30,6 +30,9 @@ public class Parser {
     private TopNode parse() {
         while (!tokens.tokenIs(TokenType.EPSILON)) {
             top.add(IndependentNode.parse(tokens));
+            if (tokens.tokenIs(TokenType.EPSILON)) {
+                break;
+            }
             tokens.Newline();
         }
         return top;

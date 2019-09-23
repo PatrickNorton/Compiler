@@ -71,7 +71,6 @@ public class ClassBodyNode implements BodyNode {
         ClassBodyNode cb = parseUntilToken(tokens, "}");
         assert tokens.tokenIs("}");
         tokens.nextToken();
-        tokens.Newline();
         return cb;
     }
 

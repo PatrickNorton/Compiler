@@ -402,9 +402,7 @@ public final class TokenList implements Iterable<Token> {
     public void nextToken(boolean ignore_newlines) {
         nextToken();
         if (ignore_newlines) {
-            while (getFirst().is(TokenType.NEWLINE)) {
-                nextToken();
-            }
+            passNewlines();
         }
     }
 
@@ -449,6 +447,9 @@ public final class TokenList implements Iterable<Token> {
          * Buffer the iterator if next is unknown
          */
         private void buffer() {
+            if (done) {
+                throw new NoSuchElementException();
+            }
             Token next = tokenizer.tokenizeNext();
             bufferIterator.add(next);
             bufferIterator.previous();
