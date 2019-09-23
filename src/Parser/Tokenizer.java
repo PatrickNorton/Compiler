@@ -20,12 +20,12 @@ import java.util.regex.Pattern;
 public final class Tokenizer {
     private final LineNumberReader file;
     private String next;
-    private static final Pattern openComment = Pattern.compile("^#\\|((?!\\|#).)*$");
+    private static final Pattern openComment = Pattern.compile("^#\\|((?!\\|#).)*?$");
     private static final Pattern closeComment = Pattern.compile("^.*?\\|#");
-    private static final Pattern openString = Pattern.compile("^[refb]*\"([^\"]|(?<!\\\\)(\\\\{2})*\\\\\"|\n)+$");
-    private static final Pattern openSingleString = Pattern.compile("^[refb]*'([^']|(?<!\\\\)(\\\\{2})*\\\\'|\n)+$");
-    private static final Pattern closeString = Pattern.compile("^((?<!\\\\)\\\\{2}\"|[^\"])*\"");
-    private static final Pattern closeSingleString = Pattern.compile("^((?<!\\\\)\\\\{2}'|[^'])*'");
+    private static final Pattern openString = Pattern.compile("^[refb]*\"([^\"]|(?<!\\\\)(\\\\{2})*\\\\\")*?$");
+    private static final Pattern openSingleString = Pattern.compile("^[refb]*'([^']|(?<!\\\\)(\\\\{2})*\\\\')*?$");
+    private static final Pattern closeString = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*\"");
+    private static final Pattern closeSingleString = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*'");
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {

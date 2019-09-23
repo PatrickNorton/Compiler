@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  */
 public enum TokenType {
     // Whitespace. Matches comments, spaces, and escaped newlines
-    WHITESPACE("^(#\\|((?!\\|#).|\\R)*\\|#|#.*|[\t ]+|\\\\\\R)"),
+    WHITESPACE("^(#\\|(.|\\R)*?\\|#|#.*|[\t ]+|\\\\\\R)"),
     // Matches when input is empty
     EPSILON("^\\z"),
     // Matches newlines of all types
@@ -37,13 +37,13 @@ public enum TokenType {
     // Assignment, and dynamic assignment (:=)
     ASSIGN("^:?="),
     // String literals, including f-strings
-    STRING("^([refb]*([\"'])([^\"]|\\\\\"|\n)+(?<!\\\\)(\\\\{2})*\\2)"),
+    STRING("^([refb]*([\"'])(.|\\R)*?(?<!\\\\)(\\\\{2})*\\2)"),
     // Boolean operators
     BOOL_OP("^\\b(and|or|not|xor)\\b"),
     // Numbers, from 123 to 0xab4f6.245
     NUMBER("^(0x[0-9a-f]+(\\.[0-9a-f]+)?|(0[ob])?[0-9]+(\\.[0-9]+)?)\\b"),
     // That special operator definition syntax
-    OPERATOR_SP("^\\b(operator *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
+    OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
             + "|\\[]=?|\\(\\)|~|u-|iter|new|in|missing|str|repr|bool|del(\\[])?))"),
     // The name of a variable
     NAME("^\\b[_a-zA-Z][_a-zA-Z0-9]*\\b"),
