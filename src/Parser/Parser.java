@@ -9,27 +9,36 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 public class Parser {
-
-    private TokenList tokens;
+    private final TokenList tokens;
+    private final TopNode top;
 
     @Contract(pure = true)
     private Parser(TokenList tokens) {
+        this(tokens, new TopNode());
+    }
+
+    @Contract(pure = true)
+    private Parser(TokenList tokens, TopNode top) {
         this.tokens = tokens;
+        this.top = top;
     }
 
     public TokenList getTokens() {
         return tokens;
     }
 
+    private TopNode parse() {
+        while (!tokens.tokenIs(TokenType.EPSILON)) {
+            top.add(IndependentNode.parse(tokens));
+            tokens.passNewlines();
+        }
+        return top;
+    }
+
     @NotNull
     public static TopNode parse(TokenList tokens) {
         Parser parser = new Parser(tokens);
-        TopNode topNode = new TopNode();
-        while (!parser.tokens.tokenIs(TokenType.EPSILON)) {
-            topNode.add(IndependentNode.parse(parser.tokens));
-            parser.tokens.passNewlines();
-        }
-        return topNode;
+        return parser.parse();
     }
 
     @NotNull
