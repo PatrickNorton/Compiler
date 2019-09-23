@@ -20,7 +20,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      * <p>
      *     ClassStatementNodes are simply any {@link BaseNode} which inherits
      *     from this node, and that is how they are parsed, with a call to
-     *     {@link BaseNode#parse}, and a typecast filter. This node
+     *     {@link IndependentNode#parse}, and a typecast filter. This node
      *     is defined as the union of all its subclasses, check an inheritance
      *     tree or grep for those.
      * </p>
