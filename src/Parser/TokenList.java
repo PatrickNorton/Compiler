@@ -413,7 +413,7 @@ public final class TokenList implements Iterable<Token> {
      */
     private class TokenIterator implements Iterator<Token> {
         private final ListIterator<Token> bufferIterator;
-        private Token next = null;
+        private boolean done = false;
 
         private TokenIterator() {
             bufferIterator = buffer.listIterator();
@@ -428,17 +428,19 @@ public final class TokenList implements Iterable<Token> {
         public boolean hasNext() {
             if (bufferIterator.hasNext()) {
                 return true;
-            }
-            if (next == null) {
+            } else {
+                if (done) {
+                    return false;
+                }
                 buffer();
+                return true;
             }
-            return !next.is(TokenType.EPSILON);
         }
 
         @Override
         public Token next() {
-            if (!bufferIterator.hasNext()) {
-                buffer();
+            if (!hasNext()) {
+                throw new NoSuchElementException();
             }
             return bufferIterator.next();
         }
@@ -447,9 +449,12 @@ public final class TokenList implements Iterable<Token> {
          * Buffer the iterator if next is unknown
          */
         private void buffer() {
-            next = tokenizer.tokenizeNext();
+            Token next = tokenizer.tokenizeNext();
             bufferIterator.add(next);
             bufferIterator.previous();
+            if (next.is(TokenType.EPSILON)) {
+                done = true;
+            }
         }
     }
 
