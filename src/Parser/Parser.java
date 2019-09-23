@@ -30,7 +30,7 @@ public class Parser {
     private TopNode parse() {
         while (!tokens.tokenIs(TokenType.EPSILON)) {
             top.add(IndependentNode.parse(tokens));
-            tokens.passNewlines();
+            tokens.Newline();
         }
         return top;
     }
