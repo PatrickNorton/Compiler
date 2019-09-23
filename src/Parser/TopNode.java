@@ -1,7 +1,9 @@
 package Parser;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -9,7 +11,7 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see StatementBodyNode
  */
-public class TopNode implements BaseNode {
+public class TopNode implements BaseNode, Iterable<IndependentNode> {
     private LinkedList<IndependentNode> nodes;
 
     @Contract(pure = true)
@@ -24,6 +26,12 @@ public class TopNode implements BaseNode {
 
     public void add(IndependentNode operand) {
         nodes.add(operand);
+    }
+
+    @NotNull
+    @Override
+    public Iterator<IndependentNode> iterator() {
+        return nodes.iterator();
     }
 
     public LinkedList<IndependentNode> getNodes() {
