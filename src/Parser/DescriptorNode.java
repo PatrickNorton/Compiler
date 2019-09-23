@@ -50,6 +50,11 @@ public enum DescriptorNode implements AtomicNode {
         return values.get(type);
     }
 
+    /**
+     * Parse a DescriptorNode from a list of tokens.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The parsed DescriptorNode
+     */
     @NotNull
     public static DescriptorNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.DESCRIPTOR);
@@ -58,6 +63,11 @@ public enum DescriptorNode implements AtomicNode {
         return descriptor;
     }
 
+    /**
+     * Parse a list of DescriptorNodes from a list of tokens.
+     * @param tokens The list of tokens to be parsed
+     * @return The array of DescriptorNodes being parsed
+     */
     @NotNull
     public static DescriptorNode[] parseList(@NotNull TokenList tokens) {
         ArrayList<DescriptorNode> descriptors = new ArrayList<>();
@@ -67,6 +77,11 @@ public enum DescriptorNode implements AtomicNode {
         return descriptors.toArray(new DescriptorNode[0]);
     }
 
+    /**
+     * Get the amount of descriptors upcoming in a list of tokens.
+     * @param tokens The list of tokens to be checked for descriptors
+     * @return The number of descriptors upcoming
+     */
     public static int count(@NotNull TokenList tokens) {
         int number = 0;
         while (tokens.tokenIs(number, TokenType.DESCRIPTOR)) {
