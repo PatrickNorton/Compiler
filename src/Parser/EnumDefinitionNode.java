@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 
-public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, DecoratableNode, AnnotatableNode {
+public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     private TypeNode name;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;

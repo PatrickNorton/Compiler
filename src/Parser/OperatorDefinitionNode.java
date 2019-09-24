@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * The class representing an operator definition.
  * @author Patrick Norton
  */
-public class OperatorDefinitionNode implements DefinitionNode {
+public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode {
     private SpecialOpNameNode op_code;
     private TypeNode[] ret_type;
     private TypedArgumentListNode args;

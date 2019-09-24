@@ -11,7 +11,7 @@ import java.util.StringJoiner;
  *
  * @author
  */
-public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, DecoratableNode, AnnotatableNode {
+public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;

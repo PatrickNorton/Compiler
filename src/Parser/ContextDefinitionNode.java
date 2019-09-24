@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * The class representing a context statement.
  * @author Patrick Norton
  */
-public class ContextDefinitionNode implements DefinitionNode {
+public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private StatementBodyNode enter;

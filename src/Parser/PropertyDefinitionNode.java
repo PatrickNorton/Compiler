@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * The class representing a property definition.
  * @author Patrick Norton
  */
-public class PropertyDefinitionNode implements DefinitionNode {
+public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
     private VariableNode name;
     private StatementBodyNode get;
     private TypedArgumentListNode set_args;

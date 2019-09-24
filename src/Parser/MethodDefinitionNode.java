@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  * @see FunctionDefinitionNode
  */
-public class MethodDefinitionNode implements DefinitionNode {
+public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retval;

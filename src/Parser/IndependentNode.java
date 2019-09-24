@@ -16,7 +16,7 @@ public interface IndependentNode extends BaseNode {
             case KEYWORD:
                 return parseKeyword(tokens);
             case DESCRIPTOR:
-                return ClassStatementNode.parseDescriptor(tokens);
+                return DescribableNode.parse(tokens);
             case OPEN_BRACE:
                 if (tokens.lineContains(TokenType.ASSIGN)) {
                     return AssignStatementNode.parse(tokens);

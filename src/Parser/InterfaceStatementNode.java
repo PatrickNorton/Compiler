@@ -6,9 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * The class representing an interface statement.
  * @author Patrick Norton
  */
-public interface InterfaceStatementNode extends IndependentNode {
-    void addDescriptor(DescriptorNode[] nodes);
-    DescriptorNode[] getDescriptors();
+public interface InterfaceStatementNode extends IndependentNode, DescribableNode {
 
     /**
      * Parse an interface statement from a list of tokens.
