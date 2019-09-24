@@ -8,12 +8,14 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  * @see FunctionDefinitionNode
  */
-public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class MethodDefinitionNode implements DefinitionNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retval;
     private StatementBodyNode body;
     private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private NameNode[] annotations = new NameNode[0];
+    private NameNode[] decorators = new NameNode[0];
 
     /**
      * Create a new instance of Parser.MethodDefinitionNode.
@@ -55,6 +57,26 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     @Override
     public void addDescriptor(DescriptorNode[] nodes) {
         this.descriptors = nodes;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
     }
 
     /**

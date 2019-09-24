@@ -7,12 +7,14 @@ import org.jetbrains.annotations.NotNull;
  * The class representing a property definition.
  * @author Patrick Norton
  */
-public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class PropertyDefinitionNode implements DefinitionNode {
     private VariableNode name;
     private StatementBodyNode get;
     private TypedArgumentListNode set_args;
     private StatementBodyNode set;
     private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private NameNode[] annotations = new NameNode[0];
+    private NameNode[] decorators = new NameNode[0];
 
     /**
      * Create a new instance of Parser.PropertyDefinitionNode.
@@ -58,6 +60,26 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     @Override
     public StatementBodyNode getBody() {
         return get;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
     }
 
     /**

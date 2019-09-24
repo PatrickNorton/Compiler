@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see ClassDefinitionNode
  */
-public class InterfaceDefinitionNode implements ComplexStatementNode, ClassStatementNode, DecoratableNode, AnnotatableNode {
+public class InterfaceDefinitionNode implements DefinitionNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private InterfaceBodyNode body;
@@ -31,6 +31,7 @@ public class InterfaceDefinitionNode implements ComplexStatementNode, ClassState
         this.body = body;
     }
 
+    @Override
     public TypeNode getName() {
         return name;
     }

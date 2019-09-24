@@ -17,6 +17,9 @@ public class ContextDefinitionNode implements DefinitionNode {
     private StatementBodyNode exit;
     private ArgumentNode[] exitArgs;
     private ClassBodyNode others;
+    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private NameNode[] annotations = new NameNode[0];
+    private NameNode[] decorators = new NameNode[0];
 
     @Contract(pure = true)
     public ContextDefinitionNode(StatementBodyNode enter, StatementBodyNode exit) {
@@ -62,6 +65,36 @@ public class ContextDefinitionNode implements DefinitionNode {
 
     public ClassBodyNode getOthers() {
         return others;
+    }
+
+    @Override
+    public void addDescriptor(DescriptorNode[] nodes) {
+        this.descriptors = nodes;
+    }
+
+    @Override
+    public DescriptorNode[] getDescriptors() {
+        return descriptors;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
     }
 
     /**

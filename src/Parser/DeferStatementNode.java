@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class DeferStatementNode implements ComplexStatementNode {
+public class DeferStatementNode implements FlowStatementNode {
     private StatementBodyNode body;
 
     @Contract(pure = true)

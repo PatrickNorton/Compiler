@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  * @see DoStatementNode
  */
-public class WhileStatementNode implements ComplexStatementNode {
+public class WhileStatementNode implements FlowStatementNode {
     private TestNode cond;
     private StatementBodyNode body;
     private StatementBodyNode nobreak;

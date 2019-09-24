@@ -10,7 +10,7 @@ import java.util.StringJoiner;
  * The class representing a context statement.
  * @author Patrick Norton
  */
-public class WithStatementNode implements ComplexStatementNode {
+public class WithStatementNode implements FlowStatementNode {
     private TestNode[] managed;
     private VariableNode[] vars;
     private StatementBodyNode body;

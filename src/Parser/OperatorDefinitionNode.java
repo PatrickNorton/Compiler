@@ -7,12 +7,14 @@ import org.jetbrains.annotations.NotNull;
  * The class representing an operator definition.
  * @author Patrick Norton
  */
-public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class OperatorDefinitionNode implements DefinitionNode {
     private SpecialOpNameNode op_code;
     private TypeNode[] ret_type;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
     private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private NameNode[] annotations = new NameNode[0];
+    private NameNode[] decorators = new NameNode[0];
 
     /**
      * Construct a new instance of Parser.OperatorDefinitionNode.
@@ -60,6 +62,26 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     @Override
     public VariableNode getName() {
         return new VariableNode(op_code.getOperator().name);
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addDecorators(NameNode... decorators) {
+        this.decorators = decorators;
+    }
+
+    @Override
+    public NameNode[] getDecorators() {
+        return decorators;
     }
 
     /**

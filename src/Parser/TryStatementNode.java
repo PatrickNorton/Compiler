@@ -13,7 +13,7 @@ import java.util.StringJoiner;
  * </p>
  * @author Patrick Norton
  */
-public class TryStatementNode implements ComplexStatementNode {
+public class TryStatementNode implements FlowStatementNode {
     private StatementBodyNode body;
     private StatementBodyNode except;
     private DottedVariableNode[] excepted;
