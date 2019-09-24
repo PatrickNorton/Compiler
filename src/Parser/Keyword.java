@@ -52,6 +52,7 @@ public enum Keyword {
     ENUM("enum", EnumDefinitionNode::parse),
     DEFAULT("default", "Unexpected ", TokenPlace.RIGHT),
     GOTO("goto", "This language does not support goto, go use C++", TokenPlace.NONE),
+    DEFER("defer", DeferStatementNode::parse),
     ;
     public final String name;
     private final Function<TokenList, IndependentNode> parseLeft;
