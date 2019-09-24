@@ -27,6 +27,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         return new VariableNode("");
     }
 
+    @Override
     public boolean isEmpty() {
         return this.name.isEmpty();
     }

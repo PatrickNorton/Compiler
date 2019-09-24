@@ -11,7 +11,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  * @see TypedArgumentNode
  */
-public class TypedArgumentListNode implements BaseNode {
+public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     private TypedArgumentNode[] positionArgs;
     private TypedArgumentNode[] normalArgs;
     private TypedArgumentNode[] nameArgs;
@@ -44,6 +44,7 @@ public class TypedArgumentListNode implements BaseNode {
         return normalArgs[index];
     }
 
+    @Override
     public boolean isEmpty() {
         return positionArgs.length + nameArgs.length + normalArgs.length == 0;
     }

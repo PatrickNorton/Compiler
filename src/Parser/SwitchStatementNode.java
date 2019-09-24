@@ -7,10 +7,15 @@ import java.util.LinkedList;
 
 /**
  * The class representing a switch statement.
+ * <p>
+ *     This class does <u>not</u> implement FlowStatementNode, because
+ *     FlowStatementNode requires a getBody method, and switch statements,
+ *     due to their reliance on case statements, do not implement a body.
+ * </p>
  * @author Patrick Norton
  * @see CaseStatementNode
  */
-public class SwitchStatementNode implements StatementNode {
+public class SwitchStatementNode implements StatementNode, EmptiableNode {
     private TestNode switched;
     private CaseStatementNode[] cases;
     private DefaultStatementNode defaultStatement;
@@ -40,13 +45,18 @@ public class SwitchStatementNode implements StatementNode {
         return defaultStatement;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return cases.length == 0 && defaultStatement.isEmpty();
+    }
+
     /**
      * Parse a switch statement from a list of tokens.
      * <p>
      *     The syntax for a switch statement is: <code>"switch" "{" *{@link
-     *     CaseStatementNode} "}"</code>. The list of tokens passed must begin
-     *     with "switch", and all case statements must be of the same
-     *     fallthrough type.
+     *     CaseStatementNode} [{@link DefaultStatementNode}] "}"</code>. The
+     *     list of tokens passed must begin with "switch", and all case
+     *     statements must be of the same fallthrough type.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed Parser.SwitchStatementNode.
@@ -76,7 +86,7 @@ public class SwitchStatementNode implements StatementNode {
         if (tokens.tokenIs("default")) {
             if (cases.isEmpty()) {
                 defaultStatement = DefaultStatementNode.parse(tokens);
-                fallthrough = cases.getLast().hasFallthrough();
+                fallthrough = defaultStatement.hasFallthrough();
             } else {
                 defaultStatement = DefaultStatementNode.parse(tokens, fallthrough);
             }
@@ -93,6 +103,7 @@ public class SwitchStatementNode implements StatementNode {
 
     @Override
     public String toString() {
-        return "switch " + switched + (cases.length > 0 ? " {...}" : " {}");
+        return "switch " + switched + (!isEmpty() ? " {...}" : " {}");
     }
+
 }

@@ -50,6 +50,7 @@ public class DottedVariableNode implements NameNode {
         return postDots;
     }
 
+    @Override
     public boolean isEmpty() {
         return preDot.isEmpty();
     }

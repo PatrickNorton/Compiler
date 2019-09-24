@@ -11,11 +11,12 @@ import java.util.LinkedList;
  * statement.
  * @author Patrick Norton
  */
-public interface TestNode extends IndependentNode {
+public interface TestNode extends IndependentNode, EmptiableNode {
     /**
      * Whether or not the Parser.TestNode is empty.
      * @return if it is empty
      */
+    @Override
     default boolean isEmpty() {
         return false;
     }

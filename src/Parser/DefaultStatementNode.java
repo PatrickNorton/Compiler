@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class DefaultStatementNode implements BaseNode {
+public class DefaultStatementNode implements BaseNode, EmptiableNode {
     private StatementBodyNode body;
     private boolean fallthrough;
 
@@ -22,8 +22,13 @@ public class DefaultStatementNode implements BaseNode {
         return body;
     }
 
-    public boolean isFallthrough() {
+    public boolean hasFallthrough() {
         return fallthrough;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return body.isEmpty();
     }
 
     @NotNull

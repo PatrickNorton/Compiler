@@ -10,7 +10,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  * @see SwitchStatementNode
  */
-public class CaseStatementNode implements BaseNode {
+public class CaseStatementNode implements BaseNode, EmptiableNode {
     private AtomicNode[] label;
     private StatementBodyNode body;
     private boolean fallthrough;
@@ -32,6 +32,11 @@ public class CaseStatementNode implements BaseNode {
 
     public boolean hasFallthrough() {
         return fallthrough;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return body.isEmpty();
     }
 
     /**

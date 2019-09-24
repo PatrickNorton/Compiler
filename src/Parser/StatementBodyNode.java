@@ -21,6 +21,7 @@ public class StatementBodyNode implements BodyNode {
         return statements;
     }
 
+    @Override
     public boolean isEmpty() {
         return statements.length == 0;
     }
