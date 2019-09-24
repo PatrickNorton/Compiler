@@ -51,7 +51,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         return isGeneric(tokens, 0);
     }
 
-    static boolean isGeneric(TokenList tokens, int start) {
+    static boolean isGeneric(@NotNull TokenList tokens, int start) {
         assert tokens.tokenIs(start, "method");
         int endPtr = start + 1;
         assert tokens.tokenIs(endPtr, TokenType.NAME);
