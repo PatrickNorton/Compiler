@@ -17,10 +17,10 @@ import java.util.LinkedList;
 public class LiteralNode implements SubTestNode, PostDottableNode {
     private String brace_type;
     private TestNode[] builders;
-    private Boolean[] is_splats;
+    private boolean[] is_splats;
 
     @Contract(pure = true)
-    public LiteralNode(String brace_type, TestNode[] builders, Boolean[] is_splats) {
+    public LiteralNode(String brace_type, TestNode[] builders, boolean[] is_splats) {
         this.brace_type = brace_type;
         this.builders = builders;
         this.is_splats = is_splats;
@@ -34,7 +34,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         return builders;
     }
 
-    public Boolean[] getIs_splats() {
+    public boolean[] getIs_splats() {
         return is_splats;
     }
 
@@ -82,7 +82,11 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         } else {
             throw new ParserException("Unmatched braces");
         }
-        return new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new Boolean[0]));
+        boolean[] is_splat_array = new boolean[is_splat.size()];
+        for (int i = 0; i < is_splat.size(); i++) {
+            is_splat_array[i] = is_splat.get(i);
+        }
+        return new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat_array);
 
     }
 

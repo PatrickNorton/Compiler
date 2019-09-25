@@ -14,7 +14,7 @@ import java.util.StringJoiner;
  * @see AssignmentNode
  */
 public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode {
-    private Boolean is_colon;
+    private boolean is_colon;
     private TypedVariableNode[] assigned;
     private TestNode[] value;
     private DescriptorNode[] descriptors = new DescriptorNode[0];
@@ -26,13 +26,13 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      * @param value The values being assigned
      */
     @Contract(pure = true)
-    public DeclaredAssignmentNode(Boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
+    public DeclaredAssignmentNode(boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
         this.is_colon = is_colon;
         this.assigned = assigned;
         this.value = value;
     }
 
-    public Boolean getIs_colon() {
+    public boolean getIs_colon() {
         return is_colon;
     }
 

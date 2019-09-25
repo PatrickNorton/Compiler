@@ -25,7 +25,7 @@ public class AssignmentNode implements AssignStatementNode {
      * colon (= vs :=), the name(s) being assigned, and the value(s) to which
      * they are assigned
      */
-    private Boolean is_colon;
+    private boolean is_colon;
     private AssignableNode[] name;
     private TestNode[] value;
 
@@ -37,13 +37,13 @@ public class AssignmentNode implements AssignStatementNode {
      * @param value The values to which they are assigned
      */
     @Contract(pure = true)
-    public AssignmentNode(Boolean is_colon, AssignableNode[] name, TestNode[] value) {
+    public AssignmentNode(boolean is_colon, AssignableNode[] name, TestNode[] value) {
         this.is_colon = is_colon;
         this.name = name;
         this.value = value;
     }
 
-    public Boolean getIs_colon() {
+    public boolean getIs_colon() {
         return is_colon;
     }
 

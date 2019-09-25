@@ -12,7 +12,7 @@ public class TypedArgumentNode implements BaseNode {
     private TypeNode type;
     private VariableNode name;
     private TestNode defaultval;
-    private Boolean is_vararg;
+    private boolean is_vararg;
     private String vararg_type;
 
     /**
@@ -24,7 +24,7 @@ public class TypedArgumentNode implements BaseNode {
      * @param vararg_type The type of the vararg, if it exists
      */
     @Contract(pure = true)
-    public TypedArgumentNode(TypeNode type, VariableNode name, TestNode defaultval, Boolean is_vararg, String vararg_type) {
+    public TypedArgumentNode(TypeNode type, VariableNode name, TestNode defaultval, boolean is_vararg, String vararg_type) {
         this.type = type;
         this.name = name;
         this.defaultval = defaultval;
@@ -44,7 +44,7 @@ public class TypedArgumentNode implements BaseNode {
         return defaultval;
     }
 
-    public Boolean getIs_vararg() {
+    public boolean getIs_vararg() {
         return is_vararg;
     }
 
