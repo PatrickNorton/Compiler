@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedList;
 import java.util.StringJoiner;
 
 /**
@@ -48,14 +49,22 @@ public class ReturnStatementNode implements SimpleFlowNode {
     static ReturnStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("return");
         tokens.nextToken();
-        boolean is_conditional = false;
-        if (tokens.tokenIs("(") && tokens.tokenIs(tokens.sizeOfBrace(0),"if")
-                && !tokens.lineContains("else")) {
-            is_conditional = true;
-        }
+        boolean is_conditional = tokens.lineContains("if") && !tokens.lineContains("else");
         TestNode[] returned;
         if (is_conditional && !tokens.tokenIs("if")) {
-            returned = LiteralNode.parse(tokens).getBuilders();
+            LinkedList<TestNode> returned_list = new LinkedList<>();
+            do {
+                returned_list.add(TestNode.parseNoTernary(tokens, false));
+                if (!tokens.tokenIs(TokenType.COMMA)) {
+                    if (!tokens.tokenIs("if")) {
+                        throw new ParserException("Unexpected " + tokens.getFirst());
+                    } else {
+                        break;
+                    }
+                }
+                tokens.nextToken();
+            } while (!tokens.tokenIs("if"));
+            returned = returned_list.toArray(new TestNode[0]);
         } else if (!tokens.tokenIs(TokenType.NEWLINE)) {
             returned = TestNode.parseList(tokens, false);
         } else {

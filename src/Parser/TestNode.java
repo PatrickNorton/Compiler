@@ -85,7 +85,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed Parser.TestNode
      */
     @NotNull
-    private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
+    static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
         TestNode node;
         switch (tokens.getFirst().token) {
             case NAME:
