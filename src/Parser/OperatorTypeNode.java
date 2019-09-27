@@ -170,6 +170,9 @@ public enum OperatorTypeNode implements AtomicNode {
      * @return The actual operator enum
      */
     static OperatorTypeNode findOp(@NotNull String name) {
+        if (name.contains(" ")) {
+            name = name.replaceAll(" +", " ");
+        }
         if (values.containsKey(name)) {
             return values.get(name);
         } else {
