@@ -49,14 +49,14 @@ public class WithStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static WithStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("with");
+        assert tokens.tokenIs(Keyword.WITH);
         tokens.nextToken();
         LinkedList<TestNode> managed = new LinkedList<>();
-        while (!tokens.tokenIs("as")) {
+        while (!tokens.tokenIs(Keyword.AS)) {
             managed.add(TestNode.parse(tokens));
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken();
-            } else if (!tokens.tokenIs("as")) {
+            } else if (!tokens.tokenIs(Keyword.AS)) {
                 throw new ParserException("Expected comma or as, got "+tokens.getFirst());
             }
         }

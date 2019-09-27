@@ -33,7 +33,7 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
 
     @NotNull
     public static DefaultStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("default");
+        assert tokens.tokenIs(Keyword.DEFAULT);
         tokens.nextToken();
         return parse(tokens, tokens.tokenIs(1, TokenType.COLON));
     }
@@ -41,7 +41,7 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
     @NotNull
     @Contract("_, _ -> new")
     public static DefaultStatementNode parse(@NotNull TokenList tokens, boolean fallthrough) {
-        assert tokens.tokenIs("default");
+        assert tokens.tokenIs(Keyword.DEFAULT);
         tokens.nextToken();
         StatementBodyNode body;
         if (fallthrough) {

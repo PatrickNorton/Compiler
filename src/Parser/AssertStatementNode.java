@@ -39,7 +39,7 @@ public class AssertStatementNode implements SimpleStatementNode {
     @NotNull
     @Contract("_ -> new")
     static AssertStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("assert");
+        assert tokens.tokenIs(Keyword.ASSERT);
         tokens.nextToken();
         TestNode assertion = TestNode.parse(tokens);
         return new AssertStatementNode(assertion);

@@ -48,7 +48,7 @@ public class BreakStatementNode implements SimpleFlowNode {
     @NotNull
     @Contract("_ -> new")
     static BreakStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("break");
+        assert tokens.tokenIs(Keyword.BREAK);
         tokens.nextToken();
         int loops;
         if (tokens.tokenIs(TokenType.NUMBER)) {
@@ -60,7 +60,7 @@ public class BreakStatementNode implements SimpleFlowNode {
             throw new ParserException("Break statement must not be followed by anything");
         }
         TestNode cond = TestNode.empty();
-        if (tokens.tokenIs("if")) {
+        if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }

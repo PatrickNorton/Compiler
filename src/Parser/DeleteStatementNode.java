@@ -32,7 +32,7 @@ public class DeleteStatementNode implements SimpleStatementNode {
     @NotNull
     @Contract("_ -> new")
     static DeleteStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("del");
+        assert tokens.tokenIs(Keyword.DEL);
         tokens.nextToken();
         TestNode deletion = TestNode.parse(tokens);
         return new DeleteStatementNode(deletion);

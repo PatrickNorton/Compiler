@@ -59,10 +59,10 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @NotNull
     static TestNode parse(@NotNull TokenList tokens, boolean ignore_newline) {
         TestNode if_true = parseNoTernary(tokens, ignore_newline);
-        if (tokens.tokenIs("if")) {
+        if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken(ignore_newline);
             TestNode statement = parseNoTernary(tokens, ignore_newline);
-            if (!tokens.tokenIs("else")) {
+            if (!tokens.tokenIs(Keyword.ELSE)) {
                 throw new ParserException("Ternary must have an else");
             }
             tokens.nextToken(ignore_newline);
@@ -107,10 +107,10 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 node = StringNode.parse(tokens);
                 break;
             case KEYWORD:
-                if (tokens.tokenIs("lambda")) {
+                if (tokens.tokenIs(Keyword.LAMBDA)) {
                     node = LambdaNode.parse(tokens);
                     break;
-                } else if (tokens.tokenIs("some")) {
+                } else if (tokens.tokenIs(Keyword.SOME)) {
                     node = SomeStatementNode.parse(tokens);
                     break;
                 }
@@ -183,11 +183,11 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     case CLOSE_BRACE:
                         break while_loop;
                     case KEYWORD:
-                        if (tokens.tokenIs("in", "casted")) {
+                        if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
                             nodes.add(OperatorNode.empty(tokens));
                             tokens.nextToken();
                             break;
-                        } else if (tokens.tokenIs("if", "else", "for")) {
+                        } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
                             break while_loop;
                         }  // Lack of breaks here is intentional
                     default:
@@ -305,7 +305,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         TestNode stmt;
         if (tokens.tokenIs("(")) {
-            if (tokens.braceContains("for")) {
+            if (tokens.braceContains(Keyword.FOR)) {
                 stmt = ComprehensionNode.parse(tokens);
             } else if (tokens.braceContains(",")) {
                 stmt = LiteralNode.parse(tokens);
@@ -322,13 +322,13 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 stmt = new FunctionCallNode(stmt, ArgumentNode.parseList(tokens));
             }
         } else if (tokens.tokenIs("[")) {
-            if (tokens.braceContains("for")) {
+            if (tokens.braceContains(Keyword.FOR)) {
                 stmt = ComprehensionNode.parse(tokens);
             } else {
                 stmt = LiteralNode.parse(tokens);
             }
         } else if (tokens.tokenIs("{")) {
-            if (tokens.braceContains("for")) {
+            if (tokens.braceContains(Keyword.FOR)) {
                 stmt = tokens.braceContains(":") ? DictComprehensionNode.parse(tokens) : ComprehensionNode.parse(tokens);
             } else if (tokens.braceContains(":")) {
                 stmt = DictLiteralNode.parse(tokens);

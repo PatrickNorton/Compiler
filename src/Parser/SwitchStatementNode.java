@@ -64,7 +64,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode {
     @NotNull
     @Contract("_ -> new")
     public static SwitchStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("switch");
+        assert tokens.tokenIs(Keyword.SWITCH);
         tokens.nextToken();
         TestNode switched = TestNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
@@ -73,7 +73,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode {
         tokens.nextToken(true);
         boolean fallthrough = false;
         LinkedList<CaseStatementNode> cases = new LinkedList<>();
-        while (tokens.tokenIs("case")) {
+        while (tokens.tokenIs(Keyword.CASE)) {
             if (cases.isEmpty()) {
                 cases.add(CaseStatementNode.parse(tokens));
                 fallthrough = cases.getLast().hasFallthrough();
@@ -83,7 +83,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode {
             tokens.passNewlines();
         }
         DefaultStatementNode defaultStatement;
-        if (tokens.tokenIs("default")) {
+        if (tokens.tokenIs(Keyword.DEFAULT)) {
             if (cases.isEmpty()) {
                 defaultStatement = DefaultStatementNode.parse(tokens);
                 fallthrough = defaultStatement.hasFallthrough();

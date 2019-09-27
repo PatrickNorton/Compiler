@@ -85,7 +85,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
     @NotNull
     @Contract("_ -> new")
     static FunctionDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("func");
+        assert tokens.tokenIs(Keyword.FUNC);
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);

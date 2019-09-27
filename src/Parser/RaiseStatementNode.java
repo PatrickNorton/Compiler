@@ -35,7 +35,7 @@ public class RaiseStatementNode implements SimpleStatementNode {
     @NotNull
     @Contract("_ -> new")
     static RaiseStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("raise");
+        assert tokens.tokenIs(Keyword.RAISE);
         tokens.nextToken();
         TestNode raised = TestNode.parse(tokens);
         return new RaiseStatementNode(raised);

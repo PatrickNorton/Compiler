@@ -62,10 +62,10 @@ public class ForStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static ForStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("for");
+        assert tokens.tokenIs(Keyword.FOR);
         tokens.nextToken();
         TypedVariableNode[] vars = TypedVariableNode.parseForVars(tokens);
-        if (!tokens.tokenIs("in")) {
+        if (!tokens.tokenIs(Keyword.IN)) {
             throw new ParserException("Expected in, got "+tokens.getFirst());
         }
         tokens.nextToken();

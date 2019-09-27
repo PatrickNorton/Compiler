@@ -52,8 +52,8 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
     @NotNull
     @Contract("_ -> new")
     public static CaseStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("case", "default");
-        if (tokens.tokenIs("default")) {
+        assert tokens.tokenIs(Keyword.CASE, Keyword.DEFAULT);
+        if (tokens.tokenIs(Keyword.DEFAULT)) {
             return parse(tokens, tokens.tokenIs(1, ":"));
         } else if (tokens.tokenIs(1, TokenType.NAME)) {
             return parse(tokens, tokens.tokenIs(tokens.sizeOfVariable(1), ":"));
@@ -79,7 +79,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
     @NotNull
     @Contract("_, _ -> new")
     public static CaseStatementNode parse(@NotNull TokenList tokens, boolean fallthrough) {
-        assert tokens.tokenIs("case");
+        assert tokens.tokenIs(Keyword.CASE);
         tokens.nextToken();
         AtomicNode[] label = fallthrough ? new AtomicNode[]{AtomicNode.parseLabel(tokens)} : AtomicNode.parseLabelList(tokens);
         StatementBodyNode body;

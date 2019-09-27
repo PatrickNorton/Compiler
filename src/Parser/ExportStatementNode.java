@@ -39,7 +39,7 @@ public class ExportStatementNode implements ImportExportNode {
     @NotNull
     @Contract("_ -> new")
     static ExportStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("export");
+        assert tokens.tokenIs(Keyword.EXPORT);
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw new ParserException("Empty export statements are illegal");

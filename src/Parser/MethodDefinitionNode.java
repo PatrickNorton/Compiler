@@ -94,7 +94,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     @NotNull
     @Contract("_ -> new")
     static MethodDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("method");
+        assert tokens.tokenIs(Keyword.METHOD);
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);

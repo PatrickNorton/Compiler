@@ -47,23 +47,23 @@ public class ReturnStatementNode implements SimpleFlowNode {
     @NotNull
     @Contract("_ -> new")
     static ReturnStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("return");
+        assert tokens.tokenIs(Keyword.RETURN);
         tokens.nextToken();
-        boolean is_conditional = tokens.lineContains("if") && !tokens.lineContains("else");
+        boolean is_conditional = tokens.lineContains(Keyword.IF) && !tokens.lineContains(Keyword.ELSE);
         TestNode[] returned;
-        if (is_conditional && !tokens.tokenIs("if")) {
+        if (is_conditional && !tokens.tokenIs(Keyword.IF)) {
             LinkedList<TestNode> returned_list = new LinkedList<>();
             do {
                 returned_list.add(TestNode.parseNoTernary(tokens, false));
                 if (!tokens.tokenIs(TokenType.COMMA)) {
-                    if (!tokens.tokenIs("if")) {
+                    if (!tokens.tokenIs(Keyword.IF)) {
                         throw new ParserException("Unexpected " + tokens.getFirst());
                     } else {
                         break;
                     }
                 }
                 tokens.nextToken();
-            } while (!tokens.tokenIs("if"));
+            } while (!tokens.tokenIs(Keyword.IF));
             returned = returned_list.toArray(new TestNode[0]);
         } else if (!tokens.tokenIs(TokenType.NEWLINE)) {
             returned = TestNode.parseList(tokens, false);
@@ -72,7 +72,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         }
         TestNode cond = TestNode.empty();
         if (is_conditional) {
-            assert tokens.tokenIs("if");
+            assert tokens.tokenIs(Keyword.IF);
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }

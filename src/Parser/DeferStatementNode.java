@@ -19,7 +19,7 @@ public class DeferStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     public static DeferStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("defer");
+        assert tokens.tokenIs(Keyword.DEFER);
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new DeferStatementNode(body);

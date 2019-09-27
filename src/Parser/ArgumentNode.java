@@ -90,7 +90,7 @@ public class ArgumentNode implements BaseNode {
             tokens.nextToken();
             return new ArgumentNode[0];
         }
-        if (tokens.braceContains("for")) {
+        if (tokens.braceContains(Keyword.FOR)) {
             return new ArgumentNode[] {new ArgumentNode(ComprehensionNode.parse(tokens))};
         }
         LinkedList<ArgumentNode> args = new LinkedList<>();

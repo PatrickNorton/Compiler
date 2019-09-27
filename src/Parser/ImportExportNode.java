@@ -20,15 +20,18 @@ public interface ImportExportNode extends SimpleStatementNode {
     @Contract("_ -> new")
     @NotNull
     static ImportExportNode parse(@NotNull TokenList tokens) {
-        if (tokens.tokenIs("from")) {
+        if (tokens.tokenIs(Keyword.FROM)) {
             return parseFrom(tokens);
         } else {
-            switch (tokens.getFirst().sequence) {
-                case "import":
+            if (!tokens.tokenIs(TokenType.KEYWORD)) {
+                throw new ParserException("Unexpected " + tokens.getFirst());
+            }
+            switch (Keyword.find(tokens.getFirst().sequence)) {
+                case IMPORT:
                     return ImportStatementNode.parse(tokens);
-                case "export":
+                case EXPORT:
                     return ExportStatementNode.parse(tokens);
-                case "typeget":
+                case TYPEGET:
                     return TypegetStatementNode.parse(tokens);
                 default:
                     throw new RuntimeException("Unknown Parser.ImportExportNode");
@@ -38,12 +41,12 @@ public interface ImportExportNode extends SimpleStatementNode {
 
     @NotNull
     private static ImportExportNode parseFrom(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("from");
-        if (tokens.lineContains("import")) {
+        assert tokens.tokenIs(Keyword.FROM);
+        if (tokens.lineContains(Keyword.IMPORT)) {
             return ImportStatementNode.parse(tokens);
-        } else if (tokens.lineContains("export")) {
+        } else if (tokens.lineContains(Keyword.EXPORT)) {
             return ExportStatementNode.parse(tokens);
-        } else if (tokens.lineContains("typeget")) {
+        } else if (tokens.lineContains(Keyword.TYPEGET)) {
             return TypegetStatementNode.parse(tokens);
         } else {
             throw new ParserException("from does not begin a statement");

@@ -26,7 +26,7 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
         if (tokens.tokenIs(TokenType.OPERATOR_SP) && GenericOperatorNode.isGeneric(tokens)) {
             return GenericOperatorNode.parse(tokens);
         }
-        if (tokens.tokenIs("method") && GenericFunctionNode.isGeneric(tokens)) {
+        if (tokens.tokenIs(Keyword.METHOD) && GenericFunctionNode.isGeneric(tokens)) {
             return GenericFunctionNode.parse(tokens);
         }
         if (tokens.tokenIs(TokenType.DESCRIPTOR) && GenericDefinitionNode.isGeneric(tokens)) {
@@ -36,7 +36,7 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
                 op = GenericOperatorNode.parse(tokens);
                 op.addDescriptor(descriptors);
                 return op;
-            } else if (tokens.tokenIs("method")) {
+            } else if (tokens.tokenIs(Keyword.METHOD)) {
                 op = GenericFunctionNode.parse(tokens);
                 op.addDescriptor(descriptors);
                 return op;

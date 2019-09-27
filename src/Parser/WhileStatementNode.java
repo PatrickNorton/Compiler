@@ -47,7 +47,7 @@ public class WhileStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static WhileStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("while");
+        assert tokens.tokenIs(Keyword.WHILE);
         tokens.nextToken();
         TestNode cond = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);

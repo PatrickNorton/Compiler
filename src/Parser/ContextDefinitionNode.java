@@ -112,7 +112,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
     @NotNull
     @Contract("_ -> new")
     static ContextDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("context");
+        assert tokens.tokenIs(Keyword.CONTEXT);
         tokens.nextToken();
         VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
@@ -125,14 +125,14 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
         ArgumentNode[] exitArgs = new ArgumentNode[0];
         LinkedList<ClassStatementNode> others = new LinkedList<>();
         while (!tokens.tokenIs("}")) {
-            if (tokens.tokenIs("enter")) {
+            if (tokens.tokenIs(Keyword.ENTER)) {
                 tokens.nextToken();
                 if (enter.isEmpty()) {
                     enter = StatementBodyNode.parse(tokens);
                 } else {
                     throw new ParserException("Cannot have multiple definitions of enter");
                 }
-            } else if (tokens.tokenIs("exit")) {
+            } else if (tokens.tokenIs(Keyword.EXIT)) {
                 tokens.nextToken();
                 if (tokens.tokenIs("(")) {
                     exitArgs = ArgumentNode.parseList(tokens);

@@ -19,10 +19,10 @@ public class ContinueStatementNode implements SimpleFlowNode {
     @NotNull
     @Contract("_ -> new")
     static ContinueStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("continue");
+        assert tokens.tokenIs(Keyword.CONTINUE);
         tokens.nextToken();
         TestNode cond = TestNode.empty();
-        if (tokens.tokenIs("if")) {
+        if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }

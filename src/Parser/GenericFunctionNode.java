@@ -52,7 +52,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     }
 
     static boolean isGeneric(@NotNull TokenList tokens, int start) {
-        assert tokens.tokenIs(start, "method");
+        assert tokens.tokenIs(start, Keyword.METHOD);
         int endPtr = start + 1;
         assert tokens.tokenIs(endPtr, TokenType.NAME);
         // NOTE: sizeOfVariable also consumes the open-paren in the argument list,
@@ -67,7 +67,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     @NotNull
     @Contract("_ -> new")
     public static GenericFunctionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("method");
+        assert tokens.tokenIs(Keyword.METHOD);
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);

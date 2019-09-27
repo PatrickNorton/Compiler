@@ -8,14 +8,14 @@ public interface GenericDefinitionNode extends InterfaceStatementNode {
             int descriptorSize = DescriptorNode.count(tokens);
             if (tokens.tokenIs(descriptorSize, TokenType.OPERATOR_SP)) {
                 return GenericOperatorNode.isGeneric(tokens, descriptorSize);
-            } else if (tokens.tokenIs(descriptorSize, "method")) {
+            } else if (tokens.tokenIs(descriptorSize, Keyword.METHOD)) {
                 return GenericFunctionNode.isGeneric(tokens, descriptorSize);
             } else {
                 return false;
             }
         } else if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
             return GenericOperatorNode.isGeneric(tokens);
-        } else if (tokens.tokenIs("method")) {
+        } else if (tokens.tokenIs(Keyword.METHOD)) {
             return GenericFunctionNode.isGeneric(tokens);
         } else {
             throw new RuntimeException("Invalid sent value to isGeneric");

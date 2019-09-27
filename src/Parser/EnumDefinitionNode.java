@@ -67,7 +67,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     @NotNull
     @Contract("_ -> new")
     public static EnumDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("enum");
+        assert tokens.tokenIs(Keyword.ENUM);
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         if (!tokens.tokenIs("{")) {

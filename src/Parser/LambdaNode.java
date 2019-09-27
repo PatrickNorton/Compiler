@@ -42,7 +42,7 @@ public class LambdaNode implements SubTestNode {
     @NotNull
     @Contract("_ -> new")
     static LambdaNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("lambda");
+        assert tokens.tokenIs(Keyword.LAMBDA);
         tokens.nextToken();
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);

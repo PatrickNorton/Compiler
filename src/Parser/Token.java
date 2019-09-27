@@ -51,6 +51,18 @@ public class Token {
         return false;
     }
 
+    public boolean is(@NotNull Keyword... tokens) {
+        if (this.is(TokenType.KEYWORD)) {
+            Keyword keyword = Keyword.find(this.sequence);
+            for (Keyword k : tokens) {
+                if (keyword == k) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     @Contract(value = " -> new", pure = true)
     public static Token Epsilon() {

@@ -43,7 +43,7 @@ public class SomeStatementNode implements SubTestNode {
     @NotNull
     @Contract("_ -> new")
     static SomeStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("some");
+        assert tokens.tokenIs(Keyword.SOME);
         tokens.nextToken();
         TestNode contained = TestNode.parse(tokens);
         if (!(contained instanceof OperatorNode)) {

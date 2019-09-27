@@ -63,17 +63,17 @@ public class ImportStatementNode implements ImportExportNode {
     @Contract("_ -> new")
     static ImportStatementNode parse(@NotNull TokenList tokens) {
         DottedVariableNode from = DottedVariableNode.empty();
-        if (tokens.tokenIs("from")) {
+        if (tokens.tokenIs(Keyword.FROM)) {
             tokens.nextToken();
             from = DottedVariableNode.parseNamesOnly(tokens);
         }
-        assert tokens.tokenIs("import");
+        assert tokens.tokenIs(Keyword.IMPORT);
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw new ParserException("Empty import statements are illegal");
         }
         DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
-        if (tokens.tokenIs("as")) {
+        if (tokens.tokenIs(Keyword.AS)) {
             DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
             return new ImportStatementNode(imports, from, as);
         }

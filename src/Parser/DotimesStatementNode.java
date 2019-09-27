@@ -56,7 +56,7 @@ public class DotimesStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static DotimesStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("dotimes");
+        assert tokens.tokenIs(Keyword.DOTIMES);
         tokens.nextToken();
         TestNode iterations = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);

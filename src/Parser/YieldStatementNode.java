@@ -41,9 +41,9 @@ public class YieldStatementNode implements SimpleStatementNode {
     @NotNull
     @Contract("_ -> new")
     static YieldStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("yield");
+        assert tokens.tokenIs(Keyword.YIELD);
         tokens.nextToken();
-        boolean is_from = tokens.tokenIs("from");
+        boolean is_from = tokens.tokenIs(Keyword.FROM);
         if (is_from) {
             tokens.nextToken();
         }

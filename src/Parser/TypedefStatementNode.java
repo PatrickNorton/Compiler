@@ -43,10 +43,10 @@ public class TypedefStatementNode implements SimpleStatementNode {
     @NotNull
     @Contract("_ -> new")
     static TypedefStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("typedef");
+        assert tokens.tokenIs(Keyword.TYPEDEF);
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
-        assert tokens.tokenIs("as");
+        assert tokens.tokenIs(Keyword.AS);
         tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
         return new TypedefStatementNode(name, type);

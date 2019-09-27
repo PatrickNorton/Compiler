@@ -147,7 +147,7 @@ public class DottedVariableNode implements NameNode {
         if (ignore_newlines) {
             tokens.passNewlines();
         }
-        if (tokens.tokenIs("(") && !tokens.braceContains("in", "for")) {
+        if (tokens.tokenIs("(") && !tokens.braceContains(Keyword.IN, Keyword.FOR)) {
             tokens.nextToken();
             DottedVariableNode[] vars = parseList(tokens, true);
             if (!tokens.tokenIs(")")) {

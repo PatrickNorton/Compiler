@@ -78,12 +78,12 @@ public class DictComprehensionNode implements SubTestNode {
         }
         tokens.nextToken(true);
         TestNode val = TestNode.parse(tokens, true);
-        if (!tokens.tokenIs("for")) {
+        if (!tokens.tokenIs(Keyword.FOR)) {
             throw new ParserException("Expected for, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
         TypedVariableNode[] vars = TypedVariableNode.parseList(tokens);
-        if (!tokens.tokenIs("in")) {
+        if (!tokens.tokenIs(Keyword.IN)) {
             throw new ParserException("Expected in, got "+tokens.getFirst());
         }
         tokens.nextToken(true);

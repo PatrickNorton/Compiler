@@ -49,10 +49,10 @@ public class DoStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static DoStatementNode parse(TokenList tokens) {
-        assert tokens.tokenIs("do");
+        assert tokens.tokenIs(Keyword.DO);
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        if (!tokens.tokenIs("while")) {
+        if (!tokens.tokenIs(Keyword.WHILE)) {
             throw new ParserException("Do statements must have a corresponding while");
         }
         TestNode conditional = TestNode.parse(tokens);

@@ -54,17 +54,17 @@ public class TypegetStatementNode implements ImportExportNode {
     @Contract("_ -> new")
     static TypegetStatementNode parse(@NotNull TokenList tokens) {
         DottedVariableNode from = DottedVariableNode.empty();
-        if (tokens.tokenIs("from")) {
+        if (tokens.tokenIs(Keyword.FROM)) {
             tokens.nextToken();
             from = DottedVariableNode.parseName(tokens);
         }
-        assert tokens.tokenIs("typeget");
+        assert tokens.tokenIs(Keyword.TYPEGET);
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw new ParserException("Empty typeget statements are illegal");
         }
         DottedVariableNode[] typegets = DottedVariableNode.parseList(tokens, false);
-        if (tokens.tokenIs("as")) {
+        if (tokens.tokenIs(Keyword.AS)) {
             tokens.nextToken();
             DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
             return new TypegetStatementNode(typegets, from, as);

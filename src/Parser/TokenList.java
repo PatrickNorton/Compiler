@@ -100,6 +100,20 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
+     * Test if a line contains a certain type of token.
+     * @param question The questions to test if the line contains
+     * @return If the line contains that token
+     */
+    boolean lineContains(Keyword... question) {
+        for (Token token : this.lineIterator()) {
+            if (token.is(question)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Create an iterable for a line of the code.
      * @return The iterable for the line
      */
@@ -199,6 +213,20 @@ public final class TokenList implements Iterable<Token> {
      * @return Whether or not that token is contained in the brace
      */
     boolean braceContains(String... question) {
+        for (Token token : firstLevel()) {
+            if (token.is(question)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check whether or not the open brace contains a token of a certain type.
+     * @param question The token types to test for
+     * @return Whether or not that token is contained in the brace
+     */
+    boolean braceContains(Keyword... question) {
         for (Token token : firstLevel()) {
             if (token.is(question)) {
                 return true;
@@ -382,6 +410,25 @@ public final class TokenList implements Iterable<Token> {
      */
     public boolean tokenIs(TokenType type1, String type2) {
         return getFirst().is(type1) || getFirst().is(type2);
+    }
+
+    /**
+     * Check if the token is a keyword of a certain type.
+     * @param types The keyword types to test
+     * @return Whether the token is of that type
+     */
+    public boolean tokenIs(Keyword... types) {
+        return getFirst().is(types);
+    }
+
+    /**
+     * Check if the token is a keyword of a certain type.
+     * @param index The index of the keyword to check
+     * @param types The keyword types to test
+     * @return Whether the token is of that type
+     */
+    public boolean tokenIs(int index, Keyword... types) {
+        return getToken(index).is(types);
     }
 
     /**

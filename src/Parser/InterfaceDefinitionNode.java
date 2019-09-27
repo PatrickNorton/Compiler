@@ -90,11 +90,11 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     @NotNull
     @Contract("_ -> new")
     static InterfaceDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("interface");
+        assert tokens.tokenIs(Keyword.INTERFACE);
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         LinkedList<TypeNode> superclasses = new LinkedList<>();
-        if (tokens.tokenIs("from")) {
+        if (tokens.tokenIs(Keyword.FROM)) {
             tokens.nextToken();
             while (!tokens.tokenIs("{")) {
                 superclasses.add(TypeNode.parse(tokens));

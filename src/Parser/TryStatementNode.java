@@ -73,7 +73,7 @@ public class TryStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static TryStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("try");
+        assert tokens.tokenIs(Keyword.TRY);
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
@@ -81,20 +81,20 @@ public class TryStatementNode implements FlowStatementNode {
         VariableNode as_var = VariableNode.empty();
         StatementBodyNode else_stmt = new StatementBodyNode();
         StatementBodyNode finally_stmt = new StatementBodyNode();
-        if (tokens.tokenIs("except")) {
+        if (tokens.tokenIs(Keyword.EXCEPT)) {
             tokens.nextToken();
             excepted = DottedVariableNode.parseList(tokens,  false);
-            if (tokens.tokenIs("as")) {
+            if (tokens.tokenIs(Keyword.AS)) {
                 tokens.nextToken();
                 as_var = VariableNode.parse(tokens);
             }
             except = StatementBodyNode.parse(tokens);
-            if (tokens.tokenIs("else")) {
+            if (tokens.tokenIs(Keyword.ELSE)) {
                 tokens.nextToken();
                 else_stmt = StatementBodyNode.parse(tokens);
             }
         }
-        if (tokens.tokenIs("finally")) {
+        if (tokens.tokenIs(Keyword.FINALLY)) {
             tokens.nextToken();
             finally_stmt = StatementBodyNode.parse(tokens);
         }

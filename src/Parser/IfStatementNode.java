@@ -62,12 +62,12 @@ public class IfStatementNode implements FlowStatementNode {
     @NotNull
     @Contract("_ -> new")
     static IfStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("if");
+        assert tokens.tokenIs(Keyword.IF);
         tokens.nextToken();
         TestNode test = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         LinkedList<ElifStatementNode> elifs = new LinkedList<>();
-        while (tokens.tokenIs("elif")) {
+        while (tokens.tokenIs(Keyword.ELIF)) {
             tokens.nextToken();
             TestNode elif_test = TestNode.parse(tokens);
             StatementBodyNode elif_body = StatementBodyNode.parse(tokens);

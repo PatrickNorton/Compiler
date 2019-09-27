@@ -92,14 +92,14 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     @NotNull
     @Contract("_ -> new")
     static ClassDefinitionNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("class");
+        assert tokens.tokenIs(Keyword.CLASS);
         tokens.nextToken();
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw new ParserException("class keyword must be followed by class name");
         }
         TypeNode name = TypeNode.parse(tokens);
         LinkedList<TypeNode> superclasses = new LinkedList<>();
-        while (tokens.tokenIs("from")) {
+        while (tokens.tokenIs(Keyword.FROM)) {
             tokens.nextToken();
             superclasses.add(TypeNode.parse(tokens));
         }

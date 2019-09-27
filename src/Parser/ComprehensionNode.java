@@ -71,12 +71,12 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
         String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
         TestNode builder = TestNode.parse(tokens, true);
-        if (!tokens.tokenIs("for")) {
+        if (!tokens.tokenIs(Keyword.FOR)) {
             throw new ParserException("Invalid start to comprehension");
         }
         tokens.nextToken(true);
         TypedVariableNode[] variables = TypedVariableNode.parseList(tokens);
-        if (!tokens.tokenIs("in")) {
+        if (!tokens.tokenIs(Keyword.IN)) {
             throw new ParserException("Comprehension body must have in after variable list");
         }
         tokens.nextToken(true);

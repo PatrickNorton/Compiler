@@ -104,10 +104,10 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         StatementBodyNode get = new StatementBodyNode();
         StatementBodyNode set = new StatementBodyNode();
         TypedArgumentListNode set_args = new TypedArgumentListNode();
-        if (tokens.tokenIs("get")) {
+        if (tokens.tokenIs(Keyword.GET)) {
             get = StatementBodyNode.parse(tokens);
         }
-        if (tokens.tokenIs("set")) {
+        if (tokens.tokenIs(Keyword.SET)) {
             set_args = TypedArgumentListNode.parse(tokens);
             set = StatementBodyNode.parse(tokens);
         }
