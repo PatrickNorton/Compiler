@@ -52,10 +52,8 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
     @NotNull
     @Contract("_ -> new")
     public static CaseStatementNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(Keyword.CASE, Keyword.DEFAULT);
-        if (tokens.tokenIs(Keyword.DEFAULT)) {
-            return parse(tokens, tokens.tokenIs(1, ":"));
-        } else if (tokens.tokenIs(1, TokenType.NAME)) {
+        assert tokens.tokenIs(Keyword.CASE);
+        if (tokens.tokenIs(1, TokenType.NAME)) {
             return parse(tokens, tokens.tokenIs(tokens.sizeOfVariable(1), ":"));
         } else {
             return parse(tokens, tokens.tokenIs(2, ":"));
