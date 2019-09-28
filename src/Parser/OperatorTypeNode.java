@@ -77,30 +77,34 @@ public enum OperatorTypeNode implements AtomicNode {
     /**
      * The different usage types for the operator.
      */
-    public enum Use {
-        UNARY(1),
-        REVERSE(1 << 1),
-        OPERATOR_SP(1 << 2),
-        OP_FUNC(1 << 3),
-        STANDARD(1 << 4),
-        AUG_ASSIGN(1 << 5),
-        TYPICAL(OPERATOR_SP.value | OP_FUNC.value | STANDARD.value | AUG_ASSIGN.value),
-        COMPARISON(OPERATOR_SP.value | OP_FUNC.value | STANDARD.value),
-        R_TYPICAL(OPERATOR_SP.value | REVERSE.value),
-        R_COMPARISON(OPERATOR_SP.value | REVERSE.value),
-        U_TYPICAL(TYPICAL.value | UNARY.value),
-        BOOLEAN(OP_FUNC.value | STANDARD.value),
+    private enum Use {
+        UNARY,
+        REVERSE,
+        OPERATOR_SP,
+        OP_FUNC,
+        STANDARD,
+        AUG_ASSIGN,
+        TYPICAL(OPERATOR_SP, OP_FUNC, STANDARD, AUG_ASSIGN),
+        COMPARISON(OPERATOR_SP, OP_FUNC, STANDARD),
+        R_TYPICAL(OPERATOR_SP, REVERSE),
+        R_COMPARISON(OPERATOR_SP, REVERSE),
+        U_TYPICAL(TYPICAL, UNARY),
+        BOOLEAN(OP_FUNC, STANDARD),
         ;
-        private final int value;
+        final EnumSet<Use> set;
+
+        Use() {
+            this.set = EnumSet.of(this);
+        }
 
         @Contract(pure = true)
-        Use(int value) {
-            this.value = value;
+        Use(Use value1, Use... values) {
+            this.set = EnumSet.of(value1, values);
         }
     }
 
     public final String name;
-    private final int usages;
+    private final EnumSet<Use> usages;
 
     private static final Map<String, OperatorTypeNode> values;
     private static final LinkedList<EnumSet<OperatorTypeNode>> operations;
@@ -112,11 +116,10 @@ public enum OperatorTypeNode implements AtomicNode {
     @Contract(pure = true)
     OperatorTypeNode(@NotNull String name, @NotNull Use... usages) {
         this.name = name;
-        int temp_usages = 0;
-        for (Use t : usages) {
-            temp_usages |= t.value;
+        this.usages = EnumSet.noneOf(Use.class);
+        for (Use use : usages) {
+            this.usages.addAll(use.set);
         }
-        this.usages = temp_usages;
     }
 
     static {  // Initialise the map
@@ -153,7 +156,7 @@ public enum OperatorTypeNode implements AtomicNode {
     @Contract(pure = true)
     public boolean isUse(@NotNull Use... usages) {
         for (Use t : usages) {
-            if ((t.value & this.usages) == 0) {
+            if (!this.usages.containsAll(t.set)) {
                 return false;
             }
         }
