@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 
 /**
@@ -199,7 +199,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             if (nodes.size() == 1) {
                 return nodes.get(0);
             }
-            for (OperatorTypeNode[] operators : OperatorTypeNode.orderOfOperations()) {
+            for (EnumSet<OperatorTypeNode> operators : OperatorTypeNode.orderOfOperations()) {
                 parseExpression(nodes, operators);
             }
             if (nodes.size() > 1) {
@@ -214,7 +214,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The list of nodes to be recombined
      * @param expr The expressions to parse together
      */
-    private static void parseExpression(@NotNull LinkedList<TestNode> nodes, OperatorTypeNode... expr) {
+    private static void parseExpression(@NotNull LinkedList<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
         if (nodes.size() == 1) {
             return;
         }
@@ -225,7 +225,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     continue;
                 }
                 OperatorTypeNode operator = ((OperatorNode) node).getOperator();
-                if (Arrays.asList(expr).contains(operator)) {
+                if (expr.contains(operator)) {
                     if (operator == OperatorTypeNode.SUBTRACT) {
                         if (nodeNumber == 0) {
                             parseUnaryOp(nodes, nodeNumber);

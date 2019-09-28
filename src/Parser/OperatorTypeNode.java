@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -102,7 +103,7 @@ public enum OperatorTypeNode implements AtomicNode {
     private final int usages;
 
     private static final Map<String, OperatorTypeNode> values;
-    private static final LinkedList<OperatorTypeNode[]> operations;
+    private static final LinkedList<EnumSet<OperatorTypeNode>> operations;
 
     /**
      * Create new instance of Parser.OperatorTypeNode.
@@ -128,20 +129,20 @@ public enum OperatorTypeNode implements AtomicNode {
 
     static {  // FIXME? Better way to initialise this?
         operations = new LinkedList<>();
-        operations.add(new OperatorTypeNode[]{POWER});
-        operations.add(new OperatorTypeNode[]{BITWISE_NOT});
-        operations.add(new OperatorTypeNode[]{MULTIPLY, DIVIDE, FLOOR_DIV, MODULO});
-        operations.add(new OperatorTypeNode[]{ADD, SUBTRACT});
-        operations.add(new OperatorTypeNode[]{LEFT_BITSHIFT, RIGHT_BITSHIFT});
-        operations.add(new OperatorTypeNode[]{BITWISE_AND});
-        operations.add(new OperatorTypeNode[]{BITWISE_XOR, BITWISE_OR});
-        operations.add(new OperatorTypeNode[]{LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS});
-        operations.add(new OperatorTypeNode[]{IN, NOT_IN, IS, IS_NOT});
-        operations.add(new OperatorTypeNode[]{BOOL_NOT});
-        operations.add(new OperatorTypeNode[]{BOOL_AND});
-        operations.add(new OperatorTypeNode[]{BOOL_OR});
-        operations.add(new OperatorTypeNode[]{BOOL_XOR});
-        operations.add(new OperatorTypeNode[]{CASTED});
+        operations.add(EnumSet.of(POWER));
+        operations.add(EnumSet.of(BITWISE_NOT));
+        operations.add(EnumSet.of(MULTIPLY, DIVIDE, FLOOR_DIV, MODULO));
+        operations.add(EnumSet.of(ADD, SUBTRACT));
+        operations.add(EnumSet.of(LEFT_BITSHIFT, RIGHT_BITSHIFT));
+        operations.add(EnumSet.of(BITWISE_AND));
+        operations.add(EnumSet.of(BITWISE_XOR, BITWISE_OR));
+        operations.add(EnumSet.of(LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS));
+        operations.add(EnumSet.of(IN, NOT_IN, IS, IS_NOT));
+        operations.add(EnumSet.of(BOOL_NOT));
+        operations.add(EnumSet.of(BOOL_AND));
+        operations.add(EnumSet.of(BOOL_OR));
+        operations.add(EnumSet.of(BOOL_XOR));
+        operations.add(EnumSet.of(CASTED));
     }
 
     /**
@@ -197,7 +198,7 @@ public enum OperatorTypeNode implements AtomicNode {
     }
 
     @Contract(pure = true)
-    static Iterable<OperatorTypeNode[]> orderOfOperations() {
+    static Iterable<EnumSet<OperatorTypeNode>> orderOfOperations() {
         return operations;
     }
 
