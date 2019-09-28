@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.EnumSet;
 import java.util.regex.Matcher;
 
 /**
@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
  */
 public class StringNode extends StringLikeNode {
     private String contents;
-    private StringPrefix[] prefixes;
+    private EnumSet<StringPrefix> prefixes;
 
     /**
      * Create a new instance of Parser.StringNode.
@@ -27,18 +27,19 @@ public class StringNode extends StringLikeNode {
     @Contract(pure = true)
     public StringNode(String contents, @NotNull char... prefixes) {
         this.contents = contents;
-        LinkedList<StringPrefix> stringPrefixes = new LinkedList<>();
+        EnumSet<StringPrefix> stringPrefixes = EnumSet.noneOf(StringPrefix.class);
         for (char c : prefixes) {
             stringPrefixes.add(StringPrefix.getPrefix(c));
         }
-        this.prefixes = stringPrefixes.toArray(new StringPrefix[0]);
+        this.prefixes = stringPrefixes;
     }
 
     public String getContents() {
         return contents;
     }
 
-    public StringPrefix[] getPrefixes() {
+    @Override
+    public EnumSet<StringPrefix> getPrefixes() {
         return prefixes;
     }
 
@@ -65,7 +66,7 @@ public class StringNode extends StringLikeNode {
                 inside = processEscapes(inside);
             }
             if (prefixes.contains("f")) {
-                return FormattedStringNode.parse(tokens, contents);
+                return FormattedStringNode.parse(contents);
             }
             return new StringNode(inside, prefixes.toCharArray());
         }

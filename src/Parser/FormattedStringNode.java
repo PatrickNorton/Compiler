@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public class FormattedStringNode extends StringLikeNode {
     private String[] strs;
     private TestNode[] tests;
-    private StringPrefix[] prefixes;
+    private EnumSet<StringPrefix> prefixes;
 
     private static final Pattern bracePattern = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})");
 
@@ -32,14 +32,14 @@ public class FormattedStringNode extends StringLikeNode {
      * @param tests The non-string-literals which are interpolated
      */
     @Contract(pure = true)
-    public FormattedStringNode(String[] strs, TestNode[] tests, char[] flags) {
+    public FormattedStringNode(String[] strs, TestNode[] tests, @NotNull char[] flags) {
         this.strs = strs;
         this.tests = tests;
-        ArrayList<StringPrefix> prefixes = new ArrayList<>();
+        EnumSet<StringPrefix> prefixes = EnumSet.noneOf(StringPrefix.class);
         for (char c : flags) {
             prefixes.add(StringPrefix.getPrefix(c));
         }
-        this.prefixes = prefixes.toArray(new StringPrefix[0]);
+        this.prefixes = prefixes;
     }
 
     public String[] getStrs() {
@@ -50,13 +50,14 @@ public class FormattedStringNode extends StringLikeNode {
         return tests;
     }
 
-    public StringPrefix[] getPrefixes() {
+    @Override
+    public EnumSet<StringPrefix> getPrefixes() {
         return prefixes;
     }
 
     @NotNull
-    @Contract("_, _ -> new")
-    static FormattedStringNode parse(TokenList tokens, @NotNull String contents) {
+    @Contract("_ -> new")
+    static FormattedStringNode parse(@NotNull String contents) {
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher prefixMatcher = prefixPattern.matcher(contents);
         String prefixes;
