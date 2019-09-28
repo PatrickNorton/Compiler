@@ -88,18 +88,26 @@ public enum OperatorTypeNode implements AtomicNode {
         COMPARISON(OPERATOR_SP, OP_FUNC, STANDARD),
         R_TYPICAL(OPERATOR_SP, REVERSE),
         R_COMPARISON(OPERATOR_SP, REVERSE),
-        U_TYPICAL(TYPICAL, UNARY),
+        U_TYPICAL(OPERATOR_SP, OP_FUNC, STANDARD, AUG_ASSIGN, UNARY),
         BOOLEAN(OP_FUNC, STANDARD),
         ;
-        final EnumSet<Use> set;
+        private final Use[] tempSet;
+        private EnumSet<Use> set;
 
+        @Contract(pure = true)
         Use() {
-            this.set = EnumSet.of(this);
+            this.tempSet = new Use[] {this};
         }
 
         @Contract(pure = true)
-        Use(Use value1, Use... values) {
-            this.set = EnumSet.of(value1, values);
+        Use(Use... values) {
+            this.tempSet = values;
+        }
+
+        static {
+            for (Use u : Use.values()) {
+                u.set = EnumSet.of(u.tempSet[0], u.tempSet);
+            }
         }
     }
 
