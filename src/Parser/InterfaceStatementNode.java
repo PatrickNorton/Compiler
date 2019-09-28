@@ -2,6 +2,8 @@ package Parser;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing an interface statement.
  * @author Patrick Norton
@@ -30,7 +32,7 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
             return GenericFunctionNode.parse(tokens);
         }
         if (tokens.tokenIs(TokenType.DESCRIPTOR) && GenericDefinitionNode.isGeneric(tokens)) {
-            DescriptorNode[] descriptors = DescriptorNode.parseList(tokens);
+            EnumSet<DescriptorNode> descriptors = DescriptorNode.parseList(tokens);
             GenericDefinitionNode op;
             if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
                 op = GenericOperatorNode.parse(tokens);

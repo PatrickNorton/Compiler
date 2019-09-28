@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing an operator definition.
  * @author Patrick Norton
@@ -12,7 +14,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private TypeNode[] ret_type;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
 
@@ -33,7 +35,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 
@@ -55,7 +57,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     }
 
     @Override
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 

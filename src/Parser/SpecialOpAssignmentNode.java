@@ -3,13 +3,15 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing an operator assignment.
  */
 public class SpecialOpAssignmentNode implements ClassStatementNode {
     private SpecialOpNameNode name;
     private TestNode assignment;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
     public SpecialOpAssignmentNode(SpecialOpNameNode name, TestNode assignment) {
@@ -26,12 +28,12 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
     }
 
     @Override
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 

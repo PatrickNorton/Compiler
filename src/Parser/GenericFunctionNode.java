@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing a generic function.
  * <p>
@@ -17,7 +19,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
     public GenericFunctionNode(VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
@@ -38,12 +40,12 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         return retvals;
     }
 
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 

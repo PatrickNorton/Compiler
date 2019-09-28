@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.StringJoiner;
 
@@ -15,7 +16,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
 
@@ -33,7 +34,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] descriptors) {
+    public void addDescriptor(EnumSet<DescriptorNode> descriptors) {
         this.descriptors = descriptors;
     }
 
@@ -52,7 +53,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     }
 
     @Override
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
@@ -108,22 +109,21 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
 
     @Override
     public String toString() {
-        String string = "";
-        if (descriptors.length > 0) {
-            StringJoiner sj = new StringJoiner(" ", "", " ");
-            for (DescriptorNode d : descriptors) {
-                sj.add(d.toString());
-            }
-            string += sj;
+        StringBuilder string = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            string.append(d);
+            string.append(' ');
         }
-        string += "class " + name + " ";
+        string.append("class ");
+        string.append(name);
+        string.append(" ");
         if (superclasses.length > 0) {
             StringJoiner sj = new StringJoiner(", ", "from ", " ");
             for (TypeNode t : superclasses) {
                 sj.add(t.toString());
             }
-            string += sj;
+            string.append(sj);
         }
-        return string + body;
+        return string.append(body).toString();
     }
 }

@@ -2,9 +2,11 @@ package Parser;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 public interface DescribableNode extends IndependentNode {
-    void addDescriptor(DescriptorNode[] nodes);
-    DescriptorNode[] getDescriptors();
+    void addDescriptor(EnumSet<DescriptorNode> nodes);
+    EnumSet<DescriptorNode> getDescriptors();
 
     /**
      * Parse a describable node from a list of tokens.
@@ -13,11 +15,11 @@ public interface DescribableNode extends IndependentNode {
      */
     @NotNull
     static DescribableNode parse(@NotNull TokenList tokens) {
-        DescriptorNode[] descriptors;
+        EnumSet<DescriptorNode> descriptors;
         if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
             descriptors = DescriptorNode.parseList(tokens);
         } else {
-            descriptors = new DescriptorNode[0];
+            descriptors = DescriptorNode.emptySet();
         }
         IndependentNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof DescribableNode) {

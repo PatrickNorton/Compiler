@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.StringJoiner;
 
 /**
@@ -21,7 +22,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
     private SpecialOpNameNode op_code;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
     public GenericOperatorNode(SpecialOpNameNode op_code, TypedArgumentListNode args, TypeNode... retvals) {
@@ -42,12 +43,12 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         return retvals;
     }
 
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 
@@ -84,15 +85,10 @@ public class GenericOperatorNode implements GenericDefinitionNode {
 
     @Override
     public String toString() {
-        String ops;
-        if (descriptors.length > 0) {
-            StringJoiner sj = new StringJoiner(" ");
-            for (DescriptorNode d : descriptors) {
-                sj.add(d.toString());
-            }
-            ops = sj + " ";
-        } else {
-            ops = "";
+        StringBuilder ops = new StringBuilder();
+        for (DescriptorNode d : descriptors) {
+            ops.append(d);
+            ops.append(' ');
         }
         return ops + "operator " + op_code + " " + args;
     }

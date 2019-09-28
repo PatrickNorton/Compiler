@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing a variable declaration without assignment.
  *
@@ -12,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class DeclarationNode implements AssignStatementNode, ClassStatementNode {
     private TypeNode type;
     private VariableNode name;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     /**
      * Create a new instance of Parser.DeclarationNode.
@@ -35,12 +37,12 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     }
 
     @Override
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 

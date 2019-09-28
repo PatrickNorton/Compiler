@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing a property definition.
  * @author Patrick Norton
@@ -12,7 +14,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     private StatementBodyNode get;
     private TypedArgumentListNode set_args;
     private StatementBodyNode set;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
 
@@ -32,7 +34,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 
@@ -53,7 +55,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         return set_args;
     }
 
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 

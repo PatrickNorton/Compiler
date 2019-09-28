@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing a method definition.
  * @author Patrick Norton
@@ -13,7 +15,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     private TypedArgumentListNode args;
     private TypeNode[] retval;
     private StatementBodyNode body;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
 
@@ -50,12 +52,12 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         return body;
     }
 
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 

@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +34,18 @@ public enum DescriptorNode implements AtomicNode {
     public final String name;
 
     private static final Map<String, DescriptorNode> values;
+
+    private static final EnumSet<DescriptorNode> ACCESS = EnumSet.of(PUBLIC, PRIVATE, PUBGET);
+    private static final EnumSet<DescriptorNode> STATIC_SET = EnumSet.of(STATIC);
+    private static final EnumSet<DescriptorNode> CONST_SET = EnumSet.of(CONST);
+    private static final EnumSet<DescriptorNode> FINAL_SET = EnumSet.of(FINAL);
+    private static final EnumSet<DescriptorNode> GENERATOR_SET = EnumSet.of(GENERATOR);
+
+    private static final List<EnumSet<DescriptorNode>> SETS;
+
+    static {
+        SETS = List.of(ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET);
+    }
 
     static {
         Map<String, DescriptorNode> temp = new HashMap<>();
@@ -69,12 +83,29 @@ public enum DescriptorNode implements AtomicNode {
      * @return The array of DescriptorNodes being parsed
      */
     @NotNull
-    public static DescriptorNode[] parseList(@NotNull TokenList tokens) {
-        ArrayList<DescriptorNode> descriptors = new ArrayList<>();
+    public static EnumSet<DescriptorNode> parseList(@NotNull TokenList tokens) {
+        int setsNum = 0;
+        EnumSet<DescriptorNode> descriptors = EnumSet.noneOf(DescriptorNode.class);
         while (tokens.tokenIs(TokenType.DESCRIPTOR)) {
-            descriptors.add(parse(tokens));
+            DescriptorNode d = parse(tokens);
+            do {
+                setsNum++;
+                if (setsNum > SETS.size()) {
+                    throw new ParserException("Illegal keyword placement");
+                }
+            } while (SETS.get(setsNum - 1).contains(d));
+            descriptors.add(d);
         }
-        return descriptors.toArray(new DescriptorNode[0]);
+        return descriptors;
+    }
+
+    /**
+     * Returns an empty EnumSet for descriptors
+     * @return The empty set
+     */
+    @NotNull
+    public static EnumSet<DescriptorNode> emptySet() {
+        return EnumSet.noneOf(DescriptorNode.class);
     }
 
     /**

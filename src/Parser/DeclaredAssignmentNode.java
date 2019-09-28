@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.StringJoiner;
 
 /**
@@ -17,7 +18,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     private boolean is_colon;
     private TypedVariableNode[] assigned;
     private TestNode[] value;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     /**
      * Create new instance of Parser.DeclaredAssignmentNode.
@@ -49,12 +50,12 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         return assigned;
     }
 
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 

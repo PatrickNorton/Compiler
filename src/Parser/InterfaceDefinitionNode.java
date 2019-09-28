@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.LinkedList;
 
 /**
@@ -14,7 +15,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     private TypeNode name;
     private TypeNode[] superclasses;
     private InterfaceBodyNode body;
-    private DescriptorNode[] descriptors = new DescriptorNode[0];
+    private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
 
@@ -46,12 +47,12 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     }
 
     @Override
-    public DescriptorNode[] getDescriptors() {
+    public EnumSet<DescriptorNode> getDescriptors() {
         return descriptors;
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
     }
 

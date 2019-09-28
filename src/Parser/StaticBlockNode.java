@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 /**
  * The class representing a static block in a class/interface definition.
  * @author Patrick Norton
@@ -20,12 +22,12 @@ public class StaticBlockNode implements ClassStatementNode {
     }
 
     @Override
-    public DescriptorNode[] getDescriptors() {
-        return new DescriptorNode[0];
+    public EnumSet<DescriptorNode> getDescriptors() {
+        return DescriptorNode.emptySet();
     }
 
     @Override
-    public void addDescriptor(DescriptorNode[] nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         throw new ParserException("Unexpected descriptor in static block");
     }
 
