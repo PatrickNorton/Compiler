@@ -44,34 +44,6 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
-     * Test if either a brace or a line contains something of the types.
-     * @param braces Whether or not to check within the brace or the line
-     * @param question The questions to test for
-     * @return Whether or not the token was found
-     */
-    boolean contains(boolean braces, TokenType... question) {
-        if (braces) {
-            return braceContains(question);
-        } else {
-            return lineContains(question);
-        }
-    }
-
-    /**
-     * Test if either a brace or a line contains something of the types.
-     * @param braces Whether or not to check within the brace or the line
-     * @param question The questions to test for
-     * @return Whether or not the token was found
-     */
-    boolean contains(boolean braces, String... question) {
-        if (braces) {
-            return braceContains(question);
-        } else {
-            return lineContains(question);
-        }
-    }
-
-    /**
      * Test if a line contains a certain type of token.
      * @param question The questions to test if the line contains
      * @return If the line contains that token

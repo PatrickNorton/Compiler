@@ -147,7 +147,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     private static TestNode parseLeftVariable(@NotNull TokenList tokens, boolean ignore_newline) {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             throw new ParserException("Illegal assignment");
-        } else if (tokens.contains(ignore_newline, TokenType.AUG_ASSIGN)) {
+        } else if (ignore_newline && tokens.braceContains(TokenType.AUG_ASSIGN)) {
+            throw new ParserException("Illegal augmented assignment");
+        } else if (!ignore_newline && tokens.lineContains(TokenType.AUG_ASSIGN)) {
             throw new ParserException("Illegal augmented assignment");
         } else {
             LinkedList<TestNode> nodes = new LinkedList<>();
