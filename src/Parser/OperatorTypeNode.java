@@ -116,7 +116,22 @@ public enum OperatorTypeNode implements AtomicNode {
     private final EnumSet<Use> usages;
 
     private static final Map<String, OperatorTypeNode> values;
-    private static final List<EnumSet<OperatorTypeNode>> operations;
+    private static final List<EnumSet<OperatorTypeNode>> operations = List.of(
+            EnumSet.of(POWER),
+            EnumSet.of(BITWISE_NOT),
+            EnumSet.of(MULTIPLY, DIVIDE, FLOOR_DIV, MODULO),
+            EnumSet.of(ADD, SUBTRACT),
+            EnumSet.of(LEFT_BITSHIFT, RIGHT_BITSHIFT),
+            EnumSet.of(BITWISE_AND),
+            EnumSet.of(BITWISE_XOR, BITWISE_OR),
+            EnumSet.of(LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS),
+            EnumSet.of(IN, NOT_IN, IS, IS_NOT),
+            EnumSet.of(BOOL_NOT),
+            EnumSet.of(BOOL_AND),
+            EnumSet.of(BOOL_OR),
+            EnumSet.of(BOOL_XOR),
+            EnumSet.of(CASTED)
+    );
 
     /**
      * Create new instance of Parser.OperatorTypeNode.
@@ -137,25 +152,6 @@ public enum OperatorTypeNode implements AtomicNode {
             temp.put(op.name, op);
         }
         values = Collections.unmodifiableMap(temp);
-    }
-
-    static {
-        operations = List.of(
-                EnumSet.of(POWER),
-                EnumSet.of(BITWISE_NOT),
-                EnumSet.of(MULTIPLY, DIVIDE, FLOOR_DIV, MODULO),
-                EnumSet.of(ADD, SUBTRACT),
-                EnumSet.of(LEFT_BITSHIFT, RIGHT_BITSHIFT),
-                EnumSet.of(BITWISE_AND),
-                EnumSet.of(BITWISE_XOR, BITWISE_OR),
-                EnumSet.of(LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS),
-                EnumSet.of(IN, NOT_IN, IS, IS_NOT),
-                EnumSet.of(BOOL_NOT),
-                EnumSet.of(BOOL_AND),
-                EnumSet.of(BOOL_OR),
-                EnumSet.of(BOOL_XOR),
-                EnumSet.of(CASTED)
-        );
     }
 
     /**
@@ -184,7 +180,7 @@ public enum OperatorTypeNode implements AtomicNode {
      * @return The actual operator enum
      */
     static OperatorTypeNode findOp(@NotNull String name) {
-        if (name.contains(" ")) {
+        if (name.contains("  ")) {
             name = name.replaceAll(" +", " ");
         }
         if (values.containsKey(name)) {
