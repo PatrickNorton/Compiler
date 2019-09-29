@@ -214,7 +214,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The list of nodes to be recombined
      * @param expr The expressions to parse together
      */
-    private static void parseExpression(@NotNull LinkedList<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
+    private static void parseExpression(@NotNull final LinkedList<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
         if (nodes.size() == 1) {
             return;
         }
@@ -258,7 +258,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The nodes to have the operator parsed out of them
      * @param nodeNumber The number giving the location of the operator
      */
-    private static void parseOperator(@NotNull LinkedList<TestNode> nodes, int nodeNumber) {
+    private static void parseOperator(@NotNull final LinkedList<TestNode> nodes, int nodeNumber) {
         if (nodeNumber == 0 || nodeNumber + 1 == nodes.size()) {
             throw new ParserException("Unexpected operator" + nodes.get(nodeNumber));
         }
@@ -281,7 +281,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The nodes to have the operator parsed out
      * @param nodeNumber The number giving the location of the operator
      */
-    private static void parseUnaryOp(@NotNull LinkedList<TestNode> nodes, int nodeNumber) {
+    private static void parseUnaryOp(@NotNull final LinkedList<TestNode> nodes, int nodeNumber) {
         if (nodeNumber + 1 == nodes.size()) {
             throw new ParserException("Unexpected operator " + nodes.get(nodeNumber));
         }
