@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The class representing a method definition.
@@ -79,6 +80,11 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     @Override
     public void addDecorators(NameNode... decorators) {
         this.decorators = decorators;
+    }
+
+    @Override
+    public Set<DescriptorNode> validDescriptors() {
+        return DescriptorNode.METHOD_VALID;
     }
 
     /**
