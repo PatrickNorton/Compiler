@@ -8,8 +8,8 @@ import java.util.LinkedList;
 /**
  * The class representing a switch statement.
  * <p>
- *     This class does <u>not</u> implement FlowStatementNode, because
- *     FlowStatementNode requires a getBody method, and switch statements,
+ *     This class does <u>not</u> implement {@link FlowStatementNode}, because
+ *     {@link FlowStatementNode} requires a getBody method, and switch statements,
  *     due to their reliance on case statements, do not implement a body.
  * </p>
  * @author Patrick Norton
