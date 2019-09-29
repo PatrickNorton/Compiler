@@ -12,7 +12,7 @@ public class Token {
     public final String sequence;
 
     /**
-     * Create a new instance of Parser.Token.
+     * Create a new instance of Token.
      * @param token The type of token which this is
      * @param sequence The sequence of text the token belongs to
      */

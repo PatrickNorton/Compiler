@@ -12,7 +12,7 @@ public class SomeStatementNode implements SubTestNode {
     private TestNode container;
 
     /**
-     * Create a new instance of Parser.SomeStatementNode.
+     * Create a new instance of SomeStatementNode.
      * @param contained The node which is contained
      * @param container The node which being tested if contained is a member
      */
@@ -31,14 +31,14 @@ public class SomeStatementNode implements SubTestNode {
     }
 
     /**
-     * Parse a Parser.SomeStatementNode from a list of tokens.
+     * Parse a SomeStatementNode from a list of tokens.
      * <p>
      *     The syntax for a some statement is: <code>"some" {@link TestNode}
      *     "in" {@link TestNode}</code>. The list of tokens must begin with
      *     "some" when passed.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.SomeStatementNode
+     * @return The newly parsed SomeStatementNode
      */
     @NotNull
     @Contract("_ -> new")

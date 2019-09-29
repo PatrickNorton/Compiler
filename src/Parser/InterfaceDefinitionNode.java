@@ -20,7 +20,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     private NameNode[] annotations = new NameNode[0];
 
     /**
-     * Construct a new instance of Parser.InterfaceDefinitionNode.
+     * Construct a new instance of InterfaceDefinitionNode.
      * @param name The name of the interface
      * @param superclasses The superclasses of the interface
      * @param body The body of the interface
@@ -86,7 +86,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
      *     the list of tokens must begin with "interface".
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.InterfaceDefinitionNode
+     * @return The freshly parsed InterfaceDefinitionNode
      */
     @NotNull
     @Contract("_ -> new")

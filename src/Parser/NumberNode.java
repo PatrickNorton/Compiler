@@ -27,9 +27,9 @@ public class NumberNode implements AtomicNode {
     }
 
     /**
-     * Parse a Parser.NumberNode from a list of tokens.
+     * Parse a NumberNode from a list of tokens.
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.NumberNode
+     * @return The freshly parsed NumberNode
      */
     @NotNull
     @Contract("_ -> new")

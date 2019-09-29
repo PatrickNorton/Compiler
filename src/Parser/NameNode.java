@@ -12,11 +12,11 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
     /**
      * Parse a name from a list of tokens.
      * <p>
-     *     The syntax for a Parser.NameNode is made up of its constituent subclasses.
+     *     The syntax for a NameNode is made up of its constituent subclasses.
      *     The list of tokens must begin with a NAME token.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.NameNode
+     * @return The freshly parsed NameNode
      */
     @NotNull
     @Contract("_ -> new")

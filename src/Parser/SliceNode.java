@@ -14,7 +14,7 @@ public class SliceNode implements SubTestNode {
     private TestNode step;
 
     /**
-     * Construct a new instance of Parser.SliceNode
+     * Construct a new instance of SliceNode
      * @param start The start of the slice
      * @param end The end of the slice
      * @param step The step amount
@@ -27,7 +27,7 @@ public class SliceNode implements SubTestNode {
     }
 
     /**
-     * Construct a new instance of Parser.SliceNode
+     * Construct a new instance of SliceNode
      * @param start The start of the slice
      * @param end The end of the slice
      */
@@ -36,7 +36,7 @@ public class SliceNode implements SubTestNode {
     }
 
     /**
-     * Construct a new instance of Parser.SliceNode
+     * Construct a new instance of SliceNode
      * @param start The start of the slice
      */
     public SliceNode(TestNode start) {
@@ -56,7 +56,7 @@ public class SliceNode implements SubTestNode {
     }
 
     /**
-     * Parse a new instance of Parser.SliceNode.
+     * Parse a new instance of SliceNode.
      * <p>
      *     The syntax for a slice is: <code>[{@link TestNode}] ":" [{@link
      *     TestNode}] [":" [{@link TestNode}]]</code>.
@@ -95,7 +95,7 @@ public class SliceNode implements SubTestNode {
     /**
      * Parse a specific piece of a slice.
      * @param tokens The list of tokens to be parsed destructively
-     * @return The parsed Parser.TestNode
+     * @return The parsed TestNode
      */
     @NotNull
     private static TestNode sliceTest(@NotNull TokenList tokens) {

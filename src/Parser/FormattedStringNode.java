@@ -27,7 +27,7 @@ public class FormattedStringNode extends StringLikeNode {
     private static final Pattern bracePattern = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})");
 
     /**
-     * Construct a new Parser.FormattedStringNode.
+     * Construct a new FormattedStringNode.
      * @param strs The intermittent string literals
      * @param tests The non-string-literals which are interpolated
      */

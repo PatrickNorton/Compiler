@@ -15,7 +15,7 @@ public class DoStatementNode implements FlowStatementNode {
     private TestNode conditional;
 
     /**
-     * Instantiate new instance of Parser.DoStatementNode.
+     * Instantiate new instance of DoStatementNode.
      * @param body The body of the loop
      * @param conditional The conditional tested for.
      */
@@ -35,16 +35,16 @@ public class DoStatementNode implements FlowStatementNode {
     }
 
     /**
-     * Parse a Parser.DoStatementNode from a list of tokens.
+     * Parse a DoStatementNode from a list of tokens.
      * <p>
      *     The syntax of a do-while statement is: <code>"do" {@link
      *     StatementBodyNode} "while" {@link TestNode}</code>. The passed
-     *     Parser.TokenList must have its first token as "do" in order to parse
+     *     TokenList must have its first token as "do" in order to parse
      *     correctly.
      * </p>
      * @param tokens The list of tokens to be parsed destructively. Must begin
-     *               with a Parser.TokenType.KEYWORD with text "do".
-     * @return The newly parsed Parser.DoStatementNode
+     *               with a TokenType.KEYWORD with text "do".
+     * @return The newly parsed DoStatementNode
      */
     @NotNull
     @Contract("_ -> new")

@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * The interface for statements which are valid in a class body.
  * <p>
  *     This inherits the method {@code addDescriptor} from
- *     Parser.InterfaceStatementNode, this allows all statements in a class body to
+ *     InterfaceStatementNode, this allows all statements in a class body to
  *     add descriptors to themselves
  * </p>
  *
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface ClassStatementNode extends InterfaceStatementNode {
     /**
-     * Parse a Parser.ClassStatementNode from a list of tokens.
+     * Parse a ClassStatementNode from a list of tokens.
      * <p>
      *     ClassStatementNodes are simply any {@link BaseNode} which inherits
      *     from this node, and that is how they are parsed, with a call to
@@ -26,7 +26,7 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      *
      * @param tokens Tokens to be parsed; parse does operate destructively on
      *               them
-     * @return The newly parsed Parser.ClassStatementNode
+     * @return The newly parsed ClassStatementNode
      */
     @NotNull
     static ClassStatementNode parse(@NotNull TokenList tokens) {

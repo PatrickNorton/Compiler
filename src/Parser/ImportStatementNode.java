@@ -16,7 +16,7 @@ public class ImportStatementNode implements ImportExportNode {
     private DottedVariableNode[] as;
 
     /**
-     * Create a new instance of Parser.ImportStatementNode.
+     * Create a new instance of ImportStatementNode.
      * @param imports The list of imported names
      * @param from The package from whence they are imported
      */
@@ -26,7 +26,7 @@ public class ImportStatementNode implements ImportExportNode {
     }
 
     /**
-     * Create a new instance of Parser.ImportStatementNode,
+     * Create a new instance of ImportStatementNode,
      * @param imports Tne list of imported names, all top-level
      */
     @Contract(pure = true)
@@ -57,7 +57,7 @@ public class ImportStatementNode implements ImportExportNode {
      *     must either begin with "import" or "from".
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.ReturnStatementNode
+     * @return The freshly parsed ReturnStatementNode
      */
     @NotNull
     @Contract("_ -> new")

@@ -46,7 +46,7 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
      *     separately.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.SpecialOpAssignmentNode
+     * @return The newly parsed SpecialOpAssignmentNode
      */
     @NotNull
     @Contract("_ -> new")

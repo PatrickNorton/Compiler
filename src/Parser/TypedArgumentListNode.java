@@ -59,7 +59,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param tester The values to test for
-     * @return The freshly parsed Parser.TypedArgumentListNode
+     * @return The freshly parsed TypedArgumentListNode
      */
     @NotNull
     static TypedArgumentListNode parseOnToken(@NotNull TokenList tokens, String... tester) {
@@ -71,7 +71,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     }
 
     /**
-     * Parse a Parser.TypedArgumentListNode from a list of tokens.
+     * Parse a TypedArgumentListNode from a list of tokens.
      * <p>
      *     The syntax for a list of typed arguments is: <code>"(" {@link
      *     TypedArgumentNode} *("," {@link TypedArgumentNode}) ["," "/"] *(","
@@ -79,7 +79,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
      *     TypedArgumentNode}) [","] ")"</code>.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.TypedArgumentListNode
+     * @return The freshly parsed TypedArgumentListNode
      */
     @NotNull
     @Contract("_ -> new")

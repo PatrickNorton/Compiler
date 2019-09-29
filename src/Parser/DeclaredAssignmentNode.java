@@ -22,7 +22,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     /**
-     * Create new instance of Parser.DeclaredAssignmentNode.
+     * Create new instance of DeclaredAssignmentNode.
      * @param is_colon Whether the assignment is dynamic (true) or static (false)
      * @param assigned The variables being assigned to
      * @param value The values being assigned
@@ -66,15 +66,15 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     }
 
     /**
-     * Parse a Parser.DeclaredAssignmentNode from a list of tokens.
+     * Parse a DeclaredAssignmentNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.DeclaredAssignmentNode is: <code>{@link TypeNode}
+     *     The syntax for a DeclaredAssignmentNode is: <code>{@link TypeNode}
      *     {@link VariableNode} *["," [{@link TypeNode}] {@link VariableNode}]
      *     [","] ("=" | ":=") {@link TestNode} *["," {@link TestNode}] [","]
      *     </code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.DeclaredAssignmentNode
+     * @return The newly parsed DeclaredAssignmentNode
      */
     @NotNull
     @Contract("_ -> new")

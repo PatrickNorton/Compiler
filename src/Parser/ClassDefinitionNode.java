@@ -10,7 +10,7 @@ import java.util.StringJoiner;
 /**
  * The node representing a class definition
  *
- * @author
+ * @author Patrick Norton
  */
 public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private TypeNode name;
@@ -21,7 +21,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private NameNode[] annotations = new NameNode[0];
 
     /**
-     * Create new instance of Parser.ClassDefinitionNode
+     * Create new instance of ClassDefinitionNode
      * @param name The name of the class being instantiated
      * @param superclasses The superclasses of the class
      * @param body The main body of the class
@@ -78,17 +78,17 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     }
 
     /**
-     * Parse Parser.ClassDefinitionNode from list of tokens.
+     * Parse ClassDefinitionNode from list of tokens.
      * <p>
      *     The syntax for a class definition as as follows: <code>
      *     [*{@link DescriptorNode}] "class" {@link TypeNode} ["from"
      *     *{@link TypeNode}] {@link ClassBodyNode}</code>.
-     *     The Parser.ClassDefinitionNode must start with "class", descriptors are
+     *     The ClassDefinitionNode must start with "class", descriptors are
      *     parsed in a different section of the code.
      * </p>
      * @param tokens The tokens to be parsed. Parse operates destructively on
      *               this.
-     * @return The new Parser.ClassDefinitionNode which was parsed
+     * @return The new ClassDefinitionNode which was parsed
      */
     @NotNull
     @Contract("_ -> new")

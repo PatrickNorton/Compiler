@@ -31,16 +31,16 @@ public class ClassBodyNode implements BodyNode {
     }
 
     /**
-     * Parse Parser.ClassBodyNode from list of tokens.
+     * Parse ClassBodyNode from list of tokens.
      * <p>
      *     A class body is simply a list of class statements, e.g. statements
      *     which can have a declaration in front of them. The statement must
      *     also be surrounded by curly braces, not doing so will result in a
-     *     Parser.ParserException being raised. The syntax of a Parser.ClassStatementNode is
+     *     ParserException being raised. The syntax of a ClassStatementNode is
      *     <code> "{" *{@link ClassStatementNode} "}" NEWLINE</code>.
      * </p>
      * @param tokens The list of tokens passed
-     * @return The parsed Parser.ClassBodyNode
+     * @return The parsed ClassBodyNode
      */
     @NotNull
     @Contract("_ -> new")
@@ -57,14 +57,14 @@ public class ClassBodyNode implements BodyNode {
     }
 
     /**
-     * Parse the Parser.ClassBodyNode of an enum from a list of tokens.
+     * Parse the ClassBodyNode of an enum from a list of tokens.
      * <p>
      *     This is functionally identical to the normal parse method, except
      *     there is no check for the opening brace, as that will have already
      *     been parsed before the constants were enumerated.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.ClassBodyNode
+     * @return The freshly parsed ClassBodyNode
      */
     @NotNull
     static ClassBodyNode parseEnum(@NotNull TokenList tokens) {

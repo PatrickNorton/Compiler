@@ -10,7 +10,7 @@ public class RaiseStatementNode implements SimpleStatementNode {
     private TestNode raised;
 
     /**
-     * Create a new instance of Parser.RaiseStatementNode.
+     * Create a new instance of RaiseStatementNode.
      * @param raised The statement to be raised
      */
     @Contract(pure = true)
@@ -30,7 +30,7 @@ public class RaiseStatementNode implements SimpleStatementNode {
      *     keyword.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.RaiseStatementNode
+     * @return The freshly parsed RaiseStatementNode
      */
     @NotNull
     @Contract("_ -> new")

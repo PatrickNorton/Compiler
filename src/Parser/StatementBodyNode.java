@@ -27,13 +27,13 @@ public class StatementBodyNode implements BodyNode {
     }
 
     /**
-     * Parse a Parser.StatementBodyNode iff the next token matches those passed.
+     * Parse a StatementBodyNode iff the next token matches those passed.
      * <p>
      *     This method will parse the token it is testing for if it matches.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param types The tokens to parse on
-     * @return The freshly parsed Parser.StatementBodyNode
+     * @return The freshly parsed StatementBodyNode
      */
     @NotNull
     @Contract("_, _ -> new")
@@ -47,13 +47,13 @@ public class StatementBodyNode implements BodyNode {
     }
 
     /**
-     * Parse a Parser.StatementBodyNode from a list of tokens.
+     * Parse a StatementBodyNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.StatementBodyNode is: <code>"{" {@link BaseNode}
+     *     The syntax for a StatementBodyNode is: <code>"{" {@link BaseNode}
      *     *(NEWLINE {@link BaseNode}) [NEWLINE] "}"</code>
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.StatementBodyNode
+     * @return The freshly parsed StatementBodyNode
      */
     @NotNull
     @Contract("_ -> new")
@@ -71,7 +71,7 @@ public class StatementBodyNode implements BodyNode {
     /**
      * Parse the statements in a fallthrough-allowed switch clause.
      * @param tokens The list of tokens to parse destructively
-     * @return The freshly parsed Parser.StatementBodyNode
+     * @return The freshly parsed StatementBodyNode
      */
     @NotNull
     @Contract("_ -> new")

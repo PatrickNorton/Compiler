@@ -22,7 +22,7 @@ public class DottedVariableNode implements NameNode {
     private NameNode[] postDots;
 
     /**
-     * Create a new instance of Parser.DottedVariableNode.
+     * Create a new instance of DottedVariableNode.
      * @param preDot The token leading off before the first dot
      * @param postDot The tokens which come after the first dot
      */
@@ -33,7 +33,7 @@ public class DottedVariableNode implements NameNode {
     }
 
     /**
-     * The constructor for an empty Parser.DottedVariableNode, which can be used in
+     * The constructor for an empty DottedVariableNode, which can be used in
      * certain situations where some code might require it.
      */
     @NotNull
@@ -56,13 +56,13 @@ public class DottedVariableNode implements NameNode {
     }
 
     /**
-     * Parse a new Parser.DottedVariableNode from a list of tokens.
+     * Parse a new DottedVariableNode from a list of tokens.
      * <p>
      *     This method may or may not be depreciated, <b>do not use</b> until
      *     I've actually figured out which one will parse things correctly
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.DottedVariableNode
+     * @return The freshly parsed DottedVariableNode
      */
     @NotNull
     @Contract("_ -> new")
@@ -79,7 +79,7 @@ public class DottedVariableNode implements NameNode {
     }
 
     /**
-     * Parse a new Parser.DottedVariableNode from a list of tokens.
+     * Parse a new DottedVariableNode from a list of tokens.
      * <p>
      *     This method also may or may not work, but it seems to do so better
      *     than {@link DottedVariableNode#parseNamesOnly} at the moment, so we'll see.
@@ -87,7 +87,7 @@ public class DottedVariableNode implements NameNode {
      *     VariableNode})</code>.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.DottedVariableNode
+     * @return The freshly parsed DottedVariableNode
      */
     @NotNull
     static DottedVariableNode parseName(@NotNull TokenList tokens) {

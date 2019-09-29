@@ -13,7 +13,7 @@ public class OperatorNode implements SubTestNode {
     private ArgumentNode[] operands;
 
     /**
-     * Construct a new instance of Parser.OperatorNode.
+     * Construct a new instance of OperatorNode.
      * @param operator The operator itself
      * @param operands The operands of the operator
      */
@@ -24,7 +24,7 @@ public class OperatorNode implements SubTestNode {
     }
 
     /**
-     * Construct a new instance of Parser.OperatorNode.
+     * Construct a new instance of OperatorNode.
      * @param operator The operator itself
      * @param operands The operands of the operator
      */

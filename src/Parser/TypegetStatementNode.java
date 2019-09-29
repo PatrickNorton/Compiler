@@ -41,14 +41,14 @@ public class TypegetStatementNode implements ImportExportNode {
     }
 
     /**
-     * Parse a Parser.TypegetStatementNode from a list of tokens.
+     * Parse a TypegetStatementNode from a list of tokens.
      * <p>
      *     The syntax for a typeget statement is: <code>["from" {@link
      *     DottedVariableNode}] "typeget" {@link DottedVariableNode} *(","
      *     {@link DottedVariableNode}) [","]</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.TypegetStatementNode
+     * @return The freshly parsed TypegetStatementNode
      */
     @NotNull
     @Contract("_ -> new")

@@ -17,7 +17,7 @@ public class IfStatementNode implements FlowStatementNode {
     private StatementBodyNode else_stmt;
 
     /**
-     * Create a new instance of Parser.IfStatementNode.
+     * Create a new instance of IfStatementNode.
      * @param conditional The conditional to test
      * @param body The body of the initial if-statement
      * @param elifs All elif statements post-ceding the initial if
@@ -54,7 +54,7 @@ public class IfStatementNode implements FlowStatementNode {
      *     The grammar of an if statement is: <code>"if" {@link TestNode}
      *     {@link StatementBodyNode} *("elif" {@link TestNode} {@link
      *     StatementBodyNode}) ["else" {@link StatementBodyNode}]</code>. The
-     *     first node in the Parser.TokenList passed in must be "if".
+     *     first node in the TokenList passed in must be "if".
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly-parsed if statement

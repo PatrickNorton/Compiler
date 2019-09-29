@@ -19,7 +19,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private NameNode[] decorators = new NameNode[0];
 
     /**
-     * Construct a new instance of Parser.OperatorDefinitionNode.
+     * Construct a new instance of OperatorDefinitionNode.
      * @param op_code The code of the operator definition
      * @param ret_type The return type of the operator
      * @param args The arguments the operator takes
@@ -96,7 +96,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      *     therefore the list of tokens must begin with a special operator.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly-parsed Parser.OperatorDefinitionNode
+     * @return The freshly-parsed OperatorDefinitionNode
      */
     @NotNull
     @Contract("_ -> new")

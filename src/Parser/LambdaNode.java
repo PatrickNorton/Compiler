@@ -12,7 +12,7 @@ public class LambdaNode implements SubTestNode {
     private StatementBodyNode body;
 
     /**
-     * Create a new instance of Parser.LambdaNode
+     * Create a new instance of LambdaNode
      * @param args The arguments passed to the lambda
      * @param body The body of the lambda
      */
@@ -31,7 +31,7 @@ public class LambdaNode implements SubTestNode {
     }
 
     /**
-     * Parse a new Parser.LambdaNode from a list of tokens.
+     * Parse a new LambdaNode from a list of tokens.
      * <p>
      *     The syntax for a lambda is: <code>"lambda" {@link
      *     TypedArgumentListNode} {@link StatementBodyNode}</code>.

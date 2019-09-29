@@ -36,15 +36,15 @@ public class WithStatementNode implements FlowStatementNode {
     }
 
     /**
-     * Parse a Parser.WithStatementNode from a list of tokens.
+     * Parse a WithStatementNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.WithStatementNode is: <code>"with" {@link TestNode}
+     *     The syntax for a WithStatementNode is: <code>"with" {@link TestNode}
      *     *("," {@link TestNode}) [","] "as" {@link VariableNode} *(","
      *     {@link TestNode}) [","] {@link StatementBodyNode}</code>. The list
      *     of tokens must begin with "with" when passed.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.WithStatementNode
+     * @return The freshly parsed WithStatementNode
      */
     @NotNull
     @Contract("_ -> new")

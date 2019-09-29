@@ -9,8 +9,8 @@ import java.util.StringJoiner;
 /**
  * The class for an assignment, such as {@code a = f(b)}.
  * <p>
- * Also note: This has no {@code Parser.AssignmentNode.parse} static method, because it is built up instead by
- * the parse in Parser.AssignStatementNode. This is because there is no easy way to
+ * Also note: This has no {@code AssignmentNode.parse} static method, because it is built up instead by
+ * the parse in AssignStatementNode. This is because there is no easy way to
  * tell whether or not the result is declared or not at an early enough point to
  * split the two off from each other.
  * </p>
@@ -30,7 +30,7 @@ public class AssignmentNode implements AssignStatementNode {
     private TestNode[] value;
 
     /**
-     * Construct new instance of an Parser.AssignmentNode.
+     * Construct new instance of an AssignmentNode.
      * @param is_colon whether or not the assignment is a dynamic or static
      *                 assignment (:= vs =)
      * @param name The name(s) being assigned to

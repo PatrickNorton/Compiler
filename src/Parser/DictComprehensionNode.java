@@ -24,7 +24,7 @@ public class DictComprehensionNode implements SubTestNode {
     private TestNode[] looped;
 
     /**
-     * Create new instance of Parser.DictComprehensionNode.
+     * Create new instance of DictComprehensionNode.
      * @param key The value which is evaluated to create the dict keys
      * @param val The value which is evaluated to create the corresponding
      *            value
@@ -56,7 +56,7 @@ public class DictComprehensionNode implements SubTestNode {
     }
 
     /**
-     * Parse a Parser.DictComprehensionNode from a list of tokens.
+     * Parse a DictComprehensionNode from a list of tokens.
      * <p>
      *     The syntax for a dictionary comprehension is: <code>"{" {@link
      *     TestNode} ":" {@link TestNode} "for" {@link TypedVariableNode}
@@ -64,7 +64,7 @@ public class DictComprehensionNode implements SubTestNode {
      *     *("," {@link TestNode}) [","] "}"</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly created Parser.DictComprehensionNode
+     * @return The newly created DictComprehensionNode
      * @see ComprehensionNode#parse
      */
     @NotNull

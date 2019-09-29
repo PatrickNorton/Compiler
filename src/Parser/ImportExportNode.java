@@ -9,13 +9,13 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface ImportExportNode extends SimpleStatementNode {
     /**
-     * Parse an Parser.ImportExportNode from a list of tokens.
+     * Parse an ImportExportNode from a list of tokens.
      * <p>
      *     This method at the moment only parses the nodes that begin with
      *     {@code "from"}, and nothing else.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.ImportExportNode
+     * @return The freshly parsed ImportExportNode
      */
     @Contract("_ -> new")
     @NotNull
@@ -34,7 +34,7 @@ public interface ImportExportNode extends SimpleStatementNode {
                 case TYPEGET:
                     return TypegetStatementNode.parse(tokens);
                 default:
-                    throw new RuntimeException("Unknown Parser.ImportExportNode");
+                    throw new RuntimeException("Unknown ImportExportNode");
             }
         }
     }

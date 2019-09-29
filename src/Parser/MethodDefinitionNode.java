@@ -21,7 +21,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     private NameNode[] decorators = new NameNode[0];
 
     /**
-     * Create a new instance of Parser.MethodDefinitionNode.
+     * Create a new instance of MethodDefinitionNode.
      * @param name The name of the method defined
      * @param args The arguments the method takes
      * @param retval The return values of the method

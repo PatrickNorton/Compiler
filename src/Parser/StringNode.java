@@ -20,7 +20,7 @@ public class StringNode extends StringLikeNode {
     private EnumSet<StringPrefix> prefixes;
 
     /**
-     * Create a new instance of Parser.StringNode.
+     * Create a new instance of StringNode.
      * @param contents The contents of the string
      * @param prefixes The prefixes thereof
      */
@@ -44,7 +44,7 @@ public class StringNode extends StringLikeNode {
     }
 
     /**
-     * Parse a Parser.StringNode from a list of tokens.
+     * Parse a StringNode from a list of tokens.
      * <p>
      *     String nodes consist only of a string token, and thus have only the
      *     requirement that the first node of the token list is of type STRING.

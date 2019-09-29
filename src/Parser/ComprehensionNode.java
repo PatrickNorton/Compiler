@@ -18,7 +18,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     private TestNode[] looped;
 
     /**
-     * Create a new instance of Parser.ComprehensionNode.
+     * Create a new instance of ComprehensionNode.
      * @param brace_type The type of brace used in the comprehension
      * @param variables The variables being looped over in the loop
      * @param builder What is actually forming the values that go into the
@@ -54,7 +54,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     }
 
     /**
-     * Parse a new Parser.ComprehensionNode from a list of tokens.
+     * Parse a new ComprehensionNode from a list of tokens.
      * <p>
      *     The syntax for a comprehension is: <code>OPEN_BRACE {@link TestNode}
      *     "for" *{@link TypedVariableNode} "in" *{@link TestNode} CLOSE_BRACE

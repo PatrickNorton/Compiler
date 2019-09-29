@@ -16,7 +16,7 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
     private TestNode value;
 
     /**
-     * Create new Parser.AugmentedAssignmentNode.
+     * Create new AugmentedAssignmentNode.
      * @param operator the operator being augmented
      * @param name the name which is augmented
      * @param value the value to which it is being augmented and then assigned

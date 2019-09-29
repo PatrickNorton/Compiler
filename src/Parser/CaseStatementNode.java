@@ -47,7 +47,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
      *     method. The list of tokens must begin with "case" when passed.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.CaseStatementNode.
+     * @return The freshly parsed CaseStatementNode.
      */
     @NotNull
     @Contract("_ -> new")
@@ -72,7 +72,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param fallthrough Whether or not the statement allows fallthrough
-     * @return The freshly parsed Parser.CaseStatementNode
+     * @return The freshly parsed CaseStatementNode
      */
     @NotNull
     @Contract("_, _ -> new")

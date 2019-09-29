@@ -1,6 +1,6 @@
 package Parser;
 // TODO! Rename getName() to not conflict with standard name
-// TODO? Remove Parser.SubTestNode & replace with something more meaningful
+// TODO? Remove SubTestNode & replace with something more meaningful
 
 
 import org.jetbrains.annotations.Contract;

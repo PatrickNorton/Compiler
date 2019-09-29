@@ -68,7 +68,7 @@ public class TryStatementNode implements FlowStatementNode {
      *     either an "except" or a "finally" in the statement.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.TryStatementNode
+     * @return The freshly parsed TryStatementNode
      */
     @NotNull
     @Contract("_ -> new")

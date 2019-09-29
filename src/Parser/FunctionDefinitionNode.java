@@ -80,14 +80,14 @@ public class FunctionDefinitionNode implements DefinitionNode {
     }
 
     /**
-     * Parse a Parser.FunctionDefinitionNode from a list of tokens.
+     * Parse a FunctionDefinitionNode from a list of tokens.
      * <p>
      *     The syntax for a function definition is: <code>"func" {@link
      *     VariableNode} {@link TypedArgumentListNode} ["->" {@link TypeNode}
      *     *("," {@link TypeNode}) [","]] {@link StatementBodyNode}</code>.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The newly parsed Parser.FunctionDefinitionNode
+     * @return The newly parsed FunctionDefinitionNode
      */
     @NotNull
     @Contract("_ -> new")

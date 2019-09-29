@@ -28,7 +28,7 @@ public interface AtomicNode extends SubTestNode {
     /**
      * Parse a list of labels for a switch statement.
      * @param tokens The list of tokens to be parsed
-     * @return The freshly parsed Parser.AtomicNode
+     * @return The freshly parsed AtomicNode
      */
     @NotNull
     static AtomicNode[] parseLabelList(@NotNull TokenList tokens) {

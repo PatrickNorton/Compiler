@@ -12,7 +12,7 @@ public class TypedefStatementNode implements SimpleStatementNode {
     private TypeNode type;
 
     /**
-     * Construct a new instance of Parser.TypedefStatementNode.
+     * Construct a new instance of TypedefStatementNode.
      * @param name The name of the typedef
      * @param type The type being assigned to
      */
@@ -31,14 +31,14 @@ public class TypedefStatementNode implements SimpleStatementNode {
     }
 
     /**
-     * Parse a Parser.TypedefStatementNode from a list of tokens.
+     * Parse a TypedefStatementNode from a list of tokens.
      * <p>
      *     The syntax for a typedef statement is: <code>"typedef" {@link
      *     TypeNode} "as" {@link TypeNode}</code>. The list of tokens passed
      *     must begin with "typedef".
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.TypedefStatementNode
+     * @return The freshly parsed TypedefStatementNode
      */
     @NotNull
     @Contract("_ -> new")

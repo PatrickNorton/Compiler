@@ -13,7 +13,7 @@ public class BreakStatementNode implements SimpleFlowNode {
     private TestNode cond;
 
     /**
-     * Create new Parser.BreakStatementNode.
+     * Create new BreakStatementNode.
      * @param loops The number of loops to be broken from
      * @param cond The conditional to be tested for
      */
@@ -33,7 +33,7 @@ public class BreakStatementNode implements SimpleFlowNode {
     }
 
     /**
-     * Parse Parser.BreakStatementNode from list of tokens.
+     * Parse BreakStatementNode from list of tokens.
      * <p>
      *     The break statement consists of three parts: the "break" keyword, the
      *     number of loops broken (optional), and the condition upon which the

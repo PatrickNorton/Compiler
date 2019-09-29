@@ -34,7 +34,7 @@ public class WhileStatementNode implements FlowStatementNode {
     }
 
     /**
-     * Parse a Parser.WhileStatementNode from a list of tokens.
+     * Parse a WhileStatementNode from a list of tokens.
      * <p>
      *     The syntax for a while statement is: <code>"while" {@link TestNode}
      *     {@link StatementBodyNode} ["nobreak" {@link

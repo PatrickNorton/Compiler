@@ -33,11 +33,11 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     }
 
     /**
-     * Parse a Parser.VariableNode if and only if the first token in the list matches
+     * Parse a VariableNode if and only if the first token in the list matches
      * one of the ones given.
      * @param tokens The list of tokens to destructively parse
      * @param types The list of types to check against
-     * @return The freshly parsed Parser.VariableNode
+     * @return The freshly parsed VariableNode
      */
     @NotNull
     static VariableNode parseOnToken(@NotNull TokenList tokens, TokenType... types) {
@@ -49,12 +49,12 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     }
 
     /**
-     * Parse a Parser.VariableNode from a list of tokens.
+     * Parse a VariableNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.VariableNode is: {@code NAME}.
+     *     The syntax for a VariableNode is: {@code NAME}.
      * </p>
      * @param tokens The list of tokens to destructively parse
-     * @return The freshly parsed Parser.VariableNode
+     * @return The freshly parsed VariableNode
      */
     @NotNull
     @Contract("_ -> new")
@@ -87,7 +87,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
      * Parse a list of VariableNodes.
      * @param tokens The list of tokens to be destructively parsed
      * @param ignore_newlines Whether or not to ignore newlines
-     * @return The freshly parsed Parser.VariableNode array
+     * @return The freshly parsed VariableNode array
      */
     static VariableNode[] parseList(TokenList tokens, boolean ignore_newlines) {
         LinkedList<VariableNode> variables = new LinkedList<>();

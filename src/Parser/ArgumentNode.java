@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedList;
 
 /**
- * Parser.ArgumentNode is the class for an untyped argument in code, for example in
+ * ArgumentNode is the class for an untyped argument in code, for example in
  * function calls, e.g. {@code foo(a, b+c+d, *e)}, where there would be 3
  * ArgumentNodes, consisting of a, b+c*d, and *e.
  *
@@ -24,7 +24,7 @@ public class ArgumentNode implements BaseNode {
     private TestNode argument;
 
     /**
-     * Create new instance of Parser.ArgumentNode.
+     * Create new instance of ArgumentNode.
      * @param variable The variable which is used as a keyword in the call
      * @param vararg Whether or not there is a vararg, and what the vararg is
      *               (e.g. * vs **)

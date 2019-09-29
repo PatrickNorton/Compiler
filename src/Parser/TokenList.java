@@ -17,7 +17,7 @@ public final class TokenList implements Iterable<Token> {
     private final Tokenizer tokenizer;
 
     /**
-     * Construct a new instance of Parser.TokenList.
+     * Construct a new instance of TokenList.
      * <p>
      *     This constructs from a buffer of tokens, instead of using a file.
      * </p>
@@ -30,7 +30,7 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
-     * Construct a new instance of Parser.TokenList.
+     * Construct a new instance of TokenList.
      * <p>
      *     This takes a {@link Tokenizer} as input and slowly parses that until
      *     there are no tokens left.
@@ -382,7 +382,7 @@ public final class TokenList implements Iterable<Token> {
 
     /**
      * Test if the token at the index is one of a certain set of values.
-     * @param type1 The Parser.TokenType value to check
+     * @param type1 The TokenType value to check
      * @param type2 The String value to check
      * @return Whether the token is of those values
      */
@@ -432,7 +432,7 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
-     * The iterator for a Parser.TokenList.
+     * The iterator for a TokenList.
      */
     private class TokenIterator implements Iterator<Token> {
         private final ListIterator<Token> bufferIterator;

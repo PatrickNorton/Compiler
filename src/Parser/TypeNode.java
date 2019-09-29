@@ -36,16 +36,16 @@ public class TypeNode implements AtomicNode {
     }
 
     /**
-     * Parse a Parser.TypeNode from a list of tokens.
+     * Parse a TypeNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.TypeNode is: <code>{@link DottedVariableNode} ["["
+     *     The syntax for a TypeNode is: <code>{@link DottedVariableNode} ["["
      *     [(["*"] {@link TypeNode} | "[" [["*"] {@link TypeNode}]
      *     *("," ["*"] {@link TypeNode}) [","]] "]") *(","
      *     (["*"] {@link TypeNode} | "[" [["*"] {@link TypeNode}]
      *     *("," ["*"] {@link TypeNode}) [","] "]") [","] "]"]</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The parsed Parser.TypeNode
+     * @return The parsed TypeNode
      */
     @NotNull
     static TypeNode parse(TokenList tokens) {
@@ -53,11 +53,11 @@ public class TypeNode implements AtomicNode {
     }
 
     /**
-     * Parse a Parser.TypeNode from a list of tokens.
+     * Parse a TypeNode from a list of tokens.
      * @param tokens The list of tokens to destructively parse.
      * @param allow_empty Whether or not empty varargs are allowed
      * @param is_vararg Whether or not the type is a vararg.
-     * @return The freshly parsed Parser.TypeNode
+     * @return The freshly parsed TypeNode
      */
     @NotNull
     @Contract("_, _, _ -> new")

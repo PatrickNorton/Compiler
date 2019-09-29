@@ -35,7 +35,7 @@ public class InterfaceBodyNode implements BodyNode {
      *     "}"</code>.
      * </p>
      * @param tokens The list of tokens to be parsed
-     * @return The freshly parsed Parser.InterfaceBodyNode
+     * @return The freshly parsed InterfaceBodyNode
      */
     @NotNull
     @Contract("_ -> new")

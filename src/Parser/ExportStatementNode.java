@@ -15,7 +15,7 @@ public class ExportStatementNode implements ImportExportNode {
     private DottedVariableNode[] exports;
 
     /**
-     * Create a new instance of Parser.ExportStatementNode.
+     * Create a new instance of ExportStatementNode.
      * @param exports The list of exports
      */
     @Contract(pure = true)
@@ -28,7 +28,7 @@ public class ExportStatementNode implements ImportExportNode {
     }
 
     /**
-     * Parse a new Parser.ExportStatementNode from a list of tokens.
+     * Parse a new ExportStatementNode from a list of tokens.
      * <p>
      *     The syntax for an export statement is: <code>"export" {@link
      *     DottedVariableNode} *("," {@link DottedVariableNode}) [","]</code>.

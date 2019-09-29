@@ -18,7 +18,7 @@ public class DotimesStatementNode implements FlowStatementNode {
     private StatementBodyNode nobreak;
 
     /**
-     * Create a new instance of Parser.DotimesStatementNode.
+     * Create a new instance of DotimesStatementNode.
      * @param iterations The number of iterations to be taken
      * @param body The body of the node
      * @param nobreak The nobreak statement
@@ -44,9 +44,9 @@ public class DotimesStatementNode implements FlowStatementNode {
     }
 
     /**
-     * Parse a Parser.DotimesStatementNode from a list of tokens.
+     * Parse a DotimesStatementNode from a list of tokens.
      * <p>
-     *     The syntax of a Parser.DotimesStatementNode is as follows: <code>"dotimes"
+     *     The syntax of a DotimesStatementNode is as follows: <code>"dotimes"
      *     {@link TestNode} {@link StatementBodyNode} ["nobreak" {@link
      *     StatementBodyNode}]</code>.
      * </p>

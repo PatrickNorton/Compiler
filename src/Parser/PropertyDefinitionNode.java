@@ -19,7 +19,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     private NameNode[] decorators = new NameNode[0];
 
     /**
-     * Create a new instance of Parser.PropertyDefinitionNode.
+     * Create a new instance of PropertyDefinitionNode.
      * @param name The name of the property
      * @param get The getter attribute for the property
      * @param set_args The arguments for setting the property
@@ -90,7 +90,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     }
 
     /**
-     * Parse a new Parser.PropertyDefinitionNode from a list of tokens.
+     * Parse a new PropertyDefinitionNode from a list of tokens.
      * <p>
      *     The syntax of a property definition is: <code>*({@link
      *     DescriptorNode}) "property" [{@link NameNode}] "{" ["get" {@link
@@ -98,7 +98,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      *     StatementBodyNode}] "}"</code>.
      * </p>
      * @param tokens The list of tokens to be parsed
-     * @return The freshly parsed Parser.PropertyDefinitionNode
+     * @return The freshly parsed PropertyDefinitionNode
      */
     @NotNull
     @Contract("_ -> new")

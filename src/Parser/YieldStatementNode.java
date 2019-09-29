@@ -29,14 +29,14 @@ public class YieldStatementNode implements SimpleStatementNode {
     }
 
     /**
-     * Given a list of tokens, parse a Parser.YieldStatementNode.
+     * Given a list of tokens, parse a YieldStatementNode.
      * <p>
      *     The syntax for a yield statement is: <code>"yield" ["from"] {@link
      *     TestNode} *("," {@link TestNode}) [",']</code>. The passed list must
      *     begin with "yield" when passed.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.YieldStatementNode
+     * @return The freshly parsed YieldStatementNode
      */
     @NotNull
     @Contract("_ -> new")

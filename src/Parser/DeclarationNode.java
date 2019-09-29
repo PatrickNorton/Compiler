@@ -17,7 +17,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     /**
-     * Create a new instance of Parser.DeclarationNode.
+     * Create a new instance of DeclarationNode.
      * @param type The type of the declared variable
      * @param name The name of that variable
      */
@@ -52,16 +52,16 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     }
 
     /**
-     * Parse a Parser.DeclarationNode from a list of tokens.
+     * Parse a DeclarationNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.DeclarationNode is: <code>{@link TypeNode}
+     *     The syntax for a DeclarationNode is: <code>{@link TypeNode}
      *     {@link VariableNode}</code>. It is important that there be a check
      *     done previously to determine that this is not simply part of a
      *     larger node, such as a {@link DeclaredAssignmentNode}, or other
      *     such thing.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.DeclarationNode
+     * @return The newly parsed DeclarationNode
      */
     @NotNull
     static DeclarationNode parse(TokenList tokens) {

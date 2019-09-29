@@ -31,7 +31,7 @@ public class TypedVariableNode implements SubTestNode {
     /**
      * Parse a list of TypedVariableNodes.
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.TypedVariableNode array
+     * @return The freshly parsed TypedVariableNode array
      */
     @NotNull
     static TypedVariableNode[] parseList(TokenList tokens) {
@@ -50,9 +50,9 @@ public class TypedVariableNode implements SubTestNode {
     }
 
     /**
-     * Parse a new Parser.TypedVariableNode from a list of tokens.
+     * Parse a new TypedVariableNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.TypedVariableNode is: <code>{@link TypeNode}
+     *     The syntax for a TypedVariableNode is: <code>{@link TypeNode}
      *     {@link VariableNode}</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed

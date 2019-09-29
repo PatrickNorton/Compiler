@@ -17,7 +17,7 @@ public class ElifStatementNode implements BaseNode {
     private StatementBodyNode body;
 
     /**
-     * Construct new instance of Parser.ElifStatementNode.
+     * Construct new instance of ElifStatementNode.
      * @param test The conditional for the statement
      * @param body The body of the statement
      */

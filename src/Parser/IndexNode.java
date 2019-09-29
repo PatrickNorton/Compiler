@@ -13,7 +13,7 @@ public class IndexNode implements NameNode {
     private TestNode[] indices;
 
     /**
-     * Construct a new instance of Parser.IndexNode.
+     * Construct a new instance of IndexNode.
      * @param var The node being indexed
      * @param indices The list of indices in the square brackets
      */

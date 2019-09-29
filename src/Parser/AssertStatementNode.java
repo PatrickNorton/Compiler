@@ -16,7 +16,7 @@ public class AssertStatementNode implements SimpleStatementNode {
     private TestNode assertion;
 
     /**
-     * Create new instance of Parser.AssertStatementNode.
+     * Create new instance of AssertStatementNode.
      * @param assertion The assertion to be tested
      */
     @Contract(pure = true)
@@ -29,7 +29,7 @@ public class AssertStatementNode implements SimpleStatementNode {
     }
 
     /**
-     * Parse Parser.AssertStatementNode from a list of tokens. This will use the
+     * Parse AssertStatementNode from a list of tokens. This will use the
      * definition of an assertion in order to create a new node, taking up the
      * stream as it goes
      * @param tokens The list of tokens to be parsed. This method does remove

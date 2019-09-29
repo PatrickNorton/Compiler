@@ -12,7 +12,7 @@ public class IncrementNode implements SimpleStatementNode {
     private NameNode variable;
 
     /**
-     * Construct a new instance of Parser.IncrementNode.
+     * Construct a new instance of IncrementNode.
      * @param variable The variable to be incremented
      */
     @Contract(pure = true)
@@ -30,7 +30,7 @@ public class IncrementNode implements SimpleStatementNode {
      *     The grammar for an increment is: <code>{@link NameNode} "++"</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.IncrementNode
+     * @return The freshly parsed IncrementNode
      */
     @NotNull
     @Contract("_ -> new")

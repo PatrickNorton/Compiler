@@ -13,7 +13,7 @@ import java.util.LinkedList;
  */
 public interface TestNode extends IndependentNode, EmptiableNode {
     /**
-     * Whether or not the Parser.TestNode is empty.
+     * Whether or not the TestNode is empty.
      * @return if it is empty
      */
     @Override
@@ -22,7 +22,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
-     * Construct a new empty Parser.TestNode.
+     * Construct a new empty TestNode.
      * @return The empty node
      */
     @NotNull
@@ -32,13 +32,13 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
-     * Parse a Parser.TestNode from a list of statements.
+     * Parse a TestNode from a list of statements.
      * <p>
-     *     A Parser.TestNode is simply defined as the union of its subclasses, and so
+     *     A TestNode is simply defined as the union of its subclasses, and so
      *     this is what this function does, it delegates to that.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.TestNode
+     * @return The freshly parsed TestNode
      */
     @NotNull
     static TestNode parse(TokenList tokens) {
@@ -46,15 +46,15 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
-     * Parse a Parser.TestNode from a list of statements, with or without newlines
+     * Parse a TestNode from a list of statements, with or without newlines
      * ignored.
      * <p>
-     *     A Parser.TestNode is simply defined as the union of its subclasses, and so
+     *     A TestNode is simply defined as the union of its subclasses, and so
      *     this is what this function does, it delegates to that.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param ignore_newline Whether or not to ignore newlines
-     * @return The freshly parsed Parser.TestNode
+     * @return The freshly parsed TestNode
      */
     @NotNull
     static TestNode parse(@NotNull TokenList tokens, boolean ignore_newline) {
@@ -74,15 +74,15 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
-     * Parse the non-ternary portion of a Parser.TestNode.
+     * Parse the non-ternary portion of a TestNode.
      * <p>
-     *     This is necessary so that when Parser.TestNode parses everything else, which
+     *     This is necessary so that when TestNode parses everything else, which
      *     can be part of a {@link TernaryNode ternary}, it does not try to eat
      *     the ternary and go into an infinite recursive loop.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param ignore_newline Whether or not to ignore newlines
-     * @return The freshly parsed Parser.TestNode
+     * @return The freshly parsed TestNode
      */
     @NotNull
     static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
@@ -141,7 +141,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param ignore_newline Whether or not to ignore newlines
-     * @return The parsed Parser.TestNode
+     * @return The parsed TestNode
      */
     @NotNull
     private static TestNode parseLeftVariable(@NotNull TokenList tokens, boolean ignore_newline) {
@@ -300,7 +300,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     /**
      * Parse an open brace from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.TestNode
+     * @return The freshly parsed TestNode
      */
     @NotNull
     static TestNode parseOpenBrace(@NotNull TokenList tokens) {

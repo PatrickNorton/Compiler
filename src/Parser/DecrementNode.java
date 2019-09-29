@@ -13,7 +13,7 @@ public class DecrementNode implements SimpleStatementNode {
     private NameNode variable;
 
     /**
-     * Create new Parser.DecrementNode from a variable.
+     * Create new DecrementNode from a variable.
      * @param variable The decremented variable
      */
     @Contract(pure = true)
@@ -26,9 +26,9 @@ public class DecrementNode implements SimpleStatementNode {
     }
 
     /**
-     * Parse a Parser.DecrementNode from a list of tokens.
+     * Parse a DecrementNode from a list of tokens.
      * <p>
-     *     The syntax for a Parser.DecrementNode is: <code>{@link NameNode} "--"
+     *     The syntax for a DecrementNode is: <code>{@link NameNode} "--"
      *     </code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed

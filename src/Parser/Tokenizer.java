@@ -145,8 +145,8 @@ public final class Tokenizer {
     }
 
     /**
-     * Create a new empty Parser.Tokenizer
-     * @return The newly parsed Parser.Tokenizer
+     * Create a new empty Tokenizer
+     * @return The newly parsed Tokenizer
      */
     @NotNull
     @Contract(" -> new")

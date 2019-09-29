@@ -1,7 +1,7 @@
 package Parser;
 
 /**
- * The interface representing a non-ternary Parser.TestNode.
+ * The interface representing a non-ternary TestNode.
  * @author Patrick Norton
  * @see TestNode
  */

@@ -133,7 +133,7 @@ public enum OperatorTypeNode implements AtomicNode {
     );
 
     /**
-     * Create new instance of Parser.OperatorTypeNode.
+     * Create new instance of OperatorTypeNode.
      * @param name The sequence of the operator
      */
     @Contract(pure = true)
@@ -211,9 +211,9 @@ public enum OperatorTypeNode implements AtomicNode {
     }
 
     /**
-     * Parse an Parser.OperatorTypeNode from a list of tokens.
+     * Parse an OperatorTypeNode from a list of tokens.
      * @param tokens The list of tokens to be parsed destructively
-     * @return The freshly parsed Parser.OperatorTypeNode
+     * @return The freshly parsed OperatorTypeNode
      */
     @NotNull
     static OperatorTypeNode parse(@NotNull TokenList tokens) {
@@ -238,7 +238,7 @@ public enum OperatorTypeNode implements AtomicNode {
             case OPERATOR_SP:
                 return findOp(token.sequence.replaceFirst("operator *", ""), Use.OPERATOR_SP);
             default:
-                throw new RuntimeException("Illegal Parser.TokenType for Parser.OperatorTypeNode.parse "+token);
+                throw new RuntimeException("Illegal TokenType for OperatorTypeNode.parse "+token);
         }
     }
 

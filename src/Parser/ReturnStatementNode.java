@@ -15,7 +15,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
     private TestNode cond;
 
     /**
-     * Construct a new instance of Parser.ReturnStatementNode.
+     * Construct a new instance of ReturnStatementNode.
      * @param returned The list of tokens that are returned
      * @param cond The condition as to whether or not there is a return
      */
@@ -42,7 +42,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
      *     TestNode}]</code>. The list of tokens must begin with "return".
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.ReturnStatementNode
+     * @return The newly parsed ReturnStatementNode
      */
     @NotNull
     @Contract("_ -> new")

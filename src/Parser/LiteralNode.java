@@ -47,7 +47,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
      *     brace when passed here.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The newly parsed Parser.LiteralNode
+     * @return The newly parsed LiteralNode
      */
     @NotNull
     @Contract("_ -> new")

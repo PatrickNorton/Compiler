@@ -16,7 +16,7 @@ public class ForStatementNode implements FlowStatementNode {
     private StatementBodyNode nobreak;
 
     /**
-     * Construct a new instance of Parser.ForStatementNode.
+     * Construct a new instance of ForStatementNode.
      * @param vars The variables iterating on each loop
      * @param iterables The iterables being iterated over
      * @param body The body of the loop
@@ -48,7 +48,7 @@ public class ForStatementNode implements FlowStatementNode {
     }
 
     /**
-     * Parse a Parser.ForStatementNode from a list of tokens.
+     * Parse a ForStatementNode from a list of tokens.
      * <p>
      *     The syntax of a for loop is: <code>"for" {@link TypedVariableNode}
      *     *("," {@link TypedVariableNode}) [","] "in" {@link TestNode} *(","
@@ -57,7 +57,7 @@ public class ForStatementNode implements FlowStatementNode {
      *     "for" in order to parse properly.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.ForStatementNode
+     * @return The newly parsed ForStatementNode
      */
     @NotNull
     @Contract("_ -> new")

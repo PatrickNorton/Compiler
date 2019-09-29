@@ -6,7 +6,7 @@ package Parser;
  */
 public class ParserException extends RuntimeException {
     /**
-     * Create a new Parser.ParserException
+     * Create a new ParserException
      * @param s The string of the exception
      */
     public ParserException(String s) {

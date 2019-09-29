@@ -59,7 +59,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode {
      *     statements must be of the same fallthrough type.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed Parser.SwitchStatementNode.
+     * @return The freshly parsed SwitchStatementNode.
      */
     @NotNull
     @Contract("_ -> new")

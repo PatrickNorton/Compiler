@@ -21,13 +21,13 @@ public class DeleteStatementNode implements SimpleStatementNode {
     }
 
     /**
-     * Parse Parser.DeleteStatementNode from a list of tokens.
+     * Parse DeleteStatementNode from a list of tokens.
      * <p>
-     *     The syntax of Parser.DeleteStatementNode is as follows: <code>"del"
+     *     The syntax of DeleteStatementNode is as follows: <code>"del"
      *     {@link TestNode}</code>.
      * </p>
      * @param tokens The list of tokens which is to be parsed destructively
-     * @return The newly parsed Parser.DeleteStatementNode
+     * @return The newly parsed DeleteStatementNode
      */
     @NotNull
     @Contract("_ -> new")

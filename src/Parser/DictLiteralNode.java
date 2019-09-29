@@ -35,7 +35,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
     }
 
     /**
-     * Parse a Parser.DictLiteralNode from a list of tokens.
+     * Parse a DictLiteralNode from a list of tokens.
      * <p>
      *     The syntax of a dictionary literal is as follows: <code>"{" {@link
      *     TestNode} ":" {@link TestNode} *("," {@link TestNode} ":" {@link
@@ -43,7 +43,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
      *     container literals.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed Parser.DictLiteralNode
+     * @return The newly parsed DictLiteralNode
      */
     @NotNull
     @Contract("_ -> new")

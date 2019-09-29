@@ -110,11 +110,11 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
      *     The syntax for a context definition is as follows: <code>"context"
      *     [{@link VariableNode}] "{" ["enter" {@link StatementBodyNode}]
      *     ["exit" {@link StatementBodyNode}] "}"</code>. The
-     *     Parser.ContextDefinitionNode must start with "context", passing a Parser.TokenList
+     *     ContextDefinitionNode must start with "context", passing a TokenList
      *     without that will result in an error.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
-     * @return The new Parser.ContextDefinitionNode
+     * @return The new ContextDefinitionNode
      */
     @NotNull
     @Contract("_ -> new")
