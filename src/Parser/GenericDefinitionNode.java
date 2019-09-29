@@ -2,7 +2,14 @@ package Parser;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
+
 public interface GenericDefinitionNode extends InterfaceStatementNode {
+    @Override
+    default EnumSet<DescriptorNode> validDescriptors() {
+        return DescriptorNode.DEFINITION_VALID;
+    }
+
     static boolean isGeneric(@NotNull TokenList tokens) {
         if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
             int descriptorSize = DescriptorNode.count(tokens);

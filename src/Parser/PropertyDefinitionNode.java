@@ -84,6 +84,11 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         return decorators;
     }
 
+    @Override
+    public EnumSet<DescriptorNode> validDescriptors() {
+        return DescriptorNode.DECLARATION_VALID;
+    }
+
     /**
      * Parse a new Parser.PropertyDefinitionNode from a list of tokens.
      * <p>

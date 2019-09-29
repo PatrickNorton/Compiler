@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.StringJoiner;
 
 /**
@@ -57,6 +58,11 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @Override
     public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
+    }
+
+    @Override
+    public Set<DescriptorNode> validDescriptors() {
+        return DescriptorNode.DECLARATION_VALID;
     }
 
     /**

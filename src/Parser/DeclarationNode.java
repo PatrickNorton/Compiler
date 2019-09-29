@@ -46,6 +46,11 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
         this.descriptors = nodes;
     }
 
+    @Override
+    public EnumSet<DescriptorNode> validDescriptors() {
+        return DescriptorNode.DECLARATION_VALID;
+    }
+
     /**
      * Parse a Parser.DeclarationNode from a list of tokens.
      * <p>

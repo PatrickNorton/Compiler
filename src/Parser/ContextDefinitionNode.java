@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * The class representing a context statement.
@@ -96,6 +97,11 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
     @Override
     public void addDecorators(NameNode... decorators) {
         this.decorators = decorators;
+    }
+
+    @Override
+    public Set<DescriptorNode> validDescriptors() {
+        return DescriptorNode.CONTEXT_VALID;
     }
 
     /**

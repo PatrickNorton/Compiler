@@ -3,10 +3,14 @@ package Parser;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 public interface DescribableNode extends IndependentNode {
     void addDescriptor(EnumSet<DescriptorNode> nodes);
     EnumSet<DescriptorNode> getDescriptors();
+    default Set<DescriptorNode> validDescriptors() {
+        return EnumSet.allOf(DescriptorNode.class);
+    }
 
     /**
      * Parse a describable node from a list of tokens.
@@ -23,6 +27,9 @@ public interface DescribableNode extends IndependentNode {
         }
         IndependentNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof DescribableNode) {
+            if (!((DescribableNode) stmt).validDescriptors().containsAll(descriptors)) {
+                throw new ParserException("Invalid descriptor " + descriptors + " for this set");
+            }
             ((DescribableNode) stmt).addDescriptor(descriptors);
             return (DescribableNode) stmt;
         } else {

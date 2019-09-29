@@ -31,6 +31,11 @@ public class StaticBlockNode implements ClassStatementNode {
         throw new ParserException("Unexpected descriptor in static block");
     }
 
+    @Override
+    public EnumSet<DescriptorNode> validDescriptors() {
+        return DescriptorNode.STATIC_BLOCK_VALID;
+    }
+
     @NotNull
     @Contract("_ -> new")
     public static StaticBlockNode parse(@NotNull TokenList tokens) {

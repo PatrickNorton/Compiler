@@ -74,6 +74,11 @@ public class FunctionDefinitionNode implements DefinitionNode {
         this.annotations = annotations;
     }
 
+    @Override
+    public EnumSet<DescriptorNode> validDescriptors() {
+        return DescriptorNode.FUNCTION_VALID;
+    }
+
     /**
      * Parse a Parser.FunctionDefinitionNode from a list of tokens.
      * <p>
