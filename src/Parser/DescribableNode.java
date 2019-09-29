@@ -6,8 +6,23 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public interface DescribableNode extends IndependentNode {
+
+    /**
+     * Add a descriptor to the node
+     * @param nodes The descriptors to add
+     */
     void addDescriptor(EnumSet<DescriptorNode> nodes);
+
+    /**
+     * Get the descriptors of the node
+     * @return The descriptors
+     */
     EnumSet<DescriptorNode> getDescriptors();
+
+    /**
+     * Get the valid descriptors for a node
+     * @return The descriptors of a node
+     */
     default Set<DescriptorNode> validDescriptors() {
         return EnumSet.allOf(DescriptorNode.class);
     }
