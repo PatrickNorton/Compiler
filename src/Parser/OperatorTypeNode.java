@@ -139,23 +139,23 @@ public enum OperatorTypeNode implements AtomicNode {
         values = Collections.unmodifiableMap(temp);
     }
 
-    static {  // FIXME? Better way to initialise this?
-        List<EnumSet<OperatorTypeNode>> tempOperations = new LinkedList<>();
-        tempOperations.add(EnumSet.of(POWER));
-        tempOperations.add(EnumSet.of(BITWISE_NOT));
-        tempOperations.add(EnumSet.of(MULTIPLY, DIVIDE, FLOOR_DIV, MODULO));
-        tempOperations.add(EnumSet.of(ADD, SUBTRACT));
-        tempOperations.add(EnumSet.of(LEFT_BITSHIFT, RIGHT_BITSHIFT));
-        tempOperations.add(EnumSet.of(BITWISE_AND));
-        tempOperations.add(EnumSet.of(BITWISE_XOR, BITWISE_OR));
-        tempOperations.add(EnumSet.of(LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS));
-        tempOperations.add(EnumSet.of(IN, NOT_IN, IS, IS_NOT));
-        tempOperations.add(EnumSet.of(BOOL_NOT));
-        tempOperations.add(EnumSet.of(BOOL_AND));
-        tempOperations.add(EnumSet.of(BOOL_OR));
-        tempOperations.add(EnumSet.of(BOOL_XOR));
-        tempOperations.add(EnumSet.of(CASTED));
-        operations = Collections.unmodifiableList(tempOperations);
+    static {
+        operations = List.of(
+                EnumSet.of(POWER),
+                EnumSet.of(BITWISE_NOT),
+                EnumSet.of(MULTIPLY, DIVIDE, FLOOR_DIV, MODULO),
+                EnumSet.of(ADD, SUBTRACT),
+                EnumSet.of(LEFT_BITSHIFT, RIGHT_BITSHIFT),
+                EnumSet.of(BITWISE_AND),
+                EnumSet.of(BITWISE_XOR, BITWISE_OR),
+                EnumSet.of(LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS),
+                EnumSet.of(IN, NOT_IN, IS, IS_NOT),
+                EnumSet.of(BOOL_NOT),
+                EnumSet.of(BOOL_AND),
+                EnumSet.of(BOOL_OR),
+                EnumSet.of(BOOL_XOR),
+                EnumSet.of(CASTED)
+        );
     }
 
     /**
