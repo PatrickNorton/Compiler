@@ -53,7 +53,11 @@ public class NumberNode implements AtomicNode {
                 digit_size = 8;
                 break;
             default:
-                return new NumberNode(new BigDecimal(value));
+                try {
+                    return new NumberNode(new BigDecimal(value));
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Illegal number given");
+                }
         }
         BigDecimal val = parseInt(value.substring(2), DIGITS.substring(0, digit_size));
         return new NumberNode(val);
