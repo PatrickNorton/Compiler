@@ -13,6 +13,8 @@ import java.math.RoundingMode;
 public class NumberNode implements AtomicNode {
     private BigDecimal integer;
 
+    private static final String DIGITS = "0123456789abcdef";
+
     /**
      * Create a new instance of BigDecimal.
      * @param integer The value of the decimal
@@ -53,7 +55,7 @@ public class NumberNode implements AtomicNode {
             default:
                 return new NumberNode(new BigDecimal(value));
         }
-        BigDecimal val = parseInt(value.substring(2), "0123465789abcdef".substring(0, digit_size));
+        BigDecimal val = parseInt(value.substring(2), DIGITS.substring(0, digit_size));
         return new NumberNode(val);
     }
 
