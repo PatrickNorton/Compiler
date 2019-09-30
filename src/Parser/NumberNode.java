@@ -4,6 +4,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
@@ -12,8 +14,6 @@ import java.math.RoundingMode;
  */
 public class NumberNode implements AtomicNode {
     private BigDecimal integer;
-
-    private static final String DIGITS = "0123456789abcdef";
 
     /**
      * Create a new instance of BigDecimal.
@@ -41,55 +41,54 @@ public class NumberNode implements AtomicNode {
         if (value.length() < 2) {
             return new NumberNode(new BigDecimal(value));
         }
-        int digit_size;
+        int base;
         switch (value.charAt(1)) {
             case 'x':
-                digit_size = 16;
+                base = 16;
                 break;
             case 'b':
-                digit_size = 2;
+                base = 2;
                 break;
             case 'o':
-                digit_size = 8;
+                base = 8;
                 break;
             default:
                 try {
                     return new NumberNode(new BigDecimal(value));
                 } catch (NumberFormatException e) {
-                    throw new RuntimeException("Illegal number given");
+                    throw new RuntimeException("Illegal number " + value);
                 }
         }
-        BigDecimal val = parseInt(value.substring(2), DIGITS.substring(0, digit_size));
-        return new NumberNode(val);
+        try {
+            BigDecimal val = parseInt(value.substring(2), base);
+            return new NumberNode(val);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Illegal number " + value);
+        }
     }
 
     /**
      * Parse the BigDecimal value of the string given, in non-base-10.
      * @param value The string value of the digit to be parsed
-     * @param digits The valid digits that can be used
+     * @param base The base of the number
      * @return The value of the string
      */
-    private static BigDecimal parseInt(@NotNull String value, @NotNull String digits) {
-        int dot = value.indexOf('.');
-        int exp_size = dot >= 0 ? dot - 1 : value.length() - 1;
-        BigDecimal base = BigDecimal.valueOf(digits.length());
-        value = value.replaceAll("\\.", "");
-        BigDecimal val = new BigDecimal(0);
-        for (int i = 0; i < value.length(); i++) {
-            char digit = value.charAt(i);
-            if (digits.indexOf(digit) == -1) {
-                throw new ParserException(digit + " is not a valid digit");
-            }
-            BigDecimal digit_val = BigDecimal.valueOf(digits.indexOf(digit));
-            if (exp_size - i >= 0) {
-                val = val.add(base.pow(exp_size - i).multiply(digit_val));
+    @NotNull
+    @Contract("_, _ -> new")
+    private static BigDecimal parseInt(@NotNull String value, int base) {
+        try {
+            return BigDecimal.valueOf(Long.parseLong(value, base));
+        } catch (NumberFormatException e) {
+            int dot = value.indexOf('.');
+            if (dot == -1) {
+                return new BigDecimal(new BigInteger(value, base));
             } else {
-                BigDecimal placeValue = BigDecimal.ONE.divide(base.pow(i - exp_size),
-                        3*(value.length() - exp_size), RoundingMode.UNNECESSARY);
-                val = val.add(placeValue.multiply(digit_val));
+                String noDecimalValue = value.replaceFirst("\\.", "");
+                BigDecimal unShifted = new BigDecimal(new BigInteger(noDecimalValue, base));
+                MathContext precision = new MathContext(0, RoundingMode.UNNECESSARY);
+                return unShifted.divide(new BigDecimal(base).pow(value.length() - dot), precision);
             }
         }
-        return val;
     }
 
     @Override
