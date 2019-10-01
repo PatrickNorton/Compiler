@@ -32,14 +32,10 @@ public class FormattedStringNode extends StringLikeNode {
      * @param tests The non-string-literals which are interpolated
      */
     @Contract(pure = true)
-    public FormattedStringNode(String[] strs, TestNode[] tests, @NotNull char[] flags) {
+    public FormattedStringNode(String[] strs, TestNode[] tests, @NotNull String flags) {
         this.strs = strs;
         this.tests = tests;
-        EnumSet<StringPrefix> prefixes = EnumSet.noneOf(StringPrefix.class);
-        for (char c : flags) {
-            prefixes.add(StringPrefix.getPrefix(c));
-        }
-        this.prefixes = prefixes;
+        this.prefixes = StringPrefix.getPrefixes(flags);
     }
 
     public String[] getStrs() {
@@ -97,7 +93,7 @@ public class FormattedStringNode extends StringLikeNode {
         if (index <= inside.length()) {
             strs.add(inside.substring(end));
         }
-        return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes.toCharArray());
+        return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
     }
 
     @Override

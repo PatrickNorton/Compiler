@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
 
@@ -25,13 +26,13 @@ public class StringNode extends StringLikeNode {
      * @param prefixes The prefixes thereof
      */
     @Contract(pure = true)
-    public StringNode(String contents, @NotNull char... prefixes) {
+    public StringNode(String contents, @NotNull String prefixes) {
         this.contents = contents;
-        EnumSet<StringPrefix> stringPrefixes = EnumSet.noneOf(StringPrefix.class);
-        for (char c : prefixes) {
-            stringPrefixes.add(StringPrefix.getPrefix(c));
-        }
-        this.prefixes = stringPrefixes;
+        this.prefixes = StringPrefix.getPrefixes(prefixes);
+    }
+
+    public StringNode(String contents) {
+        this(contents, "");
     }
 
     public String getContents() {
@@ -68,7 +69,7 @@ public class StringNode extends StringLikeNode {
             if (prefixes.contains("f")) {
                 return FormattedStringNode.parse(contents);
             }
-            return new StringNode(inside, prefixes.toCharArray());
+            return new StringNode(inside, prefixes);
         }
         inside = processEscapes(inside);
         return new StringNode(inside);

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +16,9 @@ public enum StringPrefix {
     ;
 
     public final char value;
+
     private static final Map<Character, StringPrefix> values;
+    private static final EnumSet<StringPrefix> INVALID_TOGETHER = EnumSet.of(REGEX, BYTES);
 
     @Contract(pure = true)
     StringPrefix(char c) {
@@ -32,6 +35,22 @@ public enum StringPrefix {
 
     public static StringPrefix getPrefix(char c) {
         return values.get(c);
+    }
+
+    @NotNull
+    public static EnumSet<StringPrefix> getPrefixes(@NotNull String chars) {
+        EnumSet<StringPrefix> prefixes = EnumSet.noneOf(StringPrefix.class);
+        for (char c : chars.toCharArray()) {
+            StringPrefix prefix = getPrefix(c);
+            if (prefixes.contains(prefix)) {
+                throw new ParserException("Invalid prefix combination " + chars);
+            }
+            prefixes.add(prefix);
+        }
+        if (prefixes.containsAll(INVALID_TOGETHER)) {
+            throw new ParserException("Invalid prefix combination " + chars);
+        }
+        return prefixes;
     }
 
     @NotNull
