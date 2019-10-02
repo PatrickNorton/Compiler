@@ -343,12 +343,30 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
+     * Test if the first token is the TokenType given.
+     * @param type The type to test if the token is
+     * @return Whether the token is that type
+     */
+    public boolean tokenIs(TokenType type) {
+        return getFirst().is(type);
+    }
+
+    /**
      * Test if the first token is one of a series of types.
      * @param types The types to check against
      * @return Whether or not the token is of that type
      */
     public boolean tokenIs(TokenType... types) {
         return getFirst().is(types);
+    }
+
+    /**
+     * Test if the token's sequence matches the one given.
+     * @param sequence The sequence to test
+     * @return Whether or not the sequences match
+     */
+    public boolean tokenIs(String sequence) {
+        return getFirst().is(sequence);
     }
 
     /**
@@ -361,6 +379,16 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
+     * Test if the token at the specified location is of the type given
+     * @param index The index of the token
+     * @param type The type to test
+     * @return If the token is of that type
+     */
+    public boolean tokenIs(int index, TokenType type) {
+        return getToken(index).is(type);
+    }
+
+    /**
      * Test if the token at the index is one of a certain set of types.
      * @param index The index to check for type
      * @param types The types to check against
@@ -368,6 +396,16 @@ public final class TokenList implements Iterable<Token> {
      */
     public boolean tokenIs(int index, TokenType... types) {
         return getToken(index).is(types);
+    }
+
+    /**
+     * Test if the token at the specified location is of the sequence given
+     * @param index The index of the token
+     * @param sequence The sequence to test
+     * @return If the token is of that type
+     */
+    public boolean tokenIs(int index, String sequence) {
+        return getToken(index).is(sequence);
     }
 
     /**
@@ -391,12 +429,31 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
+     * Test if the first token is a keyword of the type given
+     * @param type The type to test
+     * @return If the token is of that type
+     */
+    public boolean tokenIs(Keyword type) {
+        return getFirst().is(type);
+    }
+
+    /**
      * Check if the token is a keyword of a certain type.
      * @param types The keyword types to test
      * @return Whether the token is of that type
      */
     public boolean tokenIs(Keyword... types) {
         return getFirst().is(types);
+    }
+
+    /**
+     * Test if the token at the specified location is a keyword of the type given
+     * @param index The index of the token
+     * @param type The keyword to test
+     * @return If the token is that keyword
+     */
+    public boolean tokenIs(int index, Keyword type) {
+        return getToken(index).is(type);
     }
 
     /**

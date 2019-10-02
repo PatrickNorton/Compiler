@@ -24,6 +24,15 @@ public class Token {
     }
 
     /**
+     * Test whether or not the token is a certain type.
+     * @param token The type to test
+     * @return If the token is that type
+     */
+    public boolean is(TokenType token) {
+        return this.token == token;
+    }
+
+    /**
      * Test whether or not the token is one of a certain number of token types.
      * @param tokens The list of token types to test if this is a member of
      * @return Whether or not this is one of those types
@@ -38,6 +47,15 @@ public class Token {
     }
 
     /**
+     * Test whether or not the token is a certain sequence.
+     * @param sequence The type to test
+     * @return If the token is that type
+     */
+    public boolean is(String sequence) {
+        return this.sequence.equals(sequence);
+    }
+
+    /**
      * Test whether or not the token has one of certain sequences.
      * @param sequences The sequences to be tested
      * @return Whether or not this is one of those sequences
@@ -49,6 +67,15 @@ public class Token {
             }
         }
         return false;
+    }
+
+    /**
+     * Test whether or not the token is a certain keyword.
+     * @param keyword The keyword to test
+     * @return If the token is that type
+     */
+    public boolean is(Keyword keyword) {
+        return is(TokenType.KEYWORD) && Keyword.find(this.sequence) == keyword;
     }
 
     public boolean is(@NotNull Keyword... tokens) {
