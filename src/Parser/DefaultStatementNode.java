@@ -49,7 +49,7 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
                 throw new ParserException("Expected :, got " + tokens.getFirst());
             }
             tokens.nextToken(true);
-            body = StatementBodyNode.parseSwitch(tokens);
+            body = StatementBodyNode.parseCase(tokens);
         } else {
             body = StatementBodyNode.parse(tokens);
         }
