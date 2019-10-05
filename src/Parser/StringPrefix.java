@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public enum StringPrefix {
     FORMATTED('f'),
@@ -18,7 +19,7 @@ public enum StringPrefix {
     public final char value;
 
     private static final Map<Character, StringPrefix> values;
-    private static final EnumSet<StringPrefix> INVALID_TOGETHER = EnumSet.of(REGEX, BYTES);
+    private static final Set<StringPrefix> INVALID_TOGETHER = Collections.unmodifiableSet(EnumSet.of(REGEX, BYTES));
 
     @Contract(pure = true)
     StringPrefix(char c) {
