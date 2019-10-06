@@ -23,6 +23,15 @@ public class FunctionCallNode implements NameNode, EnumKeywordNode {
         this.parameters = parameters;
     }
 
+    @Override
+    public VariableNode getVariable() {
+        if (caller instanceof VariableNode) {
+            return (VariableNode) caller;
+        } else {
+            throw new RuntimeException("Cannot call getVariable on this");
+        }
+    }
+
     public TestNode getCaller() {
         return caller;
     }

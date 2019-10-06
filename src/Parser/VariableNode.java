@@ -21,6 +21,11 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         return name;
     }
 
+    @Override
+    public VariableNode getVariable() {
+        return this;
+    }
+
     @NotNull
     @Contract(value = " -> new", pure = true)
     public static VariableNode empty() {
