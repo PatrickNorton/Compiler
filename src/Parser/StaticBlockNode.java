@@ -36,6 +36,15 @@ public class StaticBlockNode implements ClassStatementNode {
         return DescriptorNode.STATIC_BLOCK_VALID;
     }
 
+    /**
+     * Parse a StaticBlockNode from a list of tokens.
+     * <p>
+     *     The syntax for a static block is: <code>"static" {@link
+     *     StatementBodyNode}</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed StaticBlockNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static StaticBlockNode parse(@NotNull TokenList tokens) {

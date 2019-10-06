@@ -66,6 +66,11 @@ public enum DescriptorNode implements AtomicNode {
         this.name = name;
     }
 
+    /**
+     * Get a DescriptorNode based on the string given.
+     * @param type The sequence corresponding to the descriptor
+     * @return The descriptor
+     */
     public static DescriptorNode find(String type) {
         return values.get(type);
     }

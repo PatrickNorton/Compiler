@@ -9,6 +9,15 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public interface AtomicNode extends SubTestNode {
+    /**
+     * Parse a label for a switch statement.
+     * <p>
+     *     Valid switch statement labels are names, operator types, numeric
+     *     literals, and strings.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed switch label.
+     */
     @NotNull
     static AtomicNode parseLabel(@NotNull TokenList tokens) {
         switch (tokens.getFirst().token) {

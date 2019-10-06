@@ -19,6 +19,11 @@ public class SpecialOpNameNode implements NameNode {
         return operator;
     }
 
+    /**
+     * Parse a SpecialOpNameNode from a list of tokens.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed SpecialOpNameNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static SpecialOpNameNode parse(@NotNull TokenList tokens) {

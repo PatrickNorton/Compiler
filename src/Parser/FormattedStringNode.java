@@ -51,6 +51,12 @@ public class FormattedStringNode extends StringLikeNode {
         return prefixes;
     }
 
+    /**
+     * Parse a FormattedStringNode from a {@link String} representing its
+     * contents.
+     * @param contents The contents of the string
+     * @return The freshly parsed FormattedStringNode
+     */
     @NotNull
     @Contract("_ -> new")
     static FormattedStringNode parse(@NotNull String contents) {
@@ -64,6 +70,7 @@ public class FormattedStringNode extends StringLikeNode {
         }
         LinkedList<String> strs = new LinkedList<>();
         LinkedList<TestNode> tests = new LinkedList<>();
+        // Match the inside-brace portions of the string
         Matcher m = bracePattern.matcher(inside);
         int index = 0;
         int start, end = 0;
@@ -72,13 +79,22 @@ public class FormattedStringNode extends StringLikeNode {
             strs.add(inside.substring(index, start - 1));
             StringBuilder to_test = new StringBuilder();
             int netBraces = 0;
+            /*
+             * Since Java doesn't allow recursion in regex, this uses
+             * bracePattern, which matches curly braces either at the beginning
+             * or end of the match, and then just keep matching that until the
+             * net number of braces is zero.
+             */
             do {
                 String a = m.group();
                 to_test.append(a);
-                if (a.startsWith("{")) netBraces++;
-                if (a.endsWith("}")) netBraces--;
-                if (netBraces == 0) break;
-            } while (m.find());
+                if (a.startsWith("{")) {
+                    netBraces++;
+                }
+                if (a.endsWith("}")) {
+                    netBraces--;
+                }
+            } while (netBraces > 0 && m.find());
             if (netBraces > 0) {
                 throw new ParserException("Unmatched braces in " + inside);
             }

@@ -8,12 +8,6 @@ import java.util.StringJoiner;
 
 /**
  * The class for an assignment, such as {@code a = f(b)}.
- * <p>
- * Also note: This has no {@code AssignmentNode.parse} static method, because it is built up instead by
- * the parse in AssignStatementNode. This is because there is no easy way to
- * tell whether or not the result is declared or not at an early enough point to
- * split the two off from each other.
- * </p>
  *
  * @author Patrick Norton
  * @see AssignStatementNode
@@ -56,6 +50,16 @@ public class AssignmentNode implements AssignStatementNode {
         return value;
     }
 
+    /**
+     * Parse an AssignmentNode from a list of tokens.
+     * <p>
+     *     The syntax for an AssignmentNode is: <code>{@link AssignableNode}
+     *     *("," {@link AssignableNode}) [","] (=|:=) {@link TestNode} *(","
+     *     {@link TestNode}) ","</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed AssignmentNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static AssignmentNode parse(@NotNull TokenList tokens) {

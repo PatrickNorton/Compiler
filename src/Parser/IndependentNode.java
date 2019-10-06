@@ -3,6 +3,19 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * The class representing a node that can be used in a BodyNode.
+ * <p>
+ *     This node includes any node that represents an independent statement.
+ *     Nodes that do not inherit from this include {@link ElifStatementNode}
+ *     and {@link CaseStatementNode}. Those statements inherit directly from
+ *     {@link BaseNode}. Not to be confused with {@link BaseNode}, which simply
+ *     represents all nodes.
+ * </p>
+ *
+ * @author Patrick Norton
+ * @see BaseNode
+ */
 public interface IndependentNode extends BaseNode {
     /**
      * Parse any node at all from the list of tokens given.

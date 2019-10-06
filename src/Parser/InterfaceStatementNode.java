@@ -6,6 +6,7 @@ import java.util.EnumSet;
 
 /**
  * The class representing an interface statement.
+ *
  * @author Patrick Norton
  */
 public interface InterfaceStatementNode extends IndependentNode, DescribableNode {

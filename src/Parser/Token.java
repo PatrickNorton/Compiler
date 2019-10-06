@@ -90,12 +90,20 @@ public class Token {
         return false;
     }
 
+    /**
+     * Return an Epsilon token.
+     * @return The token
+     */
     @NotNull
     @Contract(value = " -> new", pure = true)
     public static Token Epsilon() {
         return new Token(TokenType.EPSILON, "");
     }
 
+    /**
+     * Return a Newline token.
+     * @return The token
+     */
     @NotNull
     @Contract(value = " -> new", pure = true)
     public static Token Newline() {

@@ -1,8 +1,14 @@
+// TODO: "defer return" statement
 package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * The node representing a defer statement.
+ *
+ * @author Patrick Norton
+ */
 public class DeferStatementNode implements FlowStatementNode {
     private StatementBodyNode body;
 
@@ -16,6 +22,15 @@ public class DeferStatementNode implements FlowStatementNode {
         return body;
     }
 
+    /**
+     * Parse a defer statement from a list of tokens.
+     * <p>
+     *     The syntax for a defer statement is: <code>"defer" {@link
+     *     StatementBodyNode}</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed DeferStatementNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static DeferStatementNode parse(@NotNull TokenList tokens) {

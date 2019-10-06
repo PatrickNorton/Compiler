@@ -8,6 +8,7 @@ import java.util.StringJoiner;
 
 /**
  * The class representing a return statement.
+ *
  * @author Patrick Norton
  */
 public class ReturnStatementNode implements SimpleFlowNode {
@@ -70,8 +71,14 @@ public class ReturnStatementNode implements SimpleFlowNode {
         return new ReturnStatementNode(returned, cond);
     }
 
+    /**
+     * Parse the returned values in a conditional return statement.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The values to be returned
+     */
     @NotNull
     private static TestNode[] parseReturns(@NotNull TokenList tokens) {
+        assert !tokens.tokenIs(Keyword.IF);
         LinkedList<TestNode> returned_list = new LinkedList<>();
         do {
             returned_list.add(TestNode.parseNoTernary(tokens, false));

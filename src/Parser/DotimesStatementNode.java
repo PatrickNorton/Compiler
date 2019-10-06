@@ -50,8 +50,8 @@ public class DotimesStatementNode implements FlowStatementNode {
      *     {@link TestNode} {@link StatementBodyNode} ["nobreak" {@link
      *     StatementBodyNode}]</code>.
      * </p>
-     * @param tokens
-     * @return
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed DotimesStatementNode
      */
     @NotNull
     @Contract("_ -> new")

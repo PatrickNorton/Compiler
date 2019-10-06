@@ -51,10 +51,23 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         this.descriptors = nodes;
     }
 
+    /**
+     * Whether or not the operator definition at the start of the list of tokens
+     * is generic.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return If the operator is generic
+     */
     static boolean isGeneric(@NotNull TokenList tokens) {
         return isGeneric(tokens, 0);
     }
 
+    /**
+     * Whether or not the operator definition at the given point in the list of
+     * tokens is generic.
+     * @param tokens The list of tokens to be destructively parsed
+     * @param start The starting point for the parse
+     * @return If the operator is generic
+     */
     static boolean isGeneric(@NotNull TokenList tokens, int start) {
         assert tokens.tokenIs(start, TokenType.OPERATOR_SP);
         int endPtr = start + 1;
@@ -67,6 +80,17 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         return !tokens.tokenIs(endPtr, "{");
     }
 
+    /**
+     * Parse a GenericOperatorNode from a list of tokens.
+     * <p>
+     *     The syntax for a generic operator is: <code>OPERATOR_SP [{@link
+     *     TypedArgumentListNode}] ["->" {@link TypeNode} *("," {@link
+     *     TypeNode}) [","]]</code>. The TokenList passed must begin with a
+     *     special operator token.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed GenericOperatorNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static GenericOperatorNode parse(@NotNull TokenList tokens) {

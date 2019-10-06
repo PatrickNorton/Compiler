@@ -39,6 +39,11 @@ public interface ImportExportNode extends SimpleStatementNode {
         }
     }
 
+    /**
+     * Parse an ImportExportNode starting with "from" from a list of tokens.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed ImportExportNode
+     */
     @NotNull
     private static ImportExportNode parseFrom(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.FROM);

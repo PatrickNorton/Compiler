@@ -8,6 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * The class representing a keyword.
+ *
+ * @author Patrick Norton
+ */
 public enum Keyword {
     CLASS("class", ClassDefinitionNode::parse),
     FUNC("func", FunctionDefinitionNode::parse),
@@ -96,6 +101,11 @@ public enum Keyword {
         values = Collections.unmodifiableMap(temp);
     }
 
+    /**
+     * Find a keyword given its string value.
+     * @param value The string value of the keyword
+     * @return The keyword itself
+     */
     @NotNull
     static Keyword find(String value) {
         Keyword val = values.get(value);

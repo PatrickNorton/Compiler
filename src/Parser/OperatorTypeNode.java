@@ -168,6 +168,10 @@ public enum OperatorTypeNode implements AtomicNode {
         return true;
     }
 
+    /**
+     * Whether or not the operator type is unary.
+     * @return If the operator is unary
+     */
     @Contract(pure = true)
     public boolean isUnary() {
         return this.isUse(Use.UNARY);
@@ -205,6 +209,10 @@ public enum OperatorTypeNode implements AtomicNode {
         }
     }
 
+    /**
+     * The order of operations for the operators.
+     * @return An iterable of the operators for each operation in sequence.
+     */
     @Contract(pure = true)
     static Iterable<EnumSet<OperatorTypeNode>> orderOfOperations() {
         return operations;
@@ -222,6 +230,11 @@ public enum OperatorTypeNode implements AtomicNode {
         return op;
     }
 
+    /**
+     * Parse an OperatorTypeNode from a token.
+     * @param token The token from which to get the operator type
+     * @return The OperatorTypeNode found.
+     */
     @NotNull
     static OperatorTypeNode fromToken(@NotNull Token token) {
         assert token.is(TokenType.OPERATOR, TokenType.KEYWORD, TokenType.BOOL_OP,

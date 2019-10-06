@@ -4,12 +4,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
 
+/**
+ * The interface representing a definition of a generic function.
+ *
+ * @author Patrick Norton
+ */
 public interface GenericDefinitionNode extends InterfaceStatementNode {
     @Override
     default EnumSet<DescriptorNode> validDescriptors() {
         return DescriptorNode.DEFINITION_VALID;
     }
 
+    /**
+     * Find whether or not the upcoming definition is generic or not.
+     * @param tokens The list of tokens to check
+     * @return Whether or not the function is generic
+     */
     static boolean isGeneric(@NotNull TokenList tokens) {
         if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
             int descriptorSize = DescriptorNode.count(tokens);

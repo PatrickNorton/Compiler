@@ -49,10 +49,22 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         this.descriptors = nodes;
     }
 
+    /**
+     * Whether or not the method at the start of the list of tokens is generic.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return If the method is generic
+     */
     static boolean isGeneric(@NotNull TokenList tokens) {
         return isGeneric(tokens, 0);
     }
 
+    /**
+     * Whether or not the method at the given point in the list of tokens is
+     * generic.
+     * @param tokens The list of tokens to be destructively parsed
+     * @param start The starting point for the parse
+     * @return If the method is generic
+     */
     static boolean isGeneric(@NotNull TokenList tokens, int start) {
         assert tokens.tokenIs(start, Keyword.METHOD);
         int endPtr = start + 1;
@@ -66,6 +78,17 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         return !tokens.tokenIs(endPtr, "{");
     }
 
+    /**
+     * Parse a GenericFunctionNode from a list of tokens.
+     * <p>
+     *     The syntax for a generic function is: <code>"method" {@link
+     *     VariableNode} {@link TypedArgumentListNode} ["->" {@link TypeNode}
+     *     *("," {@link TypeNode}) [","]]</code>. The TokenList passed must
+     *     begin with "method".
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed GenericFunctionNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static GenericFunctionNode parse(@NotNull TokenList tokens) {

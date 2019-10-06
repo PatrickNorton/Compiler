@@ -6,6 +6,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.EnumSet;
 import java.util.LinkedList;
 
+/**
+ * The class representing an enum definition.
+ *
+ * @author Patrick Norton
+ */
 public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     private TypeNode name;
     private EnumKeywordNode[] names;
@@ -14,6 +19,12 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
 
+    /**
+     * Construct a new instance of EnumDefinitionNode.
+     * @param name The name of the enum
+     * @param names The names of the instances
+     * @param body The rest of the enum body
+     */
     @Contract(pure = true)
     public EnumDefinitionNode(TypeNode name, EnumKeywordNode[] names, ClassBodyNode body) {
         this.name = name;
@@ -65,6 +76,16 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
         this.annotations = annotations;
     }
 
+    /**
+     * Parse an EnumDefinitionNode from a list of tokens.
+     * <p>
+     *     The syntax for an enum definition is: <code>"enum" {@link NameNode}
+     *     "{" *({@link EnumKeywordNode} "," *NEWLINE) {@link EnumKeywordNode}
+     *     *({@link IndependentNode} NEWLINE) "}"</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed EnumDefinitionNode
+     */
     @NotNull
     @Contract("_ -> new")
     public static EnumDefinitionNode parse(@NotNull TokenList tokens) {

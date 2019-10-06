@@ -69,6 +69,10 @@ public final class Tokenizer {
         throw new ParserException("Syntax error on line " + file.getLineNumber());
     }
 
+    /**
+     * Return the token for when {@link #next} is empty.
+     * @return The empty-line token
+     */
     private Token emptyLine() {
         assert next.isEmpty();
         String nextLine = readLine();
@@ -80,6 +84,9 @@ public final class Tokenizer {
         }
     }
 
+    /**
+     * Adjust {@link #next} for multiline tokens.
+     */
     private void adjustForMultiline() {
         Matcher m = openComment.matcher(next);
         if (m.find()) {
@@ -97,6 +104,10 @@ public final class Tokenizer {
         }
     }
 
+    /**
+     * Concatenate lines to {@link #next} until the given pattern matches.
+     * @param tillMatch The pattern to match to
+     */
     private void concatLines(@NotNull Pattern tillMatch) {
         String next;
         StringBuilder nextBuilder = new StringBuilder(this.next);
@@ -108,6 +119,10 @@ public final class Tokenizer {
         this.next = nextBuilder.toString();
     }
 
+    /**
+     * Read a line from the line reader
+     * @return The read line
+     */
     private String readLine() {
         try {
             return file.readLine();

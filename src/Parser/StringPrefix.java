@@ -9,6 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The prefixes for strings.
+ *
+ * @author Patrick Norton
+ * @see StringNode
+ * @see FormattedStringNode
+ */
 public enum StringPrefix {
     FORMATTED('f'),
     RAW('r'),
@@ -34,10 +41,20 @@ public enum StringPrefix {
         values = Collections.unmodifiableMap(temp);
     }
 
+    /**
+     * Get the prefix from a character
+     * @param c The character of the prefix
+     * @return The prefix
+     */
     public static StringPrefix getPrefix(char c) {
         return values.get(c);
     }
 
+    /**
+     * Get the prefixes from a string.
+     * @param chars The characters to be parsed
+     * @return The string prefixes
+     */
     @NotNull
     public static EnumSet<StringPrefix> getPrefixes(@NotNull String chars) {
         EnumSet<StringPrefix> prefixes = EnumSet.noneOf(StringPrefix.class);

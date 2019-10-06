@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.StringJoiner;
 
 /**
- * The node representing a class definition
+ * The node representing a class definition.
  *
  * @author Patrick Norton
  */
@@ -21,7 +21,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private NameNode[] annotations = new NameNode[0];
 
     /**
-     * Create new instance of ClassDefinitionNode
+     * Create a new instance of a ClassDefinitionNode.
      * @param name The name of the class being instantiated
      * @param superclasses The superclasses of the class
      * @param body The main body of the class
@@ -78,7 +78,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     }
 
     /**
-     * Parse ClassDefinitionNode from list of tokens.
+     * Parse a ClassDefinitionNode from list of tokens.
      * <p>
      *     The syntax for a class definition as as follows: <code>
      *     [*{@link DescriptorNode}] "class" {@link TypeNode} ["from"

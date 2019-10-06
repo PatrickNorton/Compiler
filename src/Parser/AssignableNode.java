@@ -2,7 +2,24 @@ package Parser;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * The interface representing any statement which can function on the left side
+ * of an equals sign.
+ *
+ * @author Patrick Norton
+ */
 public interface AssignableNode extends TestNode {
+    /**
+     * Parse an AssignableNode from a list of tokens.
+     * <p>
+     *     Unlike some other interface's parse methods, which are simply
+     *     delegate-and-check methods, this must actually parse itself, as
+     *     delegating to {@link TestNode#parse} would attempt to parse the
+     *     equals sign as well.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed AssignableNode
+     */
     @NotNull
     static AssignableNode parse(@NotNull TokenList tokens) {
         assert tokens.lineContains(TokenType.ASSIGN);

@@ -3,6 +3,11 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * The class representing a the default branch of a switch statement.
+ *
+ * @author Patrick Norton
+ */
 public class DefaultStatementNode implements BaseNode, EmptiableNode {
     private StatementBodyNode body;
     private boolean fallthrough;
@@ -31,6 +36,16 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
         return body.isEmpty();
     }
 
+    /**
+     * Parse a DefaultStatementNode from a list of tokens.
+     * <p>
+     *     The syntax for a default statement is: <code>"default" ({@link
+     *     StatementBodyNode} | (":" *NEWLINE *({@link IndependentNode}
+     *     *NEWLINE)))</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed DefaultStatementNode
+     */
     @NotNull
     public static DefaultStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEFAULT);
@@ -38,6 +53,18 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
         return parse(tokens, tokens.tokenIs(1, TokenType.COLON));
     }
 
+    /**
+     * Parse a DefaultStatementNode with the given fallthrough from a list of
+     * tokens.
+     * <p>
+     *     The syntax for a default statement is: <code>"default" ({@link
+     *     StatementBodyNode} | (":" *NEWLINE *({@link IndependentNode}
+     *     *NEWLINE)))</code>.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param fallthrough The fallthrough of the statement
+     * @return The freshly parsed DefaultStatementNode
+     */
     @NotNull
     @Contract("_, _ -> new")
     public static DefaultStatementNode parse(@NotNull TokenList tokens, boolean fallthrough) {
