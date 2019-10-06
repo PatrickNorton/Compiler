@@ -25,8 +25,8 @@ public class DeferStatementNode implements FlowStatementNode {
     /**
      * Parse a defer statement from a list of tokens.
      * <p>
-     *     The syntax for a defer statement is: <code>"defer" {@link
-     *     StatementBodyNode}</code>.
+     *     The syntax for a defer statement is: <code>"defer" ({@link
+     *     StatementBodyNode} | {@link ReturnStatementNode})</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DeferStatementNode
@@ -36,7 +36,12 @@ public class DeferStatementNode implements FlowStatementNode {
     public static DeferStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEFER);
         tokens.nextToken();
-        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        StatementBodyNode body;
+        if (tokens.tokenIs(Keyword.RETURN)) {
+            body = new StatementBodyNode(ReturnStatementNode.parse(tokens));
+        } else {
+            body = StatementBodyNode.parse(tokens);
+        }
         return new DeferStatementNode(body);
     }
 }
