@@ -70,7 +70,7 @@ public class SliceNode implements SubTestNode {
         assert tokens.tokenIs("[");
         tokens.nextToken(true);
         TestNode start;
-        if (tokens.tokenIs(":")) {
+        if (tokens.tokenIs(TokenType.COLON)) {
             start = TestNode.empty();
         } else {
             start = TestNode.parse(tokens, true);
@@ -99,11 +99,11 @@ public class SliceNode implements SubTestNode {
      */
     @NotNull
     private static TestNode sliceTest(@NotNull TokenList tokens) {
-        if (!tokens.tokenIs(":")) {
+        if (!tokens.tokenIs(TokenType.COLON)) {
             throw new ParserException("Expected :, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
-        if (tokens.tokenIs(":", "]")) {
+        if (tokens.tokenIs(TokenType.COLON, "]")) {
             return TestNode.empty();
         } else {
             return TestNode.parse(tokens, true);
