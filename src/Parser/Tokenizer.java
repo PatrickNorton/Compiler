@@ -20,12 +20,12 @@ import java.util.regex.Pattern;
 public final class Tokenizer {
     private final LineNumberReader file;
     private String next;
-    private static final Pattern openComment = Pattern.compile("^#\\|((?!\\|#).)*?$");
-    private static final Pattern closeComment = Pattern.compile("^.*?\\|#");
-    private static final Pattern openString = Pattern.compile("^[refb]*\"([^\"]|(?<!\\\\)(\\\\{2})*\\\\\")*?$");
-    private static final Pattern openSingleString = Pattern.compile("^[refb]*'([^']|(?<!\\\\)(\\\\{2})*\\\\')*?$");
-    private static final Pattern closeString = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*\"");
-    private static final Pattern closeSingleString = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*'");
+    private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*?$");
+    private static final Pattern CLOSE_COMMENT = Pattern.compile("^.*?\\|#");
+    private static final Pattern OPEN_STRING = Pattern.compile("^[refb]*\"([^\"]|(?<!\\\\)(\\\\{2})*\\\\\")*$");
+    private static final Pattern OPEN_SINGLE_STRING = Pattern.compile("^[refb]*'([^']|(?<!\\\\)(\\\\{2})*\\\\')*$");
+    private static final Pattern CLOSE_STRING = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*\"");
+    private static final Pattern CLOSE_SINGLE_STRING = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*'");
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
@@ -88,19 +88,19 @@ public final class Tokenizer {
      * Adjust {@link #next} for multiline tokens.
      */
     private void adjustForMultiline() {
-        Matcher m = openComment.matcher(next);
+        Matcher m = OPEN_COMMENT.matcher(next);
         if (m.find()) {
-            concatLines(closeComment);
+            concatLines(CLOSE_COMMENT);
             return;
         }
-        m = openString.matcher(next);
+        m = OPEN_STRING.matcher(next);
         if (m.find()) {
-            concatLines(closeString);
+            concatLines(CLOSE_STRING);
             return;
         }
-        m = openSingleString.matcher(next);
+        m = OPEN_SINGLE_STRING.matcher(next);
         if (m.find()) {
-            concatLines(closeSingleString);
+            concatLines(CLOSE_SINGLE_STRING);
         }
     }
 
