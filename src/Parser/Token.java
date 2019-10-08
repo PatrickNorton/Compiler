@@ -77,6 +77,11 @@ public class Token {
         return is(TokenType.KEYWORD) && Keyword.find(this.sequence) == keyword;
     }
 
+    /**
+     * Test whether or not the token is one of a certain set of tokens.
+     * @param tokens The keywords to test
+     * @return If the token is one of those keywords
+     */
     public boolean is(@NotNull Keyword... tokens) {
         if (this.is(TokenType.KEYWORD)) {
             Keyword keyword = Keyword.find(this.sequence);
