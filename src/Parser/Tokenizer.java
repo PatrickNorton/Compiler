@@ -20,7 +20,8 @@ import java.util.regex.Pattern;
 public final class Tokenizer {
     private final LineNumberReader file;
     private String next;
-    private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*?$");
+
+    private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern CLOSE_COMMENT = Pattern.compile("^.*?\\|#");
     private static final Pattern OPEN_STRING = Pattern.compile("^[refb]*\"([^\"]|(?<!\\\\)(\\\\{2})*\\\\\")*$");
     private static final Pattern OPEN_SINGLE_STRING = Pattern.compile("^[refb]*'([^']|(?<!\\\\)(\\\\{2})*\\\\')*$");
@@ -127,7 +128,7 @@ public final class Tokenizer {
         try {
             return file.readLine();
         } catch (IOException e) {
-            throw new RuntimeException("File was deleted in mid-parse");
+            throw new RuntimeException(e);
         }
     }
 
@@ -143,7 +144,7 @@ public final class Tokenizer {
         try {
             tokenizer = new Tokenizer(f);
         } catch (FileNotFoundException e) {
-            throw new ParserException("File not found");
+            throw new ParserException("File not found", e);
         }
         return new TokenList(tokenizer);
     }
