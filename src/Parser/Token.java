@@ -18,7 +18,6 @@ public class Token {
      */
     @Contract(pure = true)
     public Token(@NotNull TokenType token, @NotNull String sequence) {
-        super();
         this.token = token;
         this.sequence = sequence;
     }
