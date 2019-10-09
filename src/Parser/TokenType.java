@@ -15,7 +15,7 @@ public enum TokenType {
     // Matches newlines of all types
     NEWLINE("^\\R"),
     // Matches list of descriptor words (const, private, etc.)
-    DESCRIPTOR("^\\b(private|const|final|pubget|static|generator)\\b"),
+    DESCRIPTOR("^\\b(public|private|const|final|pubget|static|generator)\\b"),
     // Matches keywords (if, else, class, do, etc.)
     KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
