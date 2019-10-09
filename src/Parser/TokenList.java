@@ -289,6 +289,11 @@ public final class TokenList implements Iterable<Token> {
         return size;
     }
 
+    /**
+     * The size of the return values of a statement.
+     * @param offset The number of tokens from the start the return is
+     * @return The size of the returned values
+     */
     int sizeOfReturn(int offset) {
         int size = offset;
         assert tokenIs(offset, TokenType.ARROW);
@@ -470,7 +475,7 @@ public final class TokenList implements Iterable<Token> {
      * Pop the first token and move on.
      */
     public void nextToken() {
-        if (buffer.size() >= 1) {
+        if (!buffer.isEmpty()) {
             buffer.pop();
         } else {
             tokenizer.tokenizeNext();
@@ -562,6 +567,10 @@ public final class TokenList implements Iterable<Token> {
             return next;
         }
 
+        /**
+         * Adjust the net number of braces to match the token given.
+         * @param token The token to adjust based on
+         */
         private void adjustBraces(@NotNull Token token) {
             switch (token.token) {
                 case OPEN_BRACE:
