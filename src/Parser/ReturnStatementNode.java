@@ -58,7 +58,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
                 throw new ParserException("Unexpected " + tokens.getFirst());
             }
         } else if (!tokens.tokenIs(TokenType.NEWLINE)) {
-            returned = TestNode.parseList(tokens, false);
+            returned = TestNode.parseListDanglingIf(tokens, false);
         } else {
             returned = new TestNode[0];
         }

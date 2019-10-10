@@ -3,8 +3,10 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * The interface representing all expressions, e.g. everything that isn't a
@@ -12,6 +14,15 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public interface TestNode extends IndependentNode, EmptiableNode {
+    Set<TokenType> PARSABLE_TOKENS = Collections.unmodifiableSet(
+            EnumSet.of(TokenType.NAME, TokenType.OPEN_BRACE, TokenType.BOOL_OP,
+                    TokenType.OPERATOR, TokenType.NUMBER, TokenType.OP_FUNC,
+                    TokenType.ELLIPSIS)
+    );
+    Set<Keyword> PARSABLE_KEYWORDS = Collections.unmodifiableSet(
+            EnumSet.of(Keyword.LAMBDA, Keyword.SOME, Keyword.SWITCH)
+    );
+
     /**
      * Whether or not the TestNode is empty.
      * @return if it is empty
@@ -358,26 +369,35 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      */
     @NotNull
     static TestNode[] parseList(@NotNull TokenList tokens, boolean ignore_newlines) {
+        return parseList(tokens, ignore_newlines, false);
+    }
+
+    @NotNull
+    private static TestNode[] parseList(TokenList tokens, boolean ignore_newlines, boolean danglingIf) {
         if (!ignore_newlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
         LinkedList<TestNode> tests = new LinkedList<>();
         while (!tokens.tokenIs(TokenType.NEWLINE, "}")) {
-            tests.add(parse(tokens, ignore_newlines));
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken(ignore_newlines);
-                continue;
+            if (!danglingIf || TernaryNode.beforeDanglingIf(tokens)) {
+                tests.add(parse(tokens, ignore_newlines));
+            } else {
+                tests.add(parseNoTernary(tokens, ignore_newlines));
             }
-            if (!ignore_newlines && !tokens.tokenIs(TokenType.NEWLINE, "}")) {
-                throw new ParserException("Comma must separate values");
-            } else if (ignore_newlines) {
+            if (!tokens.tokenIs(TokenType.COMMA)) {
+                break;
+            }
+            tokens.nextToken(ignore_newlines);
+            if (nextIsTest(tokens)) {
                 break;
             }
         }
-        if (!ignore_newlines && !tokens.tokenIs(TokenType.NEWLINE, "}")) {
-            throw new ParserException("Expected newline, got "+tokens.getFirst());
-        }
         return tests.toArray(new TestNode[0]);
+    }
+
+    @NotNull
+    static TestNode[] parseListDanglingIf(TokenList tokens, boolean ignore_newlines) {
+        return parseList(tokens, ignore_newlines, true);
     }
 
     /**
@@ -418,5 +438,11 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             }
         }
         return tests.toArray(new TestNode[0]);
+    }
+
+    private static boolean nextIsTest(@NotNull TokenList tokens) {
+        return PARSABLE_TOKENS.contains(tokens.getFirst().token) ||
+                (tokens.tokenIs(TokenType.KEYWORD) &&
+                        PARSABLE_KEYWORDS.contains(Keyword.find(tokens.getFirst().sequence)));
     }
 }

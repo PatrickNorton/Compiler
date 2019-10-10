@@ -3,7 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
 import java.util.StringJoiner;
 
 /**
@@ -87,22 +86,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
             throw new ParserException("Comprehension body must have in after variable list");
         }
         tokens.nextToken(true);
-        LinkedList<TestNode> looped = new LinkedList<>();
-        while (true) {
-            if (tokens.tokenIs(brace_type, Keyword.IF)) {
-                break;
-            }
-            if (TernaryNode.beforeDanglingIf(tokens)) {
-                looped.add(TestNode.parse(tokens, true));
-            } else {
-                looped.add(TestNode.parseNoTernary(tokens, true));
-            }
-            if (tokens.tokenIs(",")) {
-                tokens.nextToken(true);
-            } else {
-                break;
-            }
-        }
+        TestNode[] looped = TestNode.parseListDanglingIf(tokens, true);
         TestNode condition;
         if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken(true);
@@ -114,8 +98,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
             throw new ParserException("Expected close brace");
         }
         tokens.nextToken();
-        TestNode[] looped_array = looped.toArray(new TestNode[0]);
-        return new ComprehensionNode(brace_type, variables, builder, looped_array, condition);
+        return new ComprehensionNode(brace_type, variables, builder, looped, condition);
     }
 
     public String toString() {
