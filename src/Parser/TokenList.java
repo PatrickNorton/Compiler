@@ -101,14 +101,13 @@ public final class TokenList implements Iterable<Token> {
      */
     @NotNull
     @Contract(pure = true)
-    private Iterable<Token> lineIterator() {
+    Iterable<Token> lineIterator() {
         return LineIterator::new;
     }
 
     private class LineIterator implements Iterator<Token> {
-        private int netBraces = 0;
-        private final Iterator<Token> iterator = TokenList.this.iterator();
-        private Token next = iterator.next();
+        private Iterator<Token> iterator = TokenList.this.zerothLevel().iterator();
+        private Token next = iterator.hasNext() ? iterator.next() : null;
 
         @Override
         public boolean hasNext() {
@@ -121,45 +120,25 @@ public final class TokenList implements Iterable<Token> {
                 throw new NoSuchElementException();
             }
             Token toReturn;
-            do {
-                toReturn = next;
-                if (!iterator.hasNext()) {
-                    next = null;
-                    break;
-                } else {
-                    next = iterator.next();
-                }
-                adjustBraces(toReturn);
-            } while (next != null && netBraces > 0);
-            if (next == null && netBraces > 0) {
-                throw new ParserException("Unmatched braces");
-            }
+            toReturn = next;
+            adjustNext(toReturn);
             return toReturn;
         }
 
-        private void adjustBraces(@NotNull Token token) {
-            switch (token.token) {
-                case OPEN_BRACE:
-                    netBraces++;
-                    break;
-                case CLOSE_BRACE:
-                    netBraces--;
-                    break;
-                case EPSILON:
-                    if (netBraces > 0) {
-                        throw new ParserException("Unmatched brace");
-                    }
+        private void adjustNext(@NotNull Token token) {
+            if (!iterator.hasNext()) {
+                next = null;
+            } else {
+                next = iterator.next();
             }
             if (next == null) {
                 return;
             }
-            if (next.is("{") && netBraces == 0 &&
+            if (next.is("{") &&
                         token.is(TokenType.NAME, TokenType.ELLIPSIS, TokenType.STRING,
                                 TokenType.NUMBER, TokenType.OPERATOR_SP, TokenType.CLOSE_BRACE)) {
                 next = null;
-            } else if (token.is(TokenType.NEWLINE) && netBraces == 0) {
-                next = null;
-            } else if (netBraces < 0) {
+            } else if (token.is(TokenType.NEWLINE)) {
                 next = null;
             }
         }
@@ -173,6 +152,12 @@ public final class TokenList implements Iterable<Token> {
     @Contract(pure = true)
     private Iterable<Token> firstLevel() {
         return FirstLevelIterator::new;
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    private Iterable<Token> zerothLevel() {
+        return ZerothLevelIterator::new;
     }
 
     /**
@@ -444,6 +429,16 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
+     * Test if the token at the index is one of a certain set of values.
+     * @param type1 The String value to check
+     * @param type2 The Keyword value to check
+     * @return Whether the token is of those values
+     */
+    public boolean tokenIs(String type1, Keyword type2) {
+        return getFirst().is(type1) || getFirst().is(type2);
+    }
+
+    /**
      * Test if the first token is a keyword of the type given
      * @param type The type to test
      * @return If the token is of that type
@@ -556,24 +551,35 @@ public final class TokenList implements Iterable<Token> {
         }
     }
 
-    private class FirstLevelIterator implements Iterator<Token> {
+    private abstract class LevelIterator implements Iterator<Token> {
         private int netBraces = 0;
-        private boolean beginning = true;
+        private final int numBraces;
+        private int beginning;
         private final Iterator<Token> iterator = TokenList.this.iterator();
+
+        LevelIterator(int level) {
+            this.numBraces = level;
+            this.beginning = numBraces;
+        }
 
         @Override
         public boolean hasNext() {
-            return iterator.hasNext() && (beginning || netBraces > 0);
+            return iterator.hasNext() && (beginning > 0 || netBraces >= numBraces);
         }
 
         @Override
         public Token next() {
-            beginning = false;
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            if (beginning > 0) {
+                beginning--;
+            }
             Token next;
             do {
                 next = iterator.next();
                 adjustBraces(next);
-            } while (netBraces > 1);
+            } while (netBraces > numBraces);
             return next;
         }
 
@@ -590,8 +596,25 @@ public final class TokenList implements Iterable<Token> {
                     netBraces--;
                     break;
                 case EPSILON:
-                    throw new ParserException("Unmatched brace");
+                    if (netBraces > 0) {
+                        throw new ParserException("Unmatched brace");
+                    } else {
+                        netBraces--;
+                        break;
+                    }
             }
+        }
+    }
+
+    private class FirstLevelIterator extends LevelIterator {
+        FirstLevelIterator() {
+            super(1);
+        }
+    }
+
+    private class ZerothLevelIterator extends LevelIterator {
+        ZerothLevelIterator() {
+            super(0);
         }
     }
 
