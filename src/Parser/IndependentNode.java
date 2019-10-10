@@ -80,6 +80,18 @@ public interface IndependentNode extends BaseNode {
         }
     }
 
+    @NotNull
+    static IndependentNode parseVar(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(Keyword.VAR);
+        if (tokens.lineContains(TokenType.ASSIGN)) {
+            return AssignStatementNode.parse(tokens);
+        } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
+            throw new ParserException("var cannot be used in augmented assignment");
+        } else {
+            return DeclarationNode.parse(tokens);
+        }
+    }
+
     /**
      * Parse any token, given that the first item in the list is a keyword.
      * @param tokens The token list to be parsed

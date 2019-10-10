@@ -35,6 +35,10 @@ public class TypeNode implements AtomicNode {
         return is_vararg;
     }
 
+    public boolean isDecided() {
+        return true;
+    }
+
     /**
      * Parse a TypeNode from a list of tokens.
      * <p>
@@ -62,6 +66,9 @@ public class TypeNode implements AtomicNode {
     @NotNull
     @Contract("_, _, _ -> new")
     static TypeNode parse(@NotNull TokenList tokens, boolean allow_empty, boolean is_vararg) {
+        if (tokens.tokenIs(Keyword.VAR)) {
+            return parseVar(tokens);
+        }
         DottedVariableNode main;
         if (!tokens.tokenIs(TokenType.NAME)) {
             if (allow_empty && tokens.tokenIs("[")) {
@@ -125,6 +132,23 @@ public class TypeNode implements AtomicNode {
             }
         }
         return types.toArray(new TypeNode[0]);
+    }
+
+    @NotNull
+    private static TypeNode parseVar(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(Keyword.VAR);
+        tokens.nextToken();
+        return new TypeNode(DottedVariableNode.empty()) {
+            @Override
+            public boolean isDecided() {
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return "var";
+            }
+        };
     }
 
     @Override

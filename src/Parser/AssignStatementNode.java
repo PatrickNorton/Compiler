@@ -29,6 +29,9 @@ public interface AssignStatementNode extends SimpleStatementNode {
      */
     @NotNull
     static AssignStatementNode parse(@NotNull TokenList tokens) {
+        if (tokens.tokenIs(Keyword.VAR)) {
+            return DeclaredAssignmentNode.parse(tokens);
+        }
         if (!tokens.tokenIs(TokenType.NAME)) {
             return AssignmentNode.parse(tokens);
         }
