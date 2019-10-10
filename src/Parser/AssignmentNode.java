@@ -83,6 +83,6 @@ public class AssignmentNode implements AssignStatementNode {
         for (AssignableNode i : name) {
             joiner.add(i.toString());
         }
-        return joiner + " " + (is_colon ? ":=" : '=') + " ...";
+        return joiner + " " + (is_colon ? ":=" : '=') + (value.length > 1 ? " ..." : " " + value[0]);
     }
 }
