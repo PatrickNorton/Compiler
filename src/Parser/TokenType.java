@@ -32,6 +32,8 @@ public enum TokenType {
     AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|[&|^~])="),
     // The magical arrow unicorn
     ARROW("^->"),
+    // The even more magical double arrow bi-corn
+    DOUBLE_ARROW("^=>"),
     // Standard, boring operators, + - **
     OPERATOR("^(==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b)"),
     // Assignment, and dynamic assignment (:=)

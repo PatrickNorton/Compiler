@@ -93,6 +93,20 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         return new CaseStatementNode(label, body, fallthrough);
     }
 
+    @NotNull
+    @Contract("_ -> new")
+    public static CaseStatementNode parseExpression(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(Keyword.CASE);
+        tokens.nextToken();
+        AtomicNode[] label = AtomicNode.parseLabelList(tokens);
+        if (!tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
+            throw new ParserException("Unexpected " + tokens.getFirst());
+        }
+        tokens.nextToken();
+        TestNode[] body = TestNode.parseList(tokens, false);
+        return new CaseStatementNode(label, new StatementBodyNode(body), false);
+    }
+
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(", ");

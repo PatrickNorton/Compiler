@@ -113,6 +113,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 } else if (tokens.tokenIs(Keyword.SOME)) {
                     node = SomeStatementNode.parse(tokens);
                     break;
+                } else if (tokens.tokenIs(Keyword.SWITCH)) {
+                    node = SwitchExpressionNode.parse(tokens);
+                    break;
                 }
                 // Intentional fallthrough here
             default:

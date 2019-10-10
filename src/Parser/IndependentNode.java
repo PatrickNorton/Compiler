@@ -46,6 +46,8 @@ public interface IndependentNode extends BaseNode {
                 throw new ParserException("Unexpected operator");
             case ARROW:
                 throw new ParserException("Unexpected ->");
+            case DOUBLE_ARROW:
+                throw new ParserException("Unexpected =>");
             case OPERATOR:
             case BOOL_OP:
                 return TestNode.parse(tokens);

@@ -48,7 +48,7 @@ public interface AtomicNode extends SubTestNode {
                 break;
             }
             tokens.nextToken();
-            if (tokens.tokenIs(TokenType.COLON, "{")) {
+            if (tokens.tokenIs(TokenType.COLON, "{") || tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
                 break;
             }
         }

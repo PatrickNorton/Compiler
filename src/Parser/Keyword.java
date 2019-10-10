@@ -52,7 +52,7 @@ public enum Keyword {
     TYPEDEF("typedef", TypedefStatementNode::parse),
     SOME("some", TestNode::parse),
     INTERFACE("interface", InterfaceDefinitionNode::parse),
-    SWITCH("switch", SwitchStatementNode::parse),
+    SWITCH("switch", SwitchLikeNode::parse),
     CASE("case", "Unexpected ", TokenPlace.RIGHT),
     ENUM("enum", EnumDefinitionNode::parse),
     DEFAULT("default", "Unexpected ", TokenPlace.RIGHT),

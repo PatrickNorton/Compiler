@@ -82,4 +82,16 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
         }
         return new DefaultStatementNode(body, fallthrough);
     }
+
+    @NotNull
+    @Contract("_ -> new")
+    public static DefaultStatementNode parseExpression(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(Keyword.DEFAULT);
+        tokens.nextToken();
+        if (!tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
+            throw new ParserException("Unexpected " + tokens.getFirst());
+        }
+        StatementBodyNode body = new StatementBodyNode(TestNode.parse(tokens));
+        return new DefaultStatementNode(body, false);
+    }
 }
