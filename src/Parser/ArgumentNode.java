@@ -85,13 +85,13 @@ public class ArgumentNode implements BaseNode {
         if (!tokens.tokenIs("(")) {
             throw new ParserException("Function call must start with open-paren");
         }
+        if (tokens.braceContains(Keyword.FOR)) {
+            return new ArgumentNode[] {new ArgumentNode(ComprehensionNode.parse(tokens))};
+        }
         tokens.nextToken(true);
         if (tokens.tokenIs(")")) {
             tokens.nextToken();
             return new ArgumentNode[0];
-        }
-        if (tokens.braceContains(Keyword.FOR)) {
-            return new ArgumentNode[] {new ArgumentNode(ComprehensionNode.parse(tokens))};
         }
         LinkedList<ArgumentNode> args = new LinkedList<>();
         while (true) {

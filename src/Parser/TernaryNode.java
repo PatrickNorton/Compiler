@@ -1,6 +1,7 @@
 package Parser;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing a ternary statement.
@@ -28,6 +29,27 @@ public class TernaryNode implements TestNode {
 
     public TestNode getIf_false() {
         return if_false;
+    }
+
+    public static boolean beforeDanglingIf(@NotNull TokenList tokens) {
+        int danglingIfs = 0;
+        for (Token token : tokens.lineIterator()) {
+            if (!token.is(TokenType.KEYWORD)) {
+                continue;
+            }
+            switch (Keyword.find(token.sequence)) {
+                case IF:
+                    danglingIfs++;
+                    break;
+                case ELSE:
+                    danglingIfs--;
+                    if (danglingIfs == 0) {
+                        return true;
+                    }
+                    break;
+            }
+        }
+        return false;
     }
 
     @Override

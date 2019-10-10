@@ -16,6 +16,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     private TypedVariableNode[] variables;
     private TestNode builder;
     private TestNode[] looped;
+    private TestNode condition;
 
     /**
      * Create a new instance of ComprehensionNode.
@@ -26,11 +27,13 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
      * @param looped The iterable being looped over
      */
     @Contract(pure = true)
-    public ComprehensionNode(String brace_type, TypedVariableNode[] variables, TestNode builder, TestNode[] looped) {
+    public ComprehensionNode(String brace_type, TypedVariableNode[] variables,
+                             TestNode builder, TestNode[] looped, TestNode condition) {
         this.brace_type = brace_type;
         this.variables = variables;
         this.builder = builder;
         this.looped = looped;
+        this.condition = condition;
     }
 
     public String getBrace_type() {
@@ -47,6 +50,10 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
 
     public TestNode[] getLooped() {
         return looped;
+    }
+
+    public TestNode getCondition() {
+        return condition;
     }
 
     public boolean hasBraces() {
@@ -82,22 +89,33 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
         tokens.nextToken(true);
         LinkedList<TestNode> looped = new LinkedList<>();
         while (true) {
-            if (tokens.tokenIs(brace_type)) {
+            if (tokens.tokenIs(brace_type, Keyword.IF)) {
                 break;
             }
-            looped.add(TestNode.parse(tokens, true));
+            if (TernaryNode.beforeDanglingIf(tokens)) {
+                looped.add(TestNode.parse(tokens, true));
+            } else {
+                looped.add(TestNode.parseNoTernary(tokens, true));
+            }
             if (tokens.tokenIs(",")) {
                 tokens.nextToken(true);
             } else {
                 break;
             }
         }
+        TestNode condition;
+        if (tokens.tokenIs(Keyword.IF)) {
+            tokens.nextToken(true);
+            condition = TestNode.parse(tokens, true);
+        } else {
+            condition = TestNode.empty();
+        }
         if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
             throw new ParserException("Expected close brace");
         }
         tokens.nextToken();
         TestNode[] looped_array = looped.toArray(new TestNode[0]);
-        return new ComprehensionNode(brace_type, variables, builder, looped_array);
+        return new ComprehensionNode(brace_type, variables, builder, looped_array, condition);
     }
 
     public String toString() {
@@ -106,11 +124,11 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
         for (TypedVariableNode t : variables) {
             sj.add(t.toString());
         }
-        string += sj + " for " + builder + " in ";
+        string += builder + " for " + sj + " in ";
         sj = new StringJoiner(", ");
         for (TestNode t : looped) {
             sj.add(t.toString());
         }
-        return string + sj + TokenList.matchingBrace(brace_type);
+        return string + sj + (condition.isEmpty() ? "" : " if " + condition) + TokenList.matchingBrace(brace_type);
     }
 }
