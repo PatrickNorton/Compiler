@@ -40,7 +40,7 @@ public enum DescriptorNode implements AtomicNode {
     private static final EnumSet<DescriptorNode> FINAL_SET = EnumSet.of(FINAL);
     private static final EnumSet<DescriptorNode> GENERATOR_SET = EnumSet.of(GENERATOR);
 
-    private static final List<EnumSet<DescriptorNode>> SETS;
+    private static final List<EnumSet<DescriptorNode>> SETS = List.of(ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET);
 
     static final EnumSet<DescriptorNode> DEFINITION_VALID = EnumSet.of(PUBLIC, PRIVATE, CONST, FINAL, STATIC);
     static final EnumSet<DescriptorNode> FUNCTION_VALID = EnumSet.of(GENERATOR);
@@ -48,10 +48,6 @@ public enum DescriptorNode implements AtomicNode {
     static final EnumSet<DescriptorNode> CONTEXT_VALID = EnumSet.of(PUBLIC, PRIVATE, GENERATOR, STATIC, FINAL);
     static final EnumSet<DescriptorNode> METHOD_VALID = EnumSet.of(PUBLIC, PRIVATE, STATIC, CONST, FINAL, GENERATOR);
     static final EnumSet<DescriptorNode> STATIC_BLOCK_VALID = EnumSet.noneOf(DescriptorNode.class);
-
-    static {
-        SETS = List.of(ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET);
-    }
 
     static {
         Map<String, DescriptorNode> temp = new HashMap<>();
