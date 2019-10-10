@@ -11,6 +11,7 @@ import java.util.EnumSet;
  */
 public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
     private VariableNode name;
+    private TypeNode type;
     private StatementBodyNode get;
     private TypedArgumentListNode set_args;
     private StatementBodyNode set;
@@ -26,8 +27,10 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param set The setter attribute for the property
      */
     @Contract(pure = true)
-    public PropertyDefinitionNode(VariableNode name, StatementBodyNode get, TypedArgumentListNode set_args, StatementBodyNode set) {
+    public PropertyDefinitionNode(VariableNode name, TypeNode type,
+                                  StatementBodyNode get, TypedArgumentListNode set_args, StatementBodyNode set) {
         this.name = name;
+        this.type = type;
         this.get = get;
         this.set_args = set_args;
         this.set = set;
@@ -41,6 +44,10 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     @Override
     public VariableNode getName() {
         return name;
+    }
+
+    public TypeNode getType() {
+        return type;
     }
 
     public StatementBodyNode getGet() {
@@ -93,9 +100,9 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * Parse a new PropertyDefinitionNode from a list of tokens.
      * <p>
      *     The syntax of a property definition is: <code>*({@link
-     *     DescriptorNode}) "property" [{@link NameNode}] "{" ["get" {@link
-     *     StatementBodyNode}] ["set" {@link TypedArgumentListNode} {@link
-     *     StatementBodyNode}] "}"</code>.
+     *     DescriptorNode}) "property" {@link TypeNode} [{@link NameNode}] "{"
+     *     ["get" {@link StatementBodyNode}] ["set" {@link
+     *     TypedArgumentListNode} {@link StatementBodyNode}] "}"</code>.
      * </p>
      * @param tokens The list of tokens to be parsed
      * @return The freshly parsed PropertyDefinitionNode
@@ -103,6 +110,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     @NotNull
     @Contract("_ -> new")
     static PropertyDefinitionNode parse(@NotNull TokenList tokens) {
+        TypeNode type = TypeNode.parse(tokens);
         VariableNode name = VariableNode.empty();
         if (!tokens.tokenIs("{")) {
             name = VariableNode.parse(tokens);
@@ -123,7 +131,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
             throw new ParserException("Only set and get are allowed in context statements");
         }
         tokens.nextToken();
-        return new PropertyDefinitionNode(name, get, set_args, set);
+        return new PropertyDefinitionNode(name, type, get, set_args, set);
     }
 
     @Override
