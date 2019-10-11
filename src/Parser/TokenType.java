@@ -8,59 +8,110 @@ import java.util.regex.Pattern;
  * The possible types for a token to be.
  */
 public enum TokenType {
-    // Whitespace. Matches comments, spaces, and escaped newlines
+    /**
+     * Whitespace. Matches comments, spaces, and escaped newlines.
+     * Should not make it past the tokenizer.
+     */
     WHITESPACE("^(#\\|(.|\\R)*?\\|#|#.*|[\t ]+|\\\\\\R)"),
-    // Matches when input is empty
+    /**
+     * End of the file.
+     */
     EPSILON("^\\z"),
-    // Matches newlines of all types
+    /**
+     * Newlines.
+     */
     NEWLINE("^\\R"),
-    // Matches list of descriptor words (const, private, etc.)
+    /**
+     * Descriptor words, such as public or static.
+     */
     DESCRIPTOR("^\\b(public|private|const|final|pubget|static|generator)\\b"),
-    // Matches keywords (if, else, class, do, etc.)
+    /**
+     * Language-reserved keywords, like if, try, or enum.
+     */
     KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
             +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
             +"|raise|typedef|some|interface|casted|switch|case|enum|default|goto|defer"
             +"|var|inline)\\b"),
-    // Matches open braces
+    /**
+     * Open braces. Each token this matches corresponds with an {@link
+     * #CLOSE_BRACE closing brace}.
+     */
     OPEN_BRACE("^[\\[({]"),
-    // Matches close braces
+    /**
+     * Closing braces. Each token this matches corresponds with an {@link
+     * #OPEN_BRACE open brace}.
+     */
     CLOSE_BRACE("^[])}]"),
-    // The comma in between list items
+    /**
+     * The comma, such as in between items in a list.
+     */
     COMMA("^,"),
-    // Augmented assignment, e.g.  +=
-    // Parsed separately from standard operators because of their different use
+    /**
+     * Augmented assignment operators, such as += or -=.
+     */
     AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|[&|^~])="),
-    // The magical arrow unicorn
+    /**
+     * The magical arrow unicorn, for function return types.
+     */
     ARROW("^->"),
-    // The even more magical double arrow bi-corn
+    /**
+     * The even more magical double arrow bi-corn.
+     */
     DOUBLE_ARROW("^=>"),
-    // Standard, boring operators, + - **
+    /**
+     * Bog-standard operators, like + or <<
+     */
     OPERATOR("^(==|!=|[><]=?|([+\\-*/])\\2?|<<|>>|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b)"),
-    // Assignment, and dynamic assignment (:=)
+    /**
+     * Assignment, both static and dynamic (:=).
+     */
     ASSIGN("^:?="),
-    // String literals, including f-strings
+    /**
+     * String literals of all sorts.
+     */
     STRING("^([refb]*([\"'])(.|\\R)*?(?<!\\\\)(\\\\{2})*\\2)"),
-    // Boolean operators
+    // TODO? Merge with #OPERATOR
+    /**
+     * Boolean operators.
+     */
     BOOL_OP("^\\b(and|or|not|xor)\\b"),
-    // Numbers, from 123 to 0xab4f6.245
+    /**
+     * Numbers in all bases and decimals.
+     */
     NUMBER("^(0x[0-9a-f]+(\\.[0-9a-f]+)?|(0[ob])?[0-9]+(\\.[0-9]+)?)\\b"),
-    // That special operator definition syntax
+    /**
+     * Special operator names, for operator overload definitions.
+     */
     OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
             + "|\\[]=?|\\(\\)|~|u-|iter|new|in|missing|str|repr|bool|del(\\[])?))"),
-    // The name of a variable
+    /**
+     * Variable names.
+     */
     NAME("^\\b[_a-zA-Z][_a-zA-Z0-9]*\\b"),
-    // operator functions, like \+
+    /**
+     * Backslash-preceded operator functions, such as \+ or \<<.
+     */
     OP_FUNC("^\\\\(==|!=|[><]=?|r?([+\\-*/])\\2?|u-|<<|>>|[&|^~%])"),
-    // Colons, for slicing syntax etc.
+    /**
+     * Colons, for slices.
+     */
     COLON("^:"),
-    // The ellipsis unicorn
+    /**
+     * The ellipsis unicorn.
+     */
     ELLIPSIS("^\\.{3}"),
-    // Dots, when they don't match ellipsis
+    /**
+     * Dots that aren't an ellipsis.
+     */
     DOT("^\\."),
-    // The at symbol, for decorators
+    /**
+     * The at symbol. for decorators.
+     */
     AT("^@"),
-    // The dollar sign, for annotations
+    /**
+     * The dollar sign, for annotations.
+     */
     DOLLAR("^\\$"),
     ;
 
