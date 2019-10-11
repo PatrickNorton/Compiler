@@ -59,6 +59,7 @@ public enum Keyword {
     GOTO("goto", "This language does not support goto, go use C++", TokenPlace.NONE),
     DEFER("defer", DeferStatementNode::parse),
     VAR("var", IndependentNode::parseVar),
+    INLINE("inline", InlineableNode::parse),
     ;
     public final String name;
     private final Function<TokenList, IndependentNode> parseLeft;
@@ -115,6 +116,11 @@ public enum Keyword {
         } else {
             return val;
         }
+    }
+
+    @NotNull
+    static Keyword find(@NotNull Token value) {
+        return find(value.sequence);
     }
 
     IndependentNode parseLeft(TokenList tokens) {

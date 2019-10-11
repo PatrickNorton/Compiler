@@ -11,10 +11,11 @@ import java.util.LinkedList;
  *
  * @author Patrick Norton
  */
-public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
+public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, InlineableNode {
     private TypeNode name;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
+    private boolean inline;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
@@ -44,6 +45,16 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     @Override
     public ClassBodyNode getBody() {
         return body;
+    }
+
+    @Override
+    public boolean isInline() {
+        return inline;
+    }
+
+    @Override
+    public void setInline(boolean inline) {
+        this.inline = inline;
     }
 
     @Override

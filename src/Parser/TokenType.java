@@ -20,7 +20,8 @@ public enum TokenType {
     KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
             +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
-            +"|raise|typedef|some|interface|casted|switch|case|enum|default|goto|defer)\\b"),
+            +"|raise|typedef|some|interface|casted|switch|case|enum|default|goto|defer"
+            +"|var|inline)\\b"),
     // Matches open braces
     OPEN_BRACE("^[\\[({]"),
     // Matches close braces

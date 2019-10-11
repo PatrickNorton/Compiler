@@ -11,10 +11,11 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see ClassDefinitionNode
  */
-public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNode, InlineableNode {
     private TypeNode name;
     private TypeNode[] superclasses;
     private InterfaceBodyNode body;
+    private boolean inline;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
@@ -44,6 +45,16 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     @Override
     public InterfaceBodyNode getBody() {
         return body;
+    }
+
+    @Override
+    public boolean isInline() {
+        return inline;
+    }
+
+    @Override
+    public void setInline(boolean inline) {
+        this.inline = inline;
     }
 
     @Override
