@@ -388,7 +388,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 break;
             }
             tokens.nextToken(ignore_newlines);
-            if (nextIsTest(tokens)) {
+            if (!nextIsTest(tokens)) {
                 break;
             }
         }
