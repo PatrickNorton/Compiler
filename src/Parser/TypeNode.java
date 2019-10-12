@@ -52,7 +52,7 @@ public class TypeNode implements AtomicNode {
      * @return The parsed TypeNode
      */
     @NotNull
-    static TypeNode parse(TokenList tokens) {
+    static TypeNode  parse(TokenList tokens) {
         return parse(tokens, false, false);
     }
 

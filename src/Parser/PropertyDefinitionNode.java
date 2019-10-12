@@ -110,6 +110,8 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     @NotNull
     @Contract("_ -> new")
     static PropertyDefinitionNode parse(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(Keyword.PROPERTY);
+        tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
         VariableNode name = VariableNode.empty();
         if (!tokens.tokenIs("{")) {
@@ -120,9 +122,11 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         StatementBodyNode set = new StatementBodyNode();
         TypedArgumentListNode set_args = new TypedArgumentListNode();
         if (tokens.tokenIs(Keyword.GET)) {
+            tokens.nextToken();
             get = StatementBodyNode.parse(tokens);
         }
         if (tokens.tokenIs(Keyword.SET)) {
+            tokens.nextToken();
             set_args = TypedArgumentListNode.parse(tokens);
             set = StatementBodyNode.parse(tokens);
         }

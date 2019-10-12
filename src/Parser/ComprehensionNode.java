@@ -72,6 +72,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     @NotNull
     @Contract("_ -> new")
     static ComprehensionNode parse(@NotNull TokenList tokens) {
+        // TODO: Splats in comprehensions
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         String brace_type = tokens.getFirst().sequence;
         String matchingBrace = tokens.matchingBrace();

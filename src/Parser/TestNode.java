@@ -253,6 +253,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                                 parseOperator(nodes, nodeNumber);
                                 nodeNumber--;
                             }
+                        } else {
+                            parseOperator(nodes, nodeNumber);
+                            nodeNumber--;
                         }
                         continue;
                     }

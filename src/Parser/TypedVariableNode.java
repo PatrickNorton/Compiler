@@ -74,9 +74,6 @@ public class TypedVariableNode implements SubTestNode {
     static TypedVariableNode[] parseForVars(@NotNull TokenList tokens) {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (!tokens.tokenIs(Keyword.IN)) {
-            if (!tokens.tokenIs(TokenType.NAME)) {
-                throw new ParserException("Expected variable, got " + tokens.getFirst());
-            }
             vars.add(TypedVariableNode.parse(tokens));
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken();
