@@ -99,6 +99,9 @@ public class StringNode extends StringLikeNode {
                 case '\'':
                     sb.append('\'');
                     break;
+                case '0':
+                    sb.append('\0');
+                    break;
                 case 'a':
                     sb.append('\7');
                     break;
