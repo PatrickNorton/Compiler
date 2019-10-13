@@ -1,6 +1,7 @@
 package Parser;
 
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
 
@@ -83,8 +84,8 @@ public enum TokenType {
     /**
      * Special operator names, for operator overload definitions.
      */
-    OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%~])"
-            + "|\\[]=?|\\(\\)|u-|iter|new|in|missing|str|repr|reversed|bool|del(\\[])?))"),
+    OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
+            + "|\\[]=?|\\(\\)|~|u-|iter|new|in|missing|str|repr|reversed|bool|del(\\[])?))"),
     /**
      * Variable names.
      */
@@ -117,7 +118,8 @@ public enum TokenType {
 
     final Pattern regex;
 
-    TokenType(@Language("RegExp") String regex) {
+    TokenType(@NotNull @Language("RegExp") String regex) {
+        assert regex.startsWith("^");  // Make sure regex will only match the beginning of strings
         this.regex = Pattern.compile(regex);
     }
 }

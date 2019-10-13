@@ -172,7 +172,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 switch (tokens.getFirst().token) {
                     case OPEN_BRACE:
                         TestNode last_node = nodes.peekLast();
-                        if (last_node instanceof OperatorNode || last_node == null) {
+                        if (last_node == null || last_node instanceof OperatorNode && last_node.isEmpty()) {
                             nodes.add(parseOpenBrace(tokens));
                             break;
                         }
