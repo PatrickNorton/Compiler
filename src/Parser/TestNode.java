@@ -232,42 +232,37 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (nodes.size() == 1) {
             return;
         }
-        for (int nodeNumber = 0; nodeNumber < nodes.size(); nodeNumber++) {
+        for (int nodeNumber = 0; nodeNumber < nodes.size(); nodeNumber++) {  // Not an iterator because of list modification
             TestNode node = nodes.get(nodeNumber);
-            if (node instanceof OperatorNode) {
-                if (!node.isEmpty()) {
-                    continue;
-                }
-                OperatorTypeNode operator = ((OperatorNode) node).getOperator();
-                if (expr.contains(operator)) {
-                    if (operator == OperatorTypeNode.SUBTRACT) {
-                        if (nodeNumber == 0) {
-                            parseUnaryOp(nodes, nodeNumber);
-                            continue;
-                        }
-                        TestNode nodePrevious = nodes.get(nodeNumber - 1);
-                        if (nodePrevious instanceof OperatorNode) {
-                            if (nodePrevious.isEmpty()) {
-                                parseUnaryOp(nodes, nodeNumber);
-                            } else {
-                                parseOperator(nodes, nodeNumber);
-                                nodeNumber--;
-                            }
-                        } else {
-                            parseOperator(nodes, nodeNumber);
-                            nodeNumber--;
-                        }
-                        continue;
-                    }
-                    if (operator.isUnary()) {
-                        parseUnaryOp(nodes, nodeNumber);
-                    } else {
-                        parseOperator(nodes, nodeNumber);
-                        nodeNumber--;  // Adjust pointer to match new object
-                    }
+            if (!(node instanceof OperatorNode) || node.isEmpty()) {
+                continue;
+            }
+            OperatorTypeNode operator = ((OperatorNode) node).getOperator();
+            if (expr.contains(operator)) {
+                boolean unarySubtract = operator == OperatorTypeNode.SUBTRACT && subtractIsUnary(nodes, nodeNumber);
+                if (unarySubtract || operator.isUnary()) {
+                    parseUnaryOp(nodes, nodeNumber);
+                } else {
+                    parseOperator(nodes, nodeNumber);
+                    nodeNumber--;  // Adjust pointer to match new object
                 }
             }
         }
+    }
+
+    /**
+     * Figure out if a subtract operator is unary or not.
+     * @param nodes The list of nodes to figure out
+     * @param nodeNumber The index of the subtract
+     * @return Whether or not the - is unary
+     */
+    private static boolean subtractIsUnary(@NotNull final LinkedList<TestNode> nodes, int nodeNumber) {
+        assert nodes.get(nodeNumber) == OperatorTypeNode.SUBTRACT;
+        if (nodeNumber == 0) {
+            return false;
+        }
+        TestNode nodePrevious = nodes.get(nodeNumber - 1);
+        return !(nodePrevious instanceof OperatorNode) || nodePrevious.isEmpty();
     }
 
     /**
