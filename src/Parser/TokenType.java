@@ -83,8 +83,8 @@ public enum TokenType {
     /**
      * Special operator names, for operator overload definitions.
      */
-    OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
-            + "|\\[]=?|\\(\\)|~|u-|iter|new|in|missing|str|repr|bool|del(\\[])?))"),
+    OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%~])"
+            + "|\\[]=?|\\(\\)|u-|iter|new|in|missing|str|repr|reversed|bool|del(\\[])?))"),
     /**
      * Variable names.
      */

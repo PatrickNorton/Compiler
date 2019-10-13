@@ -72,6 +72,7 @@ public enum OperatorTypeNode implements AtomicNode {
     CASTED("casted", Use.STANDARD),
     IS("is", Use.STANDARD),
     IS_NOT("is not", Use.STANDARD),
+    REVERSED("reversed", Use.OPERATOR_SP),
     ;
 
     /**
