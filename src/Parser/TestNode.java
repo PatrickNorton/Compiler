@@ -3,9 +3,11 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -166,50 +168,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         } else if (!ignore_newline && tokens.lineContains(TokenType.AUG_ASSIGN)) {
             throw new ParserException("Illegal augmented assignment");
         } else {
-            LinkedList<TestNode> nodes = new LinkedList<>();
-            while_loop:
-            while (!tokens.tokenIs(TokenType.NEWLINE)) {
-                switch (tokens.getFirst().token) {
-                    case OPEN_BRACE:
-                        TestNode last_node = nodes.peekLast();
-                        if (last_node == null || last_node instanceof OperatorNode && last_node.isEmpty()) {
-                            nodes.add(parseOpenBrace(tokens));
-                            break;
-                        }
-                        break while_loop;
-                    case NAME:
-                        nodes.add(DottedVariableNode.parseName(tokens));
-                        break;
-                    case NUMBER:
-                        nodes.add(NumberNode.parse(tokens));
-                        break;
-                    case ARROW:
-                        throw new ParserException("Unexpected " + tokens.getFirst());
-                    case BOOL_OP:
-                    case OPERATOR:
-                        nodes.add(OperatorNode.empty(tokens));
-                        tokens.nextToken();
-                        break;
-                    case OP_FUNC:
-                        nodes.add(parseOpFunc(tokens));
-                        break;
-                    case EPSILON:
-                    case COLON:
-                    case COMMA:
-                    case CLOSE_BRACE:
-                        break while_loop;
-                    case KEYWORD:
-                        if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
-                            nodes.add(OperatorNode.empty(tokens));
-                            tokens.nextToken();
-                            break;
-                        } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
-                            break while_loop;
-                        }  // Lack of breaks here is intentional
-                    default:
-                        throw new ParserException("Unexpected " + tokens.getFirst());
-                }
-            }
+            List<TestNode> nodes = parseNodes(tokens, ignore_newline);
             if (nodes.size() == 1) {
                 return nodes.get(0);
             }
@@ -224,17 +183,73 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
+     * Parse the line into a list of nodes.
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed list of nodes.
+     */
+    @NotNull
+    private static List<TestNode> parseNodes(@NotNull TokenList tokens, boolean ignore_newlines) {
+        List<TestNode> nodes = new ArrayList<>();
+        while (ignore_newlines || !tokens.tokenIs(TokenType.NEWLINE)) {
+            switch (tokens.getFirst().token) {
+                case OPEN_BRACE:
+                    TestNode last_node = nodes.get(nodes.size() - 1);
+                    if (last_node == null || last_node instanceof OperatorNode && last_node.isEmpty()) {
+                        nodes.add(parseOpenBrace(tokens));
+                        break;
+                    }
+                    return nodes;
+                case NAME:
+                    nodes.add(DottedVariableNode.parseName(tokens));
+                    break;
+                case NUMBER:
+                    nodes.add(NumberNode.parse(tokens));
+                    break;
+                case ARROW:
+                    throw new ParserException("Unexpected " + tokens.getFirst());
+                case BOOL_OP:
+                case OPERATOR:
+                    nodes.add(OperatorNode.empty(tokens));
+                    tokens.nextToken(ignore_newlines);
+                    break;
+                case OP_FUNC:
+                    nodes.add(parseOpFunc(tokens));
+                    break;
+                case EPSILON:
+                case COLON:
+                case COMMA:
+                case CLOSE_BRACE:
+                    return nodes;
+                case KEYWORD:
+                    if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
+                        nodes.add(OperatorNode.empty(tokens));
+                        tokens.nextToken(ignore_newlines);
+                        break;
+                    } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
+                        return nodes;
+                    }  // Lack of breaks here is intentional
+                default:
+                    throw new ParserException("Unexpected " + tokens.getFirst());
+            }
+            if (ignore_newlines) {
+                tokens.passNewlines();
+            }
+        }
+        return nodes;
+    }
+
+    /**
      * Parse an expression out of a list of nodes.
      * @param nodes The list of nodes to be recombined
      * @param expr The expressions to parse together
      */
-    private static void parseExpression(@NotNull final LinkedList<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
+    private static void parseExpression(@NotNull final List<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
         if (nodes.size() == 1) {
             return;
         }
         for (int nodeNumber = 0; nodeNumber < nodes.size(); nodeNumber++) {  // Not an iterator because of list modification
             TestNode node = nodes.get(nodeNumber);
-            if (!(node instanceof OperatorNode) || node.isEmpty()) {
+            if (!(node instanceof OperatorNode && node.isEmpty())) {
                 continue;
             }
             OperatorTypeNode operator = ((OperatorNode) node).getOperator();
@@ -256,8 +271,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodeNumber The index of the subtract
      * @return Whether or not the - is unary
      */
-    private static boolean subtractIsUnary(@NotNull final LinkedList<TestNode> nodes, int nodeNumber) {
-        assert nodes.get(nodeNumber) == OperatorTypeNode.SUBTRACT;
+    private static boolean subtractIsUnary(@NotNull final List<TestNode> nodes, int nodeNumber) {
+        assert nodes.get(nodeNumber) instanceof OperatorNode
+                && ((OperatorNode) nodes.get(nodeNumber)).getOperator() == OperatorTypeNode.SUBTRACT;
         if (nodeNumber == 0) {
             return false;
         }
@@ -270,7 +286,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The nodes to have the operator parsed out of them
      * @param nodeNumber The number giving the location of the operator
      */
-    private static void parseOperator(@NotNull final LinkedList<TestNode> nodes, int nodeNumber) {
+    private static void parseOperator(@NotNull final List<TestNode> nodes, int nodeNumber) {
         if (nodeNumber == 0 || nodeNumber + 1 == nodes.size()) {
             throw new ParserException("Unexpected operator" + nodes.get(nodeNumber));
         }
@@ -293,7 +309,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The nodes to have the operator parsed out
      * @param nodeNumber The number giving the location of the operator
      */
-    private static void parseUnaryOp(@NotNull final LinkedList<TestNode> nodes, int nodeNumber) {
+    private static void parseUnaryOp(@NotNull final List<TestNode> nodes, int nodeNumber) {
         if (nodeNumber + 1 == nodes.size()) {
             throw new ParserException("Unexpected operator " + nodes.get(nodeNumber));
         }
