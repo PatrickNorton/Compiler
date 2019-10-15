@@ -89,7 +89,7 @@ public enum TokenType {
     /**
      * Variable names.
      */
-    NAME("^\\b[_a-zA-Z][_a-zA-Z0-9]*\\b"),
+    NAME("^\\b(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9]*\\b"),
     /**
      * Backslash-preceded operator functions, such as \+ or \<<.
      */

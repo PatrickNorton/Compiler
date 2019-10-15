@@ -67,7 +67,13 @@ public final class Tokenizer {
                 }
             }
         }
-        throw new ParserException("Syntax error on line " + file.getLineNumber());
+        for (InvalidToken info : InvalidToken.values()) {
+            Matcher match = info.regex.matcher(next);
+            if (match.find()) {
+                throw tokenError(info);
+            }
+        }
+        throw tokenError();
     }
 
     /**
@@ -114,10 +120,21 @@ public final class Tokenizer {
         StringBuilder nextBuilder = new StringBuilder(this.next);
         do {
             next = readLine();
-            nextBuilder.append('\n');
+            nextBuilder.append(System.lineSeparator());
             nextBuilder.append(next);
         } while (!tillMatch.matcher(next).find());
         this.next = nextBuilder.toString();
+    }
+
+    private int currentLine() {
+        String lineSeparator = System.lineSeparator();
+        if (!next.contains(lineSeparator)) {
+            return file.getLineNumber();
+        }
+        int endLine = file.getLineNumber();
+        int separatorLength = lineSeparator.length();
+        int numNewlines = (next.length() - next.replace(System.lineSeparator(), "").length()) / separatorLength;
+        return endLine - numNewlines;
     }
 
     /**
@@ -130,6 +147,23 @@ public final class Tokenizer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    private ParserException tokenError(@NotNull InvalidToken info) {
+        return tokenError(info.errorMessage);
+    }
+
+    @NotNull
+    private ParserException tokenError() {
+        return tokenError("");
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    private ParserException tokenError(String message) {
+        return new ParserException(String.format("Error on line %d:%n%s", currentLine(), message));
     }
 
     /**
