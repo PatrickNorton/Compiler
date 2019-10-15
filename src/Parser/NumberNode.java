@@ -38,9 +38,34 @@ public class NumberNode implements AtomicNode {
     @NotNull
     @Contract("_ -> new")
     static NumberNode parse(@NotNull TokenList tokens) {
+        /*
+         * How this method works:
+         *
+         * Numeric literals can come in a variety of forms. Some have a prefix
+         * (of either 0x, 0b, or 0o). If either the string's length is < 2 or
+         * the number does not start with 0, both meaning that the number must
+         * be in base 10, the default BigDecimal constructor is used. Otherwise,
+         * the base is attempted to be determined by the second character. If
+         * the base is not determined to be non-base-10, the standard base 10
+         * constructor is used. Otherwise, it moves on to the non-decimal
+         * parser.
+         *
+         * The special parser is for numbers not in base 10. Firstly, it
+         * attempts to parse the number as a long using Long#parseLong. If this
+         * does succeed, all is well and the parsed long is used as the value.
+         * If it does not succeed, it will not for one of two reasons: either
+         * the number is too big to fit in a long, or the number contains a
+         * decimal point. If the former is true, and there is no decimal, then
+         * the number is parsed as a BigInteger and then converted to a
+         * BigDecimal.
+         *
+         * If this is not the case, then the string representing the number has
+         * its decimal point removed, is parsed into a BigInteger, and then
+         * divided to put the decimal in the right place.
+         */
         String value = tokens.getFirst().sequence;
         tokens.nextToken();
-        if (value.length() < 2) {
+        if (value.length() < 2 || value.charAt(0) != '0') {
             return new NumberNode(new BigDecimal(value));
         }
         int base;
@@ -54,12 +79,23 @@ public class NumberNode implements AtomicNode {
             case 'o':
                 base = 8;
                 break;
-            default:
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
                 try {
                     return new NumberNode(new BigDecimal(value));
                 } catch (NumberFormatException e) {
                     throw new RuntimeException("Illegal number " + value);
                 }
+            default:
+                throw new RuntimeException("Illegal number " + value);
         }
         try {
             BigDecimal val = parseInt(value.substring(2), base);
