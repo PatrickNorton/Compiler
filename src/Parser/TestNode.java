@@ -193,8 +193,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         while (ignore_newlines || !tokens.tokenIs(TokenType.NEWLINE)) {
             switch (tokens.getFirst().token) {
                 case OPEN_BRACE:
-                    TestNode last_node = nodes.get(nodes.size() - 1);
-                    if (last_node == null || last_node instanceof OperatorNode && last_node.isEmpty()) {
+                    TestNode last_node;
+                    if (nodes.size() == 0 || (last_node = nodes.get(nodes.size() - 1)) instanceof OperatorNode
+                            && last_node.isEmpty()) {
                         nodes.add(parseOpenBrace(tokens));
                         break;
                     }
@@ -352,7 +353,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 stmt = new FunctionCallNode(stmt, ArgumentNode.parseList(tokens));
             }
         } else if (tokens.tokenIs("[")) {
-            if (tokens.braceContains(Keyword.FOR)) {
+            if (tokens.braceContains(TokenType.COLON)) {
+                stmt = RangeLiteralNode.parse(tokens);
+            } else if (tokens.braceContains(Keyword.FOR)) {
                 stmt = ComprehensionNode.parse(tokens);
             } else {
                 stmt = LiteralNode.parse(tokens);
