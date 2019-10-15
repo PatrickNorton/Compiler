@@ -13,6 +13,8 @@ import java.math.RoundingMode;
  * @author Patrick Norton
  */
 public class NumberNode implements AtomicNode {
+    private static final MathContext PARSE_PRECISION = new MathContext(0, RoundingMode.UNNECESSARY);
+
     private BigDecimal integer;
 
     /**
@@ -83,10 +85,17 @@ public class NumberNode implements AtomicNode {
             if (dot == -1) {
                 return new BigDecimal(new BigInteger(value, base));
             } else {
+                /*
+                 * Because BigDecimal doesn't allow non-base-10 bases in
+                 * their BigDecimal arguments...
+                 *
+                 * This takes the value of the decimal, assuming it contains a
+                 * dot, removes the dot, parses it as an integer, and then
+                 * divides by the right number to shift it to the right value.
+                 */
                 String noDecimalValue = value.replaceFirst("\\.", "");
                 BigDecimal unShifted = new BigDecimal(new BigInteger(noDecimalValue, base));
-                MathContext precision = new MathContext(0, RoundingMode.UNNECESSARY);
-                return unShifted.divide(new BigDecimal(base).pow(value.length() - dot), precision);
+                return unShifted.divide(new BigDecimal(base).pow(value.length() - dot - 1), PARSE_PRECISION);
             }
         }
     }
