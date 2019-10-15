@@ -61,7 +61,7 @@ public class TypegetStatementNode implements ImportExportNode {
         assert tokens.tokenIs(Keyword.TYPEGET);
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
-            throw new ParserException("Empty typeget statements are illegal");
+            throw tokens.error("Empty typeget statements are illegal");
         }
         DottedVariableNode[] typegets = DottedVariableNode.parseList(tokens, false);
         if (tokens.tokenIs(Keyword.AS)) {

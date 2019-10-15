@@ -30,7 +30,7 @@ public interface AtomicNode extends SubTestNode {
             case STRING:
                 return StringNode.parse(tokens);
             default:
-                throw new ParserException("Invalid label "+tokens.getFirst());
+                throw tokens.error("Invalid label "+tokens.getFirst());
         }
     }
 
@@ -53,7 +53,7 @@ public interface AtomicNode extends SubTestNode {
             }
         }
         if (nodes.isEmpty()) {
-            throw new ParserException("Cannot have zero labels");
+            throw tokens.error("Cannot have zero labels");
         }
         return nodes.toArray(new AtomicNode[0]);
     }

@@ -62,7 +62,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
             if (tokens.tokenIs(balanced_brace)) {
                 break;
             } else if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw new ParserException("Unmatched braces");
+                throw tokens.error("Unmatched braces");
             }
             if (tokens.tokenIs("*")) {
                 is_splat.add(true);
@@ -80,7 +80,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         if (tokens.tokenIs(balanced_brace)) {
             tokens.nextToken();
         } else {
-            throw new ParserException("Unmatched braces");
+            throw tokens.error("Unmatched braces");
         }
         boolean[] is_splat_array = new boolean[is_splat.size()];
         for (int i = 0; i < is_splat.size(); i++) {

@@ -87,7 +87,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
         assert tokens.tokenIs("(");
         boolean has_posArgs = tokens.braceContains("/");
         if (!tokens.tokenIs("(")) {
-            throw new ParserException("Argument lists must start with an open-paren");
+            throw tokens.error("Argument lists must start with an open-paren");
         }
         tokens.nextToken(true);
         ArrayList<TypedArgumentNode> posArgs = new ArrayList<>();
@@ -104,7 +104,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
             } else if (!tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw new ParserException("Unexpected " + tokens.getFirst());
+                throw tokens.error("Unexpected " + tokens.getFirst());
             }
         }
         ArrayList<TypedArgumentNode> which_args = args;
@@ -122,7 +122,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
                 continue;
             }
             if (!tokens.tokenIs(")")) {
-                throw new ParserException("Comma must separate arguments");
+                throw tokens.error("Comma must separate arguments");
             }
         }
         tokens.nextToken();

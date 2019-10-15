@@ -42,7 +42,7 @@ public class ExportStatementNode implements ImportExportNode {
         assert tokens.tokenIs(Keyword.EXPORT);
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
-            throw new ParserException("Empty export statements are illegal");
+            throw tokens.error("Empty export statements are illegal");
         }
         DottedVariableNode[] exports = DottedVariableNode.parseList(tokens, false);
         return new ExportStatementNode(exports);

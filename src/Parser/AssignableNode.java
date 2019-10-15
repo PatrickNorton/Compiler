@@ -31,14 +31,14 @@ public interface AssignableNode extends TestNode {
                     NumberNode num = NumberNode.parse(tokens);
                     return DottedVariableNode.fromExpr(tokens, num);
                 } else {
-                    throw new ParserException("Cannot assign to numeric literal");
+                    throw tokens.error("Cannot assign to numeric literal");
                 }
             case STRING:
                 if (tokens.tokenIs(1, TokenType.DOT)) {
                     StringLikeNode str = StringNode.parse(tokens);
                     return DottedVariableNode.fromExpr(tokens, str);
                 } else {
-                    throw new ParserException("Cannot assign to string literal");
+                    throw tokens.error("Cannot assign to string literal");
                 }
             case OPEN_BRACE:
                 TestNode t = TestNode.parseOpenBrace(tokens);
@@ -47,10 +47,10 @@ public interface AssignableNode extends TestNode {
                 } else if (t instanceof AssignableNode) {
                     return (AssignableNode) t;
                 } else {
-                    throw new ParserException("Cannot assign to node");
+                    throw tokens.error("Cannot assign to node");
                 }
             default:
-                throw new ParserException("Unassignable word" + tokens.getFirst());
+                throw tokens.error("Unassignable word" + tokens.getFirst());
         }
     }
 }

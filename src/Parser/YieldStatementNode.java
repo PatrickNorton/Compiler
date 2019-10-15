@@ -55,7 +55,7 @@ public class YieldStatementNode implements SimpleStatementNode {
                 continue;
             }
             if (!tokens.tokenIs(TokenType.NEWLINE)) {
-                throw new ParserException("Comma must separate yields");
+                throw tokens.error("Comma must separate yields");
             }
         }
         return new YieldStatementNode(is_from, yields.toArray(new TestNode[0]));

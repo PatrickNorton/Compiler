@@ -79,12 +79,12 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
         tokens.nextToken(true);
         TestNode builder = TestNode.parse(tokens, true);
         if (!tokens.tokenIs(Keyword.FOR)) {
-            throw new ParserException("Invalid start to comprehension");
+            throw tokens.error("Invalid start to comprehension");
         }
         tokens.nextToken(true);
         TypedVariableNode[] variables = TypedVariableNode.parseList(tokens);
         if (!tokens.tokenIs(Keyword.IN)) {
-            throw new ParserException("Comprehension body must have in after variable list");
+            throw tokens.error("Comprehension body must have in after variable list");
         }
         tokens.nextToken(true);
         TestNode[] looped = TestNode.parseListDanglingIf(tokens, true);
@@ -96,7 +96,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
             condition = TestNode.empty();
         }
         if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
-            throw new ParserException("Expected close brace");
+            throw tokens.error("Expected close brace");
         }
         tokens.nextToken();
         return new ComprehensionNode(brace_type, variables, builder, looped, condition);

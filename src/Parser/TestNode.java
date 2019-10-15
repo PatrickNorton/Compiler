@@ -76,7 +76,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             tokens.nextToken(ignore_newline);
             TestNode statement = parseNoTernary(tokens, ignore_newline);
             if (!tokens.tokenIs(Keyword.ELSE)) {
-                throw new ParserException("Ternary must have an else");
+                throw tokens.error("Ternary must have an else");
             }
             tokens.nextToken(ignore_newline);
             TestNode if_false = parse(tokens, ignore_newline);
@@ -132,7 +132,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 }
                 // Intentional fallthrough here
             default:
-                throw new ParserException("Unexpected "+tokens.getFirst());
+                throw tokens.error("Unexpected "+tokens.getFirst());
         }
         if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
             return DottedVariableNode.fromExpr(tokens, node);
@@ -162,21 +162,21 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @NotNull
     private static TestNode parseLeftVariable(@NotNull TokenList tokens, boolean ignore_newline) {
         if (tokens.lineContains(TokenType.ASSIGN)) {
-            throw new ParserException("Illegal assignment");
+            throw tokens.error("Illegal assignment");
         } else if (ignore_newline && tokens.braceContains(TokenType.AUG_ASSIGN)) {
-            throw new ParserException("Illegal augmented assignment");
+            throw tokens.error("Illegal augmented assignment");
         } else if (!ignore_newline && tokens.lineContains(TokenType.AUG_ASSIGN)) {
-            throw new ParserException("Illegal augmented assignment");
+            throw tokens.error("Illegal augmented assignment");
         } else {
             List<TestNode> nodes = parseNodes(tokens, ignore_newline);
             if (nodes.size() == 1) {
                 return nodes.get(0);
             }
             for (EnumSet<OperatorTypeNode> operators : OperatorTypeNode.orderOfOperations()) {
-                parseExpression(nodes, operators);
+                parseExpression(tokens, nodes, operators);
             }
             if (nodes.size() > 1) {
-                throw new ParserException("Too many tokens");
+                throw tokens.error("Too many tokens");
             }
             return nodes.get(0);
         }
@@ -207,7 +207,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     nodes.add(NumberNode.parse(tokens));
                     break;
                 case ARROW:
-                    throw new ParserException("Unexpected " + tokens.getFirst());
+                    throw tokens.error("Unexpected " + tokens.getFirst());
                 case BOOL_OP:
                 case OPERATOR:
                     nodes.add(OperatorNode.empty(tokens));
@@ -230,7 +230,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                         return nodes;
                     }  // Lack of breaks here is intentional
                 default:
-                    throw new ParserException("Unexpected " + tokens.getFirst());
+                    throw tokens.error("Unexpected " + tokens.getFirst());
             }
             if (ignore_newlines) {
                 tokens.passNewlines();
@@ -244,7 +244,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The list of nodes to be recombined
      * @param expr The expressions to parse together
      */
-    private static void parseExpression(@NotNull final List<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
+    private static void parseExpression(TokenList tokens, @NotNull final List<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
         if (nodes.size() == 1) {
             return;
         }
@@ -257,9 +257,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             if (expr.contains(operator)) {
                 boolean unarySubtract = operator == OperatorTypeNode.SUBTRACT && subtractIsUnary(nodes, nodeNumber);
                 if (unarySubtract || operator.isUnary()) {
-                    parseUnaryOp(nodes, nodeNumber);
+                    parseUnaryOp(tokens, nodes, nodeNumber);
                 } else {
-                    parseOperator(nodes, nodeNumber);
+                    parseOperator(tokens, nodes, nodeNumber);
                     nodeNumber--;  // Adjust pointer to match new object
                 }
             }
@@ -287,9 +287,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The nodes to have the operator parsed out of them
      * @param nodeNumber The number giving the location of the operator
      */
-    private static void parseOperator(@NotNull final List<TestNode> nodes, int nodeNumber) {
+    private static void parseOperator(TokenList tokens, @NotNull final List<TestNode> nodes, int nodeNumber) {
         if (nodeNumber == 0 || nodeNumber + 1 == nodes.size()) {
-            throw new ParserException("Unexpected operator" + nodes.get(nodeNumber));
+            throw tokens.error("Unexpected operator" + nodes.get(nodeNumber));
         }
         TestNode node = nodes.get(nodeNumber);
         TestNode previous = nodes.get(nodeNumber - 1);
@@ -298,7 +298,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (node instanceof OperatorNode) {
             op = OperatorNode.fromEmpty((OperatorNode) node, previous, next);
         } else {
-            throw new ParserException("Unexpected node for parseOperator");
+            throw tokens.error("Unexpected node for parseOperator");
         }
         nodes.set(nodeNumber, op);
         nodes.remove(nodeNumber + 1);
@@ -310,9 +310,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param nodes The nodes to have the operator parsed out
      * @param nodeNumber The number giving the location of the operator
      */
-    private static void parseUnaryOp(@NotNull final List<TestNode> nodes, int nodeNumber) {
+    private static void parseUnaryOp(TokenList tokens, @NotNull final List<TestNode> nodes, int nodeNumber) {
         if (nodeNumber + 1 == nodes.size()) {
-            throw new ParserException("Unexpected operator " + nodes.get(nodeNumber));
+            throw tokens.error("Unexpected operator " + nodes.get(nodeNumber));
         }
         TestNode node = nodes.get(nodeNumber);
         TestNode next = nodes.get(nodeNumber + 1);
@@ -320,7 +320,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (node instanceof OperatorNode) {
             op = OperatorNode.fromEmpty((OperatorNode) node, next);
         } else {
-            throw new ParserException("Unexpected node for parseOperator");
+            throw tokens.error("Unexpected node for parseOperator");
         }
         nodes.set(nodeNumber, op);
         nodes.remove(nodeNumber + 1);
@@ -344,7 +344,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 tokens.nextToken(true);
                 TestNode contained = parse(tokens, true);
                 if (!tokens.tokenIs(")")) {
-                    throw new ParserException("Unmatched brace");
+                    throw tokens.error("Unmatched brace");
                 }
                 tokens.nextToken();
                 stmt = contained;
@@ -451,7 +451,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 continue;
             }
             if (!tokens.tokenIs("{")) {
-                throw new ParserException("Comma must separate values");
+                throw tokens.error("Comma must separate values");
             }
         }
         return tests.toArray(new TestNode[0]);

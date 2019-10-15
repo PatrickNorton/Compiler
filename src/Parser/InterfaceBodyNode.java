@@ -41,7 +41,7 @@ public class InterfaceBodyNode implements BodyNode {
     @Contract("_ -> new")
     static InterfaceBodyNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs("{")) {
-            throw new ParserException("The body of a class must be enclosed in curly brackets");
+            throw tokens.error("The body of a class must be enclosed in curly brackets");
         }
         tokens.nextToken(true);
         ArrayList<InterfaceStatementNode> statements = new ArrayList<>();

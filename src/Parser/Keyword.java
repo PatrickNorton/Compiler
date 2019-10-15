@@ -76,13 +76,13 @@ public enum Keyword {
         this.name = name;
         switch (place) {
             case LEFT:
-                this.parseLeft = (TokenList tokens) -> {throw new ParserException(tokens.getFirst() + errorMessage);};
+                this.parseLeft = (TokenList tokens) -> {throw tokens.error(tokens.getFirst() + errorMessage);};
                 break;
             case RIGHT:
-                this.parseLeft = (TokenList tokens) -> {throw new ParserException(errorMessage + tokens.getFirst());};
+                this.parseLeft = (TokenList tokens) -> {throw tokens.error(errorMessage + tokens.getFirst());};
                 break;
             case NONE:
-                this.parseLeft = (TokenList tokens) -> {throw new ParserException(errorMessage);};
+                this.parseLeft = (TokenList tokens) -> {throw tokens.error(errorMessage);};
                 break;
             default:
                 throw new RuntimeException("Unexpected TokenPlace");

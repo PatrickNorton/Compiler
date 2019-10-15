@@ -65,7 +65,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     @Contract("_ -> new")
     static VariableNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
-            throw new ParserException("Expected name. got " + tokens.getFirst());
+            throw tokens.error("Expected name. got " + tokens.getFirst());
         }
         String name = tokens.getFirst().sequence;
         tokens.nextToken();
@@ -103,7 +103,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
             tokens.nextToken();
             VariableNode[] vars = parseList(tokens, true);
             if (!tokens.tokenIs(")")) {
-                throw new ParserException("Unmatched braces");
+                throw tokens.error("Unmatched braces");
             }
             return vars;
         }
@@ -112,7 +112,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
                 break;
             }
             if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw new ParserException("Unmatched braces");
+                throw tokens.error("Unmatched braces");
             }
             variables.add(VariableNode.parse(tokens));
             if (tokens.tokenIs(",")) {

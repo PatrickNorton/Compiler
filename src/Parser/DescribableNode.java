@@ -43,12 +43,12 @@ public interface DescribableNode extends IndependentNode {
         IndependentNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof DescribableNode) {
             if (!((DescribableNode) stmt).validDescriptors().containsAll(descriptors)) {
-                throw new ParserException("Invalid descriptor " + descriptors + " for this set");
+                throw tokens.error("Invalid descriptor " + descriptors + " for this set");
             }
             ((DescribableNode) stmt).addDescriptor(descriptors);
             return (DescribableNode) stmt;
         } else {
-            throw new ParserException("Descriptor not allowed in statement");
+            throw tokens.error("Descriptor not allowed in statement");
         }
     }
 }

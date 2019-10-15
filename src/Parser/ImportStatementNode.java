@@ -70,7 +70,7 @@ public class ImportStatementNode implements ImportExportNode {
         assert tokens.tokenIs(Keyword.IMPORT);
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
-            throw new ParserException("Empty import statements are illegal");
+            throw tokens.error("Empty import statements are illegal");
         }
         DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
         if (tokens.tokenIs(Keyword.AS)) {

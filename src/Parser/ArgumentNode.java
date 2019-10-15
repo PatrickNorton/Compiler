@@ -83,7 +83,7 @@ public class ArgumentNode implements BaseNode {
     @NotNull
     static ArgumentNode[] parseList(@NotNull TokenList tokens) {
         if (!tokens.tokenIs("(")) {
-            throw new ParserException("Function call must start with open-paren");
+            throw tokens.error("Function call must start with open-paren");
         }
         if (tokens.braceContains(Keyword.FOR)) {
             return new ArgumentNode[] {new ArgumentNode(ComprehensionNode.parse(tokens))};
@@ -115,7 +115,7 @@ public class ArgumentNode implements BaseNode {
                 break;
             }
             if (!tokens.tokenIs(",")) {
-                throw new ParserException("Expected comma, got "+tokens.getFirst());
+                throw tokens.error("Expected comma, got "+tokens.getFirst());
             }
             tokens.nextToken(true);
         }

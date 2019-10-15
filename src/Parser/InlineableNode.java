@@ -12,11 +12,11 @@ public interface InlineableNode extends IndependentNode {
         tokens.nextToken();
         Token keyword = tokens.getFirst();
         if (!keyword.is(TokenType.KEYWORD)) {
-            throw new ParserException("inline must be followed by a keyword, not " + keyword);
+            throw tokens.error("inline must be followed by a keyword, not " + keyword);
         }
         IndependentNode stmt = Keyword.find(keyword).parseLeft(tokens);
         if (!(stmt instanceof InlineableNode)) {
-            throw new ParserException("Non-inlineable statement");
+            throw tokens.error("Non-inlineable statement");
         } else {
             ((InlineableNode) stmt).setInline(true);
             return (InlineableNode) stmt;

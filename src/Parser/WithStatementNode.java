@@ -57,7 +57,7 @@ public class WithStatementNode implements FlowStatementNode {
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken();
             } else if (!tokens.tokenIs(Keyword.AS)) {
-                throw new ParserException("Expected comma or as, got "+tokens.getFirst());
+                throw tokens.error("Expected comma or as, got "+tokens.getFirst());
             }
         }
         VariableNode[] vars = VariableNode.parseList(tokens,  false);

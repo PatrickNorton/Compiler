@@ -81,7 +81,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     static DeclaredAssignmentNode parse(TokenList tokens) {
         TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
         if (!tokens.tokenIs(TokenType.ASSIGN)) {
-            throw new ParserException("Unexpected "+tokens.getFirst());
+            throw tokens.error("Unexpected "+tokens.getFirst());
         }
         boolean is_colon = tokens.tokenIs(":=");
         tokens.nextToken();

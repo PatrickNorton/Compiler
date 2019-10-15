@@ -49,7 +49,7 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
         if (stmt instanceof InterfaceStatementNode) {
             return (InterfaceStatementNode) stmt;
         } else {
-            throw new ParserException("Illegal statement");
+            throw tokens.error("Illegal statement");
         }
     }
 }

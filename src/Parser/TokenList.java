@@ -242,7 +242,7 @@ public final class TokenList implements Iterable<Token> {
                     break;
                 case EPSILON:
                     if (netBraces > 0) {
-                        throw new ParserException("Unmatched brace");
+                        throw ParserException.of("Unmatched brace", token);
                     }  // Intentional fallthrough here
                 default:
                     if (netBraces == 0) {
@@ -299,7 +299,7 @@ public final class TokenList implements Iterable<Token> {
      */
     public void Newline() {
         if (!tokenIs(TokenType.NEWLINE)) {
-            throw new ParserException("Expected newline, got "+getFirst());
+            throw ParserException.of("Expected newline, got "+getFirst(), getFirst());
         }
         nextToken(true);
     }
@@ -597,7 +597,7 @@ public final class TokenList implements Iterable<Token> {
                     break;
                 case EPSILON:
                     if (netBraces > 0) {
-                        throw new ParserException("Unmatched brace");
+                        throw ParserException.of("Unmatched brace", token);
                     } else {
                         netBraces--;
                         break;
@@ -644,6 +644,21 @@ public final class TokenList implements Iterable<Token> {
     public String matchingBrace() {
         assert tokenIs(TokenType.OPEN_BRACE);
         return TokenList.matchingBrace(getFirst().sequence);
+    }
+
+    @NotNull
+    public ParserInternalError internalError(String message) {
+        return ParserInternalError.withHeader(
+                String.format("%s%nError: source line %s%n%s",
+                        message, tokenizer.currentLine(), getFirst().lineString()));
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    public ParserException error(String message) {
+        return new ParserException(
+                String.format("%s%nError: Line %s%n%s",
+                        message, tokenizer.currentLine(), getFirst().lineString()));
     }
 
     /**

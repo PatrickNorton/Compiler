@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import javax.sound.sampled.Line;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
 
@@ -56,21 +57,22 @@ public class StringNode extends StringLikeNode {
     @Contract("_ -> new")
     static StringLikeNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.STRING);
-        String contents = tokens.getFirst().sequence;
+        Token token = tokens.getFirst();
+        String contents = token.sequence;
         tokens.nextToken();
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher regex = prefixPattern.matcher(contents);
         if (regex.find()) {
             String prefixes = regex.group();
             if (!prefixes.contains("r")) {
-                inside = processEscapes(inside);
+                inside = processEscapes(inside, token.lineInfo);
             }
             if (prefixes.contains("f")) {
-                return FormattedStringNode.parse(contents);
+                return FormattedStringNode.parse(token);
             }
             return new StringNode(inside, prefixes);
         }
-        inside = processEscapes(inside);
+        inside = processEscapes(inside, token.lineInfo);
         return new StringNode(inside);
     }
 
@@ -80,7 +82,7 @@ public class StringNode extends StringLikeNode {
      * @return The escaped string
      */
     @NotNull
-    private static String processEscapes(@NotNull String str) {
+    private static String processEscapes(@NotNull String str, LineInfo info) {
         StringBuilder sb = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
             char chr = str.charAt(i);
@@ -140,7 +142,7 @@ public class StringNode extends StringLikeNode {
                     i += 8;
                     break;
                 default:
-                    throw new ParserException("Unknown escape sequence " + str.substring(i, i+1));
+                    throw ParserException.of("Unknown escape sequence " + str.substring(i, i+1), info);
             }
             i++;
         }

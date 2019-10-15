@@ -83,7 +83,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         StatementBodyNode body;
         if (fallthrough) {
             if (!tokens.tokenIs(":")) {
-                throw new ParserException("Expected :, got " + tokens.getFirst());
+                throw tokens.error("Expected :, got " + tokens.getFirst());
             }
             tokens.nextToken(true);
             body = StatementBodyNode.parseCase(tokens);
@@ -100,7 +100,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         tokens.nextToken();
         AtomicNode[] label = AtomicNode.parseLabelList(tokens);
         if (!tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
-            throw new ParserException("Unexpected " + tokens.getFirst());
+            throw tokens.error("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken();
         TestNode[] body = TestNode.parseList(tokens, false);

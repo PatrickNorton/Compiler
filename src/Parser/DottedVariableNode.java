@@ -151,7 +151,7 @@ public class DottedVariableNode implements NameNode {
             tokens.nextToken();
             DottedVariableNode[] vars = parseList(tokens, true);
             if (!tokens.tokenIs(")")) {
-                throw new ParserException("Unmatched braces");
+                throw tokens.error("Unmatched braces");
             }
             return vars;
         }
@@ -160,7 +160,7 @@ public class DottedVariableNode implements NameNode {
                 break;
             }
             if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw new ParserException("Unmatched braces");
+                throw tokens.error("Unmatched braces");
             }
             variables.add(parseName(tokens));
             if (tokens.tokenIs(",")) {

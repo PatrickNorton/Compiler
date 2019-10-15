@@ -55,7 +55,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
         while (true) {
             keys.add(TestNode.parse(tokens));
             if (!tokens.tokenIs(":")) {
-                throw new ParserException("Dict comprehension must have colon");
+                throw tokens.error("Dict comprehension must have colon");
             }
             tokens.nextToken(true);
             values.add(TestNode.parse(tokens));
@@ -68,7 +68,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
             }
         }
         if (!tokens.tokenIs("}")) {
-            throw new ParserException("Unmatched brace");
+            throw tokens.error("Unmatched brace");
         }
         tokens.nextToken();
         return new DictLiteralNode(keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));

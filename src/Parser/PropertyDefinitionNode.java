@@ -132,7 +132,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         }
         tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
-            throw new ParserException("Only set and get are allowed in context statements");
+            throw tokens.error("Only set and get are allowed in context statements");
         }
         tokens.nextToken();
         return new PropertyDefinitionNode(name, type, get, set_args, set);

@@ -55,7 +55,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         if (is_conditional && !tokens.tokenIs(Keyword.IF)) {
             returned = parseReturns(tokens);
             if (!tokens.tokenIs(Keyword.IF)) {
-                throw new ParserException("Unexpected " + tokens.getFirst());
+                throw tokens.error("Unexpected " + tokens.getFirst());
             }
         } else if (!tokens.tokenIs(TokenType.NEWLINE)) {
             returned = TestNode.parseListDanglingIf(tokens, false);

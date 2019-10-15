@@ -124,7 +124,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
         VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
         if (!tokens.tokenIs("{")) {
-            throw new ParserException("Context managers must be followed by a curly brace");
+            throw tokens.error("Context managers must be followed by a curly brace");
         }
         tokens.nextToken(true);
         StatementBodyNode enter = new StatementBodyNode();
@@ -137,7 +137,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
                 if (enter.isEmpty()) {
                     enter = StatementBodyNode.parse(tokens);
                 } else {
-                    throw new ParserException("Cannot have multiple definitions of enter");
+                    throw tokens.error("Cannot have multiple definitions of enter");
                 }
             } else if (tokens.tokenIs(Keyword.EXIT)) {
                 tokens.nextToken();
@@ -147,7 +147,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
                 if (exit.isEmpty()) {
                     exit = StatementBodyNode.parse(tokens);
                 } else {
-                    throw new ParserException("Exit cannot be defined multiple times");
+                    throw tokens.error("Exit cannot be defined multiple times");
                 }
             } else {
                 IndependentNode stmt = IndependentNode.parse(tokens);
@@ -155,13 +155,13 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
                 if (stmt instanceof ClassStatementNode) {
                     others.add((ClassStatementNode) stmt);
                 } else {
-                    throw new ParserException("Illegal statement");
+                    throw tokens.error("Illegal statement");
                 }
             }
             tokens.passNewlines();
         }
         if (!tokens.tokenIs("}")) {
-            throw new ParserException("Context manager must end with close curly brace");
+            throw tokens.error("Context manager must end with close curly brace");
         }
         tokens.nextToken();
         return new ContextDefinitionNode(name, args, enter, exit, exitArgs, ClassBodyNode.fromList(others));

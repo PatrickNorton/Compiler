@@ -42,7 +42,7 @@ public class TypedVariableNode implements SubTestNode {
                 break;
             }
             if (!tokens.tokenIs(",")) {
-                throw new ParserException("Unexpected "+tokens.getFirst());
+                throw tokens.error("Unexpected "+tokens.getFirst());
             }
             tokens.nextToken();
         }

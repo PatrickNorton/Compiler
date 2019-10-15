@@ -37,22 +37,22 @@ public interface IndependentNode extends BaseNode {
                     return TestNode.parse(tokens);
                 }
             case CLOSE_BRACE:
-                throw new ParserException("Unmatched close brace");
+                throw tokens.error("Unmatched close brace");
             case NAME:
                 return parseLeftVariable(tokens);
             case COMMA:
-                throw new ParserException("Unexpected comma");
+                throw tokens.error("Unexpected comma");
             case AUG_ASSIGN:
-                throw new ParserException("Unexpected operator");
+                throw tokens.error("Unexpected operator");
             case ARROW:
-                throw new ParserException("Unexpected ->");
+                throw tokens.error("Unexpected ->");
             case DOUBLE_ARROW:
-                throw new ParserException("Unexpected =>");
+                throw tokens.error("Unexpected =>");
             case OPERATOR:
             case BOOL_OP:
                 return TestNode.parse(tokens);
             case ASSIGN:
-                throw new ParserException("Unexpected assignment");
+                throw tokens.error("Unexpected assignment");
             case STRING:
                 return StringNode.parse(tokens);
             case NUMBER:
@@ -66,17 +66,17 @@ public interface IndependentNode extends BaseNode {
             case OP_FUNC:
                 return TestNode.parseOpFunc(tokens);
             case COLON:
-                throw new ParserException("Unexpected colon");
+                throw tokens.error("Unexpected colon");
             case ELLIPSIS:
                 return VariableNode.parseEllipsis(tokens);
             case DOT:
-                throw new ParserException("Unexpected dot");
+                throw tokens.error("Unexpected dot");
             case AT:
                 return DecoratableNode.parseLeftDecorator(tokens);
             case DOLLAR:
                 return AnnotatableNode.parseLeftAnnotation(tokens);
             case EPSILON:
-                throw new ParserException("Unexpected EOF");
+                throw tokens.error("Unexpected EOF");
             default:
                 throw new RuntimeException("Nonexistent token found");
         }
@@ -88,7 +88,7 @@ public interface IndependentNode extends BaseNode {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             return AssignStatementNode.parse(tokens);
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
-            throw new ParserException("var cannot be used in augmented assignment");
+            throw tokens.error("var cannot be used in augmented assignment");
         } else {
             return DeclarationNode.parse(tokens);
         }
@@ -130,7 +130,7 @@ public interface IndependentNode extends BaseNode {
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
             DottedVariableNode var = DottedVariableNode.parseName(tokens);
             if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
-                throw new ParserException("Expected augmented assignment, got " + tokens.getFirst());
+                throw tokens.error("Expected augmented assignment, got " + tokens.getFirst());
             }
             OperatorTypeNode op = OperatorTypeNode.parse(tokens);
             TestNode assignment = TestNode.parse(tokens);

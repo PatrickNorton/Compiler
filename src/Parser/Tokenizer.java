@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +21,9 @@ import java.util.regex.Pattern;
 public final class Tokenizer {
     private final LineNumberReader file;
     private String next;
+    private int currentLine;
+    private String fullLine;
+    private int multilineSize = 0;
 
     private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern CLOSE_COMMENT = Pattern.compile("^.*?\\|#");
@@ -30,14 +34,20 @@ public final class Tokenizer {
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
-        file = new LineNumberReader(new FileReader(name));
-        next = readLine();
+        this(new FileReader(name));
     }
 
     @Contract(pure = true)
     private Tokenizer(String str) {
-        file = new LineNumberReader(new StringReader(str));
+        this(new StringReader(str));
+    }
+
+    @Contract(pure = true)
+    private Tokenizer(Reader r) {
+        file = new LineNumberReader(r);
         next = readLine();
+        currentLine = 1;
+        fullLine = next;
     }
 
     /**
@@ -63,7 +73,7 @@ public final class Tokenizer {
                     } while (match.find());
                 } else {
                     next = next.substring(match.end());
-                    return new Token(info, match.group());
+                    return new Token(info, match.group(), lineInfo());
                 }
             }
         }
@@ -84,10 +94,14 @@ public final class Tokenizer {
         assert next.isEmpty();
         String nextLine = readLine();
         if (nextLine == null) {
-            return Token.Epsilon();
+            return Token.Epsilon(lineInfo());
         } else {
             next = nextLine;
-            return Token.Newline();
+            fullLine = next;
+            currentLine++;
+            currentLine += multilineSize;
+            multilineSize = 0;
+            return Token.Newline(lineInfo());
         }
     }
 
@@ -122,19 +136,29 @@ public final class Tokenizer {
             next = readLine();
             nextBuilder.append(System.lineSeparator());
             nextBuilder.append(next);
+            multilineSize++;
         } while (!tillMatch.matcher(next).find());
         this.next = nextBuilder.toString();
+        fullLine = next;
     }
 
-    private int currentLine() {
-        String lineSeparator = System.lineSeparator();
-        if (!next.contains(lineSeparator)) {
-            return file.getLineNumber();
-        }
-        int endLine = file.getLineNumber();
-        int separatorLength = lineSeparator.length();
-        int numNewlines = (next.length() - next.replace(System.lineSeparator(), "").length()) / separatorLength;
-        return endLine - numNewlines;
+    @Contract(pure = true)
+    int currentLine() {
+        return currentLine;
+    }
+
+    private int lineIndex() {
+        return fullLine.length() - next.length();
+    }
+
+    @NotNull
+    @Contract(" -> new")
+    private LineInfo lineInfo() {
+        return new LineInfo(
+                currentLine,
+                fullLine,
+                fullLine.length() - next.length()
+        );
     }
 
     /**

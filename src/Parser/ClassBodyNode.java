@@ -47,7 +47,7 @@ public class ClassBodyNode implements BodyNode {
     static ClassBodyNode parse(@NotNull TokenList tokens) {
         // FIXME: Allow lack of newlines around braces
         if (!tokens.tokenIs("{")) {
-            throw new ParserException("The body of a class must be enclosed in curly brackets");
+            throw tokens.error("The body of a class must be enclosed in curly brackets");
         }
         tokens.nextToken(true);
         ClassBodyNode cb = parseUntilToken(tokens, "}");

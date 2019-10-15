@@ -86,7 +86,7 @@ public class SliceNode implements SubTestNode {
         }
         TestNode step = sliceTest(tokens);
         if (!tokens.tokenIs("]")) {
-            throw new ParserException("Expected ], got "+tokens.getFirst());
+            throw tokens.error("Expected ], got "+tokens.getFirst());
         }
         tokens.nextToken();
         return new SliceNode(start, end, step);
@@ -100,7 +100,7 @@ public class SliceNode implements SubTestNode {
     @NotNull
     private static TestNode sliceTest(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(TokenType.COLON)) {
-            throw new ParserException("Expected :, got "+tokens.getFirst());
+            throw tokens.error("Expected :, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
         if (tokens.tokenIs(TokenType.COLON, "]")) {

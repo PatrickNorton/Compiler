@@ -107,7 +107,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
         assert tokens.tokenIs(Keyword.CLASS);
         tokens.nextToken();
         if (!tokens.tokenIs(TokenType.NAME)) {
-            throw new ParserException("class keyword must be followed by class name");
+            throw tokens.error("class keyword must be followed by class name");
         }
         TypeNode name = TypeNode.parse(tokens);
         LinkedList<TypeNode> superclasses = new LinkedList<>();

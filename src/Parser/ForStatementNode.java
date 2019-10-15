@@ -66,7 +66,7 @@ public class ForStatementNode implements FlowStatementNode {
         tokens.nextToken();
         TypedVariableNode[] vars = TypedVariableNode.parseForVars(tokens);
         if (!tokens.tokenIs(Keyword.IN)) {
-            throw new ParserException("Expected in, got "+tokens.getFirst());
+            throw tokens.error("Expected in, got "+tokens.getFirst());
         }
         tokens.nextToken();
         TestNode[] iterables = TestNode.parseForIterables(tokens);

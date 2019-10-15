@@ -98,7 +98,7 @@ public enum DescriptorNode implements AtomicNode {
             do {
                 setsNum++;
                 if (setsNum > SETS.size()) {
-                    throw new ParserException("Illegal keyword placement");
+                    throw tokens.error("Illegal keyword placement");
                 }
             } while (SETS.get(setsNum - 1).contains(d));
             descriptors.add(d);

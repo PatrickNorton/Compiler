@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class Token {
     public final TokenType token;
     public final String sequence;
+    public final LineInfo lineInfo;
 
     /**
      * Create a new instance of Token.
@@ -17,9 +18,10 @@ public class Token {
      * @param sequence The sequence of text the token belongs to
      */
     @Contract(pure = true)
-    public Token(@NotNull TokenType token, @NotNull String sequence) {
+    public Token(@NotNull TokenType token, @NotNull String sequence, LineInfo lineInfo) {
         this.token = token;
         this.sequence = sequence;
+        this.lineInfo = lineInfo;
     }
 
     /**
@@ -99,9 +101,9 @@ public class Token {
      * @return The token
      */
     @NotNull
-    @Contract(value = " -> new", pure = true)
-    public static Token Epsilon() {
-        return new Token(TokenType.EPSILON, "");
+    @Contract(value = "_ -> new", pure = true)
+    public static Token Epsilon(LineInfo lineInfo) {
+        return new Token(TokenType.EPSILON, "", lineInfo);
     }
 
     /**
@@ -109,9 +111,13 @@ public class Token {
      * @return The token
      */
     @NotNull
-    @Contract(value = " -> new", pure = true)
-    public static Token Newline() {
-        return new Token(TokenType.NEWLINE, "\n");
+    @Contract(value = "_ -> new", pure = true)
+    public static Token Newline(LineInfo lineInfo) {
+        return new Token(TokenType.NEWLINE, "\n", lineInfo);
+    }
+
+    public String lineString() {
+        return lineInfo.infoString();
     }
 
     public String toString() {

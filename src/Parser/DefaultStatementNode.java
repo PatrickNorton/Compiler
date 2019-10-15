@@ -73,7 +73,7 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
         StatementBodyNode body;
         if (fallthrough) {
             if (!tokens.tokenIs(TokenType.COLON)) {
-                throw new ParserException("Expected :, got " + tokens.getFirst());
+                throw tokens.error("Expected :, got " + tokens.getFirst());
             }
             tokens.nextToken(true);
             body = StatementBodyNode.parseCase(tokens);
@@ -89,7 +89,7 @@ public class DefaultStatementNode implements BaseNode, EmptiableNode {
         assert tokens.tokenIs(Keyword.DEFAULT);
         tokens.nextToken();
         if (!tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
-            throw new ParserException("Unexpected " + tokens.getFirst());
+            throw tokens.error("Unexpected " + tokens.getFirst());
         }
         StatementBodyNode body = new StatementBodyNode(TestNode.parse(tokens));
         return new DefaultStatementNode(body, false);

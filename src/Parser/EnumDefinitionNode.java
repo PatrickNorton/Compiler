@@ -104,7 +104,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
-            throw new ParserException("Expected {, got " + tokens.getFirst());
+            throw tokens.error("Expected {, got " + tokens.getFirst());
         }
         tokens.nextToken(true);
         LinkedList<EnumKeywordNode> names = new LinkedList<>();

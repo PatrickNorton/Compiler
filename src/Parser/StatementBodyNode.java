@@ -59,7 +59,7 @@ public class StatementBodyNode implements BodyNode {
     @Contract("_ -> new")
     static StatementBodyNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs("{")) {
-            throw new ParserException("The body of a function must be enclosed in curly brackets");
+            throw tokens.error("The body of a function must be enclosed in curly brackets");
         }
         tokens.nextToken(true);
         StatementBodyNode st = parseUntilToken(tokens, "}");

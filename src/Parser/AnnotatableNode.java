@@ -32,7 +32,7 @@ public interface AnnotatableNode extends IndependentNode {
         }
         AnnotatableNode statement = AnnotatableNode.parse(tokens);
         if (statement.getAnnotations().length > 0) {
-            throw new ParserException("Attempted to annotate twice");
+            throw tokens.error("Attempted to annotate twice");
         }
         statement.addAnnotations(annotations.toArray(new NameNode[0]));
         return statement;
@@ -49,7 +49,7 @@ public interface AnnotatableNode extends IndependentNode {
         if (stmt instanceof AnnotatableNode) {
             return (AnnotatableNode) stmt;
         } else {
-            throw new ParserException("Un-annotatable statement");
+            throw tokens.error("Un-annotatable statement");
         }
     }
 }

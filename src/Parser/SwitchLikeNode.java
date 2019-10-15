@@ -75,7 +75,7 @@ public abstract class SwitchLikeNode implements StatementNode, EmptiableNode {
         tokens.nextToken();
         TestNode switched = TestNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
-            throw new ParserException("Unexpected " + tokens.getFirst());
+            throw tokens.error("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken(true);
         if (!isDetermined && tokens.tokenIs(Keyword.CASE)) {
@@ -109,7 +109,7 @@ public abstract class SwitchLikeNode implements StatementNode, EmptiableNode {
         }
         tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
-            throw new ParserException("Unexpected " + tokens.getFirst());
+            throw tokens.error("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken();
         if (isExpression) {

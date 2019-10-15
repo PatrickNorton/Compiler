@@ -24,7 +24,7 @@ public interface ImportExportNode extends SimpleStatementNode {
             return parseFrom(tokens);
         } else {
             if (!tokens.tokenIs(TokenType.KEYWORD)) {
-                throw new ParserException("Unexpected " + tokens.getFirst());
+                throw tokens.error("Unexpected " + tokens.getFirst());
             }
             switch (Keyword.find(tokens.getFirst().sequence)) {
                 case IMPORT:
@@ -54,7 +54,7 @@ public interface ImportExportNode extends SimpleStatementNode {
         } else if (tokens.lineContains(Keyword.TYPEGET)) {
             return TypegetStatementNode.parse(tokens);
         } else {
-            throw new ParserException("from does not begin a statement");
+            throw tokens.error("from does not begin a statement");
         }
     }
 }

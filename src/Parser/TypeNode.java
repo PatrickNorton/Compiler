@@ -74,7 +74,7 @@ public class TypeNode implements AtomicNode {
             if (allow_empty && tokens.tokenIs("[")) {
                 main = DottedVariableNode.empty();
             } else {
-                throw new ParserException("Expected type name, got " + tokens.getFirst());
+                throw tokens.error("Expected type name, got " + tokens.getFirst());
             }
         } else {
             main = DottedVariableNode.parseNamesOnly(tokens);
@@ -99,7 +99,7 @@ public class TypeNode implements AtomicNode {
             }
             tokens.passNewlines();
             if (!tokens.tokenIs("]")) {
-                throw new ParserException("Comma must separate subtypes");
+                throw tokens.error("Comma must separate subtypes");
             }
         }
         tokens.nextToken();
@@ -121,7 +121,7 @@ public class TypeNode implements AtomicNode {
             return new TypeNode[0];
         }
         if (!tokens.tokenIs(TokenType.ARROW)) {
-            throw new ParserException("Return value must use arrow operator");
+            throw tokens.error("Return value must use arrow operator");
         }
         tokens.nextToken();
         LinkedList<TypeNode> types = new LinkedList<>();

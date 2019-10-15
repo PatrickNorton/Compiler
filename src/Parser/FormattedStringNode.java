@@ -54,19 +54,20 @@ public class FormattedStringNode extends StringLikeNode {
     /**
      * Parse a FormattedStringNode from a {@link String} representing its
      * contents.
-     * @param contents The contents of the string
+     * @param token The token for the contents of the string
      * @return The freshly parsed FormattedStringNode
      */
     @NotNull
     @Contract("_ -> new")
-    static FormattedStringNode parse(@NotNull String contents) {
+    static FormattedStringNode parse(@NotNull Token token) {
+        String contents = token.sequence;
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher prefixMatcher = prefixPattern.matcher(contents);
         String prefixes;
         if (prefixMatcher.find()) {
             prefixes = prefixMatcher.group();
         } else {
-            throw new ParserException("Match should not have failed");
+            throw ParserException.of("Match should not have failed", token);
         }
         LinkedList<String> strs = new LinkedList<>();
         LinkedList<TestNode> tests = new LinkedList<>();
@@ -96,13 +97,13 @@ public class FormattedStringNode extends StringLikeNode {
                 }
             } while (netBraces > 0 && m.find());
             if (netBraces > 0) {
-                throw new ParserException("Unmatched braces in " + inside);
+                throw ParserException.of("Unmatched braces in " + inside, token);
             }
             end = m.end();
             TokenList tokenList = Tokenizer.parse(to_test.substring(1, to_test.length() - 1));
             tests.add(TestNode.parse(tokenList));
             if (!tokenList.tokenIs(TokenType.EPSILON)) {
-                throw new ParserException("Unexpected " + tokenList.getFirst());
+                throw ParserException.of("Unexpected " + tokenList.getFirst(), token);
             }
             index = end + 1;
         }

@@ -46,7 +46,7 @@ public interface DecoratableNode extends IndependentNode {
         if (stmt instanceof DecoratableNode) {
             return (DecoratableNode) stmt;
         } else {
-            throw new ParserException("Illegal decorator");
+            throw tokens.error("Illegal decorator");
         }
     }
 }

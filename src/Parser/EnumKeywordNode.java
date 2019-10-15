@@ -27,13 +27,13 @@ public interface EnumKeywordNode extends NameNode {
     @NotNull
     static EnumKeywordNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
-            throw new ParserException("Enum keyword must start with a variable name");
+            throw tokens.error("Enum keyword must start with a variable name");
         }
         NameNode t = NameNode.parse(tokens);
         if (t instanceof EnumKeywordNode) {
             return (EnumKeywordNode) t;
         } else {
-            throw new ParserException("Unexpected keyword");
+            throw tokens.error("Unexpected keyword");
         }
     }
 }
