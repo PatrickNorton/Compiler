@@ -21,12 +21,24 @@ public class ParserException extends RuntimeException {
         super(message, cause);
     }
 
+    /**
+     * Create a new {@link ParserException} from the token being errored.
+     * @param message The message to attach to the error
+     * @param token The token to get the context from
+     * @return The new exception
+     */
     @NotNull
     @Contract("_, _ -> new")
     public static ParserException of(String message, @NotNull Token token) {
         return  ParserException.of(message, token.lineInfo);
     }
 
+   /**
+     * Create a new {@link ParserException} from the line info being errored.
+     * @param message The message to attach to the error
+     * @param lineInfo The info to get the context from
+     * @return The new exception
+     */
     @NotNull
     @Contract("_, _ -> new")
     public static ParserException of(String message, @NotNull LineInfo lineInfo) {

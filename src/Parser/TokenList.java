@@ -646,6 +646,12 @@ public final class TokenList implements Iterable<Token> {
         return TokenList.matchingBrace(getFirst().sequence);
     }
 
+    /**
+     * Create an {@link ParserInternalError internal error} from the current
+     * context.
+     * @param message The message to attach to the error
+     * @return The new error
+     */
     @NotNull
     public ParserInternalError internalError(String message) {
         return ParserInternalError.withHeader(
@@ -653,12 +659,15 @@ public final class TokenList implements Iterable<Token> {
                         message, tokenizer.currentLine(), getFirst().lineString()));
     }
 
+    /**
+     * Create a {@link ParserException syntax error} from the current context.
+     * @param message The message to attach to the error
+     * @return The new error
+     */
     @NotNull
     @Contract("_ -> new")
     public ParserException error(String message) {
-        return new ParserException(
-                String.format("%s%nError: Line %s%n%s",
-                        message, tokenizer.currentLine(), getFirst().lineString()));
+        return ParserException.of(message, getFirst());
     }
 
     /**
