@@ -10,11 +10,18 @@ import java.util.EnumSet;
  * @author Patrick Norton
  */
 public class StaticBlockNode implements ClassStatementNode {
+    private LineInfo lineInfo;
     private StatementBodyNode stmts;
 
     @Contract(pure = true)
-    public StaticBlockNode(@NotNull StatementBodyNode stmts) {
+    public StaticBlockNode(LineInfo lineInfo, @NotNull StatementBodyNode stmts) {
+        this.lineInfo = lineInfo;
         this.stmts = stmts;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public StatementBodyNode getStmts() {
@@ -49,8 +56,9 @@ public class StaticBlockNode implements ClassStatementNode {
     @Contract("_ -> new")
     public static StaticBlockNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("static") && tokens.tokenIs(1, "{");
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        return new StaticBlockNode(StatementBodyNode.parse(tokens));
+        return new StaticBlockNode(lineInfo, StatementBodyNode.parse(tokens));
     }
 
     @Override

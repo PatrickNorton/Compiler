@@ -8,6 +8,11 @@ package Parser;
  */
 public class EmptyTestNode implements TestNode {
     @Override
+    public LineInfo getLineInfo() {
+        return LineInfo.empty();
+    }
+
+    @Override
     public boolean isEmpty() {
         return true;
     }

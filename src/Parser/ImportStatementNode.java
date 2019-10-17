@@ -11,6 +11,7 @@ import java.util.StringJoiner;
  * @see ExportStatementNode
  */
 public class ImportStatementNode implements ImportExportNode {
+    private LineInfo lineInfo;
     private DottedVariableNode[] imports;
     private DottedVariableNode from;
     private DottedVariableNode[] as;
@@ -21,8 +22,8 @@ public class ImportStatementNode implements ImportExportNode {
      * @param from The package from whence they are imported
      */
     @Contract(pure = true)
-    public ImportStatementNode(DottedVariableNode[] imports, DottedVariableNode from) {
-        this(imports, from, new DottedVariableNode[0]);
+    public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from) {
+        this(info, imports, from, new DottedVariableNode[0]);
     }
 
     /**
@@ -30,10 +31,16 @@ public class ImportStatementNode implements ImportExportNode {
      * @param imports Tne list of imported names, all top-level
      */
     @Contract(pure = true)
-    public ImportStatementNode(DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
+    public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
+        this.lineInfo = info;
         this.imports = imports;
         this.from = from;
         this.as = as;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public DottedVariableNode[] getImports() {
@@ -63,11 +70,16 @@ public class ImportStatementNode implements ImportExportNode {
     @Contract("_ -> new")
     static ImportStatementNode parse(@NotNull TokenList tokens) {
         DottedVariableNode from = DottedVariableNode.empty();
+        LineInfo info = null;
         if (tokens.tokenIs(Keyword.FROM)) {
+            info = tokens.lineInfo();
             tokens.nextToken();
             from = DottedVariableNode.parseNamesOnly(tokens);
         }
         assert tokens.tokenIs(Keyword.IMPORT);
+        if (info == null) {
+            info = tokens.lineInfo();
+        }
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw tokens.error("Empty import statements are illegal");
@@ -75,9 +87,9 @@ public class ImportStatementNode implements ImportExportNode {
         DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
         if (tokens.tokenIs(Keyword.AS)) {
             DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
-            return new ImportStatementNode(imports, from, as);
+            return new ImportStatementNode(info, imports, from, as);
         }
-        return new ImportStatementNode(imports, from);
+        return new ImportStatementNode(info, imports, from);
     }
 
     @Override

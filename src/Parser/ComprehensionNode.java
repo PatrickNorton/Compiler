@@ -11,6 +11,7 @@ import java.util.StringJoiner;
  * @see DictComprehensionNode
  */
 public class ComprehensionNode implements SubTestNode, PostDottableNode {
+    private LineInfo lineInfo;
     private String brace_type;
     private TypedVariableNode[] variables;
     private TestNode builder;
@@ -26,13 +27,19 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
      * @param looped The iterable being looped over
      */
     @Contract(pure = true)
-    public ComprehensionNode(String brace_type, TypedVariableNode[] variables,
+    public ComprehensionNode(LineInfo lineInfo, String brace_type, TypedVariableNode[] variables,
                              TestNode builder, TestNode[] looped, TestNode condition) {
+        this.lineInfo = lineInfo;
         this.brace_type = brace_type;
         this.variables = variables;
         this.builder = builder;
         this.looped = looped;
         this.condition = condition;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public String getBrace_type() {
@@ -74,6 +81,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     static ComprehensionNode parse(@NotNull TokenList tokens) {
         // TODO: Splats in comprehensions
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
+        LineInfo info = tokens.lineInfo();
         String brace_type = tokens.getFirst().sequence;
         String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
@@ -99,7 +107,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
             throw tokens.error("Expected close brace");
         }
         tokens.nextToken();
-        return new ComprehensionNode(brace_type, variables, builder, looped, condition);
+        return new ComprehensionNode(info, brace_type, variables, builder, looped, condition);
     }
 
     public String toString() {

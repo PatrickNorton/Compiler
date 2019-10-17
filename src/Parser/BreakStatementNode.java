@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class BreakStatementNode implements SimpleFlowNode {
+    private LineInfo lineInfo;
     private Integer loops;
     private TestNode cond;
 
@@ -18,9 +19,15 @@ public class BreakStatementNode implements SimpleFlowNode {
      * @param cond The conditional to be tested for
      */
     @Contract(pure = true)
-    public BreakStatementNode(Integer loops, TestNode cond) {
+    public BreakStatementNode(LineInfo lineInfo, Integer loops, TestNode cond) {
+        this.lineInfo = lineInfo;
         this.loops = loops;
         this.cond = cond;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public Integer getLoops() {
@@ -49,6 +56,7 @@ public class BreakStatementNode implements SimpleFlowNode {
     @Contract("_ -> new")
     static BreakStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.BREAK);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         int loops;
         if (tokens.tokenIs(TokenType.NUMBER)) {
@@ -64,7 +72,7 @@ public class BreakStatementNode implements SimpleFlowNode {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }
-        return new BreakStatementNode(loops, cond);
+        return new BreakStatementNode(info, loops, cond);
     }
 
     @Override

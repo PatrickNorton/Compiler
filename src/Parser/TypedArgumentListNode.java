@@ -12,20 +12,32 @@ import java.util.StringJoiner;
  * @see TypedArgumentNode
  */
 public class TypedArgumentListNode implements BaseNode, EmptiableNode {
+    private LineInfo lineInfo;
     private TypedArgumentNode[] positionArgs;
     private TypedArgumentNode[] normalArgs;
     private TypedArgumentNode[] nameArgs;
 
-    @Contract(pure = true)
-    public TypedArgumentListNode(TypedArgumentNode... args) {
-        this(new TypedArgumentNode[0], args, new TypedArgumentNode[0]);
+    public TypedArgumentListNode() {
+        this(LineInfo.empty());
     }
 
     @Contract(pure = true)
-    public TypedArgumentListNode(TypedArgumentNode[] positionArgs, TypedArgumentNode[] normalArgs, TypedArgumentNode[] nameArgs) {
+    public TypedArgumentListNode(LineInfo lineInfo, TypedArgumentNode... args) {
+        this(lineInfo, new TypedArgumentNode[0], args, new TypedArgumentNode[0]);
+    }
+
+    @Contract(pure = true)
+    public TypedArgumentListNode(LineInfo lineInfo, TypedArgumentNode[] positionArgs, TypedArgumentNode[] normalArgs,
+                                 TypedArgumentNode[] nameArgs) {
+        this.lineInfo = lineInfo;
         this.normalArgs = normalArgs;
         this.positionArgs = positionArgs;
         this.nameArgs = nameArgs;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TypedArgumentNode[] getPositionArgs() {
@@ -85,6 +97,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     @Contract("_ -> new")
     static TypedArgumentListNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("(");
+        LineInfo lineInfo = tokens.lineInfo();
         boolean has_posArgs = tokens.braceContains("/");
         if (!tokens.tokenIs("(")) {
             throw tokens.error("Argument lists must start with an open-paren");
@@ -126,8 +139,8 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
             }
         }
         tokens.nextToken();
-        return new TypedArgumentListNode(posArgs.toArray(new TypedArgumentNode[0]), args.toArray(new TypedArgumentNode[0]),
-                kwArgs.toArray(new TypedArgumentNode[0]));
+        return new TypedArgumentListNode(lineInfo, posArgs.toArray(new TypedArgumentNode[0]),
+                args.toArray(new TypedArgumentNode[0]), kwArgs.toArray(new TypedArgumentNode[0]));
     }
 
     @Override

@@ -10,11 +10,18 @@ import java.util.ArrayList;
  * @author Patrick Norton
  */
 public class InterfaceBodyNode implements BodyNode {
+    private LineInfo lineInfo;
     private InterfaceStatementNode[] statements;
 
     @Contract(pure = true)
-    public InterfaceBodyNode(InterfaceStatementNode... statements) {
+    public InterfaceBodyNode(LineInfo lineInfo, InterfaceStatementNode... statements) {
+        this.lineInfo = lineInfo;
         this.statements = statements;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -43,6 +50,7 @@ public class InterfaceBodyNode implements BodyNode {
         if (!tokens.tokenIs("{")) {
             throw tokens.error("The body of a class must be enclosed in curly brackets");
         }
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
         ArrayList<InterfaceStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs("}")) {
@@ -52,7 +60,7 @@ public class InterfaceBodyNode implements BodyNode {
             }
         }
         tokens.nextToken();
-        return new InterfaceBodyNode(statements.toArray(new InterfaceStatementNode[0]));
+        return new InterfaceBodyNode(info, statements.toArray(new InterfaceStatementNode[0]));
     }
 
     @Override

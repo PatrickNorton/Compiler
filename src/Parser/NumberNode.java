@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 public class NumberNode implements AtomicNode {
     private static final MathContext PARSE_PRECISION = new MathContext(0, RoundingMode.UNNECESSARY);
 
+    private LineInfo lineInfo;
     private BigDecimal integer;
 
     /**
@@ -22,8 +23,14 @@ public class NumberNode implements AtomicNode {
      * @param integer The value of the decimal
      */
     @Contract(pure = true)
-    public NumberNode(BigDecimal integer) {
+    public NumberNode(LineInfo lineInfo, BigDecimal integer) {
+        this.lineInfo = lineInfo;
         this.integer = integer;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public BigDecimal getInteger() {
@@ -64,9 +71,10 @@ public class NumberNode implements AtomicNode {
          * divided to put the decimal in the right place.
          */
         String value = tokens.getFirst().sequence;
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         if (value.length() < 2 || value.charAt(0) != '0') {
-            return new NumberNode(new BigDecimal(value));
+            return new NumberNode(info, new BigDecimal(value));
         }
         int base;
         switch (value.charAt(1)) {
@@ -90,7 +98,7 @@ public class NumberNode implements AtomicNode {
             case '8':
             case '9':
                 try {
-                    return new NumberNode(new BigDecimal(value));
+                    return new NumberNode(info, new BigDecimal(value));
                 } catch (NumberFormatException e) {
                     throw new RuntimeException("Illegal number " + value);
                 }
@@ -99,7 +107,7 @@ public class NumberNode implements AtomicNode {
         }
         try {
             BigDecimal val = parseInt(value.substring(2), base);
-            return new NumberNode(val);
+            return new NumberNode(info, val);
         } catch (NumberFormatException e) {
             throw new RuntimeException("Illegal number " + value);
         }

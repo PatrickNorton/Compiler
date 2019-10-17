@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public class RangeLiteralNode implements TestNode {
+    private LineInfo lineInfo;
     private TestNode start;
     private TestNode end;
     private TestNode step;
@@ -15,10 +16,16 @@ public class RangeLiteralNode implements TestNode {
      * @param step The step amount
      */
     @Contract(pure = true)
-    public RangeLiteralNode(TestNode start, TestNode end, TestNode step) {
+    public RangeLiteralNode(LineInfo lineInfo, TestNode start, TestNode end, TestNode step) {
+        this.lineInfo = lineInfo;
         this.start = start;
         this.end = end;
         this.step = step;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getStart() {
@@ -41,7 +48,7 @@ public class RangeLiteralNode implements TestNode {
     @NotNull
     @Contract("_ -> new")
     public static RangeLiteralNode fromSlice(@NotNull SliceNode node) {
-        return new RangeLiteralNode(node.getStart(), node.getEnd(), node.getStep());
+        return new RangeLiteralNode(node.getLineInfo(), node.getStart(), node.getEnd(), node.getStep());
     }
 
     @Override

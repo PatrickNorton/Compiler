@@ -12,9 +12,14 @@ import java.util.EnumSet;
  * @see DeclaredAssignmentNode
  */
 public class DeclarationNode implements AssignStatementNode, ClassStatementNode {
+    private LineInfo lineInfo;
     private TypeNode type;
     private VariableNode name;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
+
+    public DeclarationNode(TypeNode type, VariableNode name) {
+        this(type.getLineInfo(), type, name);
+    }
 
     /**
      * Create a new instance of DeclarationNode.
@@ -22,9 +27,15 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
      * @param name The name of that variable
      */
     @Contract(pure = true)
-    public DeclarationNode(TypeNode type, VariableNode name) {
+    public DeclarationNode(LineInfo lineInfo, TypeNode type, VariableNode name) {
+        this.lineInfo = lineInfo;
         this.type = type;
         this.name = name;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TypeNode getType() {

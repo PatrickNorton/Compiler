@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @see OperatorTypeNode
  */
 public class OperatorNode implements SubTestNode {
+    private LineInfo lineInfo;
     private OperatorTypeNode operator;
     private ArgumentNode[] operands;
 
@@ -18,7 +19,8 @@ public class OperatorNode implements SubTestNode {
      * @param operands The operands of the operator
      */
     @Contract(pure = true)
-    public OperatorNode(OperatorTypeNode operator, @NotNull ArgumentNode... operands) {
+    public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator, @NotNull ArgumentNode... operands) {
+        this.lineInfo = lineInfo;
         this.operator = operator;
         this.operands = operands;
     }
@@ -29,8 +31,8 @@ public class OperatorNode implements SubTestNode {
      * @param operands The operands of the operator
      */
     @Contract(pure = true)
-    public OperatorNode(OperatorTypeNode operator, TestNode... operands) {
-        this(operator, ArgumentNode.fromTestNodes(operands));
+    public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator, TestNode... operands) {
+        this(lineInfo, operator, ArgumentNode.fromTestNodes(operands));
     }
 
     /**
@@ -39,7 +41,12 @@ public class OperatorNode implements SubTestNode {
      */
     @Contract(pure = true)
     public OperatorNode(OperatorTypeNode operator) {
-        this(operator, new ArgumentNode[0]);
+        this(operator.getLineInfo(), operator, new ArgumentNode[0]);
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     /**
@@ -49,9 +56,9 @@ public class OperatorNode implements SubTestNode {
      * @return
      */
     @NotNull
-    @Contract("_, _ -> new")
-    public static OperatorNode fromEmpty(@NotNull OperatorNode empty, TestNode... operands) {
-        return new OperatorNode(empty.getOperator(), operands);
+    @Contract("_, _, _ -> new")
+    public static OperatorNode fromEmpty(LineInfo lineInfo, @NotNull OperatorNode empty, TestNode... operands) {
+        return new OperatorNode(lineInfo, empty.getOperator(), operands);
     }
 
     /**

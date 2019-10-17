@@ -12,6 +12,7 @@ import java.util.Set;
  * @see FunctionDefinitionNode
  */
 public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode {
+    private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retval;
@@ -28,11 +29,17 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
      * @param body The body of the method
      */
     @Contract(pure = true)
-    public MethodDefinitionNode(VariableNode name, TypedArgumentListNode args, TypeNode[] retval, StatementBodyNode body) {
+    public MethodDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeNode[] retval, StatementBodyNode body) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.args = args;
         this.retval = retval;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -103,12 +110,13 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     @Contract("_ -> new")
     static MethodDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.METHOD);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         TypeNode[] retval = TypeNode.parseRetVal(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new MethodDefinitionNode(name, args, retval, body);
+        return new MethodDefinitionNode(info, name, args, retval, body);
     }
 
     @Override

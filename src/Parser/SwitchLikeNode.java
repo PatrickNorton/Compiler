@@ -16,17 +16,25 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public abstract class SwitchLikeNode implements StatementNode, EmptiableNode {
+    private LineInfo lineInfo;
     private TestNode switched;
     private CaseStatementNode[] cases;
     private DefaultStatementNode defaultStatement;
     private boolean fallthrough;
 
     @Contract(pure = true)
-    public SwitchLikeNode(TestNode switched, boolean fallthrough, CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
+    public SwitchLikeNode(LineInfo lineInfo, TestNode switched, boolean fallthrough,
+                          CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
+        this.lineInfo = lineInfo;
         this.switched = switched;
         this.fallthrough = fallthrough;
         this.cases = cases;
         this.defaultStatement = defaultStatement;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getSwitched() {
@@ -72,6 +80,7 @@ public abstract class SwitchLikeNode implements StatementNode, EmptiableNode {
     @Contract("_, _, _ -> new")
     static SwitchLikeNode parse(@NotNull TokenList tokens, boolean isDetermined, boolean isExpression) {
         assert tokens.tokenIs(Keyword.SWITCH);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode switched = TestNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
@@ -113,9 +122,9 @@ public abstract class SwitchLikeNode implements StatementNode, EmptiableNode {
         }
         tokens.nextToken();
         if (isExpression) {
-            return new SwitchExpressionNode(switched, cases.toArray(new CaseStatementNode[0]), defaultStatement);
+            return new SwitchExpressionNode(lineInfo, switched, cases.toArray(new CaseStatementNode[0]), defaultStatement);
         } else {
-            return new SwitchStatementNode(switched, fallthrough, cases.toArray(new CaseStatementNode[0]), defaultStatement);
+            return new SwitchStatementNode(lineInfo, switched, fallthrough, cases.toArray(new CaseStatementNode[0]), defaultStatement);
         }
     }
 

@@ -670,6 +670,14 @@ public final class TokenList implements Iterable<Token> {
         return ParserException.of(message, getFirst());
     }
 
+    public LineInfo lineInfo() {
+        return getFirst().lineInfo;
+    }
+
+    public LineInfo lineInfo(int index) {
+        return getToken(index).lineInfo;
+    }
+
     /**
      * Get the matching brace of a string.
      * @param brace The brace to match

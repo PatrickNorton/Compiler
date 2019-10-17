@@ -296,7 +296,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         TestNode next = nodes.get(nodeNumber + 1);
         TestNode op;
         if (node instanceof OperatorNode) {
-            op = OperatorNode.fromEmpty((OperatorNode) node, previous, next);
+            op = OperatorNode.fromEmpty(previous.getLineInfo(), (OperatorNode) node, previous, next);
         } else {
             throw tokens.error("Unexpected node for parseOperator");
         }
@@ -318,7 +318,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         TestNode next = nodes.get(nodeNumber + 1);
         TestNode op;
         if (node instanceof OperatorNode) {
-            op = OperatorNode.fromEmpty((OperatorNode) node, next);
+            op = OperatorNode.fromEmpty(node.getLineInfo(), (OperatorNode) node, next);
         } else {
             throw tokens.error("Unexpected node for parseOperator");
         }
@@ -425,9 +425,10 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @NotNull
     static SubTestNode parseOpFunc(@NotNull TokenList tokens) {  // FIXME: Move this somewhere more reasonable
         assert tokens.tokenIs(TokenType.OP_FUNC);
+        LineInfo info = tokens.lineInfo();
         OperatorTypeNode op_code = OperatorTypeNode.parse(tokens);
         if (tokens.tokenIs("(")) {
-            return new OperatorNode(op_code, ArgumentNode.parseList(tokens));
+            return new OperatorNode(info, op_code, ArgumentNode.parseList(tokens));
         } else {
             return op_code;
         }

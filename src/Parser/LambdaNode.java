@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class LambdaNode implements SubTestNode {
+    private LineInfo lineInfo;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
 
@@ -17,9 +18,15 @@ public class LambdaNode implements SubTestNode {
      * @param body The body of the lambda
      */
     @Contract(pure = true)
-    public LambdaNode(TypedArgumentListNode args, StatementBodyNode body) {
+    public LambdaNode(LineInfo lineInfo, TypedArgumentListNode args, StatementBodyNode body) {
+        this.lineInfo = lineInfo;
         this.args = args;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public StatementBodyNode getBody() {
@@ -43,10 +50,11 @@ public class LambdaNode implements SubTestNode {
     @Contract("_ -> new")
     static LambdaNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.LAMBDA);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new LambdaNode(args, body);
+        return new LambdaNode(lineInfo, args, body);
     }
 
     @Override

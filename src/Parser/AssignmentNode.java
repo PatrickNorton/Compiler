@@ -22,6 +22,7 @@ public class AssignmentNode implements AssignStatementNode {
     private boolean is_colon;
     private AssignableNode[] name;
     private TestNode[] value;
+    private LineInfo lineInfo;
 
     /**
      * Construct new instance of an AssignmentNode.
@@ -32,9 +33,15 @@ public class AssignmentNode implements AssignStatementNode {
      */
     @Contract(pure = true)
     public AssignmentNode(boolean is_colon, AssignableNode[] name, TestNode[] value) {
+        this(name[0].getLineInfo(), is_colon, name, value);
+    }
+
+    @Contract(pure = true)
+    public AssignmentNode(LineInfo lineInfo, boolean is_colon, AssignableNode[] name, TestNode[] value) {
         this.is_colon = is_colon;
         this.name = name;
         this.value = value;
+        this.lineInfo = lineInfo;
     }
 
     public boolean getIs_colon() {
@@ -48,6 +55,11 @@ public class AssignmentNode implements AssignStatementNode {
 
     public TestNode[] getValue() {
         return value;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     /**

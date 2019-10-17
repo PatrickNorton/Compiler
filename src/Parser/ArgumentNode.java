@@ -19,12 +19,14 @@ public class ArgumentNode implements BaseNode {
      * ArgumentNodes have three instance variables, representing parts of the
      * argument: {@code [variable]=[vararg][argument]}.
      */
+    private LineInfo lineInfo;
     private VariableNode variable;
     private String vararg;
     private TestNode argument;
 
     /**
      * Create new instance of ArgumentNode.
+     * @param lineInfo The info regarding which line it is on
      * @param variable The variable which is used as a keyword in the call
      * @param vararg Whether or not there is a vararg, and what the vararg is
      *               (e.g. * vs **)
@@ -32,15 +34,32 @@ public class ArgumentNode implements BaseNode {
      *                 passed to the function in the end
      */
     @Contract(pure = true)
-    public ArgumentNode(VariableNode variable, String vararg, TestNode argument) {
+    public ArgumentNode(LineInfo lineInfo, VariableNode variable, String vararg, TestNode argument) {
+        this.lineInfo = lineInfo;
         this.variable = variable;
         this.vararg = vararg;
         this.argument = argument;
     }
 
+    /**
+     * Create a new instance of ArgumentNode.
+     * @param variable The variable which is used as a keyword in the call
+     * @param vararg Whether or not there is a vararg, and what the vararg is
+     *               (e.g. * vs **)
+     * @param argument What the actual argument is, e.g. what is actually
+     *                 passed to the function in the end
+     */
+    public ArgumentNode(VariableNode variable, String vararg, TestNode argument) {
+        this(variable.getLineInfo(), variable, vararg, argument);
+    }
+
     @Contract(pure = true)
+    public ArgumentNode(LineInfo lineInfo, TestNode argument) {
+        this(lineInfo, VariableNode.empty(), "", argument);
+    }
+
     public ArgumentNode(TestNode argument) {
-        this(VariableNode.empty(), "", argument);
+        this(argument.getLineInfo(), argument);
     }
 
     @NotNull
@@ -50,6 +69,11 @@ public class ArgumentNode implements BaseNode {
             args.add(new ArgumentNode(t));
         }
         return args.toArray(new ArgumentNode[0]);
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public VariableNode getVariable() {

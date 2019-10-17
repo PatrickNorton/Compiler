@@ -8,11 +8,18 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class SpecialOpNameNode implements NameNode {
+    private LineInfo lineInfo;
     private OperatorTypeNode operator;
 
     @Contract(pure = true)
-    public SpecialOpNameNode(OperatorTypeNode operator) {
+    public SpecialOpNameNode(LineInfo lineInfo, OperatorTypeNode operator) {
+        this.lineInfo = lineInfo;
         this.operator = operator;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public OperatorTypeNode getOperator() {
@@ -28,8 +35,9 @@ public class SpecialOpNameNode implements NameNode {
     @Contract("_ -> new")
     public static SpecialOpNameNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
+        LineInfo lineInfo = tokens.lineInfo();
         OperatorTypeNode op = OperatorTypeNode.parse(tokens);
-        return new SpecialOpNameNode(op);
+        return new SpecialOpNameNode(lineInfo, op);
     }
 
     @Override

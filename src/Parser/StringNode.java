@@ -26,13 +26,14 @@ public class StringNode extends StringLikeNode {
      * @param prefixes The prefixes thereof
      */
     @Contract(pure = true)
-    public StringNode(String contents, @NotNull String prefixes) {
+    public StringNode(LineInfo lineInfo, String contents, @NotNull String prefixes) {
+        super(lineInfo);
         this.contents = contents;
         this.prefixes = StringPrefix.getPrefixes(prefixes);
     }
 
-    public StringNode(String contents) {
-        this(contents, "");
+    public StringNode(LineInfo lineInfo, String contents) {
+        this(lineInfo, contents, "");
     }
 
     public String getContents() {
@@ -58,6 +59,7 @@ public class StringNode extends StringLikeNode {
     static StringLikeNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.STRING);
         Token token = tokens.getFirst();
+        LineInfo lineInfo = token.lineInfo;
         String contents = token.sequence;
         tokens.nextToken();
         String inside = contentPattern.matcher(contents).replaceAll("");
@@ -70,10 +72,10 @@ public class StringNode extends StringLikeNode {
             if (prefixes.contains("f")) {
                 return FormattedStringNode.parse(token);
             }
-            return new StringNode(inside, prefixes);
+            return new StringNode(lineInfo, inside, prefixes);
         }
         inside = processEscapes(inside, token.lineInfo);
-        return new StringNode(inside);
+        return new StringNode(lineInfo, inside);
     }
 
     /**

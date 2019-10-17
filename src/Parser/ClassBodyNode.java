@@ -13,11 +13,23 @@ import java.util.LinkedList;
  * @see StatementBodyNode
  */
 public class ClassBodyNode implements BodyNode {
+    private LineInfo lineInfo;
     private ClassStatementNode[] statements;
 
     @Contract(pure = true)
-    public ClassBodyNode(ClassStatementNode... statements) {
+    public ClassBodyNode() {
+        this(LineInfo.empty());
+    }
+
+    @Contract(pure = true)
+    public ClassBodyNode(LineInfo lineInfo, ClassStatementNode... statements) {
+        this.lineInfo = lineInfo;
         this.statements = statements;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -49,8 +61,9 @@ public class ClassBodyNode implements BodyNode {
         if (!tokens.tokenIs("{")) {
             throw tokens.error("The body of a class must be enclosed in curly brackets");
         }
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
-        ClassBodyNode cb = parseUntilToken(tokens, "}");
+        ClassBodyNode cb = parseUntilToken(info, tokens, "}");
         assert tokens.tokenIs("}");
         tokens.nextToken();
         return cb;
@@ -75,8 +88,13 @@ public class ClassBodyNode implements BodyNode {
     }
 
     @NotNull
-    @Contract("_, _ -> new")
     private static ClassBodyNode parseUntilToken(@NotNull TokenList tokens, String... sentinels) {
+        return parseUntilToken(tokens.lineInfo(), tokens, sentinels);
+    }
+
+    @NotNull
+    @Contract("_, _, _ -> new")
+    private static ClassBodyNode parseUntilToken(LineInfo lineInfo, @NotNull TokenList tokens, String... sentinels) {
         ArrayList<ClassStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(sentinels)) {
             statements.add(ClassStatementNode.parse(tokens));
@@ -84,11 +102,13 @@ public class ClassBodyNode implements BodyNode {
                 tokens.Newline();
             }
         }
-        return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
+        return new ClassBodyNode(lineInfo, statements.toArray(new ClassStatementNode[0]));
     }
 
-    static ClassBodyNode fromList(LinkedList<ClassStatementNode> statements) {
-        return new ClassBodyNode(statements.toArray(new ClassStatementNode[0]));
+    @NotNull
+    @Contract("_ -> new")
+    static ClassBodyNode fromList(@NotNull LinkedList<ClassStatementNode> statements) {
+        return new ClassBodyNode(statements.getFirst().getLineInfo(), statements.toArray(new ClassStatementNode[0]));
     }
 
     @Override

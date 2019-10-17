@@ -18,6 +18,7 @@ import java.util.StringJoiner;
  * @see DictLiteralNode
  */
 public class DictComprehensionNode implements SubTestNode {
+    private LineInfo lineInfo;
     private TestNode key;
     private TestNode val;
     private TypedVariableNode[] vars;
@@ -32,11 +33,17 @@ public class DictComprehensionNode implements SubTestNode {
      * @param looped The values being looped over
      */
     @Contract(pure = true)
-    public DictComprehensionNode(TestNode key, TestNode val, TypedVariableNode[] vars, TestNode[] looped) {
+    public DictComprehensionNode(LineInfo lineInfo, TestNode key, TestNode val, TypedVariableNode[] vars, TestNode[] looped) {
+        this.lineInfo = lineInfo;
         this.key = key;
         this.val = val;
         this.vars = vars;
         this.looped = looped;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getKey() {
@@ -71,6 +78,7 @@ public class DictComprehensionNode implements SubTestNode {
     @Contract("_ -> new")
     static DictComprehensionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("{");
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
         TestNode key = TestNode.parse(tokens, true);
         if (!tokens.tokenIs(":")) {
@@ -92,7 +100,7 @@ public class DictComprehensionNode implements SubTestNode {
             throw tokens.error("Expected }, got "+tokens.getFirst());
         }
         tokens.nextToken();
-        return new DictComprehensionNode(key, val, vars, looped);
+        return new DictComprehensionNode(info, key, val, vars, looped);
     }
 
     @Override

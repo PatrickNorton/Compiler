@@ -10,6 +10,7 @@ import java.util.EnumSet;
  * @author Patrick Norton
  */
 public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
+    private LineInfo lineInfo;
     private VariableNode name;
     private TypeNode type;
     private StatementBodyNode get;
@@ -27,13 +28,19 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param set The setter attribute for the property
      */
     @Contract(pure = true)
-    public PropertyDefinitionNode(VariableNode name, TypeNode type,
+    public PropertyDefinitionNode(LineInfo lineInfo, VariableNode name, TypeNode type,
                                   StatementBodyNode get, TypedArgumentListNode set_args, StatementBodyNode set) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.type = type;
         this.get = get;
         this.set_args = set_args;
         this.set = set;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -111,6 +118,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     @Contract("_ -> new")
     static PropertyDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.PROPERTY);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
         VariableNode name = VariableNode.empty();
@@ -135,7 +143,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
             throw tokens.error("Only set and get are allowed in context statements");
         }
         tokens.nextToken();
-        return new PropertyDefinitionNode(name, type, get, set_args, set);
+        return new PropertyDefinitionNode(info, name, type, get, set_args, set);
     }
 
     @Override

@@ -10,11 +10,26 @@ import java.util.ArrayList;
  * @author Patrick Norton
  */
 public class StatementBodyNode implements BodyNode {
+    private LineInfo lineInfo;
     private IndependentNode[] statements;
 
-    @Contract(pure = true)
+    public StatementBodyNode() {
+        this(LineInfo.empty());
+    }
+
     public StatementBodyNode(IndependentNode... statements) {
+        this(statements[0].getLineInfo(), statements);
+    }
+
+    @Contract(pure = true)
+    public StatementBodyNode(LineInfo lineInfo, IndependentNode... statements) {
+        this.lineInfo = lineInfo;
         this.statements = statements;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public IndependentNode[] getStatements() {
@@ -61,8 +76,9 @@ public class StatementBodyNode implements BodyNode {
         if (!tokens.tokenIs("{")) {
             throw tokens.error("The body of a function must be enclosed in curly brackets");
         }
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken(true);
-        StatementBodyNode st = parseUntilToken(tokens, "}");
+        StatementBodyNode st = parseUntilToken(lineInfo, tokens, "}");
         assert tokens.tokenIs("}");
         tokens.nextToken();
         return st;
@@ -76,12 +92,12 @@ public class StatementBodyNode implements BodyNode {
     @NotNull
     @Contract("_ -> new")
     static StatementBodyNode parseCase(@NotNull TokenList tokens) {
-        return parseUntilToken(tokens, "case", "default", "}");
+        return parseUntilToken(tokens.lineInfo(), tokens, "case", "default", "}");
     }
 
     @NotNull
-    @Contract("_, _ -> new")
-    private static StatementBodyNode parseUntilToken(@NotNull TokenList tokens, String... values) {
+    @Contract("_, _, _ -> new")
+    private static StatementBodyNode parseUntilToken(LineInfo lineInfo, @NotNull TokenList tokens, String... values) {
         ArrayList<IndependentNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(values)) {
             statements.add(IndependentNode.parse(tokens));
@@ -89,7 +105,7 @@ public class StatementBodyNode implements BodyNode {
                 tokens.Newline();
             }
         }
-        return new StatementBodyNode(statements.toArray(new IndependentNode[0]));
+        return new StatementBodyNode(lineInfo, statements.toArray(new IndependentNode[0]));
     }
 
     @Override

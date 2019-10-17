@@ -12,6 +12,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class ReturnStatementNode implements SimpleFlowNode {
+    private LineInfo lineInfo;
     private TestNode[] returned;
     private TestNode cond;
 
@@ -21,9 +22,15 @@ public class ReturnStatementNode implements SimpleFlowNode {
      * @param cond The condition as to whether or not there is a return
      */
     @Contract(pure = true)
-    public ReturnStatementNode(TestNode[] returned, TestNode cond) {
+    public ReturnStatementNode(LineInfo lineInfo, TestNode[] returned, TestNode cond) {
+        this.lineInfo = lineInfo;
         this.returned = returned;
         this.cond = cond;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode[] getReturned() {
@@ -49,6 +56,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
     @Contract("_ -> new")
     static ReturnStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.RETURN);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         boolean is_conditional = tokens.lineContains(Keyword.IF) && !tokens.lineContains(Keyword.ELSE);
         TestNode[] returned;
@@ -68,7 +76,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }
-        return new ReturnStatementNode(returned, cond);
+        return new ReturnStatementNode(lineInfo, returned, cond);
     }
 
     /**

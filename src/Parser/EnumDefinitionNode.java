@@ -12,6 +12,7 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, InlineableNode {
+    private LineInfo lineInfo;
     private TypeNode name;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
@@ -27,10 +28,16 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
      * @param body The rest of the enum body
      */
     @Contract(pure = true)
-    public EnumDefinitionNode(TypeNode name, EnumKeywordNode[] names, ClassBodyNode body) {
+    public EnumDefinitionNode(LineInfo lineInfo, TypeNode name, EnumKeywordNode[] names, ClassBodyNode body) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.names = names;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -101,6 +108,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
     @Contract("_ -> new")
     public static EnumDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.ENUM);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
@@ -118,7 +126,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
         }
         tokens.passNewlines();
         ClassBodyNode body = ClassBodyNode.parseEnum(tokens);
-        return new EnumDefinitionNode(name, names.toArray(new EnumKeywordNode[0]), body);
+        return new EnumDefinitionNode(info, name, names.toArray(new EnumKeywordNode[0]), body);
     }
 
     @Override

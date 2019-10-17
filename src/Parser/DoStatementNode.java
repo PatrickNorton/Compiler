@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * </p>
  */
 public class DoStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private StatementBodyNode body;
     private TestNode conditional;
 
@@ -20,9 +21,15 @@ public class DoStatementNode implements FlowStatementNode {
      * @param conditional The conditional tested for.
      */
     @Contract(pure = true)
-    public DoStatementNode(StatementBodyNode body, TestNode conditional) {
+    public DoStatementNode(LineInfo lineInfo, StatementBodyNode body, TestNode conditional) {
+        this.lineInfo = lineInfo;
         this.body = body;
         this.conditional = conditional;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -48,15 +55,16 @@ public class DoStatementNode implements FlowStatementNode {
      */
     @NotNull
     @Contract("_ -> new")
-    static DoStatementNode parse(TokenList tokens) {
+    static DoStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.DO);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         if (!tokens.tokenIs(Keyword.WHILE)) {
             throw tokens.error("Do statements must have a corresponding while");
         }
         TestNode conditional = TestNode.parse(tokens);
-        return new DoStatementNode(body, conditional);
+        return new DoStatementNode(info, body, conditional);
     }
 
     @Override

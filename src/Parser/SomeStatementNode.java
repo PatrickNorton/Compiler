@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class SomeStatementNode implements SubTestNode {
+    private LineInfo lineInfo;
     private TestNode contained;
     private TestNode container;
 
@@ -17,9 +18,15 @@ public class SomeStatementNode implements SubTestNode {
      * @param container The node which being tested if contained is a member
      */
     @Contract(pure = true)
-    public SomeStatementNode(TestNode contained, TestNode container) {
+    public SomeStatementNode(LineInfo lineInfo, TestNode contained, TestNode container) {
+        this.lineInfo = lineInfo;
         this.contained = contained;
         this.container = container;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getContained() {
@@ -44,6 +51,7 @@ public class SomeStatementNode implements SubTestNode {
     @Contract("_ -> new")
     static SomeStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.SOME);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode contained = TestNode.parse(tokens);
         if (!(contained instanceof OperatorNode)) {
@@ -54,7 +62,7 @@ public class SomeStatementNode implements SubTestNode {
             throw tokens.error("Expected an in, got "+tokens.getFirst());
         }
         ArgumentNode[] operands = in_stmt.getOperands();
-        return new SomeStatementNode(operands[0].getArgument(), operands[1].getArgument());
+        return new SomeStatementNode(lineInfo, operands[0].getArgument(), operands[1].getArgument());
     }
 
     @Override

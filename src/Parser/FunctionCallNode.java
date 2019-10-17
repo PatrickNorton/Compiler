@@ -14,13 +14,24 @@ import java.util.StringJoiner;
  * </p>
  */
 public class FunctionCallNode implements NameNode, EnumKeywordNode {
+    private LineInfo lineInfo;
     private TestNode caller;
     private ArgumentNode[] parameters;
 
-    @Contract(pure = true)
     public FunctionCallNode(TestNode caller, ArgumentNode[] parameters) {
+        this(caller.getLineInfo(), caller, parameters);
+    }
+
+    @Contract(pure = true)
+    public FunctionCallNode(LineInfo lineInfo, TestNode caller, ArgumentNode[] parameters) {
+        this.lineInfo = lineInfo;
         this.caller = caller;
         this.parameters = parameters;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override

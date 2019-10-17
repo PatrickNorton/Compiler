@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * The class representing a raise statement.
  */
 public class RaiseStatementNode implements SimpleStatementNode {
+    private LineInfo lineInfo;
     private TestNode raised;
 
     /**
@@ -14,8 +15,14 @@ public class RaiseStatementNode implements SimpleStatementNode {
      * @param raised The statement to be raised
      */
     @Contract(pure = true)
-    public RaiseStatementNode(TestNode raised) {
+    public RaiseStatementNode(LineInfo lineInfo, TestNode raised) {
+        this.lineInfo = lineInfo;
         this.raised = raised;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getRaised() {
@@ -36,9 +43,10 @@ public class RaiseStatementNode implements SimpleStatementNode {
     @Contract("_ -> new")
     static RaiseStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.RAISE);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode raised = TestNode.parse(tokens);
-        return new RaiseStatementNode(raised);
+        return new RaiseStatementNode(lineInfo, raised);
     }
 
     @Override

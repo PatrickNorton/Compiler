@@ -10,11 +10,18 @@ import java.util.LinkedList;
  * @author Patrick Norton
  */
 public class VariableNode implements NameNode, EnumKeywordNode {
+    private LineInfo lineInfo;
     private String name;
 
     @Contract(pure = true)
-    public VariableNode(String names) {
+    public VariableNode(LineInfo lineInfo, String names) {
+        this.lineInfo = lineInfo;
         this.name = names;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public String getName() {
@@ -29,7 +36,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     @NotNull
     @Contract(value = " -> new", pure = true)
     public static VariableNode empty() {
-        return new VariableNode("");
+        return new VariableNode(LineInfo.empty(), "");
     }
 
     @Override
@@ -68,8 +75,9 @@ public class VariableNode implements NameNode, EnumKeywordNode {
             throw tokens.error("Expected name. got " + tokens.getFirst());
         }
         String name = tokens.getFirst().sequence;
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
-        return new VariableNode(name);
+        return new VariableNode(info, name);
     }
 
     /**
@@ -84,8 +92,9 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     @Contract("_ -> new")
     static VariableNode parseEllipsis(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.ELLIPSIS);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
-        return new VariableNode("...");
+        return new VariableNode(info, "...");
     }
 
     /**

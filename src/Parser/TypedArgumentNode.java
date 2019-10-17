@@ -9,12 +9,16 @@ import org.jetbrains.annotations.NotNull;
  * @see TypedArgumentListNode
  */
 public class TypedArgumentNode implements BaseNode {
+    private LineInfo lineInfo;
     private TypeNode type;
     private VariableNode name;
     private TestNode defaultval;
     private boolean is_vararg;
     private String vararg_type;
 
+    public TypedArgumentNode(TypeNode type, VariableNode name, TestNode defaultval, boolean is_vararg, String vararg_type) {
+        this(type.getLineInfo(), type, name, defaultval, is_vararg, vararg_type);
+    }
     /**
      * Construct a new instance of TypedArgumentListNode.
      * @param type The type of the argument
@@ -24,12 +28,19 @@ public class TypedArgumentNode implements BaseNode {
      * @param vararg_type The type of the vararg, if it exists
      */
     @Contract(pure = true)
-    public TypedArgumentNode(TypeNode type, VariableNode name, TestNode defaultval, boolean is_vararg, String vararg_type) {
+    public TypedArgumentNode(LineInfo lineInfo, TypeNode type, VariableNode name, TestNode defaultval,
+                             boolean is_vararg, String vararg_type) {
+        this.lineInfo = lineInfo;
         this.type = type;
         this.name = name;
         this.defaultval = defaultval;
         this.is_vararg = is_vararg;
         this.vararg_type = vararg_type;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TypeNode getType() {

@@ -9,8 +9,13 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class IndexNode implements NameNode {
+    private LineInfo lineInfo;
     private NameNode var;
     private TestNode[] indices;
+
+    public IndexNode(NameNode var, TestNode... indices) {
+        this(var.getLineInfo(), var, indices);
+    }
 
     /**
      * Construct a new instance of IndexNode.
@@ -18,9 +23,15 @@ public class IndexNode implements NameNode {
      * @param indices The list of indices in the square brackets
      */
     @Contract(pure = true)
-    public IndexNode(NameNode var, TestNode... indices) {
+    public IndexNode(LineInfo lineInfo, NameNode var, TestNode... indices) {
+        this.lineInfo = lineInfo;
         this.var = var;
         this.indices = indices;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public NameNode getVar() {

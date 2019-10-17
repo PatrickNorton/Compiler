@@ -18,8 +18,13 @@ import java.util.StringJoiner;
  * @see VariableNode
  */
 public class DottedVariableNode implements NameNode {
+    private LineInfo lineInfo;
     private TestNode preDot;
     private NameNode[] postDots;
+
+    public DottedVariableNode(@NotNull TestNode preDot, NameNode... postDot) {
+        this(preDot.getLineInfo(), preDot, postDot);
+    }
 
     /**
      * Create a new instance of DottedVariableNode.
@@ -27,7 +32,8 @@ public class DottedVariableNode implements NameNode {
      * @param postDot The tokens which come after the first dot
      */
     @Contract(pure = true)
-    public DottedVariableNode(TestNode preDot, NameNode... postDot) {
+    public DottedVariableNode(LineInfo info, TestNode preDot, NameNode... postDot) {
+        this.lineInfo = info;
         this.preDot = preDot;
         this.postDots = postDot;
     }
@@ -40,6 +46,11 @@ public class DottedVariableNode implements NameNode {
     @Contract(value = " -> new", pure = true)
     public static DottedVariableNode empty() {
         return new DottedVariableNode(TestNode.empty());
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getPreDot() {

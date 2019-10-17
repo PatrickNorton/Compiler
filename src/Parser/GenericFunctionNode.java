@@ -16,16 +16,23 @@ import java.util.EnumSet;
  * @see GenericOperatorNode
  */
 public class GenericFunctionNode implements GenericDefinitionNode {
+    private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
-    public GenericFunctionNode(VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
+    public GenericFunctionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.args = args;
         this.retvals = retvals;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public VariableNode getName() {
@@ -93,11 +100,12 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     @Contract("_ -> new")
     public static GenericFunctionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.METHOD);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         TypeNode[] retval = TypeNode.parseRetVal(tokens);
-        return new GenericFunctionNode(name, args, retval);
+        return new GenericFunctionNode(info, name, args, retval);
     }
 
     @Override

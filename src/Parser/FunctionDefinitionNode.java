@@ -10,6 +10,7 @@ import java.util.EnumSet;
  * @author Patrick Norton
  */
 public class FunctionDefinitionNode implements DefinitionNode {
+    private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
     private TypeNode[] retval;
@@ -19,11 +20,18 @@ public class FunctionDefinitionNode implements DefinitionNode {
     private NameNode[] annotations = new NameNode[0];
 
     @Contract(pure = true)
-    public FunctionDefinitionNode(VariableNode name, TypedArgumentListNode args, TypeNode[] retval, StatementBodyNode body) {
+    public FunctionDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args,
+                                  TypeNode[] retval, StatementBodyNode body) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.args = args;
         this.retval = retval;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -93,12 +101,13 @@ public class FunctionDefinitionNode implements DefinitionNode {
     @Contract("_ -> new")
     static FunctionDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.FUNC);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
         TypeNode[] retval = TypeNode.parseRetVal(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new FunctionDefinitionNode(name, args, retval, body);
+        return new FunctionDefinitionNode(info, name, args, retval, body);
     }
 
     @Override

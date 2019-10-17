@@ -154,6 +154,13 @@ public enum OperatorTypeNode implements AtomicNode {
         values = Collections.unmodifiableMap(temp);
     }
 
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public LineInfo getLineInfo() {
+        return LineInfo.empty();
+    }
+
     /**
      * Check if the operator is a valid use thereof
      * @param usages The usages to test for

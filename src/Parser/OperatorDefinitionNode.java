@@ -10,6 +10,7 @@ import java.util.EnumSet;
  * @author Patrick Norton
  */
 public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode {
+    private LineInfo lineInfo;
     private SpecialOpNameNode op_code;
     private TypeNode[] ret_type;
     private TypedArgumentListNode args;
@@ -18,6 +19,10 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
 
+    public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeNode[] ret_type,
+                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
+        this(op_code.getLineInfo(), op_code, ret_type, args, body);
+    }
     /**
      * Construct a new instance of OperatorDefinitionNode.
      * @param op_code The code of the operator definition
@@ -26,12 +31,18 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param body The body of the operator definition
      */
     @Contract(pure = true)
-    public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeNode[] ret_type,
+    public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode op_code, @NotNull TypeNode[] ret_type,
                                   @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
+        this.lineInfo = lineInfo;
         this.op_code = op_code;
         this.ret_type = ret_type;
         this.args = args;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -63,7 +74,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
 
     @Override
     public VariableNode getName() {
-        return new VariableNode(op_code.getOperator().name);
+        return new VariableNode(LineInfo.empty(), op_code.getOperator().name);
     }
 
     @Override

@@ -14,8 +14,9 @@ import java.util.LinkedList;
 public class SwitchStatementNode extends SwitchLikeNode {
 
     @Contract(pure = true)
-    public SwitchStatementNode(TestNode switched, boolean fallthrough, CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
-        super(switched, fallthrough, cases, defaultStatement);
+    public SwitchStatementNode(LineInfo lineInfo, TestNode switched, boolean fallthrough,
+                               CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
+        super(lineInfo, switched, fallthrough, cases, defaultStatement);
     }
 
     /**

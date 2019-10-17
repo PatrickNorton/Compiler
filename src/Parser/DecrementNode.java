@@ -10,15 +10,26 @@ import org.jetbrains.annotations.NotNull;
  * @see IncrementNode
  */
 public class DecrementNode implements SimpleStatementNode {
+    private LineInfo lineInfo;
     private NameNode variable;
+
+    public DecrementNode(NameNode variable) {
+        this(variable.getLineInfo(), variable);
+    }
 
     /**
      * Create new DecrementNode from a variable.
      * @param variable The decremented variable
      */
     @Contract(pure = true)
-    public DecrementNode(NameNode variable) {
+    public DecrementNode(LineInfo lineInfo, NameNode variable) {
+        this.lineInfo = lineInfo;
         this.variable = variable;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public NameNode getVariable() {

@@ -62,6 +62,13 @@ public enum DescriptorNode implements AtomicNode {
         this.name = name;
     }
 
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public LineInfo getLineInfo() {
+        return LineInfo.empty();
+    }
+
     /**
      * Get a DescriptorNode based on the string given.
      * @param type The sequence corresponding to the descriptor
@@ -80,6 +87,9 @@ public enum DescriptorNode implements AtomicNode {
     public static DescriptorNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.DESCRIPTOR);
         DescriptorNode descriptor = find(tokens.getFirst().sequence);
+        if (descriptor == null) {
+            throw tokens.internalError("Unknown descriptor " + tokens.getFirst());
+        }
         tokens.nextToken();
         return descriptor;
     }

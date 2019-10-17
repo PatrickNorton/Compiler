@@ -15,15 +15,21 @@ import java.util.LinkedList;
  * @see DictLiteralNode
  */
 public class LiteralNode implements SubTestNode, PostDottableNode {
+    private LineInfo lineInfo;
     private String brace_type;
     private TestNode[] builders;
     private boolean[] is_splats;
 
     @Contract(pure = true)
-    public LiteralNode(String brace_type, TestNode[] builders, boolean[] is_splats) {
+    public LiteralNode(LineInfo lineInfo, String brace_type, TestNode[] builders, boolean[] is_splats) {
         this.brace_type = brace_type;
         this.builders = builders;
         this.is_splats = is_splats;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public String getBrace_type() {
@@ -53,6 +59,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
     @Contract("_ -> new")
     static LiteralNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
+        LineInfo lineInfo = tokens.lineInfo();
         String brace_type = tokens.getFirst().sequence;
         String balanced_brace = tokens.matchingBrace();
         tokens.nextToken(true);
@@ -86,7 +93,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         for (int i = 0; i < is_splat.size(); i++) {
             is_splat_array[i] = is_splat.get(i);
         }
-        return new LiteralNode(brace_type, values.toArray(new TestNode[0]), is_splat_array);
+        return new LiteralNode(lineInfo, brace_type, values.toArray(new TestNode[0]), is_splat_array);
 
     }
 

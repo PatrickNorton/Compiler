@@ -16,6 +16,7 @@ import java.util.StringJoiner;
  * @see AssignmentNode
  */
 public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode {
+    private LineInfo lineInfo;
     private boolean is_colon;
     private TypedVariableNode[] assigned;
     private TestNode[] value;
@@ -28,10 +29,16 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      * @param value The values being assigned
      */
     @Contract(pure = true)
-    public DeclaredAssignmentNode(boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
+    public DeclaredAssignmentNode(LineInfo lineInfo, boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
+        this.lineInfo = lineInfo;
         this.is_colon = is_colon;
         this.assigned = assigned;
         this.value = value;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public boolean getIs_colon() {
@@ -78,7 +85,8 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      */
     @NotNull
     @Contract("_ -> new")
-    static DeclaredAssignmentNode parse(TokenList tokens) {
+    static DeclaredAssignmentNode parse(@NotNull TokenList tokens) {
+        LineInfo info = tokens.lineInfo();
         TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
         if (!tokens.tokenIs(TokenType.ASSIGN)) {
             throw tokens.error("Unexpected "+tokens.getFirst());
@@ -86,7 +94,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         boolean is_colon = tokens.tokenIs(":=");
         tokens.nextToken();
         TestNode[] value = TestNode.parseList(tokens, false);
-        return new DeclaredAssignmentNode(is_colon, assigned, value);
+        return new DeclaredAssignmentNode(info, is_colon, assigned, value);
     }
 
     @Override

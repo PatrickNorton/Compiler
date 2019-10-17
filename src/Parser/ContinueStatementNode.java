@@ -10,11 +10,18 @@ import org.jetbrains.annotations.NotNull;
  * @see BreakStatementNode
  */
 public class ContinueStatementNode implements SimpleFlowNode {
+    private LineInfo lineInfo;
     private TestNode cond;
 
     @Contract(pure = true)
-    public ContinueStatementNode(TestNode cond) {
+    public ContinueStatementNode(LineInfo lineInfo, TestNode cond) {
+        this.lineInfo = lineInfo;
         this.cond = cond;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -36,13 +43,14 @@ public class ContinueStatementNode implements SimpleFlowNode {
     @Contract("_ -> new")
     static ContinueStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.CONTINUE);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode cond = TestNode.empty();
         if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken();
             cond = TestNode.parse(tokens);
         }
-        return new ContinueStatementNode(cond);
+        return new ContinueStatementNode(info, cond);
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class DotimesStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private TestNode iterations;
     private StatementBodyNode body;
     private StatementBodyNode nobreak;
@@ -24,10 +25,16 @@ public class DotimesStatementNode implements FlowStatementNode {
      * @param nobreak The nobreak statement
      */
     @Contract(pure = true)
-    public DotimesStatementNode(TestNode iterations, StatementBodyNode body, StatementBodyNode nobreak) {
+    public DotimesStatementNode(LineInfo lineInfo, TestNode iterations, StatementBodyNode body, StatementBodyNode nobreak) {
+        this.lineInfo = lineInfo;
         this.iterations = iterations;
         this.body = body;
         this.nobreak = nobreak;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getIterations() {
@@ -57,11 +64,12 @@ public class DotimesStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     static DotimesStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.DOTIMES);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode iterations = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
-        return new DotimesStatementNode(iterations, body, nobreak);
+        return new DotimesStatementNode(info, iterations, body, nobreak);
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class ForStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private TypedVariableNode[] vars;
     private TestNode[] iterables;
     private StatementBodyNode body;
@@ -23,11 +24,18 @@ public class ForStatementNode implements FlowStatementNode {
      * @param nobreak The nobreak statement body
      */
     @Contract(pure = true)
-    public ForStatementNode(TypedVariableNode[] vars, TestNode[] iterables, StatementBodyNode body, StatementBodyNode nobreak) {
+    public ForStatementNode(LineInfo lineInfo, TypedVariableNode[] vars, TestNode[] iterables,
+                            StatementBodyNode body, StatementBodyNode nobreak) {
+        this.lineInfo = lineInfo;
         this.vars = vars;
         this.iterables = iterables;
         this.body = body;
         this.nobreak = nobreak;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TypedVariableNode[] getVars() {
@@ -63,6 +71,7 @@ public class ForStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     static ForStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.FOR);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TypedVariableNode[] vars = TypedVariableNode.parseForVars(tokens);
         if (!tokens.tokenIs(Keyword.IN)) {
@@ -72,7 +81,7 @@ public class ForStatementNode implements FlowStatementNode {
         TestNode[] iterables = TestNode.parseForIterables(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
-        return new ForStatementNode(vars, iterables, body, nobreak);
+        return new ForStatementNode(lineInfo, vars, iterables, body, nobreak);
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, InlineableNode {
+    private LineInfo lineInfo;
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;
@@ -28,10 +29,16 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
      * @param body The main body of the class
      */
     @Contract(pure = true)
-    public ClassDefinitionNode(TypeNode name, TypeNode[] superclasses, ClassBodyNode body) {
+    public ClassDefinitionNode(LineInfo lineInfo, TypeNode name, TypeNode[] superclasses, ClassBodyNode body) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.superclasses = superclasses;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -105,6 +112,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
     @Contract("_ -> new")
     static ClassDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.CLASS);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw tokens.error("class keyword must be followed by class name");
@@ -115,7 +123,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
             tokens.nextToken();
             superclasses.add(TypeNode.parse(tokens));
         }
-        return new ClassDefinitionNode(name, superclasses.toArray(new TypeNode[0]), ClassBodyNode.parse(tokens));
+        return new ClassDefinitionNode(info, name, superclasses.toArray(new TypeNode[0]), ClassBodyNode.parse(tokens));
     }
 
     @Override

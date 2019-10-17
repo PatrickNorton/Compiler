@@ -9,14 +9,25 @@ import java.util.EnumSet;
  * The class representing an operator assignment.
  */
 public class SpecialOpAssignmentNode implements ClassStatementNode {
+    private LineInfo lineInfo;
     private SpecialOpNameNode name;
     private TestNode assignment;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
-    @Contract(pure = true)
     public SpecialOpAssignmentNode(SpecialOpNameNode name, TestNode assignment) {
+        this(name.getLineInfo(), name, assignment);
+    }
+
+    @Contract(pure = true)
+    public SpecialOpAssignmentNode(LineInfo lineInfo, SpecialOpNameNode name, TestNode assignment) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.assignment = assignment;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public SpecialOpNameNode getName() {

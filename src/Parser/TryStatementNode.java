@@ -14,6 +14,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class TryStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private StatementBodyNode body;
     private StatementBodyNode except;
     private DottedVariableNode[] excepted;
@@ -22,14 +23,20 @@ public class TryStatementNode implements FlowStatementNode {
     private StatementBodyNode finally_stmt;
 
     @Contract(pure = true)
-    public TryStatementNode(StatementBodyNode body, StatementBodyNode except, DottedVariableNode[] excepted,
+    public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, DottedVariableNode[] excepted,
                             VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
+        this.lineInfo = lineInfo;
         this.body = body;
         this.except = except;
         this.excepted = excepted;
         this.as_var = as_var;
         this.else_stmt = else_stmt;
         this.finally_stmt = finally_stmt;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -74,6 +81,7 @@ public class TryStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     static TryStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.TRY);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
@@ -101,7 +109,7 @@ public class TryStatementNode implements FlowStatementNode {
         if (except.isEmpty() && finally_stmt.isEmpty()) {
             throw tokens.error("Try statement must either have an except or finally clause");
         }
-        return new TryStatementNode(body, except, excepted, as_var, else_stmt, finally_stmt);
+        return new TryStatementNode(info, body, except, excepted, as_var, else_stmt, finally_stmt);
     }
 
     @Override

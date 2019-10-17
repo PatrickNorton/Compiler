@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class TypedefStatementNode implements SimpleStatementNode {
+    private LineInfo lineInfo;
     private TypeNode name;
     private TypeNode type;
 
@@ -17,9 +18,15 @@ public class TypedefStatementNode implements SimpleStatementNode {
      * @param type The type being assigned to
      */
     @Contract(pure = true)
-    public TypedefStatementNode(TypeNode name, TypeNode type) {
+    public TypedefStatementNode(LineInfo lineInfo, TypeNode name, TypeNode type) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.type = type;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TypeNode getName() {
@@ -44,12 +51,13 @@ public class TypedefStatementNode implements SimpleStatementNode {
     @Contract("_ -> new")
     static TypedefStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.TYPEDEF);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         assert tokens.tokenIs(Keyword.AS);
         tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
-        return new TypedefStatementNode(name, type);
+        return new TypedefStatementNode(info, name, type);
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @see IndexNode
  */
 public class SliceNode implements SubTestNode {
+    private LineInfo lineInfo;
     private TestNode start;
     private TestNode end;
     private TestNode step;
@@ -20,7 +21,7 @@ public class SliceNode implements SubTestNode {
      * @param step The step amount
      */
     @Contract(pure = true)
-    public SliceNode(TestNode start, TestNode end, TestNode step) {
+    public SliceNode(LineInfo lineInfo, TestNode start, TestNode end, TestNode step) {
         this.start = start;
         this.end = end;
         this.step = step;
@@ -31,16 +32,21 @@ public class SliceNode implements SubTestNode {
      * @param start The start of the slice
      * @param end The end of the slice
      */
-    public SliceNode(TestNode start, TestNode end) {
-        this(start, end, TestNode.empty());
+    public SliceNode(LineInfo lineInfo, TestNode start, TestNode end) {
+        this(lineInfo, start, end, TestNode.empty());
     }
 
     /**
      * Construct a new instance of SliceNode
      * @param start The start of the slice
      */
-    public SliceNode(TestNode start) {
-        this(start, TestNode.empty(), TestNode.empty());
+    public SliceNode(LineInfo lineInfo, TestNode start) {
+        this(lineInfo, start, TestNode.empty(), TestNode.empty());
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getStart() {
@@ -68,6 +74,7 @@ public class SliceNode implements SubTestNode {
     @Contract("_ -> new")
     static SliceNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs("[");
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
         TestNode start;
         if (tokens.tokenIs(TokenType.COLON)) {
@@ -77,19 +84,19 @@ public class SliceNode implements SubTestNode {
         }
         if (tokens.tokenIs("]")) {
             tokens.nextToken();
-            return new SliceNode(start);
+            return new SliceNode(info, start);
         }
         TestNode end = sliceTest(tokens);
         if (tokens.tokenIs("]")) {
             tokens.nextToken();
-            return new SliceNode(start, end);
+            return new SliceNode(info, start, end);
         }
         TestNode step = sliceTest(tokens);
         if (!tokens.tokenIs("]")) {
             throw tokens.error("Expected ], got "+tokens.getFirst());
         }
         tokens.nextToken();
-        return new SliceNode(start, end, step);
+        return new SliceNode(info, start, end, step);
     }
 
     /**

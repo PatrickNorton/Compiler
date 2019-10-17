@@ -14,6 +14,13 @@ public class AssertStatementNode implements SimpleStatementNode {
      * The assertion to be tested
      */
     private TestNode assertion;
+    private LineInfo lineInfo;
+
+    @Contract(pure = true)
+    public AssertStatementNode(LineInfo lineInfo, TestNode assertion) {
+        this.assertion = assertion;
+        this.lineInfo = lineInfo;
+    }
 
     /**
      * Create new instance of AssertStatementNode.
@@ -21,11 +28,16 @@ public class AssertStatementNode implements SimpleStatementNode {
      */
     @Contract(pure = true)
     public AssertStatementNode(TestNode assertion) {
-        this.assertion = assertion;
+        this(assertion.getLineInfo(), assertion);
     }
 
     public TestNode getAssertion() {
         return assertion;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     /**

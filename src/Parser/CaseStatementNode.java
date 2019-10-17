@@ -11,15 +11,22 @@ import java.util.StringJoiner;
  * @see SwitchStatementNode
  */
 public class CaseStatementNode implements BaseNode, EmptiableNode {
+    private LineInfo lineInfo;
     private AtomicNode[] label;
     private StatementBodyNode body;
     private boolean fallthrough;
 
     @Contract(pure = true)
-    public CaseStatementNode(AtomicNode[] label, StatementBodyNode body, boolean fallthrough) {
+    public CaseStatementNode(LineInfo lineInfo, AtomicNode[] label, StatementBodyNode body, boolean fallthrough) {
+        this.lineInfo = lineInfo;
         this.label = label;
         this.body = body;
         this.fallthrough = fallthrough;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public AtomicNode[] getLabel() {
@@ -78,6 +85,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
     @Contract("_, _ -> new")
     public static CaseStatementNode parse(@NotNull TokenList tokens, boolean fallthrough) {
         assert tokens.tokenIs(Keyword.CASE);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         AtomicNode[] label = fallthrough ? new AtomicNode[]{AtomicNode.parseLabel(tokens)} : AtomicNode.parseLabelList(tokens);
         StatementBodyNode body;
@@ -90,13 +98,14 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         } else {
             body = StatementBodyNode.parse(tokens);
         }
-        return new CaseStatementNode(label, body, fallthrough);
+        return new CaseStatementNode(info, label, body, fallthrough);
     }
 
     @NotNull
     @Contract("_ -> new")
     public static CaseStatementNode parseExpression(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.CASE);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         AtomicNode[] label = AtomicNode.parseLabelList(tokens);
         if (!tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
@@ -104,7 +113,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         }
         tokens.nextToken();
         TestNode[] body = TestNode.parseList(tokens, false);
-        return new CaseStatementNode(label, new StatementBodyNode(body), false);
+        return new CaseStatementNode(info, label, new StatementBodyNode(body), false);
     }
 
     @Override

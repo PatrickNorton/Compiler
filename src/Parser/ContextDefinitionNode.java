@@ -13,6 +13,7 @@ import java.util.Set;
  * @author Patrick Norton
  */
 public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode {
+    private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
     private StatementBodyNode enter;
@@ -24,19 +25,25 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
     private NameNode[] decorators = new NameNode[0];
 
     @Contract(pure = true)
-    public ContextDefinitionNode(StatementBodyNode enter, StatementBodyNode exit) {
-        this(VariableNode.empty(), new TypedArgumentListNode(), enter, exit, new ArgumentNode[0], new ClassBodyNode());
+    public ContextDefinitionNode(LineInfo info, StatementBodyNode enter, StatementBodyNode exit) {
+        this(info, VariableNode.empty(), new TypedArgumentListNode(), enter, exit, new ArgumentNode[0], new ClassBodyNode());
     }
 
     @Contract(pure = true)
-    public ContextDefinitionNode(VariableNode name, TypedArgumentListNode args, StatementBodyNode enter,
+    public ContextDefinitionNode(LineInfo info, VariableNode name, TypedArgumentListNode args, StatementBodyNode enter,
                                  StatementBodyNode exit, ArgumentNode[] exitArgs, ClassBodyNode others) {
+        this.lineInfo = info;
         this.name = name;
         this.args = args;
         this.enter = enter;
         this.exit = exit;
         this.exitArgs = exitArgs;
         this.others = others;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -120,6 +127,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
     @Contract("_ -> new")
     static ContextDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.CONTEXT);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
@@ -164,7 +172,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
             throw tokens.error("Context manager must end with close curly brace");
         }
         tokens.nextToken();
-        return new ContextDefinitionNode(name, args, enter, exit, exitArgs, ClassBodyNode.fromList(others));
+        return new ContextDefinitionNode(info, name, args, enter, exit, exitArgs, ClassBodyNode.fromList(others));
     }
 
     @Override

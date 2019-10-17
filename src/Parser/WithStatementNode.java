@@ -11,15 +11,22 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class WithStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private TestNode[] managed;
     private VariableNode[] vars;
     private StatementBodyNode body;
 
     @Contract(pure = true)
-    public WithStatementNode(TestNode[] managed, VariableNode[] vars, StatementBodyNode body) {
+    public WithStatementNode(LineInfo lineInfo, TestNode[] managed, VariableNode[] vars, StatementBodyNode body) {
+        this.lineInfo = lineInfo;
         this.managed = managed;
         this.vars = vars;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode[] getManaged() {
@@ -50,6 +57,7 @@ public class WithStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     static WithStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.WITH);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         LinkedList<TestNode> managed = new LinkedList<>();
         while (!tokens.tokenIs(Keyword.AS)) {
@@ -62,7 +70,7 @@ public class WithStatementNode implements FlowStatementNode {
         }
         VariableNode[] vars = VariableNode.parseList(tokens,  false);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new WithStatementNode(managed.toArray(new TestNode[0]), vars, body);
+        return new WithStatementNode(lineInfo, managed.toArray(new TestNode[0]), vars, body);
     }
 
     @Override

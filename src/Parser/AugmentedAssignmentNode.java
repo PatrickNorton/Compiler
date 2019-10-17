@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Contract;
  * </p>
  */
 public class AugmentedAssignmentNode implements AssignStatementNode {
+    private LineInfo lineInfo;
     private OperatorTypeNode operator;
     private NameNode name;
     private TestNode value;
@@ -23,9 +24,20 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
      */
     @Contract(pure = true)
     public AugmentedAssignmentNode(OperatorTypeNode operator, NameNode name, TestNode value) {
+        this(name.getLineInfo(), operator, name, value);
+    }
+
+    @Contract(pure = true)
+    public AugmentedAssignmentNode(LineInfo lineInfo, OperatorTypeNode operator, NameNode name, TestNode value) {
+        this.lineInfo = lineInfo;
         this.operator = operator;
         this.name = name;
         this.value = value;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public OperatorTypeNode getOperator() {

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Contract;
  * @see IfStatementNode
  */
 public class ElifStatementNode implements BaseNode {
+    private LineInfo lineInfo;
     private TestNode test;
     private StatementBodyNode body;
 
@@ -22,9 +23,15 @@ public class ElifStatementNode implements BaseNode {
      * @param body The body of the statement
      */
     @Contract(pure = true)
-    public ElifStatementNode(TestNode test, StatementBodyNode body) {
+    public ElifStatementNode(LineInfo lineInfo, TestNode test, StatementBodyNode body) {
+        this.lineInfo = lineInfo;
         this.test = test;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getTest() {

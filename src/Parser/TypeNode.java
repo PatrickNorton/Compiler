@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.StringJoiner;
 
 public class TypeNode implements AtomicNode {
+    private LineInfo lineInfo;
     private DottedVariableNode name;
     private TypeNode[] subtypes;
     private boolean is_vararg;
@@ -18,9 +19,20 @@ public class TypeNode implements AtomicNode {
 
     @Contract(pure = true)
     public TypeNode(DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg) {
+        this(name.getLineInfo(), name, subtypes, is_vararg);
+    }
+
+    @Contract(pure = true)
+    public TypeNode(LineInfo lineInfo, DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.subtypes = subtypes;
         this.is_vararg = is_vararg;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public DottedVariableNode getName() {

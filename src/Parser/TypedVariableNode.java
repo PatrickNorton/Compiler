@@ -11,13 +11,25 @@ import java.util.LinkedList;
  * @see TypedArgumentNode
  */
 public class TypedVariableNode implements SubTestNode {
+    private LineInfo lineInfo;
     private TypeNode type;
     private VariableNode var;
 
     @Contract(pure = true)
     public TypedVariableNode(TypeNode type, VariableNode var) {
+        this(type.getLineInfo(), type, var);
+    }
+
+    @Contract(pure = true)
+    public TypedVariableNode(LineInfo lineInfo, TypeNode type, VariableNode var) {
+        this.lineInfo = lineInfo;
         this.type = type;
         this.var = var;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TypeNode getType() {

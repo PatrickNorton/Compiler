@@ -32,7 +32,8 @@ public class FormattedStringNode extends StringLikeNode {
      * @param tests The non-string-literals which are interpolated
      */
     @Contract(pure = true)
-    public FormattedStringNode(String[] strs, TestNode[] tests, @NotNull String flags) {
+    public FormattedStringNode(LineInfo info, String[] strs, TestNode[] tests, @NotNull String flags) {
+        super(info);
         this.strs = strs;
         this.tests = tests;
         this.prefixes = StringPrefix.getPrefixes(flags);
@@ -60,6 +61,7 @@ public class FormattedStringNode extends StringLikeNode {
     @NotNull
     @Contract("_ -> new")
     static FormattedStringNode parse(@NotNull Token token) {
+        LineInfo info = token.lineInfo;
         String contents = token.sequence;
         String inside = contentPattern.matcher(contents).replaceAll("");
         Matcher prefixMatcher = prefixPattern.matcher(contents);
@@ -110,7 +112,7 @@ public class FormattedStringNode extends StringLikeNode {
         if (index <= inside.length()) {
             strs.add(inside.substring(end));
         }
-        return new FormattedStringNode(strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
+        return new FormattedStringNode(info, strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
     }
 
     @Override

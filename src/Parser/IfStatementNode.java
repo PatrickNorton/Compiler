@@ -11,6 +11,7 @@ import java.util.LinkedList;
  * @see ElifStatementNode
  */
 public class IfStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private TestNode conditional;
     private StatementBodyNode body;
     private ElifStatementNode[] elifs;
@@ -24,11 +25,18 @@ public class IfStatementNode implements FlowStatementNode {
      * @param else_stmt The else statement at the end
      */
     @Contract(pure = true)
-    public IfStatementNode(TestNode conditional, StatementBodyNode body, ElifStatementNode[] elifs, StatementBodyNode else_stmt) {
+    public IfStatementNode(LineInfo lineInfo, TestNode conditional, StatementBodyNode body,
+                           ElifStatementNode[] elifs, StatementBodyNode else_stmt) {
+        this.lineInfo = lineInfo;
         this.conditional = conditional;
         this.body = body;
         this.elifs = elifs;
         this.else_stmt = else_stmt;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getConditional() {
@@ -63,6 +71,7 @@ public class IfStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     static IfStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.IF);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode test = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
@@ -71,10 +80,10 @@ public class IfStatementNode implements FlowStatementNode {
             tokens.nextToken();
             TestNode elif_test = TestNode.parse(tokens);
             StatementBodyNode elif_body = StatementBodyNode.parse(tokens);
-            elifs.add(new ElifStatementNode(elif_test, elif_body));
+            elifs.add(new ElifStatementNode(info, elif_test, elif_body));
         }
         StatementBodyNode else_stmt = StatementBodyNode.parseOnToken(tokens, "else");
-        return new IfStatementNode(test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
+        return new IfStatementNode(info, test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
     }
 
     @Override

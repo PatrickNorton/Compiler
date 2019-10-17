@@ -12,6 +12,7 @@ import java.util.LinkedList;
  * @see ClassDefinitionNode
  */
 public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNode, InlineableNode {
+    private LineInfo lineInfo;
     private TypeNode name;
     private TypeNode[] superclasses;
     private InterfaceBodyNode body;
@@ -27,10 +28,16 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
      * @param body The body of the interface
      */
     @Contract(pure = true)
-    public InterfaceDefinitionNode(TypeNode name, TypeNode[] superclasses, InterfaceBodyNode body) {
+    public InterfaceDefinitionNode(LineInfo lineInfo, TypeNode name, TypeNode[] superclasses, InterfaceBodyNode body) {
+        this.lineInfo = lineInfo;
         this.name = name;
         this.superclasses = superclasses;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -103,6 +110,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     @Contract("_ -> new")
     static InterfaceDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.INTERFACE);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         LinkedList<TypeNode> superclasses = new LinkedList<>();
@@ -116,7 +124,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
                 tokens.nextToken();
             }
         }
-        return new InterfaceDefinitionNode(name, superclasses.toArray(new TypeNode[0]), InterfaceBodyNode.parse(tokens));
+        return new InterfaceDefinitionNode(info, name, superclasses.toArray(new TypeNode[0]), InterfaceBodyNode.parse(tokens));
     }
 
     @Override

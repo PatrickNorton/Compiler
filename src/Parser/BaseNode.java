@@ -7,4 +7,5 @@ package Parser;
  * @see IndependentNode
  */
 public interface BaseNode {
+    LineInfo getLineInfo();
 }

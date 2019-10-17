@@ -11,13 +11,20 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  */
 public class YieldStatementNode implements SimpleStatementNode {
+    private LineInfo lineInfo;
     private boolean is_from;
     private TestNode[] yielded;
 
     @Contract(pure = true)
-    public YieldStatementNode(boolean is_from, TestNode... yielded) {
+    public YieldStatementNode(LineInfo lineInfo, boolean is_from, TestNode... yielded) {
+        this.lineInfo = lineInfo;
         this.is_from = is_from;
         this.yielded = yielded;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode[] getYielded() {
@@ -42,6 +49,7 @@ public class YieldStatementNode implements SimpleStatementNode {
     @Contract("_ -> new")
     static YieldStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.YIELD);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         boolean is_from = tokens.tokenIs(Keyword.FROM);
         if (is_from) {
@@ -58,7 +66,7 @@ public class YieldStatementNode implements SimpleStatementNode {
                 throw tokens.error("Comma must separate yields");
             }
         }
-        return new YieldStatementNode(is_from, yields.toArray(new TestNode[0]));
+        return new YieldStatementNode(lineInfo, is_from, yields.toArray(new TestNode[0]));
     }
 
     @Override

@@ -18,8 +18,9 @@ import org.jetbrains.annotations.NotNull;
 public class SwitchExpressionNode extends SwitchLikeNode implements TestNode {
 
     @Contract(pure = true)
-    public SwitchExpressionNode(TestNode switched, CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
-        super(switched, false, cases, defaultStatement);
+    public SwitchExpressionNode(LineInfo lineInfo, TestNode switched, CaseStatementNode[] cases,
+                                DefaultStatementNode defaultStatement) {
+        super(lineInfo, switched, false, cases, defaultStatement);
     }
 
     /**

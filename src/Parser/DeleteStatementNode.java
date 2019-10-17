@@ -9,11 +9,18 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class DeleteStatementNode implements SimpleStatementNode {
+    private LineInfo lineInfo;
     private TestNode deleted;
 
     @Contract(pure = true)
-    public DeleteStatementNode(TestNode deleted) {
+    public DeleteStatementNode(LineInfo lineInfo, TestNode deleted) {
+        this.lineInfo = lineInfo;
         this.deleted = deleted;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getDeleted() {
@@ -33,9 +40,10 @@ public class DeleteStatementNode implements SimpleStatementNode {
     @Contract("_ -> new")
     static DeleteStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEL);
+        LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode deletion = TestNode.parse(tokens);
-        return new DeleteStatementNode(deletion);
+        return new DeleteStatementNode(lineInfo, deletion);
     }
 
     @Override

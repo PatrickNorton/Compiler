@@ -9,15 +9,22 @@ import org.jetbrains.annotations.NotNull;
  * @see DoStatementNode
  */
 public class WhileStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private TestNode cond;
     private StatementBodyNode body;
     private StatementBodyNode nobreak;
 
     @Contract(pure = true)
-    public WhileStatementNode(TestNode cond, StatementBodyNode body, StatementBodyNode nobreak) {
+    public WhileStatementNode(LineInfo lineInfo, TestNode cond, StatementBodyNode body, StatementBodyNode nobreak) {
+        this.lineInfo = lineInfo;
         this.cond = cond;
         this.body = body;
         this.nobreak = nobreak;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public TestNode getCond() {
@@ -48,11 +55,12 @@ public class WhileStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     static WhileStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.WHILE);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode cond = TestNode.parse(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
-        return new WhileStatementNode(cond, body, nobreak);
+        return new WhileStatementNode(info, cond, body, nobreak);
     }
 
     @Override

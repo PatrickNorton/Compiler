@@ -22,6 +22,11 @@ public class TopNode implements BaseNode {
         this.nodes = new LinkedList<>();
     }
 
+    @Override
+    public LineInfo getLineInfo() {
+        return LineInfo.empty();
+    }
+
     public void add(IndependentNode operand) {
         nodes.add(operand);
     }

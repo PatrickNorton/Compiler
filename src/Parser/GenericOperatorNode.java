@@ -18,16 +18,23 @@ import java.util.EnumSet;
  * @see GenericFunctionNode
  */
 public class GenericOperatorNode implements GenericDefinitionNode {
+    private LineInfo lineInfo;
     private SpecialOpNameNode op_code;
     private TypedArgumentListNode args;
     private TypeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
-    public GenericOperatorNode(SpecialOpNameNode op_code, TypedArgumentListNode args, TypeNode... retvals) {
+    public GenericOperatorNode(LineInfo lineInfo, SpecialOpNameNode op_code, TypedArgumentListNode args, TypeNode... retvals) {
+        this.lineInfo = lineInfo;
         this.op_code = op_code;
         this.args = args;
         this.retvals = retvals;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public SpecialOpNameNode getOp_code() {
@@ -95,6 +102,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
     @Contract("_ -> new")
     public static GenericOperatorNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
+        LineInfo info = tokens.lineInfo();
         SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
         TypeNode[] retvals;
@@ -103,7 +111,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         } else {
             retvals = new TypeNode[0];
         }
-        return new GenericOperatorNode(op_code, args, retvals);
+        return new GenericOperatorNode(info, op_code, args, retvals);
     }
 
     @Override

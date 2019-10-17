@@ -9,18 +9,30 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class DefaultStatementNode implements BaseNode, EmptiableNode {
+    private LineInfo lineInfo;
     private StatementBodyNode body;
     private boolean fallthrough;
 
     @Contract(pure = true)
-    public DefaultStatementNode(StatementBodyNode body, boolean fallthrough) {
+    public DefaultStatementNode(LineInfo lineInfo, StatementBodyNode body, boolean fallthrough) {
+        this.lineInfo = lineInfo;
         this.body = body;
         this.fallthrough = fallthrough;
     }
 
     @Contract(pure = true)
+    public DefaultStatementNode(StatementBodyNode body, boolean fallthrough) {
+        this(body.getLineInfo(), body, fallthrough);
+    }
+
+    @Contract(pure = true)
     public DefaultStatementNode(boolean fallthrough) {
         this(new StatementBodyNode(), fallthrough);
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public StatementBodyNode getBody() {

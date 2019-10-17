@@ -12,20 +12,27 @@ import java.util.StringJoiner;
  * @see ExportStatementNode
  */
 public class TypegetStatementNode implements ImportExportNode {
+    private LineInfo lineInfo;
     private DottedVariableNode[] typegets;
     private DottedVariableNode from;
     private DottedVariableNode[] as;
 
     @Contract(pure = true)
-    public TypegetStatementNode(DottedVariableNode[] imports, DottedVariableNode from) {
-        this(imports, from, new DottedVariableNode[0]);
+    public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from) {
+        this(lineInfo, imports, from, new DottedVariableNode[0]);
     }
 
     @Contract(pure = true)
-    public TypegetStatementNode(DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
+    public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
+        this.lineInfo = lineInfo;
         this.typegets = imports;
         this.from = from;
         this.as = as;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public DottedVariableNode[] getTypegets() {
@@ -53,12 +60,17 @@ public class TypegetStatementNode implements ImportExportNode {
     @NotNull
     @Contract("_ -> new")
     static TypegetStatementNode parse(@NotNull TokenList tokens) {
+        LineInfo lineInfo = null;
         DottedVariableNode from = DottedVariableNode.empty();
         if (tokens.tokenIs(Keyword.FROM)) {
+            lineInfo = tokens.lineInfo();
             tokens.nextToken();
             from = DottedVariableNode.parseName(tokens);
         }
         assert tokens.tokenIs(Keyword.TYPEGET);
+        if (lineInfo == null) {
+            lineInfo = tokens.lineInfo();
+        }
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw tokens.error("Empty typeget statements are illegal");
@@ -67,9 +79,9 @@ public class TypegetStatementNode implements ImportExportNode {
         if (tokens.tokenIs(Keyword.AS)) {
             tokens.nextToken();
             DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
-            return new TypegetStatementNode(typegets, from, as);
+            return new TypegetStatementNode(lineInfo, typegets, from, as);
         }
-        return new TypegetStatementNode(typegets, from);
+        return new TypegetStatementNode(lineInfo, typegets, from);
     }
 
     @Override

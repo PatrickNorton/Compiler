@@ -9,15 +9,26 @@ import org.jetbrains.annotations.NotNull;
  * @see DecrementNode
  */
 public class IncrementNode implements SimpleStatementNode {
+    private LineInfo lineInfo;
     private NameNode variable;
+
+    public IncrementNode(NameNode variable) {
+        this(variable.getLineInfo(), variable);
+    }
 
     /**
      * Construct a new instance of IncrementNode.
      * @param variable The variable to be incremented
      */
     @Contract(pure = true)
-    public IncrementNode(NameNode variable) {
+    public IncrementNode(LineInfo info, NameNode variable) {
+        this.lineInfo = info;
         this.variable = variable;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     public NameNode getVariable() {

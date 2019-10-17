@@ -10,11 +10,18 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class DeferStatementNode implements FlowStatementNode {
+    private LineInfo lineInfo;
     private StatementBodyNode body;
 
     @Contract(pure = true)
-    public DeferStatementNode(StatementBodyNode body) {
+    public DeferStatementNode(LineInfo info, StatementBodyNode body) {
+        this.lineInfo = info;
         this.body = body;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override
@@ -35,6 +42,7 @@ public class DeferStatementNode implements FlowStatementNode {
     @Contract("_ -> new")
     public static DeferStatementNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEFER);
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         StatementBodyNode body;
         if (tokens.tokenIs(Keyword.RETURN)) {
@@ -42,6 +50,6 @@ public class DeferStatementNode implements FlowStatementNode {
         } else {
             body = StatementBodyNode.parse(tokens);
         }
-        return new DeferStatementNode(body);
+        return new DeferStatementNode(info, body);
     }
 }
