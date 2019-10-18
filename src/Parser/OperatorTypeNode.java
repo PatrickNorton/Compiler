@@ -4,9 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,136 +12,52 @@ import java.util.Map;
  * @author Patrick Norton
  */
 public enum OperatorTypeNode implements AtomicNode {
-    ADD("+", Use.TYPICAL),
-    R_ADD("r+", Use.R_TYPICAL),
-    SUBTRACT("-", Use.U_TYPICAL),
-    R_SUBTRACT("r-", Use.R_TYPICAL),
-    UNARY_MINUS("u-", Use.U_TYPICAL),
-    MULTIPLY("*", Use.TYPICAL),
-    R_MULTIPLY("r*", Use.R_TYPICAL),
-    DIVIDE("/", Use.TYPICAL),
-    R_DIVIDE("r/", Use.R_TYPICAL),
-    FLOOR_DIV("//", Use.TYPICAL),
-    R_FLOOR_DIV("r//", Use.R_TYPICAL),
-    POWER("**", Use.TYPICAL),
-    R_POWER("r**", Use.R_TYPICAL),
-    EQUALS("==", Use.COMPARISON),
-    R_EQUALS("r==", Use.R_COMPARISON),
-    NOT_EQUALS("!=", Use.COMPARISON),
-    R_NOT_EQUALS("r!=", Use.R_COMPARISON),
-    GREATER_THAN(">", Use.COMPARISON),
-    R_GREATER_THAN("r>", Use.R_COMPARISON),
-    LESS_THAN("<", Use.COMPARISON),
-    R_LESS_THAN("r<", Use.R_COMPARISON),
-    GREATER_EQUAL(">=", Use.COMPARISON),
-    R_GREATER_EQUAL("r>=", Use.R_COMPARISON),
-    LESS_EQUAL("<=", Use.COMPARISON),
-    R_LESS_EQUAL("r<=", Use.R_COMPARISON),
-    LEFT_BITSHIFT("<<", Use.TYPICAL),
-    R_LEFT_BITSHIFT("r<<", Use.R_TYPICAL),
-    RIGHT_BITSHIFT(">>", Use.TYPICAL),
-    R_RIGHT_BITSHIFT("r>>", Use.R_TYPICAL),
-    BITWISE_AND("&", Use.TYPICAL),
-    R_BITWISE_AND("r&", Use.R_TYPICAL),
-    BITWISE_OR("|", Use.TYPICAL),
-    R_BITWISE_OR("r|", Use.R_TYPICAL),
-    BITWISE_XOR("^", Use.TYPICAL),
-    R_BITWISE_XOR("r^", Use.R_TYPICAL),
-    BITWISE_NOT("~", Use.U_TYPICAL),
-    MODULO("%", Use.TYPICAL),
-    R_MODULO("r%", Use.R_TYPICAL),
-    BOOL_AND("and", Use.BOOLEAN),
-    BOOL_OR("or", Use.BOOLEAN),
-    BOOL_NOT("not", Use.BOOLEAN, Use.UNARY),
-    BOOL_XOR("xor", Use.BOOLEAN),
-    GET_ATTR("[]", Use.OPERATOR_SP),
-    SET_ATTR("[]=", Use.OPERATOR_SP),
-    CALL("()", Use.OPERATOR_SP),
-    ITER("iter", Use.OPERATOR_SP),
-    NEW("new", Use.OPERATOR_SP),
-    IN("in", Use.STANDARD, Use.OPERATOR_SP),
-    NOT_IN("not in", Use.STANDARD),
-    MISSING("missing", Use.OPERATOR_SP),
-    DEL("del", Use.OPERATOR_SP),
-    DEL_ATTR("del[]", Use.OPERATOR_SP),
-    STR("str", Use.OPERATOR_SP),
-    REPR("repr", Use.OPERATOR_SP),
-    BOOL("bool", Use.OPERATOR_SP),
-    CASTED("casted", Use.STANDARD),
-    IS("is", Use.STANDARD),
-    IS_NOT("is not", Use.STANDARD),
-    REVERSED("reversed", Use.OPERATOR_SP),
+    ADD("+", 3),
+    SUBTRACT("-", 3, true),
+    MULTIPLY("*", 2),
+    DIVIDE("/", 2),
+    FLOOR_DIV("//", 2),
+    POWER("**", 0),
+    EQUALS("==", 7),
+    NOT_EQUALS("!=", 7),
+    GREATER_THAN(">", 7),
+    LESS_THAN("<", 7),
+    GREATER_EQUAL(">=", 7),
+    LESS_EQUAL("<=", 7),
+    LEFT_BITSHIFT("<<", 4),
+    RIGHT_BITSHIFT(">>", 4),
+    BITWISE_AND("&", 5),
+    BITWISE_OR("|", 6),
+    BITWISE_XOR("^", 6),
+    BITWISE_NOT("~", 1, true),
+    MODULO("%", 2),
+    BOOL_AND("and", 10),
+    BOOL_OR("or", 11),
+    BOOL_NOT("not", 9, true),
+    BOOL_XOR("xor", 12),
+    IN("in", 8),
+    NOT_IN("not in", 8),
+    CASTED("casted", 13),
+    IS("is", 8),
+    IS_NOT("is not", 8),
     ;
 
-    /**
-     * The different usage types for the operator.
-     */
-    private enum Use {
-        UNARY,
-        REVERSE,
-        OPERATOR_SP,
-        OP_FUNC,
-        STANDARD,
-        AUG_ASSIGN,
-        TYPICAL(OPERATOR_SP, OP_FUNC, STANDARD, AUG_ASSIGN),
-        COMPARISON(OPERATOR_SP, OP_FUNC, STANDARD),
-        R_TYPICAL(OPERATOR_SP, REVERSE),
-        R_COMPARISON(OPERATOR_SP, REVERSE),
-        U_TYPICAL(OPERATOR_SP, OP_FUNC, STANDARD, AUG_ASSIGN, UNARY),
-        BOOLEAN(OP_FUNC, STANDARD),
-        ;
-        private final Use[] tempSet;
-        private EnumSet<Use> set;
-
-        @Contract(pure = true)
-        Use() {
-            this.tempSet = new Use[] {this};
-        }
-
-        @Contract(pure = true)
-        Use(Use... values) {
-            this.tempSet = values;
-        }
-
-        static {
-            for (Use u : Use.values()) {
-                u.set = EnumSet.of(u.tempSet[0], u.tempSet);
-            }
-        }
-    }
-
     public final String name;
-    private final EnumSet<Use> usages;
+    public final int precedence;
+    private final boolean unary;
 
     private static final Map<String, OperatorTypeNode> values;
-    private static final List<EnumSet<OperatorTypeNode>> operations = List.of(
-            EnumSet.of(POWER),
-            EnumSet.of(BITWISE_NOT),
-            EnumSet.of(MULTIPLY, DIVIDE, FLOOR_DIV, MODULO),
-            EnumSet.of(ADD, SUBTRACT),
-            EnumSet.of(LEFT_BITSHIFT, RIGHT_BITSHIFT),
-            EnumSet.of(BITWISE_AND),
-            EnumSet.of(BITWISE_XOR, BITWISE_OR),
-            EnumSet.of(LESS_THAN, GREATER_THAN, LESS_EQUAL, GREATER_EQUAL, NOT_EQUALS, EQUALS),
-            EnumSet.of(IN, NOT_IN, IS, IS_NOT),
-            EnumSet.of(BOOL_NOT),
-            EnumSet.of(BOOL_AND),
-            EnumSet.of(BOOL_OR),
-            EnumSet.of(BOOL_XOR),
-            EnumSet.of(CASTED)
-    );
 
-    /**
-     * Create new instance of OperatorTypeNode.
-     * @param name The sequence of the operator
-     */
     @Contract(pure = true)
-    OperatorTypeNode(@NotNull String name, @NotNull Use... usages) {
+    OperatorTypeNode(String name, int precedence) {
+        this(name, precedence, false);
+    }
+
+    @Contract(pure = true)
+    OperatorTypeNode(String name, int precedence, boolean unary) {
         this.name = name;
-        this.usages = EnumSet.noneOf(Use.class);
-        for (Use use : usages) {
-            this.usages.addAll(use.set);
-        }
+        this.precedence = precedence;
+        this.unary = unary;
     }
 
     static {  // Initialise the map
@@ -162,27 +76,12 @@ public enum OperatorTypeNode implements AtomicNode {
     }
 
     /**
-     * Check if the operator is a valid use thereof
-     * @param usages The usages to test for
-     * @return Whether or not it is a valid use
-     */
-    @Contract(pure = true)
-    public boolean isUse(@NotNull Use... usages) {
-        for (Use t : usages) {
-            if (!this.usages.containsAll(t.set)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Whether or not the operator type is unary.
      * @return If the operator is unary
      */
     @Contract(pure = true)
     public boolean isUnary() {
-        return this.isUse(Use.UNARY);
+        return this.unary;
     }
 
     /**
@@ -191,39 +90,11 @@ public enum OperatorTypeNode implements AtomicNode {
      * @return The actual operator enum
      */
     static OperatorTypeNode findOp(@NotNull String name) {
-        if (name.contains("  ")) {
-            name = name.replaceAll(" +", " ");
-        }
         if (values.containsKey(name)) {
             return values.get(name);
         } else {
             throw new ParserException("Unknown operator");
         }
-    }
-
-    /**
-     * Find an operator in the enum, ensuring it corresponds to the types given.
-     * @param name The sequence of the operator
-     * @param usage The types to check for compliance
-     * @return The actual operator enum
-     */
-    @NotNull
-    static OperatorTypeNode findOp(@NotNull String name, Use... usage) {
-        OperatorTypeNode op = findOp(name);
-        if (op.isUse(usage)) {
-            return op;
-        } else {
-            throw new ParserException("Illegal operator "+op.name);
-        }
-    }
-
-    /**
-     * The order of operations for the operators.
-     * @return An iterable of the operators for each operation in sequence.
-     */
-    @Contract(pure = true)
-    static Iterable<EnumSet<OperatorTypeNode>> orderOfOperations() {
-        return operations;
     }
 
     /**
@@ -245,22 +116,8 @@ public enum OperatorTypeNode implements AtomicNode {
      */
     @NotNull
     static OperatorTypeNode fromToken(@NotNull Token token) {
-        assert token.is(TokenType.OPERATOR, TokenType.KEYWORD, TokenType.BOOL_OP,
-                TokenType.OP_FUNC, TokenType.AUG_ASSIGN, TokenType.OPERATOR_SP);
-        switch (token.token) {
-            case KEYWORD:
-            case BOOL_OP:
-            case OPERATOR:
-                return findOp(token.sequence, Use.STANDARD);
-            case OP_FUNC:
-                return findOp(token.sequence.replaceFirst("^\\\\", ""), Use.OP_FUNC);
-            case AUG_ASSIGN:
-                return findOp(token.sequence.replaceFirst("=$", ""), Use.AUG_ASSIGN);
-            case OPERATOR_SP:
-                return findOp(token.sequence.replaceFirst("operator *", ""), Use.OPERATOR_SP);
-            default:
-                throw new RuntimeException("Illegal TokenType for OperatorTypeNode.parse "+token);
-        }
+        assert token.is(TokenType.OPERATOR, TokenType.KEYWORD, TokenType.BOOL_OP);
+        return findOp(token.sequence);
     }
 
     @Contract(pure = true)

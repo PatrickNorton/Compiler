@@ -3,6 +3,10 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * The class representing a normal, standard operator.
  * @author Patrick Norton
@@ -11,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class OperatorNode implements SubTestNode {
     private LineInfo lineInfo;
     private OperatorTypeNode operator;
-    private ArgumentNode[] operands;
+    private List<ArgumentNode> operands;
 
     /**
      * Construct a new instance of OperatorNode.
@@ -22,7 +26,7 @@ public class OperatorNode implements SubTestNode {
     public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator, @NotNull ArgumentNode... operands) {
         this.lineInfo = lineInfo;
         this.operator = operator;
-        this.operands = operands;
+        this.operands = new ArrayList<>(Arrays.asList(operands));
     }
 
     /**
@@ -47,6 +51,10 @@ public class OperatorNode implements SubTestNode {
     @Override
     public LineInfo getLineInfo() {
         return lineInfo;
+    }
+
+    public int precedence() {
+        return operator.precedence;
     }
 
     /**
@@ -78,25 +86,34 @@ public class OperatorNode implements SubTestNode {
     }
 
     public ArgumentNode[] getOperands() {
-        return operands;
+        return operands.toArray(new ArgumentNode[0]);
+    }
+
+    public OperatorNode addArgument(ArgumentNode e) {
+        this.operands.add(e);
+        return this;
+    }
+
+    public OperatorNode addArgument(TestNode e) {
+        return addArgument(new ArgumentNode(e));
     }
 
     @Override
     public boolean isEmpty() {
-        return operands.length == 0;
+        return operands.isEmpty();
     }
 
     @Override
     public String toString() {
-        switch (operands.length) {
+        switch (operands.size()) {
             case 0:
                 return "\\" + operator;
             case 1:
-                return operator + " " + operands[0];
+                return operator + " " + operands.get(0);
             case 2:
-                return operands[0] + " " + operator + " " + operands[1];
+                return operands.get(0) + " " + operator + " " + operands.get(1);
             default:
-                return "\\" + operator + "(" + operands[0] + ", ...)";
+                return "\\" + operator + "(" + operands.get(0) + ", ...)";
         }
     }
 }

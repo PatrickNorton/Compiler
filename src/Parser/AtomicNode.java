@@ -24,7 +24,7 @@ public interface AtomicNode extends SubTestNode {
             case NAME:
                 return NameNode.parse(tokens);
             case OP_FUNC:
-                return OperatorTypeNode.parse(tokens);
+                return EscapedOperatorNode.parse(tokens);
             case NUMBER:
                 return NumberNode.parse(tokens);
             case STRING:

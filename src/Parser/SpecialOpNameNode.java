@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class SpecialOpNameNode implements NameNode {
     private LineInfo lineInfo;
-    private OperatorTypeNode operator;
+    private OpSpTypeNode operator;
 
     @Contract(pure = true)
-    public SpecialOpNameNode(LineInfo lineInfo, OperatorTypeNode operator) {
+    public SpecialOpNameNode(LineInfo lineInfo, OpSpTypeNode operator) {
         this.lineInfo = lineInfo;
         this.operator = operator;
     }
@@ -22,7 +22,7 @@ public class SpecialOpNameNode implements NameNode {
         return lineInfo;
     }
 
-    public OperatorTypeNode getOperator() {
+    public OpSpTypeNode getOperator() {
         return operator;
     }
 
@@ -36,7 +36,7 @@ public class SpecialOpNameNode implements NameNode {
     public static SpecialOpNameNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         LineInfo lineInfo = tokens.lineInfo();
-        OperatorTypeNode op = OperatorTypeNode.parse(tokens);
+        OpSpTypeNode op = OpSpTypeNode.parse(tokens);
         return new SpecialOpNameNode(lineInfo, op);
     }
 

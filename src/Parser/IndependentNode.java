@@ -64,7 +64,7 @@ public interface IndependentNode extends BaseNode {
                     return OperatorDefinitionNode.parse(tokens);
                 }
             case OP_FUNC:
-                return TestNode.parseOpFunc(tokens);
+                return EscapedOperatorNode.parse(tokens);
             case COLON:
                 throw tokens.error("Unexpected colon");
             case ELLIPSIS:
@@ -132,7 +132,7 @@ public interface IndependentNode extends BaseNode {
             if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
                 throw tokens.error("Expected augmented assignment, got " + tokens.getFirst());
             }
-            OperatorTypeNode op = OperatorTypeNode.parse(tokens);
+            AugAssignTypeNode op = AugAssignTypeNode.parse(tokens);
             TestNode assignment = TestNode.parse(tokens);
             return new AugmentedAssignmentNode(op, var, assignment);
         } else if (after_var.is("++", "--")) {

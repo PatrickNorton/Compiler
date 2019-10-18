@@ -2,11 +2,13 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -94,24 +96,24 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      *     the ternary and go into an infinite recursive loop.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @param ignore_newline Whether or not to ignore newlines
+     * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed TestNode
      */
     @NotNull
-    static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignore_newline) {
+    static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
         TestNode node;
         switch (tokens.getFirst().token) {
             case NAME:
             case OPEN_BRACE:
             case BOOL_OP:
             case OPERATOR:
-                node = parseLeftVariable(tokens, ignore_newline);
+                node = parseLeftVariable(tokens, ignoreNewlines);
                 break;
             case NUMBER:
                 node = NumberNode.parse(tokens);
                 break;
             case OP_FUNC:
-                node = parseOpFunc(tokens);
+                node = EscapedOperatorNode.parse(tokens);
                 break;
             case ELLIPSIS:
                 node = VariableNode.parseEllipsis(tokens);
@@ -168,162 +170,118 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         } else if (!ignore_newline && tokens.lineContains(TokenType.AUG_ASSIGN)) {
             throw tokens.error("Illegal augmented assignment");
         } else {
-            List<TestNode> nodes = parseNodes(tokens, ignore_newline);
-            if (nodes.size() == 1) {
-                return nodes.get(0);
-            }
-            for (EnumSet<OperatorTypeNode> operators : OperatorTypeNode.orderOfOperations()) {
-                parseExpression(tokens, nodes, operators);
-            }
-            if (nodes.size() > 1) {
-                throw tokens.error("Too many tokens");
-            }
-            return nodes.get(0);
+            return parseExpression(tokens, ignore_newline);
         }
     }
 
     /**
-     * Parse the line into a list of nodes.
+     * Parse an expression from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed list of nodes.
+     * @param ignoreNewlines Whether or not to ignore newlines
+     * @return The freshly parsed expression
      */
-    @NotNull
-    private static List<TestNode> parseNodes(@NotNull TokenList tokens, boolean ignore_newlines) {
-        List<TestNode> nodes = new ArrayList<>();
-        while (ignore_newlines || !tokens.tokenIs(TokenType.NEWLINE)) {
-            switch (tokens.getFirst().token) {
-                case OPEN_BRACE:
-                    TestNode last_node;
-                    if (nodes.size() == 0 || (last_node = nodes.get(nodes.size() - 1)) instanceof OperatorNode
-                            && last_node.isEmpty()) {
-                        nodes.add(parseOpenBrace(tokens));
-                        break;
-                    }
-                    return nodes;
-                case NAME:
-                    nodes.add(DottedVariableNode.parseName(tokens));
-                    break;
-                case NUMBER:
-                    nodes.add(NumberNode.parse(tokens));
-                    break;
-                case ARROW:
-                    throw tokens.error("Unexpected " + tokens.getFirst());
-                case BOOL_OP:
-                case OPERATOR:
-                    nodes.add(OperatorNode.empty(tokens));
-                    tokens.nextToken(ignore_newlines);
-                    break;
-                case OP_FUNC:
-                    nodes.add(parseOpFunc(tokens));
-                    break;
-                case EPSILON:
-                case COLON:
-                case COMMA:
-                case CLOSE_BRACE:
-                    return nodes;
-                case KEYWORD:
-                    if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
-                        nodes.add(OperatorNode.empty(tokens));
-                        tokens.nextToken(ignore_newlines);
-                        break;
-                    } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
-                        return nodes;
-                    }  // Lack of breaks here is intentional
-                default:
-                    throw tokens.error("Unexpected " + tokens.getFirst());
+    private static TestNode parseExpression(@NotNull TokenList tokens, boolean ignoreNewlines) {
+        Deque<OperatorNode> tempNodes = new ArrayDeque<>();
+        TestNode nextNode;
+        while (true) {
+            LineInfo info = tokens.lineInfo();
+            boolean isUnary;
+            OperatorTypeNode operator;
+            OperatorNode nextOperator;
+            nextNode = parseNode(tokens, ignoreNewlines, true);
+            if (nextNode == null) {
+                throw tokens.error("Unexpected " + tokens.getFirst());
             }
-            if (ignore_newlines) {
-                tokens.passNewlines();
-            }
-        }
-        return nodes;
-    }
-
-    /**
-     * Parse an expression out of a list of nodes.
-     * @param nodes The list of nodes to be recombined
-     * @param expr The expressions to parse together
-     */
-    private static void parseExpression(TokenList tokens, @NotNull final List<TestNode> nodes, EnumSet<OperatorTypeNode> expr) {
-        if (nodes.size() == 1) {
-            return;
-        }
-        for (int nodeNumber = 0; nodeNumber < nodes.size(); nodeNumber++) {  // Not an iterator because of list modification
-            TestNode node = nodes.get(nodeNumber);
-            if (!(node instanceof OperatorNode && node.isEmpty())) {
-                continue;
-            }
-            OperatorTypeNode operator = ((OperatorNode) node).getOperator();
-            if (expr.contains(operator)) {
-                boolean unarySubtract = operator == OperatorTypeNode.SUBTRACT && subtractIsUnary(nodes, nodeNumber);
-                if (unarySubtract || operator.isUnary()) {
-                    parseUnaryOp(tokens, nodes, nodeNumber);
+            if (nextNode instanceof OperatorTypeNode) {
+                operator = (OperatorTypeNode) nextNode;
+                if (operator == OperatorTypeNode.SUBTRACT) {
+                    isUnary = subtractIsUnary(tempNodes);
                 } else {
-                    parseOperator(tokens, nodes, nodeNumber);
-                    nodeNumber--;  // Adjust pointer to match new object
+                    if (!operator.isUnary()) {
+                        throw ParserException.of("Unexpected non-unary operator", info);
+                    }
+                    isUnary = true;
+                }
+                nextOperator = new OperatorNode(operator);
+            } else {
+                info = tokens.lineInfo();
+                TestNode hopefullyOperator = parseNode(tokens, ignoreNewlines, false);
+                if (hopefullyOperator == null) {
+                    break;
+                }
+                if (!(hopefullyOperator instanceof OperatorTypeNode)) {
+                    throw ParserException.of("Unexpected token" + hopefullyOperator, info);
+                }
+                operator = (OperatorTypeNode) hopefullyOperator;
+                if (operator.isUnary()) {
+                    throw ParserException.of("Unexpected unary operator " + operator, info);
+                }
+                nextOperator = new OperatorNode(info, operator, nextNode);
+                isUnary = false;
+            }
+            tempNodes.addFirst(nextOperator);
+            if (!isUnary) {
+                while (!tempNodes.isEmpty() && tempNodes.peekFirst().precedence() > operator.precedence) {
+                    nextOperator = tempNodes.removeFirst().addArgument(nextOperator);
                 }
             }
         }
+        OperatorNode previous;
+        if (tempNodes.isEmpty()) {
+            return nextNode;
+        }
+        previous = tempNodes.removeFirst().addArgument(nextNode);
+        while (!tempNodes.isEmpty()) {
+            previous = tempNodes.removeFirst().addArgument(previous);
+        }
+        return previous;
     }
 
-    /**
-     * Figure out if a subtract operator is unary or not.
-     * @param nodes The list of nodes to figure out
-     * @param nodeNumber The index of the subtract
-     * @return Whether or not the - is unary
-     */
-    private static boolean subtractIsUnary(@NotNull final List<TestNode> nodes, int nodeNumber) {
-        assert nodes.get(nodeNumber) instanceof OperatorNode
-                && ((OperatorNode) nodes.get(nodeNumber)).getOperator() == OperatorTypeNode.SUBTRACT;
-        if (nodeNumber == 0) {
-            return false;
-        }
-        TestNode nodePrevious = nodes.get(nodeNumber - 1);
-        return !(nodePrevious instanceof OperatorNode) || nodePrevious.isEmpty();
+    private static boolean subtractIsUnary(@NotNull Deque<OperatorNode> nodes) {
+        return nodes.isEmpty() || nodes.peekFirst().precedence() > OperatorTypeNode.SUBTRACT.precedence;
     }
 
-    /**
-     * Parse out the operator from the LinkedList of nodes.
-     * @param nodes The nodes to have the operator parsed out of them
-     * @param nodeNumber The number giving the location of the operator
-     */
-    private static void parseOperator(TokenList tokens, @NotNull final List<TestNode> nodes, int nodeNumber) {
-        if (nodeNumber == 0 || nodeNumber + 1 == nodes.size()) {
-            throw tokens.error("Unexpected operator" + nodes.get(nodeNumber));
+    @Nullable
+    private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
+        if (ignoreNewlines) {
+            tokens.passNewlines();
         }
-        TestNode node = nodes.get(nodeNumber);
-        TestNode previous = nodes.get(nodeNumber - 1);
-        TestNode next = nodes.get(nodeNumber + 1);
-        TestNode op;
-        if (node instanceof OperatorNode) {
-            op = OperatorNode.fromEmpty(previous.getLineInfo(), (OperatorNode) node, previous, next);
-        } else {
-            throw tokens.error("Unexpected node for parseOperator");
+        switch (tokens.getFirst().token) {
+            case OPEN_BRACE:
+                if (parseCurly) {
+                    return parseOpenBrace(tokens);
+                }
+                return null;
+            case NAME:
+                return DottedVariableNode.parseName(tokens);
+            case NUMBER:
+                return NumberNode.parse(tokens);
+            case ARROW:
+                throw tokens.error("Unexpected " + tokens.getFirst());
+            case BOOL_OP:
+            case OPERATOR:
+                return OperatorTypeNode.parse(tokens);
+            case OP_FUNC:
+                return EscapedOperatorNode.parse(tokens);
+            case NEWLINE:
+                if (ignoreNewlines) {
+                    throw tokens.internalError("Illegal place for newline");
+                }
+                return null;
+            case EPSILON:
+            case COLON:
+            case COMMA:
+            case CLOSE_BRACE:
+                return null;
+            case KEYWORD:
+                if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
+                    return OperatorTypeNode.parse(tokens);
+                } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
+                    return null;
+                }  // Lack of breaks here is intentional
+            default:
+                throw tokens.error("Unexpected " + tokens.getFirst());
         }
-        nodes.set(nodeNumber, op);
-        nodes.remove(nodeNumber + 1);
-        nodes.remove(nodeNumber - 1);
-    }
-
-    /**
-     * Parse out a unary operator from a list of nodes.
-     * @param nodes The nodes to have the operator parsed out
-     * @param nodeNumber The number giving the location of the operator
-     */
-    private static void parseUnaryOp(TokenList tokens, @NotNull final List<TestNode> nodes, int nodeNumber) {
-        if (nodeNumber + 1 == nodes.size()) {
-            throw tokens.error("Unexpected operator " + nodes.get(nodeNumber));
-        }
-        TestNode node = nodes.get(nodeNumber);
-        TestNode next = nodes.get(nodeNumber + 1);
-        TestNode op;
-        if (node instanceof OperatorNode) {
-            op = OperatorNode.fromEmpty(node.getLineInfo(), (OperatorNode) node, next);
-        } else {
-            throw tokens.error("Unexpected node for parseOperator");
-        }
-        nodes.set(nodeNumber, op);
-        nodes.remove(nodeNumber + 1);
     }
 
     /**
@@ -394,7 +352,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (!ignore_newlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
-        LinkedList<TestNode> tests = new LinkedList<>();
+        List<TestNode> tests = new ArrayList<>();
         while (!tokens.tokenIs(TokenType.NEWLINE, "}")) {
             if (!danglingIf || TernaryNode.beforeDanglingIf(tokens)) {
                 tests.add(parse(tokens, ignore_newlines));
@@ -418,23 +376,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
-     * Parse an operator function from a list of tokens.
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The parsed operator function
-     */
-    @NotNull
-    static SubTestNode parseOpFunc(@NotNull TokenList tokens) {  // FIXME: Move this somewhere more reasonable
-        assert tokens.tokenIs(TokenType.OP_FUNC);
-        LineInfo info = tokens.lineInfo();
-        OperatorTypeNode op_code = OperatorTypeNode.parse(tokens);
-        if (tokens.tokenIs("(")) {
-            return new OperatorNode(info, op_code, ArgumentNode.parseList(tokens));
-        } else {
-            return op_code;
-        }
-    }
-
-    /**
      * Parse the iterables in a for loop.
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed list of TestNodes
@@ -444,7 +385,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
-        LinkedList<TestNode> tests = new LinkedList<>();
+        List<TestNode> tests = new ArrayList<>();
         while (!tokens.tokenIs("{")) {
             tests.add(TestNode.parse(tokens));
             if (tokens.tokenIs(TokenType.COMMA)) {

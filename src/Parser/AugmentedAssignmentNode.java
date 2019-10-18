@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Contract;
  */
 public class AugmentedAssignmentNode implements AssignStatementNode {
     private LineInfo lineInfo;
-    private OperatorTypeNode operator;
+    private AugAssignTypeNode operator;
     private NameNode name;
     private TestNode value;
 
@@ -23,12 +23,12 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
      * @param value the value to which it is being augmented and then assigned
      */
     @Contract(pure = true)
-    public AugmentedAssignmentNode(OperatorTypeNode operator, NameNode name, TestNode value) {
+    public AugmentedAssignmentNode(AugAssignTypeNode operator, NameNode name, TestNode value) {
         this(name.getLineInfo(), operator, name, value);
     }
 
     @Contract(pure = true)
-    public AugmentedAssignmentNode(LineInfo lineInfo, OperatorTypeNode operator, NameNode name, TestNode value) {
+    public AugmentedAssignmentNode(LineInfo lineInfo, AugAssignTypeNode operator, NameNode name, TestNode value) {
         this.lineInfo = lineInfo;
         this.operator = operator;
         this.name = name;
@@ -40,7 +40,7 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
         return lineInfo;
     }
 
-    public OperatorTypeNode getOperator() {
+    public AugAssignTypeNode getOperator() {
         return operator;
     }
 
