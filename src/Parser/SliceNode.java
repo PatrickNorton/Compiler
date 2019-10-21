@@ -22,6 +22,7 @@ public class SliceNode implements SubTestNode {
      */
     @Contract(pure = true)
     public SliceNode(LineInfo lineInfo, TestNode start, TestNode end, TestNode step) {
+        this.lineInfo = lineInfo;
         this.start = start;
         this.end = end;
         this.step = step;
