@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 public class FormattedStringNode extends StringLikeNode {
     private String[] strs;
     private TestNode[] tests;
-    private EnumSet<StringPrefix> prefixes;
 
     private static final Pattern bracePattern = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})");
 
@@ -33,23 +32,18 @@ public class FormattedStringNode extends StringLikeNode {
      */
     @Contract(pure = true)
     public FormattedStringNode(LineInfo info, String[] strs, TestNode[] tests, @NotNull String flags) {
-        super(info);
+        super(info, flags);
         this.strs = strs;
         this.tests = tests;
-        this.prefixes = StringPrefix.getPrefixes(flags);
     }
 
-    public String[] getStrs() {
+    @Override
+    public String[] getStrings() {
         return strs;
     }
 
     public TestNode[] getTests() {
         return tests;
-    }
-
-    @Override
-    public EnumSet<StringPrefix> getPrefixes() {
-        return prefixes;
     }
 
     /**
@@ -79,7 +73,7 @@ public class FormattedStringNode extends StringLikeNode {
         int start, end = 0;
         while (m.find()) {
             start = m.start();
-            strs.add(inside.substring(index, start - 1));
+            strs.add(processEscapes(inside.substring(index, start - 1), info));
             StringBuilder to_test = new StringBuilder();
             int netBraces = 0;
             /*
@@ -110,7 +104,7 @@ public class FormattedStringNode extends StringLikeNode {
             index = end + 1;
         }
         if (index <= inside.length()) {
-            strs.add(inside.substring(end));
+            strs.add(processEscapes(inside.substring(end), info));
         }
         return new FormattedStringNode(info, strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
     }
@@ -118,7 +112,7 @@ public class FormattedStringNode extends StringLikeNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (StringPrefix s : prefixes) {
+        for (StringPrefix s : getPrefixes()) {
             sb.append(s.value);
         }
         sb.append('"');
