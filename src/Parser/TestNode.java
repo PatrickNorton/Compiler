@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -165,6 +164,16 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed expression
      */
     private static TestNode parseExpression(@NotNull TokenList tokens, boolean ignoreNewlines) {
+        /*
+         * How this works:
+         * Operators always come in pairs with an operand and a trailing operand
+         * at the end, e.g. 1 + 2 * 3. Thus, this method works by parsing these
+         * pairs and then assembling them in their correct order of operations.
+         * In essence, it takes these operand-operator pairs and turns them
+         * into a deque, looking like [1 +] [2 *] [3], and then puts them
+         * together, giving priority to the order of operations, e.g.
+         * [1 +] [2 *] [3] -> [1 +] [2 * 3] -> [1 + (2 * 3)].
+         */
         Deque<OperatorNode> tempNodes = new ArrayDeque<>();
         TestNode nextNode;
         while (true) {
@@ -202,12 +211,12 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (tempNodes.isEmpty()) {
             return nextNode;
         }
-        previous = tempNodes.removeFirst().addArgument(nextNode);
+        previous = tempNodes.removeLast().addArgument(nextNode);
         while (!tempNodes.isEmpty()) {
-            if (tempNodes.peekFirst().precedence() > previous.precedence()) {
-                previous = tempNodes.removeFirst().addArgument(previous);
+            if (tempNodes.peekLast().precedence() > previous.precedence()) {
+                previous = tempNodes.removeLast().addArgument(previous);
             } else {
-                previous = previous.addArgument(0, tempNodes.removeFirst());
+                previous = previous.addArgument(0, tempNodes.removeLast());
             }
         }
         return previous;
@@ -215,24 +224,27 @@ public interface TestNode extends IndependentNode, EmptiableNode {
 
     private static void addUnary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
         assert node.getOperator().isUnary();
-        nodes.addFirst(node);
+        nodes.addLast(node);
     }
 
     private static void addBinary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
         assert !node.getOperator().isUnary() && node.getOperands().length > 0;
         if (nodes.isEmpty()) {
-            nodes.addFirst(node);
+            nodes.addLast(node);
             return;
         }
-        if (nodes.getFirst().precedence() > node.precedence()) {
-            nodes.addFirst(node);
+        if (nodes.getLast().precedence() > node.precedence()) {
+            nodes.addLast(node);
+            return;
+        } else if (nodes.getLast().getOperator() == node.getOperator()) {
+            nodes.getLast().addArgument(node.getOperands()[0]);
             return;
         }
-        while (!nodes.isEmpty() && nodes.getFirst().precedence() <= node.precedence()) {
-            OperatorNode top = nodes.removeFirst();
+        while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {
+            OperatorNode top = nodes.removeLast();
             node.setArgument(0, top.addArgument(node.getOperands()[0]));
         }
-        nodes.addFirst(node);
+        nodes.addLast(node);
     }
 
     @Nullable
