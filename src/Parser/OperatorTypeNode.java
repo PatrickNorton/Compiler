@@ -13,7 +13,8 @@ import java.util.Map;
  */
 public enum OperatorTypeNode implements AtomicNode {
     ADD("+", 3),
-    SUBTRACT("-", 3, true),
+    SUBTRACT("-", 3),
+    U_SUBTRACT("u-", 1, true),
     MULTIPLY("*", 2),
     DIVIDE("/", 2),
     FLOOR_DIV("//", 2),

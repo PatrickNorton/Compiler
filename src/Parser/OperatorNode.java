@@ -98,6 +98,24 @@ public class OperatorNode implements SubTestNode {
         return addArgument(new ArgumentNode(e));
     }
 
+    public OperatorNode addArgument(int index, ArgumentNode e) {
+        this.operands.add(index, e);
+        return this;
+    }
+
+    public OperatorNode addArgument(int index, TestNode e) {
+        return addArgument(index, new ArgumentNode(e));
+    }
+
+    public OperatorNode setArgument(int index, ArgumentNode e) {
+        this.operands.set(index, e);
+        return this;
+    }
+
+    public OperatorNode setArgument(int index, TestNode e) {
+        return setArgument(index, new ArgumentNode(e));
+    }
+
     @Override
     public boolean isEmpty() {
         return operands.isEmpty();
@@ -109,7 +127,11 @@ public class OperatorNode implements SubTestNode {
             case 0:
                 return "\\" + operator;
             case 1:
-                return operator + " " + operands.get(0);
+                if (operator.isUnary()) {
+                    return operator + " " + operands.get(0);
+                } else {
+                    return "\\" + operator + "(" + operands.get(0) + ")";
+                }
             case 2:
                 return operands.get(0) + " " + operator + " " + operands.get(1);
             default:

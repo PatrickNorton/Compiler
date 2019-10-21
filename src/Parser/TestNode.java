@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -102,39 +103,22 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @NotNull
     static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
         TestNode node;
-        switch (tokens.getFirst().token) {
-            case NAME:
-            case OPEN_BRACE:
-            case BOOL_OP:
-            case OPERATOR:
-                node = parseLeftVariable(tokens, ignoreNewlines);
-                break;
-            case NUMBER:
-                node = NumberNode.parse(tokens);
-                break;
-            case OP_FUNC:
-                node = EscapedOperatorNode.parse(tokens);
-                break;
-            case ELLIPSIS:
-                node = VariableNode.parseEllipsis(tokens);
-                break;
-            case STRING:
-                node = StringNode.parse(tokens);
-                break;
-            case KEYWORD:
-                if (tokens.tokenIs(Keyword.LAMBDA)) {
+        if (tokens.tokenIs(TokenType.KEYWORD)) {
+            switch (Keyword.find(tokens.getFirst())) {
+                case LAMBDA:
                     node = LambdaNode.parse(tokens);
                     break;
-                } else if (tokens.tokenIs(Keyword.SOME)) {
+                case SOME:
                     node = SomeStatementNode.parse(tokens);
                     break;
-                } else if (tokens.tokenIs(Keyword.SWITCH)) {
+                case SWITCH:
                     node = SwitchExpressionNode.parse(tokens);
                     break;
-                }
-                // Intentional fallthrough here
-            default:
-                throw tokens.error("Unexpected "+tokens.getFirst());
+                default:
+                    throw tokens.error("Unexpected "+tokens.getFirst());
+            }
+        } else {
+            node = parseLeftVariable(tokens, ignoreNewlines);
         }
         if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
             return DottedVariableNode.fromExpr(tokens, node);
@@ -185,45 +169,33 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         TestNode nextNode;
         while (true) {
             LineInfo info = tokens.lineInfo();
-            boolean isUnary;
-            OperatorTypeNode operator;
-            OperatorNode nextOperator;
             nextNode = parseNode(tokens, ignoreNewlines, true);
             if (nextNode == null) {
-                throw tokens.error("Unexpected " + tokens.getFirst());
+                throw ParserException.of("Illegal token " + tokens.getFirst(), info);
             }
             if (nextNode instanceof OperatorTypeNode) {
-                operator = (OperatorTypeNode) nextNode;
-                if (operator == OperatorTypeNode.SUBTRACT) {
-                    isUnary = subtractIsUnary(tempNodes);
-                } else {
-                    if (!operator.isUnary()) {
-                        throw ParserException.of("Unexpected non-unary operator", info);
-                    }
-                    isUnary = true;
+                OperatorTypeNode nextOp = (OperatorTypeNode) nextNode;
+                if (nextOp == OperatorTypeNode.SUBTRACT) {
+                    nextOp = OperatorTypeNode.U_SUBTRACT;
                 }
-                nextOperator = new OperatorNode(operator);
+                if (!nextOp.isUnary()) {
+                    throw ParserException.of("Illegal token " + nextOp, info);
+                }
+                addUnary(tempNodes, new OperatorNode(nextOp));
             } else {
-                info = tokens.lineInfo();
-                TestNode hopefullyOperator = parseNode(tokens, ignoreNewlines, false);
-                if (hopefullyOperator == null) {
+                LineInfo info1 = tokens.lineInfo();
+                TestNode doubleNext = parseNode(tokens, ignoreNewlines, false);
+                if (doubleNext == null) {
                     break;
                 }
-                if (!(hopefullyOperator instanceof OperatorTypeNode)) {
-                    throw ParserException.of("Unexpected token" + hopefullyOperator, info);
+                if (!(doubleNext instanceof OperatorTypeNode)) {
+                    throw ParserException.of("Illegal token " + doubleNext, info1);
                 }
-                operator = (OperatorTypeNode) hopefullyOperator;
-                if (operator.isUnary()) {
-                    throw ParserException.of("Unexpected unary operator " + operator, info);
+                OperatorTypeNode nextOp = (OperatorTypeNode) doubleNext;
+                if (nextOp.isUnary()) {
+                    throw ParserException.of("Illegal token " + doubleNext, info1);
                 }
-                nextOperator = new OperatorNode(info, operator, nextNode);
-                isUnary = false;
-            }
-            tempNodes.addFirst(nextOperator);
-            if (!isUnary) {
-                while (!tempNodes.isEmpty() && tempNodes.peekFirst().precedence() > operator.precedence) {
-                    nextOperator = tempNodes.removeFirst().addArgument(nextOperator);
-                }
+                addBinary(tempNodes, new OperatorNode(info1, nextOp, nextNode));
             }
         }
         OperatorNode previous;
@@ -232,13 +204,35 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
         previous = tempNodes.removeFirst().addArgument(nextNode);
         while (!tempNodes.isEmpty()) {
-            previous = tempNodes.removeFirst().addArgument(previous);
+            if (tempNodes.peekFirst().precedence() > previous.precedence()) {
+                previous = tempNodes.removeFirst().addArgument(previous);
+            } else {
+                previous = previous.addArgument(0, tempNodes.removeFirst());
+            }
         }
         return previous;
     }
 
-    private static boolean subtractIsUnary(@NotNull Deque<OperatorNode> nodes) {
-        return nodes.isEmpty() || nodes.peekFirst().precedence() > OperatorTypeNode.SUBTRACT.precedence;
+    private static void addUnary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
+        assert node.getOperator().isUnary();
+        nodes.addFirst(node);
+    }
+
+    private static void addBinary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
+        assert !node.getOperator().isUnary() && node.getOperands().length > 0;
+        if (nodes.isEmpty()) {
+            nodes.addFirst(node);
+            return;
+        }
+        if (nodes.getFirst().precedence() > node.precedence()) {
+            nodes.addFirst(node);
+            return;
+        }
+        while (!nodes.isEmpty() && nodes.getFirst().precedence() <= node.precedence()) {
+            OperatorNode top = nodes.removeFirst();
+            node.setArgument(0, top.addArgument(node.getOperands()[0]));
+        }
+        nodes.addFirst(node);
     }
 
     @Nullable
@@ -248,7 +242,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
         switch (tokens.getFirst().token) {
             case OPEN_BRACE:
-                if (parseCurly) {
+                if (parseCurly || !tokens.tokenIs("{")) {
                     return parseOpenBrace(tokens);
                 }
                 return null;
@@ -273,6 +267,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case COMMA:
             case CLOSE_BRACE:
                 return null;
+            case STRING:
+                return StringNode.parse(tokens);
             case KEYWORD:
                 if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
                     return OperatorTypeNode.parse(tokens);

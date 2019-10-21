@@ -36,4 +36,9 @@ public class EscapedOperatorNode implements NameNode {
         }
         return escaped;
     }
+
+    @Override
+    public String toString() {
+        return operator.toString();
+    }
 }
