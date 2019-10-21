@@ -56,6 +56,12 @@ public abstract class StringLikeNode implements AtomicNode {
                 case '"':
                     sb.append('"');
                     break;
+                case '{':
+                    sb.append('{');
+                    break;
+                case '}':
+                    sb.append('}');
+                    break;
                 case '\'':
                     sb.append('\'');
                     break;
