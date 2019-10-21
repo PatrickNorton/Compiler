@@ -6,18 +6,20 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The class representing a raise statement.
  */
-public class RaiseStatementNode implements SimpleStatementNode {
+public class RaiseStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
     private TestNode raised;
+    private TestNode condition;
 
     /**
      * Create a new instance of RaiseStatementNode.
      * @param raised The statement to be raised
      */
     @Contract(pure = true)
-    public RaiseStatementNode(LineInfo lineInfo, TestNode raised) {
+    public RaiseStatementNode(LineInfo lineInfo, TestNode raised, TestNode condition) {
         this.lineInfo = lineInfo;
         this.raised = raised;
+        this.condition = condition;
     }
 
     @Override
@@ -27,6 +29,11 @@ public class RaiseStatementNode implements SimpleStatementNode {
 
     public TestNode getRaised() {
         return raised;
+    }
+
+    @Override
+    public TestNode getCond() {
+        return condition;
     }
 
     /**
@@ -46,7 +53,14 @@ public class RaiseStatementNode implements SimpleStatementNode {
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode raised = TestNode.parse(tokens);
-        return new RaiseStatementNode(lineInfo, raised);
+        TestNode condition;
+        if (tokens.tokenIs(Keyword.IF)) {
+            tokens.nextToken();
+            condition = TestNode.parse(tokens);
+        } else {
+            condition = TestNode.empty();
+        }
+        return new RaiseStatementNode(lineInfo, raised, condition);
     }
 
     @Override
