@@ -95,6 +95,7 @@ public final class TokenList implements Iterable<Token> {
         return false;
     }
 
+    // FIXME: Prevent parsing of block braces
     /**
      * Create an iterable for a line of the code.
      * @return The iterable for the line
@@ -134,9 +135,7 @@ public final class TokenList implements Iterable<Token> {
             if (next == null) {
                 return;
             }
-            if (next.is("{") &&
-                        token.is(TokenType.NAME, TokenType.ELLIPSIS, TokenType.STRING,
-                                TokenType.NUMBER, TokenType.OPERATOR_SP, TokenType.CLOSE_BRACE)) {
+            if (next.is("{") && !token.is(TokenType.BRACE_IS_LITERAL)) {
                 next = null;
             } else if (token.is(TokenType.NEWLINE)) {
                 next = null;
@@ -555,6 +554,7 @@ public final class TokenList implements Iterable<Token> {
         private int netBraces = 0;
         private final int numBraces;
         private int beginning;
+        private Token previous;
         private final Iterator<Token> iterator = TokenList.this.iterator();
 
         LevelIterator(int level) {
@@ -579,6 +579,7 @@ public final class TokenList implements Iterable<Token> {
             do {
                 next = iterator.next();
                 adjustBraces(next);
+                previous = next;
             } while (netBraces > numBraces);
             return next;
         }
@@ -590,6 +591,9 @@ public final class TokenList implements Iterable<Token> {
         private void adjustBraces(@NotNull Token token) {
             switch (token.token) {
                 case OPEN_BRACE:
+                    if (nextIsBlockBrace(token)) {
+                        break;
+                    }
                     netBraces++;
                     break;
                 case CLOSE_BRACE:
@@ -603,6 +607,10 @@ public final class TokenList implements Iterable<Token> {
                         break;
                     }
             }
+        }
+
+        private boolean nextIsBlockBrace(Token token) {
+            return netBraces == 0 && token.is("{") && !previous.is(TokenType.BRACE_IS_LITERAL);
         }
     }
 

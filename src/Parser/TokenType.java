@@ -3,6 +3,9 @@ package Parser;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -115,6 +118,11 @@ public enum TokenType {
      */
     DOLLAR("^\\$"),
     ;
+
+    public static final Set<TokenType> BRACE_IS_LITERAL = Collections.unmodifiableSet(
+            EnumSet.of(OPEN_BRACE, NEWLINE, KEYWORD, COMMA, OPERATOR, BOOL_OP, COLON,
+                    AT, DOLLAR, ASSIGN)
+    );
 
     final Pattern regex;
 

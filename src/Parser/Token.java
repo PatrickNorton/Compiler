@@ -3,6 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 /**
  * The class representing a lexer token.
  * @author Patrick Norton
@@ -94,6 +96,10 @@ public class Token {
             }
         }
         return false;
+    }
+
+    public boolean is(@NotNull Set<TokenType> types) {
+        return types.contains(token);
     }
 
     /**
