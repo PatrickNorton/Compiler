@@ -3,20 +3,13 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The class representing a typeget statement.
  * @author Patrick Norton
  * @see ImportStatementNode
  * @see ExportStatementNode
  */
-public class TypegetStatementNode implements ImportExportNode {
-    private LineInfo lineInfo;
-    private DottedVariableNode[] typegets;
-    private DottedVariableNode from;
-    private DottedVariableNode[] as;
-
+public class TypegetStatementNode extends ImportExportNode {
     @Contract(pure = true)
     public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from) {
         this(lineInfo, imports, from, new DottedVariableNode[0]);
@@ -24,27 +17,7 @@ public class TypegetStatementNode implements ImportExportNode {
 
     @Contract(pure = true)
     public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
-        this.lineInfo = lineInfo;
-        this.typegets = imports;
-        this.from = from;
-        this.as = as;
-    }
-
-    @Override
-    public LineInfo getLineInfo() {
-        return lineInfo;
-    }
-
-    public DottedVariableNode[] getTypegets() {
-        return typegets;
-    }
-
-    public DottedVariableNode getFrom() {
-        return from;
-    }
-
-    public DottedVariableNode[] getAs() {
-        return as;
+        super("typeget", lineInfo, imports, from, as);
     }
 
     /**
@@ -82,18 +55,5 @@ public class TypegetStatementNode implements ImportExportNode {
             return new TypegetStatementNode(lineInfo, typegets, from, as);
         }
         return new TypegetStatementNode(lineInfo, typegets, from);
-    }
-
-    @Override
-    public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (DottedVariableNode d : typegets) {
-            sj.add(d.toString());
-        }
-        if (!from.isEmpty()) {
-            return "from " + from + " typeget " + sj;
-        } else {
-            return "typeget " + sj;
-        }
     }
 }

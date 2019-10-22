@@ -3,11 +3,46 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.StringJoiner;
+
 /**
  * The interface for all import, export, and typeget nodes.
  * @author Patrick Norton
  */
-public interface ImportExportNode extends SimpleStatementNode {
+public abstract class ImportExportNode implements SimpleStatementNode {
+    private String type;
+    private LineInfo lineInfo;
+    private DottedVariableNode[] ports;
+    private DottedVariableNode from;
+    private DottedVariableNode[] as;
+
+    @Contract(pure = true)
+    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
+                            DottedVariableNode from, DottedVariableNode[] as) {
+        this.type = type;
+        this.lineInfo = lineInfo;
+        this.ports = ports;
+        this.from = from;
+        this.as = as;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
+    }
+
+    public DottedVariableNode[] getValues() {
+        return ports;
+    }
+
+    public DottedVariableNode getFrom() {
+        return from;
+    }
+
+    public DottedVariableNode[] getAs() {
+        return as;
+    }
+
     /**
      * Parse an ImportExportNode from a list of tokens.
      * <p>
@@ -55,6 +90,29 @@ public interface ImportExportNode extends SimpleStatementNode {
             return TypegetStatementNode.parse(tokens);
         } else {
             throw tokens.error("from does not begin a statement");
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner sj = new StringJoiner(", ");
+        for (DottedVariableNode d : ports) {
+            sj.add(d.toString());
+        }
+        String str;
+        if (!from.isEmpty()) {
+            str = String.format("from %s import %s", from, sj);
+        } else {
+            str = type + " " + sj;
+        }
+        if (as.length == 0) {
+            return str;
+        } else {
+            sj = new StringJoiner(", ");
+            for (DottedVariableNode d : as) {
+                sj.add(d.toString());
+            }
+            return str + " as " + sj;
         }
     }
 }

@@ -3,19 +3,12 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The node representing an import statement.
  * @author Patrick Norton
  * @see ExportStatementNode
  */
-public class ImportStatementNode implements ImportExportNode {
-    private LineInfo lineInfo;
-    private DottedVariableNode[] imports;
-    private DottedVariableNode from;
-    private DottedVariableNode[] as;
-
+public class ImportStatementNode extends ImportExportNode {
     /**
      * Create a new instance of ImportStatementNode.
      * @param imports The list of imported names
@@ -32,27 +25,7 @@ public class ImportStatementNode implements ImportExportNode {
      */
     @Contract(pure = true)
     public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
-        this.lineInfo = info;
-        this.imports = imports;
-        this.from = from;
-        this.as = as;
-    }
-
-    @Override
-    public LineInfo getLineInfo() {
-        return lineInfo;
-    }
-
-    public DottedVariableNode[] getImports() {
-        return imports;
-    }
-
-    public DottedVariableNode getFrom() {
-        return from;
-    }
-
-    public DottedVariableNode[] getAs() {
-        return as;
+        super("import", info, imports, from, as);
     }
 
     /**
@@ -90,14 +63,5 @@ public class ImportStatementNode implements ImportExportNode {
             return new ImportStatementNode(info, imports, from, as);
         }
         return new ImportStatementNode(info, imports, from);
-    }
-
-    @Override
-    public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (DottedVariableNode d : imports) {
-            sj.add(d.toString());
-        }
-        return (from.isEmpty() ? "" : from + " ") + "import " + sj;
     }
 }
