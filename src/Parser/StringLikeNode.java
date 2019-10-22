@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -12,8 +12,11 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  */
 public abstract class StringLikeNode implements AtomicNode {
+    static final Pattern PREFIXES = Pattern.compile("^[refb]*");
+    static final Pattern CONTENT = Pattern.compile("(^[refb]*\")|(\"$)");
+
     private LineInfo lineInfo;
-    private EnumSet<StringPrefix> prefixes;
+    private Set<StringPrefix> prefixes;
 
     @Contract(pure = true)
     public StringLikeNode(LineInfo lineInfo, String prefixes) {
@@ -26,13 +29,11 @@ public abstract class StringLikeNode implements AtomicNode {
         return lineInfo;
     }
 
-    public EnumSet<StringPrefix> getPrefixes() {
+    public Set<StringPrefix> getPrefixes() {
         return prefixes;
     }
 
     public abstract String[] getStrings();
-    static final Pattern prefixPattern = Pattern.compile("^[refb]*");
-    static final Pattern contentPattern = Pattern.compile("(^[refb]*\")|(\"$)");
 
     /**
      * Process the escape sequences for the string.

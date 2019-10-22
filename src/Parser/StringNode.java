@@ -3,7 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumSet;
 import java.util.regex.Matcher;
 
 /**
@@ -59,8 +58,8 @@ public class StringNode extends StringLikeNode {
         LineInfo lineInfo = token.lineInfo;
         String contents = token.sequence;
         tokens.nextToken();
-        String inside = contentPattern.matcher(contents).replaceAll("");
-        Matcher regex = prefixPattern.matcher(contents);
+        String inside = CONTENT.matcher(contents).replaceAll("");
+        Matcher regex = PREFIXES.matcher(contents);
         if (regex.find()) {
             String prefixes = regex.group();
             if (!prefixes.contains("r")) {

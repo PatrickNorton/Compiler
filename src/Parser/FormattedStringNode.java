@@ -56,8 +56,8 @@ public class FormattedStringNode extends StringLikeNode {
     static FormattedStringNode parse(@NotNull Token token) {
         LineInfo info = token.lineInfo;
         String contents = token.sequence;
-        String inside = contentPattern.matcher(contents).replaceAll("");
-        Matcher prefixMatcher = prefixPattern.matcher(contents);
+        String inside = CONTENT.matcher(contents).replaceAll("");
+        Matcher prefixMatcher = PREFIXES.matcher(contents);
         String prefixes;
         if (prefixMatcher.find()) {
             prefixes = prefixMatcher.group();
