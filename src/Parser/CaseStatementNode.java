@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The class representing the "case" clause in a switch statement.
  * @author Patrick Norton
@@ -118,10 +116,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(", ");
-        for (AtomicNode i : label) {
-            joiner.add(i.toString());
-        }
-        return "case " + joiner + (fallthrough ? ": ..." : "{...}");
+        String labels = TestNode.toString(label);
+        return "case " + labels + (fallthrough ? ": ..." : "{...}");
     }
 }

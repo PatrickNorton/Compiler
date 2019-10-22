@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.StringJoiner;
 
 /**
  * The class representing a return statement.
@@ -100,10 +99,6 @@ public class ReturnStatementNode implements SimpleFlowNode {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (TestNode t : returned) {
-            sj.add(t.toString());
-        }
-        return "return " + sj + (!cond.isEmpty() ? "if " + cond : "");
+        return "return " + TestNode.toString(returned) + (!cond.isEmpty() ? "if " + cond : "");
     }
 }

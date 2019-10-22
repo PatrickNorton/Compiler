@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.StringJoiner;
 
 /**
  * The class representing a declaration and assignment rolled into one.
@@ -104,15 +103,8 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
             sb.append(d.toString());
             sb.append(' ');
         }
-        StringJoiner sj = new StringJoiner(", ");
-        for (TypedVariableNode t : assigned) {
-            sj.add(t.toString());
-        }
-        sb.append(sj);
-        sj = new StringJoiner(", ");
-        for (TestNode v : value) {
-            sj.add(v.toString());
-        }
-        return sb + (is_colon ? " := " : " = ") + sj;
+        sb.append(TestNode.toString(assigned));
+        String values = TestNode.toString(value);
+        return sb + (is_colon ? " := " : " = ") + values;
     }
 }

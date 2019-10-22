@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The class representing the try-except-finally statement.
  * <p>
@@ -115,13 +113,10 @@ public class TryStatementNode implements FlowStatementNode {
     @Override
     public String toString() {
         if (!except.isEmpty()) {
-            StringJoiner sj = new StringJoiner(", ");
-            for (DottedVariableNode d : excepted) {
-                sj.add(d.toString());
-            }
-            return "try " + body + " except " + sj + (as_var.isEmpty() ? "" : " as " + as_var);
+            String excepted = TestNode.toString(this.excepted);
+            return String.format("try %s except %s%s", body, excepted, (as_var.isEmpty() ? "" : " as " + as_var));
         } else if (!finally_stmt.isEmpty()) {
-            return "try " + body + " finally " + finally_stmt;
+            return String.format("try %s finally %s", body, finally_stmt);
         } else {
             return "try " + body;
         }

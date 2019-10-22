@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The class representing a non-dictionary comprehension
  * @author Patrick Norton
@@ -111,16 +109,10 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     }
 
     public String toString() {
-        String string = brace_type;
-        StringJoiner sj = new StringJoiner(", ");
-        for (TypedVariableNode t : variables) {
-            sj.add(t.toString());
-        }
-        string += builder + " for " + sj + " in ";
-        sj = new StringJoiner(", ");
-        for (TestNode t : looped) {
-            sj.add(t.toString());
-        }
-        return string + sj + (condition.isEmpty() ? "" : " if " + condition) + TokenList.matchingBrace(brace_type);
+        String variables = TestNode.toString(this.variables);
+        String looped = TestNode.toString(this.looped);
+        String condition = this.condition.isEmpty() ? "" : " if " + this.condition;
+        return String.format("%s%s for %s in %s%s%s", brace_type, builder, variables, looped,
+                condition, TokenList.matchingBrace(brace_type));
     }
 }

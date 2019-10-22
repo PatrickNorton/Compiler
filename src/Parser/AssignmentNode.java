@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.StringJoiner;
 
 /**
  * The class for an assignment, such as {@code a = f(b)}.
@@ -91,10 +90,8 @@ public class AssignmentNode implements AssignStatementNode {
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(", ");
-        for (AssignableNode i : name) {
-            joiner.add(i.toString());
-        }
-        return joiner + " " + (is_colon ? ":=" : '=') + (value.length > 1 ? " ..." : " " + value[0]);
+        String names = TestNode.toString(name);
+        String values = value.length > 1 ? "..." : value[0].toString();
+        return String.join(" ", names, (is_colon ? ":=" : "="), values);
     }
 }

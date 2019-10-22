@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The class representing a dictionary comprehension.
  * <p>
@@ -105,15 +103,8 @@ public class DictComprehensionNode implements SubTestNode {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (TypedVariableNode t : vars) {
-            sj.add(t.toString());
-        }
-        String vars = sj.toString();
-        sj = new StringJoiner(", ");
-        for (TestNode t : looped) {
-            sj.add(t.toString());
-        }
-        return "{" + key + ": " + val + " for " + vars + " in " + sj;
+        String vars = TestNode.toString(this.vars);
+        String looped = TestNode.toString(this.looped);
+        return String.format("{%s: %s for %s in %s}", key, val, vars, looped);
     }
 }

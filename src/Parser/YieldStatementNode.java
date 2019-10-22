@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.StringJoiner;
 
 /**
  * The class representing a yield statement.
@@ -71,10 +70,6 @@ public class YieldStatementNode implements SimpleStatementNode {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (TestNode t : yielded) {
-            sj.add(t.toString());
-        }
-        return (is_from ? "yield from " : "yield ") + sj;
+        return (is_from ? "yield from " : "yield ") + TestNode.toString(yielded);
     }
 }

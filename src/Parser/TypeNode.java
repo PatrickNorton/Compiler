@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.StringJoiner;
 
 public class TypeNode implements AtomicNode {
     private LineInfo lineInfo;
@@ -166,11 +165,8 @@ public class TypeNode implements AtomicNode {
     @Override
     public String toString() {
         if (subtypes.length > 0) {
-            StringJoiner sj = new StringJoiner(", ");
-            for (TypeNode t : subtypes) {
-                sj.add(t.toString());
-            }
-            return (is_vararg ? "*" : "") + name + "[" + sj + "]";
+            String subtypes = TestNode.toString(this.subtypes);
+            return (is_vararg ? "*" : "") + name + "[" + subtypes + "]";
         }
         return (is_vararg ? "*" : "") + name;
     }

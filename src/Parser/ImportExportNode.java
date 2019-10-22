@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
-
 /**
  * The interface for all import, export, and typeget nodes.
  * @author Patrick Norton
@@ -95,24 +93,17 @@ public abstract class ImportExportNode implements SimpleStatementNode {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (DottedVariableNode d : ports) {
-            sj.add(d.toString());
-        }
+        String ports = TestNode.toString(this.ports);
         String str;
         if (!from.isEmpty()) {
-            str = String.format("from %s import %s", from, sj);
+            str = String.format("from %s %s %s", from, type, ports);
         } else {
-            str = type + " " + sj;
+            str = type + " " + ports;
         }
         if (as.length == 0) {
             return str;
         } else {
-            sj = new StringJoiner(", ");
-            for (DottedVariableNode d : as) {
-                sj.add(d.toString());
-            }
-            return str + " as " + sj;
+            return str + " as " + TestNode.toString(as);
         }
     }
 }

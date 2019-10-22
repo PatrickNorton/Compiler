@@ -11,6 +11,7 @@ import java.util.Deque;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * The interface representing all expressions, e.g. everything that isn't a
@@ -410,5 +411,13 @@ public interface TestNode extends IndependentNode, EmptiableNode {
 
     private static boolean nextIsTest(@NotNull TokenList tokens) {
         return tokens.tokenIs(PARSABLE_TOKENS) || tokens.tokenIsKeyword(PARSABLE_KEYWORDS);
+    }
+
+    static String toString(@NotNull TestNode... vars) {
+        StringJoiner sj = new StringJoiner(", ");
+        for (TestNode t : vars) {
+            sj.add(t.toString());
+        }
+        return sj.toString();
     }
 }

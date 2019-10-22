@@ -2,8 +2,6 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 
-import java.util.StringJoiner;
-
 /**
  * The node for a variable index.
  * @author Patrick Norton
@@ -44,10 +42,6 @@ public class IndexNode implements NameNode {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(", ");
-        for (TestNode t : indices) {
-            sj.add(t.toString());
-        }
-        return var + "[" + sj + "]";
+        return String.format("%s[%s]", var, TestNode.toString(indices));
     }
 }
