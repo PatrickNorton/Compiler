@@ -41,32 +41,19 @@ public class StringNode extends StringLikeNode {
         return new String[] {contents};
     }
 
-    /**
-     * Parse a StringNode from a list of tokens.
-     * <p>
-     *     String nodes consist only of a string token, and thus have only the
-     *     requirement that the first node of the token list is of type STRING.
-     * </p>
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed string literal
-     */
     @NotNull
     @Contract("_ -> new")
-    static StringLikeNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.STRING);
-        Token token = tokens.getFirst();
+    static StringNode parse(@NotNull Token token) {
+        assert token.is(TokenType.STRING);
         LineInfo lineInfo = token.lineInfo;
         String contents = token.sequence;
-        tokens.nextToken();
         String inside = CONTENT.matcher(contents).replaceAll("");
         Matcher regex = PREFIXES.matcher(contents);
         if (regex.find()) {
             String prefixes = regex.group();
+            assert !prefixes.contains("f");
             if (!prefixes.contains("r")) {
                 inside = processEscapes(inside, token.lineInfo);
-            }
-            if (prefixes.contains("f")) {
-                return FormattedStringNode.parse(token);
             }
             return new StringNode(lineInfo, inside, prefixes);
         }

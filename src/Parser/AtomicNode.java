@@ -28,7 +28,7 @@ public interface AtomicNode extends SubTestNode {
             case NUMBER:
                 return NumberNode.parse(tokens);
             case STRING:
-                return StringNode.parse(tokens);
+                return StringLikeNode.parse(tokens);
             default:
                 throw tokens.error("Invalid label "+tokens.getFirst());
         }

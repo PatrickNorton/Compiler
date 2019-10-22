@@ -12,8 +12,7 @@ import java.util.regex.Pattern;
  * <p>
  *     This is separate intentionally from the normal {@link StringNode},
  *     because it has a list of tests which need to be performed in order to be
- *     turned into a proper string. There is no parse method for this (yet?), as
- *     all parsing is done instead by the normal {@link StringNode#parse}.
+ *     turned into a proper string.
  * </p>
  * @author Patrick Norton
  * @see StringNode
@@ -64,6 +63,7 @@ public class FormattedStringNode extends StringLikeNode {
         } else {
             throw ParserException.of("Match should not have failed", token);
         }
+        boolean isRaw = prefixes.contains("r");
         LinkedList<String> strs = new LinkedList<>();
         LinkedList<TestNode> tests = new LinkedList<>();
         // Match the inside-brace portions of the string
@@ -72,7 +72,7 @@ public class FormattedStringNode extends StringLikeNode {
         int start, end = 0;
         while (m.find()) {
             start = m.start();
-            strs.add(processEscapes(inside.substring(index, start - 1), info));
+            strs.add(maybeProcessEscapes(isRaw, inside.substring(index, start - 1), info));
             StringBuilder to_test = new StringBuilder();
             int netBraces = 0;
             /*
@@ -103,9 +103,14 @@ public class FormattedStringNode extends StringLikeNode {
             index = end + 1;
         }
         if (index <= inside.length()) {
-            strs.add(processEscapes(inside.substring(end), info));
+            strs.add(maybeProcessEscapes(isRaw, inside.substring(end), info));
         }
         return new FormattedStringNode(info, strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
+    }
+
+    @Contract("true, _, _ -> param2; false, _, _ -> !null")
+    private static String maybeProcessEscapes(boolean isRaw, String string, LineInfo info) {
+        return isRaw ? string : processEscapes(string, info);
     }
 
     @Override

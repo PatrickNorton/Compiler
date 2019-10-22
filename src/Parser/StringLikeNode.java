@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -34,6 +35,29 @@ public abstract class StringLikeNode implements AtomicNode {
     }
 
     public abstract String[] getStrings();
+
+    /**
+     * Parse a StringLikeNode from a list of tokens.
+     * <p>
+     *     String nodes consist only of a string token, and thus have only the
+     *     requirement that the first node of the token list is of type STRING.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed string literal
+     */
+    @NotNull
+    static StringLikeNode parse(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.STRING);
+        Token token = tokens.getFirst();
+        tokens.nextToken();
+        String contents = token.sequence;
+        Matcher matcher = PREFIXES.matcher(contents);
+        if (matcher.find() && matcher.group().contains("f")) {
+            return FormattedStringNode.parse(token);
+        } else {
+            return StringNode.parse(token);
+        }
+    }
 
     /**
      * Process the escape sequences for the string.

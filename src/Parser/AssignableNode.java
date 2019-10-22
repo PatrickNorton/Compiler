@@ -35,7 +35,7 @@ public interface AssignableNode extends TestNode {
                 }
             case STRING:
                 if (tokens.tokenIs(1, TokenType.DOT)) {
-                    StringLikeNode str = StringNode.parse(tokens);
+                    StringLikeNode str = StringLikeNode.parse(tokens);
                     return DottedVariableNode.fromExpr(tokens, str);
                 } else {
                     throw tokens.error("Cannot assign to string literal");

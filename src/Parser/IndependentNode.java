@@ -54,7 +54,7 @@ public interface IndependentNode extends BaseNode {
             case ASSIGN:
                 throw tokens.error("Unexpected assignment");
             case STRING:
-                return StringNode.parse(tokens);
+                return StringLikeNode.parse(tokens);
             case NUMBER:
                 return NumberNode.parse(tokens);
             case OPERATOR_SP:

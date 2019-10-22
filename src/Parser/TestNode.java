@@ -282,7 +282,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case CLOSE_BRACE:
                 return null;
             case STRING:
-                return StringNode.parse(tokens);
+                return StringLikeNode.parse(tokens);
             case KEYWORD:
                 if (tokens.tokenIs(Keyword.IN)) {
                     return OperatorTypeNode.parse(tokens);
