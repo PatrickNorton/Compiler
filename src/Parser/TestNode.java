@@ -26,6 +26,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     Set<Keyword> PARSABLE_KEYWORDS = Collections.unmodifiableSet(
             EnumSet.of(Keyword.LAMBDA, Keyword.SOME, Keyword.SWITCH)
     );
+    TestNode EMPTY = new EmptyTestNode();
 
     /**
      * Whether or not the TestNode is empty.
@@ -43,7 +44,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @NotNull
     @Contract(value = " -> new", pure = true)
     static TestNode empty() {
-        return new EmptyTestNode();
+        return EMPTY;
     }
 
     /**
