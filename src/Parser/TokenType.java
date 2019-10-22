@@ -35,7 +35,7 @@ public enum TokenType {
     KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
             +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
             +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
-            +"|raise|typedef|some|interface|casted|switch|case|enum|default|goto|defer"
+            +"|raise|typedef|some|interface|switch|case|enum|default|goto|defer"
             +"|var|inline)\\b"),
     /**
      * Open braces. Each token this matches corresponds with an {@link
@@ -66,7 +66,7 @@ public enum TokenType {
     /**
      * Bog-standard operators, like + or <<
      */
-    OPERATOR("^(==|!=|<<|>>|[><]=?|([+\\-*/])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b)"),
+    OPERATOR("^(==|!=|<<|>>|[><]=?|([+\\-*/])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b|casted)"),
     /**
      * Assignment, both static and dynamic (:=).
      */

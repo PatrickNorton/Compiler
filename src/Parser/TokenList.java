@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * The list of tokens.
@@ -475,6 +476,14 @@ public final class TokenList implements Iterable<Token> {
         return getToken(index).is(types);
     }
 
+    public boolean tokenIs(Set<TokenType> types) {
+        return getFirst().is(types);
+    }
+
+    public boolean tokenIsKeyword(Set<Keyword> types) {
+        return getFirst().isKeyword(types);
+    }
+
     /**
      * Pop the first token and move on.
      */
@@ -610,7 +619,7 @@ public final class TokenList implements Iterable<Token> {
         }
 
         private boolean nextIsBlockBrace(Token token) {
-            return netBraces == 0 && token.is("{") && !previous.is(TokenType.BRACE_IS_LITERAL);
+            return netBraces == 0 && previous != null && token.is("{") && !previous.is(TokenType.BRACE_IS_LITERAL);
         }
     }
 

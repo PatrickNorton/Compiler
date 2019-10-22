@@ -102,6 +102,10 @@ public class Token {
         return types.contains(token);
     }
 
+    public boolean isKeyword(Set<Keyword> types) {
+        return is(TokenType.KEYWORD) && types.contains(Keyword.find(this));
+    }
+
     /**
      * Return an Epsilon token.
      * @return The token

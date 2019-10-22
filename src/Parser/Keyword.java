@@ -24,7 +24,6 @@ public enum Keyword {
     DOTIMES("dotimes", DotimesStatementNode::parse),
     METHOD("method", MethodDefinitionNode::parse),
     WHILE("while", WhileStatementNode::parse),
-    CASTED("casted", " must not begin a statement", TokenPlace.LEFT),
     IN("in", " does not begin any statements", TokenPlace.LEFT),
     FROM("from", ImportExportNode::parse),
     IMPORT("import", ImportStatementNode::parse),

@@ -21,7 +21,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     Set<TokenType> PARSABLE_TOKENS = Collections.unmodifiableSet(
             EnumSet.of(TokenType.NAME, TokenType.OPEN_BRACE, TokenType.BOOL_OP,
                     TokenType.OPERATOR, TokenType.NUMBER, TokenType.OP_FUNC,
-                    TokenType.ELLIPSIS)
+                    TokenType.ELLIPSIS, TokenType.STRING)
     );
     Set<Keyword> PARSABLE_KEYWORDS = Collections.unmodifiableSet(
             EnumSet.of(Keyword.LAMBDA, Keyword.SOME, Keyword.SWITCH)
@@ -283,7 +283,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case STRING:
                 return StringNode.parse(tokens);
             case KEYWORD:
-                if (tokens.tokenIs(Keyword.IN, Keyword.CASTED)) {
+                if (tokens.tokenIs(Keyword.IN)) {
                     return OperatorTypeNode.parse(tokens);
                 } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
                     return null;
@@ -409,8 +409,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     private static boolean nextIsTest(@NotNull TokenList tokens) {
-        return PARSABLE_TOKENS.contains(tokens.getFirst().token) ||
-                (tokens.tokenIs(TokenType.KEYWORD) &&
-                        PARSABLE_KEYWORDS.contains(Keyword.find(tokens.getFirst().sequence)));
+        return tokens.tokenIs(PARSABLE_TOKENS) || tokens.tokenIsKeyword(PARSABLE_KEYWORDS);
     }
 }
