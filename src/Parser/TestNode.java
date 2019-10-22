@@ -96,6 +96,18 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      *     This is necessary so that when TestNode parses everything else, which
      *     can be part of a {@link TernaryNode ternary}, it does not try to eat
      *     the ternary and go into an infinite recursive loop.
+     *     <ul>
+     *         <lh>Types of TestNode (besides ternary):
+     *         </lh>
+     *         <li>Function call</li>
+     *         <li><s>Declaration</s></li>
+     *         <li><s>Declared assignment</s></li>
+     *         <li><s>Assignment</s></li>
+     *         <li>Lone expression</li>
+     *         <li>Literal</li>
+     *         <li>Lambda</li>
+     *     </ul>
+     *
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @param ignoreNewlines Whether or not to ignore newlines
@@ -103,59 +115,19 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      */
     @NotNull
     static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
-        TestNode node;
-        if (tokens.tokenIs(TokenType.KEYWORD)) {
-            switch (Keyword.find(tokens.getFirst())) {
-                case LAMBDA:
-                    node = LambdaNode.parse(tokens);
-                    break;
-                case SOME:
-                    node = SomeStatementNode.parse(tokens);
-                    break;
-                case SWITCH:
-                    node = SwitchExpressionNode.parse(tokens);
-                    break;
-                default:
-                    throw tokens.error("Unexpected "+tokens.getFirst());
-            }
-        } else {
-            node = parseLeftVariable(tokens, ignoreNewlines);
-        }
-        if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, node);
-        } else {
-            return node;
-        }
-    }
-
-    /**
-     * Parses an expression starting with a variable from a list of tokens.
-     * <p>
-     *     <ul>
-     *         <lh>Things beginning with a variable token (besides ternary):
-     *         </lh>
-     *         <li>Function call</li>
-     *         <li><s>Declaration</s></li>
-     *         <li><s>Declared assignment</s></li>
-     *         <li><s>Assignment</s></li>
-     *         <li>Lone expression</li>
-     *     </ul>
-     *     The list of tokens passed must begin with a variable token.
-     * </p>
-     * @param tokens The list of tokens to be destructively parsed
-     * @param ignore_newline Whether or not to ignore newlines
-     * @return The parsed TestNode
-     */
-    @NotNull
-    private static TestNode parseLeftVariable(@NotNull TokenList tokens, boolean ignore_newline) {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             throw tokens.error("Illegal assignment");
-        } else if (ignore_newline && tokens.braceContains(TokenType.AUG_ASSIGN)) {
+        } else if (ignoreNewlines && tokens.braceContains(TokenType.AUG_ASSIGN)) {
             throw tokens.error("Illegal augmented assignment");
-        } else if (!ignore_newline && tokens.lineContains(TokenType.AUG_ASSIGN)) {
+        } else if (!ignoreNewlines && tokens.lineContains(TokenType.AUG_ASSIGN)) {
             throw tokens.error("Illegal augmented assignment");
         } else {
-            return parseExpression(tokens, ignore_newline);
+            TestNode node = parseExpression(tokens, ignoreNewlines);
+            if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
+                return DottedVariableNode.fromExpr(tokens, node);
+            } else {
+                return node;
+            }
         }
     }
 
@@ -249,6 +221,15 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         nodes.addLast(node);
     }
 
+    /**
+     * Parse a node from a list of tokens, or return null if no next node
+     * exists.
+     *
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignoreNewlines Whether or not to ignore newlines
+     * @param parseCurly Whether or not to parse a curly brace
+     * @return The freshly parsed node
+     */
     @Nullable
     private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
         if (ignoreNewlines) {
@@ -264,8 +245,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return DottedVariableNode.parseName(tokens);
             case NUMBER:
                 return NumberNode.parse(tokens);
-            case ARROW:
-                throw tokens.error("Unexpected " + tokens.getFirst());
             case BOOL_OP:
             case OPERATOR:
                 return OperatorTypeNode.parse(tokens);
@@ -284,11 +263,33 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case STRING:
                 return StringLikeNode.parse(tokens);
             case KEYWORD:
-                if (tokens.tokenIs(Keyword.IN)) {
-                    return OperatorTypeNode.parse(tokens);
-                } else if (tokens.tokenIs(Keyword.IF, Keyword.ELSE, Keyword.FOR)) {
-                    return null;
-                }  // Lack of breaks here is intentional
+                return parseKeywordNode(tokens);
+            default:
+                throw tokens.error("Unexpected " + tokens.getFirst());
+        }
+    }
+
+    /**
+     * Parse a node starting with a keyword from a list of tokens, or null if
+     * there is no following node.
+     *
+     * @param tokens The list of tokens to be destructively parsed
+     * @return The freshly parsed node
+     */
+    @Nullable
+    private static TestNode parseKeywordNode(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.KEYWORD);
+        switch (Keyword.find(tokens.getFirst())) {
+            case SOME:
+                return SomeStatementNode.parse(tokens);
+            case IN:
+                return OperatorTypeNode.parse(tokens);
+            case SWITCH:
+                return SwitchExpressionNode.parse(tokens);
+            case IF:
+            case ELSE:
+            case FOR:
+                return null;
             default:
                 throw tokens.error("Unexpected " + tokens.getFirst());
         }
