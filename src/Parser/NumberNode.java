@@ -97,6 +97,7 @@ public class NumberNode implements AtomicNode {
             case '7':
             case '8':
             case '9':
+            case '.':
                 try {
                     return new NumberNode(info, new BigDecimal(value));
                 } catch (NumberFormatException e) {
