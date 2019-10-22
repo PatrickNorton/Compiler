@@ -3,11 +3,11 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.regex.Matcher;
@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  */
 public final class Tokenizer {
-    private final LineNumberReader file;
+    private final BufferedReader file;
     private String next;
     private int currentLine;
     private String fullLine;
@@ -44,7 +44,7 @@ public final class Tokenizer {
 
     @Contract(pure = true)
     private Tokenizer(Reader r) {
-        file = new LineNumberReader(r);
+        file = new BufferedReader(r);
         next = readLine();
         currentLine = 1;
         fullLine = next;
@@ -157,7 +157,7 @@ public final class Tokenizer {
         return new LineInfo(
                 currentLine,
                 fullLine,
-                fullLine.length() - next.length()
+                lineIndex()
         );
     }
 
@@ -181,7 +181,7 @@ public final class Tokenizer {
 
     @NotNull
     private ParserException tokenError() {
-        return tokenError("");
+        return tokenError("Invalid syntax");
     }
 
     @NotNull
