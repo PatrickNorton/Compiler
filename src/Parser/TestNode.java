@@ -391,6 +391,14 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return parseList(tokens, ignore_newlines, true);
     }
 
+    static TestNode parseDanglingIf(TokenList tokens) {
+        if (TernaryNode.beforeDanglingIf(tokens)) {
+            return parse(tokens);
+        } else {
+            return parseNoTernary(tokens, false);
+        }
+    }
+
     /**
      * Parse the iterables in a for loop.
      * @param tokens The list of tokens to be destructively parsed
