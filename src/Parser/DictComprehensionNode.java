@@ -15,12 +15,8 @@ import org.jetbrains.annotations.NotNull;
  * @see ComprehensionNode
  * @see DictLiteralNode
  */
-public class DictComprehensionNode implements SubTestNode {
-    private LineInfo lineInfo;
+public class DictComprehensionNode extends ComprehensionLikeNode {
     private TestNode key;
-    private TestNode val;
-    private TypedVariableNode[] vars;
-    private TestNode[] looped;
 
     /**
      * Create new instance of DictComprehensionNode.
@@ -31,33 +27,14 @@ public class DictComprehensionNode implements SubTestNode {
      * @param looped The values being looped over
      */
     @Contract(pure = true)
-    public DictComprehensionNode(LineInfo lineInfo, TestNode key, TestNode val, TypedVariableNode[] vars, TestNode[] looped) {
-        this.lineInfo = lineInfo;
+    public DictComprehensionNode(LineInfo lineInfo, TestNode key, TestNode val,
+                                 TypedVariableNode[] vars, TestNode[] looped, TestNode condition) {
+        super(lineInfo, "{", vars, val, looped, condition);
         this.key = key;
-        this.val = val;
-        this.vars = vars;
-        this.looped = looped;
-    }
-
-    @Override
-    public LineInfo getLineInfo() {
-        return lineInfo;
     }
 
     public TestNode getKey() {
         return key;
-    }
-
-    public TestNode getVal() {
-        return val;
-    }
-
-    public TypedVariableNode[] getVars() {
-        return vars;
-    }
-
-    public TestNode[] getLooped() {
-        return looped;
     }
 
     /**
@@ -94,17 +71,21 @@ public class DictComprehensionNode implements SubTestNode {
         }
         tokens.nextToken(true);
         TestNode[] looped = TestNode.parseList(tokens, true);
+        TestNode condition;
+        if (tokens.tokenIs(Keyword.IF)) {
+            condition = TestNode.parse(tokens, true);
+        } else {
+            condition = TestNode.empty();
+        }
         if (!tokens.tokenIs("}")) {
             throw tokens.error("Expected }, got "+tokens.getFirst());
         }
         tokens.nextToken();
-        return new DictComprehensionNode(info, key, val, vars, looped);
+        return new DictComprehensionNode(info, key, val, vars, looped, condition);
     }
 
     @Override
     public String toString() {
-        String vars = TestNode.toString(this.vars);
-        String looped = TestNode.toString(this.looped);
-        return String.format("{%s: %s for %s in %s}", key, val, vars, looped);
+        return String.format("{%s: %s%s",  getBuilder(), key, secondHalfString());
     }
 }

@@ -303,42 +303,47 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @NotNull
     static TestNode parseOpenBrace(@NotNull TokenList tokens) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
+        assert tokens.tokenIs(TokenType.OPEN_BRACE);
         TestNode stmt;
-        if (tokens.tokenIs("(")) {
-            if (tokens.braceContains(Keyword.FOR)) {
-                stmt = ComprehensionNode.parse(tokens);
-            } else if (tokens.braceContains(",")) {
-                stmt = LiteralNode.parse(tokens);
-            } else {
-                tokens.nextToken(true);
-                TestNode contained = parse(tokens, true);
-                if (!tokens.tokenIs(")")) {
-                    throw tokens.error("Unmatched brace");
+        switch (tokens.getFirst().sequence) {
+            case "(":
+                if (tokens.braceContains(Keyword.FOR)) {
+                    stmt = ComprehensionNode.parse(tokens);
+                } else if (tokens.braceContains(",")) {
+                    stmt = LiteralNode.parse(tokens);
+                } else {
+                    tokens.nextToken(true);
+                    TestNode contained = parse(tokens, true);
+                    if (!tokens.tokenIs(")")) {
+                        throw tokens.error("Unmatched brace");
+                    }
+                    tokens.nextToken();
+                    stmt = contained;
                 }
-                tokens.nextToken();
-                stmt = contained;
-            }
-            if (tokens.tokenIs("(")) {
-                stmt = new FunctionCallNode(stmt, ArgumentNode.parseList(tokens));
-            }
-        } else if (tokens.tokenIs("[")) {
-            if (tokens.braceContains(TokenType.COLON)) {
-                stmt = RangeLiteralNode.parse(tokens);
-            } else if (tokens.braceContains(Keyword.FOR)) {
-                stmt = ComprehensionNode.parse(tokens);
-            } else {
-                stmt = LiteralNode.parse(tokens);
-            }
-        } else if (tokens.tokenIs("{")) {
-            if (tokens.braceContains(Keyword.FOR)) {
-                stmt = tokens.braceContains(":") ? DictComprehensionNode.parse(tokens) : ComprehensionNode.parse(tokens);
-            } else if (tokens.braceContains(":")) {
-                stmt = DictLiteralNode.parse(tokens);
-            } else {
-                stmt = LiteralNode.parse(tokens);
-            }
-        } else {
-            throw new RuntimeException("Some unknown brace was found");
+                if (tokens.tokenIs("(")) {
+                    stmt = new FunctionCallNode(stmt, ArgumentNode.parseList(tokens));
+                }
+                break;
+            case "[":
+                if (tokens.braceContains(TokenType.COLON)) {
+                    stmt = RangeLiteralNode.parse(tokens);
+                } else if (tokens.braceContains(Keyword.FOR)) {
+                    stmt = ComprehensionNode.parse(tokens);
+                } else {
+                    stmt = LiteralNode.parse(tokens);
+                }
+                break;
+            case "{":
+                if (tokens.braceContains(Keyword.FOR)) {
+                    stmt = ComprehensionLikeNode.parse(tokens);
+                } else if (tokens.braceContains(":")) {
+                    stmt = DictLiteralNode.parse(tokens);
+                } else {
+                    stmt = LiteralNode.parse(tokens);
+                }
+                break;
+            default:
+                throw tokens.internalError("Some unknown brace was found");
         }
         if (tokens.tokenIs(TokenType.DOT)) {
             return DottedVariableNode.fromExpr(tokens, stmt);

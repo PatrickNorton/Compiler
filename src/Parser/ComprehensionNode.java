@@ -8,13 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  * @see DictComprehensionNode
  */
-public class ComprehensionNode implements SubTestNode, PostDottableNode {
-    private LineInfo lineInfo;
-    private String brace_type;
-    private TypedVariableNode[] variables;
-    private TestNode builder;
-    private TestNode[] looped;
-    private TestNode condition;
+public class ComprehensionNode extends ComprehensionLikeNode {
 
     /**
      * Create a new instance of ComprehensionNode.
@@ -27,41 +21,7 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     @Contract(pure = true)
     public ComprehensionNode(LineInfo lineInfo, String brace_type, TypedVariableNode[] variables,
                              TestNode builder, TestNode[] looped, TestNode condition) {
-        this.lineInfo = lineInfo;
-        this.brace_type = brace_type;
-        this.variables = variables;
-        this.builder = builder;
-        this.looped = looped;
-        this.condition = condition;
-    }
-
-    @Override
-    public LineInfo getLineInfo() {
-        return lineInfo;
-    }
-
-    public String getBrace_type() {
-        return brace_type;
-    }
-
-    public TypedVariableNode[] getVariables() {
-        return variables;
-    }
-
-    public TestNode getBuilder() {
-        return builder;
-    }
-
-    public TestNode[] getLooped() {
-        return looped;
-    }
-
-    public TestNode getCondition() {
-        return condition;
-    }
-
-    public boolean hasBraces() {
-        return !brace_type.isEmpty();
+        super(lineInfo, brace_type, variables, builder, looped, condition);
     }
 
     /**
@@ -109,10 +69,6 @@ public class ComprehensionNode implements SubTestNode, PostDottableNode {
     }
 
     public String toString() {
-        String variables = TestNode.toString(this.variables);
-        String looped = TestNode.toString(this.looped);
-        String condition = this.condition.isEmpty() ? "" : " if " + this.condition;
-        return String.format("%s%s for %s in %s%s%s", brace_type, builder, variables, looped,
-                condition, TokenList.matchingBrace(brace_type));
+        return super.toString();
     }
 }
