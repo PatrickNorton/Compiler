@@ -60,9 +60,11 @@ public enum Keyword {
     VAR("var", IndependentNode::parseVar),
     INLINE("inline", InlineableNode::parse),
     ;
+
+    private static final Map<String, Keyword> values;
+
     public final String name;
     private final Function<TokenList, IndependentNode> parseLeft;
-    private static final Map<String, Keyword> values;
 
     @Contract(pure = true)
     Keyword(String name, Function<TokenList, IndependentNode> fn) {
@@ -75,13 +77,19 @@ public enum Keyword {
         this.name = name;
         switch (place) {
             case LEFT:
-                this.parseLeft = (TokenList tokens) -> {throw tokens.error(tokens.getFirst() + errorMessage);};
+                this.parseLeft = (TokenList tokens) -> {
+                    throw tokens.error(tokens.getFirst() + errorMessage);
+                };
                 break;
             case RIGHT:
-                this.parseLeft = (TokenList tokens) -> {throw tokens.error(errorMessage + tokens.getFirst());};
+                this.parseLeft = (TokenList tokens) -> {
+                    throw tokens.error(errorMessage + tokens.getFirst());
+                };
                 break;
             case NONE:
-                this.parseLeft = (TokenList tokens) -> {throw tokens.error(errorMessage);};
+                this.parseLeft = (TokenList tokens) -> {
+                    throw tokens.error(errorMessage);
+                };
                 break;
             default:
                 throw new RuntimeException("Unexpected TokenPlace");
