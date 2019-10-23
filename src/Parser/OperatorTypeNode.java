@@ -41,6 +41,7 @@ public enum OperatorTypeNode implements AtomicNode {
     CASTED("casted", 13),
     IS("is", 8),
     IS_NOT("is not", 8),
+    NULL_COERCE("??", 0),
     ;
 
     public final String name;

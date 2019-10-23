@@ -54,7 +54,7 @@ public enum TokenType {
     /**
      * Augmented assignment operators, such as += or -=.
      */
-    AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|[&|^~])="),
+    AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|\\?{2}|[&|^~])="),
     /**
      * The magical arrow unicorn, for function return types.
      */
@@ -66,7 +66,7 @@ public enum TokenType {
     /**
      * Bog-standard operators, like + or <<
      */
-    OPERATOR("^(==|!=|<<|>>|[><]=?|([+\\-*/])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b|casted)"),
+    OPERATOR("^(==|!=|<<|>>|[><]=?|\\?{2}|([+\\-*/])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b|casted)"),
     /**
      * Assignment, both static and dynamic (:=).
      */

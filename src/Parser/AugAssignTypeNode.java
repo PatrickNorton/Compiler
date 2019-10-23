@@ -21,6 +21,7 @@ public enum AugAssignTypeNode {
     BITWISE_XOR("^"),
     BITWISE_NOT("~"),
     MODULO("%"),
+    NULL_COERCE("??"),
     ;
 
     private static final Map<String, AugAssignTypeNode> values;
