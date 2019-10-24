@@ -39,12 +39,17 @@ public class OperatorNode implements SubTestNode {
         this(lineInfo, operator, ArgumentNode.fromTestNodes(operands));
     }
 
+    @Contract(pure = true)
+    public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator) {
+        this(lineInfo, operator, new ArgumentNode[0]);
+    };
+
     /**
      * Construct a new OperatorNode with no operands
      * @param operator The operator type
      */
     @Contract(pure = true)
-    public OperatorNode(OperatorTypeNode operator) {
+    private OperatorNode(OperatorTypeNode operator) {
         this(operator.getLineInfo(), operator, new ArgumentNode[0]);
     }
 

@@ -170,9 +170,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     throw ParserException.of("Illegal token " + nextOp, info);
                 }
                 if (nextOp.isPostfix()) {
-                    addEmptyPostfix(tempNodes, new OperatorNode(nextOp));
+                    addEmptyPostfix(tempNodes, new OperatorNode(info, nextOp));
                 } else {
-                    addUnary(tempNodes, new OperatorNode(nextOp));
+                    addUnary(tempNodes, new OperatorNode(info, nextOp));
                 }
             } else {
                 LineInfo info1 = tokens.lineInfo();
