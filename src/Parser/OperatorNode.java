@@ -136,7 +136,11 @@ public class OperatorNode implements SubTestNode {
                 return "\\" + operator;
             case 1:
                 if (operator.isUnary()) {
-                    return operator + " " + operands.get(0);
+                    if (operator.isPostfix()) {
+                        return operands.get(0).toString() + operator;
+                    } else {
+                        return operator.toString() + operands.get(0);
+                    }
                 } else {
                     return "\\" + operator + "(" + operands.get(0) + ")";
                 }
