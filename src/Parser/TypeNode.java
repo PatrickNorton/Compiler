@@ -10,23 +10,25 @@ public class TypeNode implements AtomicNode {
     private DottedVariableNode name;
     private TypeNode[] subtypes;
     private boolean is_vararg;
+    private boolean optional;
 
     @Contract(pure = true)
-    public TypeNode(DottedVariableNode name) {
-        this(name, new TypeNode[0], false);
+    public TypeNode(DottedVariableNode name, boolean optional) {
+        this(name, new TypeNode[0], false, optional);
     }
 
     @Contract(pure = true)
-    public TypeNode(DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg) {
-        this(name.getLineInfo(), name, subtypes, is_vararg);
+    public TypeNode(DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg, boolean optional) {
+        this(name.getLineInfo(), name, subtypes, is_vararg, optional);
     }
 
     @Contract(pure = true)
-    public TypeNode(LineInfo lineInfo, DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg) {
+    public TypeNode(LineInfo lineInfo, DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg, boolean optional) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.subtypes = subtypes;
         this.is_vararg = is_vararg;
+        this.optional = optional;
     }
 
     @Override
@@ -46,6 +48,10 @@ public class TypeNode implements AtomicNode {
         return is_vararg;
     }
 
+    public boolean isOptional() {
+        return optional;
+    }
+
     public boolean isDecided() {
         return true;
     }
@@ -63,7 +69,7 @@ public class TypeNode implements AtomicNode {
      * @return The parsed TypeNode
      */
     @NotNull
-    static TypeNode  parse(TokenList tokens) {
+    static TypeNode parse(TokenList tokens) {
         return parse(tokens, false, false);
     }
 
@@ -76,10 +82,11 @@ public class TypeNode implements AtomicNode {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    static TypeNode parse(@NotNull TokenList tokens, boolean allow_empty, boolean is_vararg) {
+    private static TypeNode parse(@NotNull TokenList tokens, boolean allow_empty, boolean is_vararg) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return parseVar(tokens);
         }
+        boolean optional = false;
         DottedVariableNode main;
         if (!tokens.tokenIs(TokenType.NAME)) {
             if (allow_empty && tokens.tokenIs("[")) {
@@ -89,9 +96,13 @@ public class TypeNode implements AtomicNode {
             }
         } else {
             main = DottedVariableNode.parseNamesOnly(tokens);
+            if (tokens.tokenIs("?")) {
+                optional = true;
+                tokens.nextToken();
+            }
         }
         if (!tokens.tokenIs("[")) {
-            return new TypeNode(main);
+            return new TypeNode(main, optional);
         }
         tokens.nextToken(true);
         LinkedList<TypeNode> subtypes = new LinkedList<>();
@@ -114,7 +125,7 @@ public class TypeNode implements AtomicNode {
             }
         }
         tokens.nextToken();
-        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), is_vararg);
+        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), is_vararg, optional);
     }
 
     /**
@@ -149,7 +160,7 @@ public class TypeNode implements AtomicNode {
     private static TypeNode parseVar(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.VAR);
         tokens.nextToken();
-        return new TypeNode(DottedVariableNode.empty()) {
+        return new TypeNode(DottedVariableNode.empty(), false) {
             @Override
             public boolean isDecided() {
                 return false;
@@ -168,6 +179,6 @@ public class TypeNode implements AtomicNode {
             String subtypes = TestNode.toString(this.subtypes);
             return (is_vararg ? "*" : "") + name + "[" + subtypes + "]";
         }
-        return (is_vararg ? "*" : "") + name;
+        return (is_vararg ? "*" : "") + name + (optional ? "?" : "");
     }
 }

@@ -154,7 +154,12 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             LineInfo info = tokens.lineInfo();
             nextNode = parseNode(tokens, ignoreNewlines, true);
             if (nextNode == null) {
-                throw ParserException.of("Illegal token " + tokens.getFirst(), info);
+                if (!tempNodes.isEmpty() && tempNodes.getLast().isPostfix()) {
+                    nextNode = tempNodes.removeLast();
+                    break;
+                } else {
+                    throw ParserException.of("Illegal token " + tokens.getFirst(), info);
+                }
             }
             if (nextNode instanceof OperatorTypeNode) {
                 OperatorTypeNode nextOp = (OperatorTypeNode) nextNode;
@@ -164,7 +169,11 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 if (!nextOp.isUnary()) {
                     throw ParserException.of("Illegal token " + nextOp, info);
                 }
-                addUnary(tempNodes, new OperatorNode(nextOp));
+                if (nextOp.isPostfix()) {
+                    addEmptyPostfix(tempNodes, new OperatorNode(nextOp));
+                } else {
+                    addUnary(tempNodes, new OperatorNode(nextOp));
+                }
             } else {
                 LineInfo info1 = tokens.lineInfo();
                 TestNode doubleNext = parseNode(tokens, ignoreNewlines, false);
@@ -175,10 +184,14 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     throw ParserException.of("Illegal token " + doubleNext, info1);
                 }
                 OperatorTypeNode nextOp = (OperatorTypeNode) doubleNext;
-                if (nextOp.isUnary()) {
+                if (nextOp.isUnary() && !nextOp.isPostfix()) {
                     throw ParserException.of("Illegal token " + doubleNext, info1);
                 }
-                addBinary(tempNodes, new OperatorNode(info1, nextOp, nextNode));
+                if (nextOp.isPostfix()) {
+                    addFilledPostfix(tempNodes, new OperatorNode(info1, nextOp, nextNode));
+                } else {
+                    addBinary(tempNodes, new OperatorNode(info1, nextOp, nextNode));
+                }
             }
         }
         OperatorNode previous;
@@ -197,21 +210,61 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     private static void addUnary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
-        assert node.getOperator().isUnary();
+        assert node.isUnary();
         nodes.addLast(node);
     }
 
     private static void addBinary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
-        assert !node.getOperator().isUnary() && node.getOperands().length > 0;
+        assert !node.isUnary() && node.getOperands().length > 0;
         if (nodes.isEmpty()) {
             nodes.addLast(node);
             return;
         }
-        if (nodes.getLast().precedence() > node.precedence()) {
+        OperatorNode lastNode = nodes.getLast();
+        if (lastNode.precedence() > node.precedence()) {
             nodes.addLast(node);
             return;
-        } else if (nodes.getLast().getOperator() == node.getOperator()) {
+        } else if (lastNode.getOperator() == node.getOperator()) {
             nodes.getLast().addArgument(node.getOperands()[0]);
+            return;
+        }
+        while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {
+            OperatorNode top = nodes.removeLast();
+            node.setArgument(0, top.addArgument(node.getOperands()[0]));
+        }
+        nodes.addLast(node);
+    }
+
+    private static void addFilledPostfix(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
+        assert node.isPostfix() && node.getOperands().length > 0;
+        if (nodes.isEmpty()) {
+            nodes.addLast(node);
+            return;
+        }
+        OperatorNode lastNode = nodes.getLast();
+        if (lastNode.precedence() > node.precedence()) {
+            nodes.addLast(node);
+            return;
+        }
+        while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {
+            OperatorNode top = nodes.removeLast();
+            node.setArgument(0, top.addArgument(node.getOperands()[0]));
+        }
+        nodes.addLast(node);
+    }
+
+    private static void addEmptyPostfix(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
+        assert node.isPostfix() && node.getOperands().length == 0;
+        if (nodes.isEmpty()) {
+            throw ParserInternalError.of("Illegal postfix operator", node.getLineInfo());
+        }
+        OperatorNode lastNode = nodes.getLast();
+        if (lastNode.getOperands().length < (lastNode.isUnary() ? 1 : 2)) {
+            throw ParserInternalError.of("Illegal postfix operator", node.getLineInfo());
+        }
+        if (lastNode.precedence() > node.precedence()) {
+            ArgumentNode[] operands = lastNode.getOperands();
+            lastNode.setArgument(operands.length - 1, node.addArgument(operands[operands.length - 1]));
             return;
         }
         while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {

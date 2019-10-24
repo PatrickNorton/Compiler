@@ -57,6 +57,14 @@ public class OperatorNode implements SubTestNode {
         return operator.precedence;
     }
 
+    public boolean isUnary() {
+        return operator.isUnary();
+    }
+
+    public boolean isPostfix() {
+        return operator.isPostfix();
+    }
+
     /**
      * Construct a new OperatorNode from an empty one and a list of operands.
      * @param empty The empty OperatorNode

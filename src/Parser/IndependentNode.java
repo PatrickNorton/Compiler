@@ -138,6 +138,11 @@ public interface IndependentNode extends BaseNode {
         } else if (after_var.is("++", "--")) {
             return SimpleStatementNode.parseIncDec(tokens);
         } else if (tokens.lineContains(TokenType.BOOL_OP, TokenType.OPERATOR)) {
+            if (after_var.is("?")) {
+                if (isDeclaration(tokens)) {
+                    return DeclarationNode.parse(tokens);
+                }
+            }
             return TestNode.parse(tokens);
         } else if (after_var.is(TokenType.NAME)) {
             return DeclarationNode.parse(tokens);
@@ -145,5 +150,13 @@ public interface IndependentNode extends BaseNode {
             DottedVariableNode var = DottedVariableNode.parseName(tokens);
             return var;
         }
+    }
+
+    private static boolean isDeclaration(@NotNull TokenList tokens) {
+        int varSize = tokens.sizeOfVariable();
+        if (tokens.tokenIs(varSize, "?") && tokens.tokenIs(varSize + 1, TokenType.NAME)) {
+            return tokens.tokenIs(tokens.sizeOfVariable(varSize + 1), TokenType.NEWLINE);
+        }
+        return false;
     }
 }

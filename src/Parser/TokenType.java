@@ -66,7 +66,7 @@ public enum TokenType {
     /**
      * Bog-standard operators, like + or <<
      */
-    OPERATOR("^(==|!=|<<|>>|[><]=?|\\?{2}|([+\\-*/])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b|casted)"),
+    OPERATOR("^(==|!=|<<|>>|[><]=?|!{2}|([+\\-*/?])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b|casted)"),
     /**
      * Assignment, both static and dynamic (:=).
      */

@@ -42,11 +42,14 @@ public enum OperatorTypeNode implements AtomicNode {
     IS("is", 8),
     IS_NOT("is not", 8),
     NULL_COERCE("??", 0),
+    NOT_NULL("!!", 0, true, true),
+    OPTIONAL("?", 0, true, true),
     ;
 
     public final String name;
     public final int precedence;
     private final boolean unary;
+    private final boolean postfix;
 
     private static final Map<String, OperatorTypeNode> values;
 
@@ -57,9 +60,15 @@ public enum OperatorTypeNode implements AtomicNode {
 
     @Contract(pure = true)
     OperatorTypeNode(String name, int precedence, boolean unary) {
+        this(name, precedence, unary, false);
+    }
+
+    @Contract(pure = true)
+    OperatorTypeNode(String name, int precedence, boolean unary, boolean postfix) {
         this.name = name;
         this.precedence = precedence;
         this.unary = unary;
+        this.postfix = postfix;
     }
 
     static {  // Initialise the map
@@ -84,6 +93,11 @@ public enum OperatorTypeNode implements AtomicNode {
     @Contract(pure = true)
     public boolean isUnary() {
         return this.unary;
+    }
+
+    @Contract(pure = true)
+    public boolean isPostfix() {
+        return postfix;
     }
 
     /**
