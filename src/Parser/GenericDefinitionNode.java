@@ -35,7 +35,7 @@ public interface GenericDefinitionNode extends InterfaceStatementNode {
         } else if (tokens.tokenIs(Keyword.METHOD)) {
             return GenericFunctionNode.isGeneric(tokens);
         } else {
-            throw new RuntimeException("Invalid sent value to isGeneric");
+            throw tokens.internalError("Invalid sent value to isGeneric");
         }
     }
 }

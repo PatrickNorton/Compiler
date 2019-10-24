@@ -671,9 +671,7 @@ public final class TokenList implements Iterable<Token> {
      */
     @NotNull
     public ParserInternalError internalError(String message) {
-        return ParserInternalError.withHeader(
-                String.format("%s%nError: source line %s%n%s",
-                        message, tokenizer.currentLine(), getFirst().lineString()));
+        return ParserInternalError.of(message, getFirst());
     }
 
     /**

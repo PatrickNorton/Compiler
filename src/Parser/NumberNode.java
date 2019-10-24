@@ -101,16 +101,16 @@ public class NumberNode implements AtomicNode {
                 try {
                     return new NumberNode(info, new BigDecimal(value));
                 } catch (NumberFormatException e) {
-                    throw new RuntimeException("Illegal number " + value);
+                    throw ParserInternalError.of("Illegal number " + value, info);
                 }
             default:
-                throw new RuntimeException("Illegal number " + value);
+                throw ParserInternalError.of("Illegal number " + value, info);
         }
         try {
             BigDecimal val = parseInt(value.substring(2), base);
             return new NumberNode(info, val);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Illegal number " + value);
+            throw ParserInternalError.of("Illegal number " + value, info);
         }
     }
 
