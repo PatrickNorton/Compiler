@@ -4,7 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.StringJoiner;
+import java.util.List;
 
 /**
  * The class representing a dotted variable.
@@ -20,22 +20,12 @@ import java.util.StringJoiner;
 public class DottedVariableNode implements NameNode {
     private LineInfo lineInfo;
     private TestNode preDot;
-    private NameNode[] postDots;
+    private DottedVar[] newPostDots;
 
-    public DottedVariableNode(@NotNull TestNode preDot, NameNode... postDot) {
-        this(preDot.getLineInfo(), preDot, postDot);
-    }
-
-    /**
-     * Create a new instance of DottedVariableNode.
-     * @param preDot The token leading off before the first dot
-     * @param postDot The tokens which come after the first dot
-     */
-    @Contract(pure = true)
-    public DottedVariableNode(LineInfo info, TestNode preDot, NameNode... postDot) {
-        this.lineInfo = info;
+    public DottedVariableNode(@NotNull TestNode preDot, DottedVar... postDots) {
+        this.lineInfo = preDot.getLineInfo();
         this.preDot = preDot;
-        this.postDots = postDot;
+        this.newPostDots = postDots;
     }
 
     /**
@@ -58,7 +48,11 @@ public class DottedVariableNode implements NameNode {
     }
 
     public TestNode[] getPostDots() {
-        return postDots;
+        List<TestNode> nodes = new LinkedList<TestNode>();
+        for (DottedVar d : newPostDots) {
+            nodes.add(d.getPostDot());
+        }
+        return nodes.toArray(new TestNode[0]);
     }
 
     @Override
@@ -78,15 +72,9 @@ public class DottedVariableNode implements NameNode {
     @NotNull
     @Contract("_ -> new")
     static DottedVariableNode parseNamesOnly(@NotNull TokenList tokens) {
-        LinkedList<VariableNode> names = new LinkedList<>();
-        while (tokens.tokenIs(TokenType.NAME)) {
-            names.add(VariableNode.parse(tokens));
-            if (!tokens.tokenIs(TokenType.DOT)) {
-                break;
-            }
-            tokens.nextToken();
-        }
-        return new DottedVariableNode(names.removeFirst(), names.toArray(new VariableNode[0]));
+        NameNode name = NameNode.parse(tokens);
+        DottedVar[] names = DottedVar.parseAll(tokens);
+        return new DottedVariableNode(name, names);
     }
 
     /**
@@ -126,20 +114,8 @@ public class DottedVariableNode implements NameNode {
     @Contract("_, _ -> new")
     static DottedVariableNode fromExpr(@NotNull TokenList tokens, TestNode preDot) {
         assert tokens.tokenIs(TokenType.DOT);
-        tokens.nextToken();
-        LinkedList<NameNode> postDot = new LinkedList<>();
-        while (tokens.tokenIs(TokenType.NAME, TokenType.OPERATOR_SP)) {
-            if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
-                postDot.add(SpecialOpNameNode.parse(tokens));
-                break;
-            }
-            postDot.add(NameNode.parse(tokens));
-            if (!tokens.tokenIs(TokenType.DOT)) {
-                break;
-            }
-            tokens.nextToken();
-        }
-        return new DottedVariableNode(preDot, postDot.toArray(new NameNode[0]));
+        DottedVar[] postDots = DottedVar.parseAll(tokens);
+        return new DottedVariableNode(preDot, postDots);
     }
 
     /**
@@ -185,11 +161,11 @@ public class DottedVariableNode implements NameNode {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(".");
-        sj.add(preDot.toString());
-        for (NameNode n : postDots) {
-            sj.add(n.toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append(preDot);
+        for (DottedVar d : newPostDots) {
+            sb.append(d);
         }
-        return sj.toString();
+        return sb.toString();
     }
 }

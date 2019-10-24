@@ -108,7 +108,7 @@ public enum TokenType {
     /**
      * Dots that aren't an ellipsis.
      */
-    DOT("^\\."),
+    DOT("^\\??\\."),
     /**
      * The at symbol. for decorators.
      */
