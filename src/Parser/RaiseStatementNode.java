@@ -53,13 +53,7 @@ public class RaiseStatementNode implements SimpleFlowNode {
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode raised = TestNode.parseDanglingIf(tokens);
-        TestNode condition;
-        if (tokens.tokenIs(Keyword.IF)) {
-            tokens.nextToken();
-            condition = TestNode.parse(tokens);
-        } else {
-            condition = TestNode.empty();
-        }
+        TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, false);
         return new RaiseStatementNode(lineInfo, raised, condition);
     }
 

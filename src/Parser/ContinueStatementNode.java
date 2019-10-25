@@ -45,11 +45,7 @@ public class ContinueStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs(Keyword.CONTINUE);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
-        TestNode cond = TestNode.empty();
-        if (tokens.tokenIs(Keyword.IF)) {
-            tokens.nextToken();
-            cond = TestNode.parse(tokens);
-        }
+        TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
         return new ContinueStatementNode(info, cond);
     }
 

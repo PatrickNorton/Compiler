@@ -91,6 +91,40 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     /**
+     * Parse a TestNode if the next token is the one specified.
+     *
+     * @param tokens The list of tokens to be parsed destructively
+     * @param token The token to check for
+     * @param ignoreNewlines Whether or not to ignore newlines
+     * @return The TestNode
+     */
+    static TestNode parseOnToken(@NotNull TokenList tokens, String token, boolean ignoreNewlines) {
+        if (tokens.tokenIs(token)) {
+            tokens.nextToken(ignoreNewlines);
+            return parse(tokens, ignoreNewlines);
+        } else {
+            return empty();
+        }
+    }
+
+    /**
+     * Parse a TestNode if the next token is the one specified.
+     *
+     * @param tokens The list of tokens to be parsed destructively
+     * @param token The token to check for
+     * @param ignoreNewlines Whether or not to ignore newlines
+     * @return The TestNode
+     */
+    static TestNode parseOnToken(@NotNull TokenList tokens, Keyword token, boolean ignoreNewlines) {
+        if (tokens.tokenIs(token)) {
+            tokens.nextToken(ignoreNewlines);
+            return parse(tokens, ignoreNewlines);
+        } else {
+            return empty();
+        }
+    }
+
+    /**
      * Parse the non-ternary portion of a TestNode.
      * <p>
      *     This is necessary so that when TestNode parses everything else, which
@@ -107,8 +141,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      *         <li>Literal</li>
      *         <li>Lambda</li>
      *     </ul>
-     *
      * </p>
+     *
      * @param tokens The list of tokens to be destructively parsed
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed TestNode

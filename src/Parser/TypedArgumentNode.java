@@ -85,11 +85,7 @@ public class TypedArgumentNode implements BaseNode {
         }
         TypeNode type = TypeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);
-        TestNode default_value = TestNode.empty();
-        if (tokens.tokenIs("=")) {
-            tokens.nextToken();
-            default_value = TestNode.parse(tokens, true);
-        }
+        TestNode default_value = TestNode.parseOnToken(tokens, "=", true);
         return new TypedArgumentNode(type, var, default_value, is_vararg, vararg_type);
     }
 

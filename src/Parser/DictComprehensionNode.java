@@ -71,12 +71,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
         }
         tokens.nextToken(true);
         TestNode[] looped = TestNode.parseList(tokens, true);
-        TestNode condition;
-        if (tokens.tokenIs(Keyword.IF)) {
-            condition = TestNode.parse(tokens, true);
-        } else {
-            condition = TestNode.empty();
-        }
+        TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, true);
         if (!tokens.tokenIs("}")) {
             throw tokens.error("Expected }, got "+tokens.getFirst());
         }

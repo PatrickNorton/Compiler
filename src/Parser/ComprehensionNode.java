@@ -54,13 +54,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         }
         tokens.nextToken(true);
         TestNode[] looped = TestNode.parseListDanglingIf(tokens, true);
-        TestNode condition;
-        if (tokens.tokenIs(Keyword.IF)) {
-            tokens.nextToken(true);
-            condition = TestNode.parse(tokens, true);
-        } else {
-            condition = TestNode.empty();
-        }
+        TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, true);
         if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
             throw tokens.error("Expected close brace");
         }
