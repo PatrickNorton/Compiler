@@ -3,7 +3,9 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class TypeNode implements AtomicNode {
     private LineInfo lineInfo;
@@ -76,20 +78,19 @@ public class TypeNode implements AtomicNode {
     /**
      * Parse a TypeNode from a list of tokens.
      * @param tokens The list of tokens to destructively parse.
-     * @param allow_empty Whether or not empty varargs are allowed
-     * @param is_vararg Whether or not the type is a vararg.
+     * @param allowEmpty Whether or not empty varargs are allowed
+     * @param isVararg Whether or not the type is a vararg.
      * @return The freshly parsed TypeNode
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    private static TypeNode parse(@NotNull TokenList tokens, boolean allow_empty, boolean is_vararg) {
+    private static TypeNode parse(@NotNull TokenList tokens, boolean allowEmpty, boolean isVararg) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return parseVar(tokens);
         }
-        boolean optional = false;
         DottedVariableNode main;
         if (!tokens.tokenIs(TokenType.NAME)) {
-            if (allow_empty && tokens.tokenIs("[")) {
+            if (allowEmpty && tokens.tokenIs("[")) {
                 main = DottedVariableNode.empty();
             } else {
                 throw tokens.error("Expected type name, got " + tokens.getFirst());
@@ -97,24 +98,24 @@ public class TypeNode implements AtomicNode {
         } else {
             main = DottedVariableNode.parseNamesOnly(tokens);
             if (tokens.tokenIs("?")) {
-                optional = true;
                 tokens.nextToken();
+                return new TypeNode(main, true);
             }
         }
         if (!tokens.tokenIs("[")) {
-            return new TypeNode(main, optional);
+            return new TypeNode(main, false);
         }
         tokens.nextToken(true);
-        LinkedList<TypeNode> subtypes = new LinkedList<>();
+        List<TypeNode> subtypes = new ArrayList<>();
         while (!tokens.tokenIs("]")) {
-            boolean subcls_vararg;
+            boolean subclassIsVararg;
             if (tokens.tokenIs("*", "**")) {
-                subcls_vararg = true;
+                subclassIsVararg = true;
                 tokens.nextToken(true);
             } else {
-                subcls_vararg = false;
+                subclassIsVararg = false;
             }
-            subtypes.add(parse(tokens, true, subcls_vararg));
+            subtypes.add(parse(tokens, true, subclassIsVararg));
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
                 continue;
@@ -125,7 +126,14 @@ public class TypeNode implements AtomicNode {
             }
         }
         tokens.nextToken();
-        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), is_vararg, optional);
+        boolean optional;
+        if (tokens.tokenIs("?")) {
+            optional = true;
+            tokens.nextToken();
+        } else {
+            optional = false;
+        }
+        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), isVararg, optional);
     }
 
     /**
