@@ -59,7 +59,7 @@ public abstract class ImportExportNode implements SimpleStatementNode {
             if (!tokens.tokenIs(TokenType.KEYWORD)) {
                 throw tokens.error("Unexpected " + tokens.getFirst());
             }
-            switch (Keyword.find(tokens.getFirst().sequence)) {
+            switch (Keyword.find(tokens.tokenSequence())) {
                 case IMPORT:
                     return ImportStatementNode.parse(tokens);
                 case EXPORT:

@@ -50,7 +50,7 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
     @NotNull
     static ComprehensionLikeNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
-        switch (tokens.getFirst().sequence) {
+        switch (tokens.tokenSequence()) {
             case "{":
                 if (tokens.braceContains(":")) {
                     return DictComprehensionNode.parse(tokens);

@@ -42,7 +42,7 @@ public enum AugAssignTypeNode {
     }
 
     public static AugAssignTypeNode parse(@NotNull TokenList tokens) {
-        AugAssignTypeNode operator = find(tokens.getFirst().sequence.replaceFirst("=$", ""));
+        AugAssignTypeNode operator = find(tokens.tokenSequence().replaceFirst("=$", ""));
         tokens.nextToken();
         return operator;
     }

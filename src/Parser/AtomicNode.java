@@ -20,7 +20,7 @@ public interface AtomicNode extends SubTestNode {
      */
     @NotNull
     static AtomicNode parseLabel(@NotNull TokenList tokens) {
-        switch (tokens.getFirst().token) {
+        switch (tokens.tokenType()) {
             case NAME:
                 return NameNode.parse(tokens);
             case OP_FUNC:

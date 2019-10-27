@@ -78,7 +78,7 @@ public class TypedArgumentNode implements BaseNode {
         boolean is_vararg = tokens.tokenIs("*", "**");
         String vararg_type;
         if (tokens.tokenIs("*", "**")) {
-            vararg_type = tokens.getFirst().sequence;
+            vararg_type = tokens.tokenSequence();
             tokens.nextToken();
         } else {
             vararg_type = "";

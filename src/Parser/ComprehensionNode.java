@@ -40,7 +40,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         // TODO: Splats in comprehensions
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo info = tokens.lineInfo();
-        String brace_type = tokens.getFirst().sequence;
+        String brace_type = tokens.tokenSequence();
         String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
         TestNode builder = TestNode.parse(tokens, true);

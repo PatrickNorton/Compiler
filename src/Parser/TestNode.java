@@ -322,7 +322,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
-        switch (tokens.getFirst().token) {
+        switch (tokens.tokenType()) {
             case OPEN_BRACE:
                 if (parseCurly || !tokens.tokenIs("{")) {
                     return parseOpenBrace(tokens);
@@ -392,7 +392,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         TestNode stmt;
-        switch (tokens.getFirst().sequence) {
+        switch (tokens.tokenSequence()) {
             case "(":
                 if (tokens.braceContains(Keyword.FOR)) {
                     stmt = ComprehensionNode.parse(tokens);

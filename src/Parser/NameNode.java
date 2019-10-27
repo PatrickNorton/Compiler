@@ -25,7 +25,7 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
         NameNode name = VariableNode.parse(tokens);
         while_brace:
         while (tokens.tokenIs(TokenType.OPEN_BRACE)) {
-            switch (tokens.getFirst().sequence) {
+            switch (tokens.tokenSequence()) {
                 case "(":
                     name = new FunctionCallNode(name, ArgumentNode.parseList(tokens));
                     break;

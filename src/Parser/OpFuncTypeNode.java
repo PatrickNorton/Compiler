@@ -54,7 +54,7 @@ public enum OpFuncTypeNode {
     }
 
     public static OpFuncTypeNode parse(@NotNull TokenList tokens) {
-        OpFuncTypeNode operator = find(tokens.getFirst().sequence.replaceFirst("^\\\\", ""));
+        OpFuncTypeNode operator = find(tokens.tokenSequence().replaceFirst("^\\\\", ""));
         tokens.nextToken();
         return operator;
     }

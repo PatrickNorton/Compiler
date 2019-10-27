@@ -86,7 +86,7 @@ public enum DescriptorNode implements AtomicNode {
     @NotNull
     public static DescriptorNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.DESCRIPTOR);
-        DescriptorNode descriptor = find(tokens.getFirst().sequence);
+        DescriptorNode descriptor = find(tokens.tokenSequence());
         if (descriptor == null) {
             throw tokens.internalError("Unknown descriptor " + tokens.getFirst());
         }

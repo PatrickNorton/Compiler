@@ -128,7 +128,7 @@ public class ArgumentNode implements BaseNode {
             }
             String vararg;
             if (tokens.tokenIs("*", "**")) {
-                vararg = tokens.getFirst().sequence;
+                vararg = tokens.tokenSequence();
                 tokens.nextToken(true);
             } else {
                 vararg = "";

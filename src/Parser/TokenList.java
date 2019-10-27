@@ -484,6 +484,14 @@ public final class TokenList implements Iterable<Token> {
         return getFirst().isKeyword(types);
     }
 
+    public String tokenSequence() {
+        return getFirst().sequence;
+    }
+
+    public TokenType tokenType() {
+        return getFirst().token;
+    }
+
     /**
      * Pop the first token and move on.
      */
@@ -660,7 +668,7 @@ public final class TokenList implements Iterable<Token> {
     @NotNull
     public String matchingBrace() {
         assert tokenIs(TokenType.OPEN_BRACE);
-        return TokenList.matchingBrace(getFirst().sequence);
+        return TokenList.matchingBrace(tokenSequence());
     }
 
     /**

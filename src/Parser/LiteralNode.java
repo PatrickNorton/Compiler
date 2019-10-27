@@ -60,7 +60,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
     static LiteralNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo lineInfo = tokens.lineInfo();
-        String brace_type = tokens.getFirst().sequence;
+        String brace_type = tokens.tokenSequence();
         String balanced_brace = tokens.matchingBrace();
         tokens.nextToken(true);
         LinkedList<TestNode> values = new LinkedList<>();

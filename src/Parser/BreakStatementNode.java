@@ -60,7 +60,7 @@ public class BreakStatementNode implements SimpleFlowNode {
         tokens.nextToken();
         int loops;
         if (tokens.tokenIs(TokenType.NUMBER)) {
-            loops = Integer.parseInt(tokens.getFirst().sequence);
+            loops = Integer.parseInt(tokens.tokenSequence());
             tokens.nextToken();
         } else if (tokens.tokenIs(TokenType.NEWLINE, "if")) {
             loops = 0;

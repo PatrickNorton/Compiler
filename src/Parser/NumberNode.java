@@ -70,7 +70,7 @@ public class NumberNode implements AtomicNode {
          * its decimal point removed, is parsed into a BigInteger, and then
          * divided to put the decimal in the right place.
          */
-        String value = tokens.getFirst().sequence;
+        String value = tokens.tokenSequence();
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         if (value.length() < 2 || value.charAt(0) != '0') {

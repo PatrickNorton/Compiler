@@ -25,7 +25,7 @@ public interface IndependentNode extends BaseNode {
     @Contract("_ -> new")
     static IndependentNode parse(@NotNull TokenList tokens) {
         tokens.passNewlines();
-        switch (tokens.getFirst().token) {
+        switch (tokens.tokenType()) {
             case KEYWORD:
                 return parseKeyword(tokens);
             case DESCRIPTOR:
@@ -102,7 +102,7 @@ public interface IndependentNode extends BaseNode {
     @Contract("_ -> new")
     private static IndependentNode parseKeyword(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.KEYWORD);
-        Keyword kw = Keyword.find(tokens.getFirst().sequence);
+        Keyword kw = Keyword.find(tokens.tokenSequence());
         return kw.parseLeft(tokens);
     }
 

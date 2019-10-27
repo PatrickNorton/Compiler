@@ -79,7 +79,7 @@ public enum OpSpTypeNode {
     }
 
     public static OpSpTypeNode parse(@NotNull TokenList tokens) {
-        OpSpTypeNode operator = find(tokens.getFirst().sequence.replaceFirst("operator *", ""));
+        OpSpTypeNode operator = find(tokens.tokenSequence().replaceFirst("operator *", ""));
         tokens.nextToken();
         return operator;
     }

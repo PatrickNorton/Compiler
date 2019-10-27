@@ -23,7 +23,7 @@ public interface AssignableNode extends TestNode {
     @NotNull
     static AssignableNode parse(@NotNull TokenList tokens) {
         assert tokens.lineContains(TokenType.ASSIGN);
-        switch (tokens.getFirst().token) {
+        switch (tokens.tokenType()) {
             case NAME:
                 return NameNode.parse(tokens);
             case NUMBER:

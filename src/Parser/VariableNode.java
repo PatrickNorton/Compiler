@@ -74,7 +74,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw tokens.error("Expected name. got " + tokens.getFirst());
         }
-        String name = tokens.getFirst().sequence;
+        String name = tokens.tokenSequence();
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         return new VariableNode(info, name);
