@@ -202,6 +202,15 @@ public final class TokenList implements Iterable<Token> {
         return false;
     }
 
+    boolean braceIsEmpty() {
+        assert tokenIs(TokenType.OPEN_BRACE);
+        int next = 1;
+        while (tokenIs(1, TokenType.NEWLINE)) {
+            next++;
+        }
+        return tokenIs(next, TokenType.CLOSE_BRACE);
+    }
+
     /**
      * Get the size of the variable at the start of the list of tokens.
      * @return The size of the variable

@@ -396,7 +396,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case "(":
                 if (tokens.braceContains(Keyword.FOR)) {
                     stmt = ComprehensionNode.parse(tokens);
-                } else if (tokens.braceContains(",")) {
+                } else if (tokens.braceContains(",") || tokens.braceIsEmpty()) {
                     stmt = LiteralNode.parse(tokens);
                 } else {
                     tokens.nextToken(true);

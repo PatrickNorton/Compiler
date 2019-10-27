@@ -3,7 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The class representing a dictionary literal.
@@ -20,6 +21,11 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
     private LineInfo lineInfo;
     private TestNode[] keys;
     private TestNode[] values;
+
+    @Contract(pure = true)
+    public DictLiteralNode(LineInfo info) {
+        this(info, new TestNode[0], new TestNode[0]);
+    }
 
     @Contract(pure = true)
     public DictLiteralNode(LineInfo info, TestNode[] keys, TestNode[] values) {
@@ -58,8 +64,16 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
         assert tokens.tokenIs("{");
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
-        LinkedList<TestNode> keys = new LinkedList<>();
-        LinkedList<TestNode> values = new LinkedList<>();
+        List<TestNode> keys = new ArrayList<>();
+        List<TestNode> values = new ArrayList<>();
+        if (tokens.tokenIs(":")) {
+            tokens.nextToken(true);
+            if (!tokens.tokenIs("}")) {
+                throw tokens.error("Expected }, got " + tokens.getFirst());
+            }
+            tokens.nextToken();
+            return new DictLiteralNode(info);
+        }
         while (true) {
             keys.add(TestNode.parse(tokens));
             if (!tokens.tokenIs(":")) {
@@ -85,7 +99,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
     @Override
     public String toString() {
         if (keys.length == 0) {
-            return "{}";
+            return "{:}";
         } else {
             return "{" + keys[1] + ": " + values[1] + ", ...}";
         }
