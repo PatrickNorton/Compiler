@@ -104,17 +104,6 @@ public class StatementBodyNode implements BodyNode {
         return st;
     }
 
-    /**
-     * Parse the statements in a fallthrough-allowed switch clause.
-     * @param tokens The list of tokens to parse destructively
-     * @return The freshly parsed StatementBodyNode
-     */
-    @NotNull
-    @Contract("_ -> new")
-    static StatementBodyNode parseCase(@NotNull TokenList tokens) {
-        return parseUntilToken(tokens.lineInfo(), tokens, "case", "default", "}");
-    }
-
     @NotNull
     @Contract("_, _, _ -> new")
     private static StatementBodyNode parseUntilToken(LineInfo lineInfo, @NotNull TokenList tokens, String... values) {

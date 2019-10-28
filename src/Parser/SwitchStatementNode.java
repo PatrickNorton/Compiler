@@ -3,36 +3,54 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * The class representing a switch statement.
- *
- * @author Patrick Norton
- * @see CaseStatementNode
- */
-public class SwitchStatementNode extends SwitchLikeNode {
+public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNode {
+    private LineInfo lineInfo;
+    private TestNode switched;
+    private CaseStatementNode[] cases;
 
     @Contract(pure = true)
-    public SwitchStatementNode(LineInfo lineInfo, TestNode switched, boolean fallthrough,
-                               CaseStatementNode[] cases, DefaultStatementNode defaultStatement) {
-        super(lineInfo, switched, fallthrough, cases, defaultStatement);
+    public SwitchStatementNode(LineInfo lineInfo, TestNode switched, CaseStatementNode[] cases) {
+        this.lineInfo = lineInfo;
+        this.switched = switched;
+        this.cases = cases;
     }
 
-    /**
-     * Parse a switch statement from a list of tokens.
-     * <p>
-     *     The syntax for a switch statement is: <code>"switch" "{" *{@link
-     *     CaseStatementNode} [{@link DefaultStatementNode}] "}"</code>. The
-     *     list of tokens passed must begin with "switch", and all case
-     *     statements must be of the same fallthrough type.
-     * </p>
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed SwitchStatementNode.
-     */
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
+    }
+
+    public TestNode getSwitched() {
+        return switched;
+    }
+
+    public CaseStatementNode[] getCases() {
+        return cases;
+    }
+
     @NotNull
     @Contract("_ -> new")
     public static SwitchStatementNode parse(@NotNull TokenList tokens) {
-        return (SwitchStatementNode) parse(tokens, true, false);
+        assert tokens.tokenIs(Keyword.SWITCH);
+        LineInfo info = tokens.lineInfo();
+        tokens.nextToken();
+        TestNode switched = TestNode.parse(tokens);
+        if (!tokens.tokenIs("{")) {
+            throw tokens.error("Unexpected " + tokens.getFirst());
+        }
+        tokens.nextToken(true);
+        List<CaseStatementNode> cases = new ArrayList<>();
+        while (tokens.tokenIs(Keyword.CASE, Keyword.DEFAULT)) {
+            cases.add(CaseStatementNode.parse(tokens));
+            tokens.passNewlines();
+        }
+        if (!tokens.tokenIs("}")) {
+            throw tokens.error("Unexpected " + tokens.getFirst());
+        }
+        tokens.nextToken();
+        return new SwitchStatementNode(info, switched, cases.toArray(new CaseStatementNode[0]));
     }
 }

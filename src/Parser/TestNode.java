@@ -346,6 +346,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case COLON:
             case COMMA:
             case CLOSE_BRACE:
+            case DOUBLE_ARROW:
+            case ARROW:
                 return null;
             case STRING:
                 return StringLikeNode.parse(tokens);
@@ -372,7 +374,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case IN:
                 return OperatorTypeNode.parse(tokens);
             case SWITCH:
-                return SwitchExpressionNode.parse(tokens);
+                return SwitchStatementNode.parse(tokens);
             case IF:
             case ELSE:
             case FOR:
