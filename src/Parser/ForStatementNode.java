@@ -76,7 +76,7 @@ public class ForStatementNode implements FlowStatementNode {
             throw tokens.error("Expected in, got "+tokens.getFirst());
         }
         tokens.nextToken();
-        TestNode[] iterables = TestNode.parseForIterables(tokens);
+        TestNode[] iterables = TestNode.parseList(tokens, false);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
         return new ForStatementNode(lineInfo, vars, iterables, body, nobreak);

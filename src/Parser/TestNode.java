@@ -393,13 +393,23 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     static TestNode parseOpenBrace(@NotNull TokenList tokens) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
-        TestNode stmt;
+        TestNode stmt = parseOpenBraceNoDot(tokens);
+        if (tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, stmt);
+        } else {
+            return stmt;
+        }
+    }
+
+    @NotNull
+    private static TestNode parseOpenBraceNoDot(@NotNull TokenList tokens) {
+        assert tokens.tokenIs(TokenType.OPEN_BRACE);
         switch (tokens.tokenSequence()) {
             case "(":
                 if (tokens.braceContains(Keyword.FOR)) {
-                    stmt = ComprehensionNode.parse(tokens);
+                    return ComprehensionNode.parse(tokens);
                 } else if (tokens.braceContains(",") || tokens.braceIsEmpty()) {
-                    stmt = LiteralNode.parse(tokens);
+                    return LiteralNode.parse(tokens);
                 } else {
                     tokens.nextToken(true);
                     TestNode contained = parse(tokens, true);
@@ -407,37 +417,26 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                         throw tokens.error("Unmatched brace");
                     }
                     tokens.nextToken();
-                    stmt = contained;
+                    return contained;
                 }
-                if (tokens.tokenIs("(")) {
-                    stmt = new FunctionCallNode(stmt, ArgumentNode.parseList(tokens));
-                }
-                break;
             case "[":
                 if (tokens.braceContains(TokenType.COLON)) {
-                    stmt = RangeLiteralNode.parse(tokens);
+                    return RangeLiteralNode.parse(tokens);
                 } else if (tokens.braceContains(Keyword.FOR)) {
-                    stmt = ComprehensionNode.parse(tokens);
+                    return ComprehensionNode.parse(tokens);
                 } else {
-                    stmt = LiteralNode.parse(tokens);
+                    return LiteralNode.parse(tokens);
                 }
-                break;
             case "{":
                 if (tokens.braceContains(Keyword.FOR)) {
-                    stmt = ComprehensionLikeNode.parse(tokens);
+                    return ComprehensionLikeNode.parse(tokens);
                 } else if (tokens.braceContains(":")) {
-                    stmt = DictLiteralNode.parse(tokens);
+                    return DictLiteralNode.parse(tokens);
                 } else {
-                    stmt = LiteralNode.parse(tokens);
+                    return LiteralNode.parse(tokens);
                 }
-                break;
             default:
                 throw tokens.internalError("Some unknown brace was found");
-        }
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, stmt);
-        } else {
-            return stmt;
         }
     }
 
@@ -453,24 +452,21 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     @NotNull
-    private static TestNode[] parseList(TokenList tokens, boolean ignore_newlines, boolean danglingIf) {
-        if (!ignore_newlines && tokens.tokenIs(TokenType.NEWLINE)) {
+    private static TestNode[] parseList(TokenList tokens, boolean ignoreNewlines, boolean danglingIf) {
+        if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
         List<TestNode> tests = new ArrayList<>();
-        while (!tokens.tokenIs(TokenType.NEWLINE, "}")) {
+        while (nextIsTest(tokens)) {
             if (!danglingIf || TernaryNode.beforeDanglingIf(tokens)) {
-                tests.add(parse(tokens, ignore_newlines));
+                tests.add(parse(tokens, ignoreNewlines));
             } else {
-                tests.add(parseNoTernary(tokens, ignore_newlines));
+                tests.add(parseNoTernary(tokens, ignoreNewlines));
             }
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
             }
-            tokens.nextToken(ignore_newlines);
-            if (!nextIsTest(tokens)) {
-                break;
-            }
+            tokens.nextToken(ignoreNewlines);
         }
         return tests.toArray(new TestNode[0]);
     }
@@ -486,30 +482,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         } else {
             return parseNoTernary(tokens, false);
         }
-    }
-
-    /**
-     * Parse the iterables in a for loop.
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed list of TestNodes
-     */
-    @NotNull
-    static TestNode[] parseForIterables(@NotNull TokenList tokens) {
-        if (tokens.tokenIs(TokenType.NEWLINE)) {
-            return new TestNode[0];
-        }
-        List<TestNode> tests = new ArrayList<>();
-        while (!tokens.tokenIs("{")) {
-            tests.add(TestNode.parse(tokens));
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken();
-                continue;
-            }
-            if (!tokens.tokenIs("{")) {
-                throw tokens.error("Comma must separate values");
-            }
-        }
-        return tests.toArray(new TestNode[0]);
     }
 
     private static boolean nextIsTest(@NotNull TokenList tokens) {
