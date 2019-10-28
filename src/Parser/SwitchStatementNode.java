@@ -53,4 +53,9 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
         tokens.nextToken();
         return new SwitchStatementNode(info, switched, cases.toArray(new CaseStatementNode[0]));
     }
+
+    @Override
+    public String toString() {
+        return "switch " + switched + (cases.length == 0 ? "{}" : "{...}");
+    }
 }

@@ -65,15 +65,13 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         tokens.nextToken();
         TestNode[] label = TestNode.parseList(tokens, false);
         StatementBodyNode body;
-        boolean arrow;
-        if (tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
+        boolean arrow = tokens.tokenIs(TokenType.DOUBLE_ARROW);
+        if (arrow) {
             tokens.nextToken(true);
-            body = new StatementBodyNode(TestNode.parse(tokens));
+            body = new StatementBodyNode(TestNode.parseList(tokens, false));
             tokens.Newline();
-            arrow = true;
         } else {
             body = StatementBodyNode.parse(tokens);
-            arrow = false;
         }
         return new CaseStatementNode(info, label, body, arrow);
     }
