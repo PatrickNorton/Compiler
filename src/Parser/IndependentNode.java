@@ -50,13 +50,11 @@ public interface IndependentNode extends BaseNode {
                 throw tokens.error("Unexpected =>");
             case OPERATOR:
             case BOOL_OP:
+            case STRING:
+            case NUMBER:
                 return TestNode.parse(tokens);
             case ASSIGN:
                 throw tokens.error("Unexpected assignment");
-            case STRING:
-                return StringLikeNode.parse(tokens);
-            case NUMBER:
-                return NumberNode.parse(tokens);
             case OPERATOR_SP:
                 if (tokens.tokenIs(1, "=")) {
                     return SpecialOpAssignmentNode.parse(tokens);

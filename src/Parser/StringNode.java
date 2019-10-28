@@ -67,6 +67,6 @@ public class StringNode extends StringLikeNode {
         for (StringPrefix s : getPrefixes()) {
             sb.append(s);
         }
-        return sb + contents;
+        return sb.append('"').append(contents).append('"').toString();
     }
 }
