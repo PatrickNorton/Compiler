@@ -121,26 +121,18 @@ public interface IndependentNode extends BaseNode {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             return AssignStatementNode.parse(tokens);
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
-            DottedVariableNode var = DottedVariableNode.parseName(tokens);
-            if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
-                throw tokens.error("Expected augmented assignment, got " + tokens.getFirst());
-            }
-            AugAssignTypeNode op = AugAssignTypeNode.parse(tokens);
-            TestNode assignment = TestNode.parse(tokens);
-            return new AugmentedAssignmentNode(op, var, assignment);
+            return AugmentedAssignmentNode.parse(tokens);
         } else if (after_var.is("++", "--")) {
             return SimpleStatementNode.parseIncDec(tokens);
         } else if (tokens.lineContains(TokenType.BOOL_OP, TokenType.OPERATOR)) {
-            if (after_var.is("?")) {
-                if (isDeclaration(tokens)) {
-                    return DeclarationNode.parse(tokens);
-                }
+            if (after_var.is("?") && isDeclaration(tokens)) {
+                return DeclarationNode.parse(tokens);
             }
             return TestNode.parse(tokens);
         } else if (after_var.is(TokenType.NAME)) {
             return DeclarationNode.parse(tokens);
         } else {
-            return DottedVariableNode.parseName(tokens);
+            return NameNode.parse(tokens);
         }
     }
 

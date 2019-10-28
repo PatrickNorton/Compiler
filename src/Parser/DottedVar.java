@@ -32,17 +32,28 @@ public class DottedVar implements BaseNode {
     }
 
     @NotNull
-    @Contract("_ -> new")
-    public static DottedVar parse(@NotNull TokenList tokens) {
+    public static DottedVar parse(TokenList tokens) {
+        return parse(tokens, false);
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    public static DottedVar parse(@NotNull TokenList tokens, boolean namesOnly) {
         assert tokens.tokenIs(TokenType.DOT);
         LineInfo info = tokens.lineInfo();
         boolean isNullDot = tokens.tokenIs("?.");
         tokens.nextToken();
         NameNode postDot;
         if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
+            if (namesOnly) {
+                throw tokens.error("Unexpected " + tokens.getFirst());
+            }
             postDot = SpecialOpNameNode.parse(tokens);
         } else {
-            postDot = NameNode.parse(tokens);
+            postDot = VariableNode.parse(tokens);
+        }
+        if (!namesOnly) {
+            postDot = NameNode.parsePostBraces(tokens, postDot);
         }
         return new DottedVar(info, isNullDot, postDot);
     }

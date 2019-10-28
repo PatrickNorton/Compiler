@@ -62,6 +62,26 @@ public class StatementBodyNode implements BodyNode {
     }
 
     /**
+     * Parse a StatementBodyNode iff the next token matches those passed.
+     * <p>
+     *     This method will parse the token it is testing for if it matches.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param types The tokens to parse on
+     * @return The freshly parsed StatementBodyNode
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    static StatementBodyNode parseOnToken(@NotNull TokenList tokens, Keyword... types) {
+        if (tokens.tokenIs(types)) {
+            tokens.nextToken();
+            return StatementBodyNode.parse(tokens);
+        } else {
+            return new StatementBodyNode();
+        }
+    }
+
+    /**
      * Parse a StatementBodyNode from a list of tokens.
      * <p>
      *     The syntax for a StatementBodyNode is: <code>"{" {@link BaseNode}

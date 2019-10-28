@@ -57,9 +57,9 @@ public class ImportStatementNode extends ImportExportNode {
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw tokens.error("Empty import statements are illegal");
         }
-        DottedVariableNode[] imports = DottedVariableNode.parseList(tokens, false);
+        DottedVariableNode[] imports = DottedVariableNode.parseNameOnlyList(tokens, false);
         if (tokens.tokenIs(Keyword.AS)) {
-            DottedVariableNode[] as = DottedVariableNode.parseList(tokens, false);
+            DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens, false);
             return new ImportStatementNode(info, imports, from, as);
         }
         return new ImportStatementNode(info, imports, from);

@@ -21,9 +21,23 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
     @NotNull
     @Contract("_ -> new")
     static NameNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.NAME);
-        NameNode name = VariableNode.parse(tokens);
-        while_brace:
+        assert tokens.tokenIs(TokenType.NAME, "(");
+        NameNode name;
+        if (tokens.tokenIs(TokenType.NAME)) {
+            name = VariableNode.parse(tokens);
+        } else {
+            assert tokens.tokenIs("(");
+            name = DottedVariableNode.parseOpenBrace(tokens);
+        }
+        name = parsePostBraces(tokens, name);
+        if (tokens.tokenIs(TokenType.DOT)) {
+            name = DottedVariableNode.fromExpr(tokens, name);
+        }
+        return name;
+    }
+
+    @NotNull
+    static NameNode parsePostBraces(@NotNull TokenList tokens, @NotNull NameNode name) {
         while (tokens.tokenIs(TokenType.OPEN_BRACE)) {
             switch (tokens.tokenSequence()) {
                 case "(":
@@ -37,14 +51,12 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
                     }
                     break;
                 case "{":
-                    break while_brace;
+                    return name;
                 default:
                     throw new RuntimeException("Unexpected brace");
             }
         }
-        if (tokens.tokenIs(TokenType.DOT)) {
-            name = DottedVariableNode.fromExpr(tokens, name);
-        }
         return name;
     }
+
 }

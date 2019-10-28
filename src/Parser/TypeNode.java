@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO?? Replace with simple DottedVariableNode
 public class TypeNode implements AtomicNode {
     private LineInfo lineInfo;
     private DottedVariableNode name;

@@ -329,7 +329,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 }
                 return null;
             case NAME:
-                return DottedVariableNode.parseName(tokens);
+                return NameNode.parse(tokens);
             case NUMBER:
                 return NumberNode.parse(tokens);
             case BOOL_OP:

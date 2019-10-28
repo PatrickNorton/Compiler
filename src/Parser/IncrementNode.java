@@ -46,7 +46,7 @@ public class IncrementNode implements SimpleStatementNode {
     @NotNull
     @Contract("_ -> new")
     static IncrementNode parse(TokenList tokens) {
-        NameNode var = DottedVariableNode.parseName(tokens);
+        NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs("++")) {
             throw new RuntimeException("Expected ++, got "+tokens.getFirst());
         }

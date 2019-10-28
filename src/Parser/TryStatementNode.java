@@ -15,13 +15,13 @@ public class TryStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
     private StatementBodyNode body;
     private StatementBodyNode except;
-    private DottedVariableNode[] excepted;
+    private TypeNode[] excepted;
     private VariableNode as_var;
     private StatementBodyNode else_stmt;
     private StatementBodyNode finally_stmt;
 
     @Contract(pure = true)
-    public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, DottedVariableNode[] excepted,
+    public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, TypeNode[] excepted,
                             VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
         this.lineInfo = lineInfo;
         this.body = body;
@@ -46,7 +46,7 @@ public class TryStatementNode implements FlowStatementNode {
         return except;
     }
 
-    public DottedVariableNode[] getExcepted() {
+    public TypeNode[] getExcepted() {
         return excepted;
     }
 
@@ -83,31 +83,24 @@ public class TryStatementNode implements FlowStatementNode {
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = new StatementBodyNode();
-        DottedVariableNode[] excepted = new DottedVariableNode[0];
-        VariableNode as_var = VariableNode.empty();
-        StatementBodyNode else_stmt = new StatementBodyNode();
-        StatementBodyNode finally_stmt = new StatementBodyNode();
+        TypeNode[] excepted = new TypeNode[0];
+        VariableNode as = VariableNode.empty();
+        StatementBodyNode elseStmt = new StatementBodyNode();
         if (tokens.tokenIs(Keyword.EXCEPT)) {
             tokens.nextToken();
-            excepted = DottedVariableNode.parseList(tokens,  false);
+            excepted = TypeNode.parseList(tokens);
             if (tokens.tokenIs(Keyword.AS)) {
                 tokens.nextToken();
-                as_var = VariableNode.parse(tokens);
+                as = VariableNode.parse(tokens);
             }
             except = StatementBodyNode.parse(tokens);
-            if (tokens.tokenIs(Keyword.ELSE)) {
-                tokens.nextToken();
-                else_stmt = StatementBodyNode.parse(tokens);
-            }
+            elseStmt = StatementBodyNode.parseOnToken(tokens, Keyword.ELSE);
         }
-        if (tokens.tokenIs(Keyword.FINALLY)) {
-            tokens.nextToken();
-            finally_stmt = StatementBodyNode.parse(tokens);
-        }
-        if (except.isEmpty() && finally_stmt.isEmpty()) {
+        StatementBodyNode finallyStmt = StatementBodyNode.parseOnToken(tokens, Keyword.FINALLY);
+        if (except.isEmpty() && finallyStmt.isEmpty()) {
             throw tokens.error("Try statement must either have an except or finally clause");
         }
-        return new TryStatementNode(info, body, except, excepted, as_var, else_stmt, finally_stmt);
+        return new TryStatementNode(info, body, except, excepted, as, elseStmt, finallyStmt);
     }
 
     @Override

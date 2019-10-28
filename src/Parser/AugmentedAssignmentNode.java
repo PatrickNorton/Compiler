@@ -1,6 +1,7 @@
 package Parser;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing an augmented assignment, such as +=, **=, &=, etc.
@@ -51,6 +52,18 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
 
     public TestNode getValue() {
         return value;
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    static AugmentedAssignmentNode parse(TokenList tokens) {
+        NameNode var = NameNode.parse(tokens);
+        if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
+            throw tokens.error("Expected augmented assignment, got " + tokens.getFirst());
+        }
+        AugAssignTypeNode op = AugAssignTypeNode.parse(tokens);
+        TestNode assignment = TestNode.parse(tokens);
+        return new AugmentedAssignmentNode(op, var, assignment);
     }
 
     @Override
