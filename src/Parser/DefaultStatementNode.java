@@ -24,8 +24,7 @@ public class DefaultStatementNode extends CaseStatementNode {
      * tokens.
      * <p>
      *     The syntax for a default statement is: <code>"default" ({@link
-     *     StatementBodyNode} | (":" *NEWLINE *({@link IndependentNode}
-     *     *NEWLINE)))</code>.
+     *     StatementBodyNode} | ("=>" *{@link TestNode}))</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DefaultStatementNode
