@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class TypeNode implements AtomicNode {
@@ -136,6 +135,39 @@ public class TypeNode implements AtomicNode {
         return new TypeNode(main, subtypes.toArray(new TypeNode[0]), isVararg, optional);
     }
 
+    @NotNull
+    static TypeNode[] parseListOnToken(@NotNull TokenList tokens, TokenType sentinel) {
+        if (tokens.tokenIs(sentinel)) {
+            tokens.nextToken();
+            return parseList(tokens);
+        } else {
+            return new TypeNode[0];
+        }
+    }
+
+    @NotNull
+    static TypeNode[] parseListOnToken(@NotNull TokenList tokens, Keyword sentinel) {
+        if (tokens.tokenIs(sentinel)) {
+            tokens.nextToken();
+            return parseList(tokens);
+        } else {
+            return new TypeNode[0];
+        }
+    }
+
+    @NotNull
+    static TypeNode[] parseList(@NotNull TokenList tokens) {
+        List<TypeNode> types = new ArrayList<>();
+        while (tokens.tokenIs(TokenType.NAME, Keyword.VAR)) {
+            types.add(parse(tokens));
+            if (!tokens.tokenIs(TokenType.COMMA)) {
+                break;
+            }
+            tokens.nextToken();
+        }
+        return types.toArray(new TypeNode[0]);
+    }
+
     /**
      * Parse the return value of some function.
      * <p>
@@ -147,21 +179,7 @@ public class TypeNode implements AtomicNode {
      */
     @NotNull
     static TypeNode[] parseRetVal(@NotNull TokenList tokens) {
-        if (tokens.tokenIs("{")) {
-            return new TypeNode[0];
-        }
-        if (!tokens.tokenIs(TokenType.ARROW)) {
-            throw tokens.error("Return value must use arrow operator");
-        }
-        tokens.nextToken();
-        LinkedList<TypeNode> types = new LinkedList<>();
-        while (!tokens.tokenIs(TokenType.NEWLINE, "{")) {
-            types.add(TypeNode.parse(tokens));
-            if (tokens.tokenIs(",")) {
-                tokens.nextToken();
-            }
-        }
-        return types.toArray(new TypeNode[0]);
+        return parseListOnToken(tokens, TokenType.ARROW);
     }
 
     @NotNull

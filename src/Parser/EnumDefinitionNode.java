@@ -3,8 +3,9 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The class representing an enum definition.
@@ -14,6 +15,7 @@ import java.util.LinkedList;
 public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, InlineableNode {
     private LineInfo lineInfo;
     private TypeNode name;
+    private TypeNode[] superclasses;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
     private boolean inline;
@@ -28,9 +30,10 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
      * @param body The rest of the enum body
      */
     @Contract(pure = true)
-    public EnumDefinitionNode(LineInfo lineInfo, TypeNode name, EnumKeywordNode[] names, ClassBodyNode body) {
+    public EnumDefinitionNode(LineInfo lineInfo, TypeNode name, TypeNode[] superclasses, EnumKeywordNode[] names, ClassBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
+        this.superclasses = superclasses;
         this.names = names;
         this.body = body;
     }
@@ -43,6 +46,10 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
     @Override
     public TypeNode getName() {
         return name;
+    }
+
+    public TypeNode[] getSuperclasses() {
+        return superclasses;
     }
 
     public EnumKeywordNode[] getNames() {
@@ -111,11 +118,12 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
+        TypeNode[] superclasses = TypeNode.parseListOnToken(tokens, Keyword.FROM);
         if (!tokens.tokenIs("{")) {
             throw tokens.error("Expected {, got " + tokens.getFirst());
         }
         tokens.nextToken(true);
-        LinkedList<EnumKeywordNode> names = new LinkedList<>();
+        List<EnumKeywordNode> names = new ArrayList<>();
         while (true) {
             names.add(EnumKeywordNode.parse(tokens));
             if (!tokens.tokenIs(TokenType.COMMA)) {
@@ -126,7 +134,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
         }
         tokens.passNewlines();
         ClassBodyNode body = ClassBodyNode.parseEnum(tokens);
-        return new EnumDefinitionNode(info, name, names.toArray(new EnumKeywordNode[0]), body);
+        return new EnumDefinitionNode(info, name, superclasses, names.toArray(new EnumKeywordNode[0]), body);
     }
 
     @Override

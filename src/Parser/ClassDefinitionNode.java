@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.StringJoiner;
 
 /**
@@ -118,12 +117,8 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
             throw tokens.error("class keyword must be followed by class name");
         }
         TypeNode name = TypeNode.parse(tokens);
-        LinkedList<TypeNode> superclasses = new LinkedList<>();
-        while (tokens.tokenIs(Keyword.FROM)) {
-            tokens.nextToken();
-            superclasses.add(TypeNode.parse(tokens));
-        }
-        return new ClassDefinitionNode(info, name, superclasses.toArray(new TypeNode[0]), ClassBodyNode.parse(tokens));
+        TypeNode[] superclasses = TypeNode.parseListOnToken(tokens, Keyword.FROM);
+        return new ClassDefinitionNode(info, name, superclasses, ClassBodyNode.parse(tokens));
     }
 
     @Override

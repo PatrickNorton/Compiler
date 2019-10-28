@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
-import java.util.LinkedList;
 
 /**
  * The class representing an interface definition.
@@ -113,18 +112,8 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
-        LinkedList<TypeNode> superclasses = new LinkedList<>();
-        if (tokens.tokenIs(Keyword.FROM)) {
-            tokens.nextToken();
-            while (!tokens.tokenIs("{")) {
-                superclasses.add(TypeNode.parse(tokens));
-                if (!tokens.tokenIs(TokenType.COMMA)) {
-                    break;
-                }
-                tokens.nextToken();
-            }
-        }
-        return new InterfaceDefinitionNode(info, name, superclasses.toArray(new TypeNode[0]), InterfaceBodyNode.parse(tokens));
+        TypeNode[] superclasses = TypeNode.parseListOnToken(tokens, Keyword.FROM);
+        return new InterfaceDefinitionNode(info, name, superclasses, InterfaceBodyNode.parse(tokens));
     }
 
     @Override
