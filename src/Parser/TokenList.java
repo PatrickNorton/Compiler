@@ -225,7 +225,7 @@ public final class TokenList implements Iterable<Token> {
      * @return The size of the variable
      */
     int sizeOfVariable(int offset) {
-        assert tokenIs(offset, TokenType.NAME);
+        assert tokenIs(offset, TokenType.NAME, TokenType.OPEN_BRACE);
         int netBraces = 0;
         boolean wasVar = false;
         for (int size = offset;; size++) {

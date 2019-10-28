@@ -31,15 +31,10 @@ public interface IndependentNode extends BaseNode {
             case DESCRIPTOR:
                 return DescribableNode.parse(tokens);
             case OPEN_BRACE:
-                if (tokens.lineContains(TokenType.ASSIGN)) {
-                    return AssignStatementNode.parse(tokens);
-                } else {
-                    return TestNode.parse(tokens);
-                }
-            case CLOSE_BRACE:
-                throw tokens.error("Unmatched close brace");
             case NAME:
                 return parseLeftVariable(tokens);
+            case CLOSE_BRACE:
+                throw tokens.error("Unmatched close brace");
             case COMMA:
                 throw tokens.error("Unexpected comma");
             case AUG_ASSIGN:
@@ -121,7 +116,7 @@ public interface IndependentNode extends BaseNode {
      * @return The parsed token
      */
     private static IndependentNode parseLeftVariable(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.NAME);
+        assert tokens.tokenIs(TokenType.NAME, TokenType.OPEN_BRACE);
         Token after_var = tokens.getToken(tokens.sizeOfVariable());
         if (tokens.lineContains(TokenType.ASSIGN)) {
             return AssignStatementNode.parse(tokens);
@@ -145,8 +140,7 @@ public interface IndependentNode extends BaseNode {
         } else if (after_var.is(TokenType.NAME)) {
             return DeclarationNode.parse(tokens);
         } else {
-            DottedVariableNode var = DottedVariableNode.parseName(tokens);
-            return var;
+            return DottedVariableNode.parseName(tokens);
         }
     }
 
