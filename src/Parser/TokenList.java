@@ -308,7 +308,7 @@ public final class TokenList implements Iterable<Token> {
      */
     public void Newline() {
         if (!tokenIs(TokenType.NEWLINE)) {
-            throw ParserException.of("Expected newline, got "+getFirst(), getFirst());
+            throw error("Expected newline, got " + getFirst());
         }
         nextToken(true);
     }
@@ -466,7 +466,8 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
-     * Test if the token at the specified location is a keyword of the type given
+     * Test if the token at the specified location is a keyword of the type
+     * given.
      * @param index The index of the token
      * @param type The keyword to test
      * @return If the token is that keyword
@@ -485,18 +486,40 @@ public final class TokenList implements Iterable<Token> {
         return getToken(index).is(types);
     }
 
+    /**
+     * Test if the first token is one of the types given.
+     *
+     * @param types The types to check
+     * @return Whether or not it is one of those types
+     */
     public boolean tokenIs(Set<TokenType> types) {
         return getFirst().is(types);
     }
 
+    /**
+     * Test if the first token is one of the keywords given.
+     *
+     * @param types The keywords to check
+     * @return Whether or not it is one of those keywords
+     */
     public boolean tokenIsKeyword(Set<Keyword> types) {
         return getFirst().isKeyword(types);
     }
 
+    /**
+     * The sequence of the first token.
+     *
+     * @return The sequence
+     */
     public String tokenSequence() {
         return getFirst().sequence;
     }
 
+    /**
+     * The type of the first token.
+     *
+     * @return The type
+     */
     public TokenType tokenType() {
         return getFirst().token;
     }
