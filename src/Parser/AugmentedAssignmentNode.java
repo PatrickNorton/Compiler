@@ -68,6 +68,6 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
 
     @Override
     public String toString() {
-        return name + " " + operator.toString() + "= " + value;
+        return String.join(" ", name.toString(), operator.toString(), value.toString());
     }
 }

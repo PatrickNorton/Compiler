@@ -127,11 +127,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d);
-            sb.append(" ");
-        }
+        StringBuilder sb = new StringBuilder(DescriptorNode.join(descriptors));
         sb.append(op_code);
         if (!args.isEmpty()) {
             sb.append(args);

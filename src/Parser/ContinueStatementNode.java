@@ -51,10 +51,6 @@ public class ContinueStatementNode implements SimpleFlowNode {
 
     @Override
     public String toString() {
-        if (!cond.isEmpty()) {
-            return "continue " + cond;
-        } else {
-            return "continue";
-        }
+        return cond.isEmpty() ? "continue" : "continue " + cond;
     }
 }

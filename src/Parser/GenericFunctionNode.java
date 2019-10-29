@@ -110,6 +110,6 @@ public class GenericFunctionNode implements GenericDefinitionNode {
 
     @Override
     public String toString() {
-        return "func " + name + args;
+        return DescriptorNode.join(descriptors) + "func " + name + args;
     }
 }

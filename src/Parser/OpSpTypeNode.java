@@ -91,9 +91,10 @@ public enum OpSpTypeNode {
         return values.get(sequence);
     }
 
+    @NotNull
     @Contract(pure = true)
     @Override
     public String toString() {
-        return name;
+        return "operator " + name;
     }
 }

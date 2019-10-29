@@ -53,6 +53,6 @@ public class RangeLiteralNode implements TestNode {
 
     @Override
     public String toString() {
-        return "[" + start + ":" + end + (step.isEmpty() ? "" : ":" + step) + "]";
+        return String.format("[%s:%s%s]", start, end, !step.isEmpty() ? ":" + step : "");
     }
 }

@@ -52,4 +52,9 @@ public class DeferStatementNode implements FlowStatementNode {
         }
         return new DeferStatementNode(info, body);
     }
+
+    @Override
+    public String toString() {
+        return "defer " + body;
+    }
 }

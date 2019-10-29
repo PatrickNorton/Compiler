@@ -98,10 +98,13 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
 
     @Override
     public String toString() {
-        if (keys.length == 0) {
-            return "{:}";
-        } else {
-            return "{" + keys[1] + ": " + values[1] + ", ...}";
+        switch (keys.length) {
+            case 0:
+                return "{:}";
+            case 1:
+                return String.format("{%s: %s}", keys[0], values[0]);
+            default:
+                return String.format("{%s: %s, ...}", keys[0], values[0]);
         }
     }
 }

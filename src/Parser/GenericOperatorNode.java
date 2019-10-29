@@ -116,11 +116,6 @@ public class GenericOperatorNode implements GenericDefinitionNode {
 
     @Override
     public String toString() {
-        StringBuilder ops = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            ops.append(d);
-            ops.append(' ');
-        }
-        return ops + "operator " + op_code + " " + args;
+        return DescriptorNode.join(descriptors) + "operator " + op_code + " " + args;
     }
 }

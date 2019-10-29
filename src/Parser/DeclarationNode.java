@@ -83,14 +83,6 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d.toString());
-            sb.append(' ');
-        }
-        sb.append(type);
-        sb.append(' ');
-        sb.append(name);
-        return sb.toString();
+        return DescriptorNode.join(descriptors) + type + ' ' + name;
     }
 }

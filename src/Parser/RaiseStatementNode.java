@@ -59,6 +59,6 @@ public class RaiseStatementNode implements SimpleFlowNode {
 
     @Override
     public String toString() {
-        return "raise " + raised;
+        return "raise " + raised + (condition.isEmpty() ? "" : " if " + condition);
     }
 }

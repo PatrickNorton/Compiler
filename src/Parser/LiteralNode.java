@@ -99,10 +99,14 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
 
     @Override
     public String toString() {
-        if (builders.length == 0) {
-            return brace_type + TokenList.matchingBrace(brace_type);
-        } else {
-            return brace_type + (is_splats[0] ? "*" : "") + TokenList.matchingBrace(brace_type);
+        String endBrace =  TokenList.matchingBrace(brace_type);
+        switch (builders.length) {
+            case 0:
+                return brace_type + endBrace;
+            case 1:
+                return brace_type + (is_splats[0] ? "*" : "") + builders[0] + (brace_type.equals("(") ? "," : "") + endBrace;
+            default:
+                return String.format("%s%s%s, ...%s", brace_type, (is_splats[0] ? "*" : ""), builders[0], endBrace);
         }
     }
 }

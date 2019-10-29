@@ -112,6 +112,6 @@ public class FunctionDefinitionNode implements DefinitionNode {
 
     @Override
     public String toString() {
-        return "func " + name + args + " " + body;
+        return DescriptorNode.join(descriptors) + "func " + name + args + " " + body;
     }
 }

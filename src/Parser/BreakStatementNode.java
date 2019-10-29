@@ -73,13 +73,13 @@ public class BreakStatementNode implements SimpleFlowNode {
 
     @Override
     public String toString() {
-        String string = "break";
+        StringBuilder sb = new StringBuilder("break");
         if (loops > 0) {
-            string += " " + loops;
+            sb.append(" ").append(loops);
         }
         if (!cond.isEmpty()) {
-            string += " if " + cond;
+            sb.append(" if ").append(cond);
         }
-        return string;
+        return sb.toString();
     }
 }

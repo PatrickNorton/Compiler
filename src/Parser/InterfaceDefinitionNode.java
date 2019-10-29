@@ -118,11 +118,6 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d);
-            sb.append(' ');
-        }
-        return sb + "interface " + name + " " + body;
+        return DescriptorNode.join(descriptors) + "interface " + name + " " + body;
     }
 }

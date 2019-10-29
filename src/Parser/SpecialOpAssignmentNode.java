@@ -77,11 +77,6 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d);
-            sb.append(" ");
-        }
-        return sb + "" + name + " = " + assignment;
+        return DescriptorNode.join(descriptors) + name + " = " + assignment;
     }
 }

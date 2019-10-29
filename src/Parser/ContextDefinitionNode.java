@@ -177,12 +177,13 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
 
     @Override
     public String toString() {
+        String descriptors = DescriptorNode.join(this.descriptors);
         if (name.isEmpty()) {
-            return "context";
+            return descriptors + "context";
         } else if (args.isEmpty()) {
-            return "context " + name;
+            return descriptors + "context " + name;
         } else {
-            return "context " + name + args;
+            return descriptors + "context " + name + args;
         }
     }
 }

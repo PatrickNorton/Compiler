@@ -54,4 +54,11 @@ public enum AugAssignTypeNode {
             throw new ParserException("Unknown operator");
         }
     }
+
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public String toString() {
+        return sequence + '=';
+    }
 }

@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
-import java.util.StringJoiner;
 
 /**
  * The node representing a class definition.
@@ -123,21 +122,14 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
 
     @Override
     public String toString() {
-        StringBuilder string = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            string.append(d);
-            string.append(' ');
-        }
-        string.append("class ");
-        string.append(name);
-        string.append(" ");
+        StringBuilder sb = new StringBuilder();
+        sb.append(DescriptorNode.join(descriptors));
+        sb.append("class ").append(name).append(" ");
         if (superclasses.length > 0) {
-            StringJoiner sj = new StringJoiner(", ", "from ", " ");
-            for (TypeNode t : superclasses) {
-                sj.add(t.toString());
-            }
-            string.append(sj);
+            sb.append("from ");
+            sb.append(TestNode.toString(superclasses));
+            sb.append(" ");
         }
-        return string.append(body).toString();
+        return sb.append(body).toString();
     }
 }

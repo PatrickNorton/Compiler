@@ -69,6 +69,6 @@ public class DottedVar implements BaseNode {
 
     @Override
     public String toString() {
-        return isNullDot ? "?." : "." + postDot;
+        return (isNullDot ? "?." : ".") + postDot;
     }
 }

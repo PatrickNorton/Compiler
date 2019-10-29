@@ -78,7 +78,6 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
 
     @Override
     public String toString() {
-        String labels = TestNode.toString(label);
-        return "case " + labels + (arrow ? "=> ..." : body.toString());
+        return String.format("case %s %s", TestNode.toString(label), arrow ? "=> ..." : body);
     }
 }

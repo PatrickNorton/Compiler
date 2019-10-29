@@ -42,6 +42,6 @@ public class SpecialOpNameNode implements NameNode {
 
     @Override
     public String toString() {
-        return "operator " + operator;
+        return operator.toString();
     }
 }

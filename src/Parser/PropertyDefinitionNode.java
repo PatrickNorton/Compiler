@@ -148,11 +148,6 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d);
-            sb.append(" ");
-        }
-        return sb + "property " + name + get;
+        return DescriptorNode.join(descriptors) + "property " + name + get;
     }
 }

@@ -74,6 +74,6 @@ public class WithStatementNode implements FlowStatementNode {
 
     @Override
     public String toString() {
-        return String.format("with %s as %s", TestNode.toString(managed), TestNode.toString(vars));
+        return String.format("with %s as %s %", TestNode.toString(managed), TestNode.toString(vars), body);
     }
 }

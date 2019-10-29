@@ -99,6 +99,6 @@ public class ReturnStatementNode implements SimpleFlowNode {
 
     @Override
     public String toString() {
-        return "return " + TestNode.toString(returned) + (!cond.isEmpty() ? "if " + cond : "");
+        return "return " + TestNode.toString(returned) + (!cond.isEmpty() ? " if " + cond : "");
     }
 }

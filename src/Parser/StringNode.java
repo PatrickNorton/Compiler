@@ -55,9 +55,11 @@ public class StringNode extends StringLikeNode {
             if (!prefixes.contains("r")) {
                 inside = processEscapes(inside, token.lineInfo);
             }
+        System.out.println(new StringNode(lineInfo, inside).toString());
             return new StringNode(lineInfo, inside, prefixes);
         }
         inside = processEscapes(inside, token.lineInfo);
+        System.out.println(new StringNode(lineInfo, inside).toString());
         return new StringNode(lineInfo, inside);
     }
 
@@ -67,6 +69,15 @@ public class StringNode extends StringLikeNode {
         for (StringPrefix s : getPrefixes()) {
             sb.append(s);
         }
-        return sb.append('"').append(contents).append('"').toString();
+        String newContents = contents;
+        char delimiter = '"';
+        if (contents.contains("\"")) {
+            if (contents.contains("'")) {
+                newContents = contents.replaceFirst("\"", "\\\"");
+            } else {
+                delimiter = '\'';
+            }
+        }
+        return sb.append(delimiter).append(newContents).append(delimiter).toString();
     }
 }

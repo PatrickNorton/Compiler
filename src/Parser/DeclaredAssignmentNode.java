@@ -99,12 +99,9 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d.toString());
-            sb.append(' ');
-        }
+        sb.append(DescriptorNode.join(descriptors));
         sb.append(TestNode.toString(assigned));
         String values = TestNode.toString(value);
-        return sb + (is_colon ? " := " : " = ") + values;
+        return sb.append(is_colon ? " := " : " = ").append(values).toString();
     }
 }

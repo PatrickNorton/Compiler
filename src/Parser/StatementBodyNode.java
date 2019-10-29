@@ -119,10 +119,6 @@ public class StatementBodyNode implements BodyNode {
 
     @Override
     public String toString() {
-        if (!isEmpty()) {
-            return "{...}";
-        } else {
-            return "{}";
-        }
+        return isEmpty() ? "{}" : "{...}";
     }
 }

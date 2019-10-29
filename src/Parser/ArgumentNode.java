@@ -149,11 +149,11 @@ public class ArgumentNode implements BaseNode {
 
     @Override
     public String toString() {
-        String string = this.vararg;
-        if (!this.variable.isEmpty()) {
-            string += this.variable + "=";
+        StringBuilder sb = new StringBuilder(vararg);
+        if (!variable.isEmpty()) {
+            sb.append(variable).append("=");
         }
-        string += this.argument;
-        return string;
+        sb.append(argument);
+        return sb.toString();
     }
 }

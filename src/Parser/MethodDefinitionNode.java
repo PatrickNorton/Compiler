@@ -121,11 +121,6 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d);
-            sb.append(" ");
-        }
-        return sb + "method " + name + args;
+        return DescriptorNode.join(descriptors) + "method " + name + args;
     }
 }

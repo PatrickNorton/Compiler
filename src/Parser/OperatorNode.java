@@ -143,6 +143,8 @@ public class OperatorNode implements SubTestNode {
                 if (operator.isUnary()) {
                     if (operator.isPostfix()) {
                         return operands.get(0).toString() + operator;
+                    } else if (operator == OperatorTypeNode.BOOL_NOT) {
+                        return operator.toString() + " " + operands.get(0);
                     } else {
                         return operator.toString() + operands.get(0);
                     }

@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * The node representing all descriptors.
@@ -142,5 +143,14 @@ public enum DescriptorNode implements AtomicNode {
     @Override
     public String toString() {
         return name;
+    }
+
+    static String join(@NotNull EnumSet<DescriptorNode> values) {
+        if (values.isEmpty()) return "";
+        StringJoiner sj = new StringJoiner(" ", "", " ");
+        for (DescriptorNode d : values) {
+            sj.add(d.toString());
+        }
+        return sj.toString();
     }
 }
