@@ -9,14 +9,14 @@ import java.util.EnumSet;
  * The class representing a static block in a class/interface definition.
  * @author Patrick Norton
  */
-public class StaticBlockNode implements ClassStatementNode {
+public class StaticBlockNode implements ClassStatementNode, ComplexStatementNode {
     private LineInfo lineInfo;
-    private StatementBodyNode stmts;
+    private StatementBodyNode body;
 
     @Contract(pure = true)
-    public StaticBlockNode(LineInfo lineInfo, @NotNull StatementBodyNode stmts) {
+    public StaticBlockNode(LineInfo lineInfo, @NotNull StatementBodyNode body) {
         this.lineInfo = lineInfo;
-        this.stmts = stmts;
+        this.body = body;
     }
 
     @Override
@@ -24,8 +24,9 @@ public class StaticBlockNode implements ClassStatementNode {
         return lineInfo;
     }
 
-    public StatementBodyNode getStmts() {
-        return this.stmts;
+    @Override
+    public StatementBodyNode getBody() {
+        return body;
     }
 
     @Override
@@ -63,6 +64,6 @@ public class StaticBlockNode implements ClassStatementNode {
 
     @Override
     public String toString() {
-        return "static " + stmts;
+        return "static " + body;
     }
 }

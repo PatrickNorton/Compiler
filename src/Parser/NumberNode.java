@@ -16,16 +16,16 @@ public class NumberNode implements AtomicNode {
     private static final MathContext PARSE_PRECISION = new MathContext(0, RoundingMode.UNNECESSARY);
 
     private LineInfo lineInfo;
-    private BigDecimal integer;
+    private BigDecimal value;
 
     /**
      * Create a new instance of BigDecimal.
-     * @param integer The value of the decimal
+     * @param value The value of the decimal
      */
     @Contract(pure = true)
-    public NumberNode(LineInfo lineInfo, BigDecimal integer) {
+    public NumberNode(LineInfo lineInfo, BigDecimal value) {
         this.lineInfo = lineInfo;
-        this.integer = integer;
+        this.value = value;
     }
 
     @Override
@@ -33,8 +33,8 @@ public class NumberNode implements AtomicNode {
         return lineInfo;
     }
 
-    public BigDecimal getInteger() {
-        return integer;
+    public BigDecimal getValue() {
+        return value;
     }
 
     /**
@@ -147,6 +147,6 @@ public class NumberNode implements AtomicNode {
 
     @Override
     public String toString() {
-        return integer.toString();
+        return value.toString();
     }
 }
