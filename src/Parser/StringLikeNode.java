@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  */
 public abstract class StringLikeNode implements AtomicNode {
     static final Pattern PREFIXES = Pattern.compile("^[refb]*");
-    static final Pattern CONTENT = Pattern.compile("(^[refb]*\")|(\"$)");
+    static final Pattern CONTENT = Pattern.compile("(^[refb]*[\"'])|([\"']$)");
 
     private LineInfo lineInfo;
     private Set<StringPrefix> prefixes;
