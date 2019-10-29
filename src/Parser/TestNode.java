@@ -375,6 +375,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return OperatorTypeNode.parse(tokens);
             case SWITCH:
                 return SwitchStatementNode.parse(tokens);
+            case LAMBDA:
+                return LambdaNode.parse(tokens);
             case IF:
             case ELSE:
             case FOR:
