@@ -3,9 +3,9 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The class representing a formatted string.
@@ -16,28 +16,27 @@ import java.util.regex.Pattern;
  * </p>
  * @author Patrick Norton
  * @see StringNode
+ * @see StringLikeNode
  */
 public class FormattedStringNode extends StringLikeNode {
-    private String[] strs;
+    private String[] strings;
     private TestNode[] tests;
-
-    private static final Pattern bracePattern = Pattern.compile("(?<!\\\\)(\\{([^{}]*)}?|})");
 
     /**
      * Construct a new FormattedStringNode.
-     * @param strs The intermittent string literals
+     * @param strings The intermittent string literals
      * @param tests The non-string-literals which are interpolated
      */
     @Contract(pure = true)
-    public FormattedStringNode(LineInfo info, String[] strs, TestNode[] tests, @NotNull String flags) {
+    public FormattedStringNode(LineInfo info, String[] strings, TestNode[] tests, @NotNull String flags) {
         super(info, flags);
-        this.strs = strs;
+        this.strings = strings;
         this.tests = tests;
     }
 
     @Override
     public String[] getStrings() {
-        return strs;
+        return strings;
     }
 
     public TestNode[] getTests() {
@@ -47,6 +46,7 @@ public class FormattedStringNode extends StringLikeNode {
     /**
      * Parse a FormattedStringNode from a {@link String} representing its
      * contents.
+     *
      * @param token The token for the contents of the string
      * @return The freshly parsed FormattedStringNode
      */
@@ -54,62 +54,82 @@ public class FormattedStringNode extends StringLikeNode {
     @Contract("_ -> new")
     static FormattedStringNode parse(@NotNull Token token) {
         LineInfo info = token.lineInfo;
-        String contents = token.sequence;
-        String inside = CONTENT.matcher(contents).replaceAll("");
-        Matcher prefixMatcher = PREFIXES.matcher(contents);
+        String inside = CONTENT.matcher(token.sequence).replaceAll("");
+        Matcher prefixMatcher = PREFIXES.matcher(token.sequence);
         String prefixes;
         if (prefixMatcher.find()) {
             prefixes = prefixMatcher.group();
         } else {
-            throw ParserException.of("Match should not have failed", token);
+            throw ParserException.of("Prefix-finding match should not have failed", token);
         }
         boolean isRaw = prefixes.contains("r");
-        LinkedList<String> strs = new LinkedList<>();
-        LinkedList<TestNode> tests = new LinkedList<>();
-        // Match the inside-brace portions of the string
-        Matcher m = bracePattern.matcher(inside);
-        int index = 0;
-        int start, end = 0;
-        while (m.find()) {
-            start = m.start();
-            strs.add(maybeProcessEscapes(isRaw, inside.substring(index, start - 1), info));
-            StringBuilder to_test = new StringBuilder();
-            int netBraces = 0;
-            /*
-             * Since Java doesn't allow recursion in regex, this uses
-             * bracePattern, which matches curly braces either at the beginning
-             * or end of the match, and then just keep matching that until the
-             * net number of braces is zero.
-             */
-            do {
-                String a = m.group();
-                to_test.append(a);
-                if (a.startsWith("{")) {
+        List<String> strings = new ArrayList<>();
+        List<TestNode> tests = new ArrayList<>();
+        int newStart, newEnd = 0;
+        while ((newStart = inside.indexOf('{', newEnd)) != -1) {
+            if (inside.charAt(newStart - 1) == '\\') {
+                continue;
+            }
+            strings.add(inside.substring(newEnd, newStart));
+            newEnd = sizeOfBrace(inside, newStart, isRaw);
+            if (newEnd == -1) {
+                throw ParserException.of("Unmatched braces in f-string", info);
+            }
+            tests.add(parseTest(info, inside.substring(newStart + 1, newEnd - 1)));
+        }
+        if (newEnd < inside.length()) {
+            strings.add(maybeProcessEscapes(isRaw, inside.substring(newEnd), info));
+        }
+        return new FormattedStringNode(info, strings.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
+    }
+
+    /**
+     * Parse the section of the string inside braces into a {@link TestNode}.
+     *
+     * @param info The line info for the string
+     * @param section The section to parse
+     * @return The freshly parsed TestNode
+     */
+    private static TestNode parseTest(LineInfo info, String section) {
+        TokenList tokenList = Tokenizer.parse(section);
+        TestNode test;
+        try {
+            test = TestNode.parse(tokenList);
+        } catch (ParserException e) {
+            throw ParserException.of(e.getInternalMessage(), info);
+        }
+        if (!tokenList.tokenIs(TokenType.EPSILON)) {
+            throw ParserException.of("Unexpected " + tokenList.getFirst(), info);
+        }
+        return test;
+    }
+
+    /**
+     * Get the size of the brace at the index in the string.
+     *
+     * @param str The string to find the brace in
+     * @param index The index to start at
+     * @return The position one after the final brace.
+     */
+    private static int sizeOfBrace(@NotNull String str, int index, boolean isRaw) {
+        assert str.charAt(index) == '{';
+        int netBraces = 0;
+        while (index < str.length()) {
+            switch (str.charAt(index++)) {
+                case '{':
                     netBraces++;
-                }
-                if (a.endsWith("}")) {
-                    netBraces--;
-                }
-            } while (netBraces > 0 && m.find());
-            if (netBraces > 0) {
-                throw ParserException.of("Unmatched braces in " + inside, token);
+                    break;
+                case '}':
+                    if (!isRaw || netBraces > 1 || str.charAt(index - 2) != '\\') {
+                        netBraces--;
+                    }
+                    break;
             }
-            end = m.end();
-            TokenList tokenList = Tokenizer.parse(to_test.substring(1, to_test.length() - 1));
-            try {
-                tests.add(TestNode.parse(tokenList));
-            } catch (ParserException e) {
-                throw ParserException.of(e.getInternalMessage(), info);
+            if (netBraces == 0) {
+                return index;
             }
-            if (!tokenList.tokenIs(TokenType.EPSILON)) {
-                throw ParserException.of("Unexpected " + tokenList.getFirst(), token);
-            }
-            index = end + 1;
         }
-        if (index <= inside.length()) {
-            strs.add(maybeProcessEscapes(isRaw, inside.substring(end), info));
-        }
-        return new FormattedStringNode(info, strs.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
+        return -1;
     }
 
     @Contract("true, _, _ -> param2; false, _, _ -> !null")
@@ -125,14 +145,14 @@ public class FormattedStringNode extends StringLikeNode {
         }
         sb.append('"');
         for (int i = 0; i < tests.length; i++) {
-            sb.append(strs[i]);
+            sb.append(strings[i]);
             sb.append('{');
             sb.append(tests[i]);
             sb.append('}');
         }
-        if (strs.length > tests.length) {
-            for (int i = tests.length; i < strs.length; i++) {
-                sb.append(strs[i]);
+        if (strings.length > tests.length) {
+            for (int i = tests.length; i < strings.length; i++) {
+                sb.append(strings[i]);
             }
         }
         sb.append('"');
