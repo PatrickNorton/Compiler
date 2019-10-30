@@ -96,7 +96,11 @@ public class FormattedStringNode extends StringLikeNode {
             }
             end = m.end();
             TokenList tokenList = Tokenizer.parse(to_test.substring(1, to_test.length() - 1));
-            tests.add(TestNode.parse(tokenList));
+            try {
+                tests.add(TestNode.parse(tokenList));
+            } catch (ParserException e) {
+                throw ParserException.of(e.getInternalMessage(), info);
+            }
             if (!tokenList.tokenIs(TokenType.EPSILON)) {
                 throw ParserException.of("Unexpected " + tokenList.getFirst(), token);
             }

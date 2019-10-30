@@ -9,16 +9,28 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ParserException extends RuntimeException {
     private static final String DEFAULT_MESSAGE = "%s%nError: Line %s%n%s";
+
+    private final String internalMessage;
     /**
      * Create a tokens.error
      * @param s The string of the exception
      */
     public ParserException(String s) {
-        super(s);
+        this(s, s);
     }
 
     public ParserException(String message, Throwable cause) {
         super(message, cause);
+        internalMessage = message;
+    }
+
+    private ParserException(String newMessage, String internalMessage) {
+        super(newMessage);
+        this.internalMessage = internalMessage;
+    }
+
+    public String getInternalMessage() {
+        return internalMessage;
     }
 
     /**
@@ -43,7 +55,8 @@ public class ParserException extends RuntimeException {
     @Contract("_, _ -> new")
     public static ParserException of(String message, @NotNull LineInfo lineInfo) {
         return new ParserException(
-                String.format(DEFAULT_MESSAGE, message, lineInfo.line, lineInfo.infoString())
+                String.format(DEFAULT_MESSAGE, message, lineInfo.line, lineInfo.infoString()),
+                message
         );
     }
 }
