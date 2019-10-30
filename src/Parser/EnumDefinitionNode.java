@@ -139,11 +139,6 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (DescriptorNode d : descriptors) {
-            sb.append(d);
-            sb.append(' ');
-        }
-        return sb + "enum " + name + " " + body;
+        return DescriptorNode.join(descriptors) + "enum " + name + " " + body;
     }
 }
