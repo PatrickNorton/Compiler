@@ -150,10 +150,8 @@ public class FormattedStringNode extends StringLikeNode {
             sb.append(tests[i]);
             sb.append('}');
         }
-        if (strings.length > tests.length) {
-            for (int i = tests.length; i < strings.length; i++) {
-                sb.append(strings[i]);
-            }
+        for (int i = tests.length; i < strings.length; i++) {
+            sb.append(strings[i]);
         }
         sb.append('"');
         return sb.toString();
