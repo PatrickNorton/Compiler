@@ -55,11 +55,9 @@ public class StringNode extends StringLikeNode {
             if (!prefixes.contains("r")) {
                 inside = processEscapes(inside, token.lineInfo);
             }
-        System.out.println(new StringNode(lineInfo, inside).toString());
             return new StringNode(lineInfo, inside, prefixes);
         }
         inside = processEscapes(inside, token.lineInfo);
-        System.out.println(new StringNode(lineInfo, inside).toString());
         return new StringNode(lineInfo, inside);
     }
 
