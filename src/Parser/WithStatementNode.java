@@ -67,13 +67,13 @@ public class WithStatementNode implements FlowStatementNode {
                 throw tokens.error("Expected comma or as, got "+tokens.getFirst());
             }
         }
-        VariableNode[] vars = VariableNode.parseList(tokens,  false);
+        VariableNode[] vars = VariableNode.parseList(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new WithStatementNode(lineInfo, managed.toArray(new TestNode[0]), vars, body);
     }
 
     @Override
     public String toString() {
-        return String.format("with %s as %s %", TestNode.toString(managed), TestNode.toString(vars), body);
+        return String.format("with %s as %s %s", TestNode.toString(managed), TestNode.toString(vars), body);
     }
 }

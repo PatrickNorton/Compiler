@@ -3,7 +3,8 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The class representing a name token.
@@ -57,6 +58,22 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     }
 
     /**
+     * Parse a VariableNode if the first token in the list is the one given.
+     *
+     * @param tokens The list of tokens to destructively parse
+     * @param sentinel The keyword to check for
+     * @return The freshly parsed VariableNode
+     */
+    static VariableNode parseOnToken(@NotNull TokenList tokens, Keyword sentinel) {
+        if (tokens.tokenIs(sentinel)) {
+            tokens.nextToken();
+            return parse(tokens);
+        } else {
+            return empty();
+        }
+    }
+
+    /**
      * Parse a VariableNode from a list of tokens.
      * <p>
      *     The syntax for a VariableNode is: {@code NAME}.
@@ -96,22 +113,11 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     /**
      * Parse a list of VariableNodes.
      * @param tokens The list of tokens to be destructively parsed
-     * @param ignore_newlines Whether or not to ignore newlines
      * @return The freshly parsed VariableNode array
      */
-    static VariableNode[] parseList(TokenList tokens, boolean ignore_newlines) {
-        LinkedList<VariableNode> variables = new LinkedList<>();
-        if (ignore_newlines) {
-            tokens.passNewlines();
-        }
-        if (tokens.tokenIs("(") && !tokens.braceContains(Keyword.IN, Keyword.FOR)) {
-            tokens.nextToken();
-            VariableNode[] vars = parseList(tokens, true);
-            if (!tokens.tokenIs(")")) {
-                throw tokens.error("Unmatched braces");
-            }
-            return vars;
-        }
+    @NotNull
+    static VariableNode[] parseList(@NotNull TokenList tokens) {
+        List<VariableNode> variables = new ArrayList<>();
         while (true) {
             if (!tokens.tokenIs(TokenType.NAME)) {
                 break;
@@ -121,7 +127,7 @@ public class VariableNode implements NameNode, EnumKeywordNode {
             }
             variables.add(VariableNode.parse(tokens));
             if (tokens.tokenIs(",")) {
-                tokens.nextToken(ignore_newlines);
+                tokens.nextToken();
             } else {
                 break;
             }

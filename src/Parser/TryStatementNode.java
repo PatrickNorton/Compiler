@@ -89,10 +89,7 @@ public class TryStatementNode implements FlowStatementNode {
         if (tokens.tokenIs(Keyword.EXCEPT)) {
             tokens.nextToken();
             excepted = TypeNode.parseList(tokens);
-            if (tokens.tokenIs(Keyword.AS)) {
-                tokens.nextToken();
-                as = VariableNode.parse(tokens);
-            }
+            as = VariableNode.parseOnToken(tokens, Keyword.AS);
             except = StatementBodyNode.parse(tokens);
             elseStmt = StatementBodyNode.parseOnToken(tokens, Keyword.ELSE);
         }
