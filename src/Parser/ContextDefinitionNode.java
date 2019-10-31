@@ -129,7 +129,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
         assert tokens.tokenIs(Keyword.CONTEXT);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
-        VariableNode name = VariableNode.parseOnToken(tokens, TokenType.NAME);
+        VariableNode name = VariableNode.parseOnName(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
         if (!tokens.tokenIs("{")) {
             throw tokens.error("Context managers must be followed by a curly brace");

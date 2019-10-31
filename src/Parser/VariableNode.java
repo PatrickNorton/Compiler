@@ -45,19 +45,15 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     }
 
     /**
-     * Parse a VariableNode if and only if the first token in the list matches
-     * one of the ones given.
+     * Parse a VariableNode if and only if the first token in the list is a
+     * name token.
+     *
      * @param tokens The list of tokens to destructively parse
-     * @param types The list of types to check against
      * @return The freshly parsed VariableNode
      */
     @NotNull
-    static VariableNode parseOnToken(@NotNull TokenList tokens, TokenType... types) {
-        if (tokens.tokenIs(types)) {
-            return VariableNode.parse(tokens);
-        } else {
-            return VariableNode.empty();
-        }
+    static VariableNode parseOnName(@NotNull TokenList tokens) {
+        return tokens.tokenIs(TokenType.NAME) ? parse(tokens) : empty();
     }
 
     /**

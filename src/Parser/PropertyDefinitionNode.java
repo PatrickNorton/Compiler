@@ -121,29 +121,28 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
-        VariableNode name = VariableNode.empty();
+        VariableNode name = VariableNode.parseOnName(tokens);
         if (!tokens.tokenIs("{")) {
-            name = VariableNode.parse(tokens);
+            throw tokens.error("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken(true);
-        StatementBodyNode get = new StatementBodyNode();
-        StatementBodyNode set = new StatementBodyNode();
-        TypedArgumentListNode set_args = new TypedArgumentListNode();
-        if (tokens.tokenIs(Keyword.GET)) {
-            tokens.nextToken();
-            get = StatementBodyNode.parse(tokens);
-        }
+        StatementBodyNode get = StatementBodyNode.parseOnToken(tokens, Keyword.GET);
+        StatementBodyNode set;
+        TypedArgumentListNode setArgs;
         if (tokens.tokenIs(Keyword.SET)) {
             tokens.nextToken();
-            set_args = TypedArgumentListNode.parse(tokens);
+            setArgs = TypedArgumentListNode.parse(tokens);
             set = StatementBodyNode.parse(tokens);
+        } else {
+            setArgs = new TypedArgumentListNode();
+            set = new StatementBodyNode();
         }
         tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
             throw tokens.error("Only set and get are allowed in context statements");
         }
         tokens.nextToken();
-        return new PropertyDefinitionNode(info, name, type, get, set_args, set);
+        return new PropertyDefinitionNode(info, name, type, get, setArgs, set);
     }
 
     @Override
