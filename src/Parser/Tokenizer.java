@@ -142,11 +142,6 @@ public final class Tokenizer {
         fullLine = next;
     }
 
-    @Contract(pure = true)
-    int currentLine() {
-        return currentLine;
-    }
-
     private int lineIndex() {
         return fullLine.length() - next.length();
     }
@@ -187,7 +182,7 @@ public final class Tokenizer {
     @NotNull
     @Contract("_ -> new")
     private ParserException tokenError(String message) {
-        return new ParserException(String.format("Error on line %d:%n%s", currentLine(), message));
+        return ParserException.of(message, lineInfo());
     }
 
     /**
