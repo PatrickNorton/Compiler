@@ -64,11 +64,11 @@ public class ArgumentNode implements BaseNode {
 
     @NotNull
     public static ArgumentNode[] fromTestNodes(@NotNull TestNode... testNodes) {
-        LinkedList<ArgumentNode> args = new LinkedList<>();
-        for (TestNode t : testNodes) {
-            args.add(new ArgumentNode(t));
+        ArgumentNode[] args = new ArgumentNode[testNodes.length];
+        for (int i = 0; i < testNodes.length; i++) {
+            args[i] = new ArgumentNode(testNodes[i]);
         }
-        return args.toArray(new ArgumentNode[0]);
+        return args;
     }
 
     @Override
