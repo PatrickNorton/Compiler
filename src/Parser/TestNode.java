@@ -78,7 +78,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         TestNode if_true = parseNoTernary(tokens, ignore_newline);
         if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken(ignore_newline);
-            TestNode statement = parseNoTernary(tokens, ignore_newline);
+            TestNode statement = parse(tokens, ignore_newline);
             if (!tokens.tokenIs(Keyword.ELSE)) {
                 throw tokens.error("Ternary must have an else");
             }

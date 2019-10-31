@@ -47,6 +47,7 @@ public interface IndependentNode extends BaseNode {
             case BOOL_OP:
             case STRING:
             case NUMBER:
+            case OP_FUNC:
                 return TestNode.parse(tokens);
             case ASSIGN:
                 throw tokens.error("Unexpected assignment");
@@ -56,8 +57,6 @@ public interface IndependentNode extends BaseNode {
                 } else {
                     return OperatorDefinitionNode.parse(tokens);
                 }
-            case OP_FUNC:
-                return EscapedOperatorNode.parse(tokens);
             case COLON:
                 throw tokens.error("Unexpected colon");
             case ELLIPSIS:
