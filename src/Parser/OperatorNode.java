@@ -140,21 +140,41 @@ public class OperatorNode implements SubTestNode {
             case 0:
                 return "\\" + operator;
             case 1:
-                if (operator.isUnary()) {
-                    if (operator.isPostfix()) {
-                        return operands.get(0).toString() + operator;
-                    } else if (operator == OperatorTypeNode.BOOL_NOT) {
-                        return operator.toString() + " " + operands.get(0);
-                    } else {
-                        return operator.toString() + operands.get(0);
-                    }
-                } else {
-                    return "\\" + operator + "(" + operands.get(0) + ")";
-                }
+                return unaryString();
             case 2:
-                return operands.get(0) + " " + operator + " " + operands.get(1);
+                return operandString(0) + " " + operator + " " + operandString(1);
             default:
                 return "\\" + operator + "(" + operands.get(0) + ", ...)";
+        }
+    }
+
+    @NotNull
+    private String unaryString() {
+        assert operands.size() == 1;
+        if (operator.isUnary()) {
+            if (operator.isPostfix()) {
+                return operandString(0) + operator;
+            } else if (operator == OperatorTypeNode.BOOL_NOT) {
+                return operator.toString() + " " + operandString(0);
+            } else {
+                return operator.toString() + operandString(0);
+            }
+        } else {
+            return "\\" + operator + "(" + operands.get(0) + ")";
+        }
+    }
+
+    private String operandString(int index) {
+        ArgumentNode operand = operands.get(index);
+        TestNode argument = operand.getArgument();
+        if (!(argument instanceof OperatorNode)) {
+            return argument.toString();
+        }
+        OperatorNode argumentOp = (OperatorNode) argument;
+        if (argumentOp.precedence() > this.precedence()) {
+            return "(" + argumentOp + ")";
+        } else {
+            return argumentOp.toString();
         }
     }
 }
