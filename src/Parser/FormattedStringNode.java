@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Set;
 
 /**
  * The class representing a formatted string.
@@ -28,7 +28,7 @@ public class FormattedStringNode extends StringLikeNode {
      * @param tests The non-string-literals which are interpolated
      */
     @Contract(pure = true)
-    public FormattedStringNode(LineInfo info, String[] strings, TestNode[] tests, @NotNull String flags) {
+    public FormattedStringNode(LineInfo info, String[] strings, TestNode[] tests, @NotNull Set<StringPrefix> flags) {
         super(info, flags);
         this.strings = strings;
         this.tests = tests;
@@ -54,15 +54,10 @@ public class FormattedStringNode extends StringLikeNode {
     @Contract("_ -> new")
     static FormattedStringNode parse(@NotNull Token token) {
         LineInfo info = token.lineInfo;
-        String inside = CONTENT.matcher(token.sequence).replaceAll("");
-        Matcher prefixMatcher = PREFIXES.matcher(token.sequence);
-        String prefixes;
-        if (prefixMatcher.find()) {
-            prefixes = prefixMatcher.group();
-        } else {
-            throw ParserException.of("Prefix-finding match should not have failed", token);
-        }
-        boolean isRaw = prefixes.contains("r");
+        String inside = getContents(token);
+        Set<StringPrefix> prefixes = getPrefixes(token);
+        assert prefixes.contains(StringPrefix.FORMATTED);
+        boolean isRaw = prefixes.contains(StringPrefix.RAW);
         List<String> strings = new ArrayList<>();
         List<TestNode> tests = new ArrayList<>();
         int newStart, newEnd = 0;

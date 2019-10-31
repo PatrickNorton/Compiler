@@ -4,8 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The abstract class representing a StringNode or a FormattedStringNode.
@@ -13,15 +11,12 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  */
 public abstract class StringLikeNode implements AtomicNode {
-    static final Pattern PREFIXES = Pattern.compile("^[refb]*");
-    static final Pattern CONTENT = Pattern.compile("(^[refb]*[\"'])|([\"']$)");
-
     private LineInfo lineInfo;
     private Set<StringPrefix> prefixes;
 
     @Contract(pure = true)
-    public StringLikeNode(LineInfo lineInfo, String prefixes) {
-        this.prefixes = StringPrefix.getPrefixes(prefixes);
+    StringLikeNode(LineInfo lineInfo, Set<StringPrefix> prefixes) {
+        this.prefixes = prefixes;
         this.lineInfo = lineInfo;
     }
 
@@ -50,9 +45,7 @@ public abstract class StringLikeNode implements AtomicNode {
         assert tokens.tokenIs(TokenType.STRING);
         Token token = tokens.getFirst();
         tokens.nextToken();
-        String contents = token.sequence;
-        Matcher matcher = PREFIXES.matcher(contents);
-        if (matcher.find() && matcher.group().contains("f")) {
+        if (getPrefixes(token).contains(StringPrefix.FORMATTED)) {
             return FormattedStringNode.parse(token);
         } else {
             return StringNode.parse(token);
@@ -135,5 +128,58 @@ public abstract class StringLikeNode implements AtomicNode {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Get the number of prefixes on the beginning of a string.
+     * <p>
+     *     This assumes the string given is a well-formatted string literal.
+     * </p>
+     *
+     * @param sequence The string to count the prefixes of
+     * @return The prefix count
+     */
+    private static int prefixCount(@NotNull String sequence) {
+        return sequence.indexOf(delimiter(sequence));
+    }
+
+    /**
+     * Get the delimiter of the string literal.
+     * <p>
+     *     This assumes the string given is a well-formatted string literal.
+     * </p>
+     *
+     * @param sequence The string to get the delimiter fo
+     * @return The delimiter
+     */
+    private static char delimiter(@NotNull String sequence) {
+        return sequence.charAt(sequence.length() - 1);
+    }
+
+    /**
+     * Get the prefixes from a string literal token.
+     *
+     * @param token The token to be prefixed
+     * @return The prefixes of the token
+     */
+    @NotNull
+    static Set<StringPrefix> getPrefixes(@NotNull Token token) {
+        assert token.is(TokenType.STRING);
+        String sequence = token.sequence;
+        String prefixes = sequence.substring(0, prefixCount(sequence));
+        return StringPrefix.getPrefixes(prefixes);
+    }
+
+    /**
+     * Get the text withing the quotes of a string literal token.
+     *
+     * @param token The token from which to get the contents
+     * @return The contents of the token
+     */
+    @NotNull
+    static String getContents(@NotNull Token token) {
+        assert token.is(TokenType.STRING);
+        String sequence = token.sequence;
+        return sequence.substring(prefixCount(sequence) + 1, sequence.length() - 1);
     }
 }

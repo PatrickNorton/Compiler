@@ -3,7 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.regex.Matcher;
+import java.util.Set;
 
 /**
  * The class representing a string literal.
@@ -23,13 +23,9 @@ public class StringNode extends StringLikeNode {
      * @param prefixes The prefixes thereof
      */
     @Contract(pure = true)
-    public StringNode(LineInfo lineInfo, String contents, @NotNull String prefixes) {
+    public StringNode(LineInfo lineInfo, String contents, @NotNull Set<StringPrefix> prefixes) {
         super(lineInfo, prefixes);
         this.contents = contents;
-    }
-
-    public StringNode(LineInfo lineInfo, String contents) {
-        this(lineInfo, contents, "");
     }
 
     public String getContents() {
@@ -46,19 +42,13 @@ public class StringNode extends StringLikeNode {
     static StringNode parse(@NotNull Token token) {
         assert token.is(TokenType.STRING);
         LineInfo lineInfo = token.lineInfo;
-        String contents = token.sequence;
-        String inside = CONTENT.matcher(contents).replaceAll("");
-        Matcher regex = PREFIXES.matcher(contents);
-        if (regex.find()) {
-            String prefixes = regex.group();
-            assert !prefixes.contains("f");
-            if (!prefixes.contains("r")) {
-                inside = processEscapes(inside, token.lineInfo);
-            }
-            return new StringNode(lineInfo, inside, prefixes);
+        String inside = getContents(token);
+        Set<StringPrefix> prefixes = getPrefixes(token);
+        assert !prefixes.contains(StringPrefix.FORMATTED);
+        if (!prefixes.contains(StringPrefix.RAW)) {
+            inside = processEscapes(inside, lineInfo);
         }
-        inside = processEscapes(inside, token.lineInfo);
-        return new StringNode(lineInfo, inside);
+        return new StringNode(lineInfo, inside, prefixes);
     }
 
     @Override
