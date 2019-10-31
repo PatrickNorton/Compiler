@@ -148,7 +148,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed TestNode
      */
     @NotNull
-    static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             throw tokens.error("Illegal assignment");
         } else if (ignoreNewlines && tokens.braceContains(TokenType.AUG_ASSIGN)) {

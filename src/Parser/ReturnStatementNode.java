@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-
 /**
  * The class representing a return statement.
  *
@@ -59,16 +57,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         tokens.nextToken();
         boolean is_conditional = tokens.lineContains(Keyword.IF) && !tokens.lineContains(Keyword.ELSE);
         TestNode[] returned;
-        if (is_conditional && !tokens.tokenIs(Keyword.IF)) {
-            returned = parseReturns(tokens);
-            if (!tokens.tokenIs(Keyword.IF)) {
-                throw tokens.error("Unexpected " + tokens.getFirst());
-            }
-        } else if (!tokens.tokenIs(TokenType.NEWLINE)) {
-            returned = TestNode.parseListDanglingIf(tokens, false);
-        } else {
-            returned = new TestNode[0];
-        }
+        returned = TestNode.parseListDanglingIf(tokens, false);
         TestNode cond = TestNode.empty();
         if (is_conditional) {
             assert tokens.tokenIs(Keyword.IF);
@@ -76,25 +65,6 @@ public class ReturnStatementNode implements SimpleFlowNode {
             cond = TestNode.parse(tokens);
         }
         return new ReturnStatementNode(lineInfo, returned, cond);
-    }
-
-    /**
-     * Parse the returned values in a conditional return statement.
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The values to be returned
-     */
-    @NotNull
-    private static TestNode[] parseReturns(@NotNull TokenList tokens) {
-        assert !tokens.tokenIs(Keyword.IF);
-        LinkedList<TestNode> returned_list = new LinkedList<>();
-        do {
-            returned_list.add(TestNode.parseNoTernary(tokens, false));
-            if (!tokens.tokenIs(TokenType.COMMA)) {
-                break;
-            }
-            tokens.nextToken();
-        } while (!tokens.tokenIs(Keyword.IF));
-        return returned_list.toArray(new TestNode[0]);
     }
 
     @Override
