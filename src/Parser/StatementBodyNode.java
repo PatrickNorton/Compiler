@@ -41,6 +41,12 @@ public class StatementBodyNode implements BodyNode {
         return statements.length == 0;
     }
 
+    @NotNull
+    @Contract(" -> new")
+    public static StatementBodyNode empty() {
+        return new StatementBodyNode();
+    }
+
     /**
      * Parse a StatementBodyNode iff the next token matches those passed.
      * <p>
@@ -55,9 +61,9 @@ public class StatementBodyNode implements BodyNode {
     static StatementBodyNode parseOnToken(@NotNull TokenList tokens, String... types) {
         if (tokens.tokenIs(types)) {
             tokens.nextToken();
-            return StatementBodyNode.parse(tokens);
+            return parse(tokens);
         } else {
-            return new StatementBodyNode();
+            return empty();
         }
     }
 
@@ -75,9 +81,9 @@ public class StatementBodyNode implements BodyNode {
     static StatementBodyNode parseOnToken(@NotNull TokenList tokens, Keyword... types) {
         if (tokens.tokenIs(types)) {
             tokens.nextToken();
-            return StatementBodyNode.parse(tokens);
+            return parse(tokens);
         } else {
-            return new StatementBodyNode();
+            return empty();
         }
     }
 

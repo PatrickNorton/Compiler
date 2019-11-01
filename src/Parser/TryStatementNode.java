@@ -82,10 +82,10 @@ public class TryStatementNode implements FlowStatementNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        StatementBodyNode except = new StatementBodyNode();
+        StatementBodyNode except = StatementBodyNode.empty();
         TypeNode[] excepted = new TypeNode[0];
         VariableNode as = VariableNode.empty();
-        StatementBodyNode elseStmt = new StatementBodyNode();
+        StatementBodyNode elseStmt = StatementBodyNode.empty();
         if (tokens.tokenIs(Keyword.EXCEPT)) {
             tokens.nextToken();
             excepted = TypeNode.parseList(tokens);

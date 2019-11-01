@@ -135,8 +135,8 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
             throw tokens.error("Context managers must be followed by a curly brace");
         }
         tokens.nextToken(true);
-        StatementBodyNode enter = new StatementBodyNode();
-        StatementBodyNode exit = new StatementBodyNode();
+        StatementBodyNode enter = StatementBodyNode.empty();
+        StatementBodyNode exit = StatementBodyNode.empty();
         ArgumentNode[] exitArgs = new ArgumentNode[0];
         LinkedList<ClassStatementNode> others = new LinkedList<>();
         while (!tokens.tokenIs("}")) {
