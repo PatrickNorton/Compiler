@@ -114,7 +114,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     static OperatorDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
-        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
         TypeNode[] retval;
         if (tokens.tokenIs(TokenType.ARROW)) {
             retval = TypeNode.parseRetVal(tokens);

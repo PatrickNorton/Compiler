@@ -134,7 +134,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
             setArgs = TypedArgumentListNode.parse(tokens);
             set = StatementBodyNode.parse(tokens);
         } else {
-            setArgs = new TypedArgumentListNode();
+            setArgs = TypedArgumentListNode.empty();
             set = StatementBodyNode.empty();
         }
         tokens.passNewlines();

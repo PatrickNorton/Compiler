@@ -26,7 +26,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
 
     @Contract(pure = true)
     public ContextDefinitionNode(LineInfo info, StatementBodyNode enter, StatementBodyNode exit) {
-        this(info, VariableNode.empty(), new TypedArgumentListNode(), enter, exit, new ArgumentNode[0], new ClassBodyNode());
+        this(info, VariableNode.empty(), TypedArgumentListNode.empty(), enter, exit, new ArgumentNode[0], new ClassBodyNode());
     }
 
     @Contract(pure = true)
@@ -130,7 +130,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         VariableNode name = VariableNode.parseOnName(tokens);
-        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
         if (!tokens.tokenIs("{")) {
             throw tokens.error("Context managers must be followed by a curly brace");
         }

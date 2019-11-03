@@ -52,7 +52,7 @@ public class LambdaNode implements SubTestNode {
         assert tokens.tokenIs(Keyword.LAMBDA);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new LambdaNode(lineInfo, args, body);
     }

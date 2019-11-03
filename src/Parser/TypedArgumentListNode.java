@@ -17,10 +17,6 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     private TypedArgumentNode[] normalArgs;
     private TypedArgumentNode[] nameArgs;
 
-    public TypedArgumentListNode() {
-        this(LineInfo.empty());
-    }
-
     @Contract(pure = true)
     public TypedArgumentListNode(LineInfo lineInfo, TypedArgumentNode... args) {
         this(lineInfo, new TypedArgumentNode[0], args, new TypedArgumentNode[0]);
@@ -70,16 +66,17 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
      *     For the grammar, see {@link TypedArgumentListNode#parse}
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @param tester The values to test for
      * @return The freshly parsed TypedArgumentListNode
      */
     @NotNull
-    static TypedArgumentListNode parseOnToken(@NotNull TokenList tokens, String... tester) {
-        if (tokens.tokenIs(tester)) {
-            return parse(tokens);
-        } else {
-            return new TypedArgumentListNode();
-        }
+    static TypedArgumentListNode parseOnOpenBrace(@NotNull TokenList tokens) {
+        return tokens.tokenIs("(") ? parse(tokens) : empty();
+    }
+
+    @NotNull
+    @Contract(" -> new")
+    static TypedArgumentListNode empty() {
+        return new TypedArgumentListNode(LineInfo.empty());
     }
 
     /**

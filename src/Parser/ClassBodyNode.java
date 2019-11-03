@@ -4,7 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The class representing the body of a class.
@@ -95,7 +95,7 @@ public class ClassBodyNode implements BodyNode {
     @NotNull
     @Contract("_, _, _ -> new")
     private static ClassBodyNode parseUntilToken(LineInfo lineInfo, @NotNull TokenList tokens, String... sentinels) {
-        ArrayList<ClassStatementNode> statements = new ArrayList<>();
+        List<ClassStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(sentinels)) {
             statements.add(ClassStatementNode.parse(tokens));
             if (!tokens.tokenIs(sentinels)) {
@@ -107,8 +107,11 @@ public class ClassBodyNode implements BodyNode {
 
     @NotNull
     @Contract("_ -> new")
-    static ClassBodyNode fromList(@NotNull LinkedList<ClassStatementNode> statements) {
-        return new ClassBodyNode(statements.getFirst().getLineInfo(), statements.toArray(new ClassStatementNode[0]));
+    static ClassBodyNode fromList(@NotNull List<ClassStatementNode> statements) {
+        if (statements.isEmpty()) {
+            return new ClassBodyNode();
+        }
+        return new ClassBodyNode(statements.get(0).getLineInfo(), statements.toArray(new ClassStatementNode[0]));
     }
 
     @Override

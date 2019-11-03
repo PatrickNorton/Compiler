@@ -104,7 +104,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         LineInfo info = tokens.lineInfo();
         SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
-        TypedArgumentListNode args = TypedArgumentListNode.parseOnToken(tokens, "(");
+        TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
         TypeNode[] retvals;
         if (tokens.tokenIs(TokenType.ARROW)) {
             retvals = TypeNode.parseRetVal(tokens);
