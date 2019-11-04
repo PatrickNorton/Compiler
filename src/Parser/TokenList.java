@@ -49,7 +49,7 @@ public final class TokenList implements Iterable<Token> {
      * @param length The length to ensure the buffer is
      */
     private void ensureLength(int length) {
-        while (buffer.size() < length) {
+        while (buffer.size() <= length) {
             buffer.add(tokenizer.tokenizeNext());
         }
     }
@@ -328,7 +328,7 @@ public final class TokenList implements Iterable<Token> {
      * @return The token at the index
      */
     public Token getToken(int index) {
-        ensureLength(index + 1);
+        ensureLength(index);
         return buffer.get(index);
     }
 
@@ -337,7 +337,7 @@ public final class TokenList implements Iterable<Token> {
      * @return The first token
      */
     public Token getFirst() {
-        ensureLength(1);
+        ensureLength(0);
         return buffer.getFirst();
     }
 
@@ -558,7 +558,7 @@ public final class TokenList implements Iterable<Token> {
         }
 
         private TokenIterator(int i) {
-            ensureLength(i + 1);
+            ensureLength(i);
             bufferIterator = buffer.listIterator(i);
         }
 
