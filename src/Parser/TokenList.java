@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -14,21 +13,8 @@ import java.util.Set;
  * @author Patrick Norton
  */
 public final class TokenList implements Iterable<Token> {
-    private final LinkedList<Token> buffer;
+    private final CircularBuffer<Token> buffer;
     private final Tokenizer tokenizer;
-
-    /**
-     * Construct a new instance of TokenList.
-     * <p>
-     *     This constructs from a buffer of tokens, instead of using a file.
-     * </p>
-     * @param buffer The tokens to be a list of
-     */
-    @Contract(pure = true)
-    public TokenList(LinkedList<Token> buffer) {
-        this.buffer = buffer;
-        this.tokenizer = Tokenizer.empty();
-    }
 
     /**
      * Construct a new instance of TokenList.
@@ -40,7 +26,7 @@ public final class TokenList implements Iterable<Token> {
      */
     @Contract(pure = true)
     public TokenList(Tokenizer tokenizer) {
-        this.buffer = new LinkedList<>();
+        this.buffer = new CircularBuffer<Token>();
         this.tokenizer = tokenizer;
     }
 
