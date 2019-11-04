@@ -57,6 +57,6 @@ public class FunctionCallNode implements NameNode, EnumKeywordNode {
         for (ArgumentNode a : parameters) {
             sj.add(a.toString());
         }
-        return caller + "(" + sj + ")";
+        return NameNode.parenthesize(caller) + "(" + sj + ")";
     }
 }

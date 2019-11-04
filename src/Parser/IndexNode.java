@@ -8,10 +8,10 @@ import org.jetbrains.annotations.Contract;
  */
 public class IndexNode implements NameNode {
     private LineInfo lineInfo;
-    private NameNode var;
+    private TestNode var;
     private TestNode[] indices;
 
-    public IndexNode(NameNode var, TestNode... indices) {
+    public IndexNode(TestNode var, TestNode... indices) {
         this(var.getLineInfo(), var, indices);
     }
 
@@ -21,7 +21,7 @@ public class IndexNode implements NameNode {
      * @param indices The list of indices in the square brackets
      */
     @Contract(pure = true)
-    public IndexNode(LineInfo lineInfo, NameNode var, TestNode... indices) {
+    public IndexNode(LineInfo lineInfo, TestNode var, TestNode... indices) {
         this.lineInfo = lineInfo;
         this.var = var;
         this.indices = indices;
@@ -32,7 +32,7 @@ public class IndexNode implements NameNode {
         return lineInfo;
     }
 
-    public NameNode getVar() {
+    public TestNode getVar() {
         return var;
     }
 
@@ -42,6 +42,6 @@ public class IndexNode implements NameNode {
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", var, TestNode.toString(indices));
+        return String.format("%s[%s]", NameNode.parenthesize(var), TestNode.toString(indices));
     }
 }

@@ -131,7 +131,7 @@ public interface IndependentNode extends BaseNode {
         } else if (after_var.is(TokenType.NAME)) {
             return DeclarationNode.parse(tokens);
         } else {
-            return NameNode.parse(tokens);
+            return TestNode.parse(tokens);
         }
     }
 

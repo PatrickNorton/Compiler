@@ -96,7 +96,7 @@ public enum TokenType {
     /**
      * Backslash-preceded operator functions, such as \+ or \<<.
      */
-    OP_FUNC("^\\\\(==|!=|[><]=?|r?([+\\-*/])\\2?|u-|<<|>>|[&|^~%])"),
+    OP_FUNC("^\\\\(==|!=|[><]=?|r?([+\\-*/])\\2?|u-|<<|>>|[&|^~%]|and|x?or|not)"),
     /**
      * Colons, for slices.
      */

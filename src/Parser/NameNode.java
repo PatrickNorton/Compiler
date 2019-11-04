@@ -27,7 +27,11 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
             name = VariableNode.parse(tokens);
         } else {
             assert tokens.tokenIs("(");
-            name = DottedVariableNode.parseOpenBrace(tokens);
+            tokens.nextToken(true);
+            name = parse(tokens);
+            if (!tokens.tokenIs(")")) {
+                throw tokens.error("Unexpected " + tokens.getFirst());
+            }
         }
         name = parsePostBraces(tokens, name);
         if (tokens.tokenIs(TokenType.DOT)) {
@@ -38,25 +42,15 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
 
     @NotNull
     static NameNode parsePostBraces(@NotNull TokenList tokens, @NotNull NameNode name) {
-        while (tokens.tokenIs(TokenType.OPEN_BRACE)) {
-            switch (tokens.tokenSequence()) {
-                case "(":
-                    name = new FunctionCallNode(name, ArgumentNode.parseList(tokens));
-                    break;
-                case "[":
-                    if (tokens.braceContains(":")) {
-                        name = new IndexNode(name, SliceNode.parse(tokens));
-                    } else {
-                        name = new IndexNode(name, LiteralNode.parse(tokens).getBuilders());
-                    }
-                    break;
-                case "{":
-                    return name;
-                default:
-                    throw new RuntimeException("Unexpected brace");
-            }
+        TestNode newName = TestNode.parsePostBraces(tokens, name);
+        if (newName instanceof NameNode) {
+            return (NameNode) newName;
+        } else {
+            throw tokens.internalError("Error in post-brace parsing");
         }
-        return name;
     }
 
+    static String parenthesize(@NotNull TestNode stmt) {
+        return stmt instanceof NameNode ? stmt.toString() : "(" + stmt + ")";
+    }
 }

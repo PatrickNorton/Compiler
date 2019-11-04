@@ -395,12 +395,33 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     static TestNode parseOpenBrace(@NotNull TokenList tokens) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
-        TestNode stmt = parseOpenBraceNoDot(tokens);
+        TestNode stmt = parsePostBraces(tokens, parseOpenBraceNoDot(tokens));
         if (tokens.tokenIs(TokenType.DOT)) {
             return DottedVariableNode.fromExpr(tokens, stmt);
         } else {
             return stmt;
         }
+    }
+
+    static TestNode parsePostBraces(@NotNull TokenList tokens, TestNode pre) {
+        postBraceLoop:
+        while (tokens.tokenIs(TokenType.OPEN_BRACE)) {
+            switch (tokens.tokenSequence()) {
+                case "(":
+                    pre = new FunctionCallNode(pre, ArgumentNode.parseList(tokens));
+                    break;
+                case "[":
+                    if (tokens.braceContains(TokenType.COLON)) {
+                        pre = new IndexNode(pre, SliceNode.parse(tokens));
+                    } else {
+                        pre = new IndexNode(pre, LiteralNode.parse(tokens).getBuilders());
+                    }
+                    break;
+                case "{":
+                    break postBraceLoop;
+            }
+        }
+        return pre;
     }
 
     @NotNull
