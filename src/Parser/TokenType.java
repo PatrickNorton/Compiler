@@ -1,11 +1,14 @@
 package Parser;
 
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -28,15 +31,11 @@ public enum TokenType {
     /**
      * Descriptor words, such as public or static.
      */
-    DESCRIPTOR("^\\b(public|private|const|final|pubget|static|generator)\\b"),
+    DESCRIPTOR(DescriptorNode::pattern),
     /**
      * Language-reserved keywords, like if, try, or enum.
      */
-    KEYWORD("^\\b(if|for|else|elif|do|func|class|method|while|in|from|(im|ex)port"
-            +"|typeget|dotimes|break|continue|return|context|get|set|lambda"
-            +"|property|enter|exit|try|except|finally|with|as|assert|del|yield"
-            +"|raise|typedef|some|interface|switch|case|enum|default|goto|defer"
-            +"|var|inline)\\b"),
+    KEYWORD(Keyword::pattern),
     /**
      * Open braces. Each token this matches corresponds with an {@link
      * #CLOSE_BRACE closing brace}.
@@ -64,9 +63,13 @@ public enum TokenType {
      */
     DOUBLE_ARROW("^=>"),
     /**
+     * For increment and decrement operations.
+     */
+    INCREMENT("^([-+]){2}"),
+    /**
      * Bog-standard operators, like + or <<
      */
-    OPERATOR("^(==|!=|<<|>>|[><]=?|!{2}|([+\\-*/?])\\2?|[&|^~%]|\\bis( +not)?\\b|\\bnot +in\\b|casted|instanceof)"),
+    OPERATOR(OperatorTypeNode::pattern),
     /**
      * Assignment, both static and dynamic (:=).
      */
@@ -87,8 +90,7 @@ public enum TokenType {
     /**
      * Special operator names, for operator overload definitions.
      */
-    OPERATOR_SP("^\\b(operator\\b *(r?(==|!=|([+\\-*/])\\4?|[><]=?|<<|>>|[&|^%])"
-            + "|\\[]=?|\\(\\)|~|u-|iter|new|in|missing|str|repr|reversed|bool|del(\\[])?))"),
+    OPERATOR_SP(OpSpTypeNode::pattern),
     /**
      * Variable names.
      */
@@ -96,7 +98,7 @@ public enum TokenType {
     /**
      * Backslash-preceded operator functions, such as \+ or \<<.
      */
-    OP_FUNC("^\\\\(==|!=|[><]=?|r?([+\\-*/])\\2?|u-|<<|>>|[&|^~%]|and|x?or|not)"),
+    OP_FUNC(OpFuncTypeNode::pattern),
     /**
      * Colons, for slices.
      */
@@ -124,10 +126,30 @@ public enum TokenType {
                     AT, DOLLAR, ASSIGN)
     );
 
-    final Pattern regex;
+    private Pattern regex;
+    private final Callable<Pattern> regexMaker;
 
     TokenType(@NotNull @Language("RegExp") String regex) {
         assert regex.startsWith("^");  // Make sure regex will only match the beginning of strings
         this.regex = Pattern.compile(regex);
+        this.regexMaker = null;
+    }
+
+    @Contract(pure = true)
+    TokenType(Callable<Pattern> regexMaker) {
+        this.regexMaker = regexMaker;
+        this.regex = null;
+    }
+
+    @NotNull Matcher matcher(CharSequence input) {
+        if (this.regex == null) {
+            try {
+                this.regex = regexMaker.call();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            assert regex.toString().startsWith("^");
+        }
+        return regex.matcher(input);
     }
 }

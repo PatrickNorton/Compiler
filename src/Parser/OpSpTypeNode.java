@@ -3,9 +3,12 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public enum OpSpTypeNode {
     ADD("+"),
@@ -62,6 +65,14 @@ public enum OpSpTypeNode {
     ;
 
     private static final Map<String, OpSpTypeNode> values;
+    public static final Pattern PATTERN = Pattern.compile("^operator\\b *(" +
+             Arrays.stream(values())
+                     .map((OpSpTypeNode o) -> o.name)
+                     .sorted((String i, String j) -> j.length() - i.length())
+                     .map(Pattern::quote)
+                     .collect(Collectors.joining("|"))
+            + ")(\\b|(?<!\\w))"
+    );
 
     public final String name;
 
@@ -89,6 +100,10 @@ public enum OpSpTypeNode {
             throw new ParserException("");
         }
         return values.get(sequence);
+    }
+
+    static Pattern pattern() {
+        return PATTERN;
     }
 
     @NotNull

@@ -3,12 +3,15 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The node representing all descriptors.
@@ -31,6 +34,14 @@ public enum DescriptorNode implements AtomicNode {
     FINAL("final"),
     GENERATOR("generator"),
     ;
+
+    public static final Pattern PATTERN = Pattern.compile("^(" +
+            Arrays.stream(values())
+                    .map(Object::toString)
+                    .collect(Collectors.joining("|"))
+            + ")\\b"
+    );
+
     public final String name;
 
     private static final Map<String, DescriptorNode> values;
@@ -137,6 +148,11 @@ public enum DescriptorNode implements AtomicNode {
             number++;
         }
         return number;
+    }
+
+    @Contract(pure = true)
+    static Pattern pattern() {
+        return PATTERN;
     }
 
     @Contract(pure = true)

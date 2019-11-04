@@ -60,7 +60,7 @@ public final class Tokenizer {
         }
         adjustForMultiline();
         for (TokenType info : TokenType.values()) {
-            Matcher match = info.regex.matcher(next);
+            Matcher match = info.matcher(next);
             if (match.find()) {
                 if (info == TokenType.WHITESPACE) {
                     do {
@@ -69,7 +69,7 @@ public final class Tokenizer {
                             return emptyLine();
                         }
                         adjustForMultiline();
-                        match = info.regex.matcher(next);
+                        match = info.matcher(next);
                     } while (match.find());
                 } else {
                     next = next.substring(match.end());

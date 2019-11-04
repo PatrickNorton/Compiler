@@ -3,9 +3,12 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Every type of operator that is valid.
@@ -46,6 +49,15 @@ public enum OperatorTypeNode implements AtomicNode {
     OPTIONAL("?", 0, true, true),
     INSTANCEOF("instanceof", 9),
     ;
+
+    public static final Pattern PATTERN = Pattern.compile("^(" +
+            Arrays.stream(values())
+                    .map(Object::toString)
+                    .sorted((String i, String j) -> j.length() - i.length())
+                    .map(Pattern::quote)
+                    .collect(Collectors.joining("|"))
+            + ")(\\b|(?<!\\w))"
+    );
 
     public final String name;
     public final int precedence;
@@ -135,6 +147,11 @@ public enum OperatorTypeNode implements AtomicNode {
     static OperatorTypeNode fromToken(@NotNull Token token) {
         assert token.is(TokenType.OPERATOR, TokenType.KEYWORD, TokenType.BOOL_OP);
         return findOp(token.sequence);
+    }
+
+    @Contract(pure = true)
+    static Pattern pattern() {
+        return PATTERN;
     }
 
     @Contract(pure = true)

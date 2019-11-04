@@ -3,10 +3,13 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The class representing a keyword.
@@ -62,6 +65,12 @@ public enum Keyword {
     ;
 
     private static final Map<String, Keyword> values;
+    static final Pattern PATTERN = Pattern.compile("^(" +
+            Arrays.stream(values())
+                    .map(Object::toString)
+                    .collect(Collectors.joining("|"))
+            + ")\\b"
+    );
 
     public final String name;
     private final Function<TokenList, IndependentNode> parseLeft;
@@ -132,5 +141,17 @@ public enum Keyword {
 
     IndependentNode parseLeft(TokenList tokens) {
         return this.parseLeft.apply(tokens);
+    }
+
+    @Contract(pure = true)
+    static Pattern pattern() {
+        return PATTERN;
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public String toString() {
+        return name.toLowerCase();
     }
 }
