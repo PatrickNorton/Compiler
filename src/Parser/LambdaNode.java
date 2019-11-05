@@ -64,7 +64,13 @@ public class LambdaNode implements SubTestNode {
         assert tokens.tokenIs(Keyword.LAMBDA);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
+        TypedArgumentListNode args;
+        if (tokens.tokenIs(TokenType.NAME)) {
+            LineInfo info = tokens.lineInfo();
+            args = new TypedArgumentListNode(info, TypedArgumentNode.parse(tokens));
+        } else {
+            args = TypedArgumentListNode.parseOnOpenBrace(tokens);
+        }
         TypeNode[] returns = TypeNode.parseRetVal(tokens);
         boolean isArrow;
         StatementBodyNode body;
