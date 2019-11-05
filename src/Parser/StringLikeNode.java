@@ -68,6 +68,8 @@ public abstract class StringLikeNode implements AtomicNode {
             }
             char chr2 = str.charAt(++i);
             switch (chr2) {
+                case '\n':
+                    break;
                 case '\\':
                     sb.append('\\');
                     break;
