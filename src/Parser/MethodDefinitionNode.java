@@ -121,6 +121,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
 
     @Override
     public String toString() {
-        return DescriptorNode.join(descriptors) + "method " + name + args;
+        return String.format("%smethod %s%s%s %s",
+                DescriptorNode.join(descriptors), name, args, TypeNode.returnString(retval), body);
     }
 }
