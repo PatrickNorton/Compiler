@@ -44,7 +44,6 @@ public interface IndependentNode extends BaseNode {
             case DOUBLE_ARROW:
                 throw tokens.error("Unexpected =>");
             case OPERATOR:
-            case BOOL_OP:
             case STRING:
             case NUMBER:
             case OP_FUNC:
@@ -123,7 +122,7 @@ public interface IndependentNode extends BaseNode {
             return AugmentedAssignmentNode.parse(tokens);
         } else if (after_var.is("++", "--")) {
             return SimpleStatementNode.parseIncDec(tokens);
-        } else if (tokens.lineContains(TokenType.BOOL_OP, TokenType.OPERATOR)) {
+        } else if (tokens.lineContains(TokenType.OPERATOR)) {
             if (after_var.is("?") && isDeclaration(tokens)) {
                 return DeclarationNode.parse(tokens);
             }

@@ -90,7 +90,7 @@ public class OperatorNode implements SubTestNode {
     @NotNull
     @Contract("_ -> new")
     public static OperatorNode empty(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.OPERATOR, TokenType.BOOL_OP, TokenType.KEYWORD);
+        assert tokens.tokenIs(TokenType.OPERATOR, TokenType.KEYWORD);
         return new OperatorNode(OperatorTypeNode.fromToken(tokens.getFirst()));
     }
 

@@ -78,11 +78,6 @@ public enum TokenType {
      * String literals of all sorts.
      */
     STRING("^([refb]*([\"'])(.|\\R)*?(?<!\\\\)(\\\\{2})*\\2)"),
-    // TODO? Merge with #OPERATOR
-    /**
-     * Boolean operators.
-     */
-    BOOL_OP("^\\b(and|or|not|xor)\\b"),
     /**
      * Numbers in all bases and decimals.
      */
@@ -122,8 +117,7 @@ public enum TokenType {
     ;
 
     public static final Set<TokenType> BRACE_IS_LITERAL = Collections.unmodifiableSet(
-            EnumSet.of(OPEN_BRACE, NEWLINE, KEYWORD, COMMA, OPERATOR, BOOL_OP, COLON,
-                    AT, DOLLAR, ASSIGN)
+            EnumSet.of(OPEN_BRACE, NEWLINE, KEYWORD, COMMA, OPERATOR, COLON, AT, DOLLAR, ASSIGN)
     );
 
     private Pattern regex;

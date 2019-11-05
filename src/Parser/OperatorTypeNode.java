@@ -146,7 +146,7 @@ public enum OperatorTypeNode implements AtomicNode {
      */
     @NotNull
     static OperatorTypeNode fromToken(@NotNull Token token) {
-        assert token.is(TokenType.OPERATOR, TokenType.KEYWORD, TokenType.BOOL_OP);
+        assert token.is(TokenType.OPERATOR, TokenType.KEYWORD);
         return findOp(token.sequence);
     }
 

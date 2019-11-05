@@ -20,9 +20,8 @@ import java.util.StringJoiner;
  */
 public interface TestNode extends IndependentNode, EmptiableNode {
     Set<TokenType> PARSABLE_TOKENS = Collections.unmodifiableSet(
-            EnumSet.of(TokenType.NAME, TokenType.OPEN_BRACE, TokenType.BOOL_OP,
-                    TokenType.OPERATOR, TokenType.NUMBER, TokenType.OP_FUNC,
-                    TokenType.ELLIPSIS, TokenType.STRING)
+            EnumSet.of(TokenType.NAME, TokenType.OPEN_BRACE, TokenType.OPERATOR,
+                    TokenType.NUMBER, TokenType.OP_FUNC, TokenType.ELLIPSIS, TokenType.STRING)
     );
     Set<Keyword> PARSABLE_KEYWORDS = Collections.unmodifiableSet(
             EnumSet.of(Keyword.LAMBDA, Keyword.SOME, Keyword.SWITCH)
@@ -332,7 +331,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return NameNode.parse(tokens);
             case NUMBER:
                 return NumberNode.parse(tokens);
-            case BOOL_OP:
             case OPERATOR:
                 return OperatorTypeNode.parse(tokens);
             case OP_FUNC:
