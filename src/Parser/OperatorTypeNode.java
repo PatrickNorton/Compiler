@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -53,7 +54,7 @@ public enum OperatorTypeNode implements AtomicNode {
     public static final Pattern PATTERN = Pattern.compile("^(" +
             Arrays.stream(values())
                     .map(Object::toString)
-                    .sorted((String i, String j) -> j.length() - i.length())
+                    .sorted(Comparator.comparingInt(String::length).reversed())
                     .map(Pattern::quote)
                     .map((String s) -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
                     .collect(Collectors.joining("|"))

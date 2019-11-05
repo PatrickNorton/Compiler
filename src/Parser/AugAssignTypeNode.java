@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -31,7 +32,7 @@ public enum AugAssignTypeNode {
     public static final Pattern PATTERN = Pattern.compile("^(" +
             Arrays.stream(values())
                     .map(Object::toString)
-                    .sorted((String i, String j) -> j.length() - i.length())
+                    .sorted(Comparator.comparingInt(String::length).reversed())
                     .map(Pattern::quote)
                     .collect(Collectors.joining("|"))
             + ")"
