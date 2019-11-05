@@ -70,8 +70,9 @@ public enum OpSpTypeNode {
                      .map((OpSpTypeNode o) -> o.name)
                      .sorted((String i, String j) -> j.length() - i.length())
                      .map(Pattern::quote)
+                     .map((String s) -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
                      .collect(Collectors.joining("|"))
-            + ")(\\b|(?<!\\w))"
+            + ")"
     );
 
     public final String name;
@@ -102,6 +103,7 @@ public enum OpSpTypeNode {
         return values.get(sequence);
     }
 
+    @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
     }

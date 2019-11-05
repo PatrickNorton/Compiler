@@ -53,7 +53,7 @@ public enum TokenType {
     /**
      * Augmented assignment operators, such as += or -=.
      */
-    AUG_ASSIGN("^([+\\-%]|([*/])\\2?|<<|>>|\\?{2}|[&|^~])="),
+    AUG_ASSIGN(AugAssignTypeNode::pattern),
     /**
      * The magical arrow unicorn, for function return types.
      */

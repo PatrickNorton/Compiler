@@ -3,9 +3,12 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public enum AugAssignTypeNode {
     ADD("+"),
@@ -25,6 +28,14 @@ public enum AugAssignTypeNode {
     ;
 
     private static final Map<String, AugAssignTypeNode> values;
+    public static final Pattern PATTERN = Pattern.compile("^(" +
+            Arrays.stream(values())
+                    .map(Object::toString)
+                    .sorted((String i, String j) -> j.length() - i.length())
+                    .map(Pattern::quote)
+                    .collect(Collectors.joining("|"))
+            + ")"
+    );
 
     public final String sequence;
 
@@ -53,6 +64,11 @@ public enum AugAssignTypeNode {
         } else {
             throw new ParserException("Unknown operator");
         }
+    }
+
+    @Contract(pure = true)
+    public static Pattern pattern() {
+        return PATTERN;
     }
 
     @NotNull
