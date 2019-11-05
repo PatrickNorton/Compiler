@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 // TODO?? Replace with simple DottedVariableNode
 public class TypeNode implements AtomicNode {
@@ -198,6 +199,17 @@ public class TypeNode implements AtomicNode {
                 return "var";
             }
         };
+    }
+
+    public static String returnString(@NotNull TypeNode... values) {
+        if (values.length == 0) {
+            return "";
+        }
+        StringJoiner sj = new StringJoiner(", ", " -> ", "");
+        for (TypeNode t : values) {
+            sj.add(t.toString());
+        }
+        return sj.toString();
     }
 
     @Override

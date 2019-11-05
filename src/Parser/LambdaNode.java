@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 public class LambdaNode implements SubTestNode {
     private LineInfo lineInfo;
     private TypedArgumentListNode args;
+    private TypeNode[] returns;
+    private boolean isArrow;
     private StatementBodyNode body;
 
     /**
@@ -18,9 +20,11 @@ public class LambdaNode implements SubTestNode {
      * @param body The body of the lambda
      */
     @Contract(pure = true)
-    public LambdaNode(LineInfo lineInfo, TypedArgumentListNode args, StatementBodyNode body) {
+    public LambdaNode(LineInfo lineInfo, TypedArgumentListNode args, TypeNode[] returns, boolean isArrow, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.args = args;
+        this.returns = returns;
+        this.isArrow = isArrow;
         this.body = body;
     }
 
@@ -35,6 +39,14 @@ public class LambdaNode implements SubTestNode {
 
     public TypedArgumentListNode getArgs() {
         return args;
+    }
+
+    public TypeNode[] getReturns() {
+        return returns;
+    }
+
+    public boolean isArrow() {
+        return isArrow;
     }
 
     /**
@@ -53,12 +65,23 @@ public class LambdaNode implements SubTestNode {
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
-        StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new LambdaNode(lineInfo, args, body);
+        TypeNode[] returns = TypeNode.parseRetVal(tokens);
+        boolean isArrow;
+        StatementBodyNode body;
+        if (tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
+            isArrow = true;
+            LineInfo info = tokens.lineInfo();
+            tokens.nextToken();
+            body = new StatementBodyNode(info, TestNode.parse(tokens));
+        } else {
+            isArrow = false;
+            body = StatementBodyNode.parse(tokens);
+        }
+        return new LambdaNode(lineInfo, args, returns, isArrow, body);
     }
 
     @Override
     public String toString() {
-        return "lambda " + args + body;
+        return String.format("lambda %s%s %s", args, TypeNode.returnString(returns), isArrow ? "=> ..." : body);
     }
 }
