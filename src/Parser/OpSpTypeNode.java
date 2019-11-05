@@ -51,7 +51,9 @@ public enum OpSpTypeNode {
     MODULO("%"),
     R_MODULO("r%"),
     GET_ATTR("[]"),
+    GET_SLICE("[:]"),
     SET_ATTR("[]="),
+    SET_SLICE("[:]="),
     CALL("()"),
     ITER("iter"),
     NEW("new"),
@@ -63,15 +65,16 @@ public enum OpSpTypeNode {
     REPR("repr"),
     BOOL("bool"),
     REVERSED("reversed"),
+    HASH("hash"),
     ;
 
     private static final Map<String, OpSpTypeNode> values;
     public static final Pattern PATTERN = Pattern.compile("^operator\\b *(" +
              Arrays.stream(values())
-                     .map((OpSpTypeNode o) -> o.name)
+                     .map(o -> o.name)
                      .sorted(Comparator.comparingInt(String::length).reversed())
                      .map(Pattern::quote)
-                     .map((String s) -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
+                     .map(s -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
                      .collect(Collectors.joining("|"))
             + ")"
     );

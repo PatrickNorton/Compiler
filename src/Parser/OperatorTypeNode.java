@@ -55,8 +55,8 @@ public enum OperatorTypeNode implements AtomicNode {
             Arrays.stream(values())
                     .map(Object::toString)
                     .sorted(Comparator.comparingInt(String::length).reversed())
-                    .map(Pattern::quote)
-                    .map((String s) -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
+                    .map(s -> s.contains(" ") ? s.replace(" ", " +") : Pattern.quote(s))
+                    .map(s -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
                     .collect(Collectors.joining("|"))
             + ")"
     );

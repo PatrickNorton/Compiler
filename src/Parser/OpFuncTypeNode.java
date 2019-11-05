@@ -41,10 +41,10 @@ public enum OpFuncTypeNode {
     private static final Map<String, OpFuncTypeNode> values;
     public static final Pattern PATTERN = Pattern.compile("^\\\\(" +
             Arrays.stream(values())
-                    .map((OpFuncTypeNode o) -> o.name)
+                    .map(o -> o.name)
                     .sorted(Comparator.comparingInt(String::length).reversed())
                     .map(Pattern::quote)
-                    .map((String s) -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
+                    .map(s -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
                     .collect(Collectors.joining("|"))
             +")"
     );
