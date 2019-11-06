@@ -214,6 +214,9 @@ public class TypeNode implements AtomicNode {
 
     @Override
     public String toString() {
+        if (name.isEmpty() && subtypes.length == 0) {
+            return is_vararg ? "*[]" : "[]";
+        }
         if (subtypes.length > 0) {
             String subtypes = TestNode.toString(this.subtypes);
             return (is_vararg ? "*" : "") + name + "[" + subtypes + "]" + (optional ? "?" : "");

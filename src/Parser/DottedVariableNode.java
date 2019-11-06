@@ -164,6 +164,7 @@ public class DottedVariableNode implements NameNode {
 
     @Override
     public String toString() {
+        if (isEmpty()) return "";
         StringBuilder sb = new StringBuilder();
         if (preDot instanceof PostDottableNode) {
             sb.append(preDot);
