@@ -120,7 +120,7 @@ public interface IndependentNode extends BaseNode {
             return AssignStatementNode.parse(tokens);
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
             return AugmentedAssignmentNode.parse(tokens);
-        } else if (after_var.is("++", "--")) {
+        } else if (after_var.is(TokenType.INCREMENT)) {
             return SimpleStatementNode.parseIncDec(tokens);
         } else if (tokens.lineContains(TokenType.OPERATOR)) {
             if (after_var.is("?") && isDeclaration(tokens)) {
