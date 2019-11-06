@@ -63,6 +63,14 @@ public enum TokenType {
      */
     DOUBLE_ARROW("^=>"),
     /**
+     * The ellipsis unicorn.
+     */
+    ELLIPSIS("^\\.{3}"),
+    /**
+     * Dots that aren't an ellipsis.
+     */
+    DOT("^\\??\\."),
+    /**
      * For increment and decrement operations.
      */
     INCREMENT("^([-+]){2}"),
@@ -98,14 +106,6 @@ public enum TokenType {
      * Colons, for slices.
      */
     COLON("^:"),
-    /**
-     * The ellipsis unicorn.
-     */
-    ELLIPSIS("^\\.{3}"),
-    /**
-     * Dots that aren't an ellipsis.
-     */
-    DOT("^\\??\\."),
     /**
      * The at symbol. for decorators.
      */
