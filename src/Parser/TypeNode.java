@@ -5,10 +5,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 
 // TODO?? Replace with simple DottedVariableNode
 public class TypeNode implements AtomicNode {
+    private static final Set<String> TYPE_NODE_POSSIBLE = Set.of("[", "*");
+
     private LineInfo lineInfo;
     private DottedVariableNode name;
     private TypeNode[] subtypes;
@@ -189,6 +192,10 @@ public class TypeNode implements AtomicNode {
         assert tokens.tokenIs(Keyword.VAR);
         tokens.nextToken();
         return var();
+    }
+
+    static boolean nextIsType(@NotNull TokenList tokens) {
+        return tokens.tokenIs(TokenType.NAME, Keyword.VAR) || TYPE_NODE_POSSIBLE.contains(tokens.tokenSequence());
     }
 
     /**
