@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The class representing a property definition.
@@ -99,7 +100,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     }
 
     @Override
-    public EnumSet<DescriptorNode> validDescriptors() {
+    public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.DECLARATION_VALID;
     }
 

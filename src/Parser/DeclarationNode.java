@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The class representing a variable declaration without assignment.
@@ -58,7 +59,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     }
 
     @Override
-    public EnumSet<DescriptorNode> validDescriptors() {
+    public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.DECLARATION_VALID;
     }
 

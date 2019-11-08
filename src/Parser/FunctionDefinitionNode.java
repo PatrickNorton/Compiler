@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The class representing a function definition.
@@ -83,7 +84,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
     }
 
     @Override
-    public EnumSet<DescriptorNode> validDescriptors() {
+    public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.FUNCTION_VALID;
     }
 

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The class representing a static block in a class/interface definition.
@@ -40,7 +41,7 @@ public class StaticBlockNode implements ClassStatementNode, ComplexStatementNode
     }
 
     @Override
-    public EnumSet<DescriptorNode> validDescriptors() {
+    public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.STATIC_BLOCK_VALID;
     }
 

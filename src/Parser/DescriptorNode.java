@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -47,22 +48,29 @@ public enum DescriptorNode implements AtomicNode {
 
     private static final Map<String, DescriptorNode> values;
 
-    private static final EnumSet<DescriptorNode> ACCESS = EnumSet.of(PUBLIC, PRIVATE, PUBGET);
-    private static final EnumSet<DescriptorNode> STATIC_SET = EnumSet.of(STATIC);
-    private static final EnumSet<DescriptorNode> CONST_SET = EnumSet.of(CONST);
-    private static final EnumSet<DescriptorNode> FINAL_SET = EnumSet.of(FINAL);
-    private static final EnumSet<DescriptorNode> GENERATOR_SET = EnumSet.of(GENERATOR);
-    private static final EnumSet<DescriptorNode> SYNCED_SET = EnumSet.of(SYNCED);
+    private static final Set<DescriptorNode> ACCESS = Collections.unmodifiableSet(EnumSet.of(PUBLIC, PRIVATE, PUBGET));
+    private static final Set<DescriptorNode> STATIC_SET = Collections.unmodifiableSet(EnumSet.of(STATIC));
+    private static final Set<DescriptorNode> CONST_SET = Collections.unmodifiableSet(EnumSet.of(CONST));
+    private static final Set<DescriptorNode> FINAL_SET = Collections.unmodifiableSet(EnumSet.of(FINAL));
+    private static final Set<DescriptorNode> GENERATOR_SET = Collections.unmodifiableSet(EnumSet.of(GENERATOR));
+    private static final Set<DescriptorNode> SYNCED_SET = Collections.unmodifiableSet(EnumSet.of(SYNCED));
 
-    private static final List<EnumSet<DescriptorNode>> SETS = List.of(
-            ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET, SYNCED_SET);
+    private static final List<Set<DescriptorNode>> SETS = List.of(
+            ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET, SYNCED_SET
+    );
 
-    static final EnumSet<DescriptorNode> DEFINITION_VALID = EnumSet.of(PUBLIC, PRIVATE, CONST, FINAL, STATIC);
-    static final EnumSet<DescriptorNode> FUNCTION_VALID = EnumSet.of(GENERATOR, SYNCED);
-    static final EnumSet<DescriptorNode> DECLARATION_VALID = EnumSet.of(PUBLIC, PRIVATE, PUBGET, CONST, FINAL, STATIC);
-    static final EnumSet<DescriptorNode> CONTEXT_VALID = EnumSet.of(PUBLIC, PRIVATE, GENERATOR, STATIC, FINAL, SYNCED);
-    static final EnumSet<DescriptorNode> METHOD_VALID = EnumSet.of(PUBLIC, PRIVATE, STATIC, CONST, FINAL, GENERATOR, SYNCED);
-    static final EnumSet<DescriptorNode> STATIC_BLOCK_VALID = EnumSet.noneOf(DescriptorNode.class);
+    static final Set<DescriptorNode> DEFINITION_VALID = Collections.unmodifiableSet(
+            EnumSet.of(PUBLIC, PRIVATE, CONST, FINAL, STATIC));
+    static final Set<DescriptorNode> FUNCTION_VALID = Collections.unmodifiableSet(
+            EnumSet.of(GENERATOR, SYNCED));
+    static final Set<DescriptorNode> DECLARATION_VALID = Collections.unmodifiableSet(
+            EnumSet.of(PUBLIC, PRIVATE, PUBGET, CONST, FINAL, STATIC));
+    static final Set<DescriptorNode> CONTEXT_VALID = Collections.unmodifiableSet(
+            EnumSet.of(PUBLIC, PRIVATE, GENERATOR, STATIC, FINAL, SYNCED));
+    static final Set<DescriptorNode> METHOD_VALID = Collections.unmodifiableSet(
+            EnumSet.of(PUBLIC, PRIVATE, STATIC, CONST, FINAL, GENERATOR, SYNCED));
+    static final Set<DescriptorNode> STATIC_BLOCK_VALID = Collections.unmodifiableSet(
+            EnumSet.noneOf(DescriptorNode.class));
 
     static {
         Map<String, DescriptorNode> temp = new HashMap<>();

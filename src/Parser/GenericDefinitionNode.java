@@ -2,7 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The interface representing a definition of a generic function.
@@ -11,7 +11,7 @@ import java.util.EnumSet;
  */
 public interface GenericDefinitionNode extends InterfaceStatementNode {
     @Override
-    default EnumSet<DescriptorNode> validDescriptors() {
+    default Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.DEFINITION_VALID;
     }
 
