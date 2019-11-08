@@ -55,6 +55,8 @@ public enum OpSpTypeNode {
     SET_ATTR("[]="),
     SET_SLICE("[:]="),
     CALL("()"),
+    COMPARE("<=>"),
+    R_COMPARE("r<=>"),
     ITER("iter"),
     NEW("new"),
     IN("in"),

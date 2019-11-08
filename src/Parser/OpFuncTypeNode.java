@@ -36,6 +36,7 @@ public enum OpFuncTypeNode {
     BOOL_OR("or", OperatorTypeNode.BOOL_OR),
     BOOL_NOT("not", OperatorTypeNode.BOOL_NOT),
     BOOL_XOR("xor", OperatorTypeNode.BOOL_XOR),
+    COMPARE("<=>", OperatorTypeNode.COMPARE),
     ;
 
     private static final Map<String, OpFuncTypeNode> values;

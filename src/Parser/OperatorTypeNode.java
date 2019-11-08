@@ -49,6 +49,7 @@ public enum OperatorTypeNode implements AtomicNode {
     NOT_NULL("!!", 0, true, true),
     OPTIONAL("?", 0, true, true),
     INSTANCEOF("instanceof", 9),
+    COMPARE("<=>", 7),
     ;
 
     public static final Pattern PATTERN = Pattern.compile("^(" +
