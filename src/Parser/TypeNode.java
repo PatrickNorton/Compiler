@@ -188,6 +188,17 @@ public class TypeNode implements AtomicNode {
     private static TypeNode parseVar(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.VAR);
         tokens.nextToken();
+        return var();
+    }
+
+    /**
+     * Return a new TypeNode representing the keyword {@link Keyword#VAR var}.
+     *
+     * @return The new TypeNode
+     */
+    @NotNull
+    @Contract(" -> new")
+    public static TypeNode var() {
         return new TypeNode(DottedVariableNode.empty(), false) {
             @Override
             public boolean isDecided() {

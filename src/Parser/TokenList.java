@@ -434,6 +434,17 @@ public final class TokenList implements Iterable<Token> {
     }
 
     /**
+     * Test if the token at the index is one of a certain set of values.
+     *
+     * @param type1 The TokenType value to check
+     * @param type2 The String value to check
+     * @return Whether the token is of those values
+     */
+    public boolean tokenIs(int index, TokenType type1, String type2) {
+        return getToken(index).is(type1) || getToken(index).is(type2);
+    }
+
+    /**
      * Test if the first token is a keyword of the type given
      * @param type The type to test
      * @return If the token is of that type
@@ -508,6 +519,20 @@ public final class TokenList implements Iterable<Token> {
      */
     public TokenType tokenType() {
         return getFirst().token;
+    }
+
+    /**
+     * The number of newlines from the given position in the list.
+     *
+     * @param start Where to start
+     * @return The number of newlines
+     */
+    public int numberOfNewlines(int start) {
+        int count = 0;
+        while (tokenIs(start + count, TokenType.NEWLINE)) {
+            count++;
+        }
+        return count;
     }
 
     /**

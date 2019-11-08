@@ -53,7 +53,9 @@ public class LambdaNode implements SubTestNode {
      * Parse a new LambdaNode from a list of tokens.
      * <p>
      *     The syntax for a lambda is: <code>"lambda" {@link
-     *     TypedArgumentListNode} {@link StatementBodyNode}</code>.
+     *     TypedArgumentListNode} {@link StatementBodyNode}</code>. Unlike
+     *     other {@link TypedArgumentListNode}s, this one does not have to be
+     *     typed, as that can be inferred dynamically in some cases.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
      * @return The newly parsed lambda
@@ -67,9 +69,9 @@ public class LambdaNode implements SubTestNode {
         TypedArgumentListNode args;
         if (tokens.tokenIs(TokenType.NAME)) {
             LineInfo info = tokens.lineInfo();
-            args = new TypedArgumentListNode(info, TypedArgumentNode.parse(tokens));
+            args = new TypedArgumentListNode(info, TypedArgumentNode.parseMaybeTypeless(tokens));
         } else {
-            args = TypedArgumentListNode.parseOnOpenBrace(tokens);
+            args = TypedArgumentListNode.parseOnOpenBrace(tokens, true);
         }
         TypeNode[] returns = TypeNode.parseRetVal(tokens);
         boolean isArrow;

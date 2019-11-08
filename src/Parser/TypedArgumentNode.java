@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The class representing a typed argument.
@@ -64,18 +65,34 @@ public class TypedArgumentNode implements BaseNode {
     }
 
     /**
-     * Parse a TypedArgumentNode from a list of tokens.
+     * Parse a possibly typeless TypedArgumentNode from a list of tokens.
      * <p>
      *     The syntax for a typed argument is: <code>["*" | "**"] {@link
      *     TypeNode} {@link VariableNode} ["=" {@link TestNode}]</code>.
+     *     The syntax for a untyped argument is: <code>["*" | "**"] {@link
+     *     VariableNode} ["=" {@link TestNode}]</code>.
      * </p>
-     * @param tokens The list of tokens to destructively parse
+     * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed TypedArgumentNode
      */
     @NotNull
-    @Contract("_ -> new")
-    static TypedArgumentNode parse(@NotNull TokenList tokens) {
-        boolean is_vararg = tokens.tokenIs("*", "**");
+    static TypedArgumentNode parseMaybeTypeless(TokenList tokens) {
+        return parse(tokens, !argumentIsUntyped(tokens));
+    }
+
+    /**
+     * Parse a TypedArgumentNode from a list of tokens, typed if stated so.
+     * <p>
+     *     For grammar, see the {@link #parseMaybeTypeless} method.
+     * </p>
+     *
+     * @param tokens The list of tokens to be destructively parsed
+     * @param isTyped Whether or not the node is typed
+     * @return The freshly parsed node
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    static TypedArgumentNode parse(@NotNull TokenList tokens, boolean isTyped) {
         String vararg_type;
         if (tokens.tokenIs("*", "**")) {
             vararg_type = tokens.tokenSequence();
@@ -83,10 +100,69 @@ public class TypedArgumentNode implements BaseNode {
         } else {
             vararg_type = "";
         }
-        TypeNode type = TypeNode.parse(tokens);
+        return parse(tokens, isTyped, vararg_type);
+    }
+
+    /**
+     * Parse the second half of a TypedArgumentNode, with the vararg type
+     * already given.
+     *
+     * @param tokens The list of tokens to be destructively parsed
+     * @param isTyped If the node is typed
+     * @param varargType The type of the vararg ({@code ""} if no vararg)
+     * @return The freshly parsed TypedArgumentNode
+     */
+    @Contract("_, _, _ -> new")
+    @NotNull
+    private static TypedArgumentNode parse(@NotNull TokenList tokens, boolean isTyped, String varargType) {
+        if (tokens.tokenIs(Keyword.VAR)) {
+            throw tokens.error("var is not allowed in a typed argument");
+        }
+        TypeNode type = isTyped ? TypeNode.parse(tokens) : TypeNode.var();
         VariableNode var = VariableNode.parse(tokens);
         TestNode default_value = TestNode.parseOnToken(tokens, "=", true);
-        return new TypedArgumentNode(type, var, default_value, is_vararg, vararg_type);
+        return new TypedArgumentNode(type, var, default_value, varargType.isEmpty(), varargType);
+    }
+
+    /**
+     * Parse a TypedArgumentNode, allowing the possibility of the token being
+     * the vararg-only marker ({@code "*"}). Returns {@code null} if that is
+     * the case.
+     *
+     * @param tokens The list of tokens to be destructively parsed
+     * @param allowUntyped Whether or not to allow untyped nodes
+     * @param typeDecided Whether or not it is known if the node is typed
+     * @return The freshly parsed TypedArgumentNode, or null
+     */
+    @Nullable
+    static TypedArgumentNode parseAllowingEmpty(@NotNull TokenList tokens, boolean allowUntyped, boolean typeDecided) {
+        String varargType;
+        if (tokens.tokenIs("*", "**")) {
+            varargType = tokens.tokenSequence();
+            tokens.nextToken(true);
+            if (varargType.equals("*") && !TestNode.nextIsTest(tokens)) {
+                return null;
+            }
+        } else {
+            varargType = "";
+        }
+        if (!typeDecided) {
+            allowUntyped = argumentIsUntyped(tokens);
+        }
+        return parse(tokens, !allowUntyped, varargType);
+    }
+
+    /**
+     * Whether or not the TypedArgumentNode is typed or untyped.
+     *
+     * @param tokens The list of tokens to use to make a decision
+     * @return Whether or not the node is untyped
+     */
+    static boolean argumentIsUntyped(@NotNull TokenList tokens) {
+        int size = tokens.sizeOfVariable();
+        return !tokens.tokenIs(size, TokenType.NAME) &&
+                (!tokens.tokenIs(size, "?") ||
+                        !tokens.tokenIs(size + tokens.numberOfNewlines(size), TokenType.NAME));
     }
 
     @Override

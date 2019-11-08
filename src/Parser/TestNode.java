@@ -505,7 +505,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
     }
 
-    private static boolean nextIsTest(@NotNull TokenList tokens) {
+    static boolean nextIsTest(@NotNull TokenList tokens) {
         return tokens.tokenIs(PARSABLE_TOKENS) || tokens.tokenIsKeyword(PARSABLE_KEYWORDS);
     }
 

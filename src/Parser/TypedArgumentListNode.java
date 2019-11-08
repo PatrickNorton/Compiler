@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -58,19 +59,33 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     }
 
     /**
-     * Parse a typed argument list if and only if the next token is of the type
-     * specified.
+     * Parse a typed argument list if and only if the next token is an open
+     * brace.
      * <p>
-     *     This will <i>not</i> parse the token given, as it is currently
-     *     in use as an open-paren tester. This <b>may</b> change in the future.
-     *     For the grammar, see {@link TypedArgumentListNode#parse}
+     *     For grammar, see {@link #parse(TokenList)}
      * </p>
+     *
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TypedArgumentListNode
      */
     @NotNull
     static TypedArgumentListNode parseOnOpenBrace(@NotNull TokenList tokens) {
-        return tokens.tokenIs("(") ? parse(tokens) : empty();
+        return parseOnOpenBrace(tokens, false);
+    }
+
+    /**
+     * Parse a typed argument list if and only if the next token is an open
+     * brace, possibly allowing dynamically typed arguments.
+     * <p>
+     *     For grammar, see {@link #parse(TokenList)}
+     * </p>
+     *
+     * @param tokens The list of tokens to be destructively parsed
+     * @param allowUntyped Whether or not to allow untyped arguments
+     * @return The freshly parsed TypedArgumentListNode
+     */
+    static TypedArgumentListNode parseOnOpenBrace(@NotNull TokenList tokens, boolean allowUntyped) {
+        return tokens.tokenIs("(") ? parse(tokens, allowUntyped) : empty();
     }
 
     @NotNull
@@ -93,50 +108,73 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     @NotNull
     @Contract("_ -> new")
     static TypedArgumentListNode parse(@NotNull TokenList tokens) {
+        return parse(tokens, false);
+    }
+
+    /**
+     * Parse a TypedArgumentListNode from a list of tokens, possibly allowing
+     * dynamically-typed arguments.
+     * <p>
+     *     The syntax for a list of typed arguments is: <code>"(" {@link
+     *     TypedArgumentNode} *("," {@link TypedArgumentNode}) ["," "/"] *(","
+     *     {@link TypedArgumentNode}) ["," "*"] *("," {@link
+     *     TypedArgumentNode}) [","] ")"</code>.
+     * </p>
+     *
+     * @param tokens The list of tokens to be parsed destructively
+     * @param allowUntyped Whether or not to allow untyped arguments
+     * @return The freshly parsed TypedArgumentListNode
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    private static TypedArgumentListNode parse(@NotNull TokenList tokens, boolean allowUntyped) {
         assert tokens.tokenIs("(");
-        LineInfo lineInfo = tokens.lineInfo();
-        boolean has_posArgs = tokens.braceContains("/");
-        if (!tokens.tokenIs("(")) {
-            throw tokens.error("Argument lists must start with an open-paren");
-        }
+        LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
-        ArrayList<TypedArgumentNode> posArgs = new ArrayList<>();
-        ArrayList<TypedArgumentNode> args = new ArrayList<>();
-        ArrayList<TypedArgumentNode> kwArgs = new ArrayList<>();
-        if (has_posArgs) {
-            while (!tokens.tokenIs("/")) {
-                posArgs.add(TypedArgumentNode.parse(tokens));
-                if (tokens.tokenIs(TokenType.COMMA)) {
-                    tokens.nextToken(true);
+        boolean untypedDecided = !allowUntyped;
+        List<TypedArgumentNode> posArgs = new ArrayList<>(0);  // Never used, so don't alloc memory for it
+        List<TypedArgumentNode> args = new ArrayList<>();
+        List<TypedArgumentNode> kwArgs = new ArrayList<>();
+        List<TypedArgumentNode> currentArgList = args;
+        while (!tokens.tokenIs(")")) {
+            if (tokens.tokenIs("/")) {
+                if (!posArgs.isEmpty() || currentArgList == kwArgs) {
+                    throw tokens.error("Illegal use of name-only token");
+                }
+                posArgs = args;
+                args = new ArrayList<>();
+                currentArgList = args;
+                tokens.nextToken(true);
+            } else {
+                if (tokens.tokenIs("*") && currentArgList != kwArgs) {
+                    TypedArgumentNode next = TypedArgumentNode.parseAllowingEmpty(tokens, allowUntyped, untypedDecided);
+                    if (next == null) {
+                        currentArgList = kwArgs;
+                    } else {
+                        currentArgList.add(next);
+                        if (!untypedDecided) {
+                            allowUntyped = !currentArgList.get(currentArgList.size() - 1).getType().isDecided();
+                        }
+                    }
+                } else {
+                    if (!untypedDecided) {
+                        allowUntyped = TypedArgumentNode.argumentIsUntyped(tokens);
+                        untypedDecided = true;
+                    }
+                    currentArgList.add(TypedArgumentNode.parse(tokens, !allowUntyped));
+                    tokens.passNewlines();
                 }
             }
-            tokens.nextToken();
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken(true);
-            } else if (!tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw tokens.error("Unexpected " + tokens.getFirst());
+            if (!tokens.tokenIs(TokenType.COMMA)) {
+                break;
             }
+            tokens.nextToken(true);
         }
-        ArrayList<TypedArgumentNode> which_args = args;
-        while (!tokens.tokenIs(")")) {
-            if (tokens.tokenIs("*") && tokens.tokenIs(1, ",", ")")) {
-                which_args = kwArgs;
-                tokens.nextToken(true);
-                tokens.nextToken(true);
-                continue;
-            }
-            which_args.add(TypedArgumentNode.parse(tokens));
-            tokens.passNewlines();
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken(true);
-                continue;
-            }
-            if (!tokens.tokenIs(")")) {
-                throw tokens.error("Comma must separate arguments");
-            }
+        if (!tokens.tokenIs(")")) {
+            throw tokens.error("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken();
-        return new TypedArgumentListNode(lineInfo, posArgs.toArray(new TypedArgumentNode[0]),
+        return new TypedArgumentListNode(info, posArgs.toArray(new TypedArgumentNode[0]),
                 args.toArray(new TypedArgumentNode[0]), kwArgs.toArray(new TypedArgumentNode[0]));
     }
 
