@@ -68,24 +68,8 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TypedArgumentListNode
      */
-    @NotNull
     static TypedArgumentListNode parseOnOpenBrace(@NotNull TokenList tokens) {
-        return parseOnOpenBrace(tokens, false);
-    }
-
-    /**
-     * Parse a typed argument list if and only if the next token is an open
-     * brace, possibly allowing dynamically typed arguments.
-     * <p>
-     *     For grammar, see {@link #parse(TokenList)}
-     * </p>
-     *
-     * @param tokens The list of tokens to be destructively parsed
-     * @param allowUntyped Whether or not to allow untyped arguments
-     * @return The freshly parsed TypedArgumentListNode
-     */
-    static TypedArgumentListNode parseOnOpenBrace(@NotNull TokenList tokens, boolean allowUntyped) {
-        return tokens.tokenIs("(") ? parse(tokens, allowUntyped) : empty();
+        return tokens.tokenIs("(") ? parse(tokens, false) : empty();
     }
 
     @NotNull
@@ -131,12 +115,23 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
         assert tokens.tokenIs("(");
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
+        TypedArgumentListNode list = parseInsideParens(tokens, info, allowUntyped);
+        if (!tokens.tokenIs(")")) {
+            throw tokens.error("Unexpected " + tokens.getFirst());
+        }
+        tokens.nextToken();
+        return list;
+    }
+
+    @NotNull
+    @Contract("_, _, _ -> new")
+    private static TypedArgumentListNode parseInsideParens(TokenList tokens, LineInfo info, boolean allowUntyped) {
         boolean untypedDecided = !allowUntyped;
         List<TypedArgumentNode> posArgs = new ArrayList<>(0);  // Never used, so don't alloc memory for it
         List<TypedArgumentNode> args = new ArrayList<>();
         List<TypedArgumentNode> kwArgs = new ArrayList<>();
         List<TypedArgumentNode> currentArgList = args;
-        while (!tokens.tokenIs(")")) {
+        while (TestNode.nextIsTest(tokens)) {
             if (tokens.tokenIs("/")) {
                 if (!posArgs.isEmpty() || currentArgList == kwArgs) {
                     throw tokens.error("Illegal use of name-only token");
@@ -170,12 +165,14 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
             }
             tokens.nextToken(true);
         }
-        if (!tokens.tokenIs(")")) {
-            throw tokens.error("Unexpected " + tokens.getFirst());
-        }
-        tokens.nextToken();
         return new TypedArgumentListNode(info, posArgs.toArray(new TypedArgumentNode[0]),
                 args.toArray(new TypedArgumentNode[0]), kwArgs.toArray(new TypedArgumentNode[0]));
+    }
+
+    static TypedArgumentListNode parseOptionalParens(@NotNull TokenList tokens) {
+        return tokens.tokenIs("(")
+                ? parse(tokens, true)
+                : parseInsideParens(tokens, tokens.lineInfo(), true);
     }
 
     @Override
