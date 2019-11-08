@@ -148,19 +148,15 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      */
     @NotNull
     static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
-        if (tokens.lineContains(TokenType.ASSIGN)) {
-            throw tokens.error("Illegal assignment");
-        } else if (ignoreNewlines && tokens.braceContains(TokenType.AUG_ASSIGN)) {
-            throw tokens.error("Illegal augmented assignment");
-        } else if (!ignoreNewlines && tokens.lineContains(TokenType.AUG_ASSIGN)) {
-            throw tokens.error("Illegal augmented assignment");
+        LineInfo info = tokens.lineInfo();
+        TestNode node = parseExpression(tokens, ignoreNewlines);
+        if (tokens.tokenIs(TokenType.ASSIGN, TokenType.AUG_ASSIGN)) {
+            throw ParserException.of("Illegal assignment", info);
+        }
+        if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, node);
         } else {
-            TestNode node = parseExpression(tokens, ignoreNewlines);
-            if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
-                return DottedVariableNode.fromExpr(tokens, node);
-            } else {
-                return node;
-            }
+            return node;
         }
     }
 
