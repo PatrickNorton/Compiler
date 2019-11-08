@@ -33,6 +33,7 @@ public enum DescriptorNode implements AtomicNode {
     CONST("const"),
     FINAL("final"),
     GENERATOR("generator"),
+    SYNCED("synced"),
     ;
 
     public static final Pattern PATTERN = Pattern.compile("^(" +
@@ -51,14 +52,16 @@ public enum DescriptorNode implements AtomicNode {
     private static final EnumSet<DescriptorNode> CONST_SET = EnumSet.of(CONST);
     private static final EnumSet<DescriptorNode> FINAL_SET = EnumSet.of(FINAL);
     private static final EnumSet<DescriptorNode> GENERATOR_SET = EnumSet.of(GENERATOR);
+    private static final EnumSet<DescriptorNode> SYNCED_SET = EnumSet.of(SYNCED);
 
-    private static final List<EnumSet<DescriptorNode>> SETS = List.of(ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET);
+    private static final List<EnumSet<DescriptorNode>> SETS = List.of(
+            ACCESS, STATIC_SET, CONST_SET, FINAL_SET, GENERATOR_SET, SYNCED_SET);
 
     static final EnumSet<DescriptorNode> DEFINITION_VALID = EnumSet.of(PUBLIC, PRIVATE, CONST, FINAL, STATIC);
-    static final EnumSet<DescriptorNode> FUNCTION_VALID = EnumSet.of(GENERATOR);
+    static final EnumSet<DescriptorNode> FUNCTION_VALID = EnumSet.of(GENERATOR, SYNCED);
     static final EnumSet<DescriptorNode> DECLARATION_VALID = EnumSet.of(PUBLIC, PRIVATE, PUBGET, CONST, FINAL, STATIC);
-    static final EnumSet<DescriptorNode> CONTEXT_VALID = EnumSet.of(PUBLIC, PRIVATE, GENERATOR, STATIC, FINAL);
-    static final EnumSet<DescriptorNode> METHOD_VALID = EnumSet.of(PUBLIC, PRIVATE, STATIC, CONST, FINAL, GENERATOR);
+    static final EnumSet<DescriptorNode> CONTEXT_VALID = EnumSet.of(PUBLIC, PRIVATE, GENERATOR, STATIC, FINAL, SYNCED);
+    static final EnumSet<DescriptorNode> METHOD_VALID = EnumSet.of(PUBLIC, PRIVATE, STATIC, CONST, FINAL, GENERATOR, SYNCED);
     static final EnumSet<DescriptorNode> STATIC_BLOCK_VALID = EnumSet.noneOf(DescriptorNode.class);
 
     static {
