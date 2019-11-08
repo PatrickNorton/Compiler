@@ -62,6 +62,7 @@ public enum Keyword {
     DEFER("defer", DeferStatementNode::parse),
     VAR("var", IndependentNode::parseVar),
     INLINE("inline", InlineableNode::parse),
+    SYNC("sync", SynchronizedStatementNode::parse),
     ;
 
     private static final Map<String, Keyword> values;
