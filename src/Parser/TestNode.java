@@ -147,7 +147,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed TestNode
      */
     @NotNull
-    private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
         if (tokens.lineContains(TokenType.ASSIGN)) {
             throw tokens.error("Illegal assignment");
         } else if (ignoreNewlines && tokens.braceContains(TokenType.AUG_ASSIGN)) {
@@ -473,17 +473,13 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     @NotNull
-    private static TestNode[] parseList(TokenList tokens, boolean ignoreNewlines, boolean danglingIf) {
+    private static TestNode[] parseList(TokenList tokens, boolean ignoreNewlines, boolean noTernary) {
         if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
         List<TestNode> tests = new ArrayList<>();
         while (nextIsTest(tokens)) {
-            if (!danglingIf || TernaryNode.beforeDanglingIf(tokens)) {
-                tests.add(parse(tokens, ignoreNewlines));
-            } else {
-                tests.add(parseNoTernary(tokens, ignoreNewlines));
-            }
+            tests.add(noTernary ? parseNoTernary(tokens, ignoreNewlines) : parse(tokens, ignoreNewlines));
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
             }
@@ -493,16 +489,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     @NotNull
-    static TestNode[] parseListDanglingIf(TokenList tokens, boolean ignore_newlines) {
+    static TestNode[] parseListNoTernary(TokenList tokens, boolean ignore_newlines) {
         return parseList(tokens, ignore_newlines, true);
-    }
-
-    static TestNode parseDanglingIf(TokenList tokens) {
-        if (TernaryNode.beforeDanglingIf(tokens)) {
-            return parse(tokens);
-        } else {
-            return parseNoTernary(tokens, false);
-        }
     }
 
     static boolean nextIsTest(@NotNull TokenList tokens) {

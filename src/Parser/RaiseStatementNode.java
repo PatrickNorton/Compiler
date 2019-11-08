@@ -52,7 +52,7 @@ public class RaiseStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs(Keyword.RAISE);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TestNode raised = TestNode.parseDanglingIf(tokens);
+        TestNode raised = TestNode.parseNoTernary(tokens, false);
         TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, false);
         return new RaiseStatementNode(lineInfo, raised, condition);
     }
