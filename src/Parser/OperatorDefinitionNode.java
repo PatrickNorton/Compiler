@@ -125,6 +125,14 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         return new OperatorDefinitionNode(op_code, retval, args, body);
     }
 
+    @NotNull
+    @Contract("_, _ -> new")
+    static OperatorDefinitionNode fromGeneric(@NotNull TokenList tokens, @NotNull GenericOperatorNode op) {
+        assert tokens.tokenIs("{");
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        return new OperatorDefinitionNode(op.getOp_code(), op.getRetvals(), op.getArgs(), body);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(DescriptorNode.join(descriptors));

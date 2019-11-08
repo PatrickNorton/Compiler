@@ -26,30 +26,27 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
         if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {
             return StaticBlockNode.parse(tokens);
         }
-        if (tokens.tokenIs(TokenType.OPERATOR_SP) && GenericOperatorNode.isGeneric(tokens)) {
-            return GenericOperatorNode.parse(tokens);
-        }
-        if (tokens.tokenIs(Keyword.METHOD) && GenericFunctionNode.isGeneric(tokens)) {
-            return GenericFunctionNode.parse(tokens);
-        }
-        if (tokens.tokenIs(TokenType.DESCRIPTOR) && GenericDefinitionNode.isGeneric(tokens)) {
-            EnumSet<DescriptorNode> descriptors = DescriptorNode.parseList(tokens);
-            GenericDefinitionNode op;
-            if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
-                op = GenericOperatorNode.parse(tokens);
-                op.addDescriptor(descriptors);
-                return op;
-            } else if (tokens.tokenIs(Keyword.METHOD)) {
-                op = GenericFunctionNode.parse(tokens);
-                op.addDescriptor(descriptors);
-                return op;
+        EnumSet<DescriptorNode> descriptors = DescriptorNode.parseList(tokens);
+        InterfaceStatementNode op;
+        if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
+            op = GenericOperatorNode.parse(tokens);
+            if (tokens.tokenIs("{")) {
+                op = OperatorDefinitionNode.fromGeneric(tokens, (GenericOperatorNode) op);
+            }
+        } else if (tokens.tokenIs(Keyword.METHOD)) {
+            op = GenericFunctionNode.parse(tokens);
+            if (tokens.tokenIs("{")) {
+                op = MethodDefinitionNode.fromGeneric(tokens, (GenericFunctionNode) op);
+            }
+        } else {
+            BaseNode stmt = IndependentNode.parse(tokens);
+            if (stmt instanceof InterfaceStatementNode) {
+                op = (InterfaceStatementNode) stmt;
+            } else {
+                throw tokens.error("Illegal statement");
             }
         }
-        BaseNode stmt = IndependentNode.parse(tokens);
-        if (stmt instanceof InterfaceStatementNode) {
-            return (InterfaceStatementNode) stmt;
-        } else {
-            throw tokens.error("Illegal statement");
-        }
+        op.addDescriptor(descriptors);
+        return op;
     }
 }

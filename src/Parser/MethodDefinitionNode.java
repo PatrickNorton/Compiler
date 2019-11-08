@@ -119,6 +119,12 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         return new MethodDefinitionNode(info, name, args, retval, body);
     }
 
+    static MethodDefinitionNode fromGeneric(TokenList tokens, GenericFunctionNode op) {
+        assert tokens.tokenIs("{");
+        StatementBodyNode body = StatementBodyNode.parse(tokens);
+        return new MethodDefinitionNode(op.getLineInfo(), op.getName(), op.getArgs(), op.getRetvals(), body);
+    }
+
     @Override
     public String toString() {
         return String.format("%smethod %s%s%s %s",
