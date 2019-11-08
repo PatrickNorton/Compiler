@@ -80,28 +80,6 @@ public class DottedVariableNode implements NameNode {
     }
 
     /**
-     * Parse a DottedVariableNode starting with an open brace.
-     *
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed DottedVariableNode
-     */
-    @NotNull
-    static DottedVariableNode parseOpenBrace(@NotNull TokenList tokens) {
-        assert tokens.tokenIs("(");
-        tokens.nextToken(true);
-        TestNode preDot = TestNode.parse(tokens, true);
-        if (!tokens.tokenIs(")")) {
-            throw tokens.error("Unexpected " + tokens.getFirst());
-        }
-        tokens.nextToken();
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return fromExpr(tokens, preDot);
-        } else {
-            throw tokens.error("Token must have been dotted");
-        }
-    }
-
-    /**
      * Given a variable, parses the rest of the dotted vars after it.
      * <p>
      *     The syntax for what may be parsed here is: <code>"." {@link
