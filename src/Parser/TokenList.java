@@ -82,51 +82,53 @@ public final class TokenList implements Iterable<Token> {
         return false;
     }
 
-    // FIXME: Prevent parsing of block braces
     /**
      * Create an iterable for a line of the code.
      * @return The iterable for the line
      */
     @NotNull
     @Contract(pure = true)
-    Iterable<Token> lineIterator() {
+    private Iterable<Token> lineIterator() {
         return LineIterator::new;
     }
 
     private class LineIterator implements Iterator<Token> {
         private Iterator<Token> iterator = TokenList.this.zerothLevel().iterator();
-        private Token next = iterator.hasNext() ? iterator.next() : null;
+        private boolean hasNext = iterator.hasNext();
+        private Token next = hasNext ? iterator.next() : null;
+        private Token previous = null;
 
         @Override
         public boolean hasNext() {
-            return next != null;
+            return next == null ? adjustNext() : hasNext;
         }
 
         @Override
         public Token next() {
             if (next == null) {
+                adjustNext();
+            }
+            if (!hasNext) {
                 throw new NoSuchElementException();
             }
-            Token toReturn;
-            toReturn = next;
-            adjustNext(toReturn);
-            return toReturn;
+            previous = next;
+            next = null;
+            return previous;
         }
 
-        private void adjustNext(@NotNull Token token) {
+        private boolean adjustNext() {
+            assert next == null;
             if (!iterator.hasNext()) {
-                next = null;
+                return hasNext = false;
             } else {
                 next = iterator.next();
             }
-            if (next == null) {
-                return;
+            if (next.is("{") && !previous.is(TokenType.BRACE_IS_LITERAL)) {
+                hasNext = false;
+            } else if (previous.is(TokenType.NEWLINE)) {
+                hasNext = false;
             }
-            if (next.is("{") && !token.is(TokenType.BRACE_IS_LITERAL)) {
-                next = null;
-            } else if (token.is(TokenType.NEWLINE)) {
-                next = null;
-            }
+            return hasNext;
         }
     }
 
