@@ -116,9 +116,9 @@ public interface IndependentNode extends BaseNode {
     private static IndependentNode parseLeftVariable(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME, TokenType.OPEN_BRACE);
         Token after_var = tokens.getToken(tokens.sizeOfVariable());
-        if (tokens.lineContains(TokenType.ASSIGN)) {
+        if (isAssignment(tokens, TokenType.ASSIGN)) {
             return AssignStatementNode.parse(tokens);
-        } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
+        } else if (isAssignment(tokens, TokenType.AUG_ASSIGN)) {
             return AugmentedAssignmentNode.parse(tokens);
         } else if (after_var.is(TokenType.INCREMENT)) {
             return SimpleStatementNode.parseIncDec(tokens);
@@ -131,6 +131,44 @@ public interface IndependentNode extends BaseNode {
             return DeclarationNode.parse(tokens);
         } else {
             return TestNode.parse(tokens);
+        }
+    }
+
+    /**
+     * Figure out if the upcoming sequence of tokens is assignment or not.
+     * <p>
+     *     This exists over the more simple {@link TokenList#lineContains}
+     *     methods because it tends to parse much less of the line, leading to
+     *     more efficient parsing overall.
+     * </p>
+     *
+     * @param tokens The list of tokens to check
+     * @param type The type of assignment to check for
+     * @return If there is a legal assignment ahead
+     */
+    private static boolean isAssignment(@NotNull TokenList tokens, TokenType type) {
+        int from = 0;
+        while (true) {
+            int varSize = tokens.sizeOfVariable(from);
+            if (tokens.tokenIs(varSize, "?") && tokens.tokenIs(varSize + 1, TokenType.NAME)) {
+                if (tokens.tokenIs(tokens.sizeOfVariable(varSize + 1), TokenType.COMMA)) {
+                    from = tokens.sizeOfVariable(varSize + 1) + 1;
+                } else {
+                    return tokens.tokenIs(tokens.sizeOfVariable(varSize + 1), type);
+                }
+            } else if (tokens.tokenIs(varSize, TokenType.NAME)) {
+                if (tokens.tokenIs(tokens.sizeOfVariable(varSize), TokenType.COMMA)) {
+                    from = tokens.sizeOfVariable(varSize) + 1;
+                } else {
+                    return tokens.tokenIs(tokens.sizeOfVariable(varSize), type);
+                }
+            } else {
+                if (tokens.tokenIs(varSize, TokenType.COMMA)) {
+                    from = tokens.sizeOfVariable(varSize + 1) + 1;
+                } else {
+                    return tokens.tokenIs(varSize, type);
+                }
+            }
         }
     }
 
