@@ -116,18 +116,13 @@ public interface IndependentNode extends BaseNode {
     private static IndependentNode parseLeftVariable(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME, TokenType.OPEN_BRACE);
         Token after_var = tokens.getToken(tokens.sizeOfVariable());
-        if (isAssignment(tokens, TokenType.ASSIGN)) {
+        if (isAssignment(tokens)) {
             return AssignStatementNode.parse(tokens);
-        } else if (isAssignment(tokens, TokenType.AUG_ASSIGN)) {
+        } else if (tokens.tokenIs(tokens.sizeOfVariable(), TokenType.AUG_ASSIGN)) {
             return AugmentedAssignmentNode.parse(tokens);
         } else if (after_var.is(TokenType.INCREMENT)) {
             return SimpleStatementNode.parseIncDec(tokens);
-        } else if (tokens.lineContains(TokenType.OPERATOR)) {
-            if (after_var.is("?") && isDeclaration(tokens)) {
-                return DeclarationNode.parse(tokens);
-            }
-            return TestNode.parse(tokens);
-        } else if (after_var.is(TokenType.NAME)) {
+        } else if (isDeclaration(tokens)) {
             return DeclarationNode.parse(tokens);
         } else {
             return TestNode.parse(tokens);
@@ -143,40 +138,32 @@ public interface IndependentNode extends BaseNode {
      * </p>
      *
      * @param tokens The list of tokens to check
-     * @param type The type of assignment to check for
      * @return If there is a legal assignment ahead
      */
-    private static boolean isAssignment(@NotNull TokenList tokens, TokenType type) {
+    private static boolean isAssignment(TokenList tokens) {
         int from = 0;
         while (true) {
-            int varSize = tokens.sizeOfVariable(from);
-            if (tokens.tokenIs(varSize, "?") && tokens.tokenIs(varSize + 1, TokenType.NAME)) {
-                if (tokens.tokenIs(tokens.sizeOfVariable(varSize + 1), TokenType.COMMA)) {
-                    from = tokens.sizeOfVariable(varSize + 1) + 1;
-                } else {
-                    return tokens.tokenIs(tokens.sizeOfVariable(varSize + 1), type);
-                }
-            } else if (tokens.tokenIs(varSize, TokenType.NAME)) {
-                if (tokens.tokenIs(tokens.sizeOfVariable(varSize), TokenType.COMMA)) {
-                    from = tokens.sizeOfVariable(varSize) + 1;
-                } else {
-                    return tokens.tokenIs(tokens.sizeOfVariable(varSize), type);
-                }
+            int varSize = TypeNode.sizeOfType(tokens, from);
+            if (varSize == 0) {
+                return tokens.tokenIs(tokens.sizeOfVariable(from), TokenType.ASSIGN);
+            } else if (tokens.tokenIs(varSize, TokenType.ASSIGN)) {
+                return true;
+            } else if (!tokens.tokenIs(varSize, TokenType.NAME)) {
+                return false;
+            }
+            int newVarSize = tokens.sizeOfVariable(varSize);
+            if (tokens.tokenIs(newVarSize, TokenType.COMMA)) {
+                from = newVarSize + 1;
             } else {
-                if (tokens.tokenIs(varSize, TokenType.COMMA)) {
-                    from = tokens.sizeOfVariable(varSize + 1) + 1;
-                } else {
-                    return tokens.tokenIs(varSize, type);
-                }
+                return tokens.tokenIs(newVarSize, TokenType.ASSIGN);
             }
         }
     }
 
     private static boolean isDeclaration(@NotNull TokenList tokens) {
-        int varSize = tokens.sizeOfVariable();
-        if (tokens.tokenIs(varSize, "?") && tokens.tokenIs(varSize + 1, TokenType.NAME)) {
-            return tokens.tokenIs(tokens.sizeOfVariable(varSize + 1), TokenType.NEWLINE);
-        }
-        return false;
+        int varSize = TypeNode.sizeOfType(tokens, 0);
+        return varSize > 0
+                && tokens.tokenIs(varSize, TokenType.NAME)
+                && tokens.tokenIs(varSize + 1, TokenType.NEWLINE);
     }
 }

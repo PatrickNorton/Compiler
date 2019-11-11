@@ -219,6 +219,53 @@ public class TypeNode implements AtomicNode {
         };
     }
 
+    static int sizeOfType(@NotNull TokenList tokens, int start) {
+        int netBraces = 0;
+        Token previous = Token.Epsilon(LineInfo.empty());
+        for (int i = start;; i++) {
+            Token token = tokens.getToken(i);
+            switch (token.token) {
+                case OPEN_BRACE:
+                    if (!token.is("[")) {
+                        return netBraces == 0 ? Math.max(i - 1, 0) : 0;
+                    } else if (!previous.is(TokenType.NAME, TokenType.EPSILON)) {
+                        return 0;
+                    }
+                    netBraces++;
+                    break;
+                case CLOSE_BRACE:
+                    netBraces--;
+                    break;
+                case NAME:
+                    if (previous.is(TokenType.NAME, TokenType.CLOSE_BRACE) || previous.is("?")) {
+                        return i;
+                    }
+                    break;
+                case DOT:
+                    if (!previous.is(TokenType.NAME)) {
+                        return 0;
+                    }
+                    break;
+                case OPERATOR:
+                    if (!token.is("?", "*")) {
+                        return 0;
+                    } else if (token.is("*") && !previous.is(TokenType.COMMA, TokenType.OPEN_BRACE)) {
+                        return 0;
+                    }
+                    break;
+                case COMMA:
+                case NEWLINE:
+                    if (netBraces == 0) {
+                        return i;
+                    }
+                    break;
+                default:
+                    return netBraces == 0 ? i : 0;
+            }
+            previous = token.is(TokenType.NEWLINE) ? previous : token;
+        }
+    }
+
     public static String returnString(@NotNull TypeNode... values) {
         if (values.length == 0) {
             return "";
