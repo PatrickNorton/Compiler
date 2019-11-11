@@ -8,4 +8,5 @@ package Parser;
  */
 public interface BodyNode extends BaseNode, EmptiableNode {
     IndependentNode[] getStatements();
+    IndependentNode get(int i);
 }

@@ -41,6 +41,11 @@ public class StatementBodyNode implements BodyNode {
         return statements.length == 0;
     }
 
+    @Override
+    public IndependentNode get(int i) {
+        return statements[i];
+    }
+
     @NotNull
     @Contract(" -> new")
     public static StatementBodyNode empty() {

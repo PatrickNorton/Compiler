@@ -88,6 +88,6 @@ public class LambdaNode implements SubTestNode {
     }
 
     private String arrowString() {
-        return String.format("=> %s", body.getStatements()[0]);
+        return String.format("=> %s", body.get(0));
     }
 }

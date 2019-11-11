@@ -34,6 +34,11 @@ public class InterfaceBodyNode implements BodyNode {
         return statements.length == 0;
     }
 
+    @Override
+    public InterfaceStatementNode get(int i) {
+        return statements[i];
+    }
+
     /**
      * Parse an interface body from a list of tokens.
      * <p>

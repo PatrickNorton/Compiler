@@ -42,6 +42,11 @@ public class ClassBodyNode implements BodyNode {
         return statements.length == 0;
     }
 
+    @Override
+    public ClassStatementNode get(int i) {
+        return statements[i];
+    }
+
     /**
      * Parse ClassBodyNode from list of tokens.
      * <p>
