@@ -84,6 +84,10 @@ public class LambdaNode implements SubTestNode {
 
     @Override
     public String toString() {
-        return String.format("lambda %s%s %s", args, TypeNode.returnString(returns), isArrow ? "=> ..." : body);
+        return String.format("lambda %s%s %s", args, TypeNode.returnString(returns), isArrow ? arrowString() : body);
+    }
+
+    private String arrowString() {
+        return String.format("=> %s", body.getStatements()[0]);
     }
 }
