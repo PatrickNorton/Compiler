@@ -65,25 +65,12 @@ public class TypedArgumentNode implements BaseNode {
     }
 
     /**
-     * Parse a possibly typeless TypedArgumentNode from a list of tokens.
+     * Parse a TypedArgumentNode from a list of tokens, typed if stated so.
      * <p>
      *     The syntax for a typed argument is: <code>["*" | "**"] {@link
      *     TypeNode} {@link VariableNode} ["=" {@link TestNode}]</code>.
      *     The syntax for a untyped argument is: <code>["*" | "**"] {@link
      *     VariableNode} ["=" {@link TestNode}]</code>.
-     * </p>
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The newly parsed TypedArgumentNode
-     */
-    @NotNull
-    static TypedArgumentNode parseMaybeTypeless(TokenList tokens) {
-        return parse(tokens, !argumentIsUntyped(tokens));
-    }
-
-    /**
-     * Parse a TypedArgumentNode from a list of tokens, typed if stated so.
-     * <p>
-     *     For grammar, see the {@link #parseMaybeTypeless} method.
      * </p>
      *
      * @param tokens The list of tokens to be destructively parsed
@@ -159,10 +146,8 @@ public class TypedArgumentNode implements BaseNode {
      * @return Whether or not the node is untyped
      */
     static boolean argumentIsUntyped(@NotNull TokenList tokens) {
-        int size = tokens.sizeOfVariable();
-        return !tokens.tokenIs(size, TokenType.NAME) &&
-                (!tokens.tokenIs(size, "?") ||
-                        !tokens.tokenIs(size + tokens.numberOfNewlines(size), TokenType.NAME));
+        int size = TypeNode.sizeOfType(tokens, tokens.tokenIs("*", "**") ? 1 : 0);
+        return size == 0 || !tokens.tokenIs(size + tokens.numberOfNewlines(size), TokenType.NAME);
     }
 
     @Override

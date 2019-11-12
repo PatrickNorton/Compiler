@@ -127,13 +127,13 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
     @Contract("_, _, _ -> new")
     private static TypedArgumentListNode parseInsideParens(TokenList tokens, LineInfo info, boolean allowUntyped) {
         boolean untypedDecided = !allowUntyped;
-        List<TypedArgumentNode> posArgs = new ArrayList<>(0);  // Never used, so don't alloc memory for it
+        List<TypedArgumentNode> posArgs = null;  // Never used, so don't alloc memory for it
         List<TypedArgumentNode> args = new ArrayList<>();
         List<TypedArgumentNode> kwArgs = new ArrayList<>();
         List<TypedArgumentNode> currentArgList = args;
         while (TypeNode.nextIsType(tokens)) {
             if (tokens.tokenIs("/")) {
-                if (!posArgs.isEmpty() || currentArgList == kwArgs) {
+                if (posArgs != null || currentArgList == kwArgs) {
                     throw tokens.error("Illegal use of name-only token");
                 }
                 posArgs = args;
@@ -148,7 +148,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
                     } else {
                         currentArgList.add(next);
                         if (!untypedDecided) {
-                            allowUntyped = !currentArgList.get(currentArgList.size() - 1).getType().isDecided();
+                            allowUntyped = !next.getType().isDecided();
                         }
                     }
                 } else {
@@ -165,7 +165,8 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
             }
             tokens.nextToken(true);
         }
-        return new TypedArgumentListNode(info, posArgs.toArray(new TypedArgumentNode[0]),
+        return new TypedArgumentListNode(info,
+                posArgs == null ? new TypedArgumentNode[0] : posArgs.toArray(new TypedArgumentNode[0]),
                 args.toArray(new TypedArgumentNode[0]), kwArgs.toArray(new TypedArgumentNode[0]));
     }
 
