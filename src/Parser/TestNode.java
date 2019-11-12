@@ -223,19 +223,10 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 }
             }
         }
-        OperatorNode previous;
         if (tempNodes.isEmpty()) {
             return nextNode;
         }
-        previous = tempNodes.removeLast().addArgument(nextNode);
-        while (!tempNodes.isEmpty()) {
-            if (tempNodes.peekLast().precedence() > previous.precedence()) {
-                previous = tempNodes.removeLast().addArgument(previous);
-            } else {
-                previous = previous.addArgument(0, tempNodes.removeLast());
-            }
-        }
-        return previous;
+        return finalizeArguments(tempNodes, nextNode);
     }
 
     private static void addUnary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
@@ -303,6 +294,23 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         nodes.addLast(node);
     }
 
+    private static OperatorNode finalizeArguments(@NotNull Deque<OperatorNode> nodes, TestNode next) {
+        OperatorNode previous = nodes.removeLast();
+        if (previous.isPostfix()) {
+            throw ParserException.of("Illegal postfix operator", nodes.getLast().getLineInfo());
+        }
+        previous.addArgument(next);
+        while (!nodes.isEmpty()) {
+            OperatorNode last = nodes.getLast();
+            if (last.precedence() > previous.precedence()) {
+                previous = nodes.removeLast().addArgument(previous);
+            } else {
+                previous = previous.addArgument(0, nodes.removeLast());
+            }
+        }
+        return previous;
+    }
+
     /**
      * Parse a node from a list of tokens, or return null if no next node
      * exists.
@@ -336,19 +344,12 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     throw tokens.internalError("Illegal place for newline");
                 }
                 return null;
-            case EPSILON:
-            case COLON:
-            case COMMA:
-            case CLOSE_BRACE:
-            case DOUBLE_ARROW:
-            case ARROW:
-                return null;
             case STRING:
                 return StringLikeNode.parse(tokens);
             case KEYWORD:
                 return parseKeywordNode(tokens);
             default:
-                throw tokens.error("Unexpected " + tokens.getFirst());
+                return null;
         }
     }
 
