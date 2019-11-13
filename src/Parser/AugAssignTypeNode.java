@@ -26,6 +26,9 @@ public enum AugAssignTypeNode {
     BITWISE_NOT("~"),
     MODULO("%"),
     NULL_COERCE("??"),
+    BOOL_AND("and"),
+    BOOL_OR("or"),
+    BOOL_XOR("xor"),
     ;
 
     private static final Map<String, AugAssignTypeNode> values;
