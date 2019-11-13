@@ -75,8 +75,7 @@ public enum OpSpTypeNode {
              Arrays.stream(values())
                      .map(o -> o.name)
                      .sorted(Comparator.comparingInt(String::length).reversed())
-                     .map(Pattern::quote)
-                     .map(s -> Pattern.compile("\\w(?<!\\\\E)(\\\\E)?$").matcher(s).find() ? s + "\\b" : s)
+                     .map(s -> Pattern.compile("\\w$").matcher(s).find() ? s + "\\b" : Pattern.quote(s))
                      .collect(Collectors.joining("|"))
             + ")"
     );
