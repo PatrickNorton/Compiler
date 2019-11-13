@@ -220,6 +220,9 @@ public class TypeNode implements AtomicNode {
     }
 
     static int sizeOfType(@NotNull TokenList tokens, int start) {
+        if (tokens.tokenIs(Keyword.VAR)) {
+            return start + 1;
+        }
         int netBraces = 0;
         Token previous = Token.Epsilon(LineInfo.empty());
         for (int i = start;; i++) {
