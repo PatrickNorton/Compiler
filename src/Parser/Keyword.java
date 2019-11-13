@@ -47,8 +47,6 @@ public enum Keyword {
     DEL("del", DeleteStatementNode::parse),
     YIELD("yield", YieldStatementNode::parse),
     CONTEXT("context", ContextDefinitionNode::parse),
-    GET("get", " must be in a property block", TokenPlace.LEFT),
-    SET("set", " must be in a property block", TokenPlace.LEFT),
     LAMBDA("lambda", TestNode::parse),
     RAISE("raise", RaiseStatementNode::parse),
     TYPEDEF("typedef", TypedefStatementNode::parse),

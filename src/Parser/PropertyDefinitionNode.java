@@ -122,15 +122,16 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode type = TypeNode.parse(tokens);
-        VariableNode name = VariableNode.parseOnName(tokens);
+        VariableNode name = VariableNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
             throw tokens.error("Unexpected " + tokens.getFirst());
         }
         tokens.nextToken(true);
-        StatementBodyNode get = StatementBodyNode.parseOnToken(tokens, Keyword.GET);
+        StatementBodyNode get = StatementBodyNode.parseOnToken(tokens, "get");
         StatementBodyNode set;
         TypedArgumentListNode setArgs;
-        if (tokens.tokenIs(Keyword.SET)) {
+        tokens.passNewlines();
+        if (tokens.tokenIs("set")) {
             tokens.nextToken();
             setArgs = TypedArgumentListNode.parse(tokens);
             set = StatementBodyNode.parse(tokens);
@@ -148,6 +149,8 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
 
     @Override
     public String toString() {
-        return DescriptorNode.join(descriptors) + "property " + name + get;
+        return String.format("%sproperty %s %s {%s%s}",
+                DescriptorNode.join(descriptors), type, name,
+                get.isEmpty() ? "" : "get, ", set.isEmpty() ? "" : "set " + set_args);
     }
 }
