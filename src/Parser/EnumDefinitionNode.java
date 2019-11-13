@@ -12,13 +12,12 @@ import java.util.List;
  *
  * @author Patrick Norton
  */
-public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, InlineableNode {
+public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     private LineInfo lineInfo;
     private TypeNode name;
     private TypeNode[] superclasses;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
-    private boolean inline;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
@@ -59,16 +58,6 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode, I
     @Override
     public ClassBodyNode getBody() {
         return body;
-    }
-
-    @Override
-    public boolean isInline() {
-        return inline;
-    }
-
-    @Override
-    public void setInline(boolean inline) {
-        this.inline = inline;
     }
 
     @Override

@@ -59,7 +59,6 @@ public enum Keyword {
     GOTO("goto", "This language does not support goto, go use C++", TokenPlace.NONE),
     DEFER("defer", DeferStatementNode::parse),
     VAR("var", IndependentNode::parseVar),
-    INLINE("inline", InlineableNode::parse),
     SYNC("sync", SynchronizedStatementNode::parse),
     ;
 

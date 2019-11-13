@@ -10,12 +10,11 @@ import java.util.EnumSet;
  *
  * @author Patrick Norton
  */
-public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, InlineableNode {
+public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private LineInfo lineInfo;
     private TypeNode name;
     private TypeNode[] superclasses;
     private ClassBodyNode body;
-    private boolean inline;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
@@ -56,16 +55,6 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode, 
     @Override
     public ClassBodyNode getBody() {
         return body;
-    }
-
-    @Override
-    public boolean isInline() {
-        return inline;
-    }
-
-    @Override
-    public void setInline(boolean inline) {
-        this.inline = inline;
     }
 
     @Override
