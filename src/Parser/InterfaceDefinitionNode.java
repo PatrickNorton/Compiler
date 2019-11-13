@@ -13,7 +13,7 @@ import java.util.EnumSet;
 public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNode {
     private LineInfo lineInfo;
     private TypeNode name;
-    private TypeNode[] superclasses;
+    private TypeLikeNode[] superclasses;
     private InterfaceBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
@@ -26,7 +26,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
      * @param body The body of the interface
      */
     @Contract(pure = true)
-    public InterfaceDefinitionNode(LineInfo lineInfo, TypeNode name, TypeNode[] superclasses, InterfaceBodyNode body) {
+    public InterfaceDefinitionNode(LineInfo lineInfo, TypeNode name, TypeLikeNode[] superclasses, InterfaceBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.superclasses = superclasses;
@@ -43,7 +43,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
         return name;
     }
 
-    public TypeNode[] getSuperclasses() {
+    public TypeLikeNode[] getSuperclasses() {
         return superclasses;
     }
 
@@ -101,7 +101,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
-        TypeNode[] superclasses = TypeNode.parseListOnToken(tokens, Keyword.FROM);
+        TypeLikeNode[] superclasses = TypeLikeNode.parseListOnToken(tokens, Keyword.FROM);
         return new InterfaceDefinitionNode(info, name, superclasses, InterfaceBodyNode.parse(tokens));
     }
 

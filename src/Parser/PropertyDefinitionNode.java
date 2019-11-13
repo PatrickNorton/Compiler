@@ -13,7 +13,7 @@ import java.util.Set;
 public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNode {
     private LineInfo lineInfo;
     private VariableNode name;
-    private TypeNode type;
+    private TypeLikeNode type;
     private StatementBodyNode get;
     private TypedArgumentListNode set_args;
     private StatementBodyNode set;
@@ -29,7 +29,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param set The setter attribute for the property
      */
     @Contract(pure = true)
-    public PropertyDefinitionNode(LineInfo lineInfo, VariableNode name, TypeNode type,
+    public PropertyDefinitionNode(LineInfo lineInfo, VariableNode name, TypeLikeNode type,
                                   StatementBodyNode get, TypedArgumentListNode set_args, StatementBodyNode set) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -54,7 +54,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         return name;
     }
 
-    public TypeNode getType() {
+    public TypeLikeNode getType() {
         return type;
     }
 
@@ -121,7 +121,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         assert tokens.tokenIs(Keyword.PROPERTY);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
-        TypeNode type = TypeNode.parse(tokens);
+        TypeLikeNode type = TypeLikeNode.parse(tokens);
         VariableNode name = VariableNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
             throw tokens.error("Unexpected " + tokens.getFirst());

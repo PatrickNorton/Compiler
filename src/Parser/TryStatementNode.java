@@ -15,13 +15,13 @@ public class TryStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
     private StatementBodyNode body;
     private StatementBodyNode except;
-    private TypeNode[] excepted;
+    private TypeLikeNode[] excepted;
     private VariableNode as_var;
     private StatementBodyNode else_stmt;
     private StatementBodyNode finally_stmt;
 
     @Contract(pure = true)
-    public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, TypeNode[] excepted,
+    public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, TypeLikeNode[] excepted,
                             VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
         this.lineInfo = lineInfo;
         this.body = body;
@@ -46,7 +46,7 @@ public class TryStatementNode implements FlowStatementNode {
         return except;
     }
 
-    public TypeNode[] getExcepted() {
+    public TypeLikeNode[] getExcepted() {
         return excepted;
     }
 
@@ -83,12 +83,12 @@ public class TryStatementNode implements FlowStatementNode {
         tokens.nextToken();
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode except = StatementBodyNode.empty();
-        TypeNode[] excepted = new TypeNode[0];
+        TypeLikeNode[] excepted = new TypeNode[0];
         VariableNode as = VariableNode.empty();
         StatementBodyNode elseStmt = StatementBodyNode.empty();
         if (tokens.tokenIs(Keyword.EXCEPT)) {
             tokens.nextToken();
-            excepted = TypeNode.parseList(tokens);
+            excepted = TypeLikeNode.parseList(tokens);
             as = VariableNode.parseOnToken(tokens, Keyword.AS);
             except = StatementBodyNode.parse(tokens);
             elseStmt = StatementBodyNode.parseOnToken(tokens, Keyword.ELSE);

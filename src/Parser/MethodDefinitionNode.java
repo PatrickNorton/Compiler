@@ -15,7 +15,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
-    private TypeNode[] retval;
+    private TypeLikeNode[] retval;
     private StatementBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
@@ -29,7 +29,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
      * @param body The body of the method
      */
     @Contract(pure = true)
-    public MethodDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeNode[] retval, StatementBodyNode body) {
+    public MethodDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeLikeNode[] retval, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.args = args;
@@ -51,7 +51,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         return args;
     }
 
-    public TypeNode[] getRetval() {
+    public TypeLikeNode[] getRetval() {
         return retval;
     }
 
@@ -114,7 +114,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
-        TypeNode[] retval = TypeNode.parseRetVal(tokens);
+        TypeLikeNode[] retval = TypeLikeNode.parseRetVal(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new MethodDefinitionNode(info, name, args, retval, body);
     }
@@ -128,6 +128,6 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     @Override
     public String toString() {
         return String.format("%smethod %s%s%s %s",
-                DescriptorNode.join(descriptors), name, args, TypeNode.returnString(retval), body);
+                DescriptorNode.join(descriptors), name, args, TypeLikeNode.returnString(retval), body);
     }
 }

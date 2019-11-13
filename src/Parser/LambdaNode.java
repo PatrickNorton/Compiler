@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class LambdaNode implements SubTestNode {
     private LineInfo lineInfo;
     private TypedArgumentListNode args;
-    private TypeNode[] returns;
+    private TypeLikeNode[] returns;
     private boolean isArrow;
     private StatementBodyNode body;
 
@@ -20,7 +20,7 @@ public class LambdaNode implements SubTestNode {
      * @param body The body of the lambda
      */
     @Contract(pure = true)
-    public LambdaNode(LineInfo lineInfo, TypedArgumentListNode args, TypeNode[] returns, boolean isArrow, StatementBodyNode body) {
+    public LambdaNode(LineInfo lineInfo, TypedArgumentListNode args, TypeLikeNode[] returns, boolean isArrow, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.args = args;
         this.returns = returns;
@@ -41,7 +41,7 @@ public class LambdaNode implements SubTestNode {
         return args;
     }
 
-    public TypeNode[] getReturns() {
+    public TypeLikeNode[] getReturns() {
         return returns;
     }
 
@@ -67,7 +67,7 @@ public class LambdaNode implements SubTestNode {
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TypedArgumentListNode args = TypedArgumentListNode.parseOptionalParens(tokens);
-        TypeNode[] returns = TypeNode.parseRetVal(tokens);
+        TypeLikeNode[] returns = TypeLikeNode.parseRetVal(tokens);
         boolean isArrow;
         StatementBodyNode body;
         if (tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
@@ -84,7 +84,7 @@ public class LambdaNode implements SubTestNode {
 
     @Override
     public String toString() {
-        return String.format("lambda %s%s %s", args, TypeNode.returnString(returns), isArrow ? arrowString() : body);
+        return String.format("lambda %s%s %s", args, TypeLikeNode.returnString(returns), isArrow ? arrowString() : body);
     }
 
     private String arrowString() {

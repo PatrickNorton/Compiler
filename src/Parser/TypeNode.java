@@ -6,16 +6,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.StringJoiner;
 
 // TODO?? Replace with simple DottedVariableNode
-public class TypeNode implements AtomicNode {
+public class TypeNode implements TypeLikeNode {
     private static final Set<String> TYPE_NODE_POSSIBLE = Set.of("[", "*");
 
     private LineInfo lineInfo;
     private DottedVariableNode name;
-    private TypeNode[] subtypes;
-    private boolean is_vararg;
+    private TypeLikeNode[] subtypes;
+    private boolean isVararg;
     private boolean optional;
 
     @Contract(pure = true)
@@ -24,16 +23,16 @@ public class TypeNode implements AtomicNode {
     }
 
     @Contract(pure = true)
-    public TypeNode(DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg, boolean optional) {
-        this(name.getLineInfo(), name, subtypes, is_vararg, optional);
+    public TypeNode(DottedVariableNode name, TypeLikeNode[] subtypes, boolean isVararg, boolean optional) {
+        this(name.getLineInfo(), name, subtypes, isVararg, optional);
     }
 
     @Contract(pure = true)
-    public TypeNode(LineInfo lineInfo, DottedVariableNode name, TypeNode[] subtypes, boolean is_vararg, boolean optional) {
+    public TypeNode(LineInfo lineInfo, DottedVariableNode name, TypeLikeNode[] subtypes, boolean isVararg, boolean optional) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.subtypes = subtypes;
-        this.is_vararg = is_vararg;
+        this.isVararg = isVararg;
         this.optional = optional;
     }
 
@@ -46,12 +45,14 @@ public class TypeNode implements AtomicNode {
         return name;
     }
 
-    public TypeNode[] getSubtypes() {
+    @Override
+    public TypeLikeNode[] getSubtypes() {
         return subtypes;
     }
 
-    public boolean getIs_vararg() {
-        return is_vararg;
+    @Override
+    public boolean isVararg() {
+        return isVararg;
     }
 
     public boolean isOptional() {
@@ -141,53 +142,6 @@ public class TypeNode implements AtomicNode {
     }
 
     @NotNull
-    static TypeNode[] parseListOnToken(@NotNull TokenList tokens, TokenType sentinel) {
-        if (tokens.tokenIs(sentinel)) {
-            tokens.nextToken();
-            return parseList(tokens);
-        } else {
-            return new TypeNode[0];
-        }
-    }
-
-    @NotNull
-    static TypeNode[] parseListOnToken(@NotNull TokenList tokens, Keyword sentinel) {
-        if (tokens.tokenIs(sentinel)) {
-            tokens.nextToken();
-            return parseList(tokens);
-        } else {
-            return new TypeNode[0];
-        }
-    }
-
-    @NotNull
-    static TypeNode[] parseList(@NotNull TokenList tokens) {
-        List<TypeNode> types = new ArrayList<>();
-        while (tokens.tokenIs(TokenType.NAME, Keyword.VAR)) {
-            types.add(parse(tokens));
-            if (!tokens.tokenIs(TokenType.COMMA)) {
-                break;
-            }
-            tokens.nextToken();
-        }
-        return types.toArray(new TypeNode[0]);
-    }
-
-    /**
-     * Parse the return value of some function.
-     * <p>
-     *     The syntax for a return value indicator is: <code>"->" {@link
-     *     TypeNode} *("," {@link TypeNode}) [","]</code>.
-     * </p>
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The list of return types for the function being parsed
-     */
-    @NotNull
-    static TypeNode[] parseRetVal(@NotNull TokenList tokens) {
-        return parseListOnToken(tokens, TokenType.ARROW);
-    }
-
-    @NotNull
     private static TypeNode parseVar(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.VAR);
         tokens.nextToken();
@@ -219,76 +173,15 @@ public class TypeNode implements AtomicNode {
         };
     }
 
-    static int sizeOfType(@NotNull TokenList tokens, int start) {
-        if (tokens.tokenIs(Keyword.VAR)) {
-            return start + 1;
-        }
-        int netBraces = 0;
-        Token previous = Token.Epsilon(LineInfo.empty());
-        for (int i = start;; i++) {
-            Token token = tokens.getToken(i);
-            switch (token.token) {
-                case OPEN_BRACE:
-                    if (!token.is("[")) {
-                        return netBraces == 0 ? Math.max(i - 1, 0) : 0;
-                    } else if (!previous.is(TokenType.NAME, TokenType.EPSILON)) {
-                        return 0;
-                    }
-                    netBraces++;
-                    break;
-                case CLOSE_BRACE:
-                    netBraces--;
-                    break;
-                case NAME:
-                    if (previous.is(TokenType.NAME, TokenType.CLOSE_BRACE) || previous.is("?")) {
-                        return i;
-                    }
-                    break;
-                case DOT:
-                    if (!previous.is(TokenType.NAME)) {
-                        return 0;
-                    }
-                    break;
-                case OPERATOR:
-                    if (!token.is("?", "*")) {
-                        return 0;
-                    } else if (token.is("*") && !previous.is(TokenType.COMMA, TokenType.OPEN_BRACE)) {
-                        return 0;
-                    }
-                    break;
-                case COMMA:
-                case NEWLINE:
-                    if (netBraces == 0) {
-                        return i;
-                    }
-                    break;
-                default:
-                    return netBraces == 0 ? i : 0;
-            }
-            previous = token.is(TokenType.NEWLINE) ? previous : token;
-        }
-    }
-
-    public static String returnString(@NotNull TypeNode... values) {
-        if (values.length == 0) {
-            return "";
-        }
-        StringJoiner sj = new StringJoiner(", ", " -> ", "");
-        for (TypeNode t : values) {
-            sj.add(t.toString());
-        }
-        return sj.toString();
-    }
-
     @Override
     public String toString() {
         if (name.isEmpty() && subtypes.length == 0) {
-            return is_vararg ? "*[]" : "[]";
+            return isVararg ? "*[]" : "[]";
         }
         if (subtypes.length > 0) {
             String subtypes = TestNode.toString(this.subtypes);
-            return (is_vararg ? "*" : "") + name + "[" + subtypes + "]" + (optional ? "?" : "");
+            return (isVararg ? "*" : "") + name + "[" + subtypes + "]" + (optional ? "?" : "");
         }
-        return (is_vararg ? "*" : "") + name + (optional ? "?" : "");
+        return (isVararg ? "*" : "") + name + (optional ? "?" : "");
     }
 }

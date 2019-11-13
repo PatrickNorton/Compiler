@@ -11,13 +11,13 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TypedArgumentNode implements BaseNode {
     private LineInfo lineInfo;
-    private TypeNode type;
+    private TypeLikeNode type;
     private VariableNode name;
     private TestNode defaultval;
     private boolean is_vararg;
     private String vararg_type;
 
-    public TypedArgumentNode(TypeNode type, VariableNode name, TestNode defaultval, boolean is_vararg, String vararg_type) {
+    public TypedArgumentNode(TypeLikeNode type, VariableNode name, TestNode defaultval, boolean is_vararg, String vararg_type) {
         this(type.getLineInfo(), type, name, defaultval, is_vararg, vararg_type);
     }
     /**
@@ -29,7 +29,7 @@ public class TypedArgumentNode implements BaseNode {
      * @param vararg_type The type of the vararg, if it exists
      */
     @Contract(pure = true)
-    public TypedArgumentNode(LineInfo lineInfo, TypeNode type, VariableNode name, TestNode defaultval,
+    public TypedArgumentNode(LineInfo lineInfo, TypeLikeNode type, VariableNode name, TestNode defaultval,
                              boolean is_vararg, String vararg_type) {
         this.lineInfo = lineInfo;
         this.type = type;
@@ -44,7 +44,7 @@ public class TypedArgumentNode implements BaseNode {
         return lineInfo;
     }
 
-    public TypeNode getType() {
+    public TypeLikeNode getType() {
         return type;
     }
 
@@ -105,7 +105,7 @@ public class TypedArgumentNode implements BaseNode {
         if (tokens.tokenIs(Keyword.VAR)) {
             throw tokens.error("var is not allowed in a typed argument");
         }
-        TypeNode type = isTyped ? TypeNode.parse(tokens) : TypeNode.var();
+        TypeLikeNode type = isTyped ? TypeLikeNode.parse(tokens) : TypeNode.var();
         VariableNode var = VariableNode.parse(tokens);
         TestNode default_value = TestNode.parseOnToken(tokens, "=", true);
         return new TypedArgumentNode(type, var, default_value, varargType.isEmpty(), varargType);
@@ -146,7 +146,7 @@ public class TypedArgumentNode implements BaseNode {
      * @return Whether or not the node is untyped
      */
     static boolean argumentIsUntyped(@NotNull TokenList tokens) {
-        int size = TypeNode.sizeOfType(tokens, tokens.tokenIs("*", "**") ? 1 : 0);
+        int size = TypeLikeNode.sizeOfType(tokens, tokens.tokenIs("*", "**") ? 1 : 0);
         return size == 0 || !tokens.tokenIs(size + tokens.numberOfNewlines(size), TokenType.NAME);
     }
 

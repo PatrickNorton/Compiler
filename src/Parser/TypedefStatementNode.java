@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class TypedefStatementNode implements SimpleStatementNode {
     private LineInfo lineInfo;
     private TypeNode name;
-    private TypeNode type;
+    private TypeLikeNode type;
 
     /**
      * Construct a new instance of TypedefStatementNode.
@@ -18,7 +18,7 @@ public class TypedefStatementNode implements SimpleStatementNode {
      * @param type The type being assigned to
      */
     @Contract(pure = true)
-    public TypedefStatementNode(LineInfo lineInfo, TypeNode name, TypeNode type) {
+    public TypedefStatementNode(LineInfo lineInfo, TypeNode name, TypeLikeNode type) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.type = type;
@@ -33,7 +33,7 @@ public class TypedefStatementNode implements SimpleStatementNode {
         return name;
     }
 
-    public TypeNode getType() {
+    public TypeLikeNode getType() {
         return type;
     }
 
@@ -56,7 +56,7 @@ public class TypedefStatementNode implements SimpleStatementNode {
         TypeNode name = TypeNode.parse(tokens);
         assert tokens.tokenIs(Keyword.AS);
         tokens.nextToken();
-        TypeNode type = TypeNode.parse(tokens);
+        TypeLikeNode type = TypeLikeNode.parse(tokens);
         return new TypedefStatementNode(info, name, type);
     }
 

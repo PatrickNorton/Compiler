@@ -19,11 +19,11 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
-    private TypeNode[] retvals;
+    private TypeLikeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
-    public GenericFunctionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeNode... retvals) {
+    public GenericFunctionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeLikeNode... retvals) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.args = args;
@@ -43,7 +43,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         return args;
     }
 
-    public TypeNode[] getRetvals() {
+    public TypeLikeNode[] getRetvals() {
         return retvals;
     }
 
@@ -104,7 +104,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
-        TypeNode[] retval = TypeNode.parseRetVal(tokens);
+        TypeLikeNode[] retval = TypeLikeNode.parseRetVal(tokens);
         return new GenericFunctionNode(info, name, args, retval);
     }
 

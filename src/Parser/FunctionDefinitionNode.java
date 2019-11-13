@@ -14,7 +14,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
     private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
-    private TypeNode[] retval;
+    private TypeLikeNode[] retval;
     private StatementBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
@@ -22,7 +22,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
 
     @Contract(pure = true)
     public FunctionDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args,
-                                  TypeNode[] retval, StatementBodyNode body) {
+                                  TypeLikeNode[] retval, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.args = args;
@@ -44,7 +44,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
         return args;
     }
 
-    public TypeNode[] getRetval() {
+    public TypeLikeNode[] getRetval() {
         return retval;
     }
 
@@ -106,7 +106,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
         tokens.nextToken();
         VariableNode name = VariableNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parse(tokens);
-        TypeNode[] retval = TypeNode.parseRetVal(tokens);
+        TypeLikeNode[] retval = TypeLikeNode.parseRetVal(tokens);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new FunctionDefinitionNode(info, name, args, retval, body);
     }
@@ -114,6 +114,6 @@ public class FunctionDefinitionNode implements DefinitionNode {
     @Override
     public String toString() {
         return String.format("%sfunc %s%s%s %s",
-                DescriptorNode.join(descriptors), name, args, TypeNode.returnString(retval), body);
+                DescriptorNode.join(descriptors), name, args, TypeLikeNode.returnString(retval), body);
     }
 }

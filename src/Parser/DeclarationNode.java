@@ -14,11 +14,11 @@ import java.util.Set;
  */
 public class DeclarationNode implements AssignStatementNode, ClassStatementNode {
     private LineInfo lineInfo;
-    private TypeNode type;
+    private TypeLikeNode type;
     private VariableNode name;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
-    public DeclarationNode(TypeNode type, VariableNode name) {
+    public DeclarationNode(TypeLikeNode type, VariableNode name) {
         this(type.getLineInfo(), type, name);
     }
 
@@ -28,7 +28,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
      * @param name The name of that variable
      */
     @Contract(pure = true)
-    public DeclarationNode(LineInfo lineInfo, TypeNode type, VariableNode name) {
+    public DeclarationNode(LineInfo lineInfo, TypeLikeNode type, VariableNode name) {
         this.lineInfo = lineInfo;
         this.type = type;
         this.name = name;
@@ -39,7 +39,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
         return lineInfo;
     }
 
-    public TypeNode getType() {
+    public TypeLikeNode getType() {
         return type;
     }
 
@@ -77,7 +77,7 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
      */
     @NotNull
     static DeclarationNode parse(TokenList tokens) {
-        TypeNode type = TypeNode.parse(tokens);
+        TypeLikeNode type = TypeLikeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);
         return new DeclarationNode(type, var);
     }

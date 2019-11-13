@@ -143,7 +143,7 @@ public interface IndependentNode extends BaseNode {
     private static boolean isAssignment(TokenList tokens) {
         int from = 0;
         while (true) {
-            int varSize = TypeNode.sizeOfType(tokens, from);
+            int varSize = TypeLikeNode.sizeOfType(tokens, from);
             if (varSize == 0) {
                 return tokens.tokenIs(tokens.sizeOfVariable(from), TokenType.ASSIGN);
             } else if (tokens.tokenIs(varSize, TokenType.ASSIGN)) {
@@ -161,7 +161,7 @@ public interface IndependentNode extends BaseNode {
     }
 
     private static boolean isDeclaration(@NotNull TokenList tokens) {
-        int varSize = TypeNode.sizeOfType(tokens, 0);
+        int varSize = TypeLikeNode.sizeOfType(tokens, 0);
         return varSize > 0
                 && tokens.tokenIs(varSize, TokenType.NAME)
                 && tokens.tokenIs(varSize + 1, TokenType.NEWLINE);

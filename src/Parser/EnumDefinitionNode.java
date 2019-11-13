@@ -15,7 +15,7 @@ import java.util.List;
 public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
     private LineInfo lineInfo;
     private TypeNode name;
-    private TypeNode[] superclasses;
+    private TypeLikeNode[] superclasses;
     private EnumKeywordNode[] names;
     private ClassBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
@@ -29,7 +29,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
      * @param body The rest of the enum body
      */
     @Contract(pure = true)
-    public EnumDefinitionNode(LineInfo lineInfo, TypeNode name, TypeNode[] superclasses, EnumKeywordNode[] names, ClassBodyNode body) {
+    public EnumDefinitionNode(LineInfo lineInfo, TypeNode name, TypeLikeNode[] superclasses, EnumKeywordNode[] names, ClassBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.superclasses = superclasses;
@@ -47,7 +47,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
         return name;
     }
 
-    public TypeNode[] getSuperclasses() {
+    public TypeLikeNode[] getSuperclasses() {
         return superclasses;
     }
 
@@ -107,7 +107,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
-        TypeNode[] superclasses = TypeNode.parseListOnToken(tokens, Keyword.FROM);
+        TypeLikeNode[] superclasses = TypeLikeNode.parseListOnToken(tokens, Keyword.FROM);
         if (!tokens.tokenIs("{")) {
             throw tokens.error("Expected {, got " + tokens.getFirst());
         }

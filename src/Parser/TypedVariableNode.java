@@ -12,16 +12,16 @@ import java.util.LinkedList;
  */
 public class TypedVariableNode implements SubTestNode {
     private LineInfo lineInfo;
-    private TypeNode type;
+    private TypeLikeNode type;
     private VariableNode var;
 
     @Contract(pure = true)
-    public TypedVariableNode(TypeNode type, VariableNode var) {
+    public TypedVariableNode(TypeLikeNode type, VariableNode var) {
         this(type.getLineInfo(), type, var);
     }
 
     @Contract(pure = true)
-    public TypedVariableNode(LineInfo lineInfo, TypeNode type, VariableNode var) {
+    public TypedVariableNode(LineInfo lineInfo, TypeLikeNode type, VariableNode var) {
         this.lineInfo = lineInfo;
         this.type = type;
         this.var = var;
@@ -32,7 +32,7 @@ public class TypedVariableNode implements SubTestNode {
         return lineInfo;
     }
 
-    public TypeNode getType() {
+    public TypeLikeNode getType() {
         return type;
     }
 
@@ -72,7 +72,7 @@ public class TypedVariableNode implements SubTestNode {
      */
     @NotNull
     static TypedVariableNode parse(TokenList tokens) {
-        TypeNode type = TypeNode.parse(tokens);
+        TypeLikeNode type = TypeLikeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);
         return new TypedVariableNode(type, var);
     }

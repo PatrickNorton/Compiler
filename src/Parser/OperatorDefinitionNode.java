@@ -12,14 +12,14 @@ import java.util.EnumSet;
 public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode {
     private LineInfo lineInfo;
     private SpecialOpNameNode op_code;
-    private TypeNode[] ret_type;
+    private TypeLikeNode[] ret_type;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
 
-    public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeNode[] ret_type,
+    public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeLikeNode[] ret_type,
                                   @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
         this(op_code.getLineInfo(), op_code, ret_type, args, body);
     }
@@ -31,7 +31,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param body The body of the operator definition
      */
     @Contract(pure = true)
-    public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode op_code, @NotNull TypeNode[] ret_type,
+    public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode op_code, @NotNull TypeLikeNode[] ret_type,
                                   @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.op_code = op_code;
@@ -54,7 +54,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         return op_code;
     }
 
-    public TypeNode[] getRet_type() {
+    public TypeLikeNode[] getRet_type() {
         return ret_type;
     }
 
@@ -115,9 +115,9 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
-        TypeNode[] retval;
+        TypeLikeNode[] retval;
         if (tokens.tokenIs(TokenType.ARROW)) {
-            retval = TypeNode.parseRetVal(tokens);
+            retval = TypeLikeNode.parseRetVal(tokens);
         } else {
             retval = new TypeNode[0];
         }

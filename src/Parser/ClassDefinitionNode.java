@@ -13,7 +13,7 @@ import java.util.EnumSet;
 public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     private LineInfo lineInfo;
     private TypeNode name;
-    private TypeNode[] superclasses;
+    private TypeLikeNode[] superclasses;
     private ClassBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
@@ -26,7 +26,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
      * @param body The main body of the class
      */
     @Contract(pure = true)
-    public ClassDefinitionNode(LineInfo lineInfo, TypeNode name, TypeNode[] superclasses, ClassBodyNode body) {
+    public ClassDefinitionNode(LineInfo lineInfo, TypeNode name, TypeLikeNode[] superclasses, ClassBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.superclasses = superclasses;
@@ -48,7 +48,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
         return name;
     }
 
-    public TypeNode[] getSuperclasses() {
+    public TypeLikeNode[] getSuperclasses() {
         return superclasses;
     }
 
@@ -105,7 +105,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
             throw tokens.error("class keyword must be followed by class name");
         }
         TypeNode name = TypeNode.parse(tokens);
-        TypeNode[] superclasses = TypeNode.parseListOnToken(tokens, Keyword.FROM);
+        TypeLikeNode[] superclasses = TypeLikeNode.parseListOnToken(tokens, Keyword.FROM);
         return new ClassDefinitionNode(info, name, superclasses, ClassBodyNode.parse(tokens));
     }
 

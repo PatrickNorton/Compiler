@@ -21,11 +21,11 @@ public class GenericOperatorNode implements GenericDefinitionNode {
     private LineInfo lineInfo;
     private SpecialOpNameNode op_code;
     private TypedArgumentListNode args;
-    private TypeNode[] retvals;
+    private TypeLikeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
-    public GenericOperatorNode(LineInfo lineInfo, SpecialOpNameNode op_code, TypedArgumentListNode args, TypeNode... retvals) {
+    public GenericOperatorNode(LineInfo lineInfo, SpecialOpNameNode op_code, TypedArgumentListNode args, TypeLikeNode... retvals) {
         this.lineInfo = lineInfo;
         this.op_code = op_code;
         this.args = args;
@@ -45,7 +45,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         return args;
     }
 
-    public TypeNode[] getRetvals() {
+    public TypeLikeNode[] getRetvals() {
         return retvals;
     }
 
@@ -105,11 +105,11 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         LineInfo info = tokens.lineInfo();
         SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
-        TypeNode[] retvals;
+        TypeLikeNode[] retvals;
         if (tokens.tokenIs(TokenType.ARROW)) {
-            retvals = TypeNode.parseRetVal(tokens);
+            retvals = TypeLikeNode.parseRetVal(tokens);
         } else {
-            retvals = new TypeNode[0];
+            retvals = new TypeLikeNode[0];
         }
         return new GenericOperatorNode(info, op_code, args, retvals);
     }
