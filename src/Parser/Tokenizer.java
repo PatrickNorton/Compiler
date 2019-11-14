@@ -109,6 +109,7 @@ public final class Tokenizer {
      * Adjust {@link #next} for multiline tokens.
      */
     private void adjustForMultiline() {
+        appendEscapedLines();
         Matcher m = OPEN_COMMENT.matcher(next);
         if (m.find()) {
             concatLines(CLOSE_COMMENT);
@@ -140,6 +141,15 @@ public final class Tokenizer {
         } while (!tillMatch.matcher(next).find());
         this.next = nextBuilder.toString();
         fullLine = next;
+        appendEscapedLines();
+    }
+
+    private void appendEscapedLines() {
+        while (next.endsWith("\\")) {
+            next = next.substring(0, next.length() - 1) + readLine();
+            multilineSize++;
+            fullLine = next;
+        }
     }
 
     private int lineIndex() {
