@@ -69,7 +69,6 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         if (arrow) {
             tokens.nextToken(true);
             body = new StatementBodyNode(TestNode.parseList(tokens, false));
-            tokens.Newline();
         } else {
             body = StatementBodyNode.parse(tokens);
         }

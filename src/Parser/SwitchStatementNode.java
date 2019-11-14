@@ -45,7 +45,11 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
         List<CaseStatementNode> cases = new ArrayList<>();
         while (tokens.tokenIs(Keyword.CASE, Keyword.DEFAULT)) {
             cases.add(CaseStatementNode.parse(tokens));
-            tokens.passNewlines();
+            if (!tokens.tokenIs("}")) {
+                tokens.Newline();
+            } else {
+                break;
+            }
         }
         if (!tokens.tokenIs("}")) {
             throw tokens.error("Unexpected " + tokens.getFirst());
