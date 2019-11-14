@@ -12,6 +12,7 @@ public class BreakStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
     private Integer loops;
     private TestNode cond;
+    private TestNode as;
 
     /**
      * Create new BreakStatementNode.
@@ -19,10 +20,11 @@ public class BreakStatementNode implements SimpleFlowNode {
      * @param cond The conditional to be tested for
      */
     @Contract(pure = true)
-    public BreakStatementNode(LineInfo lineInfo, Integer loops, TestNode cond) {
+    public BreakStatementNode(LineInfo lineInfo, Integer loops, TestNode cond, TestNode as) {
         this.lineInfo = lineInfo;
         this.loops = loops;
         this.cond = cond;
+        this.as = as;
     }
 
     @Override
@@ -45,9 +47,9 @@ public class BreakStatementNode implements SimpleFlowNode {
      *     The break statement consists of three parts: the "break" keyword, the
      *     number of loops broken (optional), and the condition upon which the
      *     break is to occur (optional). The statement is of the form <code>
-     *     "break" [number] ["if" {@link TestNode}]</code>. The first token in
-     *     the list parsed must be "break", otherwise an AssertionError will be
-     *     thrown.
+     *     "break" [number] ["as" {@link TestNode}] ["if" {@link
+     *     TestNode}]</code>. The first token in the list parsed must be
+     *     "break", otherwise an AssertionError will be thrown.
      * </p>
      * @param tokens The list of tokens to be parsed
      * @return The parsed break node
@@ -62,13 +64,12 @@ public class BreakStatementNode implements SimpleFlowNode {
         if (tokens.tokenIs(TokenType.NUMBER)) {
             loops = Integer.parseInt(tokens.tokenSequence());
             tokens.nextToken();
-        } else if (tokens.tokenIs(TokenType.NEWLINE, "if")) {
-            loops = 0;
         } else {
-            throw tokens.error("Break statement must not be followed by anything");
+            loops = 0;
         }
+        TestNode as = TestNode.parseNoTernaryOnToken(tokens, Keyword.AS, false);
         TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
-        return new BreakStatementNode(info, loops, cond);
+        return new BreakStatementNode(info, loops, cond, as);
     }
 
     @Override
@@ -76,6 +77,9 @@ public class BreakStatementNode implements SimpleFlowNode {
         StringBuilder sb = new StringBuilder("break");
         if (loops > 0) {
             sb.append(" ").append(loops);
+        }
+        if (!as.isEmpty()) {
+            sb.append(" as ").append(as);
         }
         if (!cond.isEmpty()) {
             sb.append(" if ").append(cond);

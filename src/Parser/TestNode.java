@@ -123,6 +123,15 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
     }
 
+    static TestNode parseNoTernaryOnToken(@NotNull TokenList tokens, Keyword token, boolean ignoreNewlines) {
+        if (tokens.tokenIs(token)) {
+            tokens.nextToken(ignoreNewlines);
+            return parseNoTernary(tokens, ignoreNewlines);
+        } else {
+            return empty();
+        }
+    }
+
     /**
      * Parse the non-ternary portion of a TestNode.
      * <p>

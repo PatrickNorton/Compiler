@@ -425,6 +425,10 @@ public final class TokenList implements Iterable<Token> {
         return getFirst().is(type1) || getFirst().is(type2);
     }
 
+    public boolean tokenIs(TokenType type1, Keyword... types) {
+        return getFirst().is(type1) || getFirst().is(types);
+    }
+
     /**
      * Test if the token at the index is one of a certain set of values.
      * @param type1 The String value to check
