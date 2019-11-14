@@ -60,6 +60,6 @@ public class TypewiseAndNode implements TypeLikeNode {
     }
 
     public String toString() {
-        return Arrays.stream(subtypes).map(Object::toString).collect(Collectors.joining("|"));
+        return Arrays.stream(subtypes).map(Object::toString).collect(Collectors.joining("&"));
     }
 }
