@@ -81,6 +81,6 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
 
     @Override
     public String toString() {
-        return String.format("{%s: %s%s",  getBuilder(), key, secondHalfString());
+        return String.format("{%s: %s%s", ArgumentNode.toString(getBuilder()), key, secondHalfString());
     }
 }

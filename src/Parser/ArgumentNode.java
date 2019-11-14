@@ -3,7 +3,9 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * ArgumentNode is the class for an untyped argument in code, for example in
@@ -117,8 +119,18 @@ public class ArgumentNode implements BaseNode {
             tokens.nextToken();
             return new ArgumentNode[0];
         }
-        LinkedList<ArgumentNode> args = new LinkedList<>();
-        while (true) {
+        ArgumentNode[] args = parseBraceFreeList(tokens);
+        if (!tokens.tokenIs(")")) {
+            throw tokens.error("Unexpected " + tokens.getFirst());
+        }
+        tokens.nextToken();
+        return args;
+    }
+
+    @NotNull
+    static ArgumentNode[] parseBraceFreeList(@NotNull TokenList tokens) {
+        List<ArgumentNode> args = new ArrayList<>();
+        while (tokens.tokenIs("*", "**") || TestNode.nextIsTest(tokens)) {
             VariableNode var = VariableNode.empty();
             int offset = tokens.tokenIs("*", "**") ? 1 : 0;
             if (tokens.tokenIs(offset, TokenType.NAME)
@@ -135,15 +147,11 @@ public class ArgumentNode implements BaseNode {
             }
             TestNode argument = TestNode.parse(tokens, true);
             args.add(new ArgumentNode(var, vararg, argument));
-            if (tokens.tokenIs(")")) {
-                break;
-            }
             if (!tokens.tokenIs(",")) {
-                throw tokens.error("Expected comma, got "+tokens.getFirst());
+                break;
             }
             tokens.nextToken(true);
         }
-        tokens.nextToken();
         return args.toArray(new ArgumentNode[0]);
     }
 
@@ -155,5 +163,13 @@ public class ArgumentNode implements BaseNode {
         }
         sb.append(argument);
         return sb.toString();
+    }
+
+    public static String toString(@NotNull ArgumentNode... values) {
+        StringJoiner sj = new StringJoiner(", ");
+        for (ArgumentNode v : values) {
+            sj.add(v.toString());
+        }
+        return sj.toString();
     }
 }

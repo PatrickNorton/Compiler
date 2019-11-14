@@ -20,7 +20,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
      */
     @Contract(pure = true)
     public ComprehensionNode(LineInfo lineInfo, String brace_type, TypedVariableNode[] variables,
-                             TestNode builder, TestNode[] looped, TestNode condition) {
+                             ArgumentNode[] builder, TestNode[] looped, TestNode condition) {
         super(lineInfo, brace_type, variables, builder, looped, condition);
     }
 
@@ -43,7 +43,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         String brace_type = tokens.tokenSequence();
         String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
-        TestNode builder = TestNode.parse(tokens, true);
+        ArgumentNode[] builder = ArgumentNode.parseBraceFreeList(tokens);
         if (!tokens.tokenIs(Keyword.FOR)) {
             throw tokens.error("Invalid start to comprehension");
         }

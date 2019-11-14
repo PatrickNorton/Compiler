@@ -7,13 +7,18 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
     private LineInfo lineInfo;
     private String brace;
     private TypedVariableNode[] variables;
-    private TestNode builder;
+    private ArgumentNode[] builder;
     private TestNode[] looped;
     private TestNode condition;
 
+     public ComprehensionLikeNode(LineInfo lineInfo, String brace, TypedVariableNode[] variables,
+                                 TestNode builder, TestNode[] looped, TestNode condition) {
+         this(lineInfo, brace, variables, ArgumentNode.fromTestNodes(builder), looped, condition);
+     }
+
     @Contract(pure = true)
     public ComprehensionLikeNode(LineInfo lineInfo, String brace, TypedVariableNode[] variables,
-                                 TestNode builder, TestNode[] looped, TestNode condition) {
+                                 ArgumentNode[] builder, TestNode[] looped, TestNode condition) {
         this.lineInfo = lineInfo;
         this.brace = brace;
         this.variables = variables;
@@ -31,7 +36,7 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
         return brace;
     }
 
-    public TestNode getBuilder() {
+    public ArgumentNode[] getBuilder() {
         return builder;
     }
 
@@ -73,6 +78,6 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
 
     @Override
     public String toString() {
-        return brace + builder + secondHalfString();
+        return brace + ArgumentNode.toString(builder) + secondHalfString();
     }
 }
