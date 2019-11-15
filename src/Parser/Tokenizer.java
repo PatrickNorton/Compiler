@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,6 +56,18 @@ public final class Tokenizer {
      * @return The next token
      */
     Token tokenizeNext() {
+        Token nextToken;
+        do {
+            nextToken = getNext();
+            if (nextToken == null) {
+                throw invalid();
+            }
+        } while (nextToken.is(TokenType.WHITESPACE));
+        return nextToken;
+    }
+
+    @Nullable
+    private Token getNext() {
         if (next.isEmpty()) {
             return emptyLine();
         }
@@ -62,28 +75,22 @@ public final class Tokenizer {
         for (TokenType info : TokenType.values()) {
             Matcher match = info.matcher(next);
             if (match.find()) {
-                if (info == TokenType.WHITESPACE) {
-                    do {
-                        next = next.substring(match.end());
-                        if (next.isEmpty()) {
-                            return emptyLine();
-                        }
-                        adjustForMultiline();
-                        match = info.matcher(next);
-                    } while (match.find());
-                } else {
-                    next = next.substring(match.end());
-                    return new Token(info, match.group(), lineInfo());
-                }
+                next = next.substring(match.end());
+                return new Token(info, match.group(), lineInfo());
             }
         }
+        return null;
+    }
+
+    @NotNull
+    private ParserException invalid() {
         for (InvalidToken info : InvalidToken.values()) {
             Matcher match = info.regex.matcher(next);
             if (match.find()) {
-                throw tokenError(info);
+                return tokenError(info);
             }
         }
-        throw tokenError();
+        return tokenError();
     }
 
     /**
@@ -101,6 +108,7 @@ public final class Tokenizer {
             currentLine++;
             currentLine += multilineSize;
             multilineSize = 0;
+            appendEscapedLines();
             return Token.Newline(lineInfo());
         }
     }
@@ -109,7 +117,6 @@ public final class Tokenizer {
      * Adjust {@link #next} for multiline tokens.
      */
     private void adjustForMultiline() {
-        appendEscapedLines();
         Matcher m = OPEN_COMMENT.matcher(next);
         if (m.find()) {
             concatLines(CLOSE_COMMENT);
