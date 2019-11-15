@@ -77,7 +77,12 @@ public class TypeNode implements TypeLikeNode {
      */
     @NotNull
     static TypeNode parse(TokenList tokens) {
-        return parse(tokens, false, false);
+        return parse(tokens, false, false, false);
+    }
+
+    @NotNull
+    static TypeNode parse(TokenList tokens, boolean ignoreNewlines) {
+        return parse(tokens, false, false, ignoreNewlines);
     }
 
     /**
@@ -88,8 +93,8 @@ public class TypeNode implements TypeLikeNode {
      * @return The freshly parsed TypeNode
      */
     @NotNull
-    @Contract("_, _, _ -> new")
-    private static TypeNode parse(@NotNull TokenList tokens, boolean allowEmpty, boolean isVararg) {
+    @Contract("_, _, _, _ -> new")
+    private static TypeNode parse(@NotNull TokenList tokens, boolean allowEmpty, boolean isVararg, boolean ignoreNewlines) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return parseVar(tokens);
         }
@@ -101,9 +106,9 @@ public class TypeNode implements TypeLikeNode {
                 throw tokens.error("Expected type name, got " + tokens.getFirst());
             }
         } else {
-            main = DottedVariableNode.parseNamesOnly(tokens);
+            main = DottedVariableNode.parseNamesOnly(tokens, ignoreNewlines);
             if (tokens.tokenIs("?")) {
-                tokens.nextToken();
+                tokens.nextToken(ignoreNewlines);
                 return new TypeNode(main, true);
             }
         }
@@ -120,7 +125,7 @@ public class TypeNode implements TypeLikeNode {
             } else {
                 subclassIsVararg = false;
             }
-            subtypes.add(parse(tokens, true, subclassIsVararg));
+            subtypes.add(parse(tokens, true, subclassIsVararg, ignoreNewlines));
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
                 continue;
@@ -130,11 +135,11 @@ public class TypeNode implements TypeLikeNode {
                 throw tokens.error("Comma must separate subtypes");
             }
         }
-        tokens.nextToken();
+        tokens.nextToken(ignoreNewlines);
         boolean optional;
         if (tokens.tokenIs("?")) {
             optional = true;
-            tokens.nextToken();
+            tokens.nextToken(ignoreNewlines);
         } else {
             optional = false;
         }

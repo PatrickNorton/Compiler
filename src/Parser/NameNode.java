@@ -21,6 +21,20 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
     @NotNull
     @Contract("_ -> new")
     static NameNode parse(@NotNull TokenList tokens) {
+        return parse(tokens, false);
+    }
+
+    /**
+     * Parse a name from a list of tokens.
+     * <p>
+     *     The syntax for a NameNode is made up of its constituent subclasses.
+     *     The list of tokens must begin with a NAME token.
+     * </p>
+     * @param tokens The list of tokens to be destructively parsed
+     * @param ignoreNewlines Whether or not to ignore newlines
+     * @return The freshly parsed NameNode
+     */
+    static NameNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.NAME, "(");
         NameNode name;
         if (tokens.tokenIs(TokenType.NAME)) {
@@ -28,21 +42,26 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
         } else {
             assert tokens.tokenIs("(");
             tokens.nextToken(true);
-            name = parse(tokens);
+            name = parse(tokens, true);
             if (!tokens.tokenIs(")")) {
                 throw tokens.error("Unexpected " + tokens.getFirst());
             }
         }
-        name = parsePostBraces(tokens, name);
+        name = parsePostBraces(tokens, name, ignoreNewlines);
         if (tokens.tokenIs(TokenType.DOT)) {
-            name = DottedVariableNode.fromExpr(tokens, name);
+            name = DottedVariableNode.fromExpr(tokens, name, ignoreNewlines);
         }
         return name;
     }
 
     @NotNull
     static NameNode parsePostBraces(@NotNull TokenList tokens, @NotNull NameNode name) {
-        TestNode newName = TestNode.parsePostBraces(tokens, name);
+        return parsePostBraces(tokens, name, false);
+    }
+
+    @NotNull
+    static NameNode parsePostBraces(@NotNull TokenList tokens, @NotNull NameNode name, boolean ignoreNewlines) {
+        TestNode newName = TestNode.parsePostBraces(tokens, name, ignoreNewlines);
         if (newName instanceof NameNode) {
             return (NameNode) newName;
         } else {

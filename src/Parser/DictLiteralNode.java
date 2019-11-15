@@ -75,12 +75,12 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
             return new DictLiteralNode(info);
         }
         while (true) {
-            keys.add(TestNode.parse(tokens));
+            keys.add(TestNode.parse(tokens, true));
             if (!tokens.tokenIs(":")) {
                 throw tokens.error("Dict comprehension must have colon");
             }
             tokens.nextToken(true);
-            values.add(TestNode.parse(tokens));
+            values.add(TestNode.parse(tokens, true));
             if (!tokens.tokenIs(",")) {
                 break;
             }

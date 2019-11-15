@@ -23,18 +23,15 @@ public class EscapedOperatorNode implements NameNode {
     }
 
     @NotNull
-    @Contract("_ -> new")
-    public static NameNode parse(@NotNull TokenList tokens) {
+    @Contract("_, _ -> new")
+    public static NameNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.OP_FUNC);
         LineInfo info = tokens.lineInfo();
         OpFuncTypeNode operator = OpFuncTypeNode.parse(tokens);
-        EscapedOperatorNode escaped = new EscapedOperatorNode(info, operator);
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, escaped);
-        } else if (tokens.tokenIs("(")) {
-            return new FunctionCallNode(escaped, ArgumentNode.parseList(tokens));
+        if (ignoreNewlines) {
+            tokens.passNewlines();
         }
-        return escaped;
+        return new EscapedOperatorNode(info, operator);
     }
 
     @Override

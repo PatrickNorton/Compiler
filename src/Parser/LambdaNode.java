@@ -61,20 +61,20 @@ public class LambdaNode implements SubTestNode {
      * @return The newly parsed lambda
      */
     @NotNull
-    @Contract("_ -> new")
-    static LambdaNode parse(@NotNull TokenList tokens) {
+    @Contract("_, _ -> new")
+    static LambdaNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(Keyword.LAMBDA);
         LineInfo lineInfo = tokens.lineInfo();
-        tokens.nextToken();
+        tokens.nextToken(ignoreNewlines);
         TypedArgumentListNode args = TypedArgumentListNode.parseOptionalParens(tokens);
-        TypeLikeNode[] returns = TypeLikeNode.parseRetVal(tokens);
+        TypeLikeNode[] returns = TypeLikeNode.parseRetVal(tokens, ignoreNewlines);
         boolean isArrow;
         StatementBodyNode body;
         if (tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
             isArrow = true;
             LineInfo info = tokens.lineInfo();
-            tokens.nextToken();
-            body = new StatementBodyNode(info, TestNode.parse(tokens));
+            tokens.nextToken(ignoreNewlines);
+            body = new StatementBodyNode(info, TestNode.parse(tokens, ignoreNewlines));
         } else {
             isArrow = false;
             body = StatementBodyNode.parse(tokens);

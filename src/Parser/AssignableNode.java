@@ -41,7 +41,7 @@ public interface AssignableNode extends TestNode {
                     throw tokens.error("Cannot assign to string literal");
                 }
             case OPEN_BRACE:
-                TestNode t = TestNode.parseOpenBrace(tokens);
+                TestNode t = TestNode.parseOpenBrace(tokens, false);
                 if (tokens.tokenIs(TokenType.DOT)) {
                     return DottedVariableNode.fromExpr(tokens, t);
                 } else if (t instanceof AssignableNode) {

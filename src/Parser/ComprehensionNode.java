@@ -37,7 +37,6 @@ public class ComprehensionNode extends ComprehensionLikeNode {
     @NotNull
     @Contract("_ -> new")
     static ComprehensionNode parse(@NotNull TokenList tokens) {
-        // TODO: Splats in comprehensions
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo info = tokens.lineInfo();
         String brace_type = tokens.tokenSequence();
@@ -48,7 +47,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Invalid start to comprehension");
         }
         tokens.nextToken(true);
-        TypedVariableNode[] variables = TypedVariableNode.parseList(tokens);
+        TypedVariableNode[] variables = TypedVariableNode.parseList(tokens, true);
         if (!tokens.tokenIs(Keyword.IN)) {
             throw tokens.error("Comprehension body must have in after variable list");
         }

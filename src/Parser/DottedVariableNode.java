@@ -70,11 +70,20 @@ public class DottedVariableNode implements NameNode {
     @NotNull
     @Contract("_ -> new")
     static DottedVariableNode parseNamesOnly(@NotNull TokenList tokens) {
+        return parseNamesOnly(tokens, false);
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    static DottedVariableNode parseNamesOnly(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.NAME);
         NameNode name = VariableNode.parse(tokens);
-        List<DottedVar> postDots = new ArrayList<DottedVar>();
+        if (ignoreNewlines) {
+            tokens.passNewlines();
+        }
+        List<DottedVar> postDots = new ArrayList<>();
         while (tokens.tokenIs(TokenType.DOT)) {
-            postDots.add(DottedVar.parse(tokens, true));
+            postDots.add(DottedVar.parse(tokens, true, ignoreNewlines));
         }
         return new DottedVariableNode(name, postDots.toArray(new DottedVar[0]));
     }
@@ -93,8 +102,14 @@ public class DottedVariableNode implements NameNode {
     @NotNull
     @Contract("_, _ -> new")
     static DottedVariableNode fromExpr(@NotNull TokenList tokens, TestNode preDot) {
+        return fromExpr(tokens, preDot, false);
+    }
+
+    @NotNull
+    @Contract("_, _, _ -> new")
+    static DottedVariableNode fromExpr(@NotNull TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.DOT);
-        DottedVar[] postDots = DottedVar.parseAll(tokens);
+        DottedVar[] postDots = DottedVar.parseAll(tokens, ignoreNewlines);
         return new DottedVariableNode(preDot, postDots);
     }
 

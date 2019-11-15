@@ -29,7 +29,7 @@ public interface TypeLikeNode extends AtomicNode {
             return type;
         }
         assert tokens.tokenIs(TokenType.NAME, Keyword.VAR);
-        TypeLikeNode type = TypeNode.parse(tokens);
+        TypeLikeNode type = TypeNode.parse(tokens, ignoreNewlines);
         if (tokens.tokenIs("|")) {
             return TypeUnionNode.fromType(tokens, type, ignoreNewlines);
         } else if (tokens.tokenIs("&")) {
@@ -41,21 +41,26 @@ public interface TypeLikeNode extends AtomicNode {
 
     @NotNull
     static TypeLikeNode[] parseList(@NotNull TokenList tokens) {
+        return parseList(tokens, false);
+    }
+
+    @NotNull
+    static TypeLikeNode[] parseList(@NotNull TokenList tokens, boolean ignoreNewlines) {
         List<TypeLikeNode> types = new ArrayList<>();
         while (tokens.tokenIs(TokenType.NAME, Keyword.VAR)) {
-            types.add(parse(tokens));
+            types.add(parse(tokens, ignoreNewlines));
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
             }
-            tokens.nextToken();
+            tokens.nextToken(ignoreNewlines);
         }
         return types.toArray(new TypeLikeNode[0]);
     }
 
     @NotNull
-    static TypeLikeNode[] parseListOnToken(@NotNull TokenList tokens, TokenType sentinel) {
+    static TypeLikeNode[] parseListOnToken(@NotNull TokenList tokens, TokenType sentinel, boolean ignoreNewlines) {
         if (tokens.tokenIs(sentinel)) {
-            tokens.nextToken();
+            tokens.nextToken(ignoreNewlines);
             return parseList(tokens);
         } else {
             return new TypeNode[0];
@@ -83,7 +88,12 @@ public interface TypeLikeNode extends AtomicNode {
      */
     @NotNull
     static TypeLikeNode[] parseRetVal(@NotNull TokenList tokens) {
-        return parseListOnToken(tokens, TokenType.ARROW);
+        return parseListOnToken(tokens, TokenType.ARROW, false);
+    }
+
+    @NotNull
+    static TypeLikeNode[] parseRetVal(TokenList tokens, boolean ignoreNewlines) {
+        return parseListOnToken(tokens, TokenType.ARROW, ignoreNewlines);
     }
 
     static String returnString(@NotNull TypeLikeNode... values) {

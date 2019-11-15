@@ -86,7 +86,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @Contract("_ -> new")
     static DeclaredAssignmentNode parse(@NotNull TokenList tokens) {
         LineInfo info = tokens.lineInfo();
-        TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
+        TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens, false);
         if (!tokens.tokenIs(TokenType.ASSIGN)) {
             throw tokens.error("Unexpected "+tokens.getFirst());
         }

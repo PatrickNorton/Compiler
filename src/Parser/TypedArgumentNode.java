@@ -83,7 +83,7 @@ public class TypedArgumentNode implements BaseNode {
         String vararg_type;
         if (tokens.tokenIs("*", "**")) {
             vararg_type = tokens.tokenSequence();
-            tokens.nextToken();
+            tokens.nextToken(true);
         } else {
             vararg_type = "";
         }
@@ -105,8 +105,9 @@ public class TypedArgumentNode implements BaseNode {
         if (tokens.tokenIs(Keyword.VAR)) {
             throw tokens.error("var is not allowed in a typed argument");
         }
-        TypeLikeNode type = isTyped ? TypeLikeNode.parse(tokens) : TypeNode.var();
+        TypeLikeNode type = isTyped ? TypeLikeNode.parse(tokens, true) : TypeNode.var();
         VariableNode var = VariableNode.parse(tokens);
+        tokens.passNewlines();
         TestNode default_value = TestNode.parseOnToken(tokens, "=", true);
         return new TypedArgumentNode(type, var, default_value, varargType.isEmpty(), varargType);
     }
@@ -124,6 +125,7 @@ public class TypedArgumentNode implements BaseNode {
     @Nullable
     static TypedArgumentNode parseAllowingEmpty(@NotNull TokenList tokens, boolean allowUntyped, boolean typeDecided) {
         String varargType;
+        tokens.passNewlines();
         if (tokens.tokenIs("*", "**")) {
             varargType = tokens.tokenSequence();
             tokens.nextToken(true);

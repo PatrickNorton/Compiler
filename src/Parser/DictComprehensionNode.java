@@ -65,7 +65,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Expected for, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
-        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens);
+        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens, true);
         if (!tokens.tokenIs(Keyword.IN)) {
             throw tokens.error("Expected in, got "+tokens.getFirst());
         }

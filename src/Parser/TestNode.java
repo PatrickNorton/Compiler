@@ -163,7 +163,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             throw ParserException.of("Illegal assignment", info);
         }
         if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, node);
+            return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
         } else {
             return node;
         }
@@ -320,6 +320,19 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return previous;
     }
 
+    @Nullable
+    private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
+        TestNode node = parseInternalNode(tokens, ignoreNewlines, parseCurly);
+        if (node == null) {
+            return null;
+        }
+        node = parsePostBraces(tokens, node, ignoreNewlines);
+        if (tokens.tokenIs(TokenType.DOT)) {
+            return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
+        }
+        return node;
+    }
+
     /**
      * Parse a node from a list of tokens, or return null if no next node
      * exists.
@@ -330,24 +343,24 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed node
      */
     @Nullable
-    private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
+    private static TestNode parseInternalNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
         switch (tokens.tokenType()) {
             case OPEN_BRACE:
                 if (parseCurly || !tokens.tokenIs("{")) {
-                    return parseOpenBrace(tokens);
+                    return parseOpenBrace(tokens, ignoreNewlines);
                 }
                 return null;
             case NAME:
-                return NameNode.parse(tokens);
+                return NameNode.parse(tokens, ignoreNewlines);
             case NUMBER:
                 return NumberNode.parse(tokens);
             case OPERATOR:
                 return OperatorTypeNode.parse(tokens);
             case OP_FUNC:
-                return EscapedOperatorNode.parse(tokens);
+                return EscapedOperatorNode.parse(tokens, ignoreNewlines);
             case NEWLINE:
                 if (ignoreNewlines) {
                     throw tokens.internalError("Illegal place for newline");
@@ -356,7 +369,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case STRING:
                 return StringLikeNode.parse(tokens);
             case KEYWORD:
-                return parseKeywordNode(tokens);
+                return parseKeywordNode(tokens, ignoreNewlines);
             default:
                 return null;
         }
@@ -370,7 +383,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed node
      */
     @Nullable
-    private static TestNode parseKeywordNode(@NotNull TokenList tokens) {
+    private static TestNode parseKeywordNode(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.KEYWORD);
         switch (Keyword.find(tokens.getFirst())) {
             case SOME:
@@ -380,7 +393,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             case SWITCH:
                 return SwitchStatementNode.parse(tokens);
             case LAMBDA:
-                return LambdaNode.parse(tokens);
+                return LambdaNode.parse(tokens, ignoreNewlines);
             case IF:
             case ELSE:
             case FOR:
@@ -396,18 +409,21 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed TestNode
      */
     @NotNull
-    static TestNode parseOpenBrace(@NotNull TokenList tokens) {
+    static TestNode parseOpenBrace(@NotNull TokenList tokens, boolean ignoreNewlines) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
-        TestNode stmt = parsePostBraces(tokens, parseOpenBraceNoDot(tokens));
+        TestNode stmt = parsePostBraces(tokens, parseOpenBraceNoDot(tokens), ignoreNewlines);
         if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, stmt);
+            return DottedVariableNode.fromExpr(tokens, stmt, ignoreNewlines);
         } else {
             return stmt;
         }
     }
 
-    static TestNode parsePostBraces(@NotNull TokenList tokens, TestNode pre) {
+    static TestNode parsePostBraces(@NotNull TokenList tokens, TestNode pre, boolean ignoreNewlines) {
+        if (ignoreNewlines) {
+            tokens.passNewlines();
+        }
         postBraceLoop:
         while (tokens.tokenIs(TokenType.OPEN_BRACE)) {
             switch (tokens.tokenSequence()) {
@@ -423,6 +439,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     break;
                 case "{":
                     break postBraceLoop;
+            }
+            if (ignoreNewlines) {
+                tokens.passNewlines();
             }
         }
         return pre;

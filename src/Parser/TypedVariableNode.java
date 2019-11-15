@@ -46,17 +46,20 @@ public class TypedVariableNode implements SubTestNode {
      * @return The freshly parsed TypedVariableNode array
      */
     @NotNull
-    static TypedVariableNode[] parseList(TokenList tokens) {
+    static TypedVariableNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (true) {
-            vars.add(TypedVariableNode.parse(tokens));
+            vars.add(parse(tokens, ignoreNewlines));
+            if (ignoreNewlines) {
+                tokens.passNewlines();
+            }
             if (tokens.tokenIs(TokenType.ASSIGN, Keyword.IN)) {
                 break;
             }
             if (!tokens.tokenIs(",")) {
                 throw tokens.error("Unexpected "+tokens.getFirst());
             }
-            tokens.nextToken();
+            tokens.nextToken(ignoreNewlines);
         }
         return vars.toArray(new TypedVariableNode[0]);
     }
@@ -70,10 +73,14 @@ public class TypedVariableNode implements SubTestNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed list of tokens
      */
+    @Contract("_, _ -> new")
     @NotNull
-    static TypedVariableNode parse(TokenList tokens) {
-        TypeLikeNode type = TypeLikeNode.parse(tokens);
+    private static TypedVariableNode parse(TokenList tokens, boolean ignoreNewlines) {
+        TypeLikeNode type = TypeLikeNode.parse(tokens, ignoreNewlines);
         VariableNode var = VariableNode.parse(tokens);
+        if (ignoreNewlines) {
+            tokens.passNewlines();
+        }
         return new TypedVariableNode(type, var);
     }
 
@@ -86,7 +93,7 @@ public class TypedVariableNode implements SubTestNode {
     static TypedVariableNode[] parseForVars(@NotNull TokenList tokens) {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (!tokens.tokenIs(Keyword.IN)) {
-            vars.add(TypedVariableNode.parse(tokens));
+            vars.add(TypedVariableNode.parse(tokens, false));
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken();
             }
