@@ -40,6 +40,16 @@ public class TypedVariableNode implements SubTestNode {
         return var;
     }
 
+    @NotNull
+    static TypedVariableNode[] parseListOnToken(@NotNull TokenList tokens, Keyword keyword) {
+        if (tokens.tokenIs(keyword)) {
+            tokens.nextToken(false);
+            return parseList(tokens, false);
+        } else {
+            return new TypedVariableNode[0];
+        }
+    }
+
     /**
      * Parse a list of TypedVariableNodes.
      * @param tokens The list of tokens to be destructively parsed
@@ -48,16 +58,13 @@ public class TypedVariableNode implements SubTestNode {
     @NotNull
     static TypedVariableNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
-        while (true) {
+        while (TypeNode.nextIsType(tokens)) {
             vars.add(parse(tokens, ignoreNewlines));
             if (ignoreNewlines) {
                 tokens.passNewlines();
             }
-            if (tokens.tokenIs(TokenType.ASSIGN, Keyword.IN)) {
-                break;
-            }
             if (!tokens.tokenIs(",")) {
-                throw tokens.error("Unexpected "+tokens.getFirst());
+                break;
             }
             tokens.nextToken(ignoreNewlines);
         }

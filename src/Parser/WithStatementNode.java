@@ -57,7 +57,7 @@ public class WithStatementNode implements FlowStatementNode {
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
         TestNode[] managed = TestNode.parseList(tokens, false);
-        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens, false);
+        TypedVariableNode[] vars = TypedVariableNode.parseListOnToken(tokens, Keyword.AS);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new WithStatementNode(lineInfo, managed, vars, body);
     }
