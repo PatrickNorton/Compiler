@@ -37,7 +37,7 @@ public class ExportStatementNode extends ImportExportNode {
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw tokens.error("Empty export statements are illegal");
         }
-        DottedVariableNode[] exports = DottedVariableNode.parseNameOnlyList(tokens, false);
+        DottedVariableNode[] exports = DottedVariableNode.parseNameOnlyList(tokens);
         return new ExportStatementNode(info, exports);
     }
 }

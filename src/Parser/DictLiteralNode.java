@@ -74,7 +74,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
             tokens.nextToken();
             return new DictLiteralNode(info);
         }
-        while (true) {
+        do {
             keys.add(TestNode.parse(tokens, true));
             if (!tokens.tokenIs(":")) {
                 throw tokens.error("Dict comprehension must have colon");
@@ -82,16 +82,14 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
             tokens.nextToken(true);
             values.add(TestNode.parse(tokens, true));
             if (!tokens.tokenIs(",")) {
-                break;
+                if (!tokens.tokenIs("}")) {
+                    throw tokens.error("Unmatched brace");
+                } else {
+                    break;
+                }
             }
             tokens.nextToken(true);
-            if (tokens.tokenIs("}")) {
-                break;
-            }
-        }
-        if (!tokens.tokenIs("}")) {
-            throw tokens.error("Unmatched brace");
-        }
+        } while (!tokens.tokenIs("}"));
         tokens.nextToken();
         return new DictLiteralNode(info, keys.toArray(new TestNode[0]), values.toArray(new TestNode[0]));
     }

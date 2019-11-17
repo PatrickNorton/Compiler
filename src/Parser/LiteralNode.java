@@ -65,10 +65,8 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         tokens.nextToken(true);
         LinkedList<TestNode> values = new LinkedList<>();
         LinkedList<Boolean> is_splat = new LinkedList<>();
-        while (true) {
-            if (tokens.tokenIs(balanced_brace)) {
-                break;
-            } else if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
+        while (!tokens.tokenIs(balanced_brace)) {
+            if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
                 throw tokens.error("Unmatched braces");
             }
             if (tokens.tokenIs("*")) {

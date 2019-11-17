@@ -122,35 +122,31 @@ public class DottedVariableNode implements NameNode {
      *     ignored.
      * </p>
      * @param tokens The list of tokens to parse
-     * @param ignoreNewlines Whether or not newlines should be ignored
      * @return The freshly parsed array of DottedVariableNodes
      */
-    static DottedVariableNode[] parseNameOnlyList(TokenList tokens, boolean ignoreNewlines) {
+    @NotNull
+    static DottedVariableNode[] parseNameOnlyList(@NotNull TokenList tokens) {
+        boolean isBraced;
         List<DottedVariableNode> variables = new ArrayList<>();
-        if (ignoreNewlines) {
-            tokens.passNewlines();
-        }
         if (tokens.tokenIs("(") && !tokens.braceContains(Keyword.IN, Keyword.FOR)) {
-            tokens.nextToken();
-            DottedVariableNode[] vars = parseNameOnlyList(tokens, true);
-            if (!tokens.tokenIs(")")) {
-                throw tokens.error("Unmatched braces");
-            }
-            return vars;
+            tokens.nextToken(true);
+            isBraced = true;
+        } else {
+            isBraced = false;
         }
-        while (true) {
-            if (!tokens.tokenIs(TokenType.NAME)) {
-                break;
-            }
-            if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw tokens.error("Unmatched braces");
-            }
-            variables.add(parseNamesOnly(tokens));
+        while (tokens.tokenIs(TokenType.NAME)) {
+            variables.add(parseNamesOnly(tokens, isBraced));
             if (tokens.tokenIs(",")) {
-                tokens.nextToken(ignoreNewlines);
+                tokens.nextToken(isBraced);
             } else {
                 break;
             }
+        }
+        if (isBraced) {
+            if (!tokens.tokenIs(")")) {
+                throw tokens.error("Unmatched braces");
+            }
+            tokens.nextToken();
         }
         return variables.toArray(new DottedVariableNode[0]);
     }

@@ -48,10 +48,10 @@ public class TypegetStatementNode extends ImportExportNode {
         if (tokens.tokenIs(TokenType.NEWLINE)) {
             throw tokens.error("Empty typeget statements are illegal");
         }
-        DottedVariableNode[] typegets = DottedVariableNode.parseNameOnlyList(tokens, false);
+        DottedVariableNode[] typegets = DottedVariableNode.parseNameOnlyList(tokens);
         if (tokens.tokenIs(Keyword.AS)) {
             tokens.nextToken();
-            DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens, false);
+            DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens);
             return new TypegetStatementNode(lineInfo, typegets, from, as);
         }
         return new TypegetStatementNode(lineInfo, typegets, from);

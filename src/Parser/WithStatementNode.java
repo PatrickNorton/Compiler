@@ -3,8 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-
 /**
  * The class representing a context statement.
  * @author Patrick Norton
@@ -12,11 +10,11 @@ import java.util.LinkedList;
 public class WithStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
     private TestNode[] managed;
-    private VariableNode[] vars;
+    private TypedVariableNode[] vars;
     private StatementBodyNode body;
 
     @Contract(pure = true)
-    public WithStatementNode(LineInfo lineInfo, TestNode[] managed, VariableNode[] vars, StatementBodyNode body) {
+    public WithStatementNode(LineInfo lineInfo, TestNode[] managed, TypedVariableNode[] vars, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.managed = managed;
         this.vars = vars;
@@ -32,7 +30,7 @@ public class WithStatementNode implements FlowStatementNode {
         return managed;
     }
 
-    public VariableNode[] getVars() {
+    public TypedVariableNode[] getVars() {
         return vars;
     }
 
@@ -58,18 +56,10 @@ public class WithStatementNode implements FlowStatementNode {
         assert tokens.tokenIs(Keyword.WITH);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        LinkedList<TestNode> managed = new LinkedList<>();
-        while (!tokens.tokenIs(Keyword.AS)) {
-            managed.add(TestNode.parse(tokens));
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken();
-            } else if (!tokens.tokenIs(Keyword.AS)) {
-                throw tokens.error("Expected comma or as, got "+tokens.getFirst());
-            }
-        }
-        VariableNode[] vars = VariableNode.parseList(tokens);
+        TestNode[] managed = TestNode.parseList(tokens, false);
+        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens, false);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new WithStatementNode(lineInfo, managed.toArray(new TestNode[0]), vars, body);
+        return new WithStatementNode(lineInfo, managed, vars, body);
     }
 
     @Override

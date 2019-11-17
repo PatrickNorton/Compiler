@@ -394,12 +394,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return SwitchStatementNode.parse(tokens);
             case LAMBDA:
                 return LambdaNode.parse(tokens, ignoreNewlines);
-            case IF:
-            case ELSE:
-            case FOR:
-                return null;
             default:
-                throw tokens.error("Unexpected " + tokens.getFirst());
+                return null;
         }
     }
 

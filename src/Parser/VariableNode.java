@@ -3,9 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * The class representing a name token.
  * @author Patrick Norton
@@ -108,31 +105,6 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         return new VariableNode(info, "...");
-    }
-
-    /**
-     * Parse a list of VariableNodes.
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed VariableNode array
-     */
-    @NotNull
-    static VariableNode[] parseList(@NotNull TokenList tokens) {
-        List<VariableNode> variables = new ArrayList<>();
-        while (true) {
-            if (!tokens.tokenIs(TokenType.NAME)) {
-                break;
-            }
-            if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
-                throw tokens.error("Unmatched braces");
-            }
-            variables.add(VariableNode.parse(tokens));
-            if (tokens.tokenIs(",")) {
-                tokens.nextToken();
-            } else {
-                break;
-            }
-        }
-        return variables.toArray(new VariableNode[0]);
     }
 
     public String toString() {
