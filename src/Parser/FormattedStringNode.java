@@ -60,12 +60,16 @@ public class FormattedStringNode extends StringLikeNode {
         boolean isRaw = prefixes.contains(StringPrefix.RAW);
         List<String> strings = new ArrayList<>();
         List<TestNode> tests = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
         int newStart, newEnd = 0;
         while ((newStart = inside.indexOf('{', newEnd)) != -1) {
             if (inside.charAt(newStart - 1) == '\\') {
+                current.append(inside, newEnd, newStart + 1);
+                newEnd = newStart + 1;
                 continue;
             }
-            strings.add(inside.substring(newEnd, newStart));
+            strings.add(current.append(inside, newEnd, newStart).toString());
+            current = new StringBuilder();
             newEnd = sizeOfBrace(inside, newStart, isRaw);
             if (newEnd == -1) {
                 throw ParserException.of("Unmatched braces in f-string", info);
