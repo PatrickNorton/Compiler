@@ -97,7 +97,7 @@ public enum TokenType {
     /**
      * Variable names.
      */
-    NAME("^\\b(?!operator\\b)[_a-zA-Z][_a-zA-Z0-9]*\\b"),
+    NAME("^\\b(?!operator\\b)(?!0-9)\\w*\\b"),
     /**
      * Backslash-preceded operator functions, such as \+ or \<<.
      */
@@ -125,7 +125,7 @@ public enum TokenType {
 
     TokenType(@NotNull @Language("RegExp") String regex) {
         assert regex.startsWith("^");  // Make sure regex will only match the beginning of strings
-        this.regex = Pattern.compile(regex);
+        this.regex = Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
         this.regexMaker = null;
     }
 
