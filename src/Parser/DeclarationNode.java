@@ -12,11 +12,12 @@ import java.util.Set;
  * @author Patrick Norton
  * @see DeclaredAssignmentNode
  */
-public class DeclarationNode implements AssignStatementNode, ClassStatementNode {
+public class DeclarationNode implements AssignStatementNode, ClassStatementNode, AnnotatableNode {
     private LineInfo lineInfo;
     private TypeLikeNode type;
     private VariableNode name;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
+    private NameNode[] annotations = new NameNode[0];
 
     public DeclarationNode(TypeLikeNode type, VariableNode name) {
         this(type.getLineInfo(), type, name);
@@ -56,6 +57,16 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode 
     @Override
     public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
     }
 
     @Override

@@ -14,12 +14,13 @@ import java.util.Set;
  * @see DeclarationNode
  * @see AssignmentNode
  */
-public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode {
+public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode, AnnotatableNode {
     private LineInfo lineInfo;
     private boolean is_colon;
     private TypedVariableNode[] assigned;
     private TestNode[] value;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
+    private NameNode[] annotations = new NameNode[0];
 
     /**
      * Create new instance of DeclaredAssignmentNode.
@@ -64,6 +65,16 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @Override
     public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         this.descriptors = nodes;
+    }
+
+    @Override
+    public NameNode[] getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void addAnnotations(NameNode... annotations) {
+        this.annotations = annotations;
     }
 
     @Override

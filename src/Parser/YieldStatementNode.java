@@ -3,22 +3,22 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-
 /**
  * The class representing a yield statement.
  * @author Patrick Norton
  */
-public class YieldStatementNode implements SimpleStatementNode {
+public class YieldStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
     private boolean is_from;
     private TestNode[] yielded;
+    private TestNode cond;
 
     @Contract(pure = true)
-    public YieldStatementNode(LineInfo lineInfo, boolean is_from, TestNode... yielded) {
+    public YieldStatementNode(LineInfo lineInfo, boolean is_from, TestNode[] yielded, TestNode cond) {
         this.lineInfo = lineInfo;
         this.is_from = is_from;
         this.yielded = yielded;
+        this.cond = cond;
     }
 
     @Override
@@ -32,6 +32,11 @@ public class YieldStatementNode implements SimpleStatementNode {
 
     public boolean getIs_from() {
         return is_from;
+    }
+
+    @Override
+    public TestNode getCond() {
+        return cond;
     }
 
     /**
@@ -54,18 +59,9 @@ public class YieldStatementNode implements SimpleStatementNode {
         if (is_from) {
             tokens.nextToken();
         }
-        LinkedList<TestNode> yields = new LinkedList<>();
-        while (!tokens.tokenIs(TokenType.NEWLINE)) {
-            yields.add(TestNode.parse(tokens));
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken();
-                continue;
-            }
-            if (!tokens.tokenIs(TokenType.NEWLINE)) {
-                throw tokens.error("Comma must separate yields");
-            }
-        }
-        return new YieldStatementNode(lineInfo, is_from, yields.toArray(new TestNode[0]));
+        TestNode[] yields = TestNode.parseListNoTernary(tokens, false);
+        TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
+        return new YieldStatementNode(lineInfo, is_from, yields, cond);
     }
 
     @Override

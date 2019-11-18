@@ -325,10 +325,11 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         TestNode node = parseInternalNode(tokens, ignoreNewlines, parseCurly);
         if (node == null) {
             return null;
-        }
-        node = parsePostBraces(tokens, node, ignoreNewlines);
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
+        } else if (node instanceof PostDottableNode) {
+            node = parsePostBraces(tokens, node, ignoreNewlines);
+            if (tokens.tokenIs(TokenType.DOT)) {
+                return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
+            }
         }
         return node;
     }
