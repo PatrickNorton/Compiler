@@ -134,11 +134,11 @@ public class FormattedStringNode extends StringLikeNode {
     @Contract(pure = true)
     private static boolean isEscaped(String str, int start) {
         for (int i = start - 1; i >= 0; i--) {
-            if (str.charAt(i) == '\\') {
+            if (str.charAt(i) != '\\') {
                 return (start - i) % 2 == 0;
             }
         }
-        return start % 2 == 0;
+        return start % 2 == 1;
     }
 
     @Contract("true, _, _ -> param2; false, _, _ -> !null")
