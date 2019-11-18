@@ -61,15 +61,15 @@ public class FormattedStringNode extends StringLikeNode {
         List<String> strings = new ArrayList<>();
         List<TestNode> tests = new ArrayList<>();
         StringBuilder current = new StringBuilder();
-        int newStart, newEnd = 0;
-        while ((newStart = inside.indexOf('{', newEnd)) != -1) {
-            if (inside.charAt(newStart - 1) == '\\') {
+        int newEnd = 0;
+        for (int newStart = inside.indexOf('{'); newStart != -1; newStart = inside.indexOf('{', newEnd)) {
+            if (isEscaped(inside, newStart)) {
                 current.append(inside, newEnd, newStart + 1);
                 newEnd = newStart + 1;
                 continue;
             }
-            strings.add(current.append(inside, newEnd, newStart).toString());
-            current = new StringBuilder();
+            strings.add(maybeProcessEscapes(isRaw, current.append(inside, newEnd, newStart).toString(), info));
+            current.setLength(0);  // Don't create new instances, help the GC a little
             newEnd = sizeOfBrace(inside, newStart, isRaw);
             if (newEnd == -1) {
                 throw ParserException.of("Unmatched braces in f-string", info);
@@ -107,28 +107,38 @@ public class FormattedStringNode extends StringLikeNode {
      * Get the size of the brace at the index in the string.
      *
      * @param str The string to find the brace in
-     * @param index The index to start at
+     * @param start The index to start at
      * @return The position one after the final brace.
      */
-    private static int sizeOfBrace(@NotNull String str, int index, boolean isRaw) {
-        assert str.charAt(index) == '{';
+    private static int sizeOfBrace(@NotNull String str, int start, boolean isRaw) {
+        assert str.charAt(start) == '{' && isRaw || !isEscaped(str, start);
         int netBraces = 0;
-        while (index < str.length()) {
-            switch (str.charAt(index++)) {
+        for (int index = start; index < str.length(); index++) {
+            switch (str.charAt(index)) {
                 case '{':
                     netBraces++;
                     break;
                 case '}':
-                    if (!isRaw || netBraces > 1 || str.charAt(index - 2) != '\\') {
+                    if (isRaw || netBraces > 1 || !isEscaped(str, start)) {
                         netBraces--;
                     }
                     break;
             }
             if (netBraces == 0) {
-                return index;
+                return index + 1;
             }
         }
         return -1;
+    }
+
+    @Contract(pure = true)
+    private static boolean isEscaped(String str, int start) {
+        for (int i = start - 1; i >= 0; i--) {
+            if (str.charAt(i) == '\\') {
+                return (start - i) % 2 == 0;
+            }
+        }
+        return start % 2 == 0;
     }
 
     @Contract("true, _, _ -> param2; false, _, _ -> !null")
