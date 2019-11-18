@@ -4,7 +4,9 @@ import java.io.File;
 
 public class Compiler {
     public static void main(String[] args) {
-        String filename = "/Users/Patricknorton/Projects/Python files/CAS.newlang";
-        TopNode topNode = Parser.parse(new File(filename));
+        TopNode[] nodes = new TopNode[args.length];
+        for (int i = 0; i < args.length; i++) {
+            nodes[i] = Parser.parse(new File(args[i]));
+        }
     }
 }
