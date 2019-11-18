@@ -10,21 +10,23 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
     private ArgumentNode[] builder;
     private TestNode[] looped;
     private TestNode condition;
+    private TestNode whileCond;
 
      public ComprehensionLikeNode(LineInfo lineInfo, String brace, TypedVariableNode[] variables,
-                                 TestNode builder, TestNode[] looped, TestNode condition) {
-         this(lineInfo, brace, variables, ArgumentNode.fromTestNodes(builder), looped, condition);
+                                 TestNode builder, TestNode[] looped, TestNode condition, TestNode whileCond) {
+         this(lineInfo, brace, variables, ArgumentNode.fromTestNodes(builder), looped, condition, whileCond);
      }
 
     @Contract(pure = true)
     public ComprehensionLikeNode(LineInfo lineInfo, String brace, TypedVariableNode[] variables,
-                                 ArgumentNode[] builder, TestNode[] looped, TestNode condition) {
+                                 ArgumentNode[] builder, TestNode[] looped, TestNode condition, TestNode whileCond) {
         this.lineInfo = lineInfo;
         this.brace = brace;
         this.variables = variables;
         this.builder = builder;
         this.looped = looped;
         this.condition = condition;
+        this.whileCond = whileCond;
     }
 
     @Override
@@ -52,6 +54,10 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
         return variables;
     }
 
+    public TestNode getWhileCond() {
+        return whileCond;
+    }
+
     @NotNull
     static ComprehensionLikeNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
@@ -72,8 +78,9 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
         String variables = TestNode.toString(this.variables);
         String looped = TestNode.toString(this.looped);
         String condition = this.condition.isEmpty() ? "" : " if " + this.condition;
-        return String.format(" for %s in %s%s%s", variables, looped,
-                condition, TokenList.matchingBrace(brace));
+        String whileCond = this.whileCond.isEmpty() ? "" : " while " + this.whileCond;
+        return String.format(" for %s in %s%s%s%s", variables, looped,
+                condition, whileCond, TokenList.matchingBrace(brace));
     }
 
     @Override

@@ -20,8 +20,8 @@ public class ComprehensionNode extends ComprehensionLikeNode {
      */
     @Contract(pure = true)
     public ComprehensionNode(LineInfo lineInfo, String brace_type, TypedVariableNode[] variables,
-                             ArgumentNode[] builder, TestNode[] looped, TestNode condition) {
-        super(lineInfo, brace_type, variables, builder, looped, condition);
+                             ArgumentNode[] builder, TestNode[] looped, TestNode condition, TestNode whileCond) {
+        super(lineInfo, brace_type, variables, builder, looped, condition, whileCond);
     }
 
     /**
@@ -54,11 +54,12 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         tokens.nextToken(true);
         TestNode[] looped = TestNode.parseListNoTernary(tokens, true);
         TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, true);
+        TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
         if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
             throw tokens.error("Expected close brace");
         }
         tokens.nextToken();
-        return new ComprehensionNode(info, brace_type, variables, builder, looped, condition);
+        return new ComprehensionNode(info, brace_type, variables, builder, looped, condition, whileCond);
     }
 
     public String toString() {
