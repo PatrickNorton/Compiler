@@ -71,12 +71,23 @@ public class ForStatementNode implements FlowStatementNode {
         assert tokens.tokenIs(Keyword.FOR);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TypedVariableNode[] vars = TypedVariableNode.parseForVars(tokens);
-        if (!tokens.tokenIs(Keyword.IN)) {
-            throw tokens.error("Expected in, got "+tokens.getFirst());
+        boolean ignoreNewlines = tokens.tokenIs("(");
+        if (ignoreNewlines) {
+            tokens.nextToken(true);
         }
-        tokens.nextToken();
-        TestNode[] iterables = TestNode.parseList(tokens, false);
+        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens, ignoreNewlines);
+        if (!tokens.tokenIs(Keyword.IN)) {
+            throw tokens.error("Expected in, got " + tokens.getFirst());
+        }
+        tokens.nextToken(ignoreNewlines);
+        TestNode[] iterables = TestNode.parseList(tokens, ignoreNewlines);
+        if (ignoreNewlines) {
+            if (tokens.tokenIs(")")) {
+                tokens.nextToken();
+            } else {
+                throw tokens.error("Unexpected " + tokens.getFirst());
+            }
+        }
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");
         return new ForStatementNode(lineInfo, vars, iterables, body, nobreak);
