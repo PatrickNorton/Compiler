@@ -25,6 +25,8 @@ public final class Tokenizer {
     private int currentLine;
     private String fullLine;
     private int multilineSize = 0;
+    private int lineIndex;
+    private boolean lastWasMultiline = false;
 
     private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern CLOSE_COMMENT = Pattern.compile("^.*?\\|#");
@@ -48,6 +50,7 @@ public final class Tokenizer {
         file = new BufferedReader(r);
         next = readLine();
         currentLine = 1;
+        lineIndex = 0;
         fullLine = next;
     }
 
@@ -75,8 +78,15 @@ public final class Tokenizer {
         for (TokenType info : TokenType.values()) {
             Matcher match = info.matcher(next);
             if (match.find()) {
+                LineInfo lineInfo = lineInfo();
                 next = next.substring(match.end());
-                return new Token(info, match.group(), lineInfo());
+                if (lastWasMultiline) {
+                    lineIndex = fullLine.length() - next.length() - fullLine.lastIndexOf(System.lineSeparator(), lineIndex);
+                } else {
+                    lineIndex += next.length();
+                }
+                lastWasMultiline = false;
+                return new Token(info, match.group(), lineInfo);
             }
         }
         return null;
@@ -103,11 +113,13 @@ public final class Tokenizer {
         if (nextLine == null) {
             return Token.Epsilon(lineInfo());
         } else {
-            next = nextLine;
+            next = nextLine.stripTrailing();
             fullLine = next;
             currentLine++;
             currentLine += multilineSize;
             multilineSize = 0;
+            lineIndex = 0;
+            lastWasMultiline = false;
             appendEscapedLines();
             return Token.Newline(lineInfo());
         }
@@ -117,18 +129,11 @@ public final class Tokenizer {
      * Adjust {@link #next} for multiline tokens.
      */
     private void adjustForMultiline() {
-        Matcher m = OPEN_COMMENT.matcher(next);
-        if (m.find()) {
+        if (OPEN_COMMENT.matcher(next).find()) {
             concatLines(CLOSE_COMMENT);
-            return;
-        }
-        m = OPEN_STRING.matcher(next);
-        if (m.find()) {
+        } else if (OPEN_STRING.matcher(next).find()) {
             concatLines(CLOSE_STRING);
-            return;
-        }
-        m = OPEN_SINGLE_STRING.matcher(next);
-        if (m.find()) {
+        } else if (OPEN_SINGLE_STRING.matcher(next).find()) {
             concatLines(CLOSE_SINGLE_STRING);
         }
     }
@@ -138,10 +143,11 @@ public final class Tokenizer {
      * @param tillMatch The pattern to match to
      */
     private void concatLines(@NotNull Pattern tillMatch) {
+        lastWasMultiline = true;
         String next;
         StringBuilder nextBuilder = new StringBuilder(this.next);
         do {
-            next = readLine();
+            next = readLine().stripTrailing();
             nextBuilder.append(System.lineSeparator());
             nextBuilder.append(next);
             multilineSize++;
@@ -159,8 +165,9 @@ public final class Tokenizer {
         }
     }
 
+    @Contract(pure = true)
     private int lineIndex() {
-        return fullLine.length() - next.length();
+        return lineIndex;
     }
 
     @NotNull

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class ParserException extends RuntimeException {
-    private static final String DEFAULT_MESSAGE = "%s%nError: Line %s%n%s";
+    private static final String DEFAULT_MESSAGE = "%s%nError: Line %d%n%s";
 
     private final String internalMessage;
     /**
@@ -55,7 +55,7 @@ public class ParserException extends RuntimeException {
     @Contract("_, _ -> new")
     public static ParserException of(String message, @NotNull LineInfo lineInfo) {
         return new ParserException(
-                String.format(DEFAULT_MESSAGE, message, lineInfo.line, lineInfo.infoString()),
+                String.format(DEFAULT_MESSAGE, message, lineInfo.getLineNumber(), lineInfo.infoString()),
                 message
         );
     }

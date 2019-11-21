@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
  * @see ParserException
  */
 public class ParserInternalError extends RuntimeException {
-    public static final String DEFAULT_HEADER = "INTERNAL ERROR:" + System.lineSeparator();
-    public static final String DEFAULT_MESSAGE = "%s%nError: source line %s%n%s";
+    private static final String DEFAULT_HEADER = "INTERNAL ERROR:" + System.lineSeparator();
+    private static final String DEFAULT_MESSAGE = "%s%nError: source line %d%n%s";
 
     /**
      * Constructs a new runtime exception with the specified detail message.
@@ -41,7 +41,7 @@ public class ParserInternalError extends RuntimeException {
 
     @NotNull
     public static ParserInternalError of(String message, @NotNull LineInfo info) {
-        return withHeader(String.format(DEFAULT_MESSAGE, message, info.lineNumber, info.infoString()));
+        return withHeader(String.format(DEFAULT_MESSAGE, message, info.getLineNumber(), info.infoString()));
     }
 
     @NotNull

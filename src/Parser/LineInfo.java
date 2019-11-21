@@ -4,9 +4,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public class LineInfo {
-    public final int lineNumber;
-    public final String line;
-    public final int startingPoint;
+    private final int lineNumber;
+    private final String line;
+    private final int startingPoint;
 
     @Contract(pure = true)
     public LineInfo(int lineNumber, String line, int startingPoint) {
@@ -15,15 +15,19 @@ public class LineInfo {
         this.startingPoint = startingPoint;
     }
 
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
     public String infoString() {
-        String header = lineNumber + ":";
-        return String.format("%s %s%n%s^", header, line, " ".repeat(startingPoint + header.length()));
+        int numSpaces = startingPoint + String.valueOf(lineNumber).length() + 2;
+        return String.format("%d: %s%n%s^", lineNumber, line, " ".repeat(numSpaces));
     }
 
     @NotNull
     @Contract(value = " -> new", pure = true)
     public static LineInfo empty() {
-        return new LineInfo(0, "", 0) {
+        return new LineInfo(-1, "", 0) {
             @Override
             public String infoString() {
                 return "Line info not available";
