@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,7 +114,7 @@ public final class Tokenizer {
         if (nextLine == null) {
             return Token.Epsilon(lineInfo());
         } else {
-            next = nextLine.stripTrailing();
+            next = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
             fullLine = next;
             currentLine++;
             currentLine += multilineSize;
@@ -147,7 +148,7 @@ public final class Tokenizer {
         String next;
         StringBuilder nextBuilder = new StringBuilder(this.next);
         do {
-            next = readLine().stripTrailing();
+            next =  Normalizer.normalize(readLine().stripTrailing(), Normalizer.Form.NFKD);
             nextBuilder.append(System.lineSeparator());
             nextBuilder.append(next);
             multilineSize++;
