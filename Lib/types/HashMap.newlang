@@ -1,5 +1,4 @@
-from types import Hashable, Array, Comparable
-from itertools import iterNull
+from types import Hashable, Array
 from numtools import highestOneBit
 from math import max
 
@@ -8,7 +7,7 @@ export HashMap
 const int DEFAULT_ARRAY_SIZE = 1 << 4
 const dec RESIZE_THRESHOLD = 0.75
 
-class HashMap[K, V] from dict[K, V] {
+class HashMap[K[Hashable], V] from dict[K, V] {
     private Array[Tuple[int64, K, V]?] values
     private uint length
 
@@ -57,6 +56,10 @@ class HashMap[K, V] from dict[K, V] {
 
     public operator iter -> V {
         yield from ((i!!)[2] for var i in self.valueList if i is not null)
+    }
+
+    public operator hash {
+        return hash(f"dict[{K}, {V}]", *self)
     }
 
     private method getInfo(K key) -> uint {
