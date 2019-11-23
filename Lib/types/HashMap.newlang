@@ -1,0 +1,81 @@
+from types import Hashable, Array, Comparable
+from itertools import iterNull
+from numtools import highestOneBit
+from math import max
+
+export HashMap
+
+const int DEFAULT_ARRAY_SIZE = 1 << 4
+const dec RESIZE_THRESHOLD = 0.75
+
+class HashMap[K, V] from dict[K, V] {
+    private Array[Tuple[int64, K, V]?] values
+    private uint length
+
+    public operator new (*tuple[K, V] values) {
+        int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
+        self.internal = Array(length, null)
+        self.valueList = []
+        self.length = 0
+        self.resize(values.length)
+        for K key, V value in values {
+            self[key] = value
+        }
+    }
+
+    public operator [] (K key) -> V {
+        uint index = self.getInfo(key)
+        raise IndexError if self.values[index] is null
+        return (self.values[index]!!)[2]
+    }
+
+    public operator []= (K key, V value) {
+        self.resize(self.length + 1)
+        uint index = self.getInfo(key)
+        if self.values[index] is null {
+            self.length++
+        }
+        self.values[index] = (hash(key), key, value)
+    }
+
+    public operator del[] (K key) {
+        int oldIndex = self.getInfo(key)
+        raise KeyError if self.values[oldIndex] is null
+        self.values[oldIndex] = null
+        self.length--
+        for var v in (i!! for var i in self.values if i is not null) {
+            int index = self.getInfo(v)
+            if self.values[index] is null {
+                self.values[index] = v
+            }
+        }
+    }
+
+    public operator in (K key) {
+        return self.values[self.getInfo(key)] is not null
+    }
+
+    public operator iter -> V {
+        yield from ((i!!)[2] for var i in self.valueList if i is not null)
+    }
+
+    private method getInfo(K key) -> uint {
+        uint index = hash(key) % self.values.length
+        while true {
+            var value = self.values[index]
+            return index if value is null
+            var v = value!!
+            return index if self.valueList[v][0] == hash(key) and self.valueList[v][1] == key
+        }
+    }
+
+    private method resize(uint size) {
+        return if size / self.values.length < RESIZE_THRESHOLD
+        uint newSize = self.values.length << 1
+        var old = self.values
+        self.values = Array(newSize, null)
+        for var v in (i!! for var i in old if i is not null) {
+            self.values[self.getInfo(v[1])] = v
+        }
+    }
+}
