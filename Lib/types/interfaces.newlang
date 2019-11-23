@@ -1,6 +1,6 @@
 from annotations import DefaultInterface
 
-export Callable, Iterable, Indexable, Sliceable
+export Boolable, Callable Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
 
 $DefaultInterface
 interface Boolable {
@@ -13,13 +13,63 @@ interface Callable[*P, R] {
 }
 
 $DefaultInterface
+interface Comparable[T] {
+    operator <=> (T other, /)
+    operator < (T other, /)
+    operator > (T other, /)
+    operator == (T other, /)
+
+    operator <= (T other, /) {
+        return self == other or self < other
+    }
+    operator >= (T other, /) {
+        return self == other or self > other
+    }
+}
+
+$DefaultInterface
+interface singleComparable[T] from Comparable[T] {
+    operator <=> (T other, /)
+
+    operator < (T other, /) {
+        return (self <=> other) == -1
+    }
+
+    operator == (T other, /) {
+        return (self <=> other) == 0
+    }
+
+    operator > (T other, /) {
+        return (self <=> other) == 1
+    }
+}
+
+interface triComparable from Comparable[T] {
+    operator < (T other, /)
+    operator > (T other, /)
+    operator == (T other, /)
+
+    operator <=> (T other, /) {
+        return 0 if self == other
+        return 1 if self > other
+        return -1
+    }
+}
+
+$DefaultInterface
 interface Hashable {
     operator hash
 }
 
 $DefaultInterface
 interface Iterable[T] {
+    pubget uint length
+
     operator iter -> T
+
+    operator in (T value, /) {
+        return any(value == i for T i in self)
+    }
 }
 
 $DefaultInterface
