@@ -1,0 +1,17 @@
+from types import Iterable
+
+export repeat
+
+# FIXME: Types for product, etc.
+
+generator func repeat(T value, int? times = null) -> T {
+    if times is null {
+        while true {
+            yield value
+        }
+    } else {
+        dotimes times!! {
+            yield value
+        }
+    }
+}

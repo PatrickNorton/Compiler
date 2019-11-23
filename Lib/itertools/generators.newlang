@@ -1,0 +1,79 @@
+from types typeget Boolable, Iterable, Callable, Iterator, nIterable
+from types import Array
+
+export accumulate, all, any, chain, compress, dropWhile, filter, filterFalse, takeWhile, zipLongest
+
+# With thanks to Python for all the ideas <3
+
+generator func accumulate(Iterable[T] value, /, Callable[T, T, T] function = \+, *, T? initial = null) -> T {
+    Iterator[T] iter = iter(value)
+    T total = initial ?? iter.next()
+    yield total
+    for T i in iter {
+        total = function(total, i)
+        yield total
+    }
+}
+
+generator func all(Iterable[Boolable] values) -> bool {
+    for var i in values {
+        return false if not i
+    }
+    return true
+}
+
+generator func any(Iterable[Boolable] values) -> bool {
+    for var i in values {
+        return true if i
+    }
+    return false
+}
+
+generator func chain(*Iterable[T] values) -> T {
+    yield from (*i for var i in values)
+}
+
+generator func compress(Iterable[T] data, Iterable[U] selectors) -> T {
+    yield from (i for T i, U j in zip(data, selectors) if j)
+}
+
+generator func dropWhile(Callable[T, bool] predicate, Iterable[T] iterable) -> T {
+    Iterator[T] iter = iter(iterable)
+    for T i in iter {
+        if not predicate(i) {
+            yield i
+            break
+        }
+    }
+    yield from iter
+}
+
+generator func filter(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
+    yield from (i for T i in sequence if predicate(i))
+}
+
+generator func filterFalse(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
+    yield from (i for T i in sequence if not predicate(i))
+}
+
+generator func takeWhile(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
+    yield from (i for T i in sequence while predicate)
+}
+
+generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> *T {
+    Array[Iterator[T]] iterators = Array(values.length, *apply(iter, values))
+    Array[bool] hasNext = Array(values.length, false)
+    while any(hasNext) {
+        Array[T] next = Array(values.length, defaultVal)
+        for int i, var j in enumerate(iterators) {
+            if hasNext[i] {
+                try {
+                    next[i] = j.next
+                } except StopIteration {
+                    hasNext[i] = false
+                }
+            }
+        }
+        yield *next
+    }
+}
