@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Set;
 public class FormattedStringNode extends StringLikeNode {
     private String[] strings;
     private TestNode[] tests;
+    private FormatInfo[] formats;
 
     /**
      * Construct a new FormattedStringNode.
@@ -28,10 +30,12 @@ public class FormattedStringNode extends StringLikeNode {
      * @param tests The non-string-literals which are interpolated
      */
     @Contract(pure = true)
-    public FormattedStringNode(LineInfo info, String[] strings, TestNode[] tests, @NotNull Set<StringPrefix> flags) {
+    public FormattedStringNode(LineInfo info, String[] strings, TestNode[] tests,
+                               FormatInfo[] formats, @NotNull Set<StringPrefix> flags) {
         super(info, flags);
         this.strings = strings;
         this.tests = tests;
+        this.formats = formats;
     }
 
     @Override
@@ -60,6 +64,7 @@ public class FormattedStringNode extends StringLikeNode {
         boolean isRaw = prefixes.contains(StringPrefix.RAW);
         List<String> strings = new ArrayList<>();
         List<TestNode> tests = new ArrayList<>();
+        List<FormatInfo> formats = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         int newEnd = 0;
         for (int newStart = inside.indexOf('{'); newStart != -1; newStart = inside.indexOf('{', newEnd)) {
@@ -74,12 +79,15 @@ public class FormattedStringNode extends StringLikeNode {
             if (newEnd == -1) {
                 throw ParserException.of("Unmatched braces in f-string", info);
             }
-            tests.add(parseTest(info, inside.substring(newStart + 1, newEnd - 1)));
+            formats.add(FormatInfo.parse(inside, newStart, newEnd - 1));
+            int end = newEnd - formats.get(formats.size() - 1).size();
+            tests.add(parseTest(info, inside.substring(newStart + 1, end - 1)));
         }
         if (newEnd < inside.length()) {
             strings.add(maybeProcessEscapes(isRaw, inside.substring(newEnd), info));
         }
-        return new FormattedStringNode(info, strings.toArray(new String[0]), tests.toArray(new TestNode[0]), prefixes);
+        return new FormattedStringNode(info, strings.toArray(new String[0]), tests.toArray(new TestNode[0]),
+                formats.toArray(new FormatInfo[0]), prefixes);
     }
 
     /**
@@ -157,6 +165,7 @@ public class FormattedStringNode extends StringLikeNode {
             sb.append(strings[i]);
             sb.append('{');
             sb.append(tests[i]);
+            sb.append(formats[i]);
             sb.append('}');
         }
         for (int i = tests.length; i < strings.length; i++) {
@@ -165,4 +174,73 @@ public class FormattedStringNode extends StringLikeNode {
         sb.append('"');
         return sb.toString();
     }
+
+    /**
+     * The class for formatting information for f-strings.
+     *
+     * @author Patrick Norton
+     * @see FormattedStringNode
+     */
+    private static class FormatInfo {
+        private static final Set<Character> FORMAT_INVALID = Set.of(
+            '"', '\'', '[', ']', '(', ')', '{', '}');
+
+        private String specifier;
+
+        @Contract(pure = true)
+        FormatInfo(String specifier) {
+            this.specifier = specifier;
+        }
+
+        @Contract(pure = true)
+        int size() {
+            return specifier == null ? 0 : specifier.length() + 1;
+        }
+
+        /**
+         * Get the format specifier out of a f-string.
+         * <p>
+         *     F-string specifiers always start with an !, and that is how they
+         *     are parsed. (More formally, and for reference later, they go
+         *     <code> "!" [conversion] ":" [see <a href=
+         *     https://www.python.org/dev/peps/pep-3101>Python's formatting
+         *     grammar</a>]</code>).
+         * </p>
+         *
+         * @param str The string to be parsed
+         * @param openBrace The location of the open brace
+         * @param closeBrace The location of the close brace
+         * @return The parsed specifier
+         * @see <a href=https://www.python.org/dev/peps/pep-3101>
+         *     Python's formatting grammar</a>
+         */
+        @NotNull
+        @Contract("_, _, _ -> new")
+        public static FormatInfo parse(String str, int openBrace, int closeBrace) {
+            String specifier = specifier(str, openBrace, closeBrace);
+            return new FormatInfo(specifier);
+        }
+
+        @Nullable
+        private static String specifier(String str, int openBrace, int closeBrace) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = closeBrace - 1; i > openBrace; i--) {
+                char currentChar = str.charAt(i);
+                if (currentChar < 32 || currentChar >= 127 || FORMAT_INVALID.contains(currentChar)
+                        || (currentChar == '!' && str.charAt(i + 1) == '=')) {
+                    return null;
+                } else if (currentChar == '!') {
+                    return sb.reverse().toString();
+                } else {
+                    sb.append(currentChar);
+                }
+            }
+            return null;
+        }
+
+        public String toString() {
+            return specifier == null ? "" : " !" + specifier;
+        }
+    }
+
 }
