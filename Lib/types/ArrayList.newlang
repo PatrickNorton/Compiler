@@ -18,11 +18,6 @@ class ArrayList[T] from list[T] {
         self.length = values.length
     }
 
-    public operator new (int length) {
-        self.values = Array(length, null)
-        self.length = length
-    }
-
     public operator [] (int index) -> T {
         raise IndexError if index >= self.length or ~index <= self.length
         return self.values[index if index >= 0 else self.length-index]
@@ -71,14 +66,14 @@ class ArrayList[T] from list[T] {
     }
 
     public operator + (Array[T] other) -> cls {
-        var new = cls(self.length + other.length)
+        var new = size(self.length + other.length)
         new.values[:self.length] = self.values
         new.values[self.length:other.length] = other.values
         return new
     }
 
     public operator * (int multiplicand) {
-        var new = cls(self.length * multiplicand)
+        var new = size(self.length * multiplicand)
         for var i in [0:multiplicand] {
             new.values[i * self.length : (i + 1) * self.length] = self.values
         }
@@ -135,5 +130,10 @@ class ArrayList[T] from list[T] {
 
     private method checkIndex(int value) {
         raise IndexError if start >= self.length or ~index <= self.length
+    }
+
+    public static method size(int size, /) -> cls {
+        cls new = []
+        new.values = Array(size, null)
     }
 }
