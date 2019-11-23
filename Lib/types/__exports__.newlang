@@ -1,1 +1,2 @@
-export HashMap.HashMap
+from HashMap export HashMap
+from interfaces export __exports__

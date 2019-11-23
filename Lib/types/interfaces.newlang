@@ -1,0 +1,23 @@
+export Callable, Iterable, Indexable, Sliceable
+
+interface Callable[*P, R] {
+    operator () (*P values, /) -> R
+}
+
+interface Hashable {
+    operator hash
+}
+
+interface Iterable[T] {
+    operator iter -> T
+}
+
+interface Indexable[K, V] {
+    operator [] (K key, /) -> V
+    operator []= (K key, V value, /)
+}
+
+interface Sliceable[V] {
+    operator [:] (int start, int stop, int step, /) -> Iterable[V]
+    operator [:]= (int start, int stop, int step, Iterable[V] values, /)
+}
