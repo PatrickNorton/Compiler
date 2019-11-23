@@ -1,0 +1,26 @@
+export ChainMap
+
+final class ChainMap[K, V] from dict[K, V] {
+    private const tuple[*dict[K, V]] values
+
+    public operator new (*dict[K, V] values) {
+        self.values = values
+    }
+
+    public operator [] (K key) -> V {
+        for var dict in self.values {
+            try {
+                return dict[key]
+            } except ValueError {}
+        }
+        raise ValueError(f"Key {key} not found")
+    }
+
+    public operator []= (K key, V value) {
+        self.values[0] = value
+    }
+
+    public operator iter -> K, V {
+        yield from (*d for var d in self.values)
+    }
+}
