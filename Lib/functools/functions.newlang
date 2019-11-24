@@ -1,0 +1,18 @@
+export apply
+
+func apply(Callable[A, B, A] function, *B values, *, A start) -> A {
+    A finalVal = start
+    for B value in values {
+        finalVal = function(finalVal, value)
+    }
+    return finalVal
+}
+
+func apply(Callable[T, T, T] function, *T values) -> T {
+    T finalVal = values[0]
+    for T value in values {
+        finalVal = function(finalVal, values)
+    }
+    return finalVal
+}
+
