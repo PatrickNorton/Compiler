@@ -1,3 +1,4 @@
+from math import max
 from types import Array
 
 export ArrayList
@@ -80,7 +81,7 @@ class ArrayList[T] from list[T] {
     }
 
     public method append(T value, /) -> self {
-        ensureSize(self.length + 1)
+        self.ensureSize(self.length + 1)
         self.values[self.length] = value
         self.length++
         return self
@@ -117,7 +118,7 @@ class ArrayList[T] from list[T] {
         self.length = 0
     }
 
-    public method index(T value, /) -> int {
+    public method index(T value, /) -> uint {
         for int i, T v in enumerate(self) {
             return i if value == v
         }
@@ -128,8 +129,21 @@ class ArrayList[T] from list[T] {
         self.values[:self.length] = self.values[self.length::-1]
     }
 
+    public method insert(T value, int index) {
+        self.checkIndex(index)
+        self.ensureSize(self.length + 1)
+        self.values[index + 1:] = self.values[index:]
+        self.values[index] = value
+    }
+
     private method checkIndex(int value) {
-        raise IndexError if start >= self.length or ~index <= self.length
+        raise IndexError(f"Invalid index {value} for list of length {self.length}") \
+            if start >= self.length or ~index <= self.length
+    }
+
+    private method ensureSize(int size) {
+        return if self.values.length > size
+        self.values = Array(max(self.values.length * 2, size), self.values, null)
     }
 
     public static method size(int size, /) -> cls {
