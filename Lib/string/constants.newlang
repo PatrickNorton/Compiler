@@ -1,0 +1,9 @@
+const str ASCII_LOWERCASE = 'abcdefghijklmnopqrstuvwxyz'
+const str ASCII_UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+const str ASCII_LETTERS = ASCII_LOWERCASE + ASCII_UPPERCASE
+const str DIGITS = '0123456789'
+const str HEX_DIGITS = '0123456789abcdef'
+const str OCT_DIGITS = '012345678'
+const str PUNCTUATION = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+const str PRINTABLE = ASCII_LETTERS + DIGITS + PUNCTUATION + WHITESPACE
+const str WHITESPACE = ' \t\r\n\f\v'
