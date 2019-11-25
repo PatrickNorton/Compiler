@@ -58,6 +58,7 @@ interface set[T] from Iterable[T], Comparable[Set[T]] {
     operator ^ (set[T] other, /) -> Set[T]
 
     operator del[] (T value, /)
+    operator in (T value, /)
     operator bool
 
     method add(T value, /) -> self

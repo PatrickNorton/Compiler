@@ -1,0 +1,98 @@
+from types typeget Hashable
+
+from numtools import highestOneBit
+from types import Array
+
+export HashSet
+
+
+const int DEFAULT_ARRAY_SIZE = 1 << 4
+const dec RESIZE_THRESHOLD = 0.75
+
+
+class HashSet[T[Hashable]] from set[T] {
+    private Array[*tuple[int64, T]?] values
+    pubget int self.length := \+(1 for var i in self.values if i is not null)
+
+    public operator new (*T items) {
+        self(items)
+    }
+
+    public operator new (Iterable[T] items) {
+        int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
+        self.internal = Array(length, null)
+        self.valueList = []
+        self.length = 0
+        self.resize(values.length)
+        for K key, V value in values {
+            self.add(key)
+        }
+    }
+
+    public operator + (Set[T] other) -> cls {
+        return {*self, *other}
+    }
+
+    public operator | = operator +
+
+    public operator & (Set[T] other) -> cls {
+        return {i for E i in other if i in self}
+    }
+
+    public operator ^ (Set[T] other) -> cls {
+        return {i for E i in self if i not in other} + {i for E i in other if i not in self}
+    }
+
+    public operator bool {
+        return self.length
+    }
+
+    public operator del[] (T value) {
+        raise ValueError if value not in self
+        self.discard(value)
+    }
+
+    public operator in (T value) {
+        return self.values[arrayIndex(value)] != null
+    }
+
+    public method add(E value) -> self {
+        self.values[arrayIndex(value)] = (hash(value), value)
+    }
+
+    public method discard(T value) {
+        self.values[arrayIndex(value)] = null
+        for var v in (i!! for var i in self.values if i is not null) {
+            int index = self.getInfo(v)
+            if self.values[index] is null {
+                self.values[index] = v
+            }
+        }
+    }
+
+    public method pop() -> T {
+        for var i in self.values {
+            if i is not null {
+                self.discard((i!!)[1])
+                return (i!!)[0]
+            }
+        }
+        raise ValueError("Cannot pop() from empty set")
+    }
+
+    public method clear() {
+        for int i in enumerate(self.values) {
+            self.values[i] = null
+        }
+    }
+
+    private method arrayIndex(T value) {
+        uint index = hash(key) % self.values.length
+        while true {
+            var value = self.values[index]
+            return index if value is null
+            var v = value!!
+            return index if self.values[v][0] == hash(key) and self.values[v][1] == key
+        }
+    }
+}
