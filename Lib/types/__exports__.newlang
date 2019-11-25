@@ -1,3 +1,4 @@
 from ArrayList export ArrayList
 from HashMap export HashMap
 from interfaces export __exports__
+from LinkedList export LinkedList

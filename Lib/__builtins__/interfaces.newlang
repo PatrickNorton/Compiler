@@ -41,8 +41,9 @@ interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
     method remove(T value, /) -> int
     method pop(int index, /) -> T
     method clear()
-    method index(T value, /)
+    method index(T value, /) -> uint
     method reverse()
+    method insert(T value, int index)
 }
 
 interface set[T] from Iterable[T], Comparable[Set[T]] {
