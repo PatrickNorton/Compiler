@@ -47,13 +47,17 @@ class EnumSet[E[Enum[E]]] from set[E] {
         return self ^ cls(other)
     }
 
+    public operator in (E value) {
+        return self.values[1 << E.index(value)]
+    }
+
     public operator del[] (E value) {
         raise ValueError if value not in self
         self.values &= ~(1 << E.index(value))
     }
 
     public operator bool {
-        return self.values != null
+        return self.values
     }
 
     public method add(E value) -> self {
