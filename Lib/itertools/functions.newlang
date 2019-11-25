@@ -1,0 +1,34 @@
+from types typeget Boolable
+
+export all, any, first, last
+
+func all(Iterable[Boolable] values) -> bool {
+    for var i in values {
+        return false if not i
+    }
+    return true
+}
+
+func any(Iterable[Boolable] values) -> bool {
+    for var i in values {
+        return true if i
+    }
+    return false
+}
+
+func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
+    for T value in values {
+        return value if predicate(value)
+    }
+    return fallback
+}
+
+func last(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
+    T lastSoFar = fallback
+    for T value in values {
+        if predicate(value) {
+            lastSoFar = value
+        }
+    }
+    return lastSoFar
+}

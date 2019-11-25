@@ -1,7 +1,7 @@
 from types typeget Boolable, Iterable, Callable, Iterator, nIterable
 from types import Array
 
-export accumulate, all, any, chain, compress, dropWhile, filter, filterFalse, takeWhile, traverse, zipLongest
+export accumulate, chain, compress, dropWhile, filter, filterFalse, takeWhile, traverse, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -13,20 +13,6 @@ generator func accumulate(Iterable[T] value, /, Callable[T, T, T] function = \+,
         total = function(total, i)
         yield total
     }
-}
-
-generator func all(Iterable[Boolable] values) -> bool {
-    for var i in values {
-        return false if not i
-    }
-    return true
-}
-
-generator func any(Iterable[Boolable] values) -> bool {
-    for var i in values {
-        return true if i
-    }
-    return false
 }
 
 generator func chain(*Iterable[T] values) -> T {
