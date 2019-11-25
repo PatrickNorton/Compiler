@@ -24,7 +24,7 @@ func copySign(T[Number] a, U[Number] b) -> T {
 }
 
 func fact(uint i) -> uint {
-    return 1 if i == 0 else \*([1:i])
+    return 1 if i == 0 else \*([1:i+1])
 }
 
 func floor(Number n, /) -> int {
@@ -39,7 +39,7 @@ func gcd(int a, int b) -> b {
             b -= a
         }
     }
-    return a
+    return a # == b
 }
 
 func max(*T[Comparable[T]] values) -> T {
@@ -54,10 +54,10 @@ func perm(uint n, uint? k = null) -> uint {
     return fact(n) // fact(n - (k ?? n))
 }
 
-func prod(*T[Multiplicable[T]] iterable) -> T {
+func prod(*T[Number] iterable) -> T {
     return \*(*iterable)
 }
 
-func sum(*T[Summable[T]] summands) -> T {
+func sum(*T[Number] summands) -> T {
     return \+(*summands)
 }
