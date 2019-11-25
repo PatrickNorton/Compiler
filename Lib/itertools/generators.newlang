@@ -1,7 +1,7 @@
 from types typeget Boolable, Iterable, Callable, Iterator, nIterable
 from types import Array
 
-export accumulate, all, any, chain, compress, dropWhile, filter, filterFalse, takeWhile, zipLongest
+export accumulate, all, any, chain, compress, dropWhile, filter, filterFalse, takeWhile, traverse, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -58,6 +58,16 @@ generator func filterFalse(Callable[T, bool] predicate, Iterable[T] sequence) ->
 
 generator func takeWhile(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence while predicate)
+}
+
+generator func traverse(T[Iterable[U|Iterable[T]]] sequence) -> U {
+    for var element in sequence {
+        if element instanceof Iterable[T] {
+            yield from traverse(element casted Iterable[T])
+        } else {
+            yield element
+        }
+    }
 }
 
 generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> *T {
