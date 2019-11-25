@@ -1,0 +1,80 @@
+from types typeget Enum
+from types import int64
+
+export EnumSet
+
+class EnumSet[E[Enum[E]]] from set[E] {
+    private uint values
+    pubget uint length = \+((self.values & 1 << i) != 0 for int i in [:E.length])
+
+    public operator new (*E values) {
+        self(values)
+    }
+
+    public operator new (Iterable[E] items) {
+        self.values = \|(1 << E.index(value) for E item in items)
+    }
+
+    public operator + = operator |
+
+    public operator | (cls other) -> cls {
+        cls new = {}
+        new.values = self.values | other.values
+        return new
+    }
+
+    public operator | (set[E] other) -> cls {
+        return {*self, *other}
+    }
+
+    public operator & (cls other) -> cls {
+        cls new = {}
+        new.values = self.values & other.values
+        return new
+    }
+
+    public operator & (set[E] other) -> cls {
+        return {i for E i in other if i in self}
+    }
+
+    public operator ^ (cls other) -> cls {
+        cls new = {}
+        new.values = self.values ^ other.values
+        return new
+    }
+
+    public operator ^ (set[E] other) -> cls {
+        return self ^ cls(other)
+    }
+
+    public operator del[] (E value) {
+        raise ValueError if value not in self
+        self.values &= ~(1 << E.index(value))
+    }
+
+    public operator bool {
+        return self.values != null
+    }
+
+    public method add(E value) -> self {
+        self.values |= 1 << E.index(self)
+    }
+
+    public method discard(E value) {
+        self.values &= ~(1 << E.index(value))
+    }
+
+    public method pop() -> E {
+        try {
+            E val = iter(self).next()
+        } except StopIteration {
+            raise ValueError("Cannot call 'pop()' on empty set")
+        }
+        del self[val]
+        return val
+    }
+
+    public method clear() {
+        self.values = 0
+    }
+}

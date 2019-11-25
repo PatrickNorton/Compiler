@@ -36,6 +36,8 @@ interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
     operator + (list[T] other, /) -> cls
     operator * (int size, /) -> cls
 
+    operator bool
+
     method append(T value, /) -> self
     method extend(Iterable[T] values, /)
     method remove(T value, /) -> int
@@ -55,6 +57,9 @@ interface set[T] from Iterable[T], Comparable[Set[T]] {
     operator & (set[T] other, /) -> Set[T]
     operator ^ (set[T] other, /) -> Set[T]
 
+    operator del[] (T value, /)
+    operator bool
+
     method add(T value, /) -> self
     method remove(T value, /)
     method discard(T value, /)
@@ -68,7 +73,13 @@ interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
 
     operator + (dict[K, V] items, /) -> dict[K, V]
 
+    operator [] (K key) -> V
+    operator []= (K key, V value)
     operator del[] (V value)
+    operator in (K key)
+
+    operator iter -> K, V
+    operator bool
 
     method remove(V value) -> K
     method keyOf(V value) -> K
