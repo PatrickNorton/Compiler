@@ -1,4 +1,4 @@
-export apply
+export apply, identity
 
 func apply(Callable[A, B, A] function, *B values, *, A start) -> A {
     A finalVal = start
@@ -16,3 +16,6 @@ func apply(Callable[T, T, T] function, *T values) -> T {
     return finalVal
 }
 
+func identity(T foo) -> T {
+    return foo
+}
