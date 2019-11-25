@@ -62,6 +62,18 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         return hash(f"dict[{K}, {V}]", *self)
     }
 
+    public method remove(V value) -> K {
+        del self[self.keyOf(value)]
+    }
+
+    public method keyOf(V value) -> K {
+        for K key, V val in self {
+            if value == val {
+                return key
+            }
+        }
+    }
+
     private method getInfo(K key) -> uint {
         uint index = hash(key) % self.values.length
         while true {
