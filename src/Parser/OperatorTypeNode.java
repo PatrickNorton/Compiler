@@ -49,6 +49,7 @@ public enum OperatorTypeNode implements AtomicNode {
     NOT_NULL("!!", 0, true, true),
     OPTIONAL("?", 0, true, true),
     INSTANCEOF("instanceof", 9),
+    NOT_INSTANCEOF("not instanceof", 9),
     COMPARE("<=>", 7),
     ;
 
