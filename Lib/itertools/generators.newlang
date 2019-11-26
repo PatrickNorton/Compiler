@@ -56,7 +56,7 @@ generator func traverse(T[Iterable[U|Iterable[T]]] sequence) -> U {
     }
 }
 
-generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> *T {
+generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
     Array[Iterator[T]] iterators = Array(values.length, *apply(iter, values))
     Array[bool] hasNext = Array(values.length, false)
     while any(hasNext) {
