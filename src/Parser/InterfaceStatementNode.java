@@ -29,9 +29,13 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
         EnumSet<DescriptorNode> descriptors = DescriptorNode.parseList(tokens);
         InterfaceStatementNode op;
         if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
-            op = GenericOperatorNode.parse(tokens);
-            if (tokens.tokenIs("{")) {
-                op = OperatorDefinitionNode.fromGeneric(tokens, (GenericOperatorNode) op);
+            if (tokens.tokenIs(1, TokenType.ASSIGN)) {
+                op = SpecialOpAssignmentNode.parse(tokens);
+            } else {
+                op = GenericOperatorNode.parse(tokens);
+                if (tokens.tokenIs("{")) {
+                    op = OperatorDefinitionNode.fromGeneric(tokens, (GenericOperatorNode) op);
+                }
             }
         } else if (tokens.tokenIs(Keyword.METHOD)) {
             op = GenericFunctionNode.parse(tokens);

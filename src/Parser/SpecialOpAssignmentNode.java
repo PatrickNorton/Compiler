@@ -12,17 +12,19 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
     private LineInfo lineInfo;
     private SpecialOpNameNode name;
     private TestNode assignment;
+    private boolean isColon;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
-    public SpecialOpAssignmentNode(SpecialOpNameNode name, TestNode assignment) {
-        this(name.getLineInfo(), name, assignment);
+    public SpecialOpAssignmentNode(SpecialOpNameNode name, TestNode assignment, boolean isColon) {
+        this(name.getLineInfo(), name, assignment, isColon);
     }
 
     @Contract(pure = true)
-    public SpecialOpAssignmentNode(LineInfo lineInfo, SpecialOpNameNode name, TestNode assignment) {
+    public SpecialOpAssignmentNode(LineInfo lineInfo, SpecialOpNameNode name, TestNode assignment, boolean isColon) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.assignment = assignment;
+        this.isColon = isColon;
     }
 
     @Override
@@ -36,6 +38,10 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
 
     public TestNode getAssignment() {
         return assignment;
+    }
+
+    public boolean isColon() {
+        return isColon;
     }
 
     @Override
@@ -62,9 +68,10 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
     @NotNull
     @Contract("_ -> new")
     public static SpecialOpAssignmentNode parse(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(1, "=");
+        assert tokens.tokenIs(1, TokenType.ASSIGN);
         SpecialOpNameNode name = SpecialOpNameNode.parse(tokens);
-        assert tokens.tokenIs("=");
+        assert tokens.tokenIs(TokenType.ASSIGN);
+        boolean isColon = tokens.tokenIs(":=");
         tokens.nextToken();
         TestNode assignment;
         if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
@@ -72,7 +79,7 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
         } else {
             assignment = TestNode.parse(tokens);
         }
-        return new SpecialOpAssignmentNode(name, assignment);
+        return new SpecialOpAssignmentNode(name, assignment, isColon);
     }
 
     @Override
