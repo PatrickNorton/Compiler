@@ -116,7 +116,7 @@ public interface IndependentNode extends BaseNode {
     private static IndependentNode parseLeftVariable(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME, TokenType.OPEN_BRACE);
         Token after_var = tokens.getToken(tokens.sizeOfVariable());
-        if (isAssignment(tokens)) {
+        if (isAssignment(tokens) || isNormalAssignment(tokens)) {
             return AssignStatementNode.parse(tokens);
         } else if (tokens.tokenIs(tokens.sizeOfVariable(), TokenType.AUG_ASSIGN)) {
             return AugmentedAssignmentNode.parse(tokens);
@@ -158,6 +158,21 @@ public interface IndependentNode extends BaseNode {
                 return tokens.tokenIs(newVarSize, TokenType.ASSIGN);
             }
         }
+    }
+
+    private static boolean isNormalAssignment(TokenList tokens) {
+        int from = 0;
+        while (TestNode.nextIsTest(tokens)) {
+            int varSize = tokens.sizeOfVariable(from);
+            if (tokens.tokenIs(varSize, TokenType.ASSIGN)) {
+                return true;
+            } else if (tokens.tokenIs(varSize, TokenType.COMMA)) {
+                from = varSize + 1;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     private static boolean isDeclaration(@NotNull TokenList tokens) {
