@@ -131,7 +131,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
         List<TypedArgumentNode> args = new ArrayList<>();
         List<TypedArgumentNode> kwArgs = new ArrayList<>();
         List<TypedArgumentNode> currentArgList = args;
-        while (TypeNode.nextIsType(tokens)) {
+        while (TypeNode.nextIsType(tokens) || tokens.tokenIs("/")) {
             if (tokens.tokenIs("/")) {
                 if (posArgs != null || currentArgList == kwArgs) {
                     throw tokens.error("Illegal use of name-only token");
