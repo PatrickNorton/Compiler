@@ -10,7 +10,7 @@ import java.util.Set;
  *
  * @author Patrick Norton
  */
-public abstract class StringLikeNode implements AtomicNode {
+public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
     private LineInfo lineInfo;
     private Set<StringPrefix> prefixes;
 
