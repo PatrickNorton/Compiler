@@ -190,7 +190,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         TestNode nextNode;
         while (true) {
             LineInfo info = tokens.lineInfo();
-            nextNode = parseNode(tokens, ignoreNewlines, true);
+            nextNode = parseNode(tokens, ignoreNewlines, tempNodes.isEmpty() || !tempNodes.getLast().isUnary());
             if (nextNode == null) {
                 if (!tempNodes.isEmpty() && tempNodes.getLast().isPostfix()) {
                     nextNode = tempNodes.removeLast();
