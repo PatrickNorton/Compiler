@@ -9,7 +9,7 @@ class StringBuilder {
     }
 
     public operator new (*Any objects) {
-        self.chars = [*str(i) for var i objects]
+        self.chars = [*str(i) for var i in objects]
     }
 
     public operator + (Any object) -> self {
