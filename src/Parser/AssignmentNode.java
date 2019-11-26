@@ -20,7 +20,7 @@ public class AssignmentNode implements AssignStatementNode {
      */
     private boolean is_colon;
     private AssignableNode[] name;
-    private TestNode[] value;
+    private TestListNode value;
     private LineInfo lineInfo;
 
     /**
@@ -31,12 +31,12 @@ public class AssignmentNode implements AssignStatementNode {
      * @param value The values to which they are assigned
      */
     @Contract(pure = true)
-    public AssignmentNode(boolean is_colon, AssignableNode[] name, TestNode[] value) {
+    public AssignmentNode(boolean is_colon, AssignableNode[] name, TestListNode value) {
         this(name[0].getLineInfo(), is_colon, name, value);
     }
 
     @Contract(pure = true)
-    public AssignmentNode(LineInfo lineInfo, boolean is_colon, AssignableNode[] name, TestNode[] value) {
+    public AssignmentNode(LineInfo lineInfo, boolean is_colon, AssignableNode[] name, TestListNode value) {
         this.is_colon = is_colon;
         this.name = name;
         this.value = value;
@@ -52,7 +52,7 @@ public class AssignmentNode implements AssignStatementNode {
         return name;
     }
 
-    public TestNode[] getValue() {
+    public TestListNode getValue() {
         return value;
     }
 
@@ -84,14 +84,13 @@ public class AssignmentNode implements AssignStatementNode {
         }
         boolean is_colon = tokens.tokenIs(":=");
         tokens.nextToken();
-        TestNode[] value = TestNode.parseList(tokens, false);
+        TestListNode value = TestListNode.parse(tokens, false);
         return new AssignmentNode(is_colon, name.toArray(new AssignableNode[0]), value);
     }
 
     @Override
     public String toString() {
         String names = TestNode.toString(name);
-        String values = value.length > 1 ? "..." : value[0].toString();
-        return String.join(" ", names, (is_colon ? ":=" : "="), values);
+        return String.join(" ", names, (is_colon ? ":=" : "="), value.toString());
     }
 }

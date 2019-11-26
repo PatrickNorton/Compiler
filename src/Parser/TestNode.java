@@ -486,33 +486,22 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     /**
      * Parse a list of TestNodes from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed
-     * @param ignore_newlines Whether or not to ignore newlines
      * @return The list of TestNodes
      */
     @NotNull
-    static TestNode[] parseList(@NotNull TokenList tokens, boolean ignore_newlines) {
-        return parseList(tokens, ignore_newlines, false);
-    }
-
-    @NotNull
-    private static TestNode[] parseList(TokenList tokens, boolean ignoreNewlines, boolean noTernary) {
+    static TestNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
         if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
         }
         List<TestNode> tests = new ArrayList<>();
         while (nextIsTest(tokens)) {
-            tests.add(noTernary ? parseNoTernary(tokens, ignoreNewlines) : parse(tokens, ignoreNewlines));
+            tests.add(parse(tokens, ignoreNewlines));
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
             }
             tokens.nextToken(ignoreNewlines);
         }
         return tests.toArray(new TestNode[0]);
-    }
-
-    @NotNull
-    static TestNode[] parseListNoTernary(TokenList tokens, boolean ignore_newlines) {
-        return parseList(tokens, ignore_newlines, true);
     }
 
     static boolean nextIsTest(@NotNull TokenList tokens) {

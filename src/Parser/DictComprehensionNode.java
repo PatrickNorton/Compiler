@@ -28,7 +28,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
      */
     @Contract(pure = true)
     public DictComprehensionNode(LineInfo lineInfo, TestNode key, TestNode val,
-                                 TypedVariableNode[] vars, TestNode[] looped, TestNode condition,
+                                 TypedVariableNode[] vars, TestListNode looped, TestNode condition,
                                  TestNode whileCond) {
         super(lineInfo, "{", vars, val, looped, condition, whileCond);
         this.key = key;
@@ -71,7 +71,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Expected in, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
-        TestNode[] looped = TestNode.parseList(tokens, true);
+        TestListNode looped = TestListNode.parse(tokens, true, true);
         TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, true);
         TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
         if (!tokens.tokenIs("}")) {

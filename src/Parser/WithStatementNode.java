@@ -9,12 +9,12 @@ import org.jetbrains.annotations.NotNull;
  */
 public class WithStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
-    private TestNode[] managed;
+    private TestListNode managed;
     private TypedVariableNode[] vars;
     private StatementBodyNode body;
 
     @Contract(pure = true)
-    public WithStatementNode(LineInfo lineInfo, TestNode[] managed, TypedVariableNode[] vars, StatementBodyNode body) {
+    public WithStatementNode(LineInfo lineInfo, TestListNode managed, TypedVariableNode[] vars, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.managed = managed;
         this.vars = vars;
@@ -26,7 +26,7 @@ public class WithStatementNode implements FlowStatementNode {
         return lineInfo;
     }
 
-    public TestNode[] getManaged() {
+    public TestListNode getManaged() {
         return managed;
     }
 
@@ -56,7 +56,7 @@ public class WithStatementNode implements FlowStatementNode {
         assert tokens.tokenIs(Keyword.WITH);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TestNode[] managed = TestNode.parseList(tokens, false);
+        TestListNode managed = TestListNode.parse(tokens, false);
         TypedVariableNode[] vars = TypedVariableNode.parseListOnToken(tokens, Keyword.AS);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         return new WithStatementNode(lineInfo, managed, vars, body);
@@ -64,6 +64,6 @@ public class WithStatementNode implements FlowStatementNode {
 
     @Override
     public String toString() {
-        return String.format("with %s as %s %s", TestNode.toString(managed), TestNode.toString(vars), body);
+        return String.format("with %s as %s %s", managed, TestNode.toString(vars), body);
     }
 }
