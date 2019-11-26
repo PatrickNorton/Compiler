@@ -18,10 +18,10 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
     private LineInfo lineInfo;
     private String brace_type;
     private TestNode[] builders;
-    private boolean[] is_splats;
+    private String[] is_splats;
 
     @Contract(pure = true)
-    public LiteralNode(LineInfo lineInfo, String brace_type, TestNode[] builders, boolean[] is_splats) {
+    public LiteralNode(LineInfo lineInfo, String brace_type, TestNode[] builders, String[] is_splats) {
         this.brace_type = brace_type;
         this.builders = builders;
         this.is_splats = is_splats;
@@ -40,7 +40,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         return builders;
     }
 
-    public boolean[] getIs_splats() {
+    public String[] getIs_splats() {
         return is_splats;
     }
 
@@ -64,16 +64,16 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         String balanced_brace = tokens.matchingBrace();
         tokens.nextToken(true);
         LinkedList<TestNode> values = new LinkedList<>();
-        LinkedList<Boolean> is_splat = new LinkedList<>();
+        LinkedList<String> is_splat = new LinkedList<>();
         while (!tokens.tokenIs(balanced_brace)) {
             if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
                 throw tokens.error("Unmatched braces");
             }
-            if (tokens.tokenIs("*")) {
-                is_splat.add(true);
+            if (tokens.tokenIs("*", "**")) {
+                is_splat.add(tokens.tokenSequence());
                 tokens.nextToken(true);
             } else {
-                is_splat.add(false);
+                is_splat.add("");
             }
             values.add(TestNode.parse(tokens, true));
             if (tokens.tokenIs(",")) {
@@ -87,11 +87,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         } else {
             throw tokens.error("Unmatched braces");
         }
-        boolean[] is_splat_array = new boolean[is_splat.size()];
-        for (int i = 0; i < is_splat.size(); i++) {
-            is_splat_array[i] = is_splat.get(i);
-        }
-        return new LiteralNode(lineInfo, brace_type, values.toArray(new TestNode[0]), is_splat_array);
+        return new LiteralNode(lineInfo, brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new String[0]));
 
     }
 
@@ -102,9 +98,9 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
             case 0:
                 return brace_type + endBrace;
             case 1:
-                return brace_type + (is_splats[0] ? "*" : "") + builders[0] + (brace_type.equals("(") ? "," : "") + endBrace;
+                return brace_type + is_splats[0] + builders[0] + (brace_type.equals("(") ? "," : "") + endBrace;
             default:
-                return String.format("%s%s%s, ...%s", brace_type, (is_splats[0] ? "*" : ""), builders[0], endBrace);
+                return String.format("%s%s%s, ...%s", brace_type, is_splats[0], builders[0], endBrace);
         }
     }
 }
