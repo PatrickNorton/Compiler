@@ -4,16 +4,24 @@ from math import max
 
 export HashMap
 
+typedef VarInfo as Tuple[int64, K, V]
+
 const int DEFAULT_ARRAY_SIZE = 1 << 4
 const dec RESIZE_THRESHOLD = 0.75
+const int PERTURB_SHIFT = 5
+
+enum Empty {
+    EMPTY,
+    DELETED
+}
 
 class HashMap[K[Hashable], V] from dict[K, V] {
-    private Array[Tuple[int64, K, V]?] values
+    private Array[VarInfo|Empty] values
     private uint length
 
     public operator new (*tuple[K, V] values) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
-        self.internal = Array(length, null)
+        self.internal = Array(length, Empty.EMPTY)
         self.valueList = []
         self.length = 0
         self.resize(values.length)
@@ -24,14 +32,14 @@ class HashMap[K[Hashable], V] from dict[K, V] {
 
     public operator [] (K key) -> V {
         uint index = self.getInfo(key)
-        raise IndexError if self.values[index] is null
-        return (self.values[index]!!)[2]
+        raise IndexError if self.values[index] is Empty.EMPTY
+        return (self.values[index] casted VarInfo)[2]
     }
 
     public operator []= (K key, V value) {
         self.resize(self.length + 1)
-        uint index = self.getInfo(key)
-        if self.values[index] is null {
+        uint index = self.getInfo(key, returnDeleted=true)
+        if self.values[index] instanceof Empty {
             self.length++
         }
         self.values[index] = (hash(key), key, value)
@@ -39,23 +47,17 @@ class HashMap[K[Hashable], V] from dict[K, V] {
 
     public operator del[] (K key) {
         int oldIndex = self.getInfo(key)
-        raise KeyError if self.values[oldIndex] is null
-        self.values[oldIndex] = null
+        raise KeyError if self.values[oldIndex] is Empty.EMPTY
+        self.values[oldIndex] = Empty.DELETED
         self.length--
-        for var v in (i!! for var i in self.values if i is not null) {
-            int index = self.getInfo(v)
-            if self.values[index] is null {
-                self.values[index] = v
-            }
-        }
     }
 
     public operator in (K key) {
-        return self.values[self.getInfo(key)] is not null
+        return not (self.values[self.getInfo(key)] instanceof Empty)
     }
 
     public operator iter -> V {
-        yield from ((i!!)[2] for var i in self.valueList if i is not null)
+        yield from ((i casted VarInfo)[2] for var i in self.valueList if not (i instanceof Empty))
     }
 
     public operator hash {
@@ -74,13 +76,15 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         }
     }
 
-    private method getInfo(K key) -> uint {
+    private method getInfo(K key, *, bool returnDeleted = false) -> uint {
         uint index = hash(key) % self.values.length
         while true {
             var value = self.values[index]
-            return index if value is null
-            var v = value!!
+            return index if value is Empty.EMPTY or (returnDeleted and value is Empty.DELETED)
+            continue if value is Empty.DELETED
+            var v = value casted VarInfo
             return index if self.valueList[v][0] == hash(key) and self.valueList[v][1] == key
+            index = (5*index + 1 + (index >> PERTURB_SHIFT)) % self.values.length
         }
     }
 
@@ -88,9 +92,9 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         return if size / self.values.length < RESIZE_THRESHOLD
         uint newSize = self.values.length << 1
         var old = self.values
-        self.values = Array(newSize, null)
-        for var v in (i!! for var i in old if i is not null) {
-            self.values[self.getInfo(v[1])] = v
+        self.values = Array(newSize, Empty.EMPTY)
+        for var v in (i casted VarInfo for var i in old if not (i instanceof Empty)) {
+            self.values[self.getInfo(v[1], returnDeleted=true)] = v
         }
     }
 }
