@@ -1,0 +1,31 @@
+from types import ArrayList
+
+class StringBuilder {
+    private list[char] chars
+    pubget uint length := chars.length
+
+    public operator new (*, int length) {
+        self.chars = ArrayList.size(length)
+    }
+
+    public operator new (*Any objects) {
+        self.chars = [*str(i) for var i objects]
+    }
+
+    public operator + (Any object) -> self {
+        self.chars += str(object)
+        return self
+    }
+
+    public operator [] (int index) -> char {
+        return chars[index]
+    }
+
+    public operator [:] (int start, int stop, int step) -> list[char] {
+        return chars[start:stop:step]
+    }
+
+    public operator str {
+        return str(*self.chars)
+    }
+}
