@@ -1,3 +1,4 @@
+from string import StringBuilder
 from types import Array
 
 export str, AsciiStr
@@ -76,5 +77,15 @@ const final class str {
                 }
             }
         }
+    }
+
+    public method join(*str strings) -> str {
+        return '' if not objects
+        var sb = StringBuilder(strings[0])
+        for str string in strings {
+            sb += self
+            sb += str
+        }
+        return str(sb)
     }
 }
