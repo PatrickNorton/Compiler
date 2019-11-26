@@ -10,11 +10,11 @@ import org.jetbrains.annotations.NotNull;
 public class YieldStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
     private boolean is_from;
-    private TestNode[] yielded;
+    private TestListNode yielded;
     private TestNode cond;
 
     @Contract(pure = true)
-    public YieldStatementNode(LineInfo lineInfo, boolean is_from, TestNode[] yielded, TestNode cond) {
+    public YieldStatementNode(LineInfo lineInfo, boolean is_from, TestListNode yielded, TestNode cond) {
         this.lineInfo = lineInfo;
         this.is_from = is_from;
         this.yielded = yielded;
@@ -26,7 +26,7 @@ public class YieldStatementNode implements SimpleFlowNode {
         return lineInfo;
     }
 
-    public TestNode[] getYielded() {
+    public TestListNode getYielded() {
         return yielded;
     }
 
@@ -59,13 +59,13 @@ public class YieldStatementNode implements SimpleFlowNode {
         if (is_from) {
             tokens.nextToken();
         }
-        TestNode[] yields = TestNode.parseListNoTernary(tokens, false);
+        TestListNode yields = TestListNode.parse(tokens, false, true);
         TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
         return new YieldStatementNode(lineInfo, is_from, yields, cond);
     }
 
     @Override
     public String toString() {
-        return (is_from ? "yield from " : "yield ") + TestNode.toString(yielded);
+        return (is_from ? "yield from " : "yield ") + yielded;
     }
 }

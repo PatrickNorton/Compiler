@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class ForStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
     private TypedVariableNode[] vars;
-    private TestNode[] iterables;
+    private TestListNode iterables;
     private StatementBodyNode body;
     private StatementBodyNode nobreak;
 
@@ -22,7 +22,7 @@ public class ForStatementNode implements FlowStatementNode {
      * @param nobreak The nobreak statement body
      */
     @Contract(pure = true)
-    public ForStatementNode(LineInfo lineInfo, TypedVariableNode[] vars, TestNode[] iterables,
+    public ForStatementNode(LineInfo lineInfo, TypedVariableNode[] vars, TestListNode iterables,
                             StatementBodyNode body, StatementBodyNode nobreak) {
         this.lineInfo = lineInfo;
         this.vars = vars;
@@ -40,7 +40,7 @@ public class ForStatementNode implements FlowStatementNode {
         return vars;
     }
 
-    public TestNode[] getIterables() {
+    public TestListNode getIterables() {
         return iterables;
     }
 
@@ -80,7 +80,7 @@ public class ForStatementNode implements FlowStatementNode {
             throw tokens.error("Expected in, got " + tokens.getFirst());
         }
         tokens.nextToken(ignoreNewlines);
-        TestNode[] iterables = TestNode.parseList(tokens, ignoreNewlines);
+        TestListNode iterables = TestListNode.parse(tokens, ignoreNewlines);
         if (ignoreNewlines) {
             if (tokens.tokenIs(")")) {
                 tokens.nextToken();
@@ -96,7 +96,6 @@ public class ForStatementNode implements FlowStatementNode {
     @Override
     public String toString() {
         String vars = TestNode.toString(this.vars);
-        String iterables = TestNode.toString(this.iterables);
         return String.format("for %s in %s %s", vars, iterables, body);
     }
 }

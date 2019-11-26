@@ -38,7 +38,7 @@ public class DefaultStatementNode extends CaseStatementNode {
         boolean arrow;
         if (tokens.tokenIs(TokenType.DOUBLE_ARROW)) {
             tokens.nextToken(true);
-            body = new StatementBodyNode(TestNode.parseList(tokens, false));
+            body = new StatementBodyNode(TestNode.parse(tokens, false));
             arrow = true;
         } else {
             body = StatementBodyNode.parse(tokens);

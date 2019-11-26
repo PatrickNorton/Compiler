@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ReturnStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
-    private TestNode[] returned;
+    private TestListNode returned;
     private TestNode cond;
 
     /**
@@ -19,7 +19,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
      * @param cond The condition as to whether or not there is a return
      */
     @Contract(pure = true)
-    public ReturnStatementNode(LineInfo lineInfo, TestNode[] returned, TestNode cond) {
+    public ReturnStatementNode(LineInfo lineInfo, TestListNode returned, TestNode cond) {
         this.lineInfo = lineInfo;
         this.returned = returned;
         this.cond = cond;
@@ -30,7 +30,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         return lineInfo;
     }
 
-    public TestNode[] getReturned() {
+    public TestListNode getReturned() {
         return returned;
     }
 
@@ -55,14 +55,13 @@ public class ReturnStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs(Keyword.RETURN);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TestNode[] returned;
-        returned = TestNode.parseListNoTernary(tokens, false);
+        TestListNode returned = TestListNode.parse(tokens, false, true);
         TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
         return new ReturnStatementNode(lineInfo, returned, cond);
     }
 
     @Override
     public String toString() {
-        return "return " + TestNode.toString(returned) + (!cond.isEmpty() ? " if " + cond : "");
+        return "return " + returned + (!cond.isEmpty() ? " if " + cond : "");
     }
 }

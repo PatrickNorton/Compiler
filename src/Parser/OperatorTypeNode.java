@@ -54,6 +54,7 @@ public enum OperatorTypeNode implements AtomicNode {
 
     public static final Pattern PATTERN = Pattern.compile("^(" +
             Arrays.stream(values())
+                    .filter(t -> t != U_SUBTRACT)
                     .map(Object::toString)
                     .sorted(Comparator.comparingInt(String::length).reversed())
                     .map(s -> Pattern.compile("\\w$").matcher(s).find() ? s + "\\b" : Pattern.quote(s))

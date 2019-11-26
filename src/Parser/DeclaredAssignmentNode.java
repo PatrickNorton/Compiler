@@ -18,7 +18,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     private LineInfo lineInfo;
     private boolean is_colon;
     private TypedVariableNode[] assigned;
-    private TestNode[] value;
+    private TestListNode value;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
 
@@ -29,7 +29,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      * @param value The values being assigned
      */
     @Contract(pure = true)
-    public DeclaredAssignmentNode(LineInfo lineInfo, boolean is_colon, TypedVariableNode[] assigned, TestNode[] value) {
+    public DeclaredAssignmentNode(LineInfo lineInfo, boolean is_colon, TypedVariableNode[] assigned, TestListNode value) {
         this.lineInfo = lineInfo;
         this.is_colon = is_colon;
         this.assigned = assigned;
@@ -103,7 +103,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         }
         boolean is_colon = tokens.tokenIs(":=");
         tokens.nextToken();
-        TestNode[] value = TestNode.parseList(tokens, false);
+        TestListNode value = TestListNode.parse(tokens, false);
         return new DeclaredAssignmentNode(info, is_colon, assigned, value);
     }
 
@@ -112,7 +112,6 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         StringBuilder sb = new StringBuilder();
         sb.append(DescriptorNode.join(descriptors));
         sb.append(TestNode.toString(assigned));
-        String values = TestNode.toString(value);
-        return sb.append(is_colon ? " := " : " = ").append(values).toString();
+        return sb.append(is_colon ? " := " : " = ").append(value).toString();
     }
 }
