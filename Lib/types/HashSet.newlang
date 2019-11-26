@@ -12,7 +12,7 @@ const dec RESIZE_THRESHOLD = 0.75
 
 class HashSet[T[Hashable]] from set[T] {
     private Array[*tuple[int64, T]?] values
-    pubget int self.length := \+(1 for var i in self.values if i is not null)
+    pubget int length := \+(1 for var i in self.values if i is not null)
 
     public operator new (*T items) {
         self(items)
