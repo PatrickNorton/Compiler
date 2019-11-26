@@ -38,7 +38,7 @@ public class ExportStatementNode extends ImportExportNode {
             tokens.nextToken();
             from = DottedVariableNode.parseNamesOnly(tokens);
         }
-        assert tokens.tokenIs(Keyword.IMPORT);
+        assert tokens.tokenIs(Keyword.EXPORT);
         if (info == null) {
             info = tokens.lineInfo();
         }

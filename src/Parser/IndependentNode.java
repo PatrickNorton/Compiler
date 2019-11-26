@@ -51,7 +51,7 @@ public interface IndependentNode extends BaseNode {
             case ASSIGN:
                 throw tokens.error("Unexpected assignment");
             case OPERATOR_SP:
-                if (tokens.tokenIs(1, "=")) {
+                if (tokens.tokenIs(1, TokenType.ASSIGN)) {
                     return SpecialOpAssignmentNode.parse(tokens);
                 } else {
                     return OperatorDefinitionNode.parse(tokens);
