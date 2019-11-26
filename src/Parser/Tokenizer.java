@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
  */
 public final class Tokenizer {
     private final BufferedReader file;
+    private final Path fileName;
     private String next;
     private int currentLine;
     private String fullLine;
@@ -38,21 +40,22 @@ public final class Tokenizer {
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
-        this(new FileReader(name));
+        this(new FileReader(name), name.toPath());
     }
 
     @Contract(pure = true)
     private Tokenizer(String str) {
-        this(new StringReader(str));
+        this(new StringReader(str), Path.of(""));
     }
 
     @Contract(pure = true)
-    private Tokenizer(Reader r) {
+    private Tokenizer(Reader r, Path path) {
         file = new BufferedReader(r);
         next = readLine();
         currentLine = 1;
         lineIndex = 0;
         fullLine = next;
+        fileName = path;
     }
 
     /**
@@ -175,6 +178,7 @@ public final class Tokenizer {
     @Contract(" -> new")
     private LineInfo lineInfo() {
         return new LineInfo(
+                fileName,
                 currentLine,
                 fullLine,
                 lineIndex()
