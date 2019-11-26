@@ -4,15 +4,15 @@ from types typeget Multiplicable, Number, Summable
 export abs, ceil, comb, copySign, fact, floor, gcd, max, min, perm, prod, sum
 
 func abs(int n) -> uint {
-    return n if n >= 0 else -n
+    return (n if n >= 0 else -n)
 }
 
 func abs(T[Number] n) -> T {
-    return -n if n < 0 else n
+    return (-n if n < 0 else n)
 }
 
 func ceil(Number n, /) -> int {
-    return int(x) if x % 1 == 0 else x // 1 + 1
+    return (int(x) if x % 1 == 0 else x // 1 + 1)
 }
 
 func comb(uint n, uint k) -> int {
@@ -24,7 +24,7 @@ func copySign(T[Number] a, U[Number] b) -> T {
 }
 
 func fact(uint i) -> uint {
-    return 1 if i == 0 else \*([1:i+1])
+    return (1 if i == 0 else \*([1:i+1]))
 }
 
 func floor(Number n, /) -> int {
