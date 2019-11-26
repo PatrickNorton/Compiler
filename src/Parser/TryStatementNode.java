@@ -94,7 +94,7 @@ public class TryStatementNode implements FlowStatementNode {
             elseStmt = StatementBodyNode.parseOnToken(tokens, Keyword.ELSE);
         }
         StatementBodyNode finallyStmt = StatementBodyNode.parseOnToken(tokens, Keyword.FINALLY);
-        if (except.isEmpty() && finallyStmt.isEmpty()) {
+        if (except.isEmpty() && excepted.length == 0 && finallyStmt.isEmpty()) {
             throw tokens.error("Try statement must either have an except or finally clause");
         }
         return new TryStatementNode(info, body, except, excepted, as, elseStmt, finallyStmt);
