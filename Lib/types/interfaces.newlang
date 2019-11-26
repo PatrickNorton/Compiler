@@ -1,6 +1,6 @@
 from annotations import DefaultInterface
 
-export Boolable, Callable Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
+export Boolable, Callable, Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
 
 $DefaultInterface
 interface Boolable {
