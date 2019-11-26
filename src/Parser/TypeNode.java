@@ -116,7 +116,7 @@ public class TypeNode implements TypeLikeNode {
             return new TypeNode(main, false);
         }
         tokens.nextToken(true);
-        List<TypeNode> subtypes = new ArrayList<>();
+        List<TypeLikeNode> subtypes = new ArrayList<>();
         while (!tokens.tokenIs("]")) {
             boolean subclassIsVararg;
             if (tokens.tokenIs("*", "**")) {
@@ -125,7 +125,13 @@ public class TypeNode implements TypeLikeNode {
             } else {
                 subclassIsVararg = false;
             }
-            subtypes.add(parse(tokens, true, subclassIsVararg, ignoreNewlines));
+            TypeLikeNode subType = parse(tokens, true, subclassIsVararg, true);
+            if (tokens.tokenIs("|")) {
+                subType = TypeUnionNode.fromType(tokens, subType, true);
+            } else if (tokens.tokenIs("&")) {
+                subType = TypewiseAndNode.fromType(tokens, subType, true);
+            }
+            subtypes.add(subType);
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
                 continue;
@@ -143,7 +149,7 @@ public class TypeNode implements TypeLikeNode {
         } else {
             optional = false;
         }
-        return new TypeNode(main, subtypes.toArray(new TypeNode[0]), isVararg, optional);
+        return new TypeNode(main, subtypes.toArray(new TypeLikeNode[0]), isVararg, optional);
     }
 
     @NotNull
