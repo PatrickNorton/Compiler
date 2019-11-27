@@ -7,14 +7,15 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public class Parser {
     private final TokenList tokens;
     private final TopNode top;
 
     @Contract(pure = true)
-    private Parser(TokenList tokens) {
-        this(tokens, new TopNode());
+    private Parser(Path path, TokenList tokens) {
+        this(tokens, new TopNode(path));
     }
 
     @Contract(pure = true)
@@ -39,13 +40,13 @@ public class Parser {
     }
 
     @NotNull
-    public static TopNode parse(TokenList tokens) {
-        Parser parser = new Parser(tokens);
+    public static TopNode parse(Path path, TokenList tokens) {
+        Parser parser = new Parser(path, tokens);
         return parser.parse();
     }
 
     @NotNull
-    public static TopNode parse(File f) {
-        return parse(Tokenizer.parse(f));
+    public static TopNode parse(@NotNull File f) {
+        return parse(f.toPath(), Tokenizer.parse(f));
     }
 }
