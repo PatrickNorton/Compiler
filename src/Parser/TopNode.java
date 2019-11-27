@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 
+import java.nio.file.Path;
 import java.util.LinkedList;
 
 /**
@@ -10,15 +11,18 @@ import java.util.LinkedList;
  * @see StatementBodyNode
  */
 public class TopNode implements BaseNode {
+    private Path path;
     private LinkedList<IndependentNode> nodes;
 
     @Contract(pure = true)
-    public TopNode(LinkedList<IndependentNode> nodes) {
+    public TopNode(Path path, LinkedList<IndependentNode> nodes) {
+        this.path = path;
         this.nodes = nodes;
     }
 
     @Contract(pure = true)
-    public TopNode() {
+    public TopNode(Path path) {
+        this.path = path;
         this.nodes = new LinkedList<>();
     }
 
@@ -33,5 +37,10 @@ public class TopNode implements BaseNode {
 
     public LinkedList<IndependentNode> getNodes() {
         return nodes;
+    }
+
+    @Override
+    public String toString() {
+        return path.toString();
     }
 }

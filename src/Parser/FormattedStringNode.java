@@ -226,11 +226,10 @@ public class FormattedStringNode extends StringLikeNode {
             StringBuilder sb = new StringBuilder();
             for (int i = closeBrace - 1; i > openBrace; i--) {
                 char currentChar = str.charAt(i);
-                if (currentChar < 32 || currentChar >= 127 || FORMAT_INVALID.contains(currentChar)
-                        || (currentChar == '!' && str.charAt(i + 1) == '=')) {
+                if (currentChar < 32 || currentChar >= 127 || FORMAT_INVALID.contains(currentChar)) {
                     return null;
                 } else if (currentChar == '!') {
-                    return sb.reverse().toString();
+                    return str.charAt(i + 1) == '=' || str.charAt(i - 1) == '!' ? null : sb.reverse().toString();
                 } else {
                     sb.append(currentChar);
                 }

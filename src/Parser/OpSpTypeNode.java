@@ -58,6 +58,7 @@ public enum OpSpTypeNode {
     COMPARE("<=>"),
     R_COMPARE("r<=>"),
     ITER("iter"),
+    ITER_SLICE("iter[:]"),
     NEW("new"),
     IN("in"),
     MISSING("missing"),

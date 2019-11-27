@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import util.Pair;
 
 /**
  * The class representing a dictionary comprehension.
@@ -71,8 +72,9 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Expected in, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
-        TestListNode looped = TestListNode.parse(tokens, true, true);
-        TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, true);
+        Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, true);
+        TestListNode looped = loopedAndCondition.getKey();
+        TestNode condition = loopedAndCondition.getValue();
         TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
         if (!tokens.tokenIs("}")) {
             throw tokens.error("Expected }, got "+tokens.getFirst());

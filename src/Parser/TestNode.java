@@ -3,6 +3,7 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.Pair;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -502,6 +503,24 @@ public interface TestNode extends IndependentNode, EmptiableNode {
             tokens.nextToken(ignoreNewlines);
         }
         return tests.toArray(new TestNode[0]);
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    static Pair<TestNode, TestNode> parseMaybePostIf(TokenList tokens, boolean ignoreNewlines) {
+        TestNode preIf = parseNoTernary(tokens, ignoreNewlines);
+        if (!tokens.tokenIs(Keyword.IF)) {
+            return Pair.of(preIf, null);
+        }
+        tokens.nextToken(ignoreNewlines);
+        TestNode postIf = parse(tokens, ignoreNewlines);
+        if (tokens.tokenIs(Keyword.ELSE)) {
+            tokens.nextToken(ignoreNewlines);
+            TestNode ternary = new TernaryNode(preIf, postIf, parse(tokens, ignoreNewlines));
+            return Pair.of(ternary, null);
+        } else {
+            return Pair.of(preIf, postIf);
+        }
     }
 
     static boolean nextIsTest(@NotNull TokenList tokens) {
