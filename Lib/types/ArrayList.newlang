@@ -1,4 +1,4 @@
-from math import max
+from math import max, min
 from types import Array
 
 export ArrayList
@@ -45,6 +45,12 @@ class ArrayList[T] from list[T] {
 
     public operator iter -> T {
         yield from self.values[:self.length]
+    }
+
+    public operator iter[:] (int start, int end, int step) -> T {
+        start = max(0, self.length + start) if start < 0 else min(self.length, start)
+        end = max(0, self.length + end) if end < 0 else min(self.length, end)
+        yield from self.values[start:stop:step]
     }
 
     public operator reversed -> T {
