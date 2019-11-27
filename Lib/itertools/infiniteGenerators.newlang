@@ -1,4 +1,8 @@
-export cycle, repeat
+export count, cycle, repeat
+
+generator func count(int start = 0, *, bool reverse = false) -> int {
+    yield from [start::reverse-1]
+}
 
 generator func cycle(Iterable[T] p) -> T {
     while true {
