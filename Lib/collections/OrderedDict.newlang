@@ -40,7 +40,7 @@ class OrderedDict[K, V] from dict[K, V] {
                     }
                 }
             }
-            int itemIndex = self.firstOpenSlot(key)
+            int itemIndex = self.values[key] if key in self.values else self.firstOpenSlot(key)
             self.items[itemIndex] = value
             self.values[key] = itemIndex
         }
