@@ -1,4 +1,5 @@
 from ChainMap export ChainMap
 from Counter export Counter
 from Deque export Deque
+from FrozenCollections export __exports__
 from OrderedDict export OrderedDict
