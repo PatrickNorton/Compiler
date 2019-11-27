@@ -9,7 +9,7 @@ import java.util.EnumSet;
  * The class representing an operator definition.
  * @author Patrick Norton
  */
-public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode, GeneralizableNode {
     private LineInfo lineInfo;
     private SpecialOpNameNode op_code;
     private TypeLikeNode[] ret_type;
@@ -18,6 +18,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
+    private TypeLikeNode[] generics = new TypeLikeNode[0];
 
     public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeLikeNode[] ret_type,
                                   @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
@@ -97,6 +98,16 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         return decorators;
     }
 
+    @Override
+    public TypeLikeNode[] getGenerics() {
+        return generics;
+    }
+
+    @Override
+    public void addGenerics(TypeLikeNode... types) {
+        this.generics = types;
+    }
+
     /**
      * Parse a new operator definition from a list of tokens.
      * <p>
@@ -135,7 +146,8 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(DescriptorNode.join(descriptors));
+        StringBuilder sb = new StringBuilder(GeneralizableNode.toString(generics));
+        sb.append(DescriptorNode.join(descriptors));
         sb.append(op_code);
         if (!args.isEmpty()) {
             sb.append(args);

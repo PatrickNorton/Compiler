@@ -10,7 +10,7 @@ import java.util.Set;
  * The class representing a function definition.
  * @author Patrick Norton
  */
-public class FunctionDefinitionNode implements DefinitionNode {
+public class FunctionDefinitionNode implements DefinitionNode, GeneralizableNode {
     private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
@@ -19,6 +19,7 @@ public class FunctionDefinitionNode implements DefinitionNode {
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] decorators = new NameNode[0];
     private NameNode[] annotations = new NameNode[0];
+    private TypeLikeNode[] generics = new TypeLikeNode[0];
 
     @Contract(pure = true)
     public FunctionDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args,
@@ -84,6 +85,16 @@ public class FunctionDefinitionNode implements DefinitionNode {
     }
 
     @Override
+    public TypeLikeNode[] getGenerics() {
+        return generics;
+    }
+
+    @Override
+    public void addGenerics(TypeLikeNode... types) {
+        this.generics = types;
+    }
+
+    @Override
     public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.FUNCTION_VALID;
     }
@@ -113,7 +124,9 @@ public class FunctionDefinitionNode implements DefinitionNode {
 
     @Override
     public String toString() {
-        return String.format("%sfunc %s%s%s %s",
-                DescriptorNode.join(descriptors), name, args, TypeLikeNode.returnString(retval), body);
+        return String.format("%s%sfunc %s%s%s %s",
+                GeneralizableNode.toString(generics),
+                DescriptorNode.join(descriptors), name, args,
+                TypeLikeNode.returnString(retval), body);
     }
 }

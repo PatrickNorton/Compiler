@@ -11,7 +11,7 @@ import java.util.Set;
  * @author Patrick Norton
  * @see FunctionDefinitionNode
  */
-public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode, GeneralizableNode {
     private LineInfo lineInfo;
     private VariableNode name;
     private TypedArgumentListNode args;
@@ -20,6 +20,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
+    private TypeLikeNode[] generics = new TypeLikeNode[0];
 
     /**
      * Create a new instance of MethodDefinitionNode.
@@ -90,6 +91,16 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
     }
 
     @Override
+    public TypeLikeNode[] getGenerics() {
+        return generics;
+    }
+
+    @Override
+    public void addGenerics(TypeLikeNode... types) {
+        this.generics = types;
+    }
+
+    @Override
     public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.METHOD_VALID;
     }
@@ -127,7 +138,9 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode 
 
     @Override
     public String toString() {
-        return String.format("%smethod %s%s%s %s",
-                DescriptorNode.join(descriptors), name, args, TypeLikeNode.returnString(retval), body);
+        return String.format("%s%smethod %s%s%s %s",
+                GeneralizableNode.toString(generics),
+                DescriptorNode.join(descriptors), name, args,
+                TypeLikeNode.returnString(retval), body);
     }
 }
