@@ -12,14 +12,6 @@ public interface GeneralizableNode extends BaseNode, DescribableNode {
         tokens.nextToken();
         TypeLikeNode[] types = TypeLikeNode.parseList(tokens);
         tokens.passNewlines();
-        switch (tokens.tokenType()) {
-            case DESCRIPTOR:
-                throw tokens.error("Generic statement may not come before descriptors");
-            case DOLLAR:
-                throw tokens.error("Generic statement may not precede annotations");
-            case AT:
-                throw tokens.error("Generic statement may not precede decorations");
-        }
         IndependentNode generalized = IndependentNode.parse(tokens);
         if (generalized instanceof GeneralizableNode) {
             GeneralizableNode node = (GeneralizableNode) generalized;
