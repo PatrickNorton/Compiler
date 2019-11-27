@@ -10,9 +10,18 @@ const int DEFAULT_ARRAY_SIZE = 1 << 4
 const dec RESIZE_THRESHOLD = 0.75
 
 
+typedef VarInfo as tuple[int64, T]
+
+
+enum Empty {
+    EMPTY,
+    DELETED
+}
+
+
 class HashSet[T[Hashable]] from set[T] {
-    private Array[*tuple[int64, T]?] values
-    pubget int length := \+(1 for var i in self.values if i is not null)
+    private Array[*VarInfo|Empty] values
+    pubget int length := \+(1 for var i in self.values if not (i instanceof Empty))
 
     public operator new (*T items) {
         self(items)
@@ -20,7 +29,7 @@ class HashSet[T[Hashable]] from set[T] {
 
     public operator new (Iterable[T] items) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
-        self.internal = Array(length, null)
+        self.internal = Array(length, Empty.EMPTY)
         self.valueList = []
         self.length = 0
         self.resize(values.length)
@@ -53,28 +62,26 @@ class HashSet[T[Hashable]] from set[T] {
     }
 
     public operator in (T value) {
-        return self.values[arrayIndex(value)] != null
+        return self.values[self.arrayIndex(value)] is not Empty.EMPTY
     }
 
     public method add(E value) -> self {
-        self.values[arrayIndex(value)] = (hash(value), value)
+        self.resize(self.length + 1)
+        self.values[self.arrayIndex(value, returnDeleted=true)] = (hash(value), value)
     }
 
     public method discard(T value) {
-        self.values[arrayIndex(value)] = null
-        for var v in (i!! for var i in self.values if i is not null) {
-            int index = self.getInfo(v)
-            if self.values[index] is null {
-                self.values[index] = v
-            }
+        var index = self.arrayIndex(value)
+        if self.values[index] is not Empty.EMPTY {
+            self.values[index] = Empty.DELETED
         }
     }
 
     public method pop() -> T {
         for var i in self.values {
-            if i is not null {
-                self.discard((i!!)[1])
-                return (i!!)[0]
+            if not (i instanceof Empty) {
+                self.discard((i casted VarInfo)[1])
+                return (i casted VarInfo)[1]
             }
         }
         raise ValueError("Cannot pop() from empty set")
@@ -82,17 +89,28 @@ class HashSet[T[Hashable]] from set[T] {
 
     public method clear() {
         for int i in enumerate(self.values) {
-            self.values[i] = null
+            self.values[i] = Empty.EMPTY
         }
     }
 
-    private method arrayIndex(T value) {
+    private method arrayIndex(T value, *, bool returnDeleted = false) {
         uint index = hash(key) % self.values.length
         while true {
             var value = self.values[index]
-            return index if value is null
-            var v = value!!
+            return index if value is Empty.EMPTY or (returnDeleted and value is Empty.DELETED)
+            continue if value is Empty.DELETED
+            var v = value casted VarInfo
             return index if self.values[v][0] == hash(key) and self.values[v][1] == key
+        }
+    }
+
+    public method resize(uint newSize) {
+        return if size / self.values.length < RESIZE_THRESHOLD
+        uint newSize = self.values.length << 1
+        var old = self.values
+        self.values = Array(newSize, Empty.EMPTY)
+        for var v in (i casted VarInfo for var i in old if not (i instanceof Empty)) {
+            self.values[self.getInfo(v[1], returnDeleted=true)] = v
         }
     }
 }
