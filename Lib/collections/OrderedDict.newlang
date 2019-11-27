@@ -1,12 +1,12 @@
 from copy import copy
 from math import min
-from types import Array, HashMap
+from types import Array
 
 export OrderedDict
 
 class OrderedDict[K, V] from dict[K, V] {
     private Array[Tuple[int, K, V]?] items
-    private HashMap[K, int] values
+    private dict[K, int] values
     pubget uint length := self.values.length
     private int nextOpen
 
