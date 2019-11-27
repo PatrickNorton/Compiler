@@ -48,7 +48,7 @@ func max(*T[Comparable[T]] values) -> T {
 }
 
 func max2(T[Comparable[T]] x, T y) -> T {
-    return x if x >= y else y
+    return (x if x >= y else y)
 }
 
 func min(*T[Comparable[T]] values) -> T {
@@ -56,7 +56,7 @@ func min(*T[Comparable[T]] values) -> T {
 }
 
 func min2(T[Comparable[T]] x, T y) -> T {
-    return x if x <= y else y
+    return (x if x <= y else y)
 }
 
 func perm(uint n, uint? k = null) -> uint {
