@@ -137,9 +137,7 @@ class LinkedList[T] from list[T] {
 
     public method index(T value) -> uint {
         for int i, T val in enumerate(self) {
-            if value == val {
-                return i
-            }
+            return i if value == val
         }
         raise ValueError(f"Value {value} not in list")
     }
