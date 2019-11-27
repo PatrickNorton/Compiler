@@ -84,7 +84,7 @@ class HashMap[K[Hashable], V] from dict[K, V] {
             continue if value is Empty.DELETED
             var v = value casted VarInfo
             return index if self.valueList[v][0] == hash(key) and self.valueList[v][1] == key
-            index = (5*index + 1 + (index >> PERTURB_SHIFT)) % self.values.length
+            index = (5*index + 1 + (hash(key) >> PERTURB_SHIFT)) % self.values.length
         }
     }
 
