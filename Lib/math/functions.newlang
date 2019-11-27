@@ -35,9 +35,9 @@ func floor(Number n, /) -> int {
 func gcd(int a, int b) -> b {
     while a != b {
         if a > b {
-            a -= b
+            a %= b
         } else { # a < b
-            b -= a
+            b %= a
         }
     }
     return a # == b
