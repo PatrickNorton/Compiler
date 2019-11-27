@@ -1,4 +1,4 @@
-package Parser;
+package util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +33,7 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
     private int start;
 
     @Contract(pure = true)
-    CircularBuffer() {
+    public CircularBuffer() {
         values = new Object[DEFAULT_SIZE];
         size = 0;
         start = 0;

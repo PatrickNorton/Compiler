@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import util.CircularBuffer;
 
 import java.util.Iterator;
 import java.util.ListIterator;
