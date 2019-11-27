@@ -59,8 +59,9 @@ public class YieldStatementNode implements SimpleFlowNode {
         if (is_from) {
             tokens.nextToken();
         }
-        TestListNode yields = TestListNode.parse(tokens, false, true);
-        TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
+        Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, false);
+        TestListNode yields = loopedAndCondition.getKey();
+        TestNode cond = loopedAndCondition.getValue();
         return new YieldStatementNode(lineInfo, is_from, yields, cond);
     }
 

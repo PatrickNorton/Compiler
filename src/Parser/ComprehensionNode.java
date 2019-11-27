@@ -52,8 +52,9 @@ public class ComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Comprehension body must have in after variable list");
         }
         tokens.nextToken(true);
-        TestListNode looped = TestListNode.parse(tokens, true, true);
-        TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, true);
+        Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, true);
+        TestListNode looped = loopedAndCondition.getKey();
+        TestNode condition = loopedAndCondition.getValue();
         TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
         if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
             throw tokens.error("Expected close brace");

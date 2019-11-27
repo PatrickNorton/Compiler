@@ -55,8 +55,9 @@ public class ReturnStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs(Keyword.RETURN);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TestListNode returned = TestListNode.parse(tokens, false, true);
-        TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
+        Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, false);
+        TestListNode returned = loopedAndCondition.getKey();
+        TestNode cond = loopedAndCondition.getValue();
         return new ReturnStatementNode(lineInfo, returned, cond);
     }
 

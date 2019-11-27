@@ -31,17 +31,11 @@ public class TestListNode implements BaseNode {
     /**
      * Parse a list of TestNodes from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed
-     * @param ignore_newlines Whether or not to ignore newlines
+     * @param ignoreNewlines Whether or not to ignore newlines
      * @return The list of TestNodes
-     */
-    @NotNull
-    static TestListNode parse(@NotNull TokenList tokens, boolean ignore_newlines) {
-        return parse(tokens, ignore_newlines, false);
-    }
-
-    @NotNull
-    @Contract("_, _, _ -> new")
-    static TestListNode parse(TokenList tokens, boolean ignoreNewlines, boolean noTernary) {
+     */@NotNull
+    @Contract("_, _ -> new")
+    static TestListNode parse(TokenList tokens, boolean ignoreNewlines) {
         if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestListNode();
         }
@@ -54,13 +48,49 @@ public class TestListNode implements BaseNode {
             } else {
                 varargs.add("");
             }
-            tests.add(noTernary ? TestNode.parseNoTernary(tokens, ignoreNewlines) : TestNode.parse(tokens, ignoreNewlines));
+            tests.add(TestNode.parse(tokens, ignoreNewlines));
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
             }
             tokens.nextToken(ignoreNewlines);
         }
         return new TestListNode(tests.toArray(new TestNode[0]), varargs.toArray(new String[0]));
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    static Pair<TestListNode, TestNode> parsePostIf(TokenList tokens, boolean ignoreNewlines) {
+        if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
+            return Pair.of(new TestListNode(), null);
+        }
+        List<TestNode> tests = new ArrayList<>();
+        List<String> varargs = new ArrayList<>();
+        TestNode postIf = TestNode.empty();
+        while (TestNode.nextIsTest(tokens) || tokens.tokenIs(Keyword.IF)) {
+            if (tokens.tokenIs(Keyword.IF)) {
+                tokens.nextToken(ignoreNewlines);
+                postIf = TestNode.parse(tokens, ignoreNewlines);
+                break;
+            }
+            if (tokens.tokenIs("*", "**")) {
+                varargs.add(tokens.tokenSequence());
+                tokens.nextToken(ignoreNewlines);
+            } else {
+                varargs.add("");
+            }
+            Pair<TestNode, TestNode> next = TestNode.parseMaybePostIf(tokens, ignoreNewlines);
+            tests.add(next.getKey());
+            if (next.getValue() != null) {
+                postIf = next.getValue();
+                break;
+            }
+            if (!tokens.tokenIs(TokenType.COMMA)) {
+                break;
+            }
+            tokens.nextToken(ignoreNewlines);
+        }
+        TestListNode node = new TestListNode(tests.toArray(new TestNode[0]), varargs.toArray(new String[0]));
+        return Pair.of(node, postIf);
     }
 
     @Override
