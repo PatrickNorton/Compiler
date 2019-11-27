@@ -1,0 +1,59 @@
+export FrozenSet
+
+final class FrozenSet[T] from set[T] {
+    private const set[T] values
+    pubget int length := values.length
+
+    operator new (*T items, /) {
+        self.values = {*items}
+    }
+
+    operator new (Iterable[T] items, /) {
+        self.values = set(items)
+    }
+
+    operator + (set[T] other, /) -> Set[T] {
+        return self.values + other
+    }
+
+    operator | = operator +
+
+    operator & (set[T] other, /) -> Set[T] {
+        return self.values & other
+    }
+
+    operator ^ (set[T] other, /) -> Set[T] {
+        return self.values ^ other
+    }
+
+    operator del[] (T value, /) {
+        raise NotImplemented
+    }
+
+    operator iter -> T {
+        yield from self.items
+    }
+
+    operator in = self.values.operator in
+    operator bool = self.values.operator bool
+
+    method add(T value, /) -> self {
+        raise NotImplemented
+    }
+
+    method remove(T value, /) {
+        raise NotImplemented
+    }
+
+    method discard(T value, /) {
+        raise NotImplemented
+    }
+
+    method pop() -> T {
+        raise NotImplemented
+    }
+
+    method clear() {
+        raise NotImplemented
+    }
+}
