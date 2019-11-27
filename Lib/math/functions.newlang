@@ -1,4 +1,5 @@
 from constants import E
+from functools import apply
 from types typeget Multiplicable, Number, Summable
 
 export abs, ceil, comb, copySign, fact, floor, gcd, max, min, perm, prod, sum
@@ -43,11 +44,19 @@ func gcd(int a, int b) -> b {
 }
 
 func max(*T[Comparable[T]] values) -> T {
-    return apply(lambda x, y => (x <=> y) >= 0, *values)
+    return apply(max2, *values)
+}
+
+func max2(T[Comparable[T]] x, T y) -> T {
+    return x if x >= y else y
 }
 
 func min(*T[Comparable[T]] values) -> T {
-    return apply(lambda x, y => (x <=> y) <= 0, *values)
+    return apply(min2, *values)
+}
+
+func min2(T[Comparable[T]] x, T y) -> T {
+    return x if x <= y else y
 }
 
 func perm(uint n, uint? k = null) -> uint {
