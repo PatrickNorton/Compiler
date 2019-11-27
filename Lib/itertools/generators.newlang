@@ -1,7 +1,7 @@
 from types typeget Boolable, Iterable, Callable, Iterator, nIterable
 from types import Array
 
-export accumulate, chain, compress, dropWhile, filter, filterFalse, takeWhile, traverse, zipLongest
+export accumulate, chain, compress, dropWhile, filter, filterFalse, takeWhile, traverse, zip, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -61,6 +61,23 @@ generator func traverse(T sequence) -> U {
         } else {
             yield element
         }
+    }
+}
+
+generic T, U
+generator func zip(Iterable[T] value1, Iterable[T] values2) -> T, U {
+    var iter1 = iter(value1)
+    var iter2 = iter(value2)
+    while true {
+        T next1
+        U next2
+        try {
+            next1 = iter1.next()
+            next2 = iter2.next()
+        } except StopIteration {
+            return
+        }
+        yield next1, next2
     }
 }
 
