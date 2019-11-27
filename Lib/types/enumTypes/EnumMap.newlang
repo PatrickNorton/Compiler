@@ -1,0 +1,72 @@
+export EnumMap
+
+enum empty {
+    EMPTY
+}
+
+class EnumMap[K[Enum[K]], V] from dict[K, V] {
+    private Array[V|empty] values
+
+    public operator new (*tuple[K, V] items) {
+        self.values = Array(K.length, empty.EMPTY)
+        for var item in items {
+            self[item[0]] = item[1]
+        }
+    }
+
+    public operator new (dict[K, V] items) {
+        self.values = Array(K.length, empty.EMPTY)
+        for K key, V value in items {
+            self[key] = value
+        }
+    }
+
+    public operator + (dict[K, V] items, /) -> cls {
+        return {**self, **other}
+    }
+
+    public operator [] (K key) -> V {
+        var value = self.values[K.index(key)]
+        raise KeyError if value is empty.EMPTY
+        return value casted V
+    }
+
+    public operator []= (K key, V value) {
+        raise KeyError if key not in self
+        self.values[K.index(key)] = value
+    }
+
+    public operator del[] (K key) {
+        raise KeyError if key not in self
+        self.values[K.index(key)] = empty.EMPTY
+    }
+
+    public operator in (K key) {
+        return self.values[K.index(key)] is not empty.EMPTY
+    }
+
+    public operator iter -> K, V {
+        for int i, var value in enumerate(self.values) {
+            yield K[i], value if value is not empty.EMPTY
+        }
+    }
+
+    public operator bool {
+        return any(i is not empty.EMPTY for var i in self.values)
+    }
+
+    public method remove(V value) -> K {
+        K key = self.keyOf(value)
+        del self[key]
+        return key
+    }
+
+    public method keyOf(V value) -> K {
+        for int i, var val in enumerate(self.values) {
+            if value == val {
+                return K[i]
+            }
+        }
+        raise KeyError
+    }
+}

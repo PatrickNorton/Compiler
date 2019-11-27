@@ -1,0 +1,24 @@
+export Counter
+
+final class Counter[T] {
+    private const HashMap[T, int] values
+
+    operator new (*T items) {
+        self.values = {}
+        for T i in items {
+            if i in self.values {
+                self.values[i]++
+            } else {
+                self.values[i] = 1
+            }
+        }
+    }
+
+    operator [] (T value) -> int {
+        try {
+            return self.values[value]
+        } except KeyError {
+            return 0
+        }
+    }
+}

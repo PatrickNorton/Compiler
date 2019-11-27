@@ -1,0 +1,66 @@
+from copy import copy
+from math import min
+from types import Array
+
+export OrderedDict
+
+class OrderedDict[K, V] from dict[K, V] {
+    private Array[Tuple[int, K, V]?] items
+    private dict[K, int] values
+    pubget uint length := self.values.length
+    private int nextOpen
+
+    public operator new (*tuple[K, V] values) {
+        self.items = Array(values.length * 2, *values, null)
+        self.values = {kv[0]: i for int i, var kv in enumerate(values)}
+        self.nextOpen = values.length
+    }
+
+    public operator [] (K key) -> V {
+        return self.items[self.values[K]]
+    }
+
+    public operator []= (K key, V value) {
+        if key in self {
+            self.items[self.values[key]] = value
+        } else {
+            if self.nextOpen == self.values.length {
+                if null not in self.items {
+                    self.items = Array(self.items.length * 2, *self.items, null)
+                }
+                int reduceIndex = 0
+                var tmp = copy(self.items)
+                for int i, var keyVal in enumerate(tmp) {
+                    if keyVal is null {
+                        reduceIndex++
+                    } else {
+                        var kvNotNull = keyVal!!
+                        self.items[i - reduceIndex] = kvNotNull
+                        self.values[kvNotNull[0]]--
+                    }
+                }
+            }
+            int itemIndex = self.values[key] if key in self.values else self.firstOpenSlot(key)
+            self.items[itemIndex] = value
+            self.values[key] = itemIndex
+        }
+    }
+
+    public operator del[] (K key) {
+        self.items[self.values[key]] = null
+        nextOpen = min(self.values[key], nextOpen)
+        del self.values[key]
+    }
+
+    public operator iter -> K, V {
+        yield from (*i!! for var i in self.items if i is not null)
+    }
+
+    public operator in (K key) {
+        return key in self.values
+    }
+
+    public operator hash {
+        return hash(f"dict[{K}, {V}]", self.values)
+    }
+}

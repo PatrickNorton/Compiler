@@ -1,0 +1,153 @@
+from math import max
+from types import Array
+
+export ArrayList
+
+const int DEFAULT_SIZE = 10
+
+class ArrayList[T] from list[T] {
+    private Array[T?] values
+    pubget uint length
+
+    public operator new {
+        self.values = Array(DEFAULT_SIZE, null)
+        self.length = 0
+    }
+
+    public operator new (Iterable[T] values) {
+        self.values = Array(values.length + DEFAULT_SIZE, *values, null)
+        self.length = values.length
+    }
+
+    public operator [] (int index) -> T {
+        raise IndexError if index >= self.length or ~index <= self.length
+        return self.values[index if index >= 0 else self.length-index]
+    }
+
+    public operator [:] (int start, int stop, int step) {
+        start = start if start > 0 else self.length - start
+        stop = stop if stop > 0 else self.length - stop
+        self.checkIndex(start)
+        self.checkIndex(stop)
+        return self.values[start:stop:step]
+    }
+
+    public operator []= (int index, T value) {
+        raise IndexError if index >= self.length or ~index <= self.length
+        self.values[index if index >= 0 else self.length-index] = value
+    }
+
+    public operator [:]= (int start, int stop, int step, super values) {
+        self.checkIndex(start)
+        self.checkIndex(stop)
+        self.values[start:stop:step] = values
+    }
+
+    public operator iter -> T {
+        yield from self.values[:self.length]
+    }
+
+    public operator reversed -> T {
+        yield from self.values[self.length::-1]
+    }
+
+    public operator in (T value) {
+        for T i in self {
+            return true if value == i
+        }
+        return false
+    }
+
+    public operator + (cls other) -> cls {
+        return self + other.values
+    }
+
+    public operator + (super other) -> cls {
+        return self + Array(other.length, other)
+    }
+
+    public operator + (Array[T] other) -> cls {
+        var new = size(self.length + other.length)
+        new.values[:self.length] = self.values
+        new.values[self.length:other.length] = other.values
+        return new
+    }
+
+    public operator * (int multiplicand) {
+        var new = size(self.length * multiplicand)
+        for var i in [0:multiplicand] {
+            new.values[i * self.length : (i + 1) * self.length] = self.values
+        }
+    }
+
+    public method append(T value, /) -> self {
+        self.ensureSize(self.length + 1)
+        self.values[self.length] = value
+        self.length++
+        return self
+    }
+
+    public method extend(Iterable[T] values, /) {
+        for T i in values {
+            self.append(values)
+        }
+    }
+
+    public method remove(T value, /) -> int {
+        int index = self.index(value)
+        self.pop(index)
+        return index
+    }
+
+    public method pop(int index, /) -> T {
+        T old = self[index]
+        if index == self.length - 1 {
+            self.values[self.length-1] = null
+        } else {
+            var oldValues = self.values
+            self.values = Array(oldValues.length, null)
+            self.values[:index] = oldValues[:index]
+            self.values[index:] = oldValues[index + 1:]
+        }
+        self.length--
+        return old
+    }
+
+    public method clear() {
+        self.values = Array(DEFAULT_SIZE, null)
+        self.length = 0
+    }
+
+    public method index(T value, /) -> uint {
+        for int i, T v in enumerate(self) {
+            return i if value == v
+        }
+        raise ValueError(f"Value {value} not found")
+    }
+
+    public method reverse() {
+        self.values[:self.length] = self.values[self.length::-1]
+    }
+
+    public method insert(T value, int index) {
+        self.checkIndex(index)
+        self.ensureSize(self.length + 1)
+        self.values[index + 1:] = self.values[index:]
+        self.values[index] = value
+    }
+
+    private method checkIndex(int value) {
+        raise IndexError(f"Invalid index {value} for list of length {self.length}") \
+            if start >= self.length or ~index <= self.length
+    }
+
+    private method ensureSize(int size) {
+        return if self.values.length > size
+        self.values = Array(max(self.values.length * 2, size), self.values, null)
+    }
+
+    public static method size(int size, /) -> cls {
+        cls new = []
+        new.values = Array(size, null)
+    }
+}
