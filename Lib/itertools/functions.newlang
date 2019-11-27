@@ -16,6 +16,7 @@ func any(Iterable[Boolable] values) -> bool {
     return false
 }
 
+generic T
 func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
     for T value in values {
         return value if predicate(value)
@@ -23,6 +24,7 @@ func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T
     return fallback
 }
 
+generic T
 func last(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
     T lastSoFar = fallback
     for T value in values {

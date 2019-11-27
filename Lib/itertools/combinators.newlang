@@ -4,6 +4,7 @@ export repeat
 
 # FIXME: Types for product, etc.
 
+generic T
 generator func repeat(T value, int? times = null) -> T {
     if times is null {
         while true {

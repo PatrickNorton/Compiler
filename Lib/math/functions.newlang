@@ -8,6 +8,7 @@ func abs(int n) -> uint {
     return n if n >= 0 else -n
 }
 
+generic T
 func abs(T[Number] n) -> T {
     return -n if n < 0 else n
 }
@@ -20,6 +21,7 @@ func comb(uint n, uint k) -> int {
     return fact(n) // (fact(k) * fact(n - k))
 }
 
+generic T, U
 func copySign(T[Number] a, U[Number] b) -> T {
     return abs(a) * sign(b)
 }
@@ -43,19 +45,23 @@ func gcd(int a, int b) -> b {
     return a # == b
 }
 
-func max(*T[Comparable[T]] values) -> T {
+generic T[Comparable[T]]
+func max(*T values) -> T {
     return apply(max2, *values)
 }
 
-func max2(T[Comparable[T]] x, T y) -> T {
+generic T[Comparable[T]]
+func max2(T x, T y) -> T {
     return x if x >= y else y
 }
 
-func min(*T[Comparable[T]] values) -> T {
+generic T[Comparable[T]]
+func min(*T values) -> T {
     return apply(min2, *values)
 }
 
-func min2(T[Comparable[T]] x, T y) -> T {
+generic T[Comparable[T]]
+func min2(T x, T y) -> T {
     return x if x <= y else y
 }
 
@@ -63,10 +69,12 @@ func perm(uint n, uint? k = null) -> uint {
     return fact(n) // fact(n - (k ?? n))
 }
 
-func prod(*T[Number] iterable) -> T {
+generic T[Number]
+func prod(*T iterable) -> T {
     return \*(*iterable)
 }
 
-func sum(*T[Number] summands) -> T {
+generic T[Number]
+func sum(*T summands) -> T {
     return \+(*summands)
 }
