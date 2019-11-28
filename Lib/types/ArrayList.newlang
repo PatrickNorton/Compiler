@@ -1,3 +1,4 @@
+from collections import normalizeIndices
 from math import max, min
 from types import Array
 
@@ -24,11 +25,8 @@ class ArrayList[T] from list[T] {
         return self.values[index if index >= 0 else self.length-index]
     }
 
+    $normalizeIndices(self)
     public operator [:] (int start, int stop, int step) {
-        start = start if start > 0 else self.length - start
-        stop = stop if stop > 0 else self.length - stop
-        self.checkIndex(start)
-        self.checkIndex(stop)
         return self.values[start:stop:step]
     }
 
