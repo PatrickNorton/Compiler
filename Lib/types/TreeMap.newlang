@@ -1,5 +1,3 @@
-# FIXME: Replace TreeNode.previous with TreeNode.parent
-
 export TreeMap
 
 const bool BLACK = false
@@ -136,7 +134,7 @@ class TreeMap[K, V] from dict[K, V] {
 class TreeNode[K, V] {
     public cls? left = null
     public cls? right = null
-    public cls? previous
+    public cls? parent
 
     public const int64 hash := hash(key)
     public const K key
@@ -144,10 +142,10 @@ class TreeNode[K, V] {
 
     public bool color
 
-    public operator new (K key, V value, cls? previous, bool color = BLACK) {
+    public operator new (K key, V value, cls? parent, bool color = BLACK) {
         self.key = key
         self.value = value
-        self.previous = previous
+        self.parent = parent
         self.color = color
     }
 
@@ -257,18 +255,18 @@ class TreeNode[K, V] {
         var top = topN!!
         assert top.right is not null
         var newTop = top.left!!
-        newTop.previous = top.previous
+        newTop.parent = top.parent
         top.left = newTop.right
         newTop.right = top
         if top.left is not null {
-            (top.left!!).previous = top
+            (top.left!!).parent = top
         }
-        top.previous = newTop
-        if newTop.previous is not null {
-            if (newTop.previous!!).right is top {
-               (newTop.previous!!).right = newTop
+        top.parent = newTop
+        if newTop.parent is not null {
+            if (newTop.parent!!).right is top {
+               (newTop.parent!!).right = newTop
             } else {
-                (newTop.previous!!).left = newTop
+                (newTop.parent!!).left = newTop
             }
         }
         return newTop
@@ -279,18 +277,18 @@ class TreeNode[K, V] {
         var top = topN!!
         assert top.left is not null
         var newTop = top.right!!
-        newTop.previous = top.previous
+        newTop.parent = top.parent
         top.right = newTop.left
         newTop.left = top
         if top.right is not null {
-            (top.right!!).previous = top
+            (top.right!!).parent = top
         }
-        top.previous = newTop
-        if newTop.previous is not null {
-            if (newTop.previous!!).right is top {
-               (newTop.previous!!).right = newTop
+        top.parent = newTop
+        if newTop.parent is not null {
+            if (newTop.parent!!).right is top {
+               (newTop.parent!!).right = newTop
             } else {
-                (newTop.previous!!).left = newTop
+                (newTop.parent!!).left = newTop
             }
         }
         return newTop
