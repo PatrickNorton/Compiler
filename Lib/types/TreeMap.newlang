@@ -10,13 +10,13 @@ class TreeMap[K, V] from dict[K, V] {
     public operator [] (K key) -> V {
         var node = self.findNode(key)
         raise KeyError if node is null
-        return (node!!).value
+        return node!!.value
     }
 
     public operator []= (K key, V value) {
         var node = self.findNode(key)
         if node is not null {
-            (node!!).value = value
+            node!!.value = value
         } elif self.top is null {
             self.top = TreeNode(key, value, null)
         } else {
@@ -55,10 +55,10 @@ class TreeMap[K, V] from dict[K, V] {
             replacement.parent = node.parent
             if node.parent is null {
                 self.root = replacement
-            } elif node is (node.parent!!).left {
-                (node.parent!!).left = replacement
+            } elif node is node.parent!!.left {
+                node.parent!!.left = replacement
             } else {
-                 (node.parent!!).right = replacement
+                 node.parent!!.right = replacement
             }
         } elif node.parent is null {
             assert self.length == 0
@@ -69,10 +69,10 @@ class TreeMap[K, V] from dict[K, V] {
             }
 
             if node.parent is not null {
-                if node is (node.parent!!).left {
-                    (node.parent!!).left = null
+                if node is node.parent!!.left {
+                    node.parent!!.left = null
                 } else {
-                    (node.parent!!).right = null
+                    node.parent!!.right = null
                 }
                 node.parent = null
             }
@@ -156,7 +156,7 @@ class TreeNode[K, V] {
     }
 
     public static method fix(cls? x) -> cls? {
-        return if ((x!!).parent!!).color is not RED
+        return if x!!.parent!!.color is not RED
         if (x?.parent is x?.parent?.parent?.left) {
             var y = x?.parent?.parent?.right
             if (y?.color is RED) {
@@ -259,14 +259,14 @@ class TreeNode[K, V] {
         top.left = newTop.right
         newTop.right = top
         if top.left is not null {
-            (top.left!!).parent = top
+            top.left!!.parent = top
         }
         top.parent = newTop
         if newTop.parent is not null {
-            if (newTop.parent!!).right is top {
-               (newTop.parent!!).right = newTop
+            if newTop.parent!!.right is top {
+               newTop.parent!!.right = newTop
             } else {
-                (newTop.parent!!).left = newTop
+                newTop.parent!!.left = newTop
             }
         }
         return newTop
@@ -281,14 +281,14 @@ class TreeNode[K, V] {
         top.right = newTop.left
         newTop.left = top
         if top.right is not null {
-            (top.right!!).parent = top
+            top.right!!.parent = top
         }
         top.parent = newTop
         if newTop.parent is not null {
-            if (newTop.parent!!).right is top {
-               (newTop.parent!!).right = newTop
+            if newTop.parent!!.right is top {
+               newTop.parent!!.right = newTop
             } else {
-                (newTop.parent!!).left = newTop
+                newTop.parent!!.left = newTop
             }
         }
         return newTop
@@ -296,7 +296,7 @@ class TreeNode[K, V] {
 
     public static method setColor(cls? node, bool color) {
         if node is not null {
-            (node!!).color = color
+            node!!.color = color
         }
     }
 }
