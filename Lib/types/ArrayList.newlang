@@ -37,9 +37,8 @@ class ArrayList[T] from list[T] {
         self.values[index if index >= 0 else self.length-index] = value
     }
 
+    @normalizeIndices(self)
     public operator [:]= (int start, int stop, int step, super values) {
-        self.checkIndex(start)
-        self.checkIndex(stop)
         self.values[start:stop:step] = values
     }
 
@@ -47,9 +46,8 @@ class ArrayList[T] from list[T] {
         yield from self.values[:self.length]
     }
 
+    @normalizeIndices(self)
     public operator iter[:] (int start, int end, int step) -> T {
-        start = max(0, self.length + start) if start < 0 else min(self.length, start)
-        end = max(0, self.length + end) if end < 0 else min(self.length, end)
         yield from self.values[start:stop:step]
     }
 
