@@ -83,3 +83,36 @@ func merge(Deque[T] left, Deque[T] right) -> Deque[T] {
     # Either left or right may have elements left; consume them.
     return result + left if left else right
 }
+
+
+generic T[Comparable[T]]
+func quickSort(Iterable[T] iterable) -> list[T] {
+    var values = Array.of(iterable)
+    qsInner(iterable, 0, iterable.length - 1)
+    return list(values)
+}
+
+
+generic T[Comparable[T]]
+func qsInner(Array[T] values, uint low, uint high) {
+    if low < high {
+        uint p = partition(values, low, high)
+        qsInner(values, low, p - 1)
+        qsInner(values, p + 1, high)
+    }
+}
+
+
+generic T[Comparable[T]]
+func partition(Array[T] values, uint low, uint high) -> uint {
+    var pivot = values[high]
+    uint i = low
+    for uint j in [low:high+1] {
+        if values[j] < pivot {
+            values[i], values[j] = values[j], values[i]
+            i++
+        }
+    }
+    a[i], a[j] = a[j], a[i]
+    return i
+}
