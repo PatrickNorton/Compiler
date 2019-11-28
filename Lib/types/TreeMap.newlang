@@ -1,0 +1,302 @@
+export TreeMap
+
+const bool BLACK = false
+const bool RED = true
+
+class TreeMap[K, V] from dict[K, V] {
+    private TreeNode[K, V]? top
+    pubget uint length
+
+    public operator [] (K key) -> V {
+        var node = self.findNode(key)
+        raise KeyError if node is null
+        return (node!!).value
+    }
+
+    public operator []= (K key, V value) {
+        var node = self.findNode(key)
+        if node is not null {
+            (node!!).value = value
+        } elif self.top is null {
+            self.top = TreeNode(key, value, null)
+        } else {
+            var node = self.top!!
+            var hash = hash(key)
+            while true {
+                var nodeNN = node!!
+                return nodeNN if nodeNN.hash == hash and nodeNN.key == key
+                if nodeNN.hash > hash {
+                    node = nodeNN.left
+                } else {
+                    node = nodeNN.right
+                }
+                if node is null {
+                    var new = TreeNode(key, value, nodeNN)
+                    if hash < nodeNN.hash {
+                        nodeNN.left = new
+                    } else {
+                        nodeNN.right = new
+                    }
+                    self.fixAfterInsertion(new)
+                    self.length++
+                    return
+                }
+            }
+        }
+    }
+
+    public operator del[] (K key) {
+        var nodeMaybe = self.findNode(key)
+        raise KeyError if nodeMaybe is null
+        var node = node!!
+        self.length--
+        var replacement = node.left ?? node.right
+        if replacement is not null {
+            replacement.parent = node.parent
+            if node.parent is null {
+                self.root = replacement
+            } elif node is (node.parent!!).left {
+                (node.parent!!).left = replacement
+            } else {
+                 (node.parent!!).right = replacement
+            }
+        } elif node.parent is null {
+            assert self.length == 0
+            self.root = null
+        } else {
+            if node.color is BLACK {
+                self.fixAfterDeletion(node)
+            }
+
+            if node.parent is not null {
+                if node is (node.parent!!).left {
+                    (node.parent!!).left = null
+                } else {
+                    (node.parent!!).right = null
+                }
+                node.parent = null
+            }
+        }
+    }
+
+    public operator in (K key) {
+        return self.findNode(key) is not null
+    }
+
+    public operator iter -> K, V {
+        yield from self.top ?? []
+    }
+
+    public operator bool {
+        return self.top is not null
+    }
+
+    public method keyOf(V value) -> K {
+        for K key, V val in self {
+            return key if value == val
+        }
+        raise ValueError
+    }
+
+    private method findNode(K key) -> TreeNode[K, V]? {
+        var node = self.top
+        var hash = hash(key)
+        while true {
+            return null if node is null
+            var nodeNN = node!!
+            return nodeNN if nodeNN.hash == hash and nodeNN.key == key
+            if nodeNN.hash < hash {
+                node = nodeNN.left
+            } else {
+                node = nodeNN.right
+            }
+        }
+    }
+
+    private method fixAfterInsertion(TreeNode[K, V] node) {
+        node.color = RED
+        while (node is not null and node is not self.root) {
+            node = fix(node)
+        }
+        self.root.color = BLACK
+    }
+
+    private method fixAfterDeletion(TreeNode[K, V] x) {
+        while (x != self.root and colorOf(x) == BLACK) {
+            TreeNode.fixDelete(x, self.root)
+        }
+
+        setColor(x, BLACK)
+    }
+}
+
+
+class TreeNode[K, V] {
+    public cls? left = null
+    public cls? right = null
+    public cls? parent
+
+    public const int64 hash := hash(key)
+    public const K key
+    public V value
+
+    public bool color
+
+    public operator new (K key, V value, cls? parent, bool color = BLACK) {
+        self.key = key
+        self.value = value
+        self.parent = parent
+        self.color = color
+    }
+
+    public operator iter -> K, V {
+        yield self.key, self.value
+        yield from self.left ?? []
+        yield from self.right ?? []
+    }
+
+    public static method fix(cls? x) -> cls? {
+        return if ((x!!).parent!!).color is not RED
+        if (x?.parent is x?.parent?.parent?.left) {
+            var y = x?.parent?.parent?.right
+            if (y?.color is RED) {
+                cls.setColor(x.parent, BLACK)
+                cls.setColor(y, BLACK)
+                cls.setColor(x.parent?.parent, RED)
+            } else {
+                if (x is x?.parent?.right) {
+                    x = x?.parent
+                    cls.rotateLeft(x)
+                }
+                cls.setColor(x?.parent, BLACK)
+                cls.setColor(x?.parent?.parent, RED)
+                cls.rotateRight(x?.parent?.parent)
+            }
+        } else {
+            var y = x?.parent?.parent?.left
+            if (y?.color is RED) {
+                cls.setColor(x?.parent, BLACK)
+                cls.setColor(y, BLACK)
+                cls.setColor(x?.parent?.parent, RED)
+                x = x?.parent?.parent
+            } else {
+                if (x is x?.parent?.left) {
+                    x = x?.parent
+                    cls.rotateRight(x)
+                }
+                cls.setColor(x?.parent, BLACK)
+                cls.setColor(x?.parent?.parent, RED)
+                cls.rotateLeft(x?.parent?.parent)
+            }
+        }
+        return x
+    }
+
+    public static method fixDelete(cls? x, cls? root) -> cls? {
+        if (x is x?.parent?.left) {
+            var sib = x?.parent?.right
+
+            if (sib?.color is RED) {
+                cls.setColor(sib, BLACK)
+                cls.setColor(x?.parent, RED)
+                cls.rotateLeft(x?.parent)
+                sib = x?.parent?.right
+            }
+
+            if (sib?.left?.color is not RED and
+                sib?.right?.color is not RED) {
+                cls.setColor(sib, RED)
+                x = x?.parent
+            } else {
+                if (sib?.right?.color is not RED) {
+                    cls.setColor(sib?.left, BLACK)
+                    cls.setColor(sib, RED)
+                    cls.rotateRight(sib)
+                    sib = x?.parent?.right
+                }
+                cls.setColor(sib, x?.parent?.color ?? BLACK)
+                cls.setColor(x?.parent, BLACK)
+                cls.setColor(sib?.right, BLACK)
+                cls.rotateLeft(x?.parent)
+                x = root
+            }
+        } else { # symmetric
+            var sib = x?.parent?.left
+
+            if (sib?.color is RED) {
+                cls.setColor(sib, BLACK)
+                cls.setColor(x?.parent, RED)
+                cls.rotateRight(x?.parent)
+                sib = x?.parent?.left
+            }
+
+            if (sib?.right?.color is not RED and
+                sib?.left?.color is not BLACK) {
+                cls.setColor(sib, RED)
+                x = x?.parent
+            } else {
+                if (sib?.left?.color is not RED) {
+                    cls.setColor(sib?.right, BLACK)
+                    cls.setColor(sib, RED)
+                    cls.rotateLeft(sib)
+                    sib = x?.parent?.left
+                }
+                cls.setColor(sib, x?.parent?.color ?? null)
+                cls.setColor(x?.parent, BLACK)
+                cls.setColor(sib?.left, BLACK)
+                cls.rotateRight(x?.parent)
+                x = root
+            }
+        }
+     }
+
+    public static method rotateLeft(cls? topN) {
+        return if topN is null
+        var top = topN!!
+        assert top.right is not null
+        var newTop = top.left!!
+        newTop.parent = top.parent
+        top.left = newTop.right
+        newTop.right = top
+        if top.left is not null {
+            (top.left!!).parent = top
+        }
+        top.parent = newTop
+        if newTop.parent is not null {
+            if (newTop.parent!!).right is top {
+               (newTop.parent!!).right = newTop
+            } else {
+                (newTop.parent!!).left = newTop
+            }
+        }
+        return newTop
+    }
+
+    public static method rotateRight(cls? topN) -> cls {
+        return if topN is null
+        var top = topN!!
+        assert top.left is not null
+        var newTop = top.right!!
+        newTop.parent = top.parent
+        top.right = newTop.left
+        newTop.left = top
+        if top.right is not null {
+            (top.right!!).parent = top
+        }
+        top.parent = newTop
+        if newTop.parent is not null {
+            if (newTop.parent!!).right is top {
+               (newTop.parent!!).right = newTop
+            } else {
+                (newTop.parent!!).left = newTop
+            }
+        }
+        return newTop
+    }
+
+    public static method setColor(cls? node, bool color) {
+        if node is not null {
+            (node!!).color = color
+        }
+    }
+}

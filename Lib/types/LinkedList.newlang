@@ -3,7 +3,7 @@ export LinkedList
 class LinkedList[T] from list[T] {
     private LLNode[T]? first
     private LLNode[T]? last
-    pubget int length
+    pubget uint length
 
     public operator new (*T nodes) {
         self.length = nodes.length
@@ -31,6 +31,44 @@ class LinkedList[T] from list[T] {
         node.this = value
     }
 
+    public operator [:] (int start, int stop, int step) -> list[T] {
+        return list(self.operator iter[:](start, stop, step))
+    }
+
+    @normalizeIndices(self)
+    public operator [:]= (int start, int stop, int step, Iterable[T] values) {
+        var startNode = self.get_LLNode(start)
+        var endNode = self.get_LLNode(end)
+        if step < 0 {
+            var current = endNode
+            var iterator = iter(values)
+            dotimes (stop - start) % step {
+                try {
+                    current.this = iterator.next()
+                } except StopIteration {
+                    break
+                }
+                dotimes step {
+                    current = current.previous!!
+                }
+            }
+        } else {
+            var current = startNode
+            var iterator = iter(values)
+            dotimes (start - stop) % step {
+                try {
+                    current.this = iterator.next()
+                } except StopIteration {
+                    break
+                }
+                dotimes step {
+                    current = current.next!!
+                }
+            }
+        }
+        self.length = \+(1 for var i in iter(lambda a => a.next, start=self.first, end=null))
+    }
+
     private method get_LLNode(int index) -> LLNode {
         if index < 0 {
             raise IndexError if self.last is null
@@ -56,6 +94,27 @@ class LinkedList[T] from list[T] {
         while current is not null {
             yield (current!!).this
             current = (current!!).next
+        }
+    }
+
+    @normalizeIndices(self)
+    public operator iter[:] (int start, int stop, int step) -> T {
+        if step < 0 {
+            var current = self.get_LLNode(self.stop)
+            dotimes (start - stop) % step {
+                yield current.this
+                dotimes step {
+                    current = (current!!).previous  # No null check needed, indices already known
+                }
+            }
+        } else {
+            var current = self.get_LLNode(self.start)
+            dotimes (stop - start) % step {
+                yield current.this
+                dotimes step {
+                    current = (current!!).next  # No null check needed, indices already known
+                }
+            }
         }
     }
 

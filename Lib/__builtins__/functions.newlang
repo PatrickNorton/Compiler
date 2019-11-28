@@ -6,6 +6,7 @@ import sys
 
 export enumerate, hash, print
 
+generic T
 generator func enumerate(Iterable[T] values, /) -> int, T {
     int index = 0
     for T value in values {

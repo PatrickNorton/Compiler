@@ -18,11 +18,19 @@ class StringBuilder {
     }
 
     public operator [] (int index) -> char {
-        return chars[index]
+        return self.chars[index]
     }
 
     public operator [:] (int start, int stop, int step) -> list[char] {
-        return chars[start:stop:step]
+        return self.chars[start:stop:step]
+    }
+
+    public operator iter -> char {
+        yield from self.chars
+    }
+
+    public operator iter[:] (int start, int stop, int step) -> char {
+        yield from self.chars[start:stop:step]
     }
 
     public operator str {

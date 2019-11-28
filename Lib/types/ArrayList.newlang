@@ -1,4 +1,5 @@
-from math import max
+from collections import normalizeIndices
+from math import max, min
 from types import Array
 
 export ArrayList
@@ -24,11 +25,8 @@ class ArrayList[T] from list[T] {
         return self.values[index if index >= 0 else self.length-index]
     }
 
+    $normalizeIndices(self)
     public operator [:] (int start, int stop, int step) {
-        start = start if start > 0 else self.length - start
-        stop = stop if stop > 0 else self.length - stop
-        self.checkIndex(start)
-        self.checkIndex(stop)
         return self.values[start:stop:step]
     }
 
@@ -37,14 +35,18 @@ class ArrayList[T] from list[T] {
         self.values[index if index >= 0 else self.length-index] = value
     }
 
+    @normalizeIndices(self)
     public operator [:]= (int start, int stop, int step, super values) {
-        self.checkIndex(start)
-        self.checkIndex(stop)
         self.values[start:stop:step] = values
     }
 
     public operator iter -> T {
         yield from self.values[:self.length]
+    }
+
+    @normalizeIndices(self)
+    public operator iter[:] (int start, int end, int step) -> T {
+        yield from self.values[start:stop:step]
     }
 
     public operator reversed -> T {

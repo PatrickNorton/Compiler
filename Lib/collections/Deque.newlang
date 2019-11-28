@@ -57,6 +57,10 @@ final class Deque[V] {
         }
     }
 
+    public operator bool {
+        return self.length
+    }
+
     public method popLeft() -> V {
         V value = self.values[self.start]
         self.start = (self.start + 1) % values.length
