@@ -8,13 +8,13 @@ import java.util.List;
 
 public class DottedVar implements BaseNode {
     private LineInfo lineInfo;
-    private boolean isNullDot;
     private NameNode postDot;
+    private String dotPrefix;
 
     @Contract(pure = true)
-    public DottedVar(LineInfo info, boolean isNullDot, NameNode postDot) {
+    public DottedVar(LineInfo info, String dotType, NameNode postDot) {
         this.lineInfo = info;
-        this.isNullDot = isNullDot;
+        this.dotPrefix = dotType;
         this.postDot = postDot;
     }
 
@@ -23,8 +23,8 @@ public class DottedVar implements BaseNode {
         return lineInfo;
     }
 
-    public boolean isNullDot() {
-        return isNullDot;
+    public String getDotPrefix() {
+        return dotPrefix;
     }
 
     public NameNode getPostDot() {
@@ -36,7 +36,7 @@ public class DottedVar implements BaseNode {
     public static DottedVar parse(@NotNull TokenList tokens, boolean namesOnly, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.DOT);
         LineInfo info = tokens.lineInfo();
-        boolean isNullDot = tokens.tokenIs("?.");
+        String dotType = tokens.tokenSequence().substring(0, tokens.tokenSequence().length() - 1);
         tokens.nextToken(ignoreNewlines);
         NameNode postDot;
         if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
@@ -50,7 +50,7 @@ public class DottedVar implements BaseNode {
         if (!namesOnly) {
             postDot = NameNode.parsePostBraces(tokens, postDot);
         }
-        return new DottedVar(info, isNullDot, postDot);
+        return new DottedVar(info, dotType, postDot);
     }
 
     @NotNull
@@ -64,6 +64,6 @@ public class DottedVar implements BaseNode {
 
     @Override
     public String toString() {
-        return (isNullDot ? "?." : ".") + postDot;
+        return dotPrefix + "." + postDot;
     }
 }

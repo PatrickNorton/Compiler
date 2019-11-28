@@ -69,7 +69,7 @@ public enum TokenType {
     /**
      * Dots that aren't an ellipsis.
      */
-    DOT("^\\??\\."),
+    DOT("^(\\?|!!)?\\."),
     /**
      * For increment and decrement operations.
      */
