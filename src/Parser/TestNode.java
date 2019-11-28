@@ -124,15 +124,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
     }
 
-    static TestNode parseNoTernaryOnToken(@NotNull TokenList tokens, Keyword token, boolean ignoreNewlines) {
-        if (tokens.tokenIs(token)) {
-            tokens.nextToken(ignoreNewlines);
-            return parseNoTernary(tokens, ignoreNewlines);
-        } else {
-            return empty();
-        }
-    }
-
     /**
      * Parse the non-ternary portion of a TestNode.
      * <p>
@@ -157,7 +148,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @return The freshly parsed TestNode
      */
     @NotNull
-    static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
         LineInfo info = tokens.lineInfo();
         TestNode node = parseExpression(tokens, ignoreNewlines);
         if (tokens.tokenIs(TokenType.ASSIGN, TokenType.AUG_ASSIGN)) {
@@ -510,14 +501,14 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     static Pair<TestNode, TestNode> parseMaybePostIf(TokenList tokens, boolean ignoreNewlines) {
         TestNode preIf = parseNoTernary(tokens, ignoreNewlines);
         if (!tokens.tokenIs(Keyword.IF)) {
-            return Pair.of(preIf, null);
+            return Pair.of(preIf, empty());
         }
         tokens.nextToken(ignoreNewlines);
         TestNode postIf = parse(tokens, ignoreNewlines);
         if (tokens.tokenIs(Keyword.ELSE)) {
             tokens.nextToken(ignoreNewlines);
             TestNode ternary = new TernaryNode(preIf, postIf, parse(tokens, ignoreNewlines));
-            return Pair.of(ternary, null);
+            return Pair.of(ternary, empty());
         } else {
             return Pair.of(preIf, postIf);
         }

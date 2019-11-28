@@ -55,8 +55,7 @@ public class RaiseStatementNode implements SimpleFlowNode {
         tokens.nextToken();
         Pair<TestNode, TestNode> raisedAndCondition = TestNode.parseMaybePostIf(tokens, false);
         TestNode raised = raisedAndCondition.getKey();
-        TestNode condition = raisedAndCondition.getValue() != null
-                ? raisedAndCondition.getValue() : TestNode.empty();
+        TestNode condition = raisedAndCondition.getValue();
         return new RaiseStatementNode(lineInfo, raised, condition);
     }
 
