@@ -199,7 +199,7 @@ class TreeNode[K, V] {
             if (sib?.color is RED) {
                 cls.setColor(sib, BLACK)
                 cls.setColor(x?.parent, RED)
-                cls.rotateLeft(x?.parent))
+                cls.rotateLeft(x?.parent)
                 sib = x?.parent?.right
             }
 
@@ -220,7 +220,7 @@ class TreeNode[K, V] {
                 cls.rotateLeft(x?.parent)
                 x = root
             }
-        } else { // symmetric
+        } else { # symmetric
             var sib = x?.parent?.left
 
             if (sib?.color is RED) {

@@ -66,7 +66,7 @@ class LinkedList[T] from list[T] {
                 }
             }
         }
-        self.length = \+(1 for var i in iter(a => a.next, start=self.first, end=null))
+        self.length = \+(1 for var i in iter(lambda a => a.next, start=self.first, end=null))
     }
 
     private method get_LLNode(int index) -> LLNode {
