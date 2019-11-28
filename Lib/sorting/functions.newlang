@@ -6,6 +6,7 @@ from types import Array
 export heapSort
 
 
+generic T[Comparable[T]]
 func heapSort(Iterable[T] iterable) -> list[T] {
     var values = Array.of(iterable)
     # Build the heap in array a so that largest value is at the root
@@ -20,6 +21,7 @@ func heapSort(Iterable[T] iterable) -> list[T] {
 }
 
 
+generic T[Comparable[T]]
 func heapify(Array[T] values) {
     for uint start in [values.length // 2 : 0 : -1] {
         siftDown(values, start, values.length - 1)
@@ -27,6 +29,7 @@ func heapify(Array[T] values) {
 }
 
 
+generic T[Comparable[T]]
 func siftDown(Array[T] values, uint start, uint end) {
     uint root = start
     while 2*root < end {
@@ -48,11 +51,13 @@ func siftDown(Array[T] values, uint start, uint end) {
 }
 
 
+generic T[Comparable[T]]
 func mergeSort(Iterable[T] iterable) -> list[T] {
     return list(msInner(Deque(iterable)))
 }
 
 
+generic T[Comparable[T]]
 func msInner(Deque[T] values) -> Deque[T] {
     return values if values.length < 2
 
@@ -68,6 +73,7 @@ func msInner(Deque[T] values) -> Deque[T] {
 }
 
 
+generic T[Comparable[T]]
 func merge(Deque[T] left, Deque[T] right) -> Deque[T] {
     var result = Deque[T]()
 
