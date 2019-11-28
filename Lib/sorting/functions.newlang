@@ -3,7 +3,7 @@ from types typeget Iterable
 from collections import Deque
 from types import Array
 
-export heapSort
+export heapSort, mergeSort, quickSort
 
 
 generic T[Comparable[T]]
