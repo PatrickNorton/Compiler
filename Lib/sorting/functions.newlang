@@ -1,0 +1,79 @@
+from types typeget Iterable
+
+from collections import Deque
+from types import Array
+
+export heapSort
+
+
+func heapSort(Iterable[T] iterable) -> list[T] {
+    var values = Array.of(iterable)
+    # Build the heap in array a so that largest value is at the root
+    heapify(values)
+    # The following loop maintains the invariants that a[0:end] is a heap and every element
+    # beyond end is greater than everything before it (so a[end:count] is in sorted order)
+    for uint end in [count:0:-1] {  # Remember: [count:0:-1] will output count-1, ..., 0
+        a[end], values[0] = values[0], values[end]
+        siftDown(values, 0, end)
+    }
+    return list(values)
+}
+
+
+func heapify(Array[T] values) {
+    for uint start in [values.length // 2 : 0 : -1] {
+        siftDown(values, start, values.length - 1)
+    }
+}
+
+
+func siftDown(Array[T] values, uint start, uint end) {
+    uint root = start
+    while 2*root < end {
+        uint child = 2*root - 1
+        uint swap = root
+        if a[swap] < a[child] {
+            swap = child
+        }
+        if child < end and values[swap] < values[child + 1] {
+            swap = child + 1
+        }
+        if swap == root {
+            return
+        } else {
+            a[root], a[swap] = a[swap], a[root]
+            root = swap
+        }
+    }
+}
+
+
+func mergeSort(Iterable[T] iterable) -> list[T] {
+    return list(msInner(Deque(iterable)))
+}
+
+
+func msInner(Deque[T] values) -> Deque[T] {
+    return values if values.length < 2
+
+    # Recursive case. First, divide the list into equal-sized sublists
+    # consisting of the first half and second half of the list.
+    var left = values[:values.length//2]
+    var right = values[values.length//2:]
+
+    left = msInner(left)
+    right = msInner(right)
+
+    return merge(left, right)
+}
+
+
+func merge(Deque[T] left, Deque[T] right) -> Deque[T] {
+    var result = Deque[T]()
+
+    while left and right {
+        result.append((left if left[0] < right[0] else right).pop())
+    }
+    # Either left or right may have elements left; consume them.
+    return result + left if left else right
+}
