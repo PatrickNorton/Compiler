@@ -15,8 +15,8 @@ public class ImportStatementNode extends ImportExportNode {
      * @param from The package from whence they are imported
      */
     @Contract(pure = true)
-    public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from) {
-        this(info, imports, from, new DottedVariableNode[0]);
+    public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from, int preDots) {
+        this(info, imports, from, new DottedVariableNode[0], preDots);
     }
 
     /**
@@ -24,8 +24,8 @@ public class ImportStatementNode extends ImportExportNode {
      * @param imports Tne list of imported names, all top-level
      */
     @Contract(pure = true)
-    public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
-        super("import", info, imports, from, as);
+    public ImportStatementNode(LineInfo info, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as, int preDots) {
+        super("import", info, imports, from, as, preDots);
     }
 
     /**
@@ -44,9 +44,11 @@ public class ImportStatementNode extends ImportExportNode {
     static ImportStatementNode parse(@NotNull TokenList tokens) {
         DottedVariableNode from = DottedVariableNode.empty();
         LineInfo info = null;
+        int preDots = 0;
         if (tokens.tokenIs(Keyword.FROM)) {
             info = tokens.lineInfo();
             tokens.nextToken();
+            preDots = parsePreDots(tokens);
             from = DottedVariableNode.parseNamesOnly(tokens);
         }
         assert tokens.tokenIs(Keyword.IMPORT);
@@ -60,8 +62,8 @@ public class ImportStatementNode extends ImportExportNode {
         DottedVariableNode[] imports = DottedVariableNode.parseNameOnlyList(tokens);
         if (tokens.tokenIs(Keyword.AS)) {
             DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens);
-            return new ImportStatementNode(info, imports, from, as);
+            return new ImportStatementNode(info, imports, from, as, preDots);
         }
-        return new ImportStatementNode(info, imports, from);
+        return new ImportStatementNode(info, imports, from, preDots);
     }
 }

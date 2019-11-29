@@ -15,8 +15,8 @@ public class ExportStatementNode extends ImportExportNode {
      * @param exports The list of exports
      */
     @Contract(pure = true)
-    public ExportStatementNode(LineInfo lineInfo, DottedVariableNode[] exports, DottedVariableNode from) {
-        super("export", lineInfo, exports, from, new DottedVariableNode[0]);
+    public ExportStatementNode(LineInfo lineInfo, DottedVariableNode[] exports, DottedVariableNode from, int preDots) {
+        super("export", lineInfo, exports, from, new DottedVariableNode[0], preDots);
     }
 
     /**
@@ -33,9 +33,11 @@ public class ExportStatementNode extends ImportExportNode {
     static ExportStatementNode parse(@NotNull TokenList tokens) {
         DottedVariableNode from = DottedVariableNode.empty();
         LineInfo info = null;
+        int preDots = 0;
         if (tokens.tokenIs(Keyword.FROM)) {
             info = tokens.lineInfo();
             tokens.nextToken();
+            preDots = parsePreDots(tokens);
             from = DottedVariableNode.parseNamesOnly(tokens);
         }
         assert tokens.tokenIs(Keyword.EXPORT);
@@ -47,6 +49,6 @@ public class ExportStatementNode extends ImportExportNode {
             throw tokens.error("Empty import statements are illegal");
         }
         DottedVariableNode[] imports = DottedVariableNode.parseNameOnlyList(tokens);
-        return new ExportStatementNode(info, imports, from);
+        return new ExportStatementNode(info, imports, from, preDots);
     }
 }

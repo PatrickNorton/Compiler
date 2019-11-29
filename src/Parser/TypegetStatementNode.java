@@ -11,13 +11,13 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TypegetStatementNode extends ImportExportNode {
     @Contract(pure = true)
-    public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from) {
-        this(lineInfo, imports, from, new DottedVariableNode[0]);
+    public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from, int preDots) {
+        this(lineInfo, imports, from, new DottedVariableNode[0], preDots);
     }
 
     @Contract(pure = true)
-    public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as) {
-        super("typeget", lineInfo, imports, from, as);
+    public TypegetStatementNode(LineInfo lineInfo, DottedVariableNode[] imports, DottedVariableNode from, DottedVariableNode[] as, int preDots) {
+        super("typeget", lineInfo, imports, from, as, preDots);
     }
 
     /**
@@ -35,9 +35,11 @@ public class TypegetStatementNode extends ImportExportNode {
     static TypegetStatementNode parse(@NotNull TokenList tokens) {
         LineInfo lineInfo = null;
         DottedVariableNode from = DottedVariableNode.empty();
+        int preDots = 0;
         if (tokens.tokenIs(Keyword.FROM)) {
             lineInfo = tokens.lineInfo();
             tokens.nextToken();
+            preDots = parsePreDots(tokens);
             from = DottedVariableNode.parseNamesOnly(tokens);
         }
         assert tokens.tokenIs(Keyword.TYPEGET);
@@ -52,8 +54,8 @@ public class TypegetStatementNode extends ImportExportNode {
         if (tokens.tokenIs(Keyword.AS)) {
             tokens.nextToken();
             DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens);
-            return new TypegetStatementNode(lineInfo, typegets, from, as);
+            return new TypegetStatementNode(lineInfo, typegets, from, as, preDots);
         }
-        return new TypegetStatementNode(lineInfo, typegets, from);
+        return new TypegetStatementNode(lineInfo, typegets, from, preDots);
     }
 }

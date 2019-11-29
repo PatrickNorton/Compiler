@@ -13,6 +13,18 @@ public abstract class ImportExportNode implements SimpleStatementNode {
     private DottedVariableNode[] ports;
     private DottedVariableNode from;
     private DottedVariableNode[] as;
+    private int preDots;
+
+    @Contract(pure = true)
+    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
+                            DottedVariableNode from, DottedVariableNode[] as, int preDots) {
+        this.type = type;
+        this.lineInfo = lineInfo;
+        this.ports = ports;
+        this.from = from;
+        this.as = as;
+        this.preDots = preDots;
+    }
 
     @Contract(pure = true)
     public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
@@ -72,6 +84,22 @@ public abstract class ImportExportNode implements SimpleStatementNode {
         }
     }
 
+    static int parsePreDots(@NotNull TokenList tokens) {
+        int dotCount = 0;
+        while (true) {
+            if (tokens.tokenIs(TokenType.ELLIPSIS)) {
+                dotCount += 3;
+                tokens.nextToken();
+            } else if (tokens.tokenIs(".")) {
+                dotCount++;
+                tokens.nextToken();
+            } else {
+                break;
+            }
+        }
+        return dotCount;
+    }
+
     /**
      * Parse an ImportExportNode starting with "from" from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed
@@ -96,7 +124,7 @@ public abstract class ImportExportNode implements SimpleStatementNode {
         String ports = TestNode.toString(this.ports);
         String str;
         if (!from.isEmpty()) {
-            str = String.format("from %s %s %s", from, type, ports);
+            str = String.format("from %s%s %s %s", preDots, from, type, ports);
         } else {
             str = type + " " + ports;
         }
