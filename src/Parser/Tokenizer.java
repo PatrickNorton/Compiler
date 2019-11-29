@@ -78,7 +78,10 @@ public final class Tokenizer {
         if (next.isEmpty()) {
             return emptyLine();
         }
-        adjustForMultiline();
+        Token nextToken = adjustForMultiline();
+        if (nextToken != null) {
+            return nextToken;
+        }
         for (TokenType info : TokenType.values()) {
             Matcher match = info.matcher(next);
             if (match.find()) {
@@ -132,13 +135,16 @@ public final class Tokenizer {
     /**
      * Adjust {@link #next} for multiline tokens.
      */
-    private void adjustForMultiline() {
+    @Nullable
+    private Token adjustForMultiline() {
         if (OPEN_COMMENT.matcher(next).find()) {
-            concatLines(CLOSE_COMMENT);
+            return concatLines(CLOSE_COMMENT, TokenType.WHITESPACE);
         } else if (OPEN_STRING.matcher(next).find()) {
-            concatLines(CLOSE_STRING);
+            return concatLines(CLOSE_STRING, TokenType.STRING);
         } else if (OPEN_SINGLE_STRING.matcher(next).find()) {
-            concatLines(CLOSE_SINGLE_STRING);
+            return concatLines(CLOSE_SINGLE_STRING, TokenType.STRING);
+        } else {
+            return null;
         }
     }
 
@@ -146,19 +152,26 @@ public final class Tokenizer {
      * Concatenate lines to {@link #next} until the given pattern matches.
      * @param tillMatch The pattern to match to
      */
-    private void concatLines(@NotNull Pattern tillMatch) {
-        lastWasMultiline = true;
-        String next;
-        StringBuilder nextBuilder = new StringBuilder(this.next);
-        do {
-            next =  Normalizer.normalize(readLine().stripTrailing(), Normalizer.Form.NFKD);
-            nextBuilder.append(System.lineSeparator());
-            nextBuilder.append(next);
-            multilineSize++;
-        } while (!tillMatch.matcher(next).find());
-        this.next = nextBuilder.toString();
-        fullLine = next;
-        appendEscapedLines();
+    @NotNull
+    @Contract("_, _ -> new")
+    private Token concatLines(@NotNull Pattern tillMatch, TokenType resultType) {
+        LineInfo lineInfo = lineInfo();
+        StringBuilder nextSequence = new StringBuilder(next);
+        while (true) {
+            String nextLine = Normalizer.normalize(readLine().stripTrailing(), Normalizer.Form.NFKD);
+            nextSequence.append(System.lineSeparator());
+            Matcher m = tillMatch.matcher(nextLine);
+            if (m.find()) {
+                nextSequence.append(m.group());
+                fullLine = nextLine;
+                next = nextLine.substring(m.group().length());
+                lineIndex = fullLine.length() - next.length();
+                appendEscapedLines();
+                return new Token(resultType, nextSequence.toString(), lineInfo);
+            }
+            nextSequence.append(nextLine);
+            currentLine++;
+        }
     }
 
     private void appendEscapedLines() {
