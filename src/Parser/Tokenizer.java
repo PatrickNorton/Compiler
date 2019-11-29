@@ -90,7 +90,7 @@ public final class Tokenizer {
                 if (lastWasMultiline) {
                     lineIndex = fullLine.length() - next.length() - fullLine.lastIndexOf(System.lineSeparator(), lineIndex);
                 } else {
-                    lineIndex += next.length();
+                    lineIndex += match.group().length();
                 }
                 lastWasMultiline = false;
                 return new Token(info, match.group(), lineInfo);
