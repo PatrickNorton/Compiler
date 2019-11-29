@@ -13,6 +13,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.text.Normalizer;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,8 +28,7 @@ public final class Tokenizer {
     private final Path fileName;
     private String next;
     private String fullLine;
-    private int lineIndex;
-    private boolean lastWasMultiline = false;
+    private NavigableSet<Integer> lbIndices;
 
     private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern CLOSE_COMMENT = Pattern.compile("^.*?\\|#");
@@ -50,9 +51,9 @@ public final class Tokenizer {
     private Tokenizer(Reader r, Path path) {
         file = new LineNumberReader(r);
         next = readLine();
-        lineIndex = 0;
         fullLine = next;
         fileName = path;
+        lbIndices = new TreeSet<>();
     }
 
     /**
@@ -84,12 +85,6 @@ public final class Tokenizer {
             if (match.find()) {
                 LineInfo lineInfo = lineInfo();
                 next = next.substring(match.end());
-                if (lastWasMultiline) {
-                    lineIndex = fullLine.length() - next.length() - fullLine.lastIndexOf(System.lineSeparator(), lineIndex);
-                } else {
-                    lineIndex += match.group().length();
-                }
-                lastWasMultiline = false;
                 return new Token(info, match.group(), lineInfo);
             }
         }
@@ -119,8 +114,7 @@ public final class Tokenizer {
         } else {
             next = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
             fullLine = next;
-            lineIndex = 0;
-            lastWasMultiline = false;
+            lbIndices = new TreeSet<>();
             appendEscapedLines();
             return Token.Newline(lineInfo());
         }
@@ -163,7 +157,6 @@ public final class Tokenizer {
                 nextSequence.append(m.group());
                 fullLine = nextLine;
                 next = nextLine.substring(m.group().length());
-                lineIndex = fullLine.length() - next.length();
                 appendEscapedLines();
                 return new Token(resultType, nextSequence.toString(), lineInfo);
             }
@@ -175,12 +168,21 @@ public final class Tokenizer {
         while (next.endsWith("\\")) {
             next = next.substring(0, next.length() - 1) + readLine();
             fullLine = next;
+            lbIndices.add(fullLine.length());
         }
     }
 
     @Contract(pure = true)
     private int lineIndex() {
-        return lineIndex;
+        if (lbIndices.isEmpty()) return fullLine.length() - next.length();
+        Integer index = lbIndices.lower(fullLine.length() - next.length());
+        return fullLine.length() - next.length() - (index == null ? 0 : index);
+    }
+
+    @Contract(pure = true)
+    private int lineNumber() {
+        return file.getLineNumber() + (lbIndices.isEmpty() ? 0 :
+                lbIndices.headSet(fullLine.length() - next.length(), true).size());
     }
 
     @NotNull
@@ -188,7 +190,7 @@ public final class Tokenizer {
     private LineInfo lineInfo() {
         return new LineInfo(
                 fileName,
-                file.getLineNumber(),
+                lineNumber(),
                 fullLine,
                 lineIndex()
         );
