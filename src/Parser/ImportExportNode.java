@@ -4,16 +4,21 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The interface for all import, export, and typeget nodes.
+ * The class for all import, export, and typeget nodes.
  * @author Patrick Norton
  */
-public abstract class ImportExportNode implements SimpleStatementNode {
+public class ImportExportNode implements SimpleStatementNode {
     private String type;
     private LineInfo lineInfo;
     private DottedVariableNode[] ports;
     private DottedVariableNode from;
     private DottedVariableNode[] as;
     private int preDots;
+
+    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
+                            DottedVariableNode from, int preDots) {
+        this(type, lineInfo, ports, from, new DottedVariableNode[0], preDots);
+    }
 
     @Contract(pure = true)
     public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
@@ -24,16 +29,6 @@ public abstract class ImportExportNode implements SimpleStatementNode {
         this.from = from;
         this.as = as;
         this.preDots = preDots;
-    }
-
-    @Contract(pure = true)
-    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
-                            DottedVariableNode from, DottedVariableNode[] as) {
-        this.type = type;
-        this.lineInfo = lineInfo;
-        this.ports = ports;
-        this.from = from;
-        this.as = as;
     }
 
     @Override
@@ -65,23 +60,30 @@ public abstract class ImportExportNode implements SimpleStatementNode {
     @Contract("_ -> new")
     @NotNull
     static ImportExportNode parse(@NotNull TokenList tokens) {
+        DottedVariableNode from = DottedVariableNode.empty();
+        LineInfo info = null;
+        int preDots = 0;
         if (tokens.tokenIs(Keyword.FROM)) {
-            return parseFrom(tokens);
-        } else {
-            if (!tokens.tokenIs(TokenType.KEYWORD)) {
-                throw tokens.error("Unexpected " + tokens.getFirst());
-            }
-            switch (Keyword.find(tokens.tokenSequence())) {
-                case IMPORT:
-                    return ImportStatementNode.parse(tokens);
-                case EXPORT:
-                    return ExportStatementNode.parse(tokens);
-                case TYPEGET:
-                    return TypegetStatementNode.parse(tokens);
-                default:
-                    throw new RuntimeException("Unknown ImportExportNode");
-            }
+            info = tokens.lineInfo();
+            tokens.nextToken();
+            preDots = parsePreDots(tokens);
+            from = DottedVariableNode.parseNamesOnly(tokens);
         }
+        assert tokens.tokenIs(Keyword.IMPORT, Keyword.EXPORT, Keyword.TYPEGET);
+        if (info == null) {
+            info = tokens.lineInfo();
+        }
+        String type = tokens.tokenSequence();
+        tokens.nextToken();
+        if (tokens.tokenIs(TokenType.NEWLINE)) {
+            throw tokens.error("Empty import statements are illegal");
+        }
+        DottedVariableNode[] imports = DottedVariableNode.parseNameOnlyList(tokens);
+        if (tokens.tokenIs(Keyword.AS)) {
+            DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens);
+            return new ImportExportNode(type, info, imports, from, as, preDots);
+        }
+        return new ImportExportNode(type, info, imports, from, preDots);
     }
 
     static int parsePreDots(@NotNull TokenList tokens) {
@@ -98,25 +100,6 @@ public abstract class ImportExportNode implements SimpleStatementNode {
             }
         }
         return dotCount;
-    }
-
-    /**
-     * Parse an ImportExportNode starting with "from" from a list of tokens.
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed ImportExportNode
-     */
-    @NotNull
-    private static ImportExportNode parseFrom(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(Keyword.FROM);
-        if (tokens.lineContains(Keyword.IMPORT)) {
-            return ImportStatementNode.parse(tokens);
-        } else if (tokens.lineContains(Keyword.EXPORT)) {
-            return ExportStatementNode.parse(tokens);
-        } else if (tokens.lineContains(Keyword.TYPEGET)) {
-            return TypegetStatementNode.parse(tokens);
-        } else {
-            throw tokens.error("from does not begin a statement");
-        }
     }
 
     @Override
