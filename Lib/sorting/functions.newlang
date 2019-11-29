@@ -1,9 +1,27 @@
-from types typeget Iterable
+from itertools import all, withNext
+import random
+from types typeget Iterable, Comparable
 
 from collections import Deque
 from types import Array
 
-export heapSort, mergeSort, quickSort
+export bogoSort, heapSort, mergeSort, quickSort
+
+
+generic T[Comparable[T]]
+func bogoSort(Iterable[T] iterable) -> list[T] {
+    var values = Array.of(iterable)
+    while not isSorted(values) {
+        random.iShuffle(values)
+    }
+    return list(values)
+}
+
+
+generic T[Comparable[T]]
+func isSorted(Array[T] values) -> bool {
+    return values.length <= 1 or all(i < j for T i, T j in withNext(values))
+}
 
 
 generic T[Comparable[T]]
