@@ -12,7 +12,7 @@ class EnumSet[E[Enum[E]]] from set[E] {
     }
 
     public operator new (Iterable[E] items) {
-        self.values = \|(1 << E.index(value) for E item in items)
+        self.values = \|(1 << item.ordinal for E item in items)
     }
 
     public operator + = operator |
@@ -48,12 +48,12 @@ class EnumSet[E[Enum[E]]] from set[E] {
     }
 
     public operator in (E value) {
-        return self.values & 1 << E.index(value)
+        return self.values & 1 << value.ordinal
     }
 
     public operator del[] (E value) {
         raise ValueError if value not in self
-        self.values &= ~(1 << E.index(value))
+        self.values &= ~(1 << value.ordinal)
     }
 
     public operator iter -> E {
@@ -65,7 +65,7 @@ class EnumSet[E[Enum[E]]] from set[E] {
     }
 
     public method add(E value) -> self {
-        self.values |= 1 << E.index(self)
+        self.values |= 1 << value.ordinal
     }
 
     public method addAll() -> self {
@@ -73,11 +73,11 @@ class EnumSet[E[Enum[E]]] from set[E] {
     }
 
     public method addRange(E start, E end) -> self {
-        self.values |= (1 << (E.index(end) - E.index(start) + 1) - 1) << E.index(start)
+        self.values |= (1 << (end.ordinal - start.ordinal + 1) - 1) << start.ordinal
     }
 
     public method discard(E value) {
-        self.values &= ~(1 << E.index(value))
+        self.values &= ~(1 << value.ordinal)
     }
 
     public method pop() -> E {

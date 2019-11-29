@@ -26,23 +26,23 @@ class EnumMap[K[Enum[K]], V] from dict[K, V] {
     }
 
     public operator [] (K key) -> V {
-        var value = self.values[K.index(key)]
+        var value = self.values[key.ordinal]
         raise KeyError if value is empty.EMPTY
         return value casted V
     }
 
     public operator []= (K key, V value) {
         raise KeyError if key not in self
-        self.values[K.index(key)] = value
+        self.values[key.ordinal] = value
     }
 
     public operator del[] (K key) {
         raise KeyError if key not in self
-        self.values[K.index(key)] = empty.EMPTY
+        self.values[key.ordinal] = empty.EMPTY
     }
 
     public operator in (K key) {
-        return self.values[K.index(key)] is not empty.EMPTY
+        return self.values[key.ordinal] is not empty.EMPTY
     }
 
     public operator iter -> K, V {
