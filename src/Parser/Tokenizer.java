@@ -4,11 +4,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
@@ -22,12 +22,10 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  */
 public final class Tokenizer {
-    private final BufferedReader file;
+    private final LineNumberReader file;
     private final Path fileName;
     private String next;
-    private int currentLine;
     private String fullLine;
-    private int multilineSize = 0;
     private int lineIndex;
     private boolean lastWasMultiline = false;
 
@@ -50,9 +48,8 @@ public final class Tokenizer {
 
     @Contract(pure = true)
     private Tokenizer(Reader r, Path path) {
-        file = new BufferedReader(r);
+        file = new LineNumberReader(r);
         next = readLine();
-        currentLine = 1;
         lineIndex = 0;
         fullLine = next;
         fileName = path;
@@ -122,9 +119,6 @@ public final class Tokenizer {
         } else {
             next = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
             fullLine = next;
-            currentLine++;
-            currentLine += multilineSize;
-            multilineSize = 0;
             lineIndex = 0;
             lastWasMultiline = false;
             appendEscapedLines();
@@ -170,14 +164,12 @@ public final class Tokenizer {
                 return new Token(resultType, nextSequence.toString(), lineInfo);
             }
             nextSequence.append(nextLine);
-            currentLine++;
         }
     }
 
     private void appendEscapedLines() {
         while (next.endsWith("\\")) {
             next = next.substring(0, next.length() - 1) + readLine();
-            multilineSize++;
             fullLine = next;
         }
     }
@@ -192,7 +184,7 @@ public final class Tokenizer {
     private LineInfo lineInfo() {
         return new LineInfo(
                 fileName,
-                currentLine,
+                file.getLineNumber(),
                 fullLine,
                 lineIndex()
         );
