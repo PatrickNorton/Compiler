@@ -152,7 +152,11 @@ public final class Tokenizer {
         LineInfo lineInfo = lineInfo();
         StringBuilder nextSequence = new StringBuilder(next);
         while (true) {
-            String nextLine = Normalizer.normalize(readLine().stripTrailing(), Normalizer.Form.NFKD);
+            String nextLine = readLine();
+            if (nextLine == null) {
+                throw ParserException.of("Unmatched delimiter", lineInfo);
+            }
+            nextLine = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
             nextSequence.append(System.lineSeparator());
             Matcher m = tillMatch.matcher(nextLine);
             if (m.find()) {
