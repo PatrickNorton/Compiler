@@ -1,4 +1,4 @@
-from types typeget Enum
+from types typeget Enum, Iterable
 from types import int64
 
 export EnumSet
@@ -48,12 +48,16 @@ class EnumSet[E[Enum[E]]] from set[E] {
     }
 
     public operator in (E value) {
-        return self.values[1 << E.index(value)]
+        return self.values & 1 << E.index(value)
     }
 
     public operator del[] (E value) {
         raise ValueError if value not in self
         self.values &= ~(1 << E.index(value))
+    }
+
+    public operator iter -> E {
+        yield from (e for uint i, E e in enumerate(E) if self.values & 1<<i)
     }
 
     public operator bool {
@@ -62,6 +66,14 @@ class EnumSet[E[Enum[E]]] from set[E] {
 
     public method add(E value) -> self {
         self.values |= 1 << E.index(self)
+    }
+
+    public method addAll() -> self {
+        self.values = 1 << (E.length + 1) - 1
+    }
+
+    public method addRange(E start, E end) -> self {
+        self.values |= (1 << (E.index(end) - E.index(start) + 1) - 1) << E.index(start)
     }
 
     public method discard(E value) {
