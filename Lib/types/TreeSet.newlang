@@ -1,0 +1,64 @@
+from interfaces import Iterable
+from TreeMap import TreeMap
+
+export TreeSet
+
+class TreeSet[T[Comparable[T]]] from dict[T] {
+    private const TreeMap[T, bool] internal
+    pubget uint length := internal.length
+
+    public operator new (*T values) {
+        self.internal = {i: true for T i in values}
+    }
+
+    public operator new (Iterable[T] items) {
+        self.internal = {i: true for T i in values}
+    }
+
+    public operator + (set[T] values) -> set[T] {
+        return {*self, *other}
+    }
+
+    public operator | = operator +
+
+    public operator & (set[T] values) -> set[T] {
+        return {i for T i in self if i in other}
+    }
+
+    public operator ^ (set[T] values) -> set[T] {
+        {i for E i in self if i not in other} + {i for E i in other if i not in self}
+    }
+
+    public operator del[] (T value) {
+        del self.internal[value]
+    }
+
+    public operator in (T value) {
+        return value in self.internal
+    }
+
+    public operator bool {
+        return self.internal
+    }
+
+    public method add(T value) {
+        self.internal[value] = true
+    }
+
+    public method remove(T value) {
+        del self.internal[value]
+    }
+
+    public method discard(T value) {
+        return if value not in self
+        del self[value]
+    }
+
+    public method pop() -> T {
+        return iter(self.internal).next()
+    }
+
+    public method clear() {
+        self.internal.clear()
+    }
+}
