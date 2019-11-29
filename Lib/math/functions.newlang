@@ -21,8 +21,8 @@ func comb(uint n, uint k) -> int {
     return fact(n) // (fact(k) * fact(n - k))
 }
 
-generic T, U
-func copySign(T[Number] a, U[Number] b) -> T {
+generic T[Number], U[Number]
+func copySign(T a, U b) -> U {
     return abs(a) * sign(b)
 }
 
