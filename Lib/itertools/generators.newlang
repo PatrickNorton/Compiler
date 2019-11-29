@@ -1,7 +1,7 @@
 from types typeget Boolable, Iterable, Callable, Iterator, nIterable
 from types import Array
 
-export accumulate, chain, compress, dropWhile, filter, filterFalse, pairs, takeWhile, traverse, withNext, zip, zipLongest
+export accumulate, chain, compress, dropWhile, filter, filterFalse, map, pairs, takeWhile, traverse, withNext, zip, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -46,6 +46,11 @@ generator func filter(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
 generic T
 generator func filterFalse(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence if not predicate(i))
+}
+
+generic T, U
+generator func map(Callable[T, U] function, Iterable[T] sequence) -> U {
+    yield from (function(i) for T i in sequence)
 }
 
 generic T
