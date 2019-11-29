@@ -107,7 +107,7 @@ public class ImportExportNode implements SimpleStatementNode {
         String ports = TestNode.toString(this.ports);
         String str;
         if (!from.isEmpty()) {
-            str = String.format("from %s%s %s %s", preDots, from, type, ports);
+            str = String.format("from %s%s %s %s", ".".repeat(preDots), from, type, ports);
         } else {
             str = type + " " + ports;
         }
