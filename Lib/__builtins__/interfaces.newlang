@@ -82,6 +82,7 @@ interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
     operator iter -> K, V
     operator bool
 
+    generator method keys() -> K
     method remove(V value) -> K
     method keyOf(V value) -> K
 }
