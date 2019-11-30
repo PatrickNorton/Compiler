@@ -1,8 +1,9 @@
+from collections import AbstractList
 from itertools import all
 
 export LinkedList
 
-class LinkedList[T] from list[T] {
+class LinkedList[T] from AbstractList[T] {
     private LLNode[T]? first
     private LLNode[T]? last
     pubget uint length
@@ -89,10 +90,6 @@ class LinkedList[T] from list[T] {
             }
             return current
         }
-    }
-
-    public operator == (list[T] other) {
-        return all(i == j for T i, T j in self, other)
     }
 
     public operator iter -> T {

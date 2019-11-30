@@ -85,11 +85,6 @@ class TreeMap[K, V] from AbstractDict[K, V] {
         return self.findNode(key) is not null
     }
 
-    public operator == (dict[K, V] other) {
-        return (self.length == other.length
-                and all(k in other and other[k] == v for K key, V value in self))
-    }
-
     public operator iter -> K, V {
         yield from self.top ?? []
     }
