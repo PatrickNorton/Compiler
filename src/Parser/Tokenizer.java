@@ -4,15 +4,17 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.text.Normalizer;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,14 +24,11 @@ import java.util.regex.Pattern;
  * @author Patrick Norton
  */
 public final class Tokenizer {
-    private final BufferedReader file;
+    private final LineNumberReader file;
     private final Path fileName;
     private String next;
-    private int currentLine;
     private String fullLine;
-    private int multilineSize = 0;
-    private int lineIndex;
-    private boolean lastWasMultiline = false;
+    private NavigableSet<Integer> lbIndices;
 
     private static final Pattern OPEN_COMMENT = Pattern.compile("^#\\|((?!\\|#).)*$");
     private static final Pattern CLOSE_COMMENT = Pattern.compile("^.*?\\|#");
@@ -50,12 +49,11 @@ public final class Tokenizer {
 
     @Contract(pure = true)
     private Tokenizer(Reader r, Path path) {
-        file = new BufferedReader(r);
+        file = new LineNumberReader(r);
         next = readLine();
-        currentLine = 1;
-        lineIndex = 0;
         fullLine = next;
         fileName = path;
+        lbIndices = new TreeSet<>();
     }
 
     /**
@@ -78,18 +76,15 @@ public final class Tokenizer {
         if (next.isEmpty()) {
             return emptyLine();
         }
-        adjustForMultiline();
+        Token nextToken = adjustForMultiline();
+        if (nextToken != null) {
+            return nextToken;
+        }
         for (TokenType info : TokenType.values()) {
             Matcher match = info.matcher(next);
             if (match.find()) {
                 LineInfo lineInfo = lineInfo();
                 next = next.substring(match.end());
-                if (lastWasMultiline) {
-                    lineIndex = fullLine.length() - next.length() - fullLine.lastIndexOf(System.lineSeparator(), lineIndex);
-                } else {
-                    lineIndex += next.length();
-                }
-                lastWasMultiline = false;
                 return new Token(info, match.group(), lineInfo);
             }
         }
@@ -119,11 +114,7 @@ public final class Tokenizer {
         } else {
             next = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
             fullLine = next;
-            currentLine++;
-            currentLine += multilineSize;
-            multilineSize = 0;
-            lineIndex = 0;
-            lastWasMultiline = false;
+            lbIndices = new TreeSet<>();
             appendEscapedLines();
             return Token.Newline(lineInfo());
         }
@@ -132,13 +123,16 @@ public final class Tokenizer {
     /**
      * Adjust {@link #next} for multiline tokens.
      */
-    private void adjustForMultiline() {
+    @Nullable
+    private Token adjustForMultiline() {
         if (OPEN_COMMENT.matcher(next).find()) {
-            concatLines(CLOSE_COMMENT);
+            return concatLines(CLOSE_COMMENT, TokenType.WHITESPACE);
         } else if (OPEN_STRING.matcher(next).find()) {
-            concatLines(CLOSE_STRING);
+            return concatLines(CLOSE_STRING, TokenType.STRING);
         } else if (OPEN_SINGLE_STRING.matcher(next).find()) {
-            concatLines(CLOSE_SINGLE_STRING);
+            return concatLines(CLOSE_SINGLE_STRING, TokenType.STRING);
+        } else {
+            return null;
         }
     }
 
@@ -146,32 +140,49 @@ public final class Tokenizer {
      * Concatenate lines to {@link #next} until the given pattern matches.
      * @param tillMatch The pattern to match to
      */
-    private void concatLines(@NotNull Pattern tillMatch) {
-        lastWasMultiline = true;
-        String next;
-        StringBuilder nextBuilder = new StringBuilder(this.next);
-        do {
-            next =  Normalizer.normalize(readLine().stripTrailing(), Normalizer.Form.NFKD);
-            nextBuilder.append(System.lineSeparator());
-            nextBuilder.append(next);
-            multilineSize++;
-        } while (!tillMatch.matcher(next).find());
-        this.next = nextBuilder.toString();
-        fullLine = next;
-        appendEscapedLines();
+    @NotNull
+    @Contract("_, _ -> new")
+    private Token concatLines(@NotNull Pattern tillMatch, TokenType resultType) {
+        LineInfo lineInfo = lineInfo();
+        StringBuilder nextSequence = new StringBuilder(next);
+        while (true) {
+            String nextLine = readLine();
+            if (nextLine == null) {
+                throw ParserException.of("Unmatched delimiter", lineInfo);
+            }
+            nextLine = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
+            nextSequence.append(System.lineSeparator());
+            Matcher m = tillMatch.matcher(nextLine);
+            if (m.find()) {
+                nextSequence.append(m.group());
+                fullLine = nextLine;
+                next = nextLine.substring(m.group().length());
+                appendEscapedLines();
+                return new Token(resultType, nextSequence.toString(), lineInfo);
+            }
+            nextSequence.append(nextLine);
+        }
     }
 
     private void appendEscapedLines() {
         while (next.endsWith("\\")) {
             next = next.substring(0, next.length() - 1) + readLine();
-            multilineSize++;
             fullLine = next;
+            lbIndices.add(fullLine.length());
         }
     }
 
     @Contract(pure = true)
     private int lineIndex() {
-        return lineIndex;
+        if (lbIndices.isEmpty()) return fullLine.length() - next.length();
+        Integer index = lbIndices.lower(fullLine.length() - next.length());
+        return fullLine.length() - next.length() - (index == null ? 0 : index);
+    }
+
+    @Contract(pure = true)
+    private int lineNumber() {
+        return file.getLineNumber() + (lbIndices.isEmpty() ? 0 :
+                lbIndices.headSet(fullLine.length() - next.length(), true).size());
     }
 
     @NotNull
@@ -179,7 +190,7 @@ public final class Tokenizer {
     private LineInfo lineInfo() {
         return new LineInfo(
                 fileName,
-                currentLine,
+                lineNumber(),
                 fullLine,
                 lineIndex()
         );

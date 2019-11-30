@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import util.Pair;
 
 /**
  * The node representing a break statement.
@@ -67,8 +68,13 @@ public class BreakStatementNode implements SimpleFlowNode {
         } else {
             loops = 0;
         }
-        TestNode as = TestNode.parseNoTernaryOnToken(tokens, Keyword.AS, false);
-        TestNode cond = TestNode.parseOnToken(tokens, Keyword.IF, false);
+        TestNode as = TestNode.empty(), cond = TestNode.empty();
+        if (tokens.tokenIs(Keyword.AS)) {
+            tokens.nextToken();
+            Pair<TestNode, TestNode> asAndCond = TestNode.parseMaybePostIf(tokens, false);
+            as = asAndCond.getKey();
+            cond = asAndCond.getValue();
+        }
         return new BreakStatementNode(info, loops, cond, as);
     }
 

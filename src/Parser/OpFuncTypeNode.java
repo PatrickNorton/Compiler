@@ -36,6 +36,9 @@ public enum OpFuncTypeNode {
     BOOL_OR("or", OperatorTypeNode.BOOL_OR),
     BOOL_NOT("not", OperatorTypeNode.BOOL_NOT),
     BOOL_XOR("xor", OperatorTypeNode.BOOL_XOR),
+    IN("in", OperatorTypeNode.IN),
+    IS("is", OperatorTypeNode.IS),
+    NULL_COERCE("??", OperatorTypeNode.NULL_COERCE),
     COMPARE("<=>", OperatorTypeNode.COMPARE),
     ;
 

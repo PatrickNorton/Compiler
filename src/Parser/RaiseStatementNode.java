@@ -2,6 +2,7 @@ package Parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import util.Pair;
 
 /**
  * The class representing a raise statement.
@@ -52,8 +53,9 @@ public class RaiseStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs(Keyword.RAISE);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        TestNode raised = TestNode.parseNoTernary(tokens, false);
-        TestNode condition = TestNode.parseOnToken(tokens, Keyword.IF, false);
+        Pair<TestNode, TestNode> raisedAndCondition = TestNode.parseMaybePostIf(tokens, false);
+        TestNode raised = raisedAndCondition.getKey();
+        TestNode condition = raisedAndCondition.getValue();
         return new RaiseStatementNode(lineInfo, raised, condition);
     }
 

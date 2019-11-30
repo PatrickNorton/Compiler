@@ -81,7 +81,7 @@ public class TestListNode implements BaseNode {
             }
             Pair<TestNode, TestNode> next = TestNode.parseMaybePostIf(tokens, ignoreNewlines);
             tests.add(next.getKey());
-            if (next.getValue() != null) {
+            if (!next.getValue().isEmpty()) {
                 postIf = next.getValue();
                 break;
             }
