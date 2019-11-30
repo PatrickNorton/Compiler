@@ -1,9 +1,11 @@
 from types typeget Enum, Iterable
+
+from collections import AbstractSet
 from types import int64
 
 export EnumSet
 
-class EnumSet[E[Enum[E]]] from set[E] {
+class EnumSet[E[Enum[E]]] from AbstractSet[E] {
     private uint values
     pubget uint length = \+((self.values & 1 << i) != 0 for int i in [:E.length])
 
@@ -15,26 +17,16 @@ class EnumSet[E[Enum[E]]] from set[E] {
         self.values = \|(1 << item.ordinal for E item in items)
     }
 
-    public operator + = operator |
-
     public operator | (cls other) -> cls {
         cls new = {}
         new.values = self.values | other.values
         return new
     }
 
-    public operator | (set[E] other) -> cls {
-        return {*self, *other}
-    }
-
     public operator & (cls other) -> cls {
         cls new = {}
         new.values = self.values & other.values
         return new
-    }
-
-    public operator & (set[E] other) -> cls {
-        return {i for E i in other if i in self}
     }
 
     public operator ^ (cls other) -> cls {
@@ -78,16 +70,6 @@ class EnumSet[E[Enum[E]]] from set[E] {
 
     public method discard(E value) {
         self.values &= ~(1 << value.ordinal)
-    }
-
-    public method pop() -> E {
-        try {
-            E val = iter(self).next()
-        } except StopIteration {
-            raise ValueError("Cannot call 'pop()' on empty set")
-        }
-        del self[val]
-        return val
     }
 
     public method clear() {

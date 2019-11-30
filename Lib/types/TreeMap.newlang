@@ -1,9 +1,11 @@
+from collections typeget AbstractDict
+
 export TreeMap
 
 const bool BLACK = false
 const bool RED = true
 
-class TreeMap[K, V] from dict[K, V] {
+class TreeMap[K, V] from AbstractDict[K, V] {
     private TreeNode[K, V]? top
     pubget uint length
 
@@ -98,13 +100,6 @@ class TreeMap[K, V] from dict[K, V] {
 
     public generator method keys() -> K {
         yield from (key for K key in self)
-    }
-
-    public method keyOf(V value) -> K {
-        for K key, V val in self {
-            return key if value == val
-        }
-        raise ValueError
     }
 
     private method findNode(K key) -> TreeNode[K, V]? {

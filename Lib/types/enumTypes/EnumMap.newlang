@@ -1,10 +1,13 @@
+from collections import AbstractDict
+from itertools import any
+
 export EnumMap
 
 enum empty {
     EMPTY
 }
 
-class EnumMap[K[Enum[K]], V] from dict[K, V] {
+class EnumMap[K[Enum[K]], V] from AbstractDict[K, V] {
     private Array[V|empty] values
 
     public operator new (*tuple[K, V] items) {

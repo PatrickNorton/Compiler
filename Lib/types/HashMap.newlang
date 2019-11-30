@@ -1,3 +1,6 @@
+from collections typeget AbstractDict
+
+
 from types import Hashable, Array
 from numtools import highestOneBit
 from math import max
@@ -15,7 +18,7 @@ enum Empty {
     DELETED
 }
 
-class HashMap[K[Hashable], V] from dict[K, V] {
+class HashMap[K[Hashable], V] from AbstractDict[K, V] {
     private Array[VarInfo|Empty] values
     private uint length
 
@@ -56,11 +59,6 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         return self.values[self.getInfo(key)] not instanceof Empty
     }
 
-    public operator == (cls other) {
-        return (self.length == other.length
-                and all(k in other and other[k] == v for K key, V value in self))
-    }
-
     public operator iter -> V {
         yield from ((i casted VarInfo)[2] for var i in self.valueList if i not instanceof Empty)
     }
@@ -71,14 +69,6 @@ class HashMap[K[Hashable], V] from dict[K, V] {
 
     public method remove(V value) -> K {
         del self[self.keyOf(value)]
-    }
-
-    public method keyOf(V value) -> K {
-        for K key, V val in self {
-            if value == val {
-                return key
-            }
-        }
     }
 
     private method getInfo(K key, *, bool returnDeleted = false) -> uint {

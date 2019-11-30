@@ -146,13 +146,6 @@ class LinkedList[T] from list[T] {
         return self
     }
 
-    public method extend(Iterable[T] values) {
-        for T value in values {
-            self.append(value)
-            self.length++
-        }
-    }
-
     public method insert(int position, T value) {
         if self.first is null {
             self.first = LLNode[T](null, value, null)
@@ -196,13 +189,6 @@ class LinkedList[T] from list[T] {
         }
         self.length--
         return node.this
-    }
-
-    public method index(T value) -> uint {
-        for int i, T val in enumerate(self) {
-            return i if value == val
-        }
-        raise ValueError(f"Value {value} not in list")
     }
 
     public method reverse() {

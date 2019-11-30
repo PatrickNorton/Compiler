@@ -1,5 +1,6 @@
 from types typeget Hashable
 
+from collections import AbstractSet
 from numtools import highestOneBit
 from types import Array
 
@@ -19,7 +20,7 @@ enum Empty {
 }
 
 
-class HashSet[T[Hashable]] from set[T] {
+class HashSet[T[Hashable]] from AbstractSet[T] {
     private Array[*VarInfo|Empty] values
     pubget int length := \+(1 for var i in self.values if i not instanceof Empty)
 
@@ -36,28 +37,6 @@ class HashSet[T[Hashable]] from set[T] {
         for K key, V value in values {
             self.add(key)
         }
-    }
-
-    public operator + (Set[T] other) -> cls {
-        return {*self, *other}
-    }
-
-    public operator | = operator +
-
-    public operator & (Set[T] other) -> cls {
-        return {i for E i in other if i in self}
-    }
-
-    public operator ^ (Set[T] other) -> cls {
-        return {i for E i in self if i not in other} + {i for E i in other if i not in self}
-    }
-
-    public operator == (set[T] other) {
-        return (self.length == other.length and all(value in other for T value in self))
-    }
-
-    public operator bool {
-        return self.length
     }
 
     public operator del[] (T value) {
@@ -79,16 +58,6 @@ class HashSet[T[Hashable]] from set[T] {
         if self.values[index] is not Empty.EMPTY {
             self.values[index] = Empty.DELETED
         }
-    }
-
-    public method pop() -> T {
-        for var i in self.values {
-            if i not instanceof Empty {
-                self.discard((i casted VarInfo)[1])
-                return (i casted VarInfo)[1]
-            }
-        }
-        raise ValueError("Cannot pop() from empty set")
     }
 
     public method clear() {
