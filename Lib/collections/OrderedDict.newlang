@@ -60,6 +60,10 @@ class OrderedDict[K, V] from dict[K, V] {
         return key in self.values
     }
 
+    public operator == (dict[K, V] other) {
+        return other instanceof OrderedDict and (other casted OrderedDict).items == self.items
+    }
+
     public operator hash {
         return hash(f"dict[{K}, {V}]", self.values)
     }

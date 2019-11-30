@@ -59,8 +59,9 @@ class IdentityMap[K, V] from dict[K, V] {
         yield from ((i casted tuple[K, V])[1] for var i in self.valueList if i not instanceof Empty)
     }
 
-    public operator hash {
-        return hash(f"dict[{K}, {V}]", *self)
+    public operator == (dict[K, V] other) {
+        return (other instanceof IdentityMap and self.length == other.length
+                and all(k in other and other[k] is v for K key, V value in self))
     }
 
     public method remove(V value) -> K {

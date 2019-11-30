@@ -52,6 +52,10 @@ class HashSet[T[Hashable]] from set[T] {
         return {i for E i in self if i not in other} + {i for E i in other if i not in self}
     }
 
+    public operator == (set[T] other) {
+        return (self.length == other.length and all(value in other for T value in self))
+    }
+
     public operator bool {
         return self.length
     }

@@ -37,6 +37,10 @@ class TreeSet[T[Comparable[T]]] from dict[T] {
         return value in self.internal
     }
 
+    public operator == (set[T] other) {
+        return self.length == other.length and all(value in other for T value in self)
+    }
+
     public operator bool {
         return self.internal
     }

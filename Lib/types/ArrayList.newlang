@@ -82,6 +82,10 @@ class ArrayList[T] from list[T] {
         }
     }
 
+    public operator == (list[T] other) {
+        return all(i == j for T i, T j in self, other)
+    }
+
     public method append(T value, /) -> self {
         self.ensureSize(self.length + 1)
         self.values[self.length] = value

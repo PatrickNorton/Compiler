@@ -56,12 +56,13 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         return self.values[self.getInfo(key)] not instanceof Empty
     }
 
-    public operator iter -> V {
-        yield from ((i casted VarInfo)[2] for var i in self.valueList if i not instanceof Empty)
+    public operator == (cls other) {
+        return (self.length == other.length
+                and all(k in other and other[k] == v for K key, V value in self))
     }
 
-    public operator hash {
-        return hash(f"dict[{K}, {V}]", *self)
+    public operator iter -> V {
+        yield from ((i casted VarInfo)[2] for var i in self.valueList if i not instanceof Empty)
     }
 
     public generator method keys() -> K {

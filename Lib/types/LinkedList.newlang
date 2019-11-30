@@ -89,6 +89,10 @@ class LinkedList[T] from list[T] {
         }
     }
 
+    public operator == (list[T] other) {
+        return all(i == j for T i, T j in self, other)
+    }
+
     public operator iter -> T {
         var current = self.first
         while current is not null {
