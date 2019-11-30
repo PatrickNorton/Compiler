@@ -1,3 +1,4 @@
+from .decorations import normalizeIndices
 from math import max, min
 from numtools import highestOneBit
 
@@ -36,6 +37,20 @@ final class Deque[V] {
             int secondHalfStart = ~(self.values.length - stopIndex) % step
             return cls(*self.values[startIndex::step],
                         *self.values[secondHalfStart:stopIndex:step])
+        }
+    }
+
+    $normalizeIndices(self)
+    public operator iter[:] -> V {
+        uint startIndex = self.internalIndex(start)
+        uint stopIndex = self.internalIndex(end)
+
+        if startIndex < stopIndex {
+            yield from self.values[startIndex:stopIndex:step]
+        } else {
+            uint secondHalfStart = ~(self.values.length - stopIndex) % step
+            yield from self.values[startIndex::step]
+            yield from self.values[secondHalfStart:stopIndex:step]
         }
     }
 
