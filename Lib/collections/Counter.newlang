@@ -1,9 +1,13 @@
+from copy import copy
+from itertools import firstN, repeat
+
 export Counter
 
-final class Counter[T] {
-    private const HashMap[T, int] values
+final class Counter[T] from dict[T, int] {
+    private const dict[T, int] values
+    pubget uint length := values.length
 
-    operator new (*T items) {
+    public operator new (*T items) {
         self.values = {}
         for T i in items {
             if i in self.values {
@@ -14,11 +18,44 @@ final class Counter[T] {
         }
     }
 
-    operator [] (T value) -> int {
+    public operator new (dict[T, int] items) {
+        self.values = copy(items)
+    }
+
+    public operator [] (T value) -> int {
         try {
             return self.values[value]
         } except KeyError {
             return 0
         }
+    }
+
+    # Methods that are simply delegated to self.values
+    public operator []= = self.values.operator []=
+    public operator del[] = self.values.operator del[]
+    public operator iter = self.values.operator iter
+    public operator in = self.values.operator in
+
+    public generator method keys() -> T {
+        yield from self.values.keys()
+    }
+
+    public method remove(int value) {
+        self.values.remove(value)
+    }
+
+    public method keyOf(int value) -> T {
+        return self.values.keyOf(value)
+    }
+
+    public generator method elements() -> T {
+        for T value, int count in self {
+            yield from repeat(value, count)
+        }
+    }
+
+    public generator method mostCommon(uint count = 0) ->  {
+        var sorted = sorted(self.values.keys(), key=lambda x => self.values[x])
+        yield from firstN(count, sorted) if count else sorted
     }
 }
