@@ -52,7 +52,7 @@ class IdentityMap[K, V] from dict[K, V] {
     }
 
     public operator in (K key) {
-        return not (self.values[self.getInfo(key)] instanceof Empty)
+        return self.values[self.getInfo(key)] not instanceof Empty
     }
 
     public operator iter -> V {

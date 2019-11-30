@@ -53,11 +53,11 @@ class HashMap[K[Hashable], V] from dict[K, V] {
     }
 
     public operator in (K key) {
-        return not (self.values[self.getInfo(key)] instanceof Empty)
+        return self.values[self.getInfo(key)] not instanceof Empty
     }
 
     public operator iter -> V {
-        yield from ((i casted VarInfo)[2] for var i in self.valueList if not (i instanceof Empty))
+        yield from ((i casted VarInfo)[2] for var i in self.valueList if i not instanceof Empty)
     }
 
     public operator hash {
@@ -97,7 +97,7 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         uint newSize = self.values.length << 1
         var old = self.values
         self.values = Array(newSize, Empty.EMPTY)
-        for var v in (i casted VarInfo for var i in old if not (i instanceof Empty)) {
+        for var v in (i casted VarInfo for var i in old if i not instanceof Empty) {
             self.values[self.getInfo(v[1], returnDeleted=true)] = v
         }
     }

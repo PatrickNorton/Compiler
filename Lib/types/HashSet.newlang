@@ -21,7 +21,7 @@ enum Empty {
 
 class HashSet[T[Hashable]] from set[T] {
     private Array[*VarInfo|Empty] values
-    pubget int length := \+(1 for var i in self.values if not (i instanceof Empty))
+    pubget int length := \+(1 for var i in self.values if i not instanceof Empty)
 
     public operator new (*T items) {
         self(items)
@@ -79,7 +79,7 @@ class HashSet[T[Hashable]] from set[T] {
 
     public method pop() -> T {
         for var i in self.values {
-            if not (i instanceof Empty) {
+            if i not instanceof Empty {
                 self.discard((i casted VarInfo)[1])
                 return (i casted VarInfo)[1]
             }
@@ -109,7 +109,7 @@ class HashSet[T[Hashable]] from set[T] {
         uint newSize = self.values.length << 1
         var old = self.values
         self.values = Array(newSize, Empty.EMPTY)
-        for var v in (i casted VarInfo for var i in old if not (i instanceof Empty)) {
+        for var v in (i casted VarInfo for var i in old if i not instanceof Empty) {
             self.values[self.getInfo(v[1], returnDeleted=true)] = v
         }
     }
