@@ -163,7 +163,7 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
                 if (stmt instanceof ClassStatementNode) {
                     others.add((ClassStatementNode) stmt);
                 } else {
-                    throw tokens.error("Illegal statement");
+                    throw ParserException.of("Illegal statement for context definition", stmt);
                 }
             }
             tokens.passNewlines();

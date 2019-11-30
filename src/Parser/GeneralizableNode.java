@@ -18,7 +18,7 @@ public interface GeneralizableNode extends BaseNode, DescribableNode {
             node.addGenerics(types);
             return node;
         } else {
-            throw ParserException.of("Attempted to generalize non-generalizable node", generalized.getLineInfo());
+            throw ParserException.of("Attempted to generalize non-generalizable node", generalized);
         }
     }
 

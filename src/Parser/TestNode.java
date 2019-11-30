@@ -525,4 +525,12 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
         return sj.toString();
     }
+
+    static String toString(@NotNull Iterable<? extends TestNode> vars) {
+        StringJoiner sj = new StringJoiner(", ");
+        for (TestNode t : vars) {
+            sj.add(t.toString());
+        }
+        return sj.toString();
+    }
 }
