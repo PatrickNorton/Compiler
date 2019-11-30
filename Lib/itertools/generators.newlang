@@ -48,6 +48,16 @@ generator func filterFalse(Callable[T, bool] predicate, Iterable[T] sequence) ->
     yield from (i for T i in sequence if not predicate(i))
 }
 
+generic T
+generator func firstN(uint count, Iterable[T] sequence) -> T {
+    var iterator = iter(sequence)
+    try {
+        dotimes count {
+            yield iterator.next()
+        }
+    } except StopIteration {}
+}
+
 generic T, U
 generator func map(Callable[T, U] function, Iterable[T] sequence) -> U {
     yield from (function(i) for T i in sequence)
