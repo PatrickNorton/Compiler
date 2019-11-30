@@ -74,6 +74,6 @@ public class DotimesStatementNode implements FlowStatementNode {
 
     @Override
     public String toString() {
-        return "dotimes " + iterations;
+        return "dotimes " + iterations + " " + body;
     }
 }
