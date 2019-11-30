@@ -251,7 +251,7 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof CircularBuffer)) return false;
-        return Arrays.equals(values, ((CircularBuffer) o).values);
+        return Arrays.equals(values, ((CircularBuffer<?>) o).values);
     }
 
     @Override
