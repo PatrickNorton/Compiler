@@ -64,6 +64,10 @@ class HashMap[K[Hashable], V] from dict[K, V] {
         return hash(f"dict[{K}, {V}]", *self)
     }
 
+    public generator method keys() -> K {
+        yield from (key for K key in self)
+    }
+
     public method remove(V value) -> K {
         del self[self.keyOf(value)]
     }

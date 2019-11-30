@@ -91,6 +91,10 @@ class TreeMap[K, V] from dict[K, V] {
         return self.top is not null
     }
 
+    public generator method keys() -> K {
+        yield from (key for K key in self)
+    }
+
     public method keyOf(V value) -> K {
         for K key, V val in self {
             return key if value == val
