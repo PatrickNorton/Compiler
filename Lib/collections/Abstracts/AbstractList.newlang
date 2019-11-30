@@ -1,4 +1,4 @@
-from itertools import any
+from itertools import any, all
 
 export AbstractList
 

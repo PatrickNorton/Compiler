@@ -1,4 +1,6 @@
 from types typeget Boolable, Iterable, Callable, Iterator, nIterable
+
+from .functions import any
 from types import Array
 
 export accumulate, chain, compress, dropWhile, filter, filterFalse, map, pairs, takeWhile, traverse, withNext, zip, zipLongest

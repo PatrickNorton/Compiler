@@ -1,3 +1,4 @@
+from itertools import all
 from types import Array
 
 export IdentityMap
