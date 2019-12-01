@@ -129,13 +129,14 @@ public enum DescriptorNode implements AtomicNode {
         int setsNum = 0;
         EnumSet<DescriptorNode> descriptors = EnumSet.noneOf(DescriptorNode.class);
         while (tokens.tokenIs(TokenType.DESCRIPTOR)) {
+            LineInfo info = tokens.lineInfo();
             DescriptorNode d = parse(tokens);
             do {
                 setsNum++;
                 if (setsNum > SETS.size()) {
-                    throw tokens.error("Illegal keyword placement");
+                    throw ParserException.of("Illegal descriptor combination", info);
                 }
-            } while (SETS.get(setsNum - 1).contains(d));
+            } while (!SETS.get(setsNum - 1).contains(d));
             descriptors.add(d);
         }
         return descriptors;

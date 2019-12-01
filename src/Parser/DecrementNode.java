@@ -50,7 +50,7 @@ public class DecrementNode implements SimpleStatementNode {
     static DecrementNode parse(TokenList tokens) {
         NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs("--")) {
-            throw new RuntimeException("Expected --, got "+tokens.getFirst());
+            throw tokens.internalError("Expected --, got "+tokens.getFirst());
         }
         tokens.nextToken();
         return new DecrementNode(var);
