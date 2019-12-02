@@ -582,15 +582,13 @@ public final class TokenList implements Iterable<Token> {
 
         @Override
         public boolean hasNext() {
-            if (bufferIterator.hasNext()) {
-                return true;
-            } else {
+            if (!bufferIterator.hasNext()) {
                 if (done) {
                     return false;
                 }
                 buffer();
-                return true;
             }
+            return true;
         }
 
         @Override
