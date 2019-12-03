@@ -14,6 +14,12 @@ public class ImportExportNode implements SimpleStatementNode {
     private DottedVariableNode from;
     private DottedVariableNode[] as;
     private int preDots;
+    private boolean isWildcard;
+
+    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode from, int preDots, boolean isWildcard) {
+        this(type, lineInfo, new DottedVariableNode[0], from, preDots);
+        this.isWildcard = isWildcard;
+    }
 
     public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
                             DottedVariableNode from, int preDots) {
@@ -48,6 +54,10 @@ public class ImportExportNode implements SimpleStatementNode {
         return as;
     }
 
+    public boolean isWildcard() {
+        return isWildcard;
+    }
+
     /**
      * Parse an ImportExportNode from a list of tokens.
      * <p>
@@ -76,7 +86,14 @@ public class ImportExportNode implements SimpleStatementNode {
         String type = tokens.tokenSequence();
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
-            throw tokens.error("Empty import statements are illegal");
+            throw tokens.error(String.format("Empty %s statements are illegal", type));
+        }
+        if (tokens.tokenIs("*")) {
+            tokens.nextToken();
+            if (tokens.tokenIs(Keyword.AS)) {
+                throw tokens.error("Cannot use 'as' with wildcard");
+            }
+            return new ImportExportNode(type, info, from, preDots,  true);
         }
         DottedVariableNode[] imports = DottedVariableNode.parseNameOnlyList(tokens);
         if (tokens.tokenIs(Keyword.AS)) {
@@ -86,7 +103,7 @@ public class ImportExportNode implements SimpleStatementNode {
         return new ImportExportNode(type, info, imports, from, preDots);
     }
 
-    static int parsePreDots(@NotNull TokenList tokens) {
+    private static int parsePreDots(@NotNull TokenList tokens) {
         int dotCount = 0;
         while (true) {
             if (tokens.tokenIs(TokenType.ELLIPSIS)) {
@@ -104,7 +121,7 @@ public class ImportExportNode implements SimpleStatementNode {
 
     @Override
     public String toString() {
-        String ports = TestNode.toString(this.ports);
+        String ports = isWildcard ? "*" : TestNode.toString(this.ports);
         String str;
         if (!from.isEmpty()) {
             str = String.format("from %s%s %s %s", ".".repeat(preDots), from, type, ports);
