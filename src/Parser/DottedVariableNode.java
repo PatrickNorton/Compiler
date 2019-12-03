@@ -88,6 +88,10 @@ public class DottedVariableNode implements NameNode {
         return new DottedVariableNode(name, postDots.toArray(new DottedVar[0]));
     }
 
+    static DottedVariableNode parseOnName(@NotNull TokenList tokens) {
+        return tokens.tokenIs(TokenType.NAME) ? parseNamesOnly(tokens) : empty();
+    }
+
     /**
      * Given a variable, parses the rest of the dotted vars after it.
      * <p>

@@ -67,7 +67,7 @@ public class ImportExportNode implements SimpleStatementNode {
             info = tokens.lineInfo();
             tokens.nextToken();
             preDots = parsePreDots(tokens);
-            from = DottedVariableNode.parseNamesOnly(tokens);
+            from = DottedVariableNode.parseOnName(tokens);
         }
         assert tokens.tokenIs(Keyword.IMPORT, Keyword.EXPORT, Keyword.TYPEGET);
         if (info == null) {
