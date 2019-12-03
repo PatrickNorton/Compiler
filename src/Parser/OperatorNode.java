@@ -42,7 +42,7 @@ public class OperatorNode implements SubTestNode {
     @Contract(pure = true)
     public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator) {
         this(lineInfo, operator, new ArgumentNode[0]);
-    };
+    }
 
     /**
      * Construct a new OperatorNode with no operands
@@ -74,7 +74,7 @@ public class OperatorNode implements SubTestNode {
      * Construct a new OperatorNode from an empty one and a list of operands.
      * @param empty The empty OperatorNode
      * @param operands The operands to add to it
-     * @return
+     * @return the new OperatorNode
      */
     @NotNull
     @Contract("_, _, _ -> new")

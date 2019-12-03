@@ -64,7 +64,4 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         return new ComprehensionNode(info, brace_type, variables, builder, looped, condition, whileCond);
     }
 
-    public String toString() {
-        return super.toString();
-    }
 }
