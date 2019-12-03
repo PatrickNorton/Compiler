@@ -1,9 +1,10 @@
-from types typeget Boolable, Iterable, Callable, Iterator, nIterable
+from types typeget Boolable, Iterable, Callable, Iterator
 
 from .functions import any
 from types import Array
 
-export accumulate, chain, compress, dropWhile, filter, filterFalse, map, pairs, takeWhile, traverse, withNext, zip, zipLongest
+export accumulate, chain, compress, dropWhile, filter, filterFalse, firstN
+export map, pairs, takeWhile, traverse, withNext, zip, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -88,7 +89,7 @@ generator func traverse(T sequence) -> U {
         if element instanceof Iterable[T] {
             yield from traverse(element casted Iterable[T])
         } else {
-            yield element
+            yield element casted U
         }
     }
 }

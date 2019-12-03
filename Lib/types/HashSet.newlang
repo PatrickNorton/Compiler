@@ -1,8 +1,8 @@
-from types typeget Hashable
+from .interfaces typeget Hashable
 
 from collections import AbstractSet
 from numtools import highestOneBit
-from types import Array
+from .natives import Array
 
 export HashSet
 

@@ -1,6 +1,6 @@
 from collections import AbstractSet
-from interfaces import Iterable
-from TreeMap import TreeMap
+from .interfaces import Iterable
+from .TreeMap import TreeMap
 
 export TreeSet
 

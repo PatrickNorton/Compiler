@@ -1,3 +1,5 @@
+from .. typeget Enum
+
 from collections import AbstractDict
 from itertools import any
 

@@ -1,4 +1,4 @@
-from collections import AbstractList
+from collections import AbstractList, normalizeIndices
 from itertools import all
 
 export LinkedList

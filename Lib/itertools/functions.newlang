@@ -1,4 +1,4 @@
-from types typeget Boolable
+from types typeget Boolable, Callable, Iterable
 
 export all, any, first, last
 

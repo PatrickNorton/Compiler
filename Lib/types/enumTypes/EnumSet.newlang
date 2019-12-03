@@ -1,4 +1,4 @@
-from types typeget Enum, Iterable
+from .. typeget Enum, Iterable
 
 from collections import AbstractSet
 from types import int64

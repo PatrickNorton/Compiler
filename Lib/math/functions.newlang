@@ -1,4 +1,3 @@
-from constants import E
 from functools import apply
 from types typeget Multiplicable, Number, Summable
 
