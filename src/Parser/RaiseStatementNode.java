@@ -46,9 +46,9 @@ public class RaiseStatementNode implements SimpleFlowNode {
     /**
      * Parse a raise statement from a list of tokens.
      * <p>
-     *     The syntax of a raise statement is: <code>"raise" {@link
-     *     TestNode}</code>. The token list must begin with the "raise"
-     *     keyword.
+     *     The syntax of a raise statement is: <code>"raise" {@link TestNode}
+     *     ["from" {@link TestNode}] ["if" {@link TestNode}] </code>. The token
+     *     list must begin with the "raise" keyword.
      * </p>
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed RaiseStatementNode
