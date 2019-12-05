@@ -238,9 +238,8 @@ public class CircularBuffer<T> extends AbstractList<T> implements Deque<T>, List
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void clear() {
-        values = (T[]) new Object[DEFAULT_SIZE];
+        Arrays.fill(values, null);
         size = 0;
         start = 0;
     }
