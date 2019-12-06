@@ -66,9 +66,7 @@ class EnumMap[K[Enum[K]], V] from AbstractDict[K, V] {
 
     public method keyOf(V value) -> K {
         for int i, var val in enumerate(self.values) {
-            if value == val {
-                return K[i]
-            }
+            return K[i] if value == val
         }
         raise KeyError
     }

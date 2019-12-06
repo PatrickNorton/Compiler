@@ -54,7 +54,7 @@ final class Counter[T] from dict[T, int] {
         }
     }
 
-    public generator method mostCommon(uint count = 0) ->  {
+    public generator method mostCommon(uint count = 0) -> T {
         var sorted = sorted(self.values.keys(), key=self.values.operator [])
         yield from firstN(count, sorted) if count else sorted
     }

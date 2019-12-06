@@ -57,10 +57,7 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     public operator in (T value) {
-        for T i in self {
-            return true if value == i
-        }
-        return false
+        return any(value == i for T i in self)
     }
 
     public operator + (cls other) -> cls {

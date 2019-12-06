@@ -1,4 +1,5 @@
 from itertools import all
+from numtools import highestOneBit
 from types import Array
 
 export IdentityMap
@@ -39,9 +40,7 @@ class IdentityMap[K, V] from dict[K, V] {
     public operator []= (K key, V value) {
         self.resize(self.length + 1)
         uint index = self.getInfo(key, returnDeleted=true)
-        if self.values[index] instanceof Empty {
-            self.length++
-        }
+        self.length += self.values[index] instanceof Empty
         self.values[index] = (key, value)
     }
 
@@ -56,8 +55,8 @@ class IdentityMap[K, V] from dict[K, V] {
         return self.values[self.getInfo(key)] not instanceof Empty
     }
 
-    public operator iter -> V {
-        yield from ((i casted tuple[K, V])[1] for var i in self.valueList if i not instanceof Empty)
+    public operator iter -> K, V {
+        yield from (*(i casted tuple[K, V]) for var i in self.values if i not instanceof Empty)
     }
 
     public operator == (dict[K, V] other) {
@@ -71,10 +70,9 @@ class IdentityMap[K, V] from dict[K, V] {
 
     public method keyOf(V value) -> K {
         for K key, V val in self {
-            if value is val {
-                return key
-            }
+            return key if value is val
         }
+        raise ValueError(f"Value {value} not in dict")
     }
 
     private method getInfo(K key, *, bool returnDeleted = false) -> uint {

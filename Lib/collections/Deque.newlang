@@ -13,9 +13,13 @@ final class Deque[V] {
     private uint end := (self.start + self.length) % self.values.length
 
     public operator new (*V values) {
-        self.values = Array(max(DEFAULT_SIZE, highestOneBit(values) << 1), null)
+        self.values = Array(max(DEFAULT_SIZE, highestOneBit(values.length) << 1), null)
         self.values[0:] = values
         self.length = values.length
+    }
+
+    public operator new (Iterable[V] values) {
+        self(*values)
     }
 
     public operator [] (int index) {
@@ -115,10 +119,6 @@ final class Deque[V] {
     }
 
     private method internalIndex(int index) {
-        if index >= 0 {
-            return (self.start + index) % self.values.length
-        } else {
-            return (self.end + index) % self.values.length
-        }
+        return ((self.start if index >= 0 else self.end) + index) % self.values.length
     }
 }
