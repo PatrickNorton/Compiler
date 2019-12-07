@@ -1,6 +1,6 @@
 from types typeget Iterable
 
-export repeat
+export product, repeat
 
 # FIXME: Types for product, etc.
 

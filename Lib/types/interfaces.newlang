@@ -1,4 +1,5 @@
-from annotations import DefaultInterface
+from .annotations import DefaultInterface
+from itertools import any
 
 export Boolable, Callable, Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
 

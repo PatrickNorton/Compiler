@@ -1,9 +1,27 @@
-from types typeget Iterable
+from itertools import all, withNext
+import random
+from types typeget Iterable, Comparable
 
 from collections import Deque
 from types import Array
 
-export heapSort, mergeSort, quickSort
+export bogoSort, heapSort, mergeSort, quickSort
+
+
+generic T[Comparable[T]]
+func bogoSort(Iterable[T] iterable) -> list[T] {
+    var values = Array.of(iterable)
+    while not isSorted(values) {
+        random.iShuffle(values)
+    }
+    return list(values)
+}
+
+
+generic T[Comparable[T]]
+func isSorted(Array[T] values) -> bool {
+    return values.length <= 1 or all(i < j for T i, T j in withNext(values))
+}
 
 
 generic T[Comparable[T]]
@@ -11,8 +29,11 @@ func heapSort(Iterable[T] iterable) -> list[T] {
     var values = Array.of(iterable)
     # Build the heap in array a so that largest value is at the root
     heapify(values)
-    # The following loop maintains the invariants that a[0:end] is a heap and every element
-    # beyond end is greater than everything before it (so a[end:count] is in sorted order)
+    #|
+     The following loop maintains the invariants that a[0:end] is a heap and
+     every element beyond end is greater than everything before it (so
+     a[end:count] is in sorted order)
+     |#
     for uint end in [count:0:-1] {  # Remember: [count:0:-1] will output count-1, ..., 0
         a[end], values[0] = values[0], values[end]
         siftDown(values, 0, end)
@@ -41,12 +62,9 @@ func siftDown(Array[T] values, uint start, uint end) {
         if child < end and values[swap] < values[child + 1] {
             swap = child + 1
         }
-        if swap == root {
-            return
-        } else {
-            a[root], a[swap] = a[swap], a[root]
-            root = swap
-        }
+        return if swap == root
+        a[root], a[swap] = a[swap], a[root]
+        root = swap
     }
 }
 
@@ -61,7 +79,7 @@ generic T[Comparable[T]]
 func msInner(Deque[T] values) -> Deque[T] {
     return values if values.length < 2
 
-    # Recursive case. First, divide the list into equal-sized sublists
+    # Recursive case. First, divide the list into equal-sized sub-lists
     # consisting of the first half and second half of the list.
     var left = values[:values.length//2]
     var right = values[values.length//2:]
@@ -81,7 +99,7 @@ func merge(Deque[T] left, Deque[T] right) -> Deque[T] {
         result.append((left if left[0] < right[0] else right).pop())
     }
     # Either left or right may have elements left; consume them.
-    return result + left if left else right
+    return result + (left if left else right)
 }
 
 

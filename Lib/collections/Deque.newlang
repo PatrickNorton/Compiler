@@ -1,3 +1,4 @@
+from .decorations import normalizeIndices
 from math import max, min
 from numtools import highestOneBit
 
@@ -12,9 +13,13 @@ final class Deque[V] {
     private uint end := (self.start + self.length) % self.values.length
 
     public operator new (*V values) {
-        self.values = Array(max(DEFAULT_SIZE, highestOneBit(values) << 1), null)
+        self.values = Array(max(DEFAULT_SIZE, highestOneBit(values.length) << 1), null)
         self.values[0:] = values
         self.length = values.length
+    }
+
+    public operator new (Iterable[V] values) {
+        self(*values)
     }
 
     public operator [] (int index) {
@@ -36,6 +41,20 @@ final class Deque[V] {
             int secondHalfStart = ~(self.values.length - stopIndex) % step
             return cls(*self.values[startIndex::step],
                         *self.values[secondHalfStart:stopIndex:step])
+        }
+    }
+
+    $normalizeIndices(self)
+    public operator iter[:] -> V {
+        uint startIndex = self.internalIndex(start)
+        uint stopIndex = self.internalIndex(end)
+
+        if startIndex < stopIndex {
+            yield from self.values[startIndex:stopIndex:step]
+        } else {
+            uint secondHalfStart = ~(self.values.length - stopIndex) % step
+            yield from self.values[startIndex::step]
+            yield from self.values[secondHalfStart:stopIndex:step]
         }
     }
 
@@ -100,10 +119,6 @@ final class Deque[V] {
     }
 
     private method internalIndex(int index) {
-        if index >= 0 {
-            return (self.start + index) % self.values.length
-        } else {
-            return (self.end + index) % self.values.length
-        }
+        return ((self.start if index >= 0 else self.end) + index) % self.values.length
     }
 }

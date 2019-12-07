@@ -17,26 +17,27 @@ class OrderedDict[K, V] from dict[K, V] {
     }
 
     public operator [] (K key) -> V {
-        return self.items[self.values[K]]
+        return (self.items[self.values[K]]!!)[2]
     }
 
     public operator []= (K key, V value) {
         if key in self {
-            self.items[self.values[key]] = value
+            (self.items[self.values[key]]!!)[2] = value
         } else {
             if self.nextOpen == self.values.length {
                 if null not in self.items {
                     self.items = Array(self.items.length * 2, *self.items, null)
-                }
-                int reduceIndex = 0
-                var tmp = copy(self.items)
-                for int i, var keyVal in enumerate(tmp) {
-                    if keyVal is null {
-                        reduceIndex++
-                    } else {
-                        var kvNotNull = keyVal!!
-                        self.items[i - reduceIndex] = kvNotNull
-                        self.values[kvNotNull[0]]--
+                } else {
+                    int reduceIndex = 0
+                    var tmp = copy(self.items)
+                    for int i, var keyVal in enumerate(tmp) {
+                        if keyVal is null {
+                            reduceIndex++
+                        } else {
+                            var kvNotNull = keyVal!!
+                            self.items[i - reduceIndex] = kvNotNull
+                            self.values[kvNotNull[0]]--
+                        }
                     }
                 }
             }
@@ -58,6 +59,10 @@ class OrderedDict[K, V] from dict[K, V] {
 
     public operator in (K key) {
         return key in self.values
+    }
+
+    public operator == (dict[K, V] other) {
+        return other instanceof OrderedDict and (other casted OrderedDict).items == self.items
     }
 
     public operator hash {

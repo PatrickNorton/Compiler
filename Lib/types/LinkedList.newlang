@@ -1,6 +1,9 @@
+from collections import AbstractList, normalizeIndices
+from itertools import all
+
 export LinkedList
 
-class LinkedList[T] from list[T] {
+class LinkedList[T] from AbstractList[T] {
     private LLNode[T]? first
     private LLNode[T]? last
     pubget uint length
@@ -92,8 +95,8 @@ class LinkedList[T] from list[T] {
     public operator iter -> T {
         var current = self.first
         while current is not null {
-            yield (current!!).this
-            current = (current!!).next
+            yield current!!.this
+            current = current!!.next
         }
     }
 
@@ -104,7 +107,7 @@ class LinkedList[T] from list[T] {
             dotimes (start - stop) % step {
                 yield current.this
                 dotimes step {
-                    current = (current!!).previous  # No null check needed, indices already known
+                    current = current!!.previous  # No null check needed, indices already known
                 }
             }
         } else {
@@ -112,7 +115,7 @@ class LinkedList[T] from list[T] {
             dotimes (stop - start) % step {
                 yield current.this
                 dotimes step {
-                    current = (current!!).next  # No null check needed, indices already known
+                    current = current!!.next  # No null check needed, indices already known
                 }
             }
         }
@@ -121,8 +124,8 @@ class LinkedList[T] from list[T] {
     public operator reversed -> T {
         var current = self.last
         while current is not null {
-            yield (current!!).this
-            current = (current!!).previous
+            yield current!!.this
+            current = current!!.previous
         }
     }
 
@@ -140,13 +143,6 @@ class LinkedList[T] from list[T] {
         self.last = new_last
         self.length++
         return self
-    }
-
-    public method extend(Iterable[T] values) {
-        for T value in values {
-            self.append(value)
-            self.length++
-        }
     }
 
     public method insert(int position, T value) {
@@ -175,15 +171,15 @@ class LinkedList[T] from list[T] {
     public method pop(int position) -> T {
         var node = self.get_LLNode(position)
         if node.previous is not null {
-            (node.previous!!).next = node.next
+            node.previous!!.next = node.next
             if node.next is not null {
-                (node.next!!).next = node.previous
+                node.next!!.next = node.previous
             } else {
                 self.last = node.previous
             }
         } else {
             if node.next is not null {
-                (node.next!!).previous = null
+                node.next!!.previous = null
                 self.first = node.next
             } else {
                 self.first = null
@@ -192,13 +188,6 @@ class LinkedList[T] from list[T] {
         }
         self.length--
         return node.this
-    }
-
-    public method index(T value) -> uint {
-        for int i, T val in enumerate(self) {
-            return i if value == val
-        }
-        raise ValueError(f"Value {value} not in list")
     }
 
     public method reverse() {
@@ -214,7 +203,7 @@ class LinkedList[T] from list[T] {
     public method insert(T value, int index) {
         var node = self.get_LLNode(position)
         if node.next is not null {
-            (node.next!!).previous = node
+            node.next!!.previous = node
         }
         node.next = LLNode(node, value, node.next)
     }

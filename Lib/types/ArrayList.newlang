@@ -1,3 +1,6 @@
+from collections typeget AbstractList
+from .natives typeget Array
+
 from collections import normalizeIndices
 from math import max, min
 from types import Array
@@ -6,7 +9,7 @@ export ArrayList
 
 const int DEFAULT_SIZE = 10
 
-class ArrayList[T] from list[T] {
+class ArrayList[T] from AbstractList[T] {
     private Array[T?] values
     pubget uint length
 
@@ -54,10 +57,7 @@ class ArrayList[T] from list[T] {
     }
 
     public operator in (T value) {
-        for T i in self {
-            return true if value == i
-        }
-        return false
+        return any(value == i for T i in self)
     }
 
     public operator + (cls other) -> cls {
@@ -89,18 +89,6 @@ class ArrayList[T] from list[T] {
         return self
     }
 
-    public method extend(Iterable[T] values, /) {
-        for T i in values {
-            self.append(values)
-        }
-    }
-
-    public method remove(T value, /) -> int {
-        int index = self.index(value)
-        self.pop(index)
-        return index
-    }
-
     public method pop(int index, /) -> T {
         T old = self[index]
         if index == self.length - 1 {
@@ -118,13 +106,6 @@ class ArrayList[T] from list[T] {
     public method clear() {
         self.values = Array(DEFAULT_SIZE, null)
         self.length = 0
-    }
-
-    public method index(T value, /) -> uint {
-        for int i, T v in enumerate(self) {
-            return i if value == v
-        }
-        raise ValueError(f"Value {value} not found")
     }
 
     public method reverse() {

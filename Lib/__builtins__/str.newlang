@@ -1,7 +1,7 @@
 from string import StringBuilder
 from types import Array
 
-export str, AsciiStr
+export str
 
 const final class str {
     private Array[byte] chars
