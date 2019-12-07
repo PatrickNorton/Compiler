@@ -1,6 +1,7 @@
 from types typeget Boolable, Callable, Iterable
 
-export all, any, first, last
+export all, any, count, countFalse, first, last
+
 
 func all(Iterable[Boolable] values) -> bool {
     for var i in values {
@@ -9,12 +10,24 @@ func all(Iterable[Boolable] values) -> bool {
     return true
 }
 
+
 func any(Iterable[Boolable] values) -> bool {
     for var i in values {
         return true if i
     }
     return false
 }
+
+
+func count(Callable[T, Boolable] predicate = bool, Iterable[T] values, /) -> uint {
+    return \+(1 for T i in values if predicate(i))
+}
+
+
+func countFalse(Callable[T, Boolable] predicate = bool, Iterable[T] values, /) -> uint {
+    return \+(1 for T i in values if not predicate(i))
+}
+
 
 generic T
 func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
@@ -23,6 +36,7 @@ func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T
     }
     return fallback
 }
+
 
 generic T
 func last(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
