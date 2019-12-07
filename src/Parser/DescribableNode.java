@@ -1,5 +1,6 @@
 package Parser;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
@@ -42,13 +43,22 @@ public interface DescribableNode extends IndependentNode {
         }
         IndependentNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof DescribableNode) {
-            if (!((DescribableNode) stmt).validDescriptors().containsAll(descriptors)) {
-                throw tokens.error("Invalid descriptor " + descriptors + " for this set");
+            DescribableNode statement = (DescribableNode) stmt;
+            if (!statement.validDescriptors().containsAll(descriptors)) {
+                throw ParserException.of(errorMessage(statement, descriptors), statement);
             }
-            ((DescribableNode) stmt).addDescriptor(descriptors);
-            return (DescribableNode) stmt;
+            statement.addDescriptor(descriptors);
+            return statement;
         } else {
             throw tokens.error("Descriptor not allowed in statement");
         }
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    private static String errorMessage(@NotNull DescribableNode stmt, @NotNull EnumSet<DescriptorNode> descriptors) {
+        Set<DescriptorNode> disjoint = EnumSet.copyOf(stmt.getDescriptors());
+        disjoint.removeAll(descriptors);
+        return "Invalid descriptor(s): " + TestNode.toString(disjoint) + " not allowed in statement";
     }
 }

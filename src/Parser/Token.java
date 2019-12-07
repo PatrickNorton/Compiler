@@ -78,7 +78,7 @@ public class Token {
      * @return If the token is that type
      */
     public boolean is(Keyword keyword) {
-        return is(TokenType.KEYWORD) && Keyword.find(this.sequence) == keyword;
+        return is(TokenType.KEYWORD) && Keyword.find(this) == keyword;
     }
 
     /**
@@ -88,7 +88,7 @@ public class Token {
      */
     public boolean is(@NotNull Keyword... tokens) {
         if (this.is(TokenType.KEYWORD)) {
-            Keyword keyword = Keyword.find(this.sequence);
+            Keyword keyword = Keyword.find(this);
             for (Keyword k : tokens) {
                 if (keyword == k) {
                     return true;

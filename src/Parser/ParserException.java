@@ -45,6 +45,11 @@ public class ParserException extends RuntimeException {
         return  ParserException.of(message, token.lineInfo);
     }
 
+    @NotNull
+    public static ParserException of(String message, @NotNull BaseNode node) {
+        return ParserException.of(message, node.getLineInfo());
+    }
+
    /**
      * Create a new {@link ParserException} from the line info being errored.
      * @param message The message to attach to the error

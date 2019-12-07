@@ -33,7 +33,7 @@ public interface EnumKeywordNode extends NameNode {
         if (t instanceof EnumKeywordNode) {
             return (EnumKeywordNode) t;
         } else {
-            throw tokens.error("Unexpected keyword");
+            throw ParserException.of("Unexpected keyword", t);
         }
     }
 }

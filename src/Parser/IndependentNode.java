@@ -69,7 +69,7 @@ public interface IndependentNode extends BaseNode {
             case EPSILON:
                 throw tokens.error("Unexpected EOF");
             default:
-                throw new RuntimeException("Nonexistent token found");
+                throw tokens.internalError("Nonexistent token found");
         }
     }
 
@@ -93,7 +93,7 @@ public interface IndependentNode extends BaseNode {
     @Contract("_ -> new")
     private static IndependentNode parseKeyword(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.KEYWORD);
-        Keyword kw = Keyword.find(tokens.tokenSequence());
+        Keyword kw = Keyword.find(tokens.getFirst());
         return kw.parseLeft(tokens);
     }
 

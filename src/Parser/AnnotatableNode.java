@@ -49,7 +49,7 @@ public interface AnnotatableNode extends IndependentNode {
         if (stmt instanceof AnnotatableNode) {
             return (AnnotatableNode) stmt;
         } else {
-            throw tokens.error("Un-annotatable statement");
+            throw ParserException.of("Attempted to annotate un-annotatable statement", stmt);
         }
     }
 }

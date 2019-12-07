@@ -124,18 +124,14 @@ public enum Keyword {
      * @return The keyword itself
      */
     @NotNull
-    static Keyword find(String value) {
-        Keyword val = values.get(value);
+    static Keyword find(@NotNull Token value) {
+        assert value.is(TokenType.KEYWORD);
+        Keyword val = values.get(value.sequence);
         if (val == null) {
-            throw new RuntimeException("Unknown keyword");
+            throw ParserInternalError.of("Unknown keyword " + value, value);
         } else {
             return val;
         }
-    }
-
-    @NotNull
-    static Keyword find(@NotNull Token value) {
-        return find(value.sequence);
     }
 
     IndependentNode parseLeft(TokenList tokens) {

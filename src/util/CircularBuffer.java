@@ -3,13 +3,12 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.AbstractCollection;
+import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.RandomAccess;
@@ -25,16 +24,17 @@ import java.util.RandomAccess;
  * @see Deque
  * @see List
  */
-public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>, List<T>, RandomAccess {
+public class CircularBuffer<T> extends AbstractList<T> implements Deque<T>, List<T>, RandomAccess {
     private static final int DEFAULT_SIZE = 16;
 
-    private Object[] values;
+    private T[] values;
     private int size;
     private int start;
 
     @Contract(pure = true)
+    @SuppressWarnings("unchecked")
     public CircularBuffer() {
-        values = new Object[DEFAULT_SIZE];
+        values = (T[]) new Object[DEFAULT_SIZE];
         size = 0;
         start = 0;
     }
@@ -116,16 +116,14 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
 
     @Contract(pure = true)
     @Override
-    @SuppressWarnings("unchecked")
     public T peekFirst() {
-        return (T) values[internalIndex(0)];
+        return values[internalIndex(0)];
     }
 
     @Contract(pure = true)
     @Override
-    @SuppressWarnings("unchecked")
     public T peekLast() {
-        return (T) values[internalIndex(size - 1)];
+        return values[internalIndex(size - 1)];
     }
 
     @Override
@@ -241,30 +239,21 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
 
     @Override
     public void clear() {
-        values = new Object[DEFAULT_SIZE];
+        Arrays.fill(values, null);
         size = 0;
         start = 0;
     }
 
-    @Contract(value = "null -> false", pure = true)
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CircularBuffer)) return false;
-        return Arrays.equals(values, ((CircularBuffer) o).values);
-    }
-
     @Override
     public int hashCode() {
-        return Objects.hash(values);
+        return Arrays.hashCode(values);
     }
 
     @Contract(pure = true)
     @Override
-    @SuppressWarnings("unchecked")
     public T get(int index) {
         verifyIndex(index);
-        return (T) values[internalIndex(index)];
+        return values[internalIndex(index)];
     }
 
     @Override
@@ -344,78 +333,6 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
         return -1;
     }
 
-    @NotNull
-    @Override
-    public ListIterator<T> listIterator() {
-        return new InternalIterator(0);
-    }
-
-    @NotNull
-    @Override
-    public ListIterator<T> listIterator(int index) {
-        return new InternalIterator(index);
-    }
-
-    private class InternalIterator implements ListIterator<T> {
-        private int current;
-
-        @Contract(pure = true)
-        InternalIterator(int start) {
-            current = start;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return current < size;
-        }
-
-        @Override
-        public T next() {
-            return get(current++);
-        }
-
-        @Override
-        public boolean hasPrevious() {
-            return current > 0;
-        }
-
-        @Override
-        public T previous() {
-            return get(--current);
-        }
-
-        @Override
-        public int nextIndex() {
-            return current;
-        }
-
-        @Override
-        public int previousIndex() {
-            return current - 1;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(T t) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void add(T t) {
-            CircularBuffer.this.add(current++, t);
-        }
-    }
-
-    @NotNull
-    @Override
-    public List<T> subList(int fromIndex, int toIndex) {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public int size() {
         return this.size;
@@ -451,7 +368,8 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
         if (start + size > values.length) {
             int newLength = values.length > Integer.MAX_VALUE / 2 ? newSize : values.length * 2;
             int firstHalfLength = values.length - start;
-            Object[] newArray = new Object[newLength];
+            @SuppressWarnings("unchecked")
+            T[] newArray = (T[]) new Object[newLength];
             System.arraycopy(values, start, newArray, 0, firstHalfLength);
             System.arraycopy(values, 0, newArray, firstHalfLength, size - firstHalfLength);
             values = newArray;
@@ -463,7 +381,7 @@ public class CircularBuffer<T> extends AbstractCollection<T> implements Deque<T>
 
     private void verifyIndex(int index) {
         if (index < 0 || index > size)
-            throw new IndexOutOfBoundsException();
+            throw new IndexOutOfBoundsException(String.format("Index %d out of bounds for list of length %d", index, size));
     }
 
     @Contract(pure = true)

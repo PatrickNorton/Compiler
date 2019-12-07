@@ -47,7 +47,7 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
             if (stmt instanceof InterfaceStatementNode) {
                 op = (InterfaceStatementNode) stmt;
             } else {
-                throw tokens.error("Illegal statement");
+                throw ParserException.of("Illegal statement in interface definition", stmt);
             }
         }
         op.addDescriptor(descriptors);

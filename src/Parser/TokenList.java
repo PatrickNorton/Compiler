@@ -426,6 +426,12 @@ public final class TokenList implements Iterable<Token> {
         return getFirst().is(type1) || getFirst().is(type2);
     }
 
+    /**
+     * Test if the token at the index is one of a certain set of values.
+     * @param type1 The TokenType value to check
+     * @param types The Keyword values to check
+     * @return Whether the token is of those values
+     */
     public boolean tokenIs(TokenType type1, Keyword... types) {
         return getFirst().is(type1) || getFirst().is(types);
     }
@@ -582,15 +588,13 @@ public final class TokenList implements Iterable<Token> {
 
         @Override
         public boolean hasNext() {
-            if (bufferIterator.hasNext()) {
-                return true;
-            } else {
+            if (!bufferIterator.hasNext()) {
                 if (done) {
                     return false;
                 }
                 buffer();
-                return true;
             }
+            return true;
         }
 
         @Override

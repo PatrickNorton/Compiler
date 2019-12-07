@@ -48,7 +48,7 @@ public class IncrementNode implements SimpleStatementNode {
     static IncrementNode parse(TokenList tokens) {
         NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs("++")) {
-            throw new RuntimeException("Expected ++, got "+tokens.getFirst());
+            throw tokens.internalError("Expected ++, got "+tokens.getFirst());
         }
         tokens.nextToken();
         return new IncrementNode(var);

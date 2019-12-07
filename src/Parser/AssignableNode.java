@@ -47,10 +47,10 @@ public interface AssignableNode extends TestNode {
                 } else if (t instanceof AssignableNode) {
                     return (AssignableNode) t;
                 } else {
-                    throw tokens.error("Cannot assign to node");
+                    throw ParserException.of("Cannot assign to node", t);
                 }
             default:
-                throw tokens.error("Unassignable word" + tokens.getFirst());
+                throw tokens.error("Un-assignable value " + tokens.getFirst());
         }
     }
 }

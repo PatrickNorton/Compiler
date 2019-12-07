@@ -9,6 +9,7 @@ public enum InvalidToken {
     EXCLAMATION("^!", "! is invalid"),
     SEMICOLON("^;", "; is not allowed, go use Java or something"),
     OPERATOR("^operator\\b *(\\w+|[\\[(=$@])?", "Invalid operator definition"),
+    BACKSLASH("^\\\\", "Invalid backslash escape")
     ;
 
     public final Pattern regex;

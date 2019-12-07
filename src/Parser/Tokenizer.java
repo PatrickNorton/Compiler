@@ -114,7 +114,7 @@ public final class Tokenizer {
         } else {
             next = Normalizer.normalize(nextLine.stripTrailing(), Normalizer.Form.NFKD);
             fullLine = next;
-            lbIndices = new TreeSet<>();
+            lbIndices.clear();
             appendEscapedLines();
             return Token.Newline(lineInfo());
         }

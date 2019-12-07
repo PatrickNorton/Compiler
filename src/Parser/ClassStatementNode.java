@@ -37,6 +37,6 @@ public interface ClassStatementNode extends InterfaceStatementNode {
         if (stmt instanceof ClassStatementNode) {
             return (ClassStatementNode) stmt;
         }
-        throw tokens.error(tokens.getFirst() + " is not a valid class statement");
+        throw ParserException.of("Invalid class statement", stmt);
     }
 }
