@@ -10,7 +10,7 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see TypedArgumentNode
  */
-public class TypedVariableNode implements SubTestNode {
+public class TypedVariableNode implements VarLikeNode, SubTestNode {
     private LineInfo lineInfo;
     private TypeLikeNode type;
     private VariableNode var;
@@ -36,15 +36,21 @@ public class TypedVariableNode implements SubTestNode {
         return type;
     }
 
-    public VariableNode getVar() {
+    @Override
+    public VariableNode getVariable() {
         return var;
+    }
+
+    @Override
+    public boolean isTyped() {
+        return true;
     }
 
     @NotNull
     static TypedVariableNode[] parseListOnToken(@NotNull TokenList tokens, Keyword keyword) {
         if (tokens.tokenIs(keyword)) {
             tokens.nextToken(false);
-            return parseList(tokens, false);
+            return parseList(tokens);
         } else {
             return new TypedVariableNode[0];
         }
@@ -56,17 +62,14 @@ public class TypedVariableNode implements SubTestNode {
      * @return The freshly parsed TypedVariableNode array
      */
     @NotNull
-    static TypedVariableNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
+    static TypedVariableNode[] parseList(TokenList tokens) {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (TypeNode.nextIsType(tokens)) {
-            vars.add(parse(tokens, ignoreNewlines));
-            if (ignoreNewlines) {
-                tokens.passNewlines();
-            }
+            vars.add(parse(tokens, false));
             if (!tokens.tokenIs(",")) {
                 break;
             }
-            tokens.nextToken(ignoreNewlines);
+            tokens.nextToken();
         }
         return vars.toArray(new TypedVariableNode[0]);
     }
@@ -82,30 +85,13 @@ public class TypedVariableNode implements SubTestNode {
      */
     @Contract("_, _ -> new")
     @NotNull
-    private static TypedVariableNode parse(TokenList tokens, boolean ignoreNewlines) {
+    static TypedVariableNode parse(TokenList tokens, boolean ignoreNewlines) {
         TypeLikeNode type = TypeLikeNode.parse(tokens, ignoreNewlines);
         VariableNode var = VariableNode.parse(tokens);
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
         return new TypedVariableNode(type, var);
-    }
-
-    /**
-     * Parse the typed variables from a for-loop.
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed list of tokens
-     */
-    @NotNull
-    static TypedVariableNode[] parseForVars(@NotNull TokenList tokens) {
-        LinkedList<TypedVariableNode> vars = new LinkedList<>();
-        while (!tokens.tokenIs(Keyword.IN)) {
-            vars.add(TypedVariableNode.parse(tokens, false));
-            if (tokens.tokenIs(TokenType.COMMA)) {
-                tokens.nextToken();
-            }
-        }
-        return vars.toArray(new TypedVariableNode[0]);
     }
 
     @Override

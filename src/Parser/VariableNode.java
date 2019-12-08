@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * The class representing a name token.
  * @author Patrick Norton
  */
-public class VariableNode implements NameNode, EnumKeywordNode {
+public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
     private LineInfo lineInfo;
     private String name;
 
@@ -29,6 +29,11 @@ public class VariableNode implements NameNode, EnumKeywordNode {
     @Override
     public VariableNode getVariable() {
         return this;
+    }
+
+    @Override
+    public boolean isTyped() {
+        return false;
     }
 
     @NotNull
@@ -87,6 +92,29 @@ public class VariableNode implements NameNode, EnumKeywordNode {
         String name = tokens.tokenSequence();
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
+        return new VariableNode(info, name);
+    }
+
+    /**
+     * Parse a VariableNode from a list of tokens.
+     * <p>
+     *     The syntax for a VariableNode is: {@code NAME}.
+     * </p>
+     * @param tokens The list of tokens to destructively parse
+     * @return The freshly parsed VariableNode
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    static VariableNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+        if (ignoreNewlines) {
+            tokens.passNewlines();
+        }
+        if (!tokens.tokenIs(TokenType.NAME)) {
+            throw tokens.error("Expected name. got " + tokens.getFirst());
+        }
+        String name = tokens.tokenSequence();
+        LineInfo info = tokens.lineInfo();
+        tokens.nextToken(ignoreNewlines);
         return new VariableNode(info, name);
     }
 

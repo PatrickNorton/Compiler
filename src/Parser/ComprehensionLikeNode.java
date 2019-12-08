@@ -6,19 +6,19 @@ import org.jetbrains.annotations.NotNull;
 public abstract class ComprehensionLikeNode implements SubTestNode, PostDottableNode {
     private LineInfo lineInfo;
     private String brace;
-    private TypedVariableNode[] variables;
+    private VarLikeNode[] variables;
     private ArgumentNode[] builder;
     private TestListNode looped;
     private TestNode condition;
     private TestNode whileCond;
 
-     public ComprehensionLikeNode(LineInfo lineInfo, String brace, TypedVariableNode[] variables,
+     public ComprehensionLikeNode(LineInfo lineInfo, String brace, VarLikeNode[] variables,
                                  TestNode builder, TestListNode looped, TestNode condition, TestNode whileCond) {
          this(lineInfo, brace, variables, ArgumentNode.fromTestNodes(builder), looped, condition, whileCond);
      }
 
     @Contract(pure = true)
-    public ComprehensionLikeNode(LineInfo lineInfo, String brace, TypedVariableNode[] variables,
+    public ComprehensionLikeNode(LineInfo lineInfo, String brace, VarLikeNode[] variables,
                                  ArgumentNode[] builder, TestListNode looped, TestNode condition, TestNode whileCond) {
         this.lineInfo = lineInfo;
         this.brace = brace;
@@ -50,7 +50,7 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
         return looped;
     }
 
-    public TypedVariableNode[] getVariables() {
+    public VarLikeNode[] getVariables() {
         return variables;
     }
 

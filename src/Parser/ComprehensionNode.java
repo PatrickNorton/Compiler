@@ -20,17 +20,19 @@ public class ComprehensionNode extends ComprehensionLikeNode {
      * @param looped The iterable being looped over
      */
     @Contract(pure = true)
-    public ComprehensionNode(LineInfo lineInfo, String brace_type, TypedVariableNode[] variables,
+    public ComprehensionNode(LineInfo lineInfo, String brace_type, VarLikeNode[] variables,
                              ArgumentNode[] builder, TestListNode looped, TestNode condition, TestNode whileCond) {
         super(lineInfo, brace_type, variables, builder, looped, condition, whileCond);
     }
 
     /**
      * Parse a new ComprehensionNode from a list of tokens.
+     *
      * <p>
      *     The syntax for a comprehension is: <code>OPEN_BRACE {@link TestNode}
-     *     "for" *{@link TypedVariableNode} "in" *{@link TestNode} CLOSE_BRACE
-     *     </code>.
+     *     *("," {@link TestNode}) [","] "for" *{@link VarLikeNode} "in"
+     *     *{@link TestNode} ["if" {@link TestNode}] ["while" {@link TestNode}]
+     *     CLOSE_BRACE</code>.
      * </p>
      * @param tokens The tokens which are operated destructively on to parse
      * @return The newly parsed comprehension
@@ -48,7 +50,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Invalid start to comprehension");
         }
         tokens.nextToken(true);
-        TypedVariableNode[] variables = TypedVariableNode.parseList(tokens, true);
+        VarLikeNode[] variables = VarLikeNode.parseList(tokens, true);
         if (!tokens.tokenIs(Keyword.IN)) {
             throw tokens.error("Comprehension body must have in after variable list");
         }

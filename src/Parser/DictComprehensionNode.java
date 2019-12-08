@@ -29,7 +29,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
      */
     @Contract(pure = true)
     public DictComprehensionNode(LineInfo lineInfo, TestNode key, TestNode val,
-                                 TypedVariableNode[] vars, TestListNode looped, TestNode condition,
+                                 VarLikeNode[] vars, TestListNode looped, TestNode condition,
                                  TestNode whileCond) {
         super(lineInfo, "{", vars, val, looped, condition, whileCond);
         this.key = key;
@@ -41,11 +41,13 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
 
     /**
      * Parse a DictComprehensionNode from a list of tokens.
+     *
      * <p>
      *     The syntax for a dictionary comprehension is: <code>"{" {@link
-     *     TestNode} ":" {@link TestNode} "for" {@link TypedVariableNode}
-     *     *("," {@link TypedVariableNode}) [","] "in" {@link TestNode}
-     *     *("," {@link TestNode}) [","] "}"</code>.
+     *     TestNode} ":" {@link TestNode} "for" {@link VarLikeNode}
+     *     *("," {@link VarLikeNode}) [","] "in" {@link TestNode}
+     *     *("," {@link TestNode}) [","] ["if" {@link TestNode}] ["while"
+     *     {@link TestNode}] "}"</code>.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly created DictComprehensionNode
@@ -67,7 +69,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
             throw tokens.error("Expected for, got "+tokens.getFirst());
         }
         tokens.nextToken(true);
-        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens, true);
+        VarLikeNode[] vars = VarLikeNode.parseList(tokens, true);
         if (!tokens.tokenIs(Keyword.IN)) {
             throw tokens.error("Expected in, got "+tokens.getFirst());
         }

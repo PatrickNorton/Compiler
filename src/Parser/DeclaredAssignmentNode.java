@@ -49,7 +49,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     public NameNode[] getName() {
         ArrayList<NameNode> name = new ArrayList<>();
         for (TypedVariableNode t : assigned) {
-            name.add(t.getVar());
+            name.add(t.getVariable());
         }
         return name.toArray(new NameNode[0]);
     }
@@ -97,7 +97,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @Contract("_ -> new")
     static DeclaredAssignmentNode parse(@NotNull TokenList tokens) {
         LineInfo info = tokens.lineInfo();
-        TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens, false);
+        TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
         if (!tokens.tokenIs(TokenType.ASSIGN)) {
             throw tokens.error("Unexpected "+tokens.getFirst());
         }

@@ -107,6 +107,10 @@ public interface TypeLikeNode extends AtomicNode {
         return sj.toString();
     }
 
+    static int sizeOfType(TokenList tokens) {
+        return sizeOfType(tokens, 0);
+    }
+
     static int sizeOfType(@NotNull TokenList tokens, int start) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return start + 1;

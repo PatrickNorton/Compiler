@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ForStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
-    private TypedVariableNode[] vars;
+    private VarLikeNode[] vars;
     private TestListNode iterables;
     private StatementBodyNode body;
     private StatementBodyNode nobreak;
@@ -22,7 +22,7 @@ public class ForStatementNode implements FlowStatementNode {
      * @param nobreak The nobreak statement body
      */
     @Contract(pure = true)
-    public ForStatementNode(LineInfo lineInfo, TypedVariableNode[] vars, TestListNode iterables,
+    public ForStatementNode(LineInfo lineInfo, VarLikeNode[] vars, TestListNode iterables,
                             StatementBodyNode body, StatementBodyNode nobreak) {
         this.lineInfo = lineInfo;
         this.vars = vars;
@@ -36,7 +36,7 @@ public class ForStatementNode implements FlowStatementNode {
         return lineInfo;
     }
 
-    public TypedVariableNode[] getVars() {
+    public VarLikeNode[] getVars() {
         return vars;
     }
 
@@ -55,10 +55,11 @@ public class ForStatementNode implements FlowStatementNode {
 
     /**
      * Parse a ForStatementNode from a list of tokens.
+     *
      * <p>
-     *     The syntax of a for loop is: <code>"for" {@link TypedVariableNode}
-     *     *("," {@link TypedVariableNode}) [","] "in" {@link TestNode} *(","
-     *     {@link TestNode}) [","] {@link StatementBodyNode} ["nobreak" {@link
+     *     The syntax of a for loop is: <code>"for" {@link VarLikeNode} *(","
+     *     {@link VarLikeNode}) [","] "in" {@link TestNode} *("," {@link
+     *     TestNode}) [","] {@link StatementBodyNode} ["nobreak" {@link
      *     StatementBodyNode}]</code>. The list of tokens must begin with a
      *     "for" in order to parse properly.
      * </p>
@@ -75,7 +76,7 @@ public class ForStatementNode implements FlowStatementNode {
         if (ignoreNewlines) {
             tokens.nextToken(true);
         }
-        TypedVariableNode[] vars = TypedVariableNode.parseList(tokens, ignoreNewlines);
+        VarLikeNode[] vars = VarLikeNode.parseList(tokens, ignoreNewlines);
         if (!tokens.tokenIs(Keyword.IN)) {
             throw tokens.error("Expected in, got " + tokens.getFirst());
         }

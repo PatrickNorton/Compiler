@@ -63,6 +63,17 @@ public class TypeNode implements TypeLikeNode {
         return true;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return name.isEmpty() && subtypes.length == 0;
+    }
+
+    @NotNull
+    @Contract(" -> new")
+    static TypeNode empty() {
+        return new TypeNode(DottedVariableNode.empty(), false);
+    }
+
     /**
      * Parse a TypeNode from a list of tokens.
      * <p>
