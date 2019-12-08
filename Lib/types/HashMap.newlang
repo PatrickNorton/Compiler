@@ -59,8 +59,8 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         return self.values[self.getInfo(key)] not instanceof Empty
     }
 
-    public operator iter -> V {
-        yield from ((i casted VarInfo)[2] for var i in self.valueList if i not instanceof Empty)
+    public operator iter -> K, V {
+        yield from (*(i casted VarInfo)[1:] for var i in self.valueList if i not instanceof Empty)
     }
 
     public generator method keys() -> K {
