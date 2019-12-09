@@ -12,7 +12,7 @@ func apply(Callable[A, B, A] function, *B values, *, A start) -> A {
 generic T
 func apply(Callable[T, T, T] function, *T values) -> T {
     T finalVal = values[0]
-    for T value in values {
+    for T value in values[1:] {
         finalVal = function(finalVal, values)
     }
     return finalVal
