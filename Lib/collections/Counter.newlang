@@ -8,7 +8,7 @@ final class Counter[T] from dict[T, int] {
     pubget uint length := values.length
 
     public operator new (*T items) {
-        self.values = {}
+        self.values = {:}
         for T i in items {
             if i in self.values {
                 self.values[i]++

@@ -18,19 +18,19 @@ class EnumSet[E[Enum[E]]] from AbstractSet[E] {
     }
 
     public operator | (cls other) -> cls {
-        cls new = {}
+        cls new = {:}
         new.values = self.values | other.values
         return new
     }
 
     public operator & (cls other) -> cls {
-        cls new = {}
+        cls new = {:}
         new.values = self.values & other.values
         return new
     }
 
     public operator ^ (cls other) -> cls {
-        cls new = {}
+        cls new = {:}
         new.values = self.values ^ other.values
         return new
     }
