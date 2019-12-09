@@ -7,14 +7,14 @@ from types import Array
 
 export ArrayList
 
-const int DEFAULT_SIZE = 10
+const uint DEFAULT_SIZE = 10
 
 class ArrayList[T] from AbstractList[T] {
     private Array[T?] values
     pubget uint length
 
-    public operator new {
-        self.values = Array(DEFAULT_SIZE, null)
+    public operator new (*T values, /, *, uint size = DEFAULT_SIZE) {
+        self.values = Array(max(values.length, size), *values, null)
         self.length = 0
     }
 
@@ -127,10 +127,5 @@ class ArrayList[T] from AbstractList[T] {
     private method ensureSize(int size) {
         return if self.values.length > size
         self.values = Array(max(self.values.length * 2, size), self.values, null)
-    }
-
-    public static method size(int size, /) -> cls {
-        cls new = []
-        new.values = Array(size, null)
     }
 }
