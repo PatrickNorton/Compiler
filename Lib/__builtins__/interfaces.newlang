@@ -100,6 +100,7 @@ interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
     generator method keys() -> K
     method remove(V value) -> K
     method keyOf(V value) -> K
+    method clear()
 }
 
 

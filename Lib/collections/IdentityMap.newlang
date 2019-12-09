@@ -64,15 +64,15 @@ class IdentityMap[K, V] from dict[K, V] {
                 and all(k in other and other[k] is v for K key, V value in self))
     }
 
-    public method remove(V value) -> K {
-        del self[self.keyOf(value)]
-    }
-
     public method keyOf(V value) -> K {
         for K key, V val in self {
             return key if value is val
         }
         raise ValueError(f"Value {value} not in dict")
+    }
+
+    public method clear() {
+        self.values.fill(Empty.EMPTY)
     }
 
     private method getInfo(K key, *, bool returnDeleted = false) -> uint {

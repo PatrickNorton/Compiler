@@ -12,6 +12,12 @@ interface AbstractDict[K, V] from dict[K, V] {
         return self.length
     }
 
+    public method remove(V value) -> K {
+        K key = self.keyOf(value)
+        del self[key]
+        return key
+    }
+
     public method keyOf(V value) -> K {
         for K key, V val in self {
             return key if value == val

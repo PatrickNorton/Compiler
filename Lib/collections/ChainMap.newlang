@@ -1,4 +1,4 @@
-from itertools import any
+from itertools import any, chain
 
 export ChainMap
 
@@ -46,5 +46,9 @@ final class ChainMap[K, V] from dict[K, V] {
     public operator repr {
         var inner = ", ".join(f"{key}: {value}" for K key, V value in self)
         return f"ChainMap[{K}, {V}]: \{{inner}\}"
+    }
+
+    public generator method keys() -> K {
+        yield from chain(d.keys for var d in self.values)
     }
 }

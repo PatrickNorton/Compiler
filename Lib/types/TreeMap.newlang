@@ -97,6 +97,10 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
         yield from (key for K key in self)
     }
 
+    public method clear() {
+        self.top = null
+    }
+
     private method findNode(K key) -> TreeNode[K, V]? {
         var node = self.top
         while true {

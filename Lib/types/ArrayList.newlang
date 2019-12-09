@@ -104,7 +104,7 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     public method clear() {
-        self.values = Array(DEFAULT_SIZE, null)
+        self.values.fill(null)
         self.length = 0
     }
 

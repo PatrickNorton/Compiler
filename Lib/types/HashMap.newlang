@@ -67,8 +67,9 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         yield from (key for K key in self)
     }
 
-    public method remove(V value) -> K {
-        del self[self.keyOf(value)]
+    public method clear() {
+        self.values.fill(Empty.EMPTY)
+        self.length = 0
     }
 
     private method getInfo(K key, *, bool returnDeleted = false) -> uint {
