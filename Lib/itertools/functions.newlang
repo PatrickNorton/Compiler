@@ -1,6 +1,6 @@
 from types typeget Boolable, Callable, Iterable
 
-export all, any, count, countFalse, first, last
+export all, any, count, countEqual, countFalse, countNotEqual, first, last
 
 
 func all(Iterable[Boolable] values) -> bool {
@@ -26,8 +26,20 @@ func count(Callable[T, Boolable] predicate = bool, Iterable[T] values, /) -> uin
 
 
 generic T
+func countEqual(T sentinel, Iterable[T] values, /) -> uint {
+    return \+(1 for T i in values if i == sentinel)
+}
+
+
+generic T
 func countFalse(Callable[T, Boolable] predicate = bool, Iterable[T] values, /) -> uint {
     return \+(1 for T i in values if not predicate(i))
+}
+
+
+generic T
+func countNotEqual(T sentinel, Iterable[T] values, /) -> uint {
+    return \+(1 for T i in values if i != sentinel)
 }
 
 
