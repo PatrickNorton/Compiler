@@ -137,6 +137,14 @@ class LinkedList[T] from AbstractList[T] {
         return cls(*self, *other)
     }
 
+    public operator * (uint size) -> cls {
+        cls new = []
+        dotimes size {
+            new.extend(self)
+        }
+        return new
+    }
+
     public method append(T value) -> self {
         var new_last = LLNode[T](self.last, value, null)
         self.last.next = new_last

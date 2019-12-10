@@ -76,7 +76,7 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     public operator * (int multiplicand) {
-        var new = size(self.length * multiplicand)
+        var new = cls(size=self.length * multiplicand)
         for var i in [0:multiplicand] {
             new.values[i * self.length : (i + 1) * self.length] = self.values
         }
@@ -110,6 +110,11 @@ class ArrayList[T] from AbstractList[T] {
 
     public method reverse() {
         self.values[:self.length] = self.values[self.length::-1]
+    }
+
+    public method extend(Sequence[T] values, /) {
+        self.ensureSize(self.length + values.length)
+        super.extend(values)
     }
 
     public method insert(T value, int index) {

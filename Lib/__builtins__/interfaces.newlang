@@ -34,7 +34,9 @@ interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
     operator new (Iterable[T] items, /)
 
     operator + (list[T] other, /) -> cls
-    operator * (int size, /) -> cls
+    operator * (uint size, /) -> cls
+
+    final operator r* = operator *
 
     operator == (list[T] other)
     operator bool
