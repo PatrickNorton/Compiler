@@ -23,9 +23,7 @@ final class Deque[V] {
     }
 
     public operator [] (int index) {
-        raise IndexError(
-            f"Index {index} out of bounds for deque of length {self.length}"
-        ) if (index if index >= 0 else ~index) >= self.length
+        self.checkIndex(index)
         return self.values[self.internalIndex(index)]
     }
 
@@ -120,5 +118,11 @@ final class Deque[V] {
 
     private method internalIndex(int index) {
         return ((self.start if index >= 0 else self.end) + index) % self.values.length
+    }
+
+    private method checkIndex(int index) {
+        raise IndexError(
+            f"Index {index} out of bounds for deque of length {self.length}"
+        ) if (index if index >= 0 else ~index) >= self.length
     }
 }
