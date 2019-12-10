@@ -33,7 +33,7 @@ final class Deque[V] {
         int startIndex = self.internalIndex(start)
         int stopIndex = self.internalIndex(end)
 
-        if (startIndex < stopIndex) {
+        if startIndex < stopIndex {
             return cls(*self.values[startIndex:stopIndex:step])
         } else {
             int secondHalfStart = ~(self.values.length - stopIndex) % step
@@ -106,7 +106,7 @@ final class Deque[V] {
     private method ensureSize(int length) {
         return if size <= self.values.length
         var new = Array[V?](highestOneBit(length) << 1, null)
-        if (self.start <= self.end) {
+        if self.start <= self.end {
             new[0:] = self.values[self.start:self.end]
         } else {
             new[0:] = self.values[self.start:]
