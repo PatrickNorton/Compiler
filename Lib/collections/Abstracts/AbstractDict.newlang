@@ -12,6 +12,10 @@ interface AbstractDict[K, V] from dict[K, V] {
         return self.length
     }
 
+    operator + (dict[K, V] other, /) -> dict[K, V] {
+        return {**self, **other}
+    }
+
     public method remove(V value) -> K {
         K key = self.keyOf(value)
         del self[key]
