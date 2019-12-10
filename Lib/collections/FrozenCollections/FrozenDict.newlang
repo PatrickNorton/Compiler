@@ -1,3 +1,8 @@
+from copy import copy
+
+export FrozenDict
+
+
 final class FrozenDict[K, V] from dict[K, V] {
     private const dict[K, V] items
 
