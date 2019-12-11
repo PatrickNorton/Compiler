@@ -318,12 +318,10 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (node == null) {
             return null;
         } else if (node instanceof PostDottableNode) {
-            node = parsePostBraces(tokens, node, ignoreNewlines);
-            if (tokens.tokenIs(TokenType.DOT)) {
-                return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
-            }
+            return parsePost(tokens, node, ignoreNewlines);
+        } else {
+            return node;
         }
-        return node;
     }
 
     /**
@@ -401,19 +399,19 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     static TestNode parseOpenBrace(@NotNull TokenList tokens, boolean ignoreNewlines) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
-        TestNode stmt = parsePostBraces(tokens, parseOpenBraceNoDot(tokens), ignoreNewlines);
-        if (tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, stmt, ignoreNewlines);
-        } else {
-            return stmt;
-        }
+        return parsePost(tokens, parseOpenBraceNoDot(tokens), ignoreNewlines);
     }
 
+    static TestNode parsePost(@NotNull TokenList tokens, TestNode pre, boolean ignoreNewlines) {
+        TestNode value = parsePostBraces(tokens, pre, ignoreNewlines);
+        return DottedVariableNode.parsePostDots(tokens, value, ignoreNewlines);
+    }
+
+    @NotNull
     static TestNode parsePostBraces(@NotNull TokenList tokens, TestNode pre, boolean ignoreNewlines) {
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
-        postBraceLoop:
         while (tokens.tokenIs(TokenType.OPEN_BRACE)) {
             switch (tokens.tokenSequence()) {
                 case "(":
@@ -427,7 +425,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     }
                     break;
                 case "{":
-                    break postBraceLoop;
+                    return pre;
             }
             if (ignoreNewlines) {
                 tokens.passNewlines();

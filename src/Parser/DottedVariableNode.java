@@ -92,6 +92,12 @@ public class DottedVariableNode implements NameNode {
         return tokens.tokenIs(TokenType.NAME) ? parseNamesOnly(tokens) : empty();
     }
 
+    static TestNode parsePostDots(@NotNull TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
+        return tokens.tokenIs(TokenType.DOT)
+                ? DottedVariableNode.fromExpr(tokens, preDot, ignoreNewlines)
+                : preDot;
+    }
+
     /**
      * Given a variable, parses the rest of the dotted vars after it.
      * <p>

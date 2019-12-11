@@ -34,6 +34,7 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed NameNode
      */
+    @NotNull
     static NameNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.NAME, "(");
         NameNode name;
@@ -47,11 +48,13 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
                 throw tokens.error("Unexpected " + tokens.getFirst());
             }
         }
-        name = parsePostBraces(tokens, name, ignoreNewlines);
-        if (tokens.tokenIs(TokenType.DOT)) {
-            name = DottedVariableNode.fromExpr(tokens, name, ignoreNewlines);
-        }
-        return name;
+        return parsePost(tokens, name, ignoreNewlines);
+    }
+
+    @NotNull
+    static NameNode parsePost(@NotNull TokenList tokens, @NotNull NameNode name, boolean ignoreNewlines) {
+        NameNode value = parsePostBraces(tokens, name, ignoreNewlines);
+        return (NameNode) DottedVariableNode.parsePostDots(tokens, value, ignoreNewlines);
     }
 
     @NotNull
