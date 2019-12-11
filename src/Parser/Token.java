@@ -126,10 +126,6 @@ public class Token {
         return new Token(TokenType.NEWLINE, "\n", lineInfo);
     }
 
-    public String lineString() {
-        return lineInfo.infoString();
-    }
-
     public String toString() {
         return this.sequence;
     }

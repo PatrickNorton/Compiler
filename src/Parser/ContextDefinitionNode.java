@@ -25,11 +25,6 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
     private NameNode[] decorators = new NameNode[0];
 
     @Contract(pure = true)
-    public ContextDefinitionNode(LineInfo info, StatementBodyNode enter, StatementBodyNode exit) {
-        this(info, VariableNode.empty(), TypedArgumentListNode.empty(), enter, exit, new ArgumentNode[0], new ClassBodyNode());
-    }
-
-    @Contract(pure = true)
     public ContextDefinitionNode(LineInfo info, VariableNode name, TypedArgumentListNode args, StatementBodyNode enter,
                                  StatementBodyNode exit, ArgumentNode[] exitArgs, ClassBodyNode others) {
         this.lineInfo = info;

@@ -252,14 +252,4 @@ public final class Tokenizer {
     public static TokenList parse(String str) {
         return new TokenList(new Tokenizer(str));
     }
-
-    /**
-     * Create a new empty Tokenizer
-     * @return The newly parsed Tokenizer
-     */
-    @NotNull
-    @Contract(" -> new")
-    public static Tokenizer empty() {
-        return new Tokenizer("");
-    }
 }

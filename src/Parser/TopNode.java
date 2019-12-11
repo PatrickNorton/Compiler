@@ -15,12 +15,6 @@ public class TopNode implements BaseNode {
     private LinkedList<IndependentNode> nodes;
 
     @Contract(pure = true)
-    public TopNode(Path path, LinkedList<IndependentNode> nodes) {
-        this.path = path;
-        this.nodes = nodes;
-    }
-
-    @Contract(pure = true)
     public TopNode(Path path) {
         this.path = path;
         this.nodes = new LinkedList<>();

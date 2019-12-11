@@ -22,6 +22,7 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
 
     @Contract(pure = true)
     public LiteralNode(LineInfo lineInfo, String brace_type, TestNode[] builders, String[] is_splats) {
+        this.lineInfo = lineInfo;
         this.brace_type = brace_type;
         this.builders = builders;
         this.is_splats = is_splats;

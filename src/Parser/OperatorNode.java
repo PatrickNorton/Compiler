@@ -70,30 +70,6 @@ public class OperatorNode implements SubTestNode {
         return operator.isPostfix();
     }
 
-    /**
-     * Construct a new OperatorNode from an empty one and a list of operands.
-     * @param empty The empty OperatorNode
-     * @param operands The operands to add to it
-     * @return the new OperatorNode
-     */
-    @NotNull
-    @Contract("_, _, _ -> new")
-    public static OperatorNode fromEmpty(LineInfo lineInfo, @NotNull OperatorNode empty, TestNode... operands) {
-        return new OperatorNode(lineInfo, empty.getOperator(), operands);
-    }
-
-    /**
-     * Parse an empty OperatorNode from a list of tokens
-     * @param tokens The list of tokens to be destructively parsed
-     * @return The freshly parsed empty OperatorNode
-     */
-    @NotNull
-    @Contract("_ -> new")
-    public static OperatorNode empty(@NotNull TokenList tokens) {
-        assert tokens.tokenIs(TokenType.OPERATOR, TokenType.KEYWORD);
-        return new OperatorNode(OperatorTypeNode.fromToken(tokens.getFirst()));
-    }
-
     public OperatorTypeNode getOperator() {
         return operator;
     }
