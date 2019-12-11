@@ -9,11 +9,13 @@ interface Boolable {
 }
 
 $DefaultInterface
+@contravariant
 interface Callable[*P, R] {
     operator () (*P values, /) -> R
 }
 
 $DefaultInterface
+@covariant
 interface Comparable[T] {
     operator <=> (T other, /)
     operator < (T other, /)
@@ -29,6 +31,7 @@ interface Comparable[T] {
 }
 
 $DefaultInterface
+@covariant
 interface singleComparable[T] from Comparable[T] {
     operator <=> (T other, /)
 
@@ -45,6 +48,8 @@ interface singleComparable[T] from Comparable[T] {
     }
 }
 
+$DefaultInterface
+@covariant
 interface triComparable from Comparable[T] {
     operator < (T other, /)
     operator > (T other, /)
@@ -63,6 +68,7 @@ interface Hashable {
 }
 
 $DefaultInterface
+@covariant
 interface Iterable[T] {
     pubget uint length
 
@@ -74,12 +80,14 @@ interface Iterable[T] {
 }
 
 $DefaultInterface
+@covariant
 interface Indexable[K, V] {
     operator [] (K key, /) -> V
     operator []= (K key, V value, /)
 }
 
 $DefaultInterface
+@covariant
 interface Sliceable[V] {
     operator [:] (int start, int stop, int step, /) -> Iterable[V]
     operator [:]= (int start, int stop, int step, Iterable[V] values, /)

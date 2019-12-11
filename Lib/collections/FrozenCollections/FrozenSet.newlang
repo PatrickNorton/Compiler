@@ -12,17 +12,17 @@ final class FrozenSet[T] from set[T] {
         self.values = set(items)
     }
 
-    operator + (set[T] other, /) -> Set[T] {
+    operator + (set[T] other, /) -> set[T] {
         return self.values + other
     }
 
     operator | = operator +
 
-    operator & (set[T] other, /) -> Set[T] {
+    operator & (set[T] other, /) -> set[T] {
         return self.values & other
     }
 
-    operator ^ (set[T] other, /) -> Set[T] {
+    operator ^ (set[T] other, /) -> set[T] {
         return self.values ^ other
     }
 
