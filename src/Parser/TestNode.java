@@ -8,10 +8,12 @@ import util.Pair;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
+import java.util.EmptyStackException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringJoiner;
 
 /**
@@ -161,155 +163,103 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
     }
 
+    class DummyOp implements TestNode {
+        public final OperatorTypeNode op;
+        public final LineInfo lineInfo;
+        public final int precedence;
+
+        @Contract(pure = true)
+        public DummyOp(@NotNull OperatorTypeNode op, LineInfo lineInfo) {
+            this.op = op;
+            this.lineInfo = lineInfo;
+            this.precedence = op.precedence;
+        }
+
+        @Override
+        public LineInfo getLineInfo() {
+            return lineInfo;
+        }
+
+        @Override
+        public String toString() {
+            return op.toString();
+        }
+    }
+
     /**
      * Parse an expression from a list of tokens.
+     *
      * @param tokens The list of tokens to be destructively parsed
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed expression
+     *
+     * @implNote This is essentially an RPN calculator
      */
     private static TestNode parseExpression(@NotNull TokenList tokens, boolean ignoreNewlines) {
-        /*
-         * How this works:
-         * Operators always come in pairs with an operand and a trailing operand
-         * at the end, e.g. 1 + 2 * 3. Thus, this method works by parsing these
-         * pairs and then assembling them in their correct order of operations.
-         * In essence, it takes these operand-operator pairs and turns them
-         * into a deque, looking like [1 +] [2 *] [3], and then puts them
-         * together, giving priority to the order of operations, e.g.
-         * [1 +] [2 *] [3] -> [1 +] [2 * 3] -> [1 + (2 * 3)].
-         */
-        Deque<OperatorNode> tempNodes = new ArrayDeque<>();
-        TestNode nextNode;
+        Queue<TestNode> queue = new ArrayDeque<>();
+        Stack<DummyOp> stack = new Stack<>();
+        boolean parseCurly = true;
         while (true) {
-            LineInfo info = tokens.lineInfo();
-            nextNode = parseNode(tokens, ignoreNewlines, tempNodes.isEmpty() || !tempNodes.getLast().isUnary());
-            if (nextNode == null) {
-                if (!tempNodes.isEmpty() && tempNodes.getLast().isPostfix()) {
-                    nextNode = tempNodes.removeLast();
-                    break;
+            LineInfo lineInfo = tokens.lineInfo();
+            TestNode node = parseNode(tokens, ignoreNewlines, parseCurly);
+            if (node == null) {
+                break;
+            } else if (node instanceof OperatorTypeNode) {
+                // Convert - to u- where needed
+                OperatorTypeNode operator = (node == OperatorTypeNode.SUBTRACT && parseCurly)
+                        ? OperatorTypeNode.U_SUBTRACT
+                        : (OperatorTypeNode) node;
+                if (parseCurly ^ (operator.isUnary() && !operator.isPostfix())) {
+                    throw tokens.error("Illegal token");
+                }
+                while (!stack.empty() && operator.precedence >= stack.peek().precedence) {
+                    queue.add(stack.pop());
+                }
+                if (operator.isPostfix()) {
+                    queue.add(new DummyOp(operator, lineInfo));
                 } else {
-                    throw ParserException.of("Illegal token " + tokens.getFirst(), info);
+                    stack.push(new DummyOp(operator, lineInfo));
                 }
-            }
-            if (nextNode instanceof OperatorTypeNode) {
-                OperatorTypeNode nextOp = (OperatorTypeNode) nextNode;
-                if (nextOp == OperatorTypeNode.SUBTRACT) {
-                    nextOp = OperatorTypeNode.U_SUBTRACT;
-                }
-                if (!nextOp.isUnary()) {
-                    throw ParserException.of("Illegal token " + nextOp, info);
-                }
-                if (nextOp.isPostfix()) {
-                    addEmptyPostfix(tempNodes, new OperatorNode(info, nextOp));
-                } else {
-                    addUnary(tempNodes, new OperatorNode(info, nextOp));
-                }
+                parseCurly = !operator.isPostfix();
             } else {
-                LineInfo info1 = tokens.lineInfo();
-                TestNode doubleNext = parseNode(tokens, ignoreNewlines, false);
-                if (doubleNext == null) {
-                    break;
+                if (!parseCurly) {
+                    throw tokens.error("Illegal token");
                 }
-                if (!(doubleNext instanceof OperatorTypeNode)) {
-                    throw ParserException.of("Illegal token " + doubleNext, info1);
-                }
-                OperatorTypeNode nextOp = (OperatorTypeNode) doubleNext;
-                if (nextOp.isUnary() && !nextOp.isPostfix()) {
-                    throw ParserException.of("Illegal token " + doubleNext, info1);
-                }
-                if (nextOp.isPostfix()) {
-                    addFilledPostfix(tempNodes, new OperatorNode(info1, nextOp, nextNode));
-                } else {
-                    addBinary(tempNodes, new OperatorNode(info1, nextOp, nextNode));
-                }
+                queue.add(node);
+                parseCurly = false;
             }
         }
-        if (tempNodes.isEmpty()) {
-            return nextNode;
+        while (!stack.empty()) {
+            queue.add(stack.pop());
         }
-        return finalizeArguments(tempNodes, nextNode);
+        return convertQueueToNode(queue);
     }
 
-    private static void addUnary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
-        assert node.isUnary();
-        nodes.addLast(node);
-    }
-
-    private static void addBinary(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
-        assert !node.isUnary() && node.getOperands().length > 0;
-        if (nodes.isEmpty()) {
-            nodes.addLast(node);
-            return;
-        }
-        OperatorNode lastNode = nodes.getLast();
-        if (lastNode.precedence() > node.precedence()) {
-            nodes.addLast(node);
-            return;
-        } else if (lastNode.getOperator() == node.getOperator()) {
-            nodes.getLast().addArgument(node.getOperands()[0]);
-            return;
-        }
-        while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {
-            OperatorNode top = nodes.removeLast();
-            node.setArgument(0, top.addArgument(node.getOperands()[0]));
-        }
-        nodes.addLast(node);
-    }
-
-    private static void addFilledPostfix(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
-        assert node.isPostfix() && node.getOperands().length > 0;
-        if (nodes.isEmpty()) {
-            nodes.addLast(node);
-            return;
-        }
-        OperatorNode lastNode = nodes.getLast();
-        if (lastNode.precedence() > node.precedence()) {
-            nodes.addLast(node);
-            return;
-        }
-        while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {
-            OperatorNode top = nodes.removeLast();
-            node.setArgument(0, top.addArgument(node.getOperands()[0]));
-        }
-        nodes.addLast(node);
-    }
-
-    private static void addEmptyPostfix(@NotNull Deque<OperatorNode> nodes, @NotNull OperatorNode node) {
-        assert node.isPostfix() && node.getOperands().length == 0;
-        if (nodes.isEmpty()) {
-            throw ParserInternalError.of("Illegal postfix operator", node.getLineInfo());
-        }
-        OperatorNode lastNode = nodes.getLast();
-        if (lastNode.getOperands().length < (lastNode.isUnary() ? 1 : 2)) {
-            throw ParserInternalError.of("Illegal postfix operator", node.getLineInfo());
-        }
-        if (lastNode.precedence() > node.precedence()) {
-            ArgumentNode[] operands = lastNode.getOperands();
-            lastNode.setArgument(operands.length - 1, node.addArgument(operands[operands.length - 1]));
-            return;
-        }
-        while (!nodes.isEmpty() && nodes.getLast().precedence() <= node.precedence()) {
-            OperatorNode top = nodes.removeLast();
-            node.setArgument(0, top.addArgument(node.getOperands()[0]));
-        }
-        nodes.addLast(node);
-    }
-
-    private static OperatorNode finalizeArguments(@NotNull Deque<OperatorNode> nodes, TestNode next) {
-        OperatorNode previous = nodes.removeLast();
-        if (previous.isPostfix()) {
-            throw ParserException.of("Illegal postfix operator", nodes.getLast().getLineInfo());
-        }
-        previous.addArgument(next);
-        while (!nodes.isEmpty()) {
-            OperatorNode last = nodes.getLast();
-            if (last.precedence() > previous.precedence()) {
-                previous = nodes.removeLast().addArgument(previous);
+    private static TestNode convertQueueToNode(@NotNull Queue<TestNode> queue) {
+        Stack<TestNode> temp = new Stack<>();
+        for (TestNode t : queue) {
+            if (t instanceof DummyOp) {
+                LineInfo info = t.getLineInfo();
+                OperatorTypeNode op = ((DummyOp) t).op;
+                int nodeCount = op.isUnary() ? 1 : 2;
+                TestNode[] nodes = new TestNode[nodeCount];
+                try {
+                    for (int i = nodeCount - 1; i >= 0; i--) {
+                        nodes[i] = temp.pop();
+                    }
+                } catch (EmptyStackException e) {
+                    throw ParserException.of("Illegal node combination", op);
+                }
+                temp.push(new OperatorNode(info, op, nodes));
             } else {
-                previous = previous.addArgument(0, nodes.removeLast());
+                temp.push(t);
             }
         }
-        return previous;
+        TestNode node = temp.pop();
+        if (!temp.isEmpty()) {
+            throw ParserException.of("Invalid node", temp.peek());
+        }
+        return node;
     }
 
     @Nullable
