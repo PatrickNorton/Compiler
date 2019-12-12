@@ -209,12 +209,16 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 OperatorTypeNode operator = (node == OperatorTypeNode.SUBTRACT && parseCurly)
                         ? OperatorTypeNode.U_SUBTRACT
                         : (OperatorTypeNode) node;
+                // Operators in a place that they shouldn't be, e.g. 1 + * 2
                 if (parseCurly ^ (operator.isUnary() && !operator.isPostfix())) {
                     throw tokens.error("Illegal token");
                 }
+                // Push all operators that bind more tightly onto the queue
                 while (!stack.empty() && operator.precedence >= stack.peek().precedence) {
                     queue.add(stack.pop());
                 }
+                // Postfix operators don't go on the stack, as they have no
+                // arguments left to be parsed
                 if (operator.isPostfix()) {
                     queue.add(new DummyOp(operator, lineInfo));
                 } else {
@@ -225,6 +229,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 if (!parseCurly) {
                     throw tokens.error("Illegal token");
                 }
+                // Non-operators just get pushed onto the stack
                 queue.add(node);
                 parseCurly = false;
             }
@@ -244,6 +249,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 int nodeCount = op.isUnary() ? 1 : 2;
                 TestNode[] nodes = new TestNode[nodeCount];
                 try {
+                    // Nodes need to be reversed, as they get popped backwards
                     for (int i = nodeCount - 1; i >= 0; i--) {
                         nodes[i] = temp.pop();
                     }
