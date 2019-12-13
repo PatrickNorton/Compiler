@@ -28,6 +28,6 @@ final class Stack[T] {
 
     public method pop() -> T {
         self.length--
-        return self.values[self.length]
+        return self.values[self.length] casted T
     }
 }

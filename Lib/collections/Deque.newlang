@@ -22,9 +22,9 @@ final class Deque[V] {
         self(*values)
     }
 
-    public operator [] (int index) {
+    public operator [] (int index) -> V {
         self.checkIndex(index)
-        return self.values[self.internalIndex(index)]
+        return self.values[self.internalIndex(index)] casted V
     }
 
     public operator [:] (int start, int end, int step) -> cls {
