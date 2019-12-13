@@ -15,7 +15,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     private VariableNode name;
     private TypeLikeNode type;
     private StatementBodyNode get;
-    private TypedArgumentListNode set_args;
+    private TypedArgumentListNode setArgs;
     private StatementBodyNode set;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
@@ -25,17 +25,17 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * Create a new instance of PropertyDefinitionNode.
      * @param name The name of the property
      * @param get The getter attribute for the property
-     * @param set_args The arguments for setting the property
+     * @param setArgs The arguments for setting the property
      * @param set The setter attribute for the property
      */
     @Contract(pure = true)
     public PropertyDefinitionNode(LineInfo lineInfo, VariableNode name, TypeLikeNode type,
-                                  StatementBodyNode get, TypedArgumentListNode set_args, StatementBodyNode set) {
+                                  StatementBodyNode get, TypedArgumentListNode setArgs, StatementBodyNode set) {
         this.lineInfo = lineInfo;
         this.name = name;
         this.type = type;
         this.get = get;
-        this.set_args = set_args;
+        this.setArgs = setArgs;
         this.set = set;
     }
 
@@ -66,8 +66,8 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         return set;
     }
 
-    public TypedArgumentListNode getSet_args() {
-        return set_args;
+    public TypedArgumentListNode getSetArgs() {
+        return setArgs;
     }
 
     public EnumSet<DescriptorNode> getDescriptors() {
@@ -151,6 +151,6 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
     public String toString() {
         return String.format("%sproperty %s %s {%s%s}",
                 DescriptorNode.join(descriptors), type, name,
-                get.isEmpty() ? "" : "get, ", set.isEmpty() ? "" : "set " + set_args);
+                get.isEmpty() ? "" : "get, ", set.isEmpty() ? "" : "set " + setArgs);
     }
 }

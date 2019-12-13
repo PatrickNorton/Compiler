@@ -8,20 +8,20 @@ import org.jetbrains.annotations.Contract;
  */
 public class TernaryNode implements TestNode {
     private LineInfo lineInfo;
-    private TestNode if_true;
+    private TestNode ifTrue;
     private TestNode statement;
-    private TestNode if_false;
+    private TestNode ifFalse;
 
-    public TernaryNode(TestNode if_true, TestNode statement, TestNode if_false) {
-        this(if_true.getLineInfo(), if_true, statement, if_false);
+    public TernaryNode(TestNode ifTrue, TestNode statement, TestNode ifFalse) {
+        this(ifTrue.getLineInfo(), ifTrue, statement, ifFalse);
     }
 
     @Contract(pure = true)
-    public TernaryNode(LineInfo lineInfo, TestNode if_true, TestNode statement, TestNode if_false) {
+    public TernaryNode(LineInfo lineInfo, TestNode ifTrue, TestNode statement, TestNode ifFalse) {
         this.lineInfo = lineInfo;
-        this.if_true = if_true;
+        this.ifTrue = ifTrue;
         this.statement = statement;
-        this.if_false = if_false;
+        this.ifFalse = ifFalse;
     }
 
     @Override
@@ -29,20 +29,20 @@ public class TernaryNode implements TestNode {
         return lineInfo;
     }
 
-    public TestNode getIf_true() {
-        return if_true;
+    public TestNode getIfTrue() {
+        return ifTrue;
     }
 
     public TestNode getStatement() {
         return statement;
     }
 
-    public TestNode getIf_false() {
-        return if_false;
+    public TestNode getIfFalse() {
+        return ifFalse;
     }
 
     @Override
     public String toString() {
-        return if_true + " if " + statement + " else " + if_false;
+        return ifTrue + " if " + statement + " else " + ifFalse;
     }
 }

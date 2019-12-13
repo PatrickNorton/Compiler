@@ -72,23 +72,23 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      *     this is what this function does, it delegates to that.
      * </p>
      * @param tokens The list of tokens to be destructively parsed
-     * @param ignore_newline Whether or not to ignore newlines
+     * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed TestNode
      */
     @NotNull
-    static TestNode parse(@NotNull TokenList tokens, boolean ignore_newline) {
-        TestNode if_true = parseNoTernary(tokens, ignore_newline);
+    static TestNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+        TestNode ifTrue = parseNoTernary(tokens, ignoreNewlines);
         if (tokens.tokenIs(Keyword.IF)) {
-            tokens.nextToken(ignore_newline);
-            TestNode statement = parse(tokens, ignore_newline);
+            tokens.nextToken(ignoreNewlines);
+            TestNode statement = parse(tokens, ignoreNewlines);
             if (!tokens.tokenIs(Keyword.ELSE)) {
                 throw tokens.error("Ternary must have an else");
             }
-            tokens.nextToken(ignore_newline);
-            TestNode if_false = parse(tokens, ignore_newline);
-            return new TernaryNode(if_true, statement, if_false);
+            tokens.nextToken(ignoreNewlines);
+            TestNode ifFalse = parse(tokens, ignoreNewlines);
+            return new TernaryNode(ifTrue, statement, ifFalse);
         } else {
-            return if_true;
+            return ifTrue;
         }
     }
 

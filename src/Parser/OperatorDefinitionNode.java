@@ -11,8 +11,8 @@ import java.util.EnumSet;
  */
 public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNode, GeneralizableNode {
     private LineInfo lineInfo;
-    private SpecialOpNameNode op_code;
-    private TypeLikeNode[] ret_type;
+    private SpecialOpNameNode opCode;
+    private TypeLikeNode[] retType;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
@@ -20,23 +20,23 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private NameNode[] decorators = new NameNode[0];
     private TypeLikeNode[] generics = new TypeLikeNode[0];
 
-    public OperatorDefinitionNode(@NotNull SpecialOpNameNode op_code, @NotNull TypeLikeNode[] ret_type,
+    public OperatorDefinitionNode(@NotNull SpecialOpNameNode opCode, @NotNull TypeLikeNode[] retType,
                                   @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
-        this(op_code.getLineInfo(), op_code, ret_type, args, body);
+        this(opCode.getLineInfo(), opCode, retType, args, body);
     }
     /**
      * Construct a new instance of OperatorDefinitionNode.
-     * @param op_code The code of the operator definition
-     * @param ret_type The return type of the operator
+     * @param opCode The code of the operator definition
+     * @param retType The return type of the operator
      * @param args The arguments the operator takes
      * @param body The body of the operator definition
      */
     @Contract(pure = true)
-    public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode op_code, @NotNull TypeLikeNode[] ret_type,
+    public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode opCode, @NotNull TypeLikeNode[] retType,
                                   @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
         this.lineInfo = lineInfo;
-        this.op_code = op_code;
-        this.ret_type = ret_type;
+        this.opCode = opCode;
+        this.retType = retType;
         this.args = args;
         this.body = body;
     }
@@ -51,12 +51,12 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         this.descriptors = nodes;
     }
 
-    public SpecialOpNameNode getOp_code() {
-        return op_code;
+    public SpecialOpNameNode getOpCode() {
+        return opCode;
     }
 
-    public TypeLikeNode[] getRet_type() {
-        return ret_type;
+    public TypeLikeNode[] getRetType() {
+        return retType;
     }
 
     public TypedArgumentListNode getArgs() {
@@ -75,7 +75,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
 
     @Override
     public VariableNode getName() {
-        return new VariableNode(LineInfo.empty(), op_code.getOperator().name);
+        return new VariableNode(LineInfo.empty(), opCode.getOperator().name);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     @Contract("_ -> new")
     static OperatorDefinitionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
-        SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
+        SpecialOpNameNode opCode = SpecialOpNameNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
         TypeLikeNode[] retval;
         if (tokens.tokenIs(TokenType.ARROW)) {
@@ -133,7 +133,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
             retval = new TypeNode[0];
         }
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new OperatorDefinitionNode(op_code, retval, args, body);
+        return new OperatorDefinitionNode(opCode, retval, args, body);
     }
 
     @NotNull
@@ -141,14 +141,14 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     static OperatorDefinitionNode fromGeneric(@NotNull TokenList tokens, @NotNull GenericOperatorNode op) {
         assert tokens.tokenIs("{");
         StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new OperatorDefinitionNode(op.getOp_code(), op.getRetvals(), op.getArgs(), body);
+        return new OperatorDefinitionNode(op.getOpCode(), op.getRetvals(), op.getArgs(), body);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(GeneralizableNode.toString(generics));
         sb.append(DescriptorNode.join(descriptors));
-        sb.append(op_code);
+        sb.append(opCode);
         if (!args.isEmpty()) {
             sb.append(args);
         }

@@ -13,16 +13,16 @@ public class ComprehensionNode extends ComprehensionLikeNode {
 
     /**
      * Create a new instance of ComprehensionNode.
-     * @param brace_type The type of brace used in the comprehension
+     * @param braceType The type of brace used in the comprehension
      * @param variables The variables being looped over in the loop
      * @param builder What is actually forming the values that go into the
      *                built object
      * @param looped The iterable being looped over
      */
     @Contract(pure = true)
-    public ComprehensionNode(LineInfo lineInfo, String brace_type, VarLikeNode[] variables,
+    public ComprehensionNode(LineInfo lineInfo, String braceType, VarLikeNode[] variables,
                              ArgumentNode[] builder, TestListNode looped, TestNode condition, TestNode whileCond) {
-        super(lineInfo, brace_type, variables, builder, looped, condition, whileCond);
+        super(lineInfo, braceType, variables, builder, looped, condition, whileCond);
     }
 
     /**
@@ -42,7 +42,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
     static ComprehensionNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo info = tokens.lineInfo();
-        String brace_type = tokens.tokenSequence();
+        String braceType = tokens.tokenSequence();
         String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
         ArgumentNode[] builder = ArgumentNode.parseBraceFreeList(tokens);
@@ -59,11 +59,11 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         TestListNode looped = loopedAndCondition.getKey();
         TestNode condition = loopedAndCondition.getValue();
         TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
-        if (!brace_type.isEmpty() && !tokens.tokenIs(matchingBrace)) {
+        if (!braceType.isEmpty() && !tokens.tokenIs(matchingBrace)) {
             throw tokens.error("Expected close brace");
         }
         tokens.nextToken();
-        return new ComprehensionNode(info, brace_type, variables, builder, looped, condition, whileCond);
+        return new ComprehensionNode(info, braceType, variables, builder, looped, condition, whileCond);
     }
 
 }

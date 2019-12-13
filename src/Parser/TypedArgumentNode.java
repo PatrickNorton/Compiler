@@ -13,30 +13,30 @@ public class TypedArgumentNode implements BaseNode {
     private LineInfo lineInfo;
     private TypeLikeNode type;
     private VariableNode name;
-    private TestNode defaultval;
-    private boolean is_vararg;
-    private String vararg_type;
+    private TestNode defaultVal;
+    private boolean isVararg;
+    private String varargType;
 
-    public TypedArgumentNode(TypeLikeNode type, VariableNode name, TestNode defaultval, boolean is_vararg, String vararg_type) {
-        this(type.getLineInfo(), type, name, defaultval, is_vararg, vararg_type);
+    public TypedArgumentNode(TypeLikeNode type, VariableNode name, TestNode defaultVal, boolean isVararg, String varargType) {
+        this(type.getLineInfo(), type, name, defaultVal, isVararg, varargType);
     }
     /**
      * Construct a new instance of TypedArgumentListNode.
      * @param type The type of the argument
      * @param name The name of the argument
-     * @param defaultval The default value of the argument
-     * @param is_vararg If the argument has a vararg
-     * @param vararg_type The type of the vararg, if it exists
+     * @param defaultVal The default value of the argument
+     * @param isVararg If the argument has a vararg
+     * @param varargType The type of the vararg, if it exists
      */
     @Contract(pure = true)
-    public TypedArgumentNode(LineInfo lineInfo, TypeLikeNode type, VariableNode name, TestNode defaultval,
-                             boolean is_vararg, String vararg_type) {
+    public TypedArgumentNode(LineInfo lineInfo, TypeLikeNode type, VariableNode name, TestNode defaultVal,
+                             boolean isVararg, String varargType) {
         this.lineInfo = lineInfo;
         this.type = type;
         this.name = name;
-        this.defaultval = defaultval;
-        this.is_vararg = is_vararg;
-        this.vararg_type = vararg_type;
+        this.defaultVal = defaultVal;
+        this.isVararg = isVararg;
+        this.varargType = varargType;
     }
 
     @Override
@@ -52,16 +52,16 @@ public class TypedArgumentNode implements BaseNode {
         return name;
     }
 
-    public TestNode getDefaultval() {
-        return defaultval;
+    public TestNode getDefaultVal() {
+        return defaultVal;
     }
 
-    public boolean getIs_vararg() {
-        return is_vararg;
+    public boolean getVararg() {
+        return isVararg;
     }
 
-    public String getVararg_type() {
-        return vararg_type;
+    public String getVarargType() {
+        return varargType;
     }
 
     /**
@@ -80,14 +80,14 @@ public class TypedArgumentNode implements BaseNode {
     @NotNull
     @Contract("_, _ -> new")
     static TypedArgumentNode parse(@NotNull TokenList tokens, boolean isTyped) {
-        String vararg_type;
+        String varargType;
         if (tokens.tokenIs("*", "**")) {
-            vararg_type = tokens.tokenSequence();
+            varargType = tokens.tokenSequence();
             tokens.nextToken(true);
         } else {
-            vararg_type = "";
+            varargType = "";
         }
-        return parse(tokens, isTyped, vararg_type);
+        return parse(tokens, isTyped, varargType);
     }
 
     /**
@@ -108,8 +108,8 @@ public class TypedArgumentNode implements BaseNode {
         TypeLikeNode type = isTyped ? TypeLikeNode.parse(tokens, true) : TypeNode.var();
         VariableNode var = VariableNode.parse(tokens);
         tokens.passNewlines();
-        TestNode default_value = TestNode.parseOnToken(tokens, "=", true);
-        return new TypedArgumentNode(type, var, default_value, varargType.isEmpty(), varargType);
+        TestNode defaultValue = TestNode.parseOnToken(tokens, "=", true);
+        return new TypedArgumentNode(type, var, defaultValue, varargType.isEmpty(), varargType);
     }
 
     /**
@@ -155,15 +155,15 @@ public class TypedArgumentNode implements BaseNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (is_vararg) {
-            sb.append(vararg_type);
+        if (isVararg) {
+            sb.append(varargType);
         }
         sb.append(type);
         sb.append(" ");
         sb.append(name);
-        if (!defaultval.isEmpty()) {
+        if (!defaultVal.isEmpty()) {
             sb.append("=");
-            sb.append(defaultval);
+            sb.append(defaultVal);
         }
         return sb.toString();
     }

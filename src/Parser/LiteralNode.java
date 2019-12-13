@@ -16,16 +16,16 @@ import java.util.LinkedList;
  */
 public class LiteralNode implements SubTestNode, PostDottableNode {
     private LineInfo lineInfo;
-    private String brace_type;
+    private String braceType;
     private TestNode[] builders;
-    private String[] is_splats;
+    private String[] isSplats;
 
     @Contract(pure = true)
-    public LiteralNode(LineInfo lineInfo, String brace_type, TestNode[] builders, String[] is_splats) {
+    public LiteralNode(LineInfo lineInfo, String braceType, TestNode[] builders, String[] isSplats) {
         this.lineInfo = lineInfo;
-        this.brace_type = brace_type;
+        this.braceType = braceType;
         this.builders = builders;
-        this.is_splats = is_splats;
+        this.isSplats = isSplats;
     }
 
     @Override
@@ -33,16 +33,16 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
         return lineInfo;
     }
 
-    public String getBrace_type() {
-        return brace_type;
+    public String getBraceType() {
+        return braceType;
     }
 
     public TestNode[] getBuilders() {
         return builders;
     }
 
-    public String[] getIs_splats() {
-        return is_splats;
+    public String[] getIsSplats() {
+        return isSplats;
     }
 
     /**
@@ -61,20 +61,20 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
     static LiteralNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo lineInfo = tokens.lineInfo();
-        String brace_type = tokens.tokenSequence();
-        String balanced_brace = tokens.matchingBrace();
+        String braceType = tokens.tokenSequence();
+        String matchingBrace = tokens.matchingBrace();
         tokens.nextToken(true);
         LinkedList<TestNode> values = new LinkedList<>();
-        LinkedList<String> is_splat = new LinkedList<>();
-        while (!tokens.tokenIs(balanced_brace)) {
+        LinkedList<String> isSplat = new LinkedList<>();
+        while (!tokens.tokenIs(matchingBrace)) {
             if (tokens.tokenIs(TokenType.CLOSE_BRACE)) {
                 throw tokens.error("Unmatched braces");
             }
             if (tokens.tokenIs("*", "**")) {
-                is_splat.add(tokens.tokenSequence());
+                isSplat.add(tokens.tokenSequence());
                 tokens.nextToken(true);
             } else {
-                is_splat.add("");
+                isSplat.add("");
             }
             values.add(TestNode.parse(tokens, true));
             if (tokens.tokenIs(",")) {
@@ -83,25 +83,25 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
                 break;
             }
         }
-        if (tokens.tokenIs(balanced_brace)) {
+        if (tokens.tokenIs(matchingBrace)) {
             tokens.nextToken();
         } else {
             throw tokens.error("Unmatched braces");
         }
-        return new LiteralNode(lineInfo, brace_type, values.toArray(new TestNode[0]), is_splat.toArray(new String[0]));
+        return new LiteralNode(lineInfo, braceType, values.toArray(new TestNode[0]), isSplat.toArray(new String[0]));
 
     }
 
     @Override
     public String toString() {
-        String endBrace =  TokenList.matchingBrace(brace_type);
+        String endBrace =  TokenList.matchingBrace(braceType);
         switch (builders.length) {
             case 0:
-                return brace_type + endBrace;
+                return braceType + endBrace;
             case 1:
-                return brace_type + is_splats[0] + builders[0] + (brace_type.equals("(") ? "," : "") + endBrace;
+                return braceType + isSplats[0] + builders[0] + (braceType.equals("(") ? "," : "") + endBrace;
             default:
-                return String.format("%s%s%s, ...%s", brace_type, is_splats[0], builders[0], endBrace);
+                return String.format("%s%s%s, ...%s", braceType, isSplats[0], builders[0], endBrace);
         }
     }
 }

@@ -15,23 +15,23 @@ public class IfStatementNode implements FlowStatementNode {
     private TestNode conditional;
     private StatementBodyNode body;
     private ElifStatementNode[] elifs;
-    private StatementBodyNode else_stmt;
+    private StatementBodyNode elseStmt;
 
     /**
      * Create a new instance of IfStatementNode.
      * @param conditional The conditional to test
      * @param body The body of the initial if-statement
      * @param elifs All elif statements post-ceding the initial if
-     * @param else_stmt The else statement at the end
+     * @param elseStmt The else statement at the end
      */
     @Contract(pure = true)
     public IfStatementNode(LineInfo lineInfo, TestNode conditional, StatementBodyNode body,
-                           ElifStatementNode[] elifs, StatementBodyNode else_stmt) {
+                           ElifStatementNode[] elifs, StatementBodyNode elseStmt) {
         this.lineInfo = lineInfo;
         this.conditional = conditional;
         this.body = body;
         this.elifs = elifs;
-        this.else_stmt = else_stmt;
+        this.elseStmt = elseStmt;
     }
 
     @Override
@@ -52,8 +52,8 @@ public class IfStatementNode implements FlowStatementNode {
         return elifs;
     }
 
-    public StatementBodyNode getElse_stmt() {
-        return else_stmt;
+    public StatementBodyNode getElseStmt() {
+        return elseStmt;
     }
 
     /**
@@ -78,12 +78,12 @@ public class IfStatementNode implements FlowStatementNode {
         LinkedList<ElifStatementNode> elifs = new LinkedList<>();
         while (tokens.tokenIs(Keyword.ELIF)) {
             tokens.nextToken();
-            TestNode elif_test = TestNode.parse(tokens);
-            StatementBodyNode elif_body = StatementBodyNode.parse(tokens);
-            elifs.add(new ElifStatementNode(info, elif_test, elif_body));
+            TestNode elifCondition = TestNode.parse(tokens);
+            StatementBodyNode elifBody = StatementBodyNode.parse(tokens);
+            elifs.add(new ElifStatementNode(info, elifCondition, elifBody));
         }
-        StatementBodyNode else_stmt = StatementBodyNode.parseOnToken(tokens, "else");
-        return new IfStatementNode(info, test, body, elifs.toArray(new ElifStatementNode[0]), else_stmt);
+        StatementBodyNode elseStmt = StatementBodyNode.parseOnToken(tokens, "else");
+        return new IfStatementNode(info, test, body, elifs.toArray(new ElifStatementNode[0]), elseStmt);
     }
 
     @Override

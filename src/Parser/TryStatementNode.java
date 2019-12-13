@@ -16,20 +16,20 @@ public class TryStatementNode implements FlowStatementNode {
     private StatementBodyNode body;
     private StatementBodyNode except;
     private TypeLikeNode[] excepted;
-    private VariableNode as_var;
-    private StatementBodyNode else_stmt;
-    private StatementBodyNode finally_stmt;
+    private VariableNode asVar;
+    private StatementBodyNode elseStmt;
+    private StatementBodyNode finallyStmt;
 
     @Contract(pure = true)
     public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, TypeLikeNode[] excepted,
-                            VariableNode as_var, StatementBodyNode else_stmt, StatementBodyNode finally_stmt) {
+                            VariableNode asVar, StatementBodyNode elseStmt, StatementBodyNode finallyStmt) {
         this.lineInfo = lineInfo;
         this.body = body;
         this.except = except;
         this.excepted = excepted;
-        this.as_var = as_var;
-        this.else_stmt = else_stmt;
-        this.finally_stmt = finally_stmt;
+        this.asVar = asVar;
+        this.elseStmt = elseStmt;
+        this.finallyStmt = finallyStmt;
     }
 
     @Override
@@ -50,16 +50,16 @@ public class TryStatementNode implements FlowStatementNode {
         return excepted;
     }
 
-    public VariableNode getAs_var() {
-        return as_var;
+    public VariableNode getAsVar() {
+        return asVar;
     }
 
-    public StatementBodyNode getElse_stmt() {
-        return else_stmt;
+    public StatementBodyNode getElseStmt() {
+        return elseStmt;
     }
 
-    public StatementBodyNode getFinally_stmt() {
-        return finally_stmt;
+    public StatementBodyNode getFinallyStmt() {
+        return finallyStmt;
     }
 
     /**
@@ -104,9 +104,9 @@ public class TryStatementNode implements FlowStatementNode {
     public String toString() {
         if (!except.isEmpty()) {
             String excepted = TestNode.toString(this.excepted);
-            return String.format("try %s except %s%s", body, excepted, (as_var.isEmpty() ? "" : " as " + as_var));
-        } else if (!finally_stmt.isEmpty()) {
-            return String.format("try %s finally %s", body, finally_stmt);
+            return String.format("try %s except %s%s", body, excepted, (asVar.isEmpty() ? "" : " as " + asVar));
+        } else if (!finallyStmt.isEmpty()) {
+            return String.format("try %s finally %s", body, finallyStmt);
         } else {
             return "try " + body;
         }

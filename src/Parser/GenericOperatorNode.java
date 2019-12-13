@@ -19,15 +19,15 @@ import java.util.EnumSet;
  */
 public class GenericOperatorNode implements GenericDefinitionNode {
     private LineInfo lineInfo;
-    private SpecialOpNameNode op_code;
+    private SpecialOpNameNode opCode;
     private TypedArgumentListNode args;
     private TypeLikeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
     @Contract(pure = true)
-    public GenericOperatorNode(LineInfo lineInfo, SpecialOpNameNode op_code, TypedArgumentListNode args, TypeLikeNode... retvals) {
+    public GenericOperatorNode(LineInfo lineInfo, SpecialOpNameNode opCode, TypedArgumentListNode args, TypeLikeNode... retvals) {
         this.lineInfo = lineInfo;
-        this.op_code = op_code;
+        this.opCode = opCode;
         this.args = args;
         this.retvals = retvals;
     }
@@ -37,8 +37,8 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         return lineInfo;
     }
 
-    public SpecialOpNameNode getOp_code() {
-        return op_code;
+    public SpecialOpNameNode getOpCode() {
+        return opCode;
     }
 
     public TypedArgumentListNode getArgs() {
@@ -103,7 +103,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
     public static GenericOperatorNode parse(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         LineInfo info = tokens.lineInfo();
-        SpecialOpNameNode op_code = SpecialOpNameNode.parse(tokens);
+        SpecialOpNameNode opCode = SpecialOpNameNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
         TypeLikeNode[] retvals;
         if (tokens.tokenIs(TokenType.ARROW)) {
@@ -111,11 +111,11 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         } else {
             retvals = new TypeLikeNode[0];
         }
-        return new GenericOperatorNode(info, op_code, args, retvals);
+        return new GenericOperatorNode(info, opCode, args, retvals);
     }
 
     @Override
     public String toString() {
-        return DescriptorNode.join(descriptors) + "operator " + op_code + " " + args;
+        return DescriptorNode.join(descriptors) + "operator " + opCode + " " + args;
     }
 }

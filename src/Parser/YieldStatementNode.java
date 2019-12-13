@@ -10,14 +10,14 @@ import util.Pair;
  */
 public class YieldStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
-    private boolean is_from;
+    private boolean isFrom;
     private TestListNode yielded;
     private TestNode cond;
 
     @Contract(pure = true)
-    public YieldStatementNode(LineInfo lineInfo, boolean is_from, TestListNode yielded, TestNode cond) {
+    public YieldStatementNode(LineInfo lineInfo, boolean isFrom, TestListNode yielded, TestNode cond) {
         this.lineInfo = lineInfo;
-        this.is_from = is_from;
+        this.isFrom = isFrom;
         this.yielded = yielded;
         this.cond = cond;
     }
@@ -31,8 +31,8 @@ public class YieldStatementNode implements SimpleFlowNode {
         return yielded;
     }
 
-    public boolean getIs_from() {
-        return is_from;
+    public boolean isFrom() {
+        return isFrom;
     }
 
     @Override
@@ -56,18 +56,18 @@ public class YieldStatementNode implements SimpleFlowNode {
         assert tokens.tokenIs(Keyword.YIELD);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();
-        boolean is_from = tokens.tokenIs(Keyword.FROM);
-        if (is_from) {
+        boolean isFrom = tokens.tokenIs(Keyword.FROM);
+        if (isFrom) {
             tokens.nextToken();
         }
         Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, false);
         TestListNode yields = loopedAndCondition.getKey();
         TestNode cond = loopedAndCondition.getValue();
-        return new YieldStatementNode(lineInfo, is_from, yields, cond);
+        return new YieldStatementNode(lineInfo, isFrom, yields, cond);
     }
 
     @Override
     public String toString() {
-        return (is_from ? "yield from " : "yield ") + yielded;
+        return (isFrom ? "yield from " : "yield ") + yielded;
     }
 }

@@ -115,12 +115,12 @@ public interface IndependentNode extends BaseNode {
      */
     private static IndependentNode parseLeftVariable(@NotNull TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME, TokenType.OPEN_BRACE);
-        Token after_var = tokens.getToken(tokens.sizeOfVariable());
+        Token afterVar = tokens.getToken(tokens.sizeOfVariable());
         if (isAssignment(tokens) || isNormalAssignment(tokens)) {
             return AssignStatementNode.parse(tokens);
         } else if (tokens.tokenIs(tokens.sizeOfVariable(), TokenType.AUG_ASSIGN)) {
             return AugmentedAssignmentNode.parse(tokens);
-        } else if (after_var.is(TokenType.INCREMENT)) {
+        } else if (afterVar.is(TokenType.INCREMENT)) {
             return SimpleStatementNode.parseIncDec(tokens);
         } else if (isDeclaration(tokens)) {
             return DeclarationNode.parse(tokens);

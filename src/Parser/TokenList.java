@@ -561,11 +561,11 @@ public final class TokenList implements Iterable<Token> {
 
     /**
      * Pop the first token and move on, possibly ignoring newlines.
-     * @param ignore_newlines Whether or not to ignore newlines
+     * @param ignoreNewlines Whether or not to ignore newlines
      */
-    public void nextToken(boolean ignore_newlines) {
+    public void nextToken(boolean ignoreNewlines) {
         nextToken();
-        if (ignore_newlines) {
+        if (ignoreNewlines) {
             passNewlines();
         }
     }

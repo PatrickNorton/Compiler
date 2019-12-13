@@ -20,7 +20,7 @@ public interface SimpleStatementNode extends StatementNode {
         } else if (amount.is("--")) {
             return DecrementNode.parse(tokens);
         } else {
-            throw tokens.internalError("inc_or_dec must use ++ or --");
+            throw tokens.internalError("parseIncDec must use ++ or --");
         }
     }
 }
