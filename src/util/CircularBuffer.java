@@ -117,13 +117,13 @@ public class CircularBuffer<T> extends AbstractList<T> implements Deque<T>, List
     @Contract(pure = true)
     @Override
     public T peekFirst() {
-        return values[internalIndex(0)];
+        return size == 0 ? null : values[internalIndex(0)];
     }
 
     @Contract(pure = true)
     @Override
     public T peekLast() {
-        return values[internalIndex(size - 1)];
+        return size == 0 ? null : values[internalIndex(size - 1)];
     }
 
     @Override
