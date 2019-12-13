@@ -154,17 +154,6 @@ public class TypedArgumentNode implements BaseNode {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        if (isVararg) {
-            sb.append(varargType);
-        }
-        sb.append(type);
-        sb.append(" ");
-        sb.append(name);
-        if (!defaultVal.isEmpty()) {
-            sb.append("=");
-            sb.append(defaultVal);
-        }
-        return sb.toString();
+        return String.format("%s%s %s%s", varargType, type, name, defaultVal.isEmpty() ? "" : defaultVal);
     }
 }

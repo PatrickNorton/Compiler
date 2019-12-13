@@ -157,12 +157,7 @@ public class ArgumentNode implements BaseNode {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(vararg);
-        if (!variable.isEmpty()) {
-            sb.append(variable).append("=");
-        }
-        sb.append(argument);
-        return sb.toString();
+        return vararg + (variable.isEmpty() ? "" : variable + "=") + argument;
     }
 
     public static String toString(@NotNull ArgumentNode... values) {

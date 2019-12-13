@@ -111,14 +111,7 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(DescriptorNode.join(descriptors));
-        sb.append("class ").append(name).append(" ");
-        if (superclasses.length > 0) {
-            sb.append("from ");
-            sb.append(TestNode.toString(superclasses));
-            sb.append(" ");
-        }
-        return sb.append(body).toString();
+        return String.format("%sclass %s %s %s", DescriptorNode.join(descriptors), name,
+                superclasses.length > 0 ? "from " + TestNode.toString(superclasses) : "", body);
     }
 }

@@ -61,7 +61,7 @@ public class StringNode extends StringLikeNode {
         char delimiter = '"';
         if (contents.contains("\"")) {
             if (contents.contains("'")) {
-                newContents = contents.replaceFirst("\"", "\\\"");
+                newContents = contents.replace("\"", "\\\"");
             } else {
                 delimiter = '\'';
             }
