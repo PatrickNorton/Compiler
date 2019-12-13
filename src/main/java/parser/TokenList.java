@@ -27,7 +27,7 @@ public final class TokenList implements Iterable<Token> {
      */
     @Contract(pure = true)
     public TokenList(Tokenizer tokenizer) {
-        this.buffer = new CircularBuffer<Token>();
+        this.buffer = new CircularBuffer<>();
         this.tokenizer = tokenizer;
     }
 
