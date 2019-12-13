@@ -86,7 +86,7 @@ public class ImportExportNode implements SimpleStatementNode {
         String type = tokens.tokenSequence();
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE)) {
-            throw tokens.error(String.format("Empty %s statements are illegal", type));
+            throw tokens.errorf("Empty %s statements are illegal", type);
         }
         if (tokens.tokenIs("*")) {
             tokens.nextToken();

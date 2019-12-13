@@ -60,28 +60,16 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
         TestNode key = TestNode.parse(tokens, true);
-        if (!tokens.tokenIs(":")) {
-            throw tokens.error("Expected :, got "+tokens.getFirst());
-        }
-        tokens.nextToken(true);
+        tokens.expect(":", true);
         TestNode val = TestNode.parse(tokens, true);
-        if (!tokens.tokenIs(Keyword.FOR)) {
-            throw tokens.error("Expected for, got "+tokens.getFirst());
-        }
-        tokens.nextToken(true);
+        tokens.expect(Keyword.FOR, true);
         VarLikeNode[] vars = VarLikeNode.parseList(tokens, true);
-        if (!tokens.tokenIs(Keyword.IN)) {
-            throw tokens.error("Expected in, got "+tokens.getFirst());
-        }
-        tokens.nextToken(true);
+        tokens.expect(Keyword.IN, true);
         Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, true);
         TestListNode looped = loopedAndCondition.getKey();
         TestNode condition = loopedAndCondition.getValue();
         TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
-        if (!tokens.tokenIs("}")) {
-            throw tokens.error("Expected }, got "+tokens.getFirst());
-        }
-        tokens.nextToken();
+        tokens.expect("}");
         return new DictComprehensionNode(info, key, val, vars, looped, condition, whileCond);
     }
 

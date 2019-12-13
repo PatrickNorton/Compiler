@@ -60,7 +60,9 @@ public class ComprehensionNode extends ComprehensionLikeNode {
         TestNode condition = loopedAndCondition.getValue();
         TestNode whileCond = TestNode.parseOnToken(tokens, Keyword.WHILE, true);
         if (!braceType.isEmpty() && !tokens.tokenIs(matchingBrace)) {
-            throw tokens.error("Expected close brace");
+            throw tokens.tokenIs(TokenType.CLOSE_BRACE)
+                    ? tokens.errorf("Unmatched brace: %s does not match %s", matchingBrace, tokens.getFirst())
+                    : tokens.errorExpected("close brace");
         }
         tokens.nextToken();
         return new ComprehensionNode(info, braceType, variables, builder, looped, condition, whileCond);

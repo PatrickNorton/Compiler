@@ -45,7 +45,7 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
             tokens.nextToken(true);
             name = parse(tokens, true);
             if (!tokens.tokenIs(")")) {
-                throw tokens.error("Unexpected " + tokens.getFirst());
+                throw tokens.defaultError();
             }
         }
         return parsePost(tokens, name, ignoreNewlines);

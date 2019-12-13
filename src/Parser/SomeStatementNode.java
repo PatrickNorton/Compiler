@@ -55,11 +55,11 @@ public class SomeStatementNode implements SubTestNode {
         tokens.nextToken();
         TestNode contained = TestNode.parse(tokens);
         if (!(contained instanceof OperatorNode)) {
-            throw tokens.error("Expected an in, got "+tokens.getFirst());
+            throw tokens.errorExpected("in");
         }
         OperatorNode inStmt = (OperatorNode) contained;
         if (inStmt.getOperator() != OperatorTypeNode.IN) {
-            throw tokens.error("Expected an in, got "+tokens.getFirst());
+            throw tokens.errorExpected("in");
         }
         ArgumentNode[] operands = inStmt.getOperands();
         return new SomeStatementNode(lineInfo, operands[0].getArgument(), operands[1].getArgument());

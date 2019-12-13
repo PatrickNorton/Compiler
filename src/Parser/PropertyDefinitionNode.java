@@ -124,7 +124,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         TypeLikeNode type = TypeLikeNode.parse(tokens);
         VariableNode name = VariableNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
-            throw tokens.error("Unexpected " + tokens.getFirst());
+            throw tokens.defaultError();
         }
         tokens.nextToken(true);
         StatementBodyNode get = StatementBodyNode.parseOnToken(tokens, "get");
@@ -141,7 +141,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         }
         tokens.passNewlines();
         if (!tokens.tokenIs("}")) {
-            throw tokens.error("Only set and get are allowed in context statements");
+            throw tokens.errorWithFirst("Only set and get are allowed in context statements, not");
         }
         tokens.nextToken();
         return new PropertyDefinitionNode(info, name, type, get, setArgs, set);

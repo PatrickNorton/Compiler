@@ -39,7 +39,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
         tokens.nextToken();
         TestNode switched = TestNode.parse(tokens);
         if (!tokens.tokenIs("{")) {
-            throw tokens.error("Unexpected " + tokens.getFirst());
+            throw tokens.defaultError();
         }
         tokens.nextToken(true);
         List<CaseStatementNode> cases = new ArrayList<>();
@@ -52,7 +52,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
             }
         }
         if (!tokens.tokenIs("}")) {
-            throw tokens.error("Unexpected " + tokens.getFirst());
+            throw tokens.defaultError();
         }
         tokens.nextToken();
         return new SwitchStatementNode(info, switched, cases.toArray(new CaseStatementNode[0]));

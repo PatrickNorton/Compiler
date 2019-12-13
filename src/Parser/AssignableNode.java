@@ -50,7 +50,7 @@ public interface AssignableNode extends TestNode {
                     throw ParserException.of("Cannot assign to node", t);
                 }
             default:
-                throw tokens.error("Un-assignable value " + tokens.getFirst());
+                throw tokens.errorWithFirst("Un-assignable value");
         }
     }
 }

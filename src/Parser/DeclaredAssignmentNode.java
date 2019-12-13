@@ -105,7 +105,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         LineInfo info = tokens.lineInfo();
         TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
         if (!tokens.tokenIs(TokenType.ASSIGN)) {
-            throw tokens.error("Unexpected "+tokens.getFirst());
+            throw tokens.defaultError();
         }
         boolean isColon = tokens.tokenIs(":=");
         tokens.nextToken();

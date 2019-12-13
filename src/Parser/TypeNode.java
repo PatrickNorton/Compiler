@@ -114,7 +114,7 @@ public class TypeNode implements TypeLikeNode {
             if (allowEmpty && tokens.tokenIs("[")) {
                 main = DottedVariableNode.empty();
             } else {
-                throw tokens.error("Expected type name, got " + tokens.getFirst());
+                throw tokens.errorExpected("type name");
             }
         } else {
             main = DottedVariableNode.parseNamesOnly(tokens, ignoreNewlines);

@@ -87,7 +87,7 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
     @Contract("_ -> new")
     static VariableNode parse(@NotNull TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
-            throw tokens.error("Expected name. got " + tokens.getFirst());
+            throw tokens.errorExpected("name");
         }
         String name = tokens.tokenSequence();
         LineInfo info = tokens.lineInfo();
@@ -110,7 +110,7 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
             tokens.passNewlines();
         }
         if (!tokens.tokenIs(TokenType.NAME)) {
-            throw tokens.error("Expected name. got " + tokens.getFirst());
+            throw tokens.errorExpected("name");
         }
         String name = tokens.tokenSequence();
         LineInfo info = tokens.lineInfo();

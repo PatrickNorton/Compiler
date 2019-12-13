@@ -121,7 +121,7 @@ public class ArgumentNode implements BaseNode {
         }
         ArgumentNode[] args = parseBraceFreeList(tokens);
         if (!tokens.tokenIs(")")) {
-            throw tokens.error("Unexpected " + tokens.getFirst());
+            throw tokens.defaultError();
         }
         tokens.nextToken();
         return args;

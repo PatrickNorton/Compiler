@@ -41,7 +41,7 @@ public class DottedVar implements BaseNode {
         NameNode postDot;
         if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
             if (namesOnly) {
-                throw tokens.error("Unexpected " + tokens.getFirst());
+                throw tokens.defaultError();
             }
             postDot = SpecialOpNameNode.parse(tokens);
         } else {

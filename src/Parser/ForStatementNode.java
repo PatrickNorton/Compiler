@@ -77,16 +77,13 @@ public class ForStatementNode implements FlowStatementNode {
             tokens.nextToken(true);
         }
         VarLikeNode[] vars = VarLikeNode.parseList(tokens, ignoreNewlines);
-        if (!tokens.tokenIs(Keyword.IN)) {
-            throw tokens.error("Expected in, got " + tokens.getFirst());
-        }
-        tokens.nextToken(ignoreNewlines);
+        tokens.expect(Keyword.IN, ignoreNewlines);
         TestListNode iterables = TestListNode.parse(tokens, ignoreNewlines);
         if (ignoreNewlines) {
             if (tokens.tokenIs(")")) {
                 tokens.nextToken();
             } else {
-                throw tokens.error("Unexpected " + tokens.getFirst());
+                throw tokens.defaultError();
             }
         }
         StatementBodyNode body = StatementBodyNode.parse(tokens);

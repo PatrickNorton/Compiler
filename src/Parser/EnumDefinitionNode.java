@@ -108,10 +108,7 @@ public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
         tokens.nextToken();
         TypeNode name = TypeNode.parse(tokens);
         TypeLikeNode[] superclasses = TypeLikeNode.parseListOnToken(tokens, Keyword.FROM);
-        if (!tokens.tokenIs("{")) {
-            throw tokens.error("Expected {, got " + tokens.getFirst());
-        }
-        tokens.nextToken(true);
+        tokens.expect("{", true);
         List<EnumKeywordNode> names = new ArrayList<>();
         while (true) {
             names.add(EnumKeywordNode.parse(tokens));

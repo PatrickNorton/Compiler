@@ -93,10 +93,7 @@ public class SliceNode implements SubTestNode {
             return new SliceNode(info, start, end);
         }
         TestNode step = sliceTest(tokens);
-        if (!tokens.tokenIs("]")) {
-            throw tokens.error("Expected ], got "+tokens.getFirst());
-        }
-        tokens.nextToken();
+        tokens.expect("]");
         return new SliceNode(info, start, end, step);
     }
 
@@ -107,10 +104,7 @@ public class SliceNode implements SubTestNode {
      */
     @NotNull
     private static TestNode sliceTest(@NotNull TokenList tokens) {
-        if (!tokens.tokenIs(TokenType.COLON)) {
-            throw tokens.error("Expected :, got "+tokens.getFirst());
-        }
-        tokens.nextToken(true);
+        tokens.expect(TokenType.COLON, ":", true);
         if (tokens.tokenIs(TokenType.COLON, "]")) {
             return TestNode.empty();
         } else {

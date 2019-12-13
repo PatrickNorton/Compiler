@@ -65,7 +65,7 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
     static AugmentedAssignmentNode parse(TokenList tokens) {
         NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs(TokenType.AUG_ASSIGN)) {
-            throw tokens.error("Expected augmented assignment, got " + tokens.getFirst());
+            throw tokens.errorExpected("augmented assignment");
         }
         AugAssignTypeNode op = AugAssignTypeNode.parse(tokens);
         TestNode assignment = TestNode.parse(tokens);

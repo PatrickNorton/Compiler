@@ -68,10 +68,7 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
         List<TestNode> values = new ArrayList<>();
         if (tokens.tokenIs(":")) {
             tokens.nextToken(true);
-            if (!tokens.tokenIs("}")) {
-                throw tokens.error("Expected }, got " + tokens.getFirst());
-            }
-            tokens.nextToken();
+            tokens.expect("}");
             return new DictLiteralNode(info);
         }
         do {

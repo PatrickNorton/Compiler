@@ -403,7 +403,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     tokens.nextToken(true);
                     TestNode contained = parse(tokens, true);
                     if (!tokens.tokenIs(")")) {
-                        throw tokens.error("Unmatched brace");
+                        throw tokens.errorWithFirst("Unmatched brace: ) does not match %s");
                     }
                     tokens.nextToken();
                     return contained;

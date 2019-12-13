@@ -296,10 +296,7 @@ public final class TokenList implements Iterable<Token> {
      * Expect and parse a newline from the beginning of the list.
      */
     public void Newline() {
-        if (!tokenIs(TokenType.NEWLINE)) {
-            throw error("Expected newline, got " + getFirst());
-        }
-        nextToken(true);
+        expect(TokenType.NEWLINE, "newline", true);
     }
 
     /**
@@ -745,6 +742,54 @@ public final class TokenList implements Iterable<Token> {
     @Contract("_ -> new")
     public ParserException error(String message) {
         return ParserException.of(message, getFirst());
+    }
+
+    @NotNull
+    public ParserException errorf(String message, Object... args) {
+        return ParserException.of(String.format(message, args), getFirst());
+    }
+
+    @NotNull
+    public ParserException errorWithFirst(String message) {
+        return error(message + " " + getFirst());
+    }
+
+    @NotNull
+    public ParserException errorExpected(String expected) {
+        return errorf("Expected %s, got %s", expected, getFirst());
+    }
+
+    public void expect(String expected) {
+        if (!tokenIs(expected)) {
+            throw errorExpected(expected);
+        }
+        nextToken();
+    }
+
+    public void expect(String expected, boolean ignoreNewlines) {
+        if (!tokenIs(expected)) {
+            throw errorExpected(expected);
+        }
+        nextToken(ignoreNewlines);
+    }
+
+    public void expect(Keyword expected, boolean ignoreNewlines) {
+        if (!tokenIs(expected)) {
+            throw errorExpected(expected.name);
+        }
+        nextToken(ignoreNewlines);
+    }
+
+    public void expect(TokenType expected, String message, boolean ignoreNewlines) {
+        if (!tokenIs(expected)) {
+            throw errorExpected(message);
+        }
+        nextToken(ignoreNewlines);
+    }
+
+    @NotNull
+    public ParserException defaultError() {
+        return errorWithFirst("Unexpected");
     }
 
     public LineInfo lineInfo() {
