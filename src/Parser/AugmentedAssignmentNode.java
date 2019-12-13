@@ -46,12 +46,18 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
     }
 
     @Override
-    public NameNode[] getName() {
+    public NameNode[] getNames() {
         return new NameNode[] {name};
     }
 
-    public TestNode getValue() {
-        return value;
+    @Override
+    public TestListNode getValues() {
+        return new TestListNode(value);
+    }
+
+    @Override
+    public boolean isColon() {
+        return false;
     }
 
     @NotNull

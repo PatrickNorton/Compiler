@@ -17,6 +17,10 @@ public class TestListNode implements BaseNode {
         this(new TestNode[0], new String[0]);
     }
 
+    public TestListNode(TestNode... tests) {
+        this(tests, new String[0]);
+    }
+
     @Contract(pure = true)
     public TestListNode(@NotNull TestNode[] tests, @NotNull String[] varargs) {
         assert tests.length == varargs.length;

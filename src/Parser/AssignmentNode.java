@@ -18,41 +18,42 @@ public class AssignmentNode implements AssignStatementNode {
      * colon (= vs :=), the name(s) being assigned, and the value(s) to which
      * they are assigned
      */
-    private boolean is_colon;
+    private boolean isColon;
     private AssignableNode[] name;
     private TestListNode value;
     private LineInfo lineInfo;
 
     /**
      * Construct new instance of an AssignmentNode.
-     * @param is_colon whether or not the assignment is a dynamic or static
+     * @param isColon whether or not the assignment is a dynamic or static
      *                 assignment (:= vs =)
      * @param name The name(s) being assigned to
      * @param value The values to which they are assigned
      */
     @Contract(pure = true)
-    public AssignmentNode(boolean is_colon, AssignableNode[] name, TestListNode value) {
-        this(name[0].getLineInfo(), is_colon, name, value);
+    public AssignmentNode(boolean isColon, AssignableNode[] name, TestListNode value) {
+        this(name[0].getLineInfo(), isColon, name, value);
     }
 
     @Contract(pure = true)
-    public AssignmentNode(LineInfo lineInfo, boolean is_colon, AssignableNode[] name, TestListNode value) {
-        this.is_colon = is_colon;
+    public AssignmentNode(LineInfo lineInfo, boolean isColon, AssignableNode[] name, TestListNode value) {
+        this.isColon = isColon;
         this.name = name;
         this.value = value;
         this.lineInfo = lineInfo;
     }
 
-    public boolean getIs_colon() {
-        return is_colon;
+    @Override
+    public boolean isColon() {
+        return isColon;
     }
 
     @Override
-    public AssignableNode[] getName() {
+    public AssignableNode[] getNames() {
         return name;
     }
 
-    public TestListNode getValue() {
+    public TestListNode getValues() {
         return value;
     }
 
@@ -82,15 +83,15 @@ public class AssignmentNode implements AssignStatementNode {
             }
             tokens.nextToken();
         }
-        boolean is_colon = tokens.tokenIs(":=");
+        boolean isColon = tokens.tokenIs(":=");
         tokens.nextToken();
         TestListNode value = TestListNode.parse(tokens, false);
-        return new AssignmentNode(is_colon, name.toArray(new AssignableNode[0]), value);
+        return new AssignmentNode(isColon, name.toArray(new AssignableNode[0]), value);
     }
 
     @Override
     public String toString() {
         String names = TestNode.toString(name);
-        return String.join(" ", names, (is_colon ? ":=" : "="), value.toString());
+        return String.join(" ", names, (isColon ? ":=" : "="), value.toString());
     }
 }

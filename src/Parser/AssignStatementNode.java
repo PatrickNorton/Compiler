@@ -19,7 +19,9 @@ public interface AssignStatementNode extends SimpleStatementNode {
      * AssignStatementNodes must have something that is assigned to them
      * @return list of assigned names
      */
-    AssignableNode[] getName();
+    AssignableNode[] getNames();
+    boolean isColon();
+    TestListNode getValues();
 
     /**
      * Parse an assignment statement from a list of tokens.

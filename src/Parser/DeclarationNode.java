@@ -12,7 +12,7 @@ import java.util.Set;
  * @author Patrick Norton
  * @see DeclaredAssignmentNode
  */
-public class DeclarationNode implements AssignStatementNode, ClassStatementNode, AnnotatableNode {
+public class DeclarationNode implements DeclaredStatementNode, ClassStatementNode, AnnotatableNode {
     private LineInfo lineInfo;
     private TypeLikeNode type;
     private VariableNode name;
@@ -45,7 +45,12 @@ public class DeclarationNode implements AssignStatementNode, ClassStatementNode,
     }
 
     @Override
-    public NameNode[] getName() {
+    public TypedVariableNode[] getTypes() {
+        return new TypedVariableNode[] {new TypedVariableNode(type, name)};
+    }
+
+    @Override
+    public NameNode[] getNames() {
         return new NameNode[] {name};
     }
 

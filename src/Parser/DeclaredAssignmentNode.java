@@ -3,7 +3,6 @@ package Parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -14,9 +13,9 @@ import java.util.Set;
  * @see DeclarationNode
  * @see AssignmentNode
  */
-public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode, AnnotatableNode {
+public class DeclaredAssignmentNode implements AssignStatementNode, ClassStatementNode, DeclaredStatementNode, AnnotatableNode {
     private LineInfo lineInfo;
-    private boolean is_colon;
+    private boolean isColon;
     private TypedVariableNode[] assigned;
     private TestListNode value;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
@@ -24,14 +23,14 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
 
     /**
      * Create new instance of DeclaredAssignmentNode.
-     * @param is_colon Whether the assignment is dynamic (true) or static (false)
+     * @param isColon Whether the assignment is dynamic (true) or static (false)
      * @param assigned The variables being assigned to
      * @param value The values being assigned
      */
     @Contract(pure = true)
-    public DeclaredAssignmentNode(LineInfo lineInfo, boolean is_colon, TypedVariableNode[] assigned, TestListNode value) {
+    public DeclaredAssignmentNode(LineInfo lineInfo, boolean isColon, TypedVariableNode[] assigned, TestListNode value) {
         this.lineInfo = lineInfo;
-        this.is_colon = is_colon;
+        this.isColon = isColon;
         this.assigned = assigned;
         this.value = value;
     }
@@ -41,21 +40,28 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         return lineInfo;
     }
 
-    public boolean getIs_colon() {
-        return is_colon;
+    @Override
+    public boolean isColon() {
+        return isColon;
     }
 
     @Override
-    public NameNode[] getName() {
-        ArrayList<NameNode> name = new ArrayList<>();
-        for (TypedVariableNode t : assigned) {
-            name.add(t.getVariable());
+    public NameNode[] getNames() {
+        NameNode[] name = new NameNode[assigned.length];
+        for (int i = 0; i < assigned.length; i++) {
+            name[i] = assigned[i].getVariable();
         }
-        return name.toArray(new NameNode[0]);
+        return name;
     }
 
-    public TypedVariableNode[] getAssigned() {
+    @Override
+    public TypedVariableNode[] getTypes() {
         return assigned;
+    }
+
+    @Override
+    public TestListNode getValues() {
+        return value;
     }
 
     public EnumSet<DescriptorNode> getDescriptors() {
@@ -101,16 +107,16 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
         if (!tokens.tokenIs(TokenType.ASSIGN)) {
             throw tokens.error("Unexpected "+tokens.getFirst());
         }
-        boolean is_colon = tokens.tokenIs(":=");
+        boolean isColon = tokens.tokenIs(":=");
         tokens.nextToken();
         TestListNode value = TestListNode.parse(tokens, false);
-        return new DeclaredAssignmentNode(info, is_colon, assigned, value);
+        return new DeclaredAssignmentNode(info, isColon, assigned, value);
     }
 
     @Override
     public String toString() {
         return DescriptorNode.join(descriptors) +
                 TestNode.toString(assigned) +
-                (is_colon ? " := " : " = ") + value;
+                (isColon ? " := " : " = ") + value;
     }
 }
