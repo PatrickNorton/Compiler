@@ -126,7 +126,7 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
                     i += 9;
                     break;
                 default:
-                    throw ParserException.of("Unknown escape sequence " + str.substring(i, i+1), info);
+                    throw ParserException.of("Unknown escape sequence: " + str.substring(i-1, i+1), info);
             }
         }
         return sb.toString();
