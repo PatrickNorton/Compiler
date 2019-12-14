@@ -152,19 +152,6 @@ public enum DescriptorNode implements AtomicNode {
         return EnumSet.noneOf(DescriptorNode.class);
     }
 
-    /**
-     * Get the amount of descriptors upcoming in a list of tokens.
-     * @param tokens The list of tokens to be checked for descriptors
-     * @return The number of descriptors upcoming
-     */
-    public static int count(@NotNull TokenList tokens) {
-        int number = 0;
-        while (tokens.tokenIs(number, TokenType.DESCRIPTOR)) {
-            number++;
-        }
-        return number;
-    }
-
     @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
