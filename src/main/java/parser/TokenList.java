@@ -1,6 +1,7 @@
 package main.java.parser;
 
 import main.java.util.CircularBuffer;
+import main.java.util.IndexedDeque;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +15,7 @@ import java.util.Set;
  * @author Patrick Norton
  */
 public final class TokenList implements Iterable<Token> {
-    private final CircularBuffer<Token> buffer;
+    private final IndexedDeque<Token> buffer;
     private final Tokenizer tokenizer;
 
     /**

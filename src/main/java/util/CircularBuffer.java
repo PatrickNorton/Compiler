@@ -24,7 +24,7 @@ import java.util.RandomAccess;
  * @see Deque
  * @see List
  */
-public class CircularBuffer<T> extends AbstractList<T> implements Deque<T>, List<T>, RandomAccess {
+public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T>, RandomAccess {
     private static final int DEFAULT_SIZE = 16;
 
     private T[] values;
