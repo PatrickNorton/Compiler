@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public enum OperatorTypeNode implements AtomicNode {
     ADD("+", 3),
     SUBTRACT("-", 3),
-    U_SUBTRACT("u-", 1, true),
+    U_SUBTRACT("-", 1, true),
     MULTIPLY("*", 2),
     DIVIDE("/", 2),
     FLOOR_DIV("//", 2),
@@ -92,7 +92,8 @@ public enum OperatorTypeNode implements AtomicNode {
     static {  // Initialise the map
         Map<String, OperatorTypeNode> temp = new HashMap<>();
         for (OperatorTypeNode op : OperatorTypeNode.values()) {
-            temp.put(op.name, op);
+            if (op != U_SUBTRACT)
+                temp.put(op.name, op);
         }
         values = Collections.unmodifiableMap(temp);
     }

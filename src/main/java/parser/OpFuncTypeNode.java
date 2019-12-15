@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public enum OpFuncTypeNode {
     ADD("+", OperatorTypeNode.ADD),
     SUBTRACT("-", OperatorTypeNode.SUBTRACT),
-    U_SUBTRACT("u-", OperatorTypeNode.SUBTRACT),
+    U_SUBTRACT("-", OperatorTypeNode.SUBTRACT),
     MULTIPLY("*", OperatorTypeNode.MULTIPLY),
     DIVIDE("/", OperatorTypeNode.DIVIDE),
     FLOOR_DIV("//", OperatorTypeNode.FLOOR_DIV),
@@ -45,6 +45,7 @@ public enum OpFuncTypeNode {
     private static final Map<String, OpFuncTypeNode> values;
     public static final Pattern PATTERN = Pattern.compile("^\\\\(" +
             Arrays.stream(values())
+                    .filter(x -> x != U_SUBTRACT)
                     .map(o -> o.name)
                     .sorted(Comparator.comparingInt(String::length).reversed())
                     .map(s -> Pattern.compile("\\w$").matcher(s).find() ? s + "\\b" : Pattern.quote(s))
@@ -58,7 +59,8 @@ public enum OpFuncTypeNode {
     static {
         Map<String, OpFuncTypeNode> temp = new HashMap<>();
         for (OpFuncTypeNode value : OpFuncTypeNode.values()) {
-            temp.put(value.name, value);
+            if (value != U_SUBTRACT)
+                temp.put(value.name, value);
         }
         values = Collections.unmodifiableMap(temp);
     }
