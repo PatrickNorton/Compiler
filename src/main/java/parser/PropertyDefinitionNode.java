@@ -123,10 +123,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         tokens.nextToken();
         TypeLikeNode type = TypeLikeNode.parse(tokens);
         VariableNode name = VariableNode.parse(tokens);
-        if (!tokens.tokenIs("{")) {
-            throw tokens.defaultError();
-        }
-        tokens.nextToken(true);
+        tokens.expect("{", true);
         StatementBodyNode get = StatementBodyNode.parseOnToken(tokens, "get");
         StatementBodyNode set;
         TypedArgumentListNode setArgs;

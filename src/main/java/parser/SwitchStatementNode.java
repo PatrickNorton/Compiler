@@ -38,10 +38,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode switched = TestNode.parse(tokens);
-        if (!tokens.tokenIs("{")) {
-            throw tokens.defaultError();
-        }
-        tokens.nextToken(true);
+        tokens.expect("{", true);
         List<CaseStatementNode> cases = new ArrayList<>();
         while (tokens.tokenIs(Keyword.CASE, Keyword.DEFAULT)) {
             cases.add(CaseStatementNode.parse(tokens));
@@ -51,10 +48,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
                 break;
             }
         }
-        if (!tokens.tokenIs("}")) {
-            throw tokens.defaultError();
-        }
-        tokens.nextToken();
+        tokens.expect("}");
         return new SwitchStatementNode(info, switched, cases.toArray(new CaseStatementNode[0]));
     }
 

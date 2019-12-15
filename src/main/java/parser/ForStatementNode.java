@@ -80,11 +80,7 @@ public class ForStatementNode implements FlowStatementNode {
         tokens.expect(Keyword.IN, ignoreNewlines);
         TestListNode iterables = TestListNode.parse(tokens, ignoreNewlines);
         if (ignoreNewlines) {
-            if (tokens.tokenIs(")")) {
-                tokens.nextToken();
-            } else {
-                throw tokens.defaultError();
-            }
+            tokens.expect(")");
         }
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         StatementBodyNode nobreak = StatementBodyNode.parseOnToken(tokens, "nobreak");

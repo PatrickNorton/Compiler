@@ -116,10 +116,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
         TypedArgumentListNode list = parseInsideParens(tokens, info, allowUntyped);
-        if (!tokens.tokenIs(")")) {
-            throw tokens.defaultError();
-        }
-        tokens.nextToken();
+        tokens.expect(")");
         return list;
     }
 
