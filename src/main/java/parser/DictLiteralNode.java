@@ -72,11 +72,16 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
             return new DictLiteralNode(info);
         }
         do {
-            keys.add(TestNode.parse(tokens, true));
-            if (!tokens.tokenIs(":")) {
-                throw tokens.error("Dict comprehension must have colon");
+            if (tokens.tokenIs("**")) {
+                tokens.nextToken(true);
+                keys.add(TestNode.empty());
+            } else {
+                keys.add(TestNode.parse(tokens, true));
+                if (!tokens.tokenIs(":")) {
+                    throw tokens.error("Dict comprehension must have colon");
+                }
+                tokens.nextToken(true);
             }
-            tokens.nextToken(true);
             values.add(TestNode.parse(tokens, true));
             if (!tokens.tokenIs(",")) {
                 if (!tokens.tokenIs("}")) {
@@ -97,9 +102,9 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
             case 0:
                 return "{:}";
             case 1:
-                return String.format("{%s: %s}", keys[0], values[0]);
+                return keys[0].isEmpty() ? "{**" + values[0] + "}" : String.format("{%s: %s}", keys[0], values[0]);
             default:
-                return String.format("{%s: %s, ...}", keys[0], values[0]);
+                return keys[0].isEmpty() ? "{**" + values[0] + "...}" : String.format("{%s: %s, ...}", keys[0], values[0]);
         }
     }
 }
