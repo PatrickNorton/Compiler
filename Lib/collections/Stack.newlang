@@ -30,4 +30,8 @@ final class Stack[T] {
         self.length--
         return self.values[self.length] casted T
     }
+
+    public method peek() -> T {
+        return self.values[self.length] casted T
+    }
 }
