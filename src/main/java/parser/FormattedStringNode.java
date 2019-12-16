@@ -98,15 +98,15 @@ public class FormattedStringNode extends StringLikeNode {
      * @return The freshly parsed TestNode
      */
     private static TestNode parseTest(LineInfo info, String section) {
-        TokenList tokenList = Tokenizer.parse(section);
+        TokenList tokens = Tokenizer.parse(section);
         TestNode test;
         try {
-            test = TestNode.parse(tokenList);
+            test = TestNode.parse(tokens);
         } catch (ParserException e) {
             throw ParserException.of(e.getInternalMessage(), info);
         }
-        if (!tokenList.tokenIs(TokenType.EPSILON)) {
-            throw ParserException.of("Unexpected " + tokenList.getFirst(), info);
+        if (!tokens.tokenIs(TokenType.EPSILON)) {
+            throw ParserException.of("Unexpected " + tokens.getFirst(), info);
         }
         return test;
     }
