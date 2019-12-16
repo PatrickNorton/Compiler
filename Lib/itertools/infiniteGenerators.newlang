@@ -1,3 +1,5 @@
+from types typeget Iterable
+
 export count, cycle, repeat
 
 generator func count(int start = 0, *, bool reverse = false) -> int {
