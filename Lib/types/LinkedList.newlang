@@ -69,7 +69,7 @@ class LinkedList[T] from AbstractList[T] {
                 }
             }
         }
-        self.length = \+(1 for var i in iter(lambda a => a.next, start=self.first, end=null))
+        self.length = \+(1 for var i in self)
     }
 
     private method getNode(int index) -> LLNode {
