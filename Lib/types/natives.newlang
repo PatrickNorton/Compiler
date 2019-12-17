@@ -1,7 +1,7 @@
 # NOTE: Native is commented out till it gets implemented as a descriptor
 export Array
 
-#|native|# final class Array[T] {
+final native class Array[T] {
     pubget uint length
 
     public operator new (uint length, *T values, T end) {}
