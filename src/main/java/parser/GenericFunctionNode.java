@@ -39,10 +39,12 @@ public class GenericFunctionNode implements GenericDefinitionNode {
         return name;
     }
 
+    @Override
     public TypedArgumentListNode getArgs() {
         return args;
     }
 
+    @Override
     public TypeLikeNode[] getRetvals() {
         return retvals;
     }

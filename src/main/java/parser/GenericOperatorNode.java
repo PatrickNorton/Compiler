@@ -41,10 +41,12 @@ public class GenericOperatorNode implements GenericDefinitionNode {
         return opCode;
     }
 
+    @Override
     public TypedArgumentListNode getArgs() {
         return args;
     }
 
+    @Override
     public TypeLikeNode[] getRetvals() {
         return retvals;
     }

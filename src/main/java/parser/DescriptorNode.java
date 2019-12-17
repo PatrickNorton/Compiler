@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 public enum DescriptorNode implements AtomicNode {
     PUBLIC("public"),
     PRIVATE("private"),
+    PROTECTED("protected"),
     PUBGET("pubget"),
     STATIC("static"),
     CONST("const"),
@@ -49,7 +50,7 @@ public enum DescriptorNode implements AtomicNode {
 
     private static final Map<String, DescriptorNode> values;
 
-    private static final Set<DescriptorNode> ACCESS = Collections.unmodifiableSet(EnumSet.of(PUBLIC, PRIVATE, PUBGET));
+    private static final Set<DescriptorNode> ACCESS = Collections.unmodifiableSet(EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED));
     private static final Set<DescriptorNode> STATIC_SET = Collections.unmodifiableSet(EnumSet.of(STATIC));
     private static final Set<DescriptorNode> CONST_SET = Collections.unmodifiableSet(EnumSet.of(CONST));
     private static final Set<DescriptorNode> FINAL_SET = Collections.unmodifiableSet(EnumSet.of(FINAL));
@@ -62,15 +63,15 @@ public enum DescriptorNode implements AtomicNode {
     );
 
     static final Set<DescriptorNode> DEFINITION_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, CONST, FINAL, STATIC, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PROTECTED, CONST, FINAL, STATIC, NATIVE));
     static final Set<DescriptorNode> FUNCTION_VALID = Collections.unmodifiableSet(
             EnumSet.of(GENERATOR, SYNCED, NATIVE));
     static final Set<DescriptorNode> DECLARATION_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, PUBGET, CONST, FINAL, STATIC, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED, CONST, FINAL, STATIC, NATIVE));
     static final Set<DescriptorNode> CONTEXT_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, GENERATOR, STATIC, FINAL, SYNCED, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PROTECTED, GENERATOR, STATIC, FINAL, SYNCED, NATIVE));
     static final Set<DescriptorNode> METHOD_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, STATIC, FINAL, GENERATOR, SYNCED, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, GENERATOR, SYNCED, NATIVE));
     static final Set<DescriptorNode> STATIC_BLOCK_VALID = Collections.unmodifiableSet(
             EnumSet.noneOf(DescriptorNode.class));
 
@@ -149,19 +150,6 @@ public enum DescriptorNode implements AtomicNode {
     @NotNull
     public static EnumSet<DescriptorNode> emptySet() {
         return EnumSet.noneOf(DescriptorNode.class);
-    }
-
-    /**
-     * Get the amount of descriptors upcoming in a list of tokens.
-     * @param tokens The list of tokens to be checked for descriptors
-     * @return The number of descriptors upcoming
-     */
-    public static int count(@NotNull TokenList tokens) {
-        int number = 0;
-        while (tokens.tokenIs(number, TokenType.DESCRIPTOR)) {
-            number++;
-        }
-        return number;
     }
 
     @Contract(pure = true)

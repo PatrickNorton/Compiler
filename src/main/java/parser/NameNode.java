@@ -44,9 +44,7 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
             assert tokens.tokenIs("(");
             tokens.nextToken(true);
             name = parse(tokens, true);
-            if (!tokens.tokenIs(")")) {
-                throw tokens.defaultError();
-            }
+            tokens.expect(")", ignoreNewlines);
         }
         return parsePost(tokens, name, ignoreNewlines);
     }

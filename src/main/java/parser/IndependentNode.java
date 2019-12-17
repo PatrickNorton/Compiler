@@ -35,14 +35,8 @@ public interface IndependentNode extends BaseNode {
                 return parseLeftVariable(tokens);
             case CLOSE_BRACE:
                 throw tokens.error("Unmatched close brace");
-            case COMMA:
-                throw tokens.error("Unexpected comma");
             case AUG_ASSIGN:
                 throw tokens.error("Unexpected operator");
-            case ARROW:
-                throw tokens.error("Unexpected ->");
-            case DOUBLE_ARROW:
-                throw tokens.error("Unexpected =>");
             case OPERATOR:
             case STRING:
             case NUMBER:
@@ -56,18 +50,21 @@ public interface IndependentNode extends BaseNode {
                 } else {
                     return OperatorDefinitionNode.parse(tokens);
                 }
-            case COLON:
-                throw tokens.error("Unexpected colon");
             case ELLIPSIS:
                 return VariableNode.parseEllipsis(tokens);
-            case DOT:
-                throw tokens.error("Unexpected dot");
             case AT:
                 return DecoratableNode.parseLeftDecorator(tokens);
             case DOLLAR:
                 return AnnotatableNode.parseLeftAnnotation(tokens);
             case EPSILON:
                 throw tokens.error("Unexpected EOF");
+            case ARROW:
+            case DOUBLE_ARROW:
+            case INCREMENT:
+            case COLON:
+            case DOT:
+            case COMMA:
+                throw tokens.defaultError();
             default:
                 throw tokens.internalError("Nonexistent token found");
         }

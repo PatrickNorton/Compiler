@@ -63,6 +63,7 @@ public class DoStatementNode implements FlowStatementNode {
         if (!tokens.tokenIs(Keyword.WHILE)) {
             throw tokens.error("Do statements must have a corresponding while");
         }
+        tokens.nextToken();
         TestNode conditional = TestNode.parse(tokens);
         return new DoStatementNode(info, body, conditional);
     }

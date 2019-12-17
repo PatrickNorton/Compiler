@@ -120,10 +120,7 @@ public class ArgumentNode implements BaseNode {
             return new ArgumentNode[0];
         }
         ArgumentNode[] args = parseBraceFreeList(tokens);
-        if (!tokens.tokenIs(")")) {
-            throw tokens.defaultError();
-        }
-        tokens.nextToken();
+        tokens.expect(")");
         return args;
     }
 
