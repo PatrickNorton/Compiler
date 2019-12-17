@@ -33,7 +33,7 @@ class IdentityMap[K, V] from dict[K, V] {
 
     public operator [] (K key) -> V {
         uint index = self.getInfo(key)
-        raise IndexError if self.values[index] is Empty.EMPTY
+        raise IndexError(f"Key {key} not in dict") if self.values[index] is Empty.EMPTY
         return (self.values[index] casted tuple[K, V])[1]
     }
 
