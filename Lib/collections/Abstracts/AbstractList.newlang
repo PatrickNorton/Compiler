@@ -32,7 +32,7 @@ interface AbstractList[T] from list[T] {
     }
 
     # Commented out until keyword change gets merged in
-    #|protected|# method checkIndex(int value) {
+    protected method checkIndex(int value) {
         raise IndexError(f"Invalid index {value} for list of length {self.length}") \
             if value >= self.length or ~value >= self.length
     }
