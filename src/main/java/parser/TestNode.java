@@ -254,7 +254,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                         nodes[i] = temp.pop();
                     }
                 } catch (EmptyStackException e) {
-                    throw ParserException.of("Illegal node combination", op);
+                    throw ParserException.of("Illegal node combination", t);
                 }
                 temp.push(new OperatorNode(info, op, nodes));
             } else {
