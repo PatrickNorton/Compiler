@@ -23,27 +23,26 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
         } elif self.top is null {
             self.top = TreeNode(key, value, null)
         } else {
-            var node = self.top!!
-            while true {
-                var nodeNN = node!!
+            var node = self.top
+            cls nodeNN
+            do {
+                nodeNN = node!!
                 return if nodeNN.key == key
                 if nodeNN.key > key {
                     node = nodeNN.left
                 } else {
                     node = nodeNN.right
                 }
-                if node is null {
-                    var new = TreeNode(key, value, nodeNN)
-                    if key < nodeNN.key {
-                        nodeNN.left = new
-                    } else {
-                        nodeNN.right = new
-                    }
-                    self.fixAfterInsertion(new)
-                    self.length++
-                    return
-                }
+            } while node is not null
+            var new = TreeNode(key, value, nodeNN)
+            if key < nodeNN.key {
+                nodeNN.left = new
+            } else {
+                nodeNN.right = new
             }
+            self.fixAfterInsertion(new)
+            self.length++
+            return
         }
     }
 
