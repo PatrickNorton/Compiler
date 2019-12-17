@@ -238,7 +238,7 @@ class TreeNode[K, V] {
                     cls.rotateLeft(sib)
                     sib = x?.parent?.left
                 }
-                cls.setColor(sib, x?.parent?.color ?? null)
+                cls.setColor(sib, x?.parent?.color ?? BLACK)
                 cls.setColor(x?.parent, BLACK)
                 cls.setColor(sib?.left, BLACK)
                 cls.rotateRight(x?.parent)
