@@ -30,12 +30,10 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
 
     public operator new (Iterable[T] items) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
-        self.internal = Array(length, Empty.EMPTY)
-        self.valueList = []
-        self.length = 0
+        self.values = Array(length, Empty.EMPTY)
         self.resize(values.length)
-        for K key, V value in values {
-            self.add(key)
+        for E item in items {
+            self.add(item)
         }
     }
 
