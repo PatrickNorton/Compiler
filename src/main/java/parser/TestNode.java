@@ -237,6 +237,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         while (!stack.empty()) {
             queue.add(stack.pop());
         }
+        if (queue.isEmpty()) {
+            throw tokens.error("Illegal empty statement");
+        }
         return convertQueueToNode(queue);
     }
 
