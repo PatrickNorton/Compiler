@@ -24,8 +24,8 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     public operator [] (int index) -> T {
-        raise IndexError if index >= self.length or ~index <= self.length
-        return self.values[index if index >= 0 else self.length-index]
+        self.checkIndex(index)
+        return self.values[index if index >= 0 else self.length-index] casted T
     }
 
     $normalizeIndices(self)
@@ -44,20 +44,16 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     public operator iter -> T {
-        yield from self.values[:self.length]
+        yield from self.values[:self.length] casted Iterable[T]
     }
 
     @normalizeIndices(self)
     public operator iter[:] (int start, int end, int step) -> T {
-        yield from self.values[start:stop:step]
+        yield from self.values[start:stop:step] casted Iterable[T]
     }
 
     public operator reversed -> T {
-        yield from self.values[self.length::-1]
-    }
-
-    public operator in (T value) {
-        return any(value == i for T i in self)
+        yield from self.values[self.length::-1] casted Iterable[T]
     }
 
     public operator + (cls other) -> cls {
@@ -75,7 +71,7 @@ class ArrayList[T] from AbstractList[T] {
         return new
     }
 
-    public operator * (int multiplicand) {
+    public operator * (int multiplicand) -> cls {
         var new = cls(size=self.length * multiplicand)
         for var i in [0:multiplicand] {
             new.values[i * self.length : (i + 1) * self.length] = self.values
@@ -90,7 +86,8 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     public method pop(int index, /) -> T {
-        T old = self[index]
+        self.checkIndex(index)
+        T old = self[index] casted T
         if index == self.length - 1 {
             self.values[self.length-1] = null
         } else {
@@ -122,11 +119,6 @@ class ArrayList[T] from AbstractList[T] {
         self.ensureSize(self.length + 1)
         self.values[index + 1:] = self.values[index:]
         self.values[index] = value
-    }
-
-    private method checkIndex(int value) {
-        raise IndexError(f"Invalid index {value} for list of length {self.length}") \
-            if value >= self.length or ~value >= self.length
     }
 
     private method ensureSize(int size) {
