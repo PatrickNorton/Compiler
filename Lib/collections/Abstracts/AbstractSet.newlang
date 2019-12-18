@@ -7,13 +7,11 @@ interface AbstractSet[T] from set[T] {
         return {*self, *other}
     }
 
-    operator | = operator +
-
-    operator & (Set[T] other) -> cls {
+    operator & (set[T] other) -> cls {
         return {i for E i in other if i in self}
     }
 
-    operator ^ (Set[T] other) -> cls {
+    operator ^ (set[T] other) -> cls {
         return {i for E i in self if i not in other} + {i for E i in other if i not in self}
     }
 

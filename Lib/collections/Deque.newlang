@@ -22,11 +22,9 @@ final class Deque[V] {
         self(*values)
     }
 
-    public operator [] (int index) {
-        raise IndexError(
-            f"Index {index} out of bounds for deque of length {self.length}"
-        ) if (index if index >= 0 else ~index) >= self.length
-        return self.values[self.internalIndex(index)]
+    public operator [] (int index) -> V {
+        self.checkIndex(index)
+        return self.values[self.internalIndex(index)] casted V
     }
 
     public operator [:] (int start, int end, int step) -> cls {
@@ -35,7 +33,7 @@ final class Deque[V] {
         int startIndex = self.internalIndex(start)
         int stopIndex = self.internalIndex(end)
 
-        if (startIndex < stopIndex) {
+        if startIndex < stopIndex {
             return cls(*self.values[startIndex:stopIndex:step])
         } else {
             int secondHalfStart = ~(self.values.length - stopIndex) % step
@@ -108,7 +106,7 @@ final class Deque[V] {
     private method ensureSize(int length) {
         return if size <= self.values.length
         var new = Array[V?](highestOneBit(length) << 1, null)
-        if (self.start <= self.end) {
+        if self.start <= self.end {
             new[0:] = self.values[self.start:self.end]
         } else {
             new[0:] = self.values[self.start:]
@@ -120,5 +118,11 @@ final class Deque[V] {
 
     private method internalIndex(int index) {
         return ((self.start if index >= 0 else self.end) + index) % self.values.length
+    }
+
+    private method checkIndex(int index) {
+        raise IndexError(
+            f"Index {index} out of bounds for deque of length {self.length}"
+        ) if (index if index >= 0 else ~index) >= self.length
     }
 }

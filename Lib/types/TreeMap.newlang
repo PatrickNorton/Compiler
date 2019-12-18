@@ -23,27 +23,26 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
         } elif self.top is null {
             self.top = TreeNode(key, value, null)
         } else {
-            var node = self.top!!
-            while true {
-                var nodeNN = node!!
+            var node = self.top
+            cls nodeNN
+            do {
+                nodeNN = node!!
                 return if nodeNN.key == key
                 if nodeNN.key > key {
                     node = nodeNN.left
                 } else {
                     node = nodeNN.right
                 }
-                if node is null {
-                    var new = TreeNode(key, value, nodeNN)
-                    if key < nodeNN.key {
-                        nodeNN.left = new
-                    } else {
-                        nodeNN.right = new
-                    }
-                    self.fixAfterInsertion(new)
-                    self.length++
-                    return
-                }
+            } while node is not null
+            var new = TreeNode(key, value, nodeNN)
+            if key < nodeNN.key {
+                nodeNN.left = new
+            } else {
+                nodeNN.right = new
             }
+            self.fixAfterInsertion(new)
+            self.length++
+            return
         }
     }
 
@@ -97,6 +96,10 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
         yield from (key for K key in self)
     }
 
+    public method clear() {
+        self.top = null
+    }
+
     private method findNode(K key) -> TreeNode[K, V]? {
         var node = self.top
         while true {
@@ -113,14 +116,14 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
 
     private method fixAfterInsertion(TreeNode[K, V] node) {
         node.color = RED
-        while (node is not null and node is not self.root) {
+        while node is not null and node is not self.root {
             node = TreeNode.fix(node)
         }
         self.root.color = BLACK
     }
 
     private method fixAfterDeletion(TreeNode[K, V] x) {
-        while (x is not self.root and colorOf(x) is BLACK) {
+        while x is not self.root and colorOf(x) is BLACK {
             TreeNode.fixDelete(x, self.root)
         }
         TreeNode.setColor(x, BLACK)
@@ -153,14 +156,14 @@ class TreeNode[K, V] {
 
     public static method fix(cls? x) -> cls? {
         return if x!!.parent!!.color is not RED
-        if (x?.parent is x?.parent?.parent?.left) {
+        if x?.parent is x?.parent?.parent?.left {
             var y = x?.parent?.parent?.right
-            if (y?.color is RED) {
+            if y?.color is RED {
                 cls.setColor(x.parent, BLACK)
                 cls.setColor(y, BLACK)
                 cls.setColor(x.parent?.parent, RED)
             } else {
-                if (x is x?.parent?.right) {
+                if x is x?.parent?.right {
                     x = x?.parent
                     cls.rotateLeft(x)
                 }
@@ -170,13 +173,13 @@ class TreeNode[K, V] {
             }
         } else {
             var y = x?.parent?.parent?.left
-            if (y?.color is RED) {
+            if y?.color is RED {
                 cls.setColor(x?.parent, BLACK)
                 cls.setColor(y, BLACK)
                 cls.setColor(x?.parent?.parent, RED)
                 x = x?.parent?.parent
             } else {
-                if (x is x?.parent?.left) {
+                if x is x?.parent?.left {
                     x = x?.parent
                     cls.rotateRight(x)
                 }
@@ -189,22 +192,21 @@ class TreeNode[K, V] {
     }
 
     public static method fixDelete(cls? x, cls? root) -> cls? {
-        if (x is x?.parent?.left) {
+        if x is x?.parent?.left {
             var sib = x?.parent?.right
 
-            if (sib?.color is RED) {
+            if sib?.color is RED {
                 cls.setColor(sib, BLACK)
                 cls.setColor(x?.parent, RED)
                 cls.rotateLeft(x?.parent)
                 sib = x?.parent?.right
             }
 
-            if (sib?.left?.color is not RED and
-                sib?.right?.color is not RED) {
+            if sib?.left?.color is not RED and sib?.right?.color is not RED {
                 cls.setColor(sib, RED)
                 x = x?.parent
             } else {
-                if (sib?.right?.color is not RED) {
+                if sib?.right?.color is not RED {
                     cls.setColor(sib?.left, BLACK)
                     cls.setColor(sib, RED)
                     cls.rotateRight(sib)
@@ -219,25 +221,24 @@ class TreeNode[K, V] {
         } else { # symmetric
             var sib = x?.parent?.left
 
-            if (sib?.color is RED) {
+            if sib?.color is RED {
                 cls.setColor(sib, BLACK)
                 cls.setColor(x?.parent, RED)
                 cls.rotateRight(x?.parent)
                 sib = x?.parent?.left
             }
 
-            if (sib?.right?.color is not RED and
-                sib?.left?.color is not BLACK) {
+            if sib?.right?.color is not RED and sib?.left?.color is not BLACK {
                 cls.setColor(sib, RED)
                 x = x?.parent
             } else {
-                if (sib?.left?.color is not RED) {
+                if sib?.left?.color is not RED {
                     cls.setColor(sib?.right, BLACK)
                     cls.setColor(sib, RED)
                     cls.rotateLeft(sib)
                     sib = x?.parent?.left
                 }
-                cls.setColor(sib, x?.parent?.color ?? null)
+                cls.setColor(sib, x?.parent?.color ?? BLACK)
                 cls.setColor(x?.parent, BLACK)
                 cls.setColor(sib?.left, BLACK)
                 cls.rotateRight(x?.parent)

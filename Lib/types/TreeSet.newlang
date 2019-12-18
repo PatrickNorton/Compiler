@@ -5,15 +5,15 @@ from .TreeMap import TreeMap
 export TreeSet
 
 class TreeSet[T[Comparable[T]]] from AbstractSet[T] {
-    private const TreeMap[T, bool] internal
+    private const TreeMap[T, null] internal
     pubget uint length := internal.length
 
     public operator new (*T values) {
-        self.internal = {i: true for T i in values}
+        self.internal = {i: null for T i in values}
     }
 
     public operator new (Iterable[T] items) {
-        self.internal = {i: true for T i in values}
+        self.internal = {i: null for T i in values}
     }
 
     public operator del[] (T value) {

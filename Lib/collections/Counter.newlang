@@ -1,5 +1,5 @@
 from copy import copy
-from itertools import firstN, repeat
+from itertools import chain, firstN, repeat
 
 export Counter
 
@@ -8,7 +8,7 @@ final class Counter[T] from dict[T, int] {
     pubget uint length := values.length
 
     public operator new (*T items) {
-        self.values = {}
+        self.values = {:}
         for T i in items {
             if i in self.values {
                 self.values[i]++
@@ -35,6 +35,12 @@ final class Counter[T] from dict[T, int] {
     public operator del[] = self.values.operator del[]
     public operator iter = self.values.operator iter
     public operator in = self.values.operator in
+    public operator == = self.values.operator ==
+    public operator bool = self.values.operator bool
+
+    public operator + (cls other) -> cls {
+        return {i: self[i] + other[i] for T i in chain(self.keys(), other.keys())}
+    }
 
     public generator method keys() -> T {
         yield from self.values.keys()

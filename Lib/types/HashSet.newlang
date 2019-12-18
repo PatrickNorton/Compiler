@@ -22,7 +22,7 @@ enum Empty {
 
 class HashSet[T[Hashable]] from AbstractSet[T] {
     private Array[*VarInfo|Empty] values
-    pubget int length := \+(1 for var i in self.values if i not instanceof Empty)
+    pubget int length := \+(i not instanceof Empty for var i in self.values)
 
     public operator new (*T items) {
         self(items)
@@ -30,12 +30,10 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
 
     public operator new (Iterable[T] items) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
-        self.internal = Array(length, Empty.EMPTY)
-        self.valueList = []
-        self.length = 0
+        self.values = Array(length, Empty.EMPTY)
         self.resize(values.length)
-        for K key, V value in values {
-            self.add(key)
+        for E item in items {
+            self.add(item)
         }
     }
 
@@ -61,9 +59,7 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
     }
 
     public method clear() {
-        for int i in enumerate(self.values) {
-            self.values[i] = Empty.EMPTY
-        }
+        self.values.fill(Empty.EMPTY)
     }
 
     private method arrayIndex(T value, *, bool returnDeleted = false) {
@@ -72,7 +68,8 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
         while true {
             var value = self.values[index]
             if value is Empty.DELETED and returnDeleted {
-                deleted = value
+                deleted = index
+                returnDeleted = false  # Take the first deleted value for speed
             }
             return index if value is Empty.EMPTY
             continue if value is Empty.DELETED

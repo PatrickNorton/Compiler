@@ -59,16 +59,17 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         return self.values[self.getInfo(key)] not instanceof Empty
     }
 
-    public operator iter -> V {
-        yield from ((i casted VarInfo)[2] for var i in self.valueList if i not instanceof Empty)
+    public operator iter -> K, V {
+        yield from (*(i casted VarInfo)[1:] for var i in self.valueList if i not instanceof Empty)
     }
 
     public generator method keys() -> K {
         yield from (key for K key in self)
     }
 
-    public method remove(V value) -> K {
-        del self[self.keyOf(value)]
+    public method clear() {
+        self.values.fill(Empty.EMPTY)
+        self.length = 0
     }
 
     private method getInfo(K key, *, bool returnDeleted = false) -> uint {
@@ -77,7 +78,8 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         while true {
             var value = self.values[index]
             if value is Empty.DELETED and returnDeleted {
-                deleted = value
+                deleted = index
+                returnDeleted = false  # Take the first value, makes lookup quicker
             }
             return index if value is Empty.EMPTY
             continue if value is Empty.DELETED

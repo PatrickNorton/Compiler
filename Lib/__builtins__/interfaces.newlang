@@ -29,12 +29,16 @@ interface int {
     operator hash
 }
 
+@covariant
 interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
     operator new (*T items, /)
     operator new (Iterable[T] items, /)
 
     operator + (list[T] other, /) -> cls
-    operator * (int size, /) -> cls
+    operator * (uint size, /) -> cls
+
+    final operator r+ = operator +
+    final operator r* = operator *
 
     operator == (list[T] other)
     operator bool
@@ -53,14 +57,21 @@ interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
     method insert(T value, int index)
 }
 
+@covariant
 interface set[T] from Iterable[T], Comparable[Set[T]] {
     operator new (*T items, /)
     operator new (Iterable[T] items, /)
 
-    operator + (set[T] other, /) -> Set[T]
+    operator + (set[T] other, /) -> set[T]
     operator | = operator +
-    operator & (set[T] other, /) -> Set[T]
-    operator ^ (set[T] other, /) -> Set[T]
+    operator & (set[T] other, /) -> set[T]
+    operator ^ (set[T] other, /) -> set[T]
+
+    final operator r+ = operator +
+    final operator r| = operator |
+    final operator r& = operator &
+    final operator r^ = operator ^
+    final operator r== = operator ==
 
     operator del[] (T value, /)
     operator in (T value, /)
@@ -78,6 +89,7 @@ interface set[T] from Iterable[T], Comparable[Set[T]] {
     method clear()
 }
 
+@covariant
 interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
     operator new (*tuple[K, V] items, /)
     operator new (dict[K, V] items, /)
@@ -93,6 +105,9 @@ interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
     operator iter -> K, V
     operator bool
 
+    final operator r+ = operator +
+    final operator r== = operator ==
+
     final operator hash {
         return hash(f"dict[{K}, {V}]", *self)
     }
@@ -100,6 +115,5 @@ interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
     generator method keys() -> K
     method remove(V value) -> K
     method keyOf(V value) -> K
+    method clear()
 }
-
-

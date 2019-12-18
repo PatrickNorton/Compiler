@@ -26,11 +26,11 @@ class LinkedList[T] from AbstractList[T] {
     }
 
     public operator [] (int index) {
-        return self.get_LLNode(index).this
+        return self.getNode(index).this
     }
 
     public operator []= (int index, T value) {
-        var node = self.get_LLNode(position)
+        var node = self.getNode(position)
         node.this = value
     }
 
@@ -40,8 +40,8 @@ class LinkedList[T] from AbstractList[T] {
 
     @normalizeIndices(self)
     public operator [:]= (int start, int stop, int step, Iterable[T] values) {
-        var startNode = self.get_LLNode(start)
-        var endNode = self.get_LLNode(end)
+        var startNode = self.getNode(start)
+        var endNode = self.getNode(end)
         if step < 0 {
             var current = endNode
             var iterator = iter(values)
@@ -69,10 +69,10 @@ class LinkedList[T] from AbstractList[T] {
                 }
             }
         }
-        self.length = \+(1 for var i in iter(lambda a => a.next, start=self.first, end=null))
+        self.length = \+(1 for var i in self)
     }
 
-    private method get_LLNode(int index) -> LLNode {
+    private method getNode(int index) -> LLNode {
         if index < 0 {
             raise IndexError if self.last is null
             var current = self.last!!
@@ -103,7 +103,7 @@ class LinkedList[T] from AbstractList[T] {
     @normalizeIndices(self)
     public operator iter[:] (int start, int stop, int step) -> T {
         if step < 0 {
-            var current = self.get_LLNode(self.stop)
+            var current = self.getNode(self.stop)
             dotimes (start - stop) % step {
                 yield current.this
                 dotimes step {
@@ -111,7 +111,7 @@ class LinkedList[T] from AbstractList[T] {
                 }
             }
         } else {
-            var current = self.get_LLNode(self.start)
+            var current = self.getNode(self.start)
             dotimes (stop - start) % step {
                 yield current.this
                 dotimes step {
@@ -137,39 +137,46 @@ class LinkedList[T] from AbstractList[T] {
         return cls(*self, *other)
     }
 
+    public operator * (uint size) -> cls {
+        cls new = []
+        dotimes size {
+            new.extend(self)
+        }
+        return new
+    }
+
     public method append(T value) -> self {
-        var new_last = LLNode[T](self.last, value, null)
-        self.last.next = new_last
-        self.last = new_last
+        var newLast = LLNode[T](self.last, value, null)
+        self.last.next = newLast
+        self.last = newLast
         self.length++
         return self
     }
 
-    public method insert(int position, T value) {
+    public method insert(T value, int position) {
         if self.first is null {
             self.first = LLNode[T](null, value, null)
             self.last = self.first
         } elif position == 0 {
             var node = self.first!!
-            var new_node = LLNode[T](null, value, node)
-            self.first = new_node
+            self.first = LLNode[T](null, value, node)
         } elif position == -1 or position == self.length {
-            var node = self.get_LLNode(-1)
-            var new_node = LLNode[T](node, value, null)
-            node.next = new_node
-            self.last = new_node
+            var node = self.getNode(-1)
+            var newNode = LLNode[T](node, value, null)
+            node.next = newNode
+            self.last = newNode
         } else {
-            var node = self.get_LLNode(position)!!
+            var node = self.getNode(position)!!
             var next = node.next
-            var new_node = LLNode[T](node, value, next)
-            node.next = new_node
-            next.previous = new_node
+            var newNode = LLNode[T](node, value, next)
+            node.next = newNode
+            next.previous = newNode
         }
         self.length++
     }
 
     public method pop(int position) -> T {
-        var node = self.get_LLNode(position)
+        var node = self.getNode(position)
         if node.previous is not null {
             node.previous!!.next = node.next
             if node.next is not null {
@@ -200,17 +207,10 @@ class LinkedList[T] from AbstractList[T] {
         }
     }
 
-    public method insert(T value, int index) {
-        var node = self.get_LLNode(position)
-        if node.next is not null {
-            node.next!!.previous = node
-        }
-        node.next = LLNode(node, value, node.next)
-    }
-
     public method clear() {
         self.last = null
         self.first = null
+        self.length = 0
     }
 }
 

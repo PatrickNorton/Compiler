@@ -1,0 +1,37 @@
+from types import Array
+
+export Stack
+
+
+const int DEFAULT_SIZE = 16
+
+
+final class Stack[T] {
+    private Array[T?] values
+    pubget uint length
+
+    public operator new {
+        self.values = Array(DEFAULT_SIZE, null)
+    }
+
+    public operator iter {
+        yield from self.values[self.length::-1]
+    }
+
+    public method push(T value) {
+        if self.length == self.values.length {
+            self.values = Array.copy(self.values, size=self.values.length*2)
+        }
+        self.values[self.length] = value
+        self.length++
+    }
+
+    public method pop() -> T {
+        self.length--
+        return self.values[self.length] casted T
+    }
+
+    public method peek() -> T {
+        return self.values[self.length] casted T
+    }
+}
