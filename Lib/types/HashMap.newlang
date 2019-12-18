@@ -78,7 +78,8 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         while true {
             var value = self.values[index]
             if value is Empty.DELETED and returnDeleted {
-                deleted = value
+                deleted = index
+                returnDeleted = false  # Take the first value, makes lookup quicker
             }
             return index if value is Empty.EMPTY
             continue if value is Empty.DELETED

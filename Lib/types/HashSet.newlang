@@ -68,7 +68,7 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
         while true {
             var value = self.values[index]
             if value is Empty.DELETED and returnDeleted {
-                deleted = value
+                deleted = index
                 returnDeleted = false  # Take the first deleted value for speed
             }
             return index if value is Empty.EMPTY
