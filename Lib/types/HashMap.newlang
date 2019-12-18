@@ -35,7 +35,7 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
 
     public operator [] (K key) -> V {
         uint index = self.getInfo(key)
-        raise IndexError if self.values[index] is Empty.EMPTY
+        raise KeyError if self.values[index] is Empty.EMPTY
         return (self.values[index] casted VarInfo)[2]
     }
 
