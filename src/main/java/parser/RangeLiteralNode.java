@@ -3,7 +3,7 @@ package main.java.parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class RangeLiteralNode implements TestNode {
+public class RangeLiteralNode implements TestNode, PostDottableNode {
     private LineInfo lineInfo;
     private TestNode start;
     private TestNode end;

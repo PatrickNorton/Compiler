@@ -156,8 +156,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (tokens.tokenIs(TokenType.ASSIGN, TokenType.AUG_ASSIGN)) {
             throw ParserException.of("Illegal assignment", info);
         }
-        if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
+        if (node instanceof PostDottableNode) {
+            return parsePost(tokens, node, ignoreNewlines);
         } else {
             return node;
         }
@@ -274,9 +274,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @Nullable
     private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
         TestNode node = parseInternalNode(tokens, ignoreNewlines, parseCurly);
-        if (node == null) {
-            return null;
-        } else if (node instanceof PostDottableNode) {
+        if (node instanceof PostDottableNode) {
             return parsePost(tokens, node, ignoreNewlines);
         } else {
             return node;
