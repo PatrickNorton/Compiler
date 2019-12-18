@@ -150,6 +150,7 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         sb.append(DescriptorNode.join(descriptors));
         sb.append(opCode);
         if (!args.isEmpty()) {
+            sb.append(' ');
             sb.append(args);
         }
         return sb + " " + body;
