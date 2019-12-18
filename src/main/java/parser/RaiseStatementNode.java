@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The class representing a raise statement.
  */
-public class RaiseStatementNode implements SimpleFlowNode {
+public class RaiseStatementNode implements SimpleFlowNode, TestNode {
     private LineInfo lineInfo;
     private TestNode raised;
     private TestNode condition;
@@ -56,15 +56,31 @@ public class RaiseStatementNode implements SimpleFlowNode {
     @NotNull
     @Contract("_ -> new")
     static RaiseStatementNode parse(@NotNull TokenList tokens) {
+        return parse(tokens, false);
+    }
+
+    /**
+     * Parse a raise statement from a list of tokens.
+     * <p>
+     *     The syntax of a raise statement is: <code>"raise" {@link TestNode}
+     *     ["from" {@link TestNode}] ["if" {@link TestNode}] </code>. The token
+     *     list must begin with the "raise" keyword.
+     * </p>
+     * @param tokens The list of tokens to be parsed destructively
+     * @return The freshly parsed RaiseStatementNode
+     */
+    @NotNull
+    @Contract("_, _ -> new")
+    static RaiseStatementNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(Keyword.RAISE);
         LineInfo lineInfo = tokens.lineInfo();
-        tokens.nextToken();
-        Pair<TestNode, TestNode> raisedAndCondition = TestNode.parseMaybePostIf(tokens, false);
+        tokens.nextToken(ignoreNewlines);
+        Pair<TestNode, TestNode> raisedAndCondition = TestNode.parseMaybePostIf(tokens, ignoreNewlines);
         TestNode raised = raisedAndCondition.getKey();
         TestNode condition, from;
         if (raisedAndCondition.getValue().isEmpty() && tokens.tokenIs(Keyword.FROM)) {
-            tokens.nextToken();
-            Pair<TestNode, TestNode> fromAndCondition = TestNode.parseMaybePostIf(tokens, false);
+            tokens.nextToken(ignoreNewlines);
+            Pair<TestNode, TestNode> fromAndCondition = TestNode.parseMaybePostIf(tokens, ignoreNewlines);
             from = fromAndCondition.getKey();
             condition = fromAndCondition.getValue();
         } else {

@@ -344,6 +344,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return SwitchStatementNode.parse(tokens);
             case LAMBDA:
                 return LambdaNode.parse(tokens, ignoreNewlines);
+            case RAISE:
+                return RaiseStatementNode.parse(tokens, ignoreNewlines);
             default:
                 return null;
         }
