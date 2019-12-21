@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class BreakStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
-    private Integer loops;
+    private int loops;
     private TestNode cond;
     private TestNode as;
 
@@ -33,7 +33,7 @@ public class BreakStatementNode implements SimpleFlowNode {
         return lineInfo;
     }
 
-    public Integer getLoops() {
+    public int getLoops() {
         return loops;
     }
 

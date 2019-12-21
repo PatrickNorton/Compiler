@@ -156,8 +156,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         if (tokens.tokenIs(TokenType.ASSIGN, TokenType.AUG_ASSIGN)) {
             throw ParserException.of("Illegal assignment", info);
         }
-        if (node instanceof PostDottableNode && tokens.tokenIs(TokenType.DOT)) {
-            return DottedVariableNode.fromExpr(tokens, node, ignoreNewlines);
+        if (node instanceof PostDottableNode) {
+            return parsePost(tokens, node, ignoreNewlines);
         } else {
             return node;
         }
@@ -211,7 +211,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                         : (OperatorTypeNode) node;
                 // Operators in a place that they shouldn't be, e.g. 1 + * 2
                 if (parseCurly ^ (operator.isUnary() && !operator.isPostfix())) {
-                    throw tokens.error("Illegal token");
+                    throw tokens.defaultError();
                 }
                 // Push all operators that bind more tightly onto the queue
                 while (!stack.empty() && operator.precedence >= stack.peek().precedence) {
@@ -227,7 +227,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 parseCurly = !operator.isPostfix();
             } else {
                 if (!parseCurly) {
-                    throw tokens.error("Illegal token");
+                    throw tokens.defaultError();
                 }
                 // Non-operators just get pushed onto the stack
                 queue.add(node);
@@ -236,6 +236,9 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
         while (!stack.empty()) {
             queue.add(stack.pop());
+        }
+        if (queue.isEmpty()) {
+            throw tokens.error("Illegal empty statement");
         }
         return convertQueueToNode(queue);
     }
@@ -254,7 +257,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                         nodes[i] = temp.pop();
                     }
                 } catch (EmptyStackException e) {
-                    throw ParserException.of("Illegal node combination", op);
+                    throw ParserException.of("Illegal node combination", t);
                 }
                 temp.push(new OperatorNode(info, op, nodes));
             } else {
@@ -271,9 +274,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     @Nullable
     private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
         TestNode node = parseInternalNode(tokens, ignoreNewlines, parseCurly);
-        if (node == null) {
-            return null;
-        } else if (node instanceof PostDottableNode) {
+        if (node instanceof PostDottableNode) {
             return parsePost(tokens, node, ignoreNewlines);
         } else {
             return node;
@@ -341,6 +342,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return SwitchStatementNode.parse(tokens);
             case LAMBDA:
                 return LambdaNode.parse(tokens, ignoreNewlines);
+            case RAISE:
+                return RaiseStatementNode.parse(tokens, ignoreNewlines);
             default:
                 return null;
         }
@@ -403,7 +406,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     tokens.nextToken(true);
                     TestNode contained = parse(tokens, true);
                     if (!tokens.tokenIs(")")) {
-                        throw tokens.errorWithFirst("Unmatched brace: ) does not match %s");
+                        throw tokens.errorWithFirst("Unmatched brace: ) does not match");
                     }
                     tokens.nextToken();
                     return contained;
