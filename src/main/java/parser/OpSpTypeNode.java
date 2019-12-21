@@ -69,6 +69,8 @@ public enum OpSpTypeNode {
     BOOL("bool"),
     REVERSED("reversed"),
     HASH("hash"),
+    ENTER("enter"),
+    EXIT("exit"),
     ;
 
     private static final Map<String, OpSpTypeNode> values;
