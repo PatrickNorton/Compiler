@@ -211,7 +211,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                         : (OperatorTypeNode) node;
                 // Operators in a place that they shouldn't be, e.g. 1 + * 2
                 if (parseCurly ^ (operator.isUnary() && !operator.isPostfix())) {
-                    throw tokens.error("Illegal token");
+                    throw tokens.defaultError();
                 }
                 // Push all operators that bind more tightly onto the queue
                 while (!stack.empty() && operator.precedence >= stack.peek().precedence) {
@@ -227,7 +227,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 parseCurly = !operator.isPostfix();
             } else {
                 if (!parseCurly) {
-                    throw tokens.error("Illegal token");
+                    throw tokens.defaultError();
                 }
                 // Non-operators just get pushed onto the stack
                 queue.add(node);
