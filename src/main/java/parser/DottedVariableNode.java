@@ -98,6 +98,12 @@ public class DottedVariableNode implements NameNode {
                 : preDot;
     }
 
+    static NameNode parsePostDots(@NotNull TokenList tokens, NameNode preDot, boolean ignoreNewlines) {
+        return tokens.tokenIs(TokenType.DOT)
+                ? DottedVariableNode.fromExpr(tokens, preDot, ignoreNewlines)
+                : preDot;
+    }
+
     /**
      * Given a variable, parses the rest of the dotted vars after it.
      * <p>

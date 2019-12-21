@@ -52,7 +52,7 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
     @NotNull
     static NameNode parsePost(@NotNull TokenList tokens, @NotNull NameNode name, boolean ignoreNewlines) {
         NameNode value = parsePostBraces(tokens, name, ignoreNewlines);
-        return (NameNode) DottedVariableNode.parsePostDots(tokens, value, ignoreNewlines);
+        return DottedVariableNode.parsePostDots(tokens, value, ignoreNewlines);
     }
 
     @NotNull
