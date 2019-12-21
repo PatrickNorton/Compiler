@@ -1,3 +1,5 @@
+from types typeget Iterable
+
 from types import Array
 
 export Stack
@@ -24,6 +26,12 @@ final class Stack[T] {
         }
         self.values[self.length] = value
         self.length++
+    }
+
+    public method pushAll(Iterable[T] values) {
+        for T value in values {
+            self.push(value)
+        }
     }
 
     public method pop() -> T {
