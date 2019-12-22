@@ -9,8 +9,13 @@ class DefaultDict[K, V] from AbstractDict[K, V] {
     public operator new (*tuple[K, V] items, /) = NotImplemented
     public operator new (dict[K, V] items, /) = NotImplemented
 
-    public operator new (Callable[f] function) {
+    public operator new (Callable[V] function) {
         self.internal = {}
+        self.fallback = function
+    }
+
+    public operator new (dict[K, V] items, Callable[V] function) {
+        self.internal = dict(items)
         self.fallback = function
     }
 
