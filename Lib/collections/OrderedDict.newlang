@@ -73,6 +73,11 @@ class OrderedDict[K, V] from AbstractDict[K, V] {
         return hash(f"dict[{K}, {V}]", self.values)
     }
 
+    public operator repr {
+        str values = ", ".join(f"{i}: {j}" for K i, V j in self)
+        return f"{type(self)}({values})"
+    }
+
     public generator method keys() -> K {
         yield from self.values.keys()
     }

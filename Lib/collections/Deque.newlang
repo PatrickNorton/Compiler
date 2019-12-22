@@ -80,6 +80,10 @@ final class Deque[V] {
         return self.length
     }
 
+    public operator repr {
+        return f"{type(self)}({list(self.values)})"
+    }
+
     public method popLeft() -> V {
         V value = self.values[self.start]
         self.start = (self.start + 1) % values.length

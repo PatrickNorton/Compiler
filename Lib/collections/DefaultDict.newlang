@@ -50,6 +50,10 @@ class DefaultDict[K, V] from AbstractDict[K, V] {
         return self.internal
     }
 
+    operator repr {
+        return f"{type(self)}({self.internal})"
+    }
+
     generator method keys() -> K {
         yield from (key for K key in self.internal)
     }

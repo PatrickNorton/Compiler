@@ -42,6 +42,10 @@ final class Counter[T] from dict[T, int] {
         return {i: self[i] + other[i] for T i in chain(self.keys(), other.keys())}
     }
 
+    public operator repr {
+        return f"{type(self)}({self.values})"
+    }
+
     public generator method keys() -> T {
         yield from self.values.keys()
     }
