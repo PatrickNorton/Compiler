@@ -1,6 +1,11 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public enum Bytecode {
     NOP(0x0, 0),
@@ -67,5 +72,26 @@ public enum Bytecode {
 
     public int size() {
         return operands + 1;
+    }
+
+    @NotNull
+    static String disassemble(@NotNull List<Byte> bytes) {
+        var sb = new StringBuilder();
+        var map = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(t -> t.value, Function.identity()));
+        for (int i = 0; i < bytes.size();) {
+            var op = map.get(bytes.get(i));
+            var value = fromBytes(bytes.subList(i + 1, i + op.size()));
+            i += op.size();
+            sb.append(String.format("%16s%4s%d", op, "", value));
+        }
+        return sb.toString();
+    }
+
+    private static int fromBytes(@NotNull List<Byte> bytes) {
+        int total = 0;
+        for (int i = 0; i < bytes.size(); i++) {
+            total |= bytes.get(i) << Byte.SIZE * (bytes.size() - i);
+        }
+        return total;
     }
 }
