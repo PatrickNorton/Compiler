@@ -47,7 +47,9 @@ public enum Bytecode {
     CALL_TOS(0x35, 2),
     TAIL_METHOD(0x36, 2),
     TAIL_TOS(0x37, 2),
-    RETURN(0x38, 0),
+    RETURN(0x38, 2),
+    THROW(0x39, 0),
+    THROW_QUICK(0x3A, 2),
     // Markers
     FUNC_DEF(0x40, 0),
     CLASS_DEF(0x41, 0),
