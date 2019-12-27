@@ -10,14 +10,16 @@ import java.util.List;
 
 public class IfConverter implements BaseConverter {
     private IfStatementNode node;
+    private CompilerInfo info;
 
-    public IfConverter(IfStatementNode node) {
+    public IfConverter(CompilerInfo info, IfStatementNode node) {
         this.node = node;
+        this.info = info;
     }
 
     @Override
     public List<Byte> convert(int start) {
-        var bytes = new ArrayList<>(BaseConverter.bytes(start, node.getConditional()));
+        var bytes = new ArrayList<>(BaseConverter.bytes(start, node.getConditional(), info));
         addBody(bytes, start + bytes.size(), node.getBody());
         for (var elif : node.getElifs()) {
             addElif(bytes, start, elif);
@@ -29,7 +31,7 @@ public class IfConverter implements BaseConverter {
     }
 
     private void addBody(@NotNull List<Byte> bytes, int start, StatementBodyNode body) {
-        var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP_FALSE.size(), body);
+        var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP_FALSE.size(), body, info);
         // Jump index
         bytes.add(Bytecode.JUMP_FALSE.value);
         var jumpTarget = start + bytes.size() + bodyBytes.size();
@@ -43,7 +45,7 @@ public class IfConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP.value);
         var jumpTarget = bytes.size();
         bytes.addAll(intToBytes(0));  // Set jump target as temp value
-        bytes.addAll(BaseConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond));
+        bytes.addAll(BaseConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond, info));
         addBody(bytes, start, body);
         // Set jump target
         var target = intToBytes(start + bytes.size());
@@ -53,7 +55,7 @@ public class IfConverter implements BaseConverter {
     }
 
     private void addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body) {
-        var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP.size(), body);
+        var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP.size(), body, info);
         // Jump index
         bytes.add(Bytecode.JUMP.value);
         var jumpTarget = start + bytes.size() + bodyBytes.size();
