@@ -48,6 +48,10 @@ public enum Bytecode {
     TAIL_METHOD(0x36, 2),
     TAIL_TOS(0x37, 2),
     RETURN(0x38, 0),
+    // Markers
+    FUNC_DEF(0x40, 0),
+    CLASS_DEF(0x41, 0),
+    END_CLASS(0x42, 0),
     ;
 
     public final byte value;
