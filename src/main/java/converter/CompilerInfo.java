@@ -16,13 +16,13 @@ public final class CompilerInfo {
     private int loopLevel;
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;
-    private LinkedHashSet<LangConstant> constantPool;
+    private Set<LangConstant> constantPool;
 
     public CompilerInfo() {
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();
-        this.constantPool = new LinkedHashSet<>();
+        this.constantPool = new LinkedHashSet<>();  // Relies on constant iteration order
     }
 
     /**
