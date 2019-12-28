@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CompilerInfo {
+public final class CompilerInfo {
     private int loopLevel;
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;

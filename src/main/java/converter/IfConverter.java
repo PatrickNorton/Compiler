@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IfConverter implements BaseConverter {
+public final class IfConverter implements BaseConverter {
     private IfStatementNode node;
     private CompilerInfo info;
 
