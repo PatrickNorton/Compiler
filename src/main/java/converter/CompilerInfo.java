@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,13 +16,13 @@ public final class CompilerInfo {
     private int loopLevel;
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;
-    private Set<LangConstant> constantPool;
+    private LinkedHashSet<LangConstant> constantPool;
 
     public CompilerInfo() {
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();
-        this.constantPool = new HashSet<>();
+        this.constantPool = new LinkedHashSet<>();
     }
 
     /**
@@ -81,12 +82,22 @@ public final class CompilerInfo {
      *
      * @param value The value to add
      */
-    public void addConstant(LangConstant value) {
+    public int addConstant(LangConstant value) {
         constantPool.add(value);
+        return constIndex(value);
     }
 
     public Set<LangConstant> constants() {
         return constantPool;
+    }
+
+    private int constIndex(LangConstant value) {
+        int index = 0;
+        for (var v : constantPool) {
+            if (v.equals(value)) return index;
+            index++;
+        }
+        return -1;
     }
 
     /**
