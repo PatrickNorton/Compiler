@@ -1,4 +1,7 @@
 package main.java.converter;
 
-public class LangConstant {
+import java.util.List;
+
+public interface LangConstant {
+    List<Byte> toBytes();
 }
