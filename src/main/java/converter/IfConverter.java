@@ -35,7 +35,7 @@ public final class IfConverter implements BaseConverter {
         // Jump index
         bytes.add(Bytecode.JUMP_FALSE.value);
         var jumpTarget = start + bytes.size() + bodyBytes.size();
-        bytes.addAll(intToBytes(jumpTarget));
+        bytes.addAll(Util.intToBytes(jumpTarget));
         bytes.addAll(bodyBytes);
     }
 
@@ -44,11 +44,11 @@ public final class IfConverter implements BaseConverter {
         var body = elif.getBody();
         bytes.add(Bytecode.JUMP.value);
         var jumpTarget = bytes.size();
-        bytes.addAll(intToBytes(0));  // Set jump target as temp value
+        bytes.addAll(Util.intToBytes(0));  // Set jump target as temp value
         bytes.addAll(BaseConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond, info));
         addBody(bytes, start, body);
         // Set jump target
-        var target = intToBytes(start + bytes.size());
+        var target = Util.intToBytes(start + bytes.size());
         for (int i = 0; i < target.size(); i++) {
             bytes.set(jumpTarget + i, target.get(i));
         }
@@ -59,7 +59,7 @@ public final class IfConverter implements BaseConverter {
         // Jump index
         bytes.add(Bytecode.JUMP.value);
         var jumpTarget = start + bytes.size() + bodyBytes.size();
-        bytes.addAll(intToBytes(jumpTarget));
+        bytes.addAll(Util.intToBytes(jumpTarget));
         bytes.addAll(bodyBytes);
     }
 }

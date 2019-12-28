@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -108,20 +107,9 @@ public final class CompilerInfo {
      * @param value The pointer value to set it to
      */
     private void setPointer(int listIndex, List<Byte> bytes, int value) {
-        var ptrBytes = intToBytes(value);
+        var ptrBytes = Util.intToBytes(value);
         for (int i = 0; i < ptrBytes.size(); i++) {
             bytes.set(listIndex + i, ptrBytes.get(i));
         }
-    }
-
-    @NotNull
-    @Contract(pure = true)
-    private List<Byte> intToBytes(int value) {
-        return List.of(
-                (byte) (value >>> 24),
-                (byte) (value >>> 16),
-                (byte) (value >>> 8),
-                (byte) value
-        );
     }
 }

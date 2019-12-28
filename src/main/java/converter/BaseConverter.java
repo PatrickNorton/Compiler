@@ -10,15 +10,6 @@ import java.util.List;
 public interface BaseConverter {
     List<Byte> convert(int start);
 
-    default List<Byte> intToBytes(int value) {
-        return List.of(
-                (byte) (value >>> 24),
-                (byte) (value >>> 16),
-                (byte) (value >>> 8),
-                (byte) value
-        );
-    }
-
     static List<Byte> bytes(int start, BaseNode tokens, CompilerInfo info) {
         return toBytes(tokens, info).convert(start);
     }
