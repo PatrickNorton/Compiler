@@ -38,6 +38,8 @@ public enum Bytecode {
     BOOL_OR(0x21, 0),
     BOOL_NOT(0x22, 0),
     IDENTICAL(0x23, 0),
+    INSTANCEOF(0x24, 0),
+    CALL_OP(0x24, 2+2),
     // Jumps, etc.
     JUMP(0x30, 4),
     JUMP_FALSE(0x31, 4),
