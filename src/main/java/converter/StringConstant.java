@@ -31,9 +31,10 @@ public final class StringConstant implements LangConstant {
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
+        var strBytes = strBytes();
         bytes.add((byte) ConstantBytes.STR.ordinal());
-        bytes.addAll(Util.intToBytes(value.length()));
-        bytes.addAll(strBytes());
+        bytes.addAll(Util.intToBytes(strBytes.size()));
+        bytes.addAll(strBytes);
         return bytes;
     }
 
