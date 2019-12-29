@@ -1,6 +1,10 @@
 package main.java.converter;
 
+import main.java.parser.TypeLikeNode;
+import main.java.parser.TypeNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,11 +21,18 @@ public final class CompilerInfo {
     private List<Integer> loopStarts;
     private Set<LangConstant> constantPool;
 
+    private List<Map<String, TypeObject>> variables;
+    private Set<TypeObject> types;
+    private Map<String, TypeObject> typeMap;
+
     public CompilerInfo() {
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();
         this.constantPool = new LinkedHashSet<>();  // Relies on constant iteration order
+        this.variables = new ArrayList<>();
+        this.types = new HashSet<>();
+        this.typeMap = new HashMap<>();
     }
 
     /**
@@ -88,6 +99,43 @@ public final class CompilerInfo {
 
     public Set<LangConstant> constants() {
         return constantPool;
+    }
+
+    public void addType(@NotNull TypeLikeNode type, List<TypeObject> supers) {
+        if (!typeMap.containsKey(type.strName())) {
+            var typeObject = newType(type, supers);
+            types.add(typeObject);
+            typeMap.put(typeObject.name(), typeObject);
+        }
+    }
+
+    @Nullable
+    @Contract(pure = true)
+    public TypeObject getType(@NotNull TypeLikeNode type) {
+        return typeMap.get(type.strName());
+    }
+
+    @NotNull
+    @Contract("null, _ -> fail")
+    public TypeObject newType(TypeLikeNode type, List<TypeObject> supers) {
+        if (type instanceof TypeNode) {
+            var typeNode = (TypeNode) type;
+            return new StdTypeObject(typeNode.strName(),
+                    supers,
+                    getTypes(typeNode.getSubtypes())
+            );
+        } else {
+            throw new UnsupportedOperationException("Unknown type of parameter 'type': " + type.getClass());
+        }
+    }
+
+    @NotNull
+    private List<TypeObject> getTypes(@NotNull TypeLikeNode... types) {
+        List<TypeObject> typeObjects = new ArrayList<>(types.length);
+        for (var type : types) {
+            typeObjects.add(getType(type));
+        }
+        return typeObjects;
     }
 
     private int constIndex(LangConstant value) {
