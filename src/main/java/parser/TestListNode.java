@@ -33,6 +33,10 @@ public class TestListNode implements BaseNode {
         return LineInfo.empty();
     }
 
+    public int size() {
+        return tests.length;
+    }
+
     /**
      * Parse a list of TestNodes from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed

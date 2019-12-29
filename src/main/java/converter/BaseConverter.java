@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.BaseNode;
 import main.java.parser.IfStatementNode;
+import main.java.parser.ReturnStatementNode;
 import main.java.parser.WhileStatementNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +19,8 @@ public interface BaseConverter {
     private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
         if (node instanceof IfStatementNode) {
             return new IfConverter(info, (IfStatementNode) node);
+        } else if (node instanceof ReturnStatementNode) {
+            return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof WhileStatementNode) {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else {

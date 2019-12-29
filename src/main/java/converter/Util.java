@@ -18,4 +18,11 @@ public final class Util {
                 (byte) value
         );
     }
+
+    static List<Byte> shortToBytes(short value) {
+        return List.of(
+                (byte) (value >>> 8),
+                (byte) value
+        );
+    }
 }
