@@ -4,4 +4,5 @@ public enum ConstantBytes {
     STR,
     INT,
     BIGINT,
+    DECIMAL,
 }
