@@ -27,7 +27,7 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
 
     @NotNull
     public Iterator<E> iterator() {
-        return valueList.iterator();
+        return new IHSIterator();
     }
 
     @Override
@@ -58,8 +58,7 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
 
     @Override
     public boolean remove(Object o) {
-        if (contains(o)) {
-            values.remove(o);
+        if (values.remove(o)) {
             valueList.remove(o);
             return true;
         } else {
@@ -89,6 +88,26 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
             }
         }
         return modified;
+    }
+
+    @NotNull
+    @Override
+    public Object[] toArray() {
+        return valueList.toArray();
+    }
+
+    private class IHSIterator implements Iterator<E> {
+        private Iterator<E> iterator = values.iterator();
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public E next() {
+            return iterator.next();
+        }
     }
 
     @Override
