@@ -79,7 +79,7 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(@NotNull Collection<?> c) {
         boolean modified = false;
         for (var value : c) {
             if (contains(value)) {
