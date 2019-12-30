@@ -29,17 +29,12 @@ public class StdTypeObject implements TypeObject {
         if (this.equals(other)) {
             return true;
         }
-        if (other instanceof StdTypeObject) {
-            var that = (StdTypeObject) other;
-            for (var sup : supers) {
-                if (sup.isSubclass(other)) {
-                    return true;
-                }
+        for (var sup : supers) {
+            if (sup.isSubclass(other)) {
+                return true;
             }
-            return false;
-        } else {
-            throw new UnsupportedOperationException("Unknown type for TypeObject");
         }
+        return false;
     }
 
     @Override
