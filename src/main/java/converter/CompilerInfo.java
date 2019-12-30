@@ -2,6 +2,8 @@ package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
+import main.java.util.IndexedHashSet;
+import main.java.util.IndexedSet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +20,7 @@ public final class CompilerInfo {
     private int loopLevel;
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;
-    private Set<LangConstant> constantPool;
+    private IndexedSet<LangConstant> constantPool;
 
     private List<Map<String, TypeObject>> variables;
     private Map<String, TypeObject> typeMap;
@@ -28,7 +29,7 @@ public final class CompilerInfo {
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();
-        this.constantPool = new LinkedHashSet<>();  // Relies on constant iteration order
+        this.constantPool = new IndexedHashSet<>();  // Relies on constant iteration order
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
     }

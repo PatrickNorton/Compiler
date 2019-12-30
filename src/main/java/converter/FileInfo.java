@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.util.IndexedHashSet;
+import main.java.util.IndexedSet;
 import main.java.util.Pair;
 
 import java.io.File;
@@ -8,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,13 +18,13 @@ public final class FileInfo {
     private Set<String> exports;
     private Set<Pair<String, String>> imports;
     private Map<String, List<Byte>> functions;
-    private Set<LangConstant> constants;
+    private IndexedSet<LangConstant> constants;
 
     public FileInfo() {
         this.exports = new HashSet<>();
         this.imports = new HashSet<>();
         this.functions = new LinkedHashMap<>();
-        this.constants = new LinkedHashSet<>();
+        this.constants = new IndexedHashSet<>();
     }
 
     public void addExport(String name) {
