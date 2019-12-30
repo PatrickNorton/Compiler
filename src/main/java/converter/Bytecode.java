@@ -15,9 +15,10 @@ public enum Bytecode {
     LOAD_DOT(0x4, 2),
     LOAD_SUBSCRIPT(0x5, 2),
     POP_TOP(0x6, 0),
-    SWAP_2(0x7, 0),
-    SWAP_3(0x8, 0),
-    SWAP_N(0x9, 4),
+    DUP_TOP(0x7, 0),
+    SWAP_2(0x8, 0),
+    SWAP_3(0x9, 0),
+    SWAP_N(0xA, 4),
     // Binary operators
     PLUS(0x10, 0),
     MINUS(0x11, 0),
