@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public final class CompilerInfo {
     private int loopLevel;
@@ -24,6 +25,7 @@ public final class CompilerInfo {
 
     private List<Map<String, TypeObject>> variables;
     private Map<String, TypeObject> typeMap;
+    private Stack<String> varStack;
 
     public CompilerInfo() {
         this.loopLevel = 0;
@@ -32,6 +34,7 @@ public final class CompilerInfo {
         this.constantPool = new IndexedHashSet<>();  // Relies on constant iteration order
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
+        this.varStack = new Stack<>();
     }
 
     /**
@@ -153,6 +156,43 @@ public final class CompilerInfo {
             index++;
         }
         return -1;
+    }
+
+    @NotNull
+    public List<Byte> bringToTop(@NotNull String... varNames) {
+        // FIXME: Does not deal with duplicate variables well
+        List<Byte> bytes = new ArrayList<>();
+        for (int i = varNames.length - 1; i >= 0; i--) {
+            int index = varStack.search(varNames[i]);
+            switch (index) {
+                case 0:
+                    continue;
+                case 1:
+                    bytes.add(Bytecode.SWAP_2.value);
+                    break;
+                case 2:
+                    bytes.add(Bytecode.SWAP_3.value);
+                    break;
+                default:
+                    bytes.add(Bytecode.SWAP_N.value);
+                    bytes.addAll(Util.intToBytes(index));
+                    break;
+            }
+            fixStack(index);
+        }
+        return bytes;
+    }
+
+    private void fixStack(int index) {
+        var tempStack = new Stack<String>();
+        for (int i = 0; i < index; i++) {
+            tempStack.add(varStack.pop());
+        }
+        var newTop = tempStack.pop();
+        for (int i = 0; i < index; i++) {
+            varStack.add(tempStack.pop());
+        }
+        varStack.add(newTop);
     }
 
     /**
