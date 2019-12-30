@@ -22,7 +22,6 @@ public final class CompilerInfo {
     private Set<LangConstant> constantPool;
 
     private List<Map<String, TypeObject>> variables;
-    private Set<TypeObject> types;
     private Map<String, TypeObject> typeMap;
 
     public CompilerInfo() {
@@ -31,7 +30,6 @@ public final class CompilerInfo {
         this.loopStarts = new ArrayList<>();
         this.constantPool = new LinkedHashSet<>();  // Relies on constant iteration order
         this.variables = new ArrayList<>();
-        this.types = new HashSet<>();
         this.typeMap = new HashMap<>();
     }
 
@@ -106,7 +104,6 @@ public final class CompilerInfo {
     public void addType(@NotNull TypeLikeNode type, List<TypeObject> supers) {
         if (!typeMap.containsKey(type.strName())) {
             var typeObject = newType(type, supers);
-            types.add(typeObject);
             typeMap.put(typeObject.name(), typeObject);
         }
     }
