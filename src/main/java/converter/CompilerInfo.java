@@ -46,6 +46,7 @@ public final class CompilerInfo {
         loopLevel++;
         assert loopStarts.size() == loopLevel - 1;
         loopStarts.add(listStart + bytes.size());
+        addStackFrame();
     }
 
     /**
@@ -63,6 +64,7 @@ public final class CompilerInfo {
             setPointer(listStart - i, bytes, endLoop);
         }
         danglingPointers.remove(loopLevel);
+        removeStackFrame();
     }
 
     /**
@@ -127,6 +129,14 @@ public final class CompilerInfo {
         } else {
             throw new UnsupportedOperationException("Unknown type of parameter 'type': " + type.getClass());
         }
+    }
+
+    public void addStackFrame() {
+        variables.add(new HashMap<>());
+    }
+
+    public void removeStackFrame() {
+        variables.remove(variables.size() - 1);
     }
 
     @NotNull
