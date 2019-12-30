@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class DecimalConstant implements LangConstant {
-    private BigDecimal value;
+    private final BigDecimal value;
 
     public DecimalConstant(BigDecimal value) {
         this.value = value;

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class IntConstant implements LangConstant {
-    private int value;
+    private final int value;
 
     public IntConstant(int value) {
         this.value = value;

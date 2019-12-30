@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class BigintConstant implements LangConstant {
-    private BigInteger value;
+public final class BigintConstant implements LangConstant {
+    private final BigInteger value;
 
     public BigintConstant(BigInteger value) {
         this.value = value;
