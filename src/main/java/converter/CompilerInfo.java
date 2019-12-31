@@ -2,11 +2,12 @@ package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
+import main.java.parser.TypeUnionNode;
+import main.java.parser.TypewiseAndNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,24 +113,31 @@ public final class CompilerInfo {
         }
     }
 
-    @Nullable
+    @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
-        return typeMap.get(type.strName());
+        var value = typeMap.get(type.strName());
+        if (value == null) {
+            throw new RuntimeException("Unknown type " + type);
+        } else {
+            return value;
+        }
     }
 
     @NotNull
     @Contract("null, _ -> fail")
     public TypeObject newType(TypeLikeNode type, List<TypeObject> supers) {
+        TypeObject endType;
         if (type instanceof TypeNode) {
-            var typeNode = (TypeNode) type;
-            return new StdTypeObject(typeNode.strName(),
-                    supers,
-                    getTypes(typeNode.getSubtypes())
-            );
+            endType = new StdTypeObject(type.strName(), supers, getTypes(type.getSubtypes()));
+        } else if (type instanceof TypeUnionNode) {
+            endType = new UnionTypeObject(typesOf(type.getSubtypes()));
+        } else if (type instanceof TypewiseAndNode) {
+            endType = new IntersectionTypeObject(typesOf(type.getSubtypes()));
         } else {
             throw new UnsupportedOperationException("Unknown type of parameter 'type': " + type.getClass());
         }
+        return type.isOptional() ? new OptionalTypeObject(endType) : endType;
     }
 
     public void addStackFrame() {
@@ -145,6 +153,16 @@ public final class CompilerInfo {
         List<TypeObject> typeObjects = new ArrayList<>(types.length);
         for (var type : types) {
             typeObjects.add(getType(type));
+        }
+        return typeObjects;
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    private TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
+        var typeObjects = new TypeObject[types.length];
+        for (int i = 0; i < types.length; i++) {
+            typeObjects[i] = getType(types[i]);
         }
         return typeObjects;
     }
