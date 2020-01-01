@@ -54,6 +54,10 @@ public enum Bytecode {
     RETURN(0x38, 2),
     THROW(0x39, 0),
     THROW_QUICK(0x3A, 2),
+    ENTER_TRY(0x3B, 2),
+    EXCEPT_N(0x3C, 2),
+    FINALLY(0x3D, 0),
+    END_TRY(0x3E, 0),
     // Markers
     FUNC_DEF(0x40, 0),
     CLASS_DEF(0x41, 0),
