@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.Stack;
 
 public final class CompilerInfo {
+    private FileInfo parent;
     private int loopLevel;
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;
@@ -28,7 +29,8 @@ public final class CompilerInfo {
     private Map<String, TypeObject> typeMap;
     private Stack<String> varStack;
 
-    public CompilerInfo() {
+    public CompilerInfo(FileInfo parent) {
+        this.parent = parent;
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();

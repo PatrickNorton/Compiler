@@ -37,6 +37,10 @@ public class ImportExportNode implements SimpleStatementNode {
         this.preDots = preDots;
     }
 
+    public String getType() {
+        return type;
+    }
+
     @Override
     public LineInfo getLineInfo() {
         return lineInfo;

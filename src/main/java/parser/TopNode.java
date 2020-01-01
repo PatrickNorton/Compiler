@@ -1,8 +1,10 @@
 package main.java.parser;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -10,7 +12,7 @@ import java.util.LinkedList;
  * @author Patrick Norton
  * @see StatementBodyNode
  */
-public class TopNode implements BaseNode {
+public class TopNode implements BaseNode, Iterable<IndependentNode> {
     private Path path;
     private LinkedList<IndependentNode> nodes;
 
@@ -31,6 +33,12 @@ public class TopNode implements BaseNode {
 
     public LinkedList<IndependentNode> getNodes() {
         return nodes;
+    }
+
+    @NotNull
+    @Override
+    public Iterator<IndependentNode> iterator() {
+        return nodes.iterator();
     }
 
     @Override
