@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Converter {
-    TopNode node;
+public final class Converter {
+    private TopNode node;
 
     private Converter(TopNode node) {
         this.node = node;
