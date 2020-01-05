@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.ImportExportNode;
 import main.java.parser.ParserInternalError;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ public final class ImportExportConverter implements BaseConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         switch (node.getType()) {
