@@ -5,4 +5,5 @@ public enum ConstantBytes {
     INT,
     BIGINT,
     DECIMAL,
+    IMPORT,
 }

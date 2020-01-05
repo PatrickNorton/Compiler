@@ -126,6 +126,10 @@ public final class CompilerInfo {
         }
     }
 
+    public TypeObject getType(String variable) {
+        return null;  // FIXME: Implement
+    }
+
     @NotNull
     @Contract("null, _ -> fail")
     public TypeObject newType(TypeLikeNode type, List<TypeObject> supers) {
@@ -148,6 +152,27 @@ public final class CompilerInfo {
 
     public void removeStackFrame() {
         variables.remove(variables.size() - 1);
+    }
+
+    public int addImport(String name) {
+        parent.addImport(name);
+        return 0;  // FIXME: Add import number
+    }
+
+    public void addExport(String name, TypeObject type) {
+        // TODO: Implement
+    }
+
+    public void addVariable(String name, TypeObject type) {
+        variables.get(variables.size() - 1).put(name, type);
+    }
+
+    public TypeObject importType(String name) {
+        return null;  // FIXME: Get meaningful type
+    }
+
+    public TypeObject exportType(String name) {
+        return null;  // FIXME: Get meaningful type
     }
 
     @NotNull
