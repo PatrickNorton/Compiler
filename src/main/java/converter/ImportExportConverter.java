@@ -6,7 +6,7 @@ import main.java.parser.ParserInternalError;
 import java.util.Collections;
 import java.util.List;
 
-public class ImportExportConverter implements BaseConverter {
+public final class ImportExportConverter implements BaseConverter {
     private CompilerInfo info;
     private ImportExportNode node;
 

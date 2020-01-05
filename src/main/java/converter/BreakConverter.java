@@ -5,7 +5,7 @@ import main.java.parser.BreakStatementNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BreakConverter implements BaseConverter {
+public final class BreakConverter implements BaseConverter {
     private BreakStatementNode node;
     private CompilerInfo info;
 
