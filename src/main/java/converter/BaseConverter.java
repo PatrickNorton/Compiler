@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.BaseNode;
 import main.java.parser.BreakStatementNode;
 import main.java.parser.IfStatementNode;
+import main.java.parser.ImportExportNode;
 import main.java.parser.ReturnStatementNode;
 import main.java.parser.WhileStatementNode;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,8 @@ public interface BaseConverter {
             return new BreakConverter(info, (BreakStatementNode) node);
         } else if (node instanceof IfStatementNode) {
             return new IfConverter(info, (IfStatementNode) node);
+        } else if (node instanceof ImportExportNode) {
+            return new ImportExportConverter(info, (ImportExportNode) node);
         } else if (node instanceof ReturnStatementNode) {
             return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof WhileStatementNode) {
