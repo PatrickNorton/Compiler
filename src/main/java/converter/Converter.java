@@ -5,24 +5,31 @@ import main.java.parser.DefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.IndependentNode;
+import main.java.parser.LineInfo;
+import main.java.parser.Parser;
 import main.java.parser.ParserException;
 import main.java.parser.ParserInternalError;
 import main.java.parser.TopNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class Converter {
     private TopNode node;
+    private FileInfo info;
 
     private Converter(TopNode node) {
         this.node = node;
+        this.info = new FileInfo();
     }
 
     private void convert() {
-        var info = new FileInfo();
         List<IndependentNode> nonDefs = new ArrayList<>();
         List<FunctionDefinitionNode> funcDefs = new ArrayList<>();
         List<DefinitionNode> classDefs = new ArrayList<>();
@@ -66,7 +73,7 @@ public final class Converter {
                 if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
                     throw ParserException.of("Illegal import " + value, value);
                 }
-                info.addImport(value.toString(), ((VariableNode) as.getPreDot()).getName());
+                info.addImport(value.toString());
             }
         }
     }
@@ -86,5 +93,32 @@ public final class Converter {
 
     public static void convert(TopNode node) {
         new Converter(node).convert();
+    }
+
+    public static FileInfo findModule(String name) {
+        var path = System.getenv("PATH");
+        for (String filename : path.split(":")) {
+            try (var walker = Files.walk(Path.of(filename))) {
+                var result = walker.filter(Converter::isModule)
+                        .collect(Collectors.toList());
+                if (!result.isEmpty()) {
+                    var endPath = result.get(0);
+                    return new Converter(Parser.parse(endPath.toFile())).info;
+                }
+            } catch (IOException e) {
+                // FIXME: Handle this
+            }
+        }
+        throw ParserException.of("Cannot find module " + name, LineInfo.empty());
+    }
+
+    private static boolean isModule(Path path) {
+        if (Files.isRegularFile(path)) {
+            return path.endsWith(".newlang");
+        } else {
+            var files = path.toFile().list((f, s) -> s.equals("__exports__.newlang"));
+            assert files != null;
+            return files.length > 0;
+        }
     }
 }

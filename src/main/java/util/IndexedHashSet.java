@@ -90,6 +90,11 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
         return modified;
     }
 
+    @Override
+    public int indexOf(E object) {
+        return valueList.indexOf(object);
+    }
+
     @NotNull
     @Override
     public Object[] toArray() {

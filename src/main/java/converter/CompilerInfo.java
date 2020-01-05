@@ -155,8 +155,7 @@ public final class CompilerInfo {
     }
 
     public int addImport(String name) {
-        parent.addImport(name);
-        return 0;  // FIXME: Add import number
+        return parent.addImport(name);
     }
 
     public void addExport(String name, TypeObject type) {
