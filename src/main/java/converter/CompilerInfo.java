@@ -6,6 +6,7 @@ import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.IntAllocator;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,7 @@ public final class CompilerInfo {
     private IndexedSet<LangConstant> constantPool;
 
     private List<Map<String, Pair<TypeObject, Integer>>> variables;
-    private int varCount;
+    private IntAllocator varNumbers;
     private Map<String, TypeObject> typeMap;
 
     public CompilerInfo(FileInfo parent) {
@@ -36,7 +37,7 @@ public final class CompilerInfo {
         this.loopStarts = new ArrayList<>();
         this.constantPool = new IndexedHashSet<>();
         this.variables = new ArrayList<>();
-        this.varCount = 0;
+        this.varNumbers = new IntAllocator();
         this.typeMap = new HashMap<>();
     }
 
@@ -151,7 +152,10 @@ public final class CompilerInfo {
     }
 
     public void removeStackFrame() {
-        variables.remove(variables.size() - 1);
+        var vars = variables.remove(variables.size() - 1);
+        for (var pair : vars.values()) {
+            varNumbers.remove(pair.getValue());
+        }
     }
 
     public int addImport(String name) {
@@ -163,7 +167,7 @@ public final class CompilerInfo {
     }
 
     public void addVariable(String name, TypeObject type) {
-        variables.get(variables.size() - 1).put(name, Pair.of(type, varCount++));
+        variables.get(variables.size() - 1).put(name, Pair.of(type, varNumbers.getNext()));
     }
 
     private Pair<TypeObject, Integer> varInfo(String name) {
