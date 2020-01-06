@@ -19,6 +19,8 @@ public enum Bytecode {
     SWAP_2(0x8, 0),
     SWAP_3(0x9, 0),
     SWAP_N(0xA, 4),
+    STORE(0xB, 4),
+    STORE_SUBSCRIPT(0xC, 0),
     // Binary operators
     PLUS(0x10, 0),
     MINUS(0x11, 0),

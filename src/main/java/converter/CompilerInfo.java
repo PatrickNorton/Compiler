@@ -6,6 +6,7 @@ import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 public final class CompilerInfo {
     private FileInfo parent;
@@ -25,19 +25,19 @@ public final class CompilerInfo {
     private List<Integer> loopStarts;
     private IndexedSet<LangConstant> constantPool;
 
-    private List<Map<String, TypeObject>> variables;
+    private List<Map<String, Pair<TypeObject, Integer>>> variables;
+    private int varCount;
     private Map<String, TypeObject> typeMap;
-    private Stack<String> varStack;
 
     public CompilerInfo(FileInfo parent) {
         this.parent = parent;
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();
-        this.constantPool = new IndexedHashSet<>();  // Relies on constant iteration order
+        this.constantPool = new IndexedHashSet<>();
         this.variables = new ArrayList<>();
+        this.varCount = 0;
         this.typeMap = new HashMap<>();
-        this.varStack = new Stack<>();
     }
 
     /**
@@ -163,7 +163,17 @@ public final class CompilerInfo {
     }
 
     public void addVariable(String name, TypeObject type) {
-        variables.get(variables.size() - 1).put(name, type);
+        variables.get(variables.size() - 1).put(name, Pair.of(type, varCount++));
+    }
+
+    private Pair<TypeObject, Integer> varInfo(String name) {
+        for (int i = variables.size() - 1; i >= 0; i--) {
+            var map = variables.get(i);
+            if (map.containsKey(name)) {
+                return map.get(name);
+            }
+        }
+        throw new RuntimeException("Unknown variable");
     }
 
     public TypeObject importType(String name) {
@@ -194,12 +204,7 @@ public final class CompilerInfo {
     }
 
     private int constIndex(LangConstant value) {
-        int index = 0;
-        for (var v : constantPool) {
-            if (v.equals(value)) return index;
-            index++;
-        }
-        return -1;
+        return constantPool.indexOf(value);
     }
 
     @NotNull
@@ -207,36 +212,10 @@ public final class CompilerInfo {
         // FIXME: Does not deal with duplicate variables well
         List<Byte> bytes = new ArrayList<>();
         for (int i = varNames.length - 1; i >= 0; i--) {
-            int index = varStack.search(varNames[i]);
-            switch (index) {
-                case 0:
-                    continue;
-                case 1:
-                    bytes.add(Bytecode.SWAP_2.value);
-                    break;
-                case 2:
-                    bytes.add(Bytecode.SWAP_3.value);
-                    break;
-                default:
-                    bytes.add(Bytecode.SWAP_N.value);
-                    bytes.addAll(Util.intToBytes(index));
-                    break;
-            }
-            fixStack(index);
+            bytes.add(Bytecode.LOAD_VALUE.value);
+            bytes.addAll(Util.shortToBytes(varInfo(varNames[i]).getValue().shortValue()));
         }
         return bytes;
-    }
-
-    private void fixStack(int index) {
-        var tempStack = new Stack<String>();
-        for (int i = 0; i < index; i++) {
-            tempStack.add(varStack.pop());
-        }
-        var newTop = tempStack.pop();
-        for (int i = 0; i < index; i++) {
-            varStack.add(tempStack.pop());
-        }
-        varStack.add(newTop);
     }
 
     /**
