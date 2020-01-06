@@ -18,8 +18,13 @@ public class IntAllocator extends AbstractCollection<Integer> implements Collect
     }
 
     public int getNext() {
-        max++;
-        return removed.isEmpty() ? max - 1 : removed.first();
+        if (removed.isEmpty()) {
+            return max++;
+        } else {
+            int n = removed.first();
+            removed.remove(n);
+            return n;
+        }
     }
 
     public void remove(int num) {
