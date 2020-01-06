@@ -127,7 +127,7 @@ public final class CompilerInfo {
     }
 
     public TypeObject getType(String variable) {
-        return null;  // FIXME: Implement
+        return varInfo(variable).getKey();
     }
 
     @NotNull
