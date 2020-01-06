@@ -31,8 +31,13 @@ public final class FileInfo {
         this.constants = new IndexedHashSet<>();
     }
 
-    public void addExport(String name) {
+    public void addExport(String name, TypeObject type) {
         this.exports.add(name);
+        exportTypes.put(name, type);
+    }
+
+    public TypeObject exportType(String name) {
+        return exportTypes.get(name);
     }
 
     public int addImport(String name) {

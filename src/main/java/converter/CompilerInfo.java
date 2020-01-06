@@ -159,7 +159,7 @@ public final class CompilerInfo {
     }
 
     public void addExport(String name, TypeObject type) {
-        // TODO: Implement
+        parent.addExport(name, type);
     }
 
     public void addVariable(String name, TypeObject type) {
@@ -167,11 +167,11 @@ public final class CompilerInfo {
     }
 
     public TypeObject importType(String name) {
-        return null;  // FIXME: Get meaningful type
+        return parent.importType(name);
     }
 
     public TypeObject exportType(String name) {
-        return null;  // FIXME: Get meaningful type
+        return parent.exportType(name);
     }
 
     @NotNull
