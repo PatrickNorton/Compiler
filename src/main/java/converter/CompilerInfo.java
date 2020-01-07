@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
+import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,7 @@ public final class CompilerInfo {
 
     private List<Map<String, VariableInfo>> variables;
     private Map<String, TypeObject> typeMap;
+    private IntAllocator varNumbers;
 
     public CompilerInfo(FileInfo parent) {
         this.parent = parent;
@@ -28,6 +30,7 @@ public final class CompilerInfo {
         this.loopStarts = new ArrayList<>();
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
+        this.varNumbers = new IntAllocator();
     }
 
     /**
@@ -133,7 +136,7 @@ public final class CompilerInfo {
     public void removeStackFrame() {
         var vars = variables.remove(variables.size() - 1);
         for (var pair : vars.values()) {
-            parent.deScopeVariable(pair.getLocation());
+            varNumbers.remove(pair.getLocation());
         }
     }
 
@@ -175,7 +178,7 @@ public final class CompilerInfo {
      * @param type The type of the variable
      */
     public void addVariable(String name, TypeObject type) {
-        addVariable(name, new VariableInfo(type, parent.newVariableIndex()));
+        addVariable(name, new VariableInfo(type, varNumbers.getNext()));
     }
 
     private void addVariable(String name, VariableInfo info) {
