@@ -21,9 +21,13 @@ public class VariableConverter implements TestConverter {
 
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_VALUE.size());
-        bytes.add(Bytecode.LOAD_VALUE.value);
-        bytes.addAll(Util.shortToBytes((short) info.varIndex(node.getName())));
+        String name = node.getName();
+        boolean isConst = info.variableIsConstant(node.getName());
+        var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
+        List<Byte> bytes = new ArrayList<>(bytecode.size());
+        bytes.add(bytecode.value);
+        short index = (short) (isConst ? info.constIndex(name) : info.varIndex(name));
+        bytes.addAll(Util.shortToBytes(index));
         return bytes;
     }
 }

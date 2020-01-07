@@ -153,8 +153,20 @@ public final class CompilerInfo {
         parent.addExport(name, type);
     }
 
+    public void addVariable(String name, TypeObject type, LangConstant constValue) {
+        addVariable(name, new VariableInfo(type, constValue, -1));
+    }
+
     public void addVariable(String name, TypeObject type) {
-        variables.get(variables.size() - 1).put(name, new VariableInfo(type, parent.newVariableIndex()));
+        addVariable(name, new VariableInfo(type, parent.newVariableIndex()));
+    }
+
+    private void addVariable(String name, VariableInfo info) {
+         variables.get(variables.size() - 1).put(name, info);
+    }
+
+    public boolean variableIsConstant(String name) {
+        return varInfo(name).isConst();
     }
 
     private VariableInfo varInfo(String name) {
@@ -200,6 +212,11 @@ public final class CompilerInfo {
 
     public int constIndex(LangConstant value) {
         return parent.constIndex(value);
+    }
+
+    public int constIndex(String name) {
+        var variableInfo = varInfo(name);
+        return constIndex(variableInfo.constValue());
     }
 
     /**
