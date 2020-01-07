@@ -202,17 +202,6 @@ public final class CompilerInfo {
         return parent.constIndex(value);
     }
 
-    @NotNull
-    public List<Byte> bringToTop(@NotNull String... varNames) {
-        // FIXME: Does not deal with duplicate variables well
-        List<Byte> bytes = new ArrayList<>();
-        for (int i = varNames.length - 1; i >= 0; i--) {
-            bytes.add(Bytecode.LOAD_VALUE.value);
-            bytes.addAll(Util.shortToBytes((short) varInfo(varNames[i]).getLocation()));
-        }
-        return bytes;
-    }
-
     /**
      * Set a pointer starting at a given index in the byte list.
      *
