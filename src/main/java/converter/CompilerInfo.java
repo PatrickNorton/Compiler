@@ -142,7 +142,7 @@ public final class CompilerInfo {
     public void removeStackFrame() {
         var vars = variables.remove(variables.size() - 1);
         for (var pair : vars.values()) {
-            parent.varNumbers.remove(pair.getValue());
+            parent.deScopeVariable(pair.getValue());
         }
     }
 
@@ -155,7 +155,7 @@ public final class CompilerInfo {
     }
 
     public void addVariable(String name, TypeObject type) {
-        variables.get(variables.size() - 1).put(name, Pair.of(type, parent.varNumbers.getNext()));
+        variables.get(variables.size() - 1).put(name, Pair.of(type, parent.newVariableIndex()));
     }
 
     private Pair<TypeObject, Integer> varInfo(String name) {

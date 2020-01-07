@@ -22,7 +22,7 @@ public final class FileInfo {
     private Map<String, TypeObject> importTypes;
     private Map<String, List<Byte>> functions;
     private IndexedSet<LangConstant> constants;
-    public final IntAllocator varNumbers;
+    private IntAllocator varNumbers;
 
     public FileInfo() {
         this.exports = new HashSet<>();
@@ -67,6 +67,14 @@ public final class FileInfo {
 
     public int constIndex(LangConstant value) {
         return constants.indexOf(value);
+    }
+
+    public int newVariableIndex() {
+        return varNumbers.getNext();
+    }
+
+    public void deScopeVariable(int index) {
+        varNumbers.remove(index);
     }
 
     public void writeToFile(File file) {
