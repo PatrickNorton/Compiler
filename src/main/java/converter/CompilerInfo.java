@@ -4,9 +4,6 @@ import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
-import main.java.util.IndexedHashSet;
-import main.java.util.IndexedSet;
-import main.java.util.IntAllocator;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -24,10 +21,8 @@ public final class CompilerInfo {
     private int loopLevel;
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;
-    private IndexedSet<LangConstant> constantPool;
 
     private List<Map<String, Pair<TypeObject, Integer>>> variables;
-    private IntAllocator varNumbers;
     private Map<String, TypeObject> typeMap;
 
     public CompilerInfo(FileInfo parent) {
@@ -35,9 +30,7 @@ public final class CompilerInfo {
         this.loopLevel = 0;
         this.danglingPointers = new HashMap<>();
         this.loopStarts = new ArrayList<>();
-        this.constantPool = new IndexedHashSet<>();
         this.variables = new ArrayList<>();
-        this.varNumbers = new IntAllocator();
         this.typeMap = new HashMap<>();
     }
 
@@ -101,12 +94,7 @@ public final class CompilerInfo {
      * @param value The value to add
      */
     public int addConstant(LangConstant value) {
-        constantPool.add(value);
-        return constIndex(value);
-    }
-
-    public Set<LangConstant> constants() {
-        return constantPool;
+        return parent.addConstant(value);
     }
 
     public void addType(@NotNull TypeLikeNode type, List<TypeObject> supers) {
@@ -154,7 +142,7 @@ public final class CompilerInfo {
     public void removeStackFrame() {
         var vars = variables.remove(variables.size() - 1);
         for (var pair : vars.values()) {
-            varNumbers.remove(pair.getValue());
+            parent.varNumbers.remove(pair.getValue());
         }
     }
 
@@ -167,7 +155,7 @@ public final class CompilerInfo {
     }
 
     public void addVariable(String name, TypeObject type) {
-        variables.get(variables.size() - 1).put(name, Pair.of(type, varNumbers.getNext()));
+        variables.get(variables.size() - 1).put(name, Pair.of(type, parent.varNumbers.getNext()));
     }
 
     private Pair<TypeObject, Integer> varInfo(String name) {
@@ -211,8 +199,8 @@ public final class CompilerInfo {
         return typeObjects;
     }
 
-    private int constIndex(LangConstant value) {
-        return constantPool.indexOf(value);
+    public int constIndex(LangConstant value) {
+        return parent.constIndex(value);
     }
 
     @NotNull

@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.IntAllocator;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +22,7 @@ public final class FileInfo {
     private Map<String, TypeObject> importTypes;
     private Map<String, List<Byte>> functions;
     private IndexedSet<LangConstant> constants;
+    public final IntAllocator varNumbers;
 
     public FileInfo() {
         this.exports = new HashSet<>();
@@ -29,6 +31,7 @@ public final class FileInfo {
         this.importTypes = new HashMap<>();
         this.functions = new LinkedHashMap<>();
         this.constants = new IndexedHashSet<>();
+        this.varNumbers = new IntAllocator();
     }
 
     public void addExport(String name, TypeObject type) {
@@ -55,6 +58,15 @@ public final class FileInfo {
 
     public void addFunction(String name, List<Byte> bytecode) {
         this.functions.put(name, bytecode);
+    }
+
+    public int addConstant(LangConstant value) {
+        constants.add(value);
+        return constIndex(value);
+    }
+
+    public int constIndex(LangConstant value) {
+        return constants.indexOf(value);
     }
 
     public void writeToFile(File file) {
