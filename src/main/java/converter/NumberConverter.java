@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.NumberNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ public final class NumberConverter implements ConstantConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         int constIndex = info.addConstant(constant());
@@ -23,6 +25,7 @@ public final class NumberConverter implements ConstantConverter {
         return bytes;
     }
 
+    @NotNull
     @Override
     public LangConstant constant() {
         return LangConstant.of(node);
@@ -30,6 +33,6 @@ public final class NumberConverter implements ConstantConverter {
 
     @Override
     public TypeObject returnType() {
-        return Builtins.INT;
+        return constant() instanceof IntConstant ? Builtins.INT : Builtins.DECIMAL;
     }
 }
