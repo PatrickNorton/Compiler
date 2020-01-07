@@ -25,7 +25,8 @@ public class DeclaredAssignmentConverter implements BaseConverter {
         var assigned = node.getTypes()[0];
         var converter = TestConverter.of(info, value);
         var valueType = converter.returnType();
-        var assignedType = info.getType(assigned.getType());
+        var rawType = assigned.getType();
+        var assignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
         if (!valueType.isSubclass(assignedType)) {
             throw ParserException.of(String.format(
                     "Object of type %s cannot be assigned to object of type %s",
