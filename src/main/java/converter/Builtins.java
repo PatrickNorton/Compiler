@@ -8,4 +8,8 @@ public final class Builtins {
     }
 
     public static final TypeObject CALLABLE = new DefaultInterface("Callable", OpSpTypeNode.CALL);
+
+    public static final TypeObject INT = new StdTypeObject("int");
+
+    public static final TypeObject STR = new StdTypeObject("str");
 }

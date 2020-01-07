@@ -10,6 +10,10 @@ public class StdTypeObject implements TypeObject {
     private final List<TypeObject> declaredGenerics;
     private final List<String> generics;
 
+    public StdTypeObject(String name) {
+        this(name, Collections.emptyList(), Collections.emptyList());
+    }
+
     public StdTypeObject(String name, List<TypeObject> supers, List<TypeObject> declaredGenerics) {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);
