@@ -87,7 +87,8 @@ public final class Converter {
             if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
                 throw ParserException.of("Illegal import " + value, value);
             }
-            info.addExport(((VariableNode) value.getPreDot()).getName());
+            var name = ((VariableNode) value.getPreDot()).getName();
+            info.addExport(name, null);  // FIXME: Get types to work
         }
     }
 
