@@ -37,6 +37,10 @@ public class TestListNode implements BaseNode {
         return tests.length;
     }
 
+    public TestNode get(int index) {
+        return tests[index];
+    }
+
     /**
      * Parse a list of TestNodes from a list of tokens.
      * @param tokens The list of tokens to be destructively parsed

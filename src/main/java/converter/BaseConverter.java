@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.BaseNode;
 import main.java.parser.BreakStatementNode;
+import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.ReturnStatementNode;
@@ -21,6 +22,8 @@ public interface BaseConverter {
     private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
         if (node instanceof BreakStatementNode) {
             return new BreakConverter(info, (BreakStatementNode) node);
+        } else if (node instanceof DeclaredAssignmentNode) {
+            return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
         } else if (node instanceof IfStatementNode) {
             return new IfConverter(info, (IfStatementNode) node);
         } else if (node instanceof ImportExportNode) {
