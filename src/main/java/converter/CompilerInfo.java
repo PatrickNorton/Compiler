@@ -4,7 +4,6 @@ import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
-import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +21,7 @@ public final class CompilerInfo {
     private Map<Integer, Set<Integer>> danglingPointers;
     private List<Integer> loopStarts;
 
-    private List<Map<String, Pair<TypeObject, Integer>>> variables;
+    private List<Map<String, VariableInfo>> variables;
     private Map<String, TypeObject> typeMap;
 
     public CompilerInfo(FileInfo parent) {
@@ -116,7 +115,7 @@ public final class CompilerInfo {
     }
 
     public TypeObject getType(String variable) {
-        return varInfo(variable).getKey();
+        return varInfo(variable).getType();
     }
 
     @NotNull
@@ -142,7 +141,7 @@ public final class CompilerInfo {
     public void removeStackFrame() {
         var vars = variables.remove(variables.size() - 1);
         for (var pair : vars.values()) {
-            parent.deScopeVariable(pair.getValue());
+            parent.deScopeVariable(pair.getLocation());
         }
     }
 
@@ -155,10 +154,10 @@ public final class CompilerInfo {
     }
 
     public void addVariable(String name, TypeObject type) {
-        variables.get(variables.size() - 1).put(name, Pair.of(type, parent.newVariableIndex()));
+        variables.get(variables.size() - 1).put(name, new VariableInfo(type, parent.newVariableIndex()));
     }
 
-    private Pair<TypeObject, Integer> varInfo(String name) {
+    private VariableInfo varInfo(String name) {
         for (int i = variables.size() - 1; i >= 0; i--) {
             var map = variables.get(i);
             if (map.containsKey(name)) {
@@ -177,7 +176,7 @@ public final class CompilerInfo {
     }
 
     public int varIndex(String name) {
-        return varInfo(name).getValue();
+        return varInfo(name).getLocation();
     }
 
     @NotNull
@@ -209,7 +208,7 @@ public final class CompilerInfo {
         List<Byte> bytes = new ArrayList<>();
         for (int i = varNames.length - 1; i >= 0; i--) {
             bytes.add(Bytecode.LOAD_VALUE.value);
-            bytes.addAll(Util.shortToBytes(varInfo(varNames[i]).getValue().shortValue()));
+            bytes.addAll(Util.shortToBytes((short) varInfo(varNames[i]).getLocation()));
         }
         return bytes;
     }
