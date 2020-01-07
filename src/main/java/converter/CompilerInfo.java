@@ -188,6 +188,10 @@ public final class CompilerInfo {
         return parent.exportType(name);
     }
 
+    public int varIndex(String name) {
+        return varInfo(name).getValue();
+    }
+
     @NotNull
     private List<TypeObject> getTypes(@NotNull TypeLikeNode... types) {
         List<TypeObject> typeObjects = new ArrayList<>(types.length);
