@@ -1,9 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
-import main.java.parser.TypeNode;
-import main.java.parser.TypeUnionNode;
-import main.java.parser.TypewiseAndNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -96,13 +93,12 @@ public final class CompilerInfo {
         return parent.addConstant(value);
     }
 
-    public void addType(@NotNull TypeLikeNode type, List<TypeObject> supers) {
-        if (!typeMap.containsKey(type.strName())) {
-            var typeObject = newType(type, supers);
-            typeMap.put(typeObject.name(), typeObject);
-        }
-    }
-
+    /**
+     * Get the compiler's type from a {@link TypeLikeNode}.
+     *
+     * @param type The node to translate
+     * @return The compiler's type
+     */
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
@@ -114,30 +110,26 @@ public final class CompilerInfo {
         }
     }
 
+    /**
+     * Get the type of a variable.
+     *
+     * @param variable The variable name to get the type from
+     * @return The type of the variable
+     */
     public TypeObject getType(String variable) {
         return varInfo(variable).getType();
     }
 
-    @NotNull
-    @Contract("null, _ -> fail")
-    public TypeObject newType(TypeLikeNode type, List<TypeObject> supers) {
-        TypeObject endType;
-        if (type instanceof TypeNode) {
-            endType = new StdTypeObject(type.strName(), supers, getTypes(type.getSubtypes()));
-        } else if (type instanceof TypeUnionNode) {
-            endType = new UnionTypeObject(typesOf(type.getSubtypes()));
-        } else if (type instanceof TypewiseAndNode) {
-            endType = new IntersectionTypeObject(typesOf(type.getSubtypes()));
-        } else {
-            throw new UnsupportedOperationException("Unknown type of parameter 'type': " + type.getClass());
-        }
-        return type.isOptional() ? new OptionalTypeObject(endType) : endType;
-    }
-
+    /**
+     * Add a new set of variable names to the stack.
+     */
     public void addStackFrame() {
         variables.add(new HashMap<>());
     }
 
+    /**
+     * Remove the current level of variable declarations from the stack.
+     */
     public void removeStackFrame() {
         var vars = variables.remove(variables.size() - 1);
         for (var pair : vars.values()) {
@@ -145,18 +137,43 @@ public final class CompilerInfo {
         }
     }
 
+    /**
+     * Add an import to the import list.
+     *
+     * @param name The name of the import to add
+     * @return The index of the import
+     */
     public int addImport(String name) {
         return parent.addImport(name);
     }
 
+    /**
+     * Add an export to the export list.
+     *
+     * @param name The name of the export to add
+     * @param type The type of the export
+     */
     public void addExport(String name, TypeObject type) {
         parent.addExport(name, type);
     }
 
+    /**
+     * Add a variable with a constant value to the stack.
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param constValue The constant value the variable has
+     */
     public void addVariable(String name, TypeObject type, LangConstant constValue) {
         addVariable(name, new VariableInfo(type, constValue, -1));
     }
 
+    /**
+     * Add a variable to the stack.
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     */
     public void addVariable(String name, TypeObject type) {
         addVariable(name, new VariableInfo(type, parent.newVariableIndex()));
     }
@@ -165,6 +182,12 @@ public final class CompilerInfo {
          variables.get(variables.size() - 1).put(name, info);
     }
 
+    /**
+     * Check if a variable is constant.
+     *
+     * @param name The name of the variable to check
+     * @return If the variable is constant
+     */
     public boolean variableIsConstant(String name) {
         return varInfo(name).isConst();
     }
@@ -187,6 +210,12 @@ public final class CompilerInfo {
         return parent.exportType(name);
     }
 
+    /**
+     * The index of the variable in the variable stack.
+     *
+     * @param name The name of the variable
+     * @return The index in the stack
+     */
     public int varIndex(String name) {
         return varInfo(name).getLocation();
     }
@@ -210,10 +239,22 @@ public final class CompilerInfo {
         return typeObjects;
     }
 
+    /**
+     * The index of a constant in the constant stack.
+     *
+     * @param value The name of the variable
+     * @return The index in the stack
+     */
     public int constIndex(LangConstant value) {
         return parent.constIndex(value);
     }
 
+    /**
+     * The index of a constant variable in the constant stack.
+     *
+     * @param name The name of the variable
+     * @return The index in the stack
+     */
     public int constIndex(String name) {
         var variableInfo = varInfo(name);
         return constIndex(variableInfo.constValue());
