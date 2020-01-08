@@ -6,8 +6,10 @@ import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +21,7 @@ public final class CompilerInfo {
     private int loopLevel;
     private Map<Integer, Set<Integer>> breakPointers;
     private Map<Integer, Set<Integer>> continuePointers;
+    private Deque<Integer> continueLocations;
 
     private List<Map<String, VariableInfo>> variables;
     private Map<String, TypeObject> typeMap;
@@ -29,6 +32,7 @@ public final class CompilerInfo {
         this.loopLevel = 0;
         this.breakPointers = new HashMap<>();
         this.continuePointers = new HashMap<>();
+        this.continueLocations = new ArrayDeque<>();
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
         this.varNumbers = new IntAllocator();
@@ -39,6 +43,8 @@ public final class CompilerInfo {
      */
     public void enterLoop() {
         loopLevel++;
+        continueLocations.push(-1);
+        assert continueLocations.size() == loopLevel;
         addStackFrame();
     }
 
@@ -56,8 +62,10 @@ public final class CompilerInfo {
             setPointer(listStart - i, bytes, endLoop);
         }
         breakPointers.remove(loopLevel);
+        int continueLocation = continueLocations.pop();
+        assert continueLocation != -1 : "Continue location not defined";
         for (int i : continuePointers.getOrDefault(loopLevel, Collections.emptySet())) {
-            setPointer(listStart - i, bytes, endLoop);
+            setPointer(listStart - i, bytes, continueLocation);
         }
         continuePointers.remove(loopLevel);
         removeStackFrame();
@@ -70,19 +78,30 @@ public final class CompilerInfo {
      * @param location The location (absolute, by start of function)
      */
     public void addBreak(int levels, int location) {
-        breakPointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
-        breakPointers.get(loopLevel - levels).add(location);
+        var pointerSet = breakPointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
+        pointerSet.add(location);
     }
 
     /**
      * Add a continue statement's pointer to the list.
      *
-     * @param levels The number of levels to continue
-     * @param location The location (relative to the start of the list)
+     * @param location The location (absolute, by start of function)
      */
-    public void addContinue(int levels, int location) {
-        continuePointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
-        continuePointers.get(loopLevel - levels).add(location);
+    public void addContinue(int location) {
+        var pointerSet = continuePointers.computeIfAbsent(loopLevel, k -> new HashSet<>());
+        pointerSet.add(location);
+    }
+
+    /**
+     * Set the point where a {@code continue} statement should jump to.
+     *
+     * @param location The location (absolute, by start of function)
+     */
+    public void setContinuePoint(int location) {
+        assert continueLocations.size() == loopLevel : "Mismatch in continue levels";
+        int oldValue = continueLocations.pop();
+        assert oldValue == -1 : "Defined multiple continue points for loop";
+        continueLocations.push(location);
     }
 
     /**
