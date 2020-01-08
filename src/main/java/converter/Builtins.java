@@ -14,4 +14,6 @@ public final class Builtins {
     public static final TypeObject STR = new StdTypeObject("str");
 
     public static final TypeObject DECIMAL = new StdTypeObject("dec");
+
+    public static final TypeObject TYPE = new TypeTypeObject();
 }

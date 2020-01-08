@@ -1,7 +1,20 @@
 package main.java.converter;
 
+import main.java.parser.ContextDefinitionNode;
+import main.java.parser.DefinitionNode;
+import main.java.parser.FunctionDefinitionNode;
+import main.java.parser.ImportExportNode;
+import main.java.parser.LineInfo;
+import main.java.parser.MethodDefinitionNode;
+import main.java.parser.OperatorDefinitionNode;
+import main.java.parser.ParserException;
+import main.java.parser.ParserInternalError;
+import main.java.parser.PropertyDefinitionNode;
+import main.java.parser.TopNode;
+import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class FileInfo {
+public final class FileInfo {  // FIXME: LineInfo for exceptions
+    private TopNode node;
     private Set<String> exports;
     private Map<String, TypeObject> exportTypes;
     private IndexedSet<String> imports;
@@ -22,7 +36,10 @@ public final class FileInfo {
     private Map<String, List<Byte>> functions;
     private IndexedSet<LangConstant> constants;
 
-    public FileInfo() {
+    private boolean allowSettingExports;
+
+    public FileInfo(TopNode node) {
+        this.node = node;
         this.exports = new HashSet<>();
         this.exportTypes = new HashMap<>();
         this.imports = new IndexedHashSet<>();
@@ -32,6 +49,9 @@ public final class FileInfo {
     }
 
     public void addExport(String name, TypeObject type) {
+        if (!allowSettingExports) {
+            throw ParserException.of("Illegal position for export statement", LineInfo.empty());
+        }
         this.exports.add(name);
         exportTypes.put(name, type);
     }
@@ -64,6 +84,105 @@ public final class FileInfo {
 
     public int constIndex(LangConstant value) {
         return constants.indexOf(value);
+    }
+
+    public FileInfo link() {
+        Map<String, String> exports = new HashMap<>();
+        Map<String, TypeObject> globals = new HashMap<>();
+        for (var stmt : node) {
+            if (stmt instanceof DefinitionNode) {
+                var name = ((DefinitionNode) stmt).getName();
+                TypeObject type;
+                if (stmt instanceof FunctionDefinitionNode) {
+                    type = null;
+                } else if (stmt instanceof PropertyDefinitionNode) {
+                    var typeNode = ((PropertyDefinitionNode) stmt).getType();
+                    type = null;  // FIXME: Convert type properly
+                } else if (stmt instanceof ContextDefinitionNode) {
+                    type = null;
+                } else if (stmt instanceof OperatorDefinitionNode) {
+                    throw ParserInternalError.of("Illegal operator definition", stmt);
+                } else if (stmt instanceof MethodDefinitionNode) {
+                    throw ParserInternalError.of("Illegal method definition", stmt);
+                } else {
+                    type = Builtins.TYPE;
+                }
+                globals.put(name.toString(), type);
+            } else if (stmt instanceof ImportExportNode) {
+                var ieNode = (ImportExportNode) stmt;
+                switch (ieNode.getType()) {
+                    case "import":
+                    case "typeget":
+                        addImports(ieNode, globals);
+                        break;
+                    case "export":
+                        addExports(ieNode, exports);
+                        break;
+                    default:
+                        throw ParserInternalError.of(
+                                "Unknown type of import/export", ieNode.getLineInfo()
+                        );
+                }
+            }
+        }
+        try {
+            allowSettingExports = true;
+            for (var entry : exports.entrySet()) {
+                var exportName = entry.getValue();
+                var exportType = globals.get(entry.getKey());
+                if (exportType == null) {
+                    throw ParserException.of("Undefined name for export: " + exportName, LineInfo.empty());
+                }
+                this.exportTypes.put(exportName, exportType);
+            }
+        } finally {
+            allowSettingExports = false;
+        }
+        return this;
+    }
+
+    private void addImports(@NotNull ImportExportNode node, Map<String, TypeObject> globals) {
+        assert node.getType().equals("import");
+        for (int i = 0; i < node.getValues().length; i++) {
+            var value = node.getValues()[i];
+            var as = node.getAs()[i];
+            String importName;
+            if (as.isEmpty()) {
+                if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
+                    throw ParserException.of("Illegal import " + value, value);
+                }
+                importName = (((VariableNode) value.getPreDot()).getName());
+            } else {
+                if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
+                    throw ParserException.of("Illegal import " + value, value);
+                }
+                importName = (value.toString());
+            }
+            FileInfo f = Converter.findModule(importName);
+            if (globals.containsKey(importName)) {
+                throw ParserException.of(String.format("Name %s already defined", importName), node);
+            } else {
+                globals.put(importName, f.exportType(importName));
+            }
+        }
+    }
+
+    private void addExports(@NotNull ImportExportNode node, Map<String, String> exports) {
+        assert node.getType().equals("export");
+        for (int i = 0; i < node.getValues().length; i++) {
+            var as = node.getAs()[i];
+            var value = node.getValues()[i];
+            if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
+                throw ParserException.of("Illegal import " + value, value);
+            }
+            var name = ((VariableNode) value.getPreDot()).getName();
+            var asName = as.isEmpty() ? name : ((VariableNode) as.getPreDot()).getName();
+            if (exports.containsKey(asName)) {
+                throw ParserException.of(String.format("Name %s already exported", asName), node);
+            } else {
+                exports.put(name, asName);
+            }
+        }
     }
 
     public void writeToFile(File file) {
