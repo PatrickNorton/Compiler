@@ -16,7 +16,7 @@ public abstract class LoopConverter implements BaseConverter {
     @Override
     public final List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        info.enterLoop(start, bytes);
+        info.enterLoop();
         trueConvert(start, bytes);
         info.exitLoop(start, bytes);
         return bytes;

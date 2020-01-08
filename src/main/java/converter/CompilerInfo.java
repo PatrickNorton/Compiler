@@ -17,8 +17,8 @@ import java.util.Set;
 public final class CompilerInfo {
     private FileInfo parent;
     private int loopLevel;
-    private Map<Integer, Set<Integer>> danglingPointers;
-    private List<Integer> loopStarts;
+    private Map<Integer, Set<Integer>> breakPointers;
+    private Map<Integer, Set<Integer>> continuePointers;
 
     private List<Map<String, VariableInfo>> variables;
     private Map<String, TypeObject> typeMap;
@@ -27,8 +27,8 @@ public final class CompilerInfo {
     public CompilerInfo(FileInfo parent) {
         this.parent = parent;
         this.loopLevel = 0;
-        this.danglingPointers = new HashMap<>();
-        this.loopStarts = new ArrayList<>();
+        this.breakPointers = new HashMap<>();
+        this.continuePointers = new HashMap<>();
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
         this.varNumbers = new IntAllocator();
@@ -36,15 +36,9 @@ public final class CompilerInfo {
 
     /**
      * Enter another loop, implying another level of break/continue statements.
-     *
-     * @param listStart The index of the beginning of the list relative to the
-     *                  start of the function
-     * @param bytes The list of bytes
      */
-    public void enterLoop(int listStart, @NotNull List<Byte> bytes) {
+    public void enterLoop() {
         loopLevel++;
-        assert loopStarts.size() == loopLevel - 1;
-        loopStarts.add(listStart + bytes.size());
         addStackFrame();
     }
 
@@ -58,11 +52,14 @@ public final class CompilerInfo {
     public void exitLoop(int listStart, @NotNull List<Byte> bytes) {
         loopLevel--;
         int endLoop = listStart + bytes.size();
-        loopStarts.remove(loopStarts.size() - 1);
-        for (int i : danglingPointers.getOrDefault(loopLevel, Collections.emptySet())) {
+        for (int i : breakPointers.getOrDefault(loopLevel, Collections.emptySet())) {
             setPointer(listStart - i, bytes, endLoop);
         }
-        danglingPointers.remove(loopLevel);
+        breakPointers.remove(loopLevel);
+        for (int i : continuePointers.getOrDefault(loopLevel, Collections.emptySet())) {
+            setPointer(listStart - i, bytes, endLoop);
+        }
+        continuePointers.remove(loopLevel);
         removeStackFrame();
     }
 
@@ -73,19 +70,19 @@ public final class CompilerInfo {
      * @param location The location (absolute, by start of function)
      */
     public void addBreak(int levels, int location) {
-        danglingPointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
-        danglingPointers.get(loopLevel - levels).add(location);
+        breakPointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
+        breakPointers.get(loopLevel - levels).add(location);
     }
 
     /**
      * Add a continue statement's pointer to the list.
      *
      * @param levels The number of levels to continue
-     * @param bytes The list of bytes to adjust
      * @param location The location (relative to the start of the list)
      */
-    public void addContinue(int levels, List<Byte> bytes, int location) {
-        setPointer(location, bytes, loopStarts.get(loopLevel - levels));
+    public void addContinue(int levels, int location) {
+        continuePointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
+        continuePointers.get(loopLevel - levels).add(location);
     }
 
     /**
