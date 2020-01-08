@@ -55,12 +55,12 @@ public final class ImportExportConverter implements BaseConverter {
             for (int i = 0; i < node.getValues().length; i++) {
                 info.addImport(from + node.getValues()[i]);
                 var exportedName = hasAs ? node.getAs()[i].toString() : node.getValues()[i].toString();
-                info.addExport(exportedName, info.importType(from + node.getValues()[i]));
+                info.addExport(exportedName, info.importType(from + node.getValues()[i]), node.getLineInfo());
             }
         } else {
             for (int i = 0; i < node.getValues().length; i++) {
                 var exportedName = hasAs ? node.getAs()[i].toString() : node.getValues()[i].toString();
-                info.addExport(exportedName, info.getType(node.getValues()[i].toString()));
+                info.addExport(exportedName, info.getType(node.getValues()[i].toString()), node.getLineInfo());
             }
         }
     }

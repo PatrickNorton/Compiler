@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
 import main.java.parser.TypeLikeNode;
 import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
@@ -156,8 +157,8 @@ public final class CompilerInfo {
      * @param name The name of the export to add
      * @param type The type of the export
      */
-    public void addExport(String name, TypeObject type) {
-        parent.addExport(name, type);
+    public void addExport(String name, TypeObject type, LineInfo info) {
+        parent.addExport(name, type, info);
     }
 
     /**

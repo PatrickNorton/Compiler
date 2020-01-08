@@ -48,9 +48,9 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.constants = new IndexedHashSet<>();
     }
 
-    public void addExport(String name, TypeObject type) {
+    public void addExport(String name, TypeObject type, LineInfo info) {
         if (!allowSettingExports) {
-            throw ParserException.of("Illegal position for export statement", LineInfo.empty());
+            throw ParserException.of("Illegal position for export statement", info);
         }
         this.exports.add(name);
         exportTypes.put(name, type);
