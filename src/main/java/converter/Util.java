@@ -7,6 +7,8 @@ import java.util.List;
 
 public final class Util {
     public static final byte[] MAGIC_NUMBER = toByteArray(0x0ABADE66);  // A bad egg :)
+    public static final String FILE_EXTENSION = ".newlang";
+    public static final String EXPORTS_FILENAME = "__exports__" + FILE_EXTENSION;
 
     private Util() {}
 

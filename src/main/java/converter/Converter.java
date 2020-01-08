@@ -15,11 +15,9 @@ import java.util.stream.Collectors;
 public final class Converter {
     private static final Map<String, FileInfo> modules = new HashMap<>();
 
-    private TopNode node;
     private FileInfo info;
 
     private Converter(TopNode node) {
-        this.node = node;
         this.info = new FileInfo(node);
     }
 
@@ -33,8 +31,13 @@ public final class Converter {
                 var result = walker.filter(Converter::isModule)
                         .collect(Collectors.toList());
                 if (!result.isEmpty()) {
-                    var endPath = result.get(0);
-                    var info = new Converter(Parser.parse(endPath.toFile())).info;
+                    var endFile = result.get(0).toFile();
+                    if (endFile.isDirectory()) {
+                        var exportFiles = endFile.listFiles((f, s) -> s.equals(Util.EXPORTS_FILENAME));
+                        assert exportFiles != null && exportFiles.length == 1;
+                        endFile = exportFiles[0];
+                    }
+                    var info = new Converter(Parser.parse(endFile)).info;
                     modules.put(name, info);
                     return info;
                 }
@@ -47,9 +50,9 @@ public final class Converter {
 
     private static boolean isModule(Path path) {
         if (Files.isRegularFile(path)) {
-            return path.endsWith(".newlang");
+            return path.endsWith(Util.FILE_EXTENSION);
         } else {
-            var files = path.toFile().list((f, s) -> s.equals("__exports__.newlang"));
+            var files = path.toFile().list((f, s) -> s.equals(Util.EXPORTS_FILENAME));
             assert files != null;
             return files.length > 0;
         }
