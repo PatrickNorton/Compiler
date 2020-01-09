@@ -5,7 +5,7 @@ import main.java.parser.VariableNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariableConverter implements TestConverter {
+public final class VariableConverter implements TestConverter {
     private CompilerInfo info;
     private VariableNode node;
 

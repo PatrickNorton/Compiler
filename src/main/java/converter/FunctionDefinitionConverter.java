@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class FunctionDefinitionConverter implements BaseConverter {
+public final class FunctionDefinitionConverter implements BaseConverter {
     private CompilerInfo info;
     private FunctionDefinitionNode node;
 

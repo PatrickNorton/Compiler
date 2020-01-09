@@ -5,7 +5,7 @@ import main.java.parser.ContinueStatementNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContinueConverter implements BaseConverter {
+public final class ContinueConverter implements BaseConverter {
     private ContinueStatementNode node;
     private CompilerInfo info;
 

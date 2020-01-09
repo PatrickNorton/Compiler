@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class DeclaredAssignmentConverter implements BaseConverter {
+public final class DeclaredAssignmentConverter implements BaseConverter {
     private CompilerInfo info;
     private DeclaredAssignmentNode node;
 
