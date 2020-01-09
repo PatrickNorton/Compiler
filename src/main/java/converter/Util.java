@@ -23,6 +23,12 @@ public final class Util {
         );
     }
 
+    private static final List<Byte> ZERO_INT_BYTES = List.of((byte) 0, (byte) 0, (byte) 0, (byte) 0);
+
+    static List<Byte> zeroToBytes() {
+        return ZERO_INT_BYTES;
+    }
+
     @NotNull
     @Contract(pure = true)
     static List<Byte> shortToBytes(short value) {
