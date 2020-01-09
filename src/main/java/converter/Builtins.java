@@ -15,6 +15,7 @@ public final class Builtins {
             "__default__",
             "self",
             "cls",
+            "super",
             "null"
     );
 
