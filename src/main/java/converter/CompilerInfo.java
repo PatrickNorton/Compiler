@@ -280,6 +280,10 @@ public final class CompilerInfo {
         return constIndex(variableInfo.constValue());
     }
 
+    public void addFunction(String name, List<Byte> bytes) {
+        parent.addFunction(name, bytes);
+    }
+
     /**
      * Set a pointer starting at a given index in the byte list.
      *

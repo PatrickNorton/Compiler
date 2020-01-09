@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.BaseNode;
 import main.java.parser.BreakStatementNode;
 import main.java.parser.DeclaredAssignmentNode;
+import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.ReturnStatementNode;
@@ -24,6 +25,8 @@ public interface BaseConverter {
             return new BreakConverter(info, (BreakStatementNode) node);
         } else if (node instanceof DeclaredAssignmentNode) {
             return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
+        } else if (node instanceof FunctionDefinitionNode) {
+            return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node);
         } else if (node instanceof IfStatementNode) {
             return new IfConverter(info, (IfStatementNode) node);
         } else if (node instanceof ImportExportNode) {
