@@ -20,15 +20,13 @@ public final class WhileConverter extends LoopConverter {
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(jumpTarget));
         bytes.addAll(body);
+        info.setContinuePoint(start + bytes.size());
         var cond = BaseConverter.bytes(start + bytes.size(), node.getCond(), info);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);
         bytes.addAll(Util.intToBytes(start));
         if (!node.getNobreak().isEmpty()) {
             var nobreak = BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info);
-            int eol = start + bytes.size() + nobreak.size() + Bytecode.JUMP.size();
-            bytes.add(Bytecode.JUMP.value);
-            bytes.addAll(Util.intToBytes(eol));
             bytes.addAll(nobreak);
         }
     }
