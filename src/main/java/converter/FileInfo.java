@@ -60,6 +60,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             }
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
         }
+        functions.put("__default__", bytes);
         return this;
     }
 
