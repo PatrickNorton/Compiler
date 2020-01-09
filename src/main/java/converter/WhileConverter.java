@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.WhileStatementNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class WhileConverter extends LoopConverter {
@@ -13,9 +14,10 @@ public final class WhileConverter extends LoopConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
-    protected void trueConvert(int start, @NotNull List<Byte> bytes) {
-        assert bytes.size() == 0;
+    protected List<Byte> trueConvert(int start) {
+        List<Byte> bytes = new ArrayList<>();
         // While loop starts by jumping to condition, use the fact that a
         // continue statement does the same
         bytes.add(Bytecode.JUMP.value);
@@ -32,5 +34,6 @@ public final class WhileConverter extends LoopConverter {
             var nobreak = BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info);
             bytes.addAll(nobreak);
         }
+        return bytes;
     }
 }

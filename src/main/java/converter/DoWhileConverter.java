@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.DoStatementNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class DoWhileConverter extends LoopConverter {
@@ -13,15 +14,16 @@ public final class DoWhileConverter extends LoopConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
-    protected void trueConvert(int start, @NotNull List<Byte> bytes) {
-        assert bytes.size() == 0;
+    protected List<Byte> trueConvert(int start) {
         var body = BaseConverter.bytes(start, node.getBody(), info);
-        bytes.addAll(body);
+        List<Byte> bytes = new ArrayList<>(body);
         info.setContinuePoint(start + bytes.size());
         var cond = BaseConverter.bytes(start + bytes.size(), node.getConditional(), info);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);
         bytes.addAll(Util.zeroToBytes());
+        return bytes;
     }
 }
