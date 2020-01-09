@@ -30,7 +30,7 @@ public class FunctionCallConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
-        return info.getType("");
+        return info.getType("");  // FIXME: Return meaningful type
     }
 
     private void ensureTypesMatch(@NotNull TypeObject callerType) {
