@@ -2,6 +2,9 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.TypeLikeNode;
+import main.java.parser.TypeNode;
+import main.java.parser.TypeUnionNode;
+import main.java.parser.TypewiseAndNode;
 import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -122,11 +125,28 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
-        var value = typeMap.get(type.strName());
-        if (value == null) {
-            throw new RuntimeException("Unknown type " + type);
+        if (type instanceof TypeUnionNode) {
+            var union = (TypeUnionNode) type;
+            var subTypes = new TypeObject[union.getSubtypes().length];
+            for (int i = 0; i < subTypes.length; i++) {
+                subTypes[i] = getType(union.getSubtypes()[i]);
+            }
+            return new UnionTypeObject(subTypes);
+        } else if (type instanceof TypewiseAndNode) {
+            var union = (TypewiseAndNode) type;
+            var subTypes = new TypeObject[union.getSubtypes().length];
+            for (int i = 0; i < subTypes.length; i++) {
+                subTypes[i] = getType(union.getSubtypes()[i]);
+            }
+            return new IntersectionTypeObject(subTypes);
         } else {
-            return value;
+            assert type instanceof TypeNode;
+            var value = typeMap.get(type.strName());
+            if (value == null) {
+                throw new RuntimeException("Unknown type " + type);
+            } else {
+                return value;
+            }
         }
     }
 
