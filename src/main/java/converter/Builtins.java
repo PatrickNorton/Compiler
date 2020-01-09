@@ -14,7 +14,8 @@ public final class Builtins {
             "false",
             "__default__",
             "self",
-            "cls"
+            "cls",
+            "null"
     );
 
     public static final TypeObject CALLABLE = new DefaultInterface("Callable", OpSpTypeNode.CALL);
