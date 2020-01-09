@@ -20,7 +20,7 @@ public final class WhileConverter extends LoopConverter {
         // continue statement does the same
         bytes.add(Bytecode.JUMP.value);
         info.addContinue(start + 1);
-        bytes.addAll(Util.intToBytes(0));
+        bytes.addAll(Util.zeroToBytes());
         var body = BaseConverter.bytes(start + bytes.size(), node.getBody(), info);
         bytes.addAll(body);
         info.setContinuePoint(start + bytes.size());

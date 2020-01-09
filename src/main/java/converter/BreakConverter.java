@@ -22,10 +22,9 @@ public final class BreakConverter implements BaseConverter {
             bytes.add(Bytecode.JUMP_TRUE.value);
         } else {
             bytes.add(Bytecode.JUMP.value);
-
         }
         info.addBreak(node.getLoops(), start + bytes.size());
-        bytes.addAll(Util.intToBytes(0));
+        bytes.addAll(Util.zeroToBytes());
         return bytes;
     }
 }

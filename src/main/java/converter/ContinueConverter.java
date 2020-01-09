@@ -22,10 +22,9 @@ public final class ContinueConverter implements BaseConverter {
             bytes.add(Bytecode.JUMP_TRUE.value);
         } else {
             bytes.add(Bytecode.JUMP.value);
-
         }
         info.addContinue(start + bytes.size());
-        bytes.addAll(Util.intToBytes(0));
+        bytes.addAll(Util.zeroToBytes());
         return bytes;
     }
 }

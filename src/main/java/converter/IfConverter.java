@@ -44,7 +44,7 @@ public final class IfConverter implements BaseConverter {
         var body = elif.getBody();
         bytes.add(Bytecode.JUMP.value);
         var jumpTarget = bytes.size();
-        bytes.addAll(Util.intToBytes(0));  // Set jump target as temp value
+        bytes.addAll(Util.zeroToBytes());  // Set jump target as temp value
         bytes.addAll(BaseConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond, info));
         addBody(bytes, start, body);
         // Set jump target
