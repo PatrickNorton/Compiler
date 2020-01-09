@@ -21,7 +21,7 @@ import java.util.Set;
 
 public final class CompilerInfo {
     private FileInfo parent;
-    private int loopLevel;
+    private Deque<Boolean> loopLevel;
     private Map<Integer, Set<Integer>> breakPointers;
     private Map<Integer, Set<Integer>> continuePointers;
     private Deque<Integer> continueLocations;
@@ -32,7 +32,7 @@ public final class CompilerInfo {
 
     public CompilerInfo(FileInfo parent) {
         this.parent = parent;
-        this.loopLevel = 0;
+        this.loopLevel = new ArrayDeque<>();
         this.breakPointers = new HashMap<>();
         this.continuePointers = new HashMap<>();
         this.continueLocations = new ArrayDeque<>();
@@ -44,10 +44,10 @@ public final class CompilerInfo {
     /**
      * Enter another loop, implying another level of break/continue statements.
      */
-    public void enterLoop() {
-        loopLevel++;
+    public void enterLoop(boolean hasContinue) {
+        loopLevel.push(hasContinue);
         continueLocations.push(-1);
-        assert continueLocations.size() == loopLevel;
+        assert continueLocations.size() == loopLevel.size();
         addStackFrame();
     }
 
@@ -59,18 +59,23 @@ public final class CompilerInfo {
      * @param bytes The list of bytes
      */
     public void exitLoop(int listStart, @NotNull List<Byte> bytes) {
-        loopLevel--;
+        boolean hasContinue = loopLevel.pop();
+        int level = loopLevel.size();
         int endLoop = listStart + bytes.size();
-        for (int i : breakPointers.getOrDefault(loopLevel, Collections.emptySet())) {
+        for (int i : breakPointers.getOrDefault(level, Collections.emptySet())) {
             setPointer(listStart - i, bytes, endLoop);
         }
-        breakPointers.remove(loopLevel);
+        breakPointers.remove(level);
         int continueLocation = continueLocations.pop();
-        assert continueLocation != -1 : "Continue location not defined";
-        for (int i : continuePointers.getOrDefault(loopLevel, Collections.emptySet())) {
-            setPointer(listStart - i, bytes, continueLocation);
+        if (hasContinue) {
+            assert continueLocation != -1 : "Continue location not defined";
+            for (int i : continuePointers.getOrDefault(level, Collections.emptySet())) {
+                setPointer(listStart - i, bytes, continueLocation);
+            }
+            continuePointers.remove(level);
+        } else {
+            assert continueLocation == -1 : "Continue location erroneously set";
         }
-        continuePointers.remove(loopLevel);
         removeStackFrame();
     }
 
@@ -81,7 +86,7 @@ public final class CompilerInfo {
      * @param location The location (absolute, by start of function)
      */
     public void addBreak(int levels, int location) {
-        var pointerSet = breakPointers.computeIfAbsent(loopLevel - levels, k -> new HashSet<>());
+        var pointerSet = breakPointers.computeIfAbsent(loopLevel.size() - levels, k -> new HashSet<>());
         pointerSet.add(location);
     }
 
@@ -91,7 +96,7 @@ public final class CompilerInfo {
      * @param location The location (absolute, by start of function)
      */
     public void addContinue(int location) {
-        var pointerSet = continuePointers.computeIfAbsent(loopLevel, k -> new HashSet<>());
+        var pointerSet = continuePointers.computeIfAbsent(loopLevel.size(), k -> new HashSet<>());
         pointerSet.add(location);
     }
 
@@ -101,7 +106,7 @@ public final class CompilerInfo {
      * @param location The location (absolute, by start of function)
      */
     public void setContinuePoint(int location) {
-        assert continueLocations.size() == loopLevel : "Mismatch in continue levels";
+        assert continueLocations.size() == loopLevel.size() : "Mismatch in continue levels";
         int oldValue = continueLocations.pop();
         assert oldValue == -1 : "Defined multiple continue points for loop";
         continueLocations.push(location);
