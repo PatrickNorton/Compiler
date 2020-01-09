@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -46,6 +47,20 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.importTypes = new HashMap<>();
         this.functions = new LinkedHashMap<>();
         this.constants = new IndexedHashSet<>();
+    }
+
+    public FileInfo compile() {
+        link();
+        var compilerInfo = new CompilerInfo(this);
+        List<Byte> bytes = new ArrayList<>();
+        for (var statement : node) {
+            if (statement instanceof ImportExportNode
+                    && ((ImportExportNode) statement).getType().equals("export")) {
+                continue;
+            }
+            bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
+        }
+        return this;
     }
 
     public void addExport(String name, TypeObject type, LineInfo info) {
