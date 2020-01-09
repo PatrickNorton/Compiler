@@ -2,8 +2,8 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Parser;
-import main.java.parser.TopNode;
 
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,13 +12,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class Converter {
+    private static final FilenameFilter EXPORT_FILTER = (f, s) -> s.equals(Util.EXPORTS_FILENAME);
     private static final Map<String, FileInfo> modules = new HashMap<>();
 
-    private FileInfo info;
-
-    private Converter(TopNode node) {
-        this.info = new FileInfo(node);
-    }
+    private Converter() {}
 
     public static FileInfo findModule(String name) {
         if (modules.containsKey(name)) {
@@ -32,11 +29,11 @@ public final class Converter {
                 if (!result.isEmpty()) {
                     var endFile = result.get(0).toFile();
                     if (endFile.isDirectory()) {
-                        var exportFiles = endFile.listFiles((f, s) -> s.equals(Util.EXPORTS_FILENAME));
+                        var exportFiles = endFile.listFiles(EXPORT_FILTER);
                         assert exportFiles != null && exportFiles.length == 1;
                         endFile = exportFiles[0];
                     }
-                    var info = new Converter(Parser.parse(endFile)).info;
+                    var info = new FileInfo(Parser.parse(endFile));
                     modules.put(name, info);
                     return info;
                 }
@@ -51,7 +48,7 @@ public final class Converter {
         if (Files.isRegularFile(path)) {
             return path.endsWith(Util.FILE_EXTENSION);
         } else {
-            var files = path.toFile().list((f, s) -> s.equals(Util.EXPORTS_FILENAME));
+            var files = path.toFile().list(EXPORT_FILTER);
             assert files != null;
             return files.length > 0;
         }
