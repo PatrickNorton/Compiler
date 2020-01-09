@@ -4,6 +4,7 @@ import main.java.parser.FunctionCallNode;
 import main.java.parser.NumberNode;
 import main.java.parser.StringNode;
 import main.java.parser.TestNode;
+import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 public interface TestConverter extends BaseConverter {
@@ -17,6 +18,8 @@ public interface TestConverter extends BaseConverter {
             return new NumberConverter(info, (NumberNode) node);
         } else if (node instanceof StringNode) {
             return new StringConverter(info, (StringNode) node);
+        } else if (node instanceof VariableNode) {
+            return new VariableConverter(info, (VariableNode) node);
         } else {
             throw new UnsupportedOperationException("Unknown type: " + node.getClass());
         }
