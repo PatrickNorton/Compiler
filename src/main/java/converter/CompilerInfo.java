@@ -127,18 +127,10 @@ public final class CompilerInfo {
     public TypeObject getType(@NotNull TypeLikeNode type) {
         if (type instanceof TypeUnionNode) {
             var union = (TypeUnionNode) type;
-            var subTypes = new TypeObject[union.getSubtypes().length];
-            for (int i = 0; i < subTypes.length; i++) {
-                subTypes[i] = getType(union.getSubtypes()[i]);
-            }
-            return new UnionTypeObject(subTypes);
+            return new UnionTypeObject(typesOf(union.getSubtypes()));
         } else if (type instanceof TypewiseAndNode) {
             var union = (TypewiseAndNode) type;
-            var subTypes = new TypeObject[union.getSubtypes().length];
-            for (int i = 0; i < subTypes.length; i++) {
-                subTypes[i] = getType(union.getSubtypes()[i]);
-            }
-            return new IntersectionTypeObject(subTypes);
+            return new IntersectionTypeObject(typesOf(union.getSubtypes()));
         } else {
             assert type instanceof TypeNode;
             var value = typeMap.get(type.strName());
@@ -246,10 +238,6 @@ public final class CompilerInfo {
         return parent.importType(name);
     }
 
-    public TypeObject exportType(String name) {
-        return parent.exportType(name);
-    }
-
     /**
      * The index of the variable in the variable stack.
      *
@@ -258,15 +246,6 @@ public final class CompilerInfo {
      */
     public int varIndex(String name) {
         return varInfo(name).getLocation();
-    }
-
-    @NotNull
-    private List<TypeObject> getTypes(@NotNull TypeLikeNode... types) {
-        List<TypeObject> typeObjects = new ArrayList<>(types.length);
-        for (var type : types) {
-            typeObjects.add(getType(type));
-        }
-        return typeObjects;
     }
 
     @NotNull
