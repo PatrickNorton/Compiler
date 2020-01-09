@@ -19,8 +19,8 @@ public enum Bytecode {
     SWAP_2(0x8, 0),
     SWAP_3(0x9, 0),
     SWAP_N(0xA, 4),
-    STORE(0xB, 4),
-    STORE_SUBSCRIPT(0xC, 0),
+    STORE(0xB, 2),
+    STORE_SUBSCRIPT(0xC, 2),
     // Binary operators
     PLUS(0x10, 0),
     MINUS(0x11, 0),
@@ -44,6 +44,8 @@ public enum Bytecode {
     IDENTICAL(0x23, 0),
     INSTANCEOF(0x24, 0),
     CALL_OP(0x25, 2+2),
+    PACK_TUPLE(0x26, 0),
+    UNPACK_TUPLE(0x27, 0),
     // Jumps, etc.
     JUMP(0x30, 4),
     JUMP_FALSE(0x31, 4),
