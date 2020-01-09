@@ -12,7 +12,9 @@ public final class Builtins {
     public static final Set<String> FORBIDDEN_NAMES = Set.of(
             "true",
             "false",
-            "__default__"
+            "__default__",
+            "self",
+            "cls"
     );
 
     public static final TypeObject CALLABLE = new DefaultInterface("Callable", OpSpTypeNode.CALL);
