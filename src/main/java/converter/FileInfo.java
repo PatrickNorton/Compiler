@@ -7,8 +7,6 @@ import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
-import main.java.parser.ParserException;
-import main.java.parser.ParserInternalError;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopNode;
 import main.java.parser.VariableNode;
@@ -66,7 +64,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
 
     public void addExport(String name, TypeObject type, LineInfo info) {
         if (!allowSettingExports) {
-            throw ParserException.of("Illegal position for export statement", info);
+            throw CompilerException.of("Illegal position for export statement", info);
         }
         this.exports.add(name);
         exportTypes.put(name, type);
@@ -117,9 +115,9 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
                 } else if (stmt instanceof ContextDefinitionNode) {
                     type = null;
                 } else if (stmt instanceof OperatorDefinitionNode) {
-                    throw ParserInternalError.of("Illegal operator definition", stmt);
+                    throw CompilerInternalError.of("Illegal operator definition", stmt);
                 } else if (stmt instanceof MethodDefinitionNode) {
-                    throw ParserInternalError.of("Illegal method definition", stmt);
+                    throw CompilerInternalError.of("Illegal method definition", stmt);
                 } else {
                     type = Builtins.TYPE;
                 }
@@ -135,7 +133,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
                         addExports(ieNode, exports);
                         break;
                     default:
-                        throw ParserInternalError.of(
+                        throw CompilerInternalError.of(
                                 "Unknown type of import/export", ieNode.getLineInfo()
                         );
                 }
@@ -147,7 +145,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
                 var exportName = entry.getValue();
                 var exportType = globals.get(entry.getKey());
                 if (exportType == null) {
-                    throw ParserException.of("Undefined name for export: " + exportName, LineInfo.empty());
+                    throw CompilerException.of("Undefined name for export: " + exportName, LineInfo.empty());
                 }
                 this.exportTypes.put(exportName, exportType);
             }
@@ -165,18 +163,18 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             String importName;
             if (as.isEmpty()) {
                 if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
-                    throw ParserException.of("Illegal import " + value, value);
+                    throw CompilerException.of("Illegal import " + value, value);
                 }
                 importName = (((VariableNode) value.getPreDot()).getName());
             } else {
                 if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
-                    throw ParserException.of("Illegal import " + value, value);
+                    throw CompilerException.of("Illegal import " + value, value);
                 }
                 importName = (value.toString());
             }
             FileInfo f = Converter.findModule(importName);
             if (globals.containsKey(importName)) {
-                throw ParserException.of(String.format("Name %s already defined", importName), node);
+                throw CompilerException.format("Name %s already defined", node, importName);
             } else {
                 globals.put(importName, f.exportType(importName));
             }
@@ -189,12 +187,12 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             var as = node.getAs()[i];
             var value = node.getValues()[i];
             if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
-                throw ParserException.of("Illegal import " + value, value);
+                throw CompilerException.of("Illegal import " + value, value);
             }
             var name = ((VariableNode) value.getPreDot()).getName();
             var asName = as.isEmpty() ? name : ((VariableNode) as.getPreDot()).getName();
             if (exports.containsKey(asName)) {
-                throw ParserException.of(String.format("Name %s already exported", asName), node);
+                throw CompilerException.format("Name %s already exported", node, asName);
             } else {
                 exports.put(name, asName);
             }

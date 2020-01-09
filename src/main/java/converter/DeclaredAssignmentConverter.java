@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.DeclaredAssignmentNode;
-import main.java.parser.ParserException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -31,12 +30,12 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var assignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
         var assignedName = assigned.getVariable().getName();
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
-            throw ParserException.of("Illegal name " + assignedName, node);
+            throw CompilerException.of("Illegal name " + assignedName, node);
         }
         if (!valueType.isSubclass(assignedType)) {
-            throw ParserException.of(String.format(
+            throw CompilerException.format(
                     "Object of type %s cannot be assigned to object of type %s",
-                    valueType, assignedType), node);
+                    node, valueType, assignedType);
         }
         if (converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();

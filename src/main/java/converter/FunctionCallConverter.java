@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.FunctionCallNode;
-import main.java.parser.ParserException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class FunctionCallConverter implements TestConverter {
 
     private void ensureTypesMatch(@NotNull TypeObject callerType) {
         if (!callerType.isSubclass(Builtins.CALLABLE)) {
-            throw ParserException.of("Cannot call " + node.getCaller(), node);
+            throw CompilerException.of("Cannot call " + node.getCaller(), node);
         }
     }
 }

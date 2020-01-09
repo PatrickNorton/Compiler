@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Parser;
-import main.java.parser.ParserException;
 import main.java.parser.TopNode;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public final class Converter {
                 // FIXME: Handle this
             }
         }
-        throw ParserException.of("Cannot find module " + name, LineInfo.empty());
+        throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
     }
 
     private static boolean isModule(Path path) {

@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.ImportExportNode;
-import main.java.parser.ParserInternalError;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -28,7 +27,7 @@ public final class ImportExportConverter implements BaseConverter {
                 addExport();
                 break;
             default:
-                throw ParserInternalError.of("Unknown type for ImportExportNode: " + node.getType(), node);
+                throw CompilerInternalError.of("Unknown type for ImportExportNode: " + node.getType(), node);
         }
         return Collections.emptyList();
     }
