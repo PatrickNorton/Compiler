@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.VariableNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public final class VariableConverter implements TestConverter {
         return info.getType(node.getName());
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         String name = node.getName();

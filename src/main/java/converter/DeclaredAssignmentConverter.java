@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.ParserException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +17,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (node.getNames().length > 1) {
@@ -27,20 +29,24 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var valueType = converter.returnType();
         var rawType = assigned.getType();
         var assignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
+        var assignedName = assigned.getVariable().getName();
+        if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
+            throw ParserException.of("Illegal name " + assignedName, node);
+        }
         if (!valueType.isSubclass(assignedType)) {
             throw ParserException.of(String.format(
                     "Object of type %s cannot be assigned to object of type %s",
-                    converter.returnType(), assigned.getType()), node);
+                    valueType, assignedType), node);
         }
         if (converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
-            info.addVariable(assigned.getVariable().getName(), info.getType(assigned.getType()), constant);
+            info.addVariable(assignedName, assignedType, constant);
             return Collections.emptyList();
         } else {
-            info.addVariable(assigned.getVariable().getName(), info.getType(assigned.getType()));
+            info.addVariable(assignedName, assignedType);
             List<Byte> bytes = new ArrayList<>(converter.convert(start));
             bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes((short) info.varIndex(assigned.getVariable().getName())));
+            bytes.addAll(Util.shortToBytes((short) info.varIndex(assignedName)));
             return bytes;
         }
     }
