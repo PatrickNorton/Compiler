@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +32,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     private Map<String, TypeObject> exportTypes;
     private IndexedSet<String> imports;
     private Map<String, TypeObject> importTypes;
-    private Map<String, List<Byte>> functions;
+    private List<List<Byte>> functions;
     private IndexedSet<LangConstant> constants;
 
     private boolean allowSettingExports;
@@ -43,7 +43,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.exportTypes = new HashMap<>();
         this.imports = new IndexedHashSet<>();
         this.importTypes = new HashMap<>();
-        this.functions = new LinkedHashMap<>();
+        this.functions = new ArrayList<>(Collections.singletonList(null));
         this.constants = new IndexedHashSet<>(Builtins.BUILTINS);
     }
 
@@ -58,7 +58,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             }
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
         }
-        functions.put("__default__", bytes);
+        functions.set(0, bytes);  // Put the default function at the beginning
         return this;
     }
 
@@ -87,8 +87,9 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         return importTypes.get(name);
     }
 
-    public void addFunction(String name, List<Byte> bytecode) {
-        this.functions.put(name, bytecode);
+    public int addFunction(List<Byte> bytecode) {
+        functions.add(bytecode);
+        return functions.size() - 1;
     }
 
     public int addConstant(LangConstant value) {
@@ -200,7 +201,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     public void writeToFile(File file) {
-        System.out.println(Bytecode.disassemble(functions.get("__default__")));
+        System.out.println(Bytecode.disassemble(functions.get(0)));
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.toByteArray(imports.size()));
@@ -221,13 +222,10 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             }
             writer.flush();
             writer.write(Util.toByteArray(functions.size()));
-            for (var entry : functions.entrySet()) {
-                var keyArray = StandardCharsets.UTF_8.encode(entry.getKey()).array();
-                var valArray = Util.toByteArray(entry.getValue());
-                writer.write(Util.toByteArray(keyArray.length));
-                writer.write(keyArray);
-                writer.write(Util.toByteArray(valArray.length));
-                writer.write(valArray);
+            for (var bytes : functions) {
+                var byteArray = Util.unBox(bytes.toArray(new Byte[0]));
+                writer.write(byteArray.length);
+                writer.write(byteArray);
             }
             writer.flush();
         } catch (IOException e) {

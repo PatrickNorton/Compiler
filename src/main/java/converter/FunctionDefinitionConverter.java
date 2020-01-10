@@ -23,7 +23,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));
         }
         info.removeStackFrame();
-        info.addFunction(node.getName().getName(), bytes);
+        int index = info.addFunction(bytes);
+        var constVal = new FunctionConstant(index);
+        info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
         return Collections.emptyList();
     }
 }

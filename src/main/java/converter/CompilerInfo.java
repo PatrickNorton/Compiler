@@ -204,6 +204,7 @@ public final class CompilerInfo {
      * @param constValue The constant value the variable has
      */
     public void addVariable(String name, TypeObject type, LangConstant constValue) {
+        addConstant(constValue);
         addVariable(name, new VariableInfo(type, constValue, -1));
     }
 
@@ -286,8 +287,8 @@ public final class CompilerInfo {
         return constIndex(variableInfo.constValue());
     }
 
-    public void addFunction(String name, List<Byte> bytes) {
-        parent.addFunction(name, bytes);
+    public int addFunction(List<Byte> bytes) {
+        return parent.addFunction(bytes);
     }
 
     /**

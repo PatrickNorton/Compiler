@@ -66,4 +66,15 @@ public final class Util {
         }
         return bytes;
     }
+
+    @NotNull
+    @Contract(pure = true)
+    static byte[] unBox(@NotNull Byte[] bytes) {
+        byte[] byteArray = new byte[bytes.length];
+        int index = 0;
+        for (byte b : bytes) {
+            byteArray[index++] = b;
+        }
+        return byteArray;
+    }
 }
