@@ -10,6 +10,10 @@ import java.util.TreeSet;
 public class UnionTypeObject implements TypeObject {
     private final SortedSet<TypeObject> types;
 
+    public UnionTypeObject(SortedSet<TypeObject> types) {
+        this.types = Collections.unmodifiableSortedSet(types);
+    }
+
     public UnionTypeObject(TypeObject... types) {
         this.types = Collections.unmodifiableSortedSet(new TreeSet<>(List.of(types)));
     }
