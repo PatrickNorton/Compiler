@@ -100,7 +100,7 @@ public enum Bytecode {
             var op = map.get(bytes.get(i));
             var value = fromBytes(bytes.subList(i + 1, i + op.size()));
             i += op.size();
-            sb.append(String.format("%16s%4s%d%n", op, "", value));
+            sb.append(String.format("%-16s%d%n", op, value));
         }
         return sb.toString();
     }
