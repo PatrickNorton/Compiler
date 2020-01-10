@@ -2,7 +2,9 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Parser;
+import main.java.parser.TopNode;
 
+import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +18,10 @@ public final class Converter {
     private static final Map<String, FileInfo> modules = new HashMap<>();
 
     private Converter() {}
+
+    public static void convertToFile(File file, TopNode node) {
+        new FileInfo(node).compile().writeToFile(file);
+    }
 
     public static FileInfo findModule(String name) {
         if (modules.containsKey(name)) {

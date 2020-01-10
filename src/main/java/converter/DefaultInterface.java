@@ -15,7 +15,7 @@ public class DefaultInterface implements TypeObject {
 
     @Override
     public boolean isSubclass(TypeObject other) {
-        return false;  // TODO: Implement
+        return true;  // TODO: Implement
     }
 
     @Override

@@ -39,6 +39,8 @@ public final class CompilerInfo {
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
         this.varNumbers = new IntAllocator();
+
+        variables.add(Builtins.NAMES);
     }
 
     /**

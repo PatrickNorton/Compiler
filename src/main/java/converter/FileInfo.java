@@ -44,7 +44,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.imports = new IndexedHashSet<>();
         this.importTypes = new HashMap<>();
         this.functions = new LinkedHashMap<>();
-        this.constants = new IndexedHashSet<>();
+        this.constants = new IndexedHashSet<>(Builtins.BUILTINS);
     }
 
     public FileInfo compile() {
@@ -200,6 +200,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     public void writeToFile(File file) {
+        System.out.println(Bytecode.disassemble(functions.get("__default__")));
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.toByteArray(imports.size()));

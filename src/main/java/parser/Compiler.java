@@ -1,5 +1,8 @@
 package main.java.parser;
 
+import main.java.converter.Converter;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,15 +16,20 @@ public class Compiler {
 //        for (int i = 0; i < args.length; i++) {
 //            nodes[i] = main.java.Parser.parse(new File(args[i]));
 //        }
-        List<TopNode> nodes;
+        List<File> nodes;
         try {
             nodes = Files.walk(Paths.get(args[0]))
                     .filter(Files::isRegularFile)
                     .map(Path::toFile)
-                    .map(Parser::parse)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+        for (File file : nodes) {
+            TopNode node = Parser.parse(file);
+            var fileName = file.getName();
+            var destFile = file.toPath().resolveSibling(fileName.replaceFirst("\\.newlang$", ".nbyte"));
+            Converter.convertToFile(destFile.toFile(), node);
         }
     }
 }

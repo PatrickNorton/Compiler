@@ -100,7 +100,7 @@ public enum Bytecode {
             var op = map.get(bytes.get(i));
             var value = fromBytes(bytes.subList(i + 1, i + op.size()));
             i += op.size();
-            sb.append(String.format("%16s%4s%d", op, "", value));
+            sb.append(String.format("%16s%4s%d%n", op, "", value));
         }
         return sb.toString();
     }
@@ -108,7 +108,7 @@ public enum Bytecode {
     private static int fromBytes(@NotNull List<Byte> bytes) {
         int total = 0;
         for (int i = 0; i < bytes.size(); i++) {
-            total |= bytes.get(i) << Byte.SIZE * (bytes.size() - i);
+            total |= bytes.get(i) << Byte.SIZE * (bytes.size() - i - 1);
         }
         return total;
     }

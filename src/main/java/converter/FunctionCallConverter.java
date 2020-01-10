@@ -21,7 +21,8 @@ public class FunctionCallConverter implements TestConverter {
         ensureTypesMatch(callConverter.returnType());
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
         for (var value : node.getParameters()) {
-            bytes.addAll(BaseConverter.bytes(start, value, info));
+            // TODO: Varargs
+            bytes.addAll(BaseConverter.bytes(start, value.getArgument(), info));
         }
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
