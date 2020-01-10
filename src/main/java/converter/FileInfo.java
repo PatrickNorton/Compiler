@@ -224,7 +224,6 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             writer.write(Util.toByteArray(constants.size()));
             for (var constant : constants) {
                 var byteArray = Util.unBox(constant.toBytes().toArray(new Byte[0]));
-                writer.write(byteArray.length);
                 writer.write(byteArray);
             }
             writer.flush();
