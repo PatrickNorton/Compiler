@@ -7,4 +7,5 @@ public enum ConstantBytes {
     DECIMAL,
     IMPORT,
     BUILTIN,
+    FUNCTION,
 }
