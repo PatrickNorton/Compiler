@@ -36,6 +36,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     private IndexedSet<LangConstant> constants;
 
     private boolean allowSettingExports;
+    private boolean linked;
 
     public FileInfo(TopNode node) {
         this.node = node;
@@ -45,6 +46,8 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.importTypes = new HashMap<>();
         this.functions = new ArrayList<>(Collections.singletonList(null));
         this.constants = new IndexedHashSet<>(Builtins.BUILTINS);
+        this.allowSettingExports = false;
+        this.linked = false;
     }
 
     public FileInfo compile() {
@@ -102,6 +105,9 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     public FileInfo link() {
+        if (linked) {
+            return this;
+        }
         Map<String, String> exports = new HashMap<>();
         Map<String, TypeObject> globals = new HashMap<>();
         for (var stmt : node) {
@@ -153,6 +159,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         } finally {
             allowSettingExports = false;
         }
+        linked = true;
         return this;
     }
 
