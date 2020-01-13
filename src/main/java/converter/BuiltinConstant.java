@@ -14,7 +14,7 @@ public final class BuiltinConstant implements LangConstant {
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
-        bytes.add((byte) ConstantBytes.BIGINT.ordinal());
+        bytes.add((byte) ConstantBytes.BUILTIN.ordinal());
         bytes.addAll(Util.intToBytes(builtinIndex));
         return bytes;
     }
