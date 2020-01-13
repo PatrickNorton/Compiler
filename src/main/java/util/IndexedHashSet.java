@@ -102,7 +102,7 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
     }
 
     private class IHSIterator implements Iterator<E> {
-        private Iterator<E> iterator = values.iterator();
+        private Iterator<E> iterator = valueList.iterator();
 
         @Override
         public boolean hasNext() {
