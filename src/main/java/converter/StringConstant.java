@@ -40,8 +40,7 @@ public final class StringConstant implements LangConstant {
 
     @NotNull
     private List<Byte> strBytes() {
-        var byteBuffer = StandardCharsets.UTF_8.encode(value);
-        var byteArray = byteBuffer.array();
+        var byteArray = value.getBytes(StandardCharsets.UTF_8);
         List<Byte> bytes = new ArrayList<>(byteArray.length);
         for (byte b : byteArray) {
             bytes.add(b);
