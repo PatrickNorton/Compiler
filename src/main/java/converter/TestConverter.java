@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.FunctionCallNode;
 import main.java.parser.NumberNode;
+import main.java.parser.OperatorNode;
 import main.java.parser.StringNode;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
@@ -17,6 +18,8 @@ public interface TestConverter extends BaseConverter {
             return new FunctionCallConverter(info, (FunctionCallNode) node);
         } else if (node instanceof NumberNode) {
             return new NumberConverter(info, (NumberNode) node);
+        } else if (node instanceof OperatorNode) {
+            return new OperatorConverter(info, (OperatorNode) node);
         } else if (node instanceof StringNode) {
             return new StringConverter(info, (StringNode) node);
         } else if (node instanceof SwitchStatementNode) {

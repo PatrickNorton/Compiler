@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public enum Bytecode {
+public enum Bytecode {  // FIXME: Missing bool_xor
     NOP(0x0, 0),
     LOAD_NULL(0x1, 0),
     LOAD_CONST(0x2, 2),
