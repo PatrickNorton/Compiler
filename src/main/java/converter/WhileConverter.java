@@ -29,7 +29,7 @@ public final class WhileConverter extends LoopConverter {
         var cond = BaseConverter.bytes(start + bytes.size(), node.getCond(), info);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);
-        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(Util.intToBytes(start + Bytecode.JUMP.size()));
         if (!node.getNobreak().isEmpty()) {
             var nobreak = BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info);
             bytes.addAll(nobreak);

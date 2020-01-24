@@ -61,8 +61,8 @@ public final class CompilerInfo {
      * @param bytes The list of bytes
      */
     public void exitLoop(int listStart, @NotNull List<Byte> bytes) {
-        boolean hasContinue = loopLevel.pop();
         int level = loopLevel.size();
+        boolean hasContinue = loopLevel.pop();
         int endLoop = listStart + bytes.size();
         for (int i : breakPointers.getOrDefault(level, Collections.emptySet())) {
             setPointer(listStart - i, bytes, endLoop);
@@ -72,7 +72,7 @@ public final class CompilerInfo {
         if (hasContinue) {
             assert continueLocation != -1 : "Continue location not defined";
             for (int i : continuePointers.getOrDefault(level, Collections.emptySet())) {
-                setPointer(listStart - i, bytes, continueLocation);
+                setPointer(listStart + i, bytes, continueLocation);
             }
             continuePointers.remove(level);
         } else {
