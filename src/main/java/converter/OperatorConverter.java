@@ -33,6 +33,11 @@ public class OperatorConverter implements TestConverter {
         temp.put(OperatorTypeNode.BOOL_NOT, Bytecode.BOOL_NOT);
         temp.put(OperatorTypeNode.IS, Bytecode.IDENTICAL);
         temp.put(OperatorTypeNode.INSTANCEOF, Bytecode.INSTANCEOF);
+        temp.put(OperatorTypeNode.EQUALS, Bytecode.EQUAL);
+        temp.put(OperatorTypeNode.LESS_THAN, Bytecode.LESS_THAN);
+        temp.put(OperatorTypeNode.GREATER_THAN, Bytecode.GREATER_THAN);
+        temp.put(OperatorTypeNode.LESS_EQUAL, Bytecode.LESS_EQUAL);
+        temp.put(OperatorTypeNode.GREATER_EQUAL, Bytecode.GREATER_EQUAL);
         BYTECODE_MAP = Collections.unmodifiableMap(temp);
     }
 

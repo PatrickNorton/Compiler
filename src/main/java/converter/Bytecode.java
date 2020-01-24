@@ -46,6 +46,11 @@ public enum Bytecode {  // FIXME: Missing bool_xor
     CALL_OP(0x25, 2+2),
     PACK_TUPLE(0x26, 0),
     UNPACK_TUPLE(0x27, 0),
+    EQUAL(0x28, 0),
+    LESS_THAN(0x29, 0),
+    GREATER_THAN(0x2A, 0),
+    LESS_EQUAL(0x2B, 0),
+    GREATER_EQUAL(0x2C, 0),
     // Jumps, etc.
     JUMP(0x30, 4),
     JUMP_FALSE(0x31, 4),
