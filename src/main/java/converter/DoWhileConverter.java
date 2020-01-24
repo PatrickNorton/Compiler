@@ -23,7 +23,7 @@ public final class DoWhileConverter extends LoopConverter {
         var cond = BaseConverter.bytes(start + bytes.size(), node.getConditional(), info);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);
-        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(Util.intToBytes(start));
         return bytes;
     }
 }
