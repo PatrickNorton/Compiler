@@ -33,8 +33,8 @@ public final class IfConverter implements BaseConverter {
     private void addBody(@NotNull List<Byte> bytes, int start, StatementBodyNode body) {
         var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP_FALSE.size(), body, info);
         // Jump index
+        var jumpTarget = start + bytes.size() + Bytecode.JUMP_FALSE.size() + bodyBytes.size();
         bytes.add(Bytecode.JUMP_FALSE.value);
-        var jumpTarget = start + bytes.size() + bodyBytes.size();
         bytes.addAll(Util.intToBytes(jumpTarget));
         bytes.addAll(bodyBytes);
     }
@@ -57,8 +57,8 @@ public final class IfConverter implements BaseConverter {
     private void addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body) {
         var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP.size(), body, info);
         // Jump index
+        var jumpTarget = start + bytes.size() + Bytecode.JUMP.size() + bodyBytes.size();
         bytes.add(Bytecode.JUMP.value);
-        var jumpTarget = start + bytes.size() + bodyBytes.size();
         bytes.addAll(Util.intToBytes(jumpTarget));
         bytes.addAll(bodyBytes);
     }
