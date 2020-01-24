@@ -10,6 +10,7 @@ import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.ReturnStatementNode;
+import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
 import main.java.parser.WhileStatementNode;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +46,8 @@ public interface BaseConverter {
             return new ImportExportConverter(info, (ImportExportNode) node);
         } else if (node instanceof ReturnStatementNode) {
             return new ReturnConverter(info, (ReturnStatementNode) node);
+        } else if (node instanceof StatementBodyNode) {
+            return new BodyConverter(info, (StatementBodyNode) node);
         } else if (node instanceof WhileStatementNode) {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else {
