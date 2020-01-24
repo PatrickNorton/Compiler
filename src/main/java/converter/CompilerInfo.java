@@ -65,14 +65,14 @@ public final class CompilerInfo {
         boolean hasContinue = loopLevel.pop();
         int endLoop = listStart + bytes.size();
         for (int i : breakPointers.getOrDefault(level, Collections.emptySet())) {
-            setPointer(listStart + i, bytes, endLoop);
+            setPointer(i - listStart, bytes, endLoop);
         }
         breakPointers.remove(level);
         int continueLocation = continueLocations.pop();
         if (hasContinue) {
             assert continueLocation != -1 : "Continue location not defined";
             for (int i : continuePointers.getOrDefault(level, Collections.emptySet())) {
-                setPointer(listStart + i, bytes, continueLocation);
+                setPointer(i - listStart, bytes, continueLocation);
             }
             continuePointers.remove(level);
         } else {
