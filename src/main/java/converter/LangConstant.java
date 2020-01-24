@@ -35,4 +35,10 @@ public interface LangConstant {
             return new DecimalConstant(value);
         }
     }
+
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    static LangConstant of(int value) {
+        return new IntConstant(value);
+    }
 }
