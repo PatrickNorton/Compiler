@@ -53,6 +53,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     public FileInfo compile() {
         link();
         var compilerInfo = new CompilerInfo(this);
+        compilerInfo.addStackFrame();
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node) {
             if (statement instanceof ImportExportNode
@@ -61,6 +62,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             }
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
         }
+        compilerInfo.removeStackFrame();
         functions.set(0, bytes);  // Put the default function at the beginning
         return this;
     }
