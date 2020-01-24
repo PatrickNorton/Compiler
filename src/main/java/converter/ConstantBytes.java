@@ -8,4 +8,5 @@ public enum ConstantBytes {
     IMPORT,
     BUILTIN,
     FUNCTION,
+    BOOL,
 }
