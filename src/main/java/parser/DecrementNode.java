@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  * @see IncrementNode
  */
-public class DecrementNode implements SimpleStatementNode {
+public class DecrementNode implements IncDecNode {
     private LineInfo lineInfo;
     private NameNode variable;
 
@@ -32,6 +32,7 @@ public class DecrementNode implements SimpleStatementNode {
         return lineInfo;
     }
 
+    @Override
     public NameNode getVariable() {
         return variable;
     }
