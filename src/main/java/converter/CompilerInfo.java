@@ -65,7 +65,7 @@ public final class CompilerInfo {
         boolean hasContinue = loopLevel.pop();
         int endLoop = listStart + bytes.size();
         for (int i : breakPointers.getOrDefault(level, Collections.emptySet())) {
-            setPointer(listStart - i, bytes, endLoop);
+            setPointer(listStart + i, bytes, endLoop);
         }
         breakPointers.remove(level);
         int continueLocation = continueLocations.pop();
