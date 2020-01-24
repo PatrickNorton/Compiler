@@ -1,11 +1,12 @@
 package main.java.converter;
 
 import main.java.parser.IncrementNode;
+import main.java.parser.VariableNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IncrementConverter implements BaseConverter {
+public final class IncrementConverter implements BaseConverter {
     private IncrementNode node;
     private CompilerInfo info;
 
@@ -27,6 +28,13 @@ public class IncrementConverter implements BaseConverter {
         int constIndex = info.addConstant(LangConstant.of(1));
         bytes.addAll(Util.shortToBytes((short) constIndex));
         bytes.add(Bytecode.PLUS.value);
+        if (node.getVariable() instanceof VariableNode) {
+            int varIndex = info.varIndex(((VariableNode) node.getVariable()).getName());
+            bytes.add(Bytecode.STORE.value);
+            bytes.addAll(Util.shortToBytes((short) varIndex));
+        } else {
+            throw CompilerInternalError.of("Non-variable increment not yet implemented", node);
+        }
         return bytes;
     }
 }

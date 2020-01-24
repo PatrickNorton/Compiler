@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DeclaredAssignmentNode;
+import main.java.parser.DescriptorNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,16 +38,15 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                     "Object of type %s cannot be assigned to object of type %s",
                     node, valueType, assignedType);
         }
-        if (converter instanceof ConstantConverter) {
+        if (converter instanceof ConstantConverter && node.getDescriptors().contains(DescriptorNode.CONST)) {
             var constant = ((ConstantConverter) converter).constant();
             info.addVariable(assignedName, assignedType, constant);
             return Collections.emptyList();
-        } else {
-            info.addVariable(assignedName, assignedType);
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes((short) info.varIndex(assignedName)));
-            return bytes;
         }
+        info.addVariable(assignedName, assignedType);
+        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        bytes.add(Bytecode.STORE.value);
+        bytes.addAll(Util.shortToBytes((short) info.varIndex(assignedName)));
+        return bytes;
     }
 }
