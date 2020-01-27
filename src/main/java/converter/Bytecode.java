@@ -113,8 +113,12 @@ public enum Bytecode {  // FIXME: Missing bool_xor
     private static int fromBytes(@NotNull List<Byte> bytes) {
         int total = 0;
         for (int i = 0; i < bytes.size(); i++) {
-            total |= bytes.get(i) << Byte.SIZE * (bytes.size() - i - 1);
+            total |= byteToInt(bytes.get(i)) << Byte.SIZE * (bytes.size() - i - 1);
         }
         return total;
+    }
+
+    private static int byteToInt(byte value) {
+        return value < 0 ? value + 256 : value;
     }
 }
