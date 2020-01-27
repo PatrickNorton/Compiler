@@ -239,6 +239,8 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             writer.write(Util.toByteArray(functions.size()));
             for (var bytes : functions) {
                 var byteArray = Util.unBox(bytes.toArray(new Byte[0]));
+                writer.write(Util.toByteArray(0));  // TODO: Put function name
+                writer.write(Util.toByteArray((short) 0));  // TODO: Put variable count
                 writer.write(Util.toByteArray(byteArray.length));
                 writer.write(byteArray);
             }
