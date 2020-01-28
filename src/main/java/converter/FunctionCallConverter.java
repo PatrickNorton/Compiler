@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionCallConverter implements TestConverter {
+public final class FunctionCallConverter implements TestConverter {
     private CompilerInfo info;
     private FunctionCallNode node;
 

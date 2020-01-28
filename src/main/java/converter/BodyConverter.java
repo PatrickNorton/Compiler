@@ -5,7 +5,7 @@ import main.java.parser.StatementBodyNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BodyConverter implements BaseConverter {
+public final class BodyConverter implements BaseConverter {
     private StatementBodyNode node;
     private CompilerInfo info;
 

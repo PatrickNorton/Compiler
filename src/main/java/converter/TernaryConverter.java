@@ -5,7 +5,7 @@ import main.java.parser.TernaryNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TernaryConverter implements TestConverter {
+public final class TernaryConverter implements TestConverter {
     private TernaryNode node;
     private CompilerInfo info;
 

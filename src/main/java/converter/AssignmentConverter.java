@@ -7,7 +7,7 @@ import main.java.parser.VariableNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AssignmentConverter implements BaseConverter {
+public final class AssignmentConverter implements BaseConverter {
     private CompilerInfo info;
     private AssignmentNode node;
 

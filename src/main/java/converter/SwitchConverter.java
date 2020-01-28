@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-public class SwitchConverter extends LoopConverter implements TestConverter {
+public final class SwitchConverter extends LoopConverter implements TestConverter {
     private SwitchStatementNode node;
     private Deque<Deque<Integer>> locations;
 
