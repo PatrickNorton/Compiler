@@ -50,9 +50,17 @@ public class AugmentedAssignmentNode implements AssignStatementNode {
         return new NameNode[] {name};
     }
 
+    public NameNode getName() {
+        return name;
+    }
+
     @Override
     public TestListNode getValues() {
         return new TestListNode(value);
+    }
+
+    public TestNode getValue() {
+        return value;
     }
 
     @Override

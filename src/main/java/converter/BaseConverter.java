@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.AssignmentNode;
+import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.BaseNode;
 import main.java.parser.BreakStatementNode;
 import main.java.parser.ContinueStatementNode;
@@ -32,6 +33,8 @@ public interface BaseConverter {
             return TestConverter.of(info, (TestNode) node);
         } else if (node instanceof AssignmentNode) {
             return new AssignmentConverter(info, (AssignmentNode) node);
+        } else if (node instanceof AugmentedAssignmentNode) {
+            return new AugAssignConverter(info, (AugmentedAssignmentNode) node);
         } else if (node instanceof BreakStatementNode) {
             return new BreakConverter(info, (BreakStatementNode) node);
         } else if (node instanceof ContinueStatementNode) {
