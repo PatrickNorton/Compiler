@@ -104,8 +104,8 @@ public enum Bytecode {  // FIXME: Missing bool_xor
         for (int i = 0; i < bytes.size();) {
             var op = map.get(bytes.get(i));
             var value = fromBytes(bytes.subList(i + 1, i + op.size()));
+            sb.append(String.format("%-7d%-16s%d%n", i, op, value));
             i += op.size();
-            sb.append(String.format("%-16s%d%n", op, value));
         }
         return sb.toString();
     }
