@@ -20,7 +20,7 @@ public final class IfConverter implements BaseConverter {
     @Override
     public List<Byte> convert(int start) {
         var bytes = new ArrayList<>(BaseConverter.bytes(start, node.getConditional(), info));
-        addBody(bytes, start + bytes.size(), node.getBody());
+        addBody(bytes, start, node.getBody());
         for (var elif : node.getElifs()) {
             addElif(bytes, start, elif);
         }
