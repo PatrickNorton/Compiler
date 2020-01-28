@@ -21,6 +21,7 @@ public enum Bytecode {  // FIXME: Missing bool_xor
     SWAP_N(0xA, 4),
     STORE(0xB, 2),
     STORE_SUBSCRIPT(0xC, 2),
+    STORE_ATTR(0xD, 2),
     // Binary operators
     PLUS(0x10, 0),
     MINUS(0x11, 0),
