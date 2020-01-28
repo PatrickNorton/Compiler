@@ -22,7 +22,7 @@ public final class IfConverter implements BaseConverter {
         var bytes = new ArrayList<>(BaseConverter.bytes(start, node.getConditional(), info));
         boolean hasElse = !node.getElseStmt().isEmpty();
         addBody(bytes, start, node.getBody(), node.getElifs().length > 0 || hasElse);
-        int elifsRemaining = node.getElifs().length;
+        int elifsRemaining = node.getElifs().length - 1;
         for (var elif : node.getElifs()) {
             addElif(bytes, start, elif, hasElse || elifsRemaining > 0);
             elifsRemaining--;
