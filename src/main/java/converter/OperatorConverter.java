@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class OperatorConverter implements TestConverter {
-    private static final Map<OperatorTypeNode, Bytecode> BYTECODE_MAP;
+    public static final Map<OperatorTypeNode, Bytecode> BYTECODE_MAP;
 
     static {  // TODO: Make these members of OperatorTypeNode
         var temp = new EnumMap<OperatorTypeNode, Bytecode>(OperatorTypeNode.class);
