@@ -77,4 +77,10 @@ public final class Util {
         }
         return byteArray;
     }
+
+    static void emplace(List<Byte> original, @NotNull List<Byte> toInsert, int start) {
+        for (int i = 0; i < toInsert.size(); i++) {
+            original.set(start + i, toInsert.get(i));
+        }
+    }
 }
