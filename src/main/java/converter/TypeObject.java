@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.parser.OperatorTypeNode;
+
 import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -7,6 +9,10 @@ import java.util.TreeSet;
 public interface TypeObject {
     boolean isSubclass(TypeObject other);
     String name();
+
+    default TypeObject operatorReturnType(OperatorTypeNode o) {
+        return null;
+    }
 
     static TypeObject union(TypeObject... values) {
         SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));

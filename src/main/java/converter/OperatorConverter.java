@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.OperatorNode;
 import main.java.parser.OperatorTypeNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,8 +51,14 @@ public class OperatorConverter implements TestConverter {
     }
 
     @Override
+    @NotNull
     public TypeObject returnType() {
-        throw new UnsupportedOperationException();
+        var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument());
+        var retType = firstOpConverter.returnType().operatorReturnType(node.getOperator());
+        if (retType == null) {
+            throw CompilerInternalError.of("Operator not implemented", node);
+        }
+        return retType;
     }
 
     @Override
