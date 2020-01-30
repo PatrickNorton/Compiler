@@ -3,6 +3,8 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class Util {
@@ -82,5 +84,15 @@ public final class Util {
         for (int i = 0; i < toInsert.size(); i++) {
             original.set(start + i, toInsert.get(i));
         }
+    }
+
+    @NotNull
+    static List<Byte> strBytes(@NotNull String value) {
+        var byteArray = value.getBytes(StandardCharsets.UTF_8);
+        List<Byte> bytes = new ArrayList<>(byteArray.length);
+        for (byte b : byteArray) {
+            bytes.add(b);
+        }
+        return bytes;
     }
 }

@@ -1,6 +1,6 @@
 package main.java.converter;
 
-import main.java.parser.OperatorTypeNode;
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -14,13 +14,13 @@ public class StdTypeObject implements TypeObject {
     private final List<TypeObject> supers;
     private final List<TypeObject> declaredGenerics;
     private final List<String> generics;
-    private final Map<OperatorTypeNode, FunctionInfo> operators;
+    private final Map<OpSpTypeNode, FunctionInfo> operators;
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList(), Collections.emptyList());
     }
 
-    public StdTypeObject(String name, List<TypeObject> supers, Map<OperatorTypeNode, FunctionInfo> operators) {
+    public StdTypeObject(String name, List<TypeObject> supers, Map<OpSpTypeNode, FunctionInfo> operators) {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);
         this.declaredGenerics = Collections.emptyList();
@@ -33,7 +33,7 @@ public class StdTypeObject implements TypeObject {
         this.supers = Collections.unmodifiableList(supers);
         this.declaredGenerics = Collections.unmodifiableList(declaredGenerics);
         this.generics = Collections.emptyList();
-        this.operators = new EnumMap<>(OperatorTypeNode.class);
+        this.operators = new EnumMap<>(OpSpTypeNode.class);
     }
 
     public StdTypeObject(String name, List<StdTypeObject> supers, List<String> generics, Object sentinel) {
@@ -41,7 +41,7 @@ public class StdTypeObject implements TypeObject {
         this.supers = Collections.unmodifiableList(supers);
         this.generics = Collections.unmodifiableList(generics);
         this.declaredGenerics = Collections.emptyList();
-        this.operators = new EnumMap<>(OperatorTypeNode.class);
+        this.operators = new EnumMap<>(OpSpTypeNode.class);
         assert sentinel == null;
     }
 
@@ -62,13 +62,13 @@ public class StdTypeObject implements TypeObject {
         return name;
     }
 
-    public void setOperator(OperatorTypeNode o, FunctionInfo args) {
+    public void setOperator(OpSpTypeNode o, FunctionInfo args) {
         operators.put(o, args);
     }
 
     @Override
     @Nullable
-    public TypeObject operatorReturnType(OperatorTypeNode o) {
+    public TypeObject operatorReturnType(OpSpTypeNode o) {
         if (operators.containsKey(o)) {
             return operators.get(o).getReturns()[0];
         }

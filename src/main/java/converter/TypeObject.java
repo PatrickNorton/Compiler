@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 
 import java.util.Arrays;
@@ -11,6 +12,10 @@ public interface TypeObject {
     String name();
 
     default TypeObject operatorReturnType(OperatorTypeNode o) {
+        return operatorReturnType((OpSpTypeNode) null);  // TODO: Make it return correctly
+    }
+
+    default TypeObject operatorReturnType(OpSpTypeNode o) {
         return null;
     }
 

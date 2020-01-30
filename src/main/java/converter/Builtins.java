@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
-import main.java.parser.OperatorTypeNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +38,8 @@ public final class Builtins {
 
     public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT), Collections.emptyList());
 
+    public static final StdTypeObject RANGE = new StdTypeObject("range");
+
     public static final TypeObject TYPE = new TypeTypeObject();
 
     public static final LangConstant PRINT = new BuiltinConstant(BUILTIN_INDICES.indexOf("print"));
@@ -50,17 +51,23 @@ public final class Builtins {
     static {  // Set int operators
         var intOpArgInfo = new ArgumentInfo(new Argument("", INT));
         var intOperatorInfo = new FunctionInfo("", intOpArgInfo, INT);
-        INT.setOperator(OperatorTypeNode.ADD, intOperatorInfo);
-        INT.setOperator(OperatorTypeNode.SUBTRACT, intOperatorInfo);
-        INT.setOperator(OperatorTypeNode.MULTIPLY, intOperatorInfo);
-        INT.setOperator(OperatorTypeNode.DIVIDE, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.ADD, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.SUBTRACT, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.MULTIPLY, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.DIVIDE, intOperatorInfo);
     }
 
     static {  // Set str operators
         var strPlusInfo = new FunctionInfo("", new ArgumentInfo(new Argument("", STR)), STR);
-        STR.setOperator(OperatorTypeNode.ADD, strPlusInfo);
+        STR.setOperator(OpSpTypeNode.ADD, strPlusInfo);
         var strTimesInfo = new FunctionInfo("", new ArgumentInfo(new Argument("", INT)), STR);
-        STR.setOperator(OperatorTypeNode.MULTIPLY, strTimesInfo);
+        STR.setOperator(OpSpTypeNode.MULTIPLY, strTimesInfo);
+    }
+
+    static {  // Set range operators
+        var rangeIterInfo = new FunctionInfo("", new ArgumentInfo(), INT);
+        RANGE.setOperator(OpSpTypeNode.ITER, rangeIterInfo);
+        RANGE.setOperator(OpSpTypeNode.ITER_SLICE, rangeIterInfo);
     }
 
     public static final Map<String, VariableInfo> NAMES = Map.of(
@@ -74,4 +81,8 @@ public final class Builtins {
             TRUE,
             FALSE
     );
+
+    public static int indexOf(LangConstant value) {
+        return BUILTINS.indexOf(value);
+    }
 }

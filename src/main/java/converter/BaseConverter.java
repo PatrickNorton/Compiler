@@ -8,6 +8,7 @@ import main.java.parser.ContinueStatementNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
 import main.java.parser.DoStatementNode;
+import main.java.parser.ForStatementNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.ImportExportNode;
@@ -45,6 +46,8 @@ public interface BaseConverter {
             return new DecrementConverter(info, (DecrementNode) node);
         } else if (node instanceof DoStatementNode) {
             return new DoWhileConverter(info, (DoStatementNode) node);
+        } else if (node instanceof ForStatementNode) {
+            return new ForConverter(info, (ForStatementNode) node);
         } else if (node instanceof FunctionDefinitionNode) {
             return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node);
         } else if (node instanceof IfStatementNode) {
