@@ -29,7 +29,7 @@ public class RangeConverter implements TestConverter {
         convertPortion(start, bytes, node.getStep());
         bytes.add(Bytecode.LOAD_CONST.value);
         var constant = info.addConstant(new BuiltinConstant(-1));  // FIXME: Get builtin constants figured out
-        bytes.addAll(Util.intToBytes(constant));
+        bytes.addAll(Util.shortToBytes((short) constant));
         return bytes;
     }
 
