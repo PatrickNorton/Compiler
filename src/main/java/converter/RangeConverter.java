@@ -24,12 +24,14 @@ public class RangeConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        convertPortion(start, bytes, node.getStart());
-        convertPortion(start, bytes, node.getEnd());
-        convertPortion(start, bytes, node.getStep());
         bytes.add(Bytecode.LOAD_CONST.value);
         var constant = info.constIndex(Builtins.constantOf("range"));
         bytes.addAll(Util.shortToBytes((short) constant));
+        convertPortion(start, bytes, node.getStart());
+        convertPortion(start, bytes, node.getEnd());
+        convertPortion(start, bytes, node.getStep());
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) 3));
         return bytes;
     }
 
