@@ -16,7 +16,7 @@ public interface TypeObject extends LangObject {
     }
 
     default TypeObject operatorReturnType(OperatorTypeNode o) {
-        return operatorReturnType((OpSpTypeNode) null);  // TODO: Make it return correctly
+        return operatorReturnType(OpSpTypeNode.translate(o));
     }
 
     default TypeObject operatorReturnType(OpSpTypeNode o) {
