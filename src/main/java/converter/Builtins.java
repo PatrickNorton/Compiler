@@ -47,6 +47,8 @@ public final class Builtins {
 
     public static final LangObject PRINT = new LangInstance(CALLABLE);
 
+    public static final LangObject ITER = new LangInstance(CALLABLE);
+
     public static final LangConstant TRUE = new BoolConstant(true);
 
     public static final LangConstant FALSE = new BoolConstant(false);
@@ -80,7 +82,8 @@ public final class Builtins {
             STR,
             BOOL,
             RANGE,
-            TYPE
+            TYPE,
+            ITER
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP;
@@ -94,6 +97,7 @@ public final class Builtins {
         temp.put("bool", BOOL);
         temp.put("range", RANGE);
         temp.put("type", TYPE);
+        temp.put("iter", ITER);
         BUILTIN_MAP = temp;
     }
 

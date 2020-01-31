@@ -73,8 +73,7 @@ public enum Bytecode {  // FIXME: Missing bool_xor
     CLASS_DEF(0x41, 0),
     END_CLASS(0x42, 0),
     // Loop stuff
-    FOR_ITER(0x50, 2),
-    ITER_NEXT(0x51, 4),
+    FOR_ITER(0x50, 4),
     ;
 
     public final byte value;
