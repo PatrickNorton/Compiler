@@ -20,6 +20,11 @@ public final class BuiltinConstant implements LangConstant {
     }
 
     @Override
+    public TypeObject getType() {
+        return Builtins.TRUE_BUILTINS.get(builtinIndex).getType();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

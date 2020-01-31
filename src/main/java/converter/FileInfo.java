@@ -45,7 +45,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.imports = new IndexedHashSet<>();
         this.importTypes = new HashMap<>();
         this.functions = new ArrayList<>(Collections.singletonList(null));
-        this.constants = new IndexedHashSet<>(Builtins.BUILTINS);
+        this.constants = new IndexedHashSet<>();
         this.allowSettingExports = false;
         this.linked = false;
     }

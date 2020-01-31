@@ -7,9 +7,13 @@ import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public interface TypeObject {
+public interface TypeObject extends LangObject {
     boolean isSubclass(TypeObject other);
     String name();
+
+    default TypeObject getType() {
+        return new TypeTypeObject();
+    }
 
     default TypeObject operatorReturnType(OperatorTypeNode o) {
         return operatorReturnType((OpSpTypeNode) null);  // TODO: Make it return correctly

@@ -38,6 +38,11 @@ public final class StringConstant implements LangConstant {
         return bytes;
     }
 
+    @Override
+    public TypeObject getType() {
+        return Builtins.STR;
+    }
+
     @NotNull
     private List<Byte> strBytes() {
         var byteArray = value.getBytes(StandardCharsets.UTF_8);

@@ -16,6 +16,11 @@ public class BoolConstant implements LangConstant {
     }
 
     @Override
+    public TypeObject getType() {
+        return Builtins.BOOL;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

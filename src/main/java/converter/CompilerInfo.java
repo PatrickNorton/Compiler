@@ -8,6 +8,7 @@ import main.java.parser.TypewiseAndNode;
 import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public final class CompilerInfo {
@@ -39,8 +41,6 @@ public final class CompilerInfo {
         this.variables = new ArrayList<>();
         this.typeMap = new HashMap<>();
         this.varNumbers = new IntAllocator();
-
-        variables.add(Builtins.NAMES);
     }
 
     /**
@@ -156,7 +156,8 @@ public final class CompilerInfo {
      * @return The type of the variable
      */
     public TypeObject getType(String variable) {
-        return varInfo(variable).getType();
+        var info = varInfo(variable);
+        return info == null ? Builtins.constantOf(variable).getType() : info.getType();
     }
 
     /**
@@ -229,9 +230,11 @@ public final class CompilerInfo {
      * @return If the variable is constant
      */
     public boolean variableIsConstant(String name) {
-        return varInfo(name).isConst();
+        var info = varInfo(name);
+        return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.isConst();
     }
 
+    @Nullable
     private VariableInfo varInfo(String name) {
         for (int i = variables.size() - 1; i >= 0; i--) {
             var map = variables.get(i);
@@ -239,7 +242,7 @@ public final class CompilerInfo {
                 return map.get(name);
             }
         }
-        throw new RuntimeException("Unknown variable");
+        return null;
     }
 
     public TypeObject importType(String name) {
@@ -253,7 +256,7 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public int varIndex(String name) {
-        return varInfo(name).getLocation();
+        return Objects.requireNonNull(varInfo(name)).getLocation();
     }
 
     @NotNull
@@ -284,7 +287,9 @@ public final class CompilerInfo {
      */
     public int constIndex(String name) {
         var variableInfo = varInfo(name);
-        return constIndex(variableInfo.constValue());
+        return constIndex(variableInfo != null
+                ? variableInfo.constValue()
+                : Builtins.constantOf(name));
     }
 
     public int addFunction(List<Byte> bytes) {

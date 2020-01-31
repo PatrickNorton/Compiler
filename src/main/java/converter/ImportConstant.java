@@ -17,4 +17,9 @@ public class ImportConstant implements LangConstant {
         bytes.addAll(Util.intToBytes(index));
         return bytes;
     }
+
+    @Override
+    public TypeObject getType() {
+        throw new RuntimeException("Cannot figure out type of this yet");
+    }
 }

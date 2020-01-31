@@ -17,4 +17,9 @@ public class FunctionConstant implements LangConstant {
         bytes.addAll(Util.intToBytes(functionIndex));
         return bytes;
     }
+
+    @Override
+    public TypeObject getType() {
+        return Builtins.CALLABLE;
+    }
 }

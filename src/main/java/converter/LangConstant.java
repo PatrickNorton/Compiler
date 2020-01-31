@@ -8,8 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigInteger;
 import java.util.List;
 
-public interface LangConstant {
+public interface LangConstant extends LangObject {
     List<Byte> toBytes();
+
+    TypeObject getType();
 
     @NotNull
     @Contract("_ -> new")

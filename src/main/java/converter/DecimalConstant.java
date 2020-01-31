@@ -38,4 +38,9 @@ public final class DecimalConstant implements LangConstant {
         }
         return bytes;
     }
+
+    @Override
+    public TypeObject getType() {
+        return Builtins.DECIMAL;
+    }
 }

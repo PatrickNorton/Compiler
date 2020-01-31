@@ -1,8 +1,11 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,19 +73,37 @@ public final class Builtins {
         RANGE.setOperator(OpSpTypeNode.ITER_SLICE, rangeIterInfo);
     }
 
-    public static final Map<String, VariableInfo> NAMES = Map.of(
-            "print", new VariableInfo(CALLABLE, PRINT, -1),
-            "true", new VariableInfo(BOOL, TRUE, -1),
-            "false", new VariableInfo(BOOL, FALSE, -1)
-    );
-
-    public static final List<LangConstant> BUILTINS = List.of(
+    public static final List<LangObject> TRUE_BUILTINS = List.of(
             PRINT,
-            TRUE,
-            FALSE
+            CALLABLE,
+            INT,
+            STR,
+            BOOL,
+            RANGE,
+            TYPE
     );
 
-    public static int indexOf(LangConstant value) {
-        return BUILTINS.indexOf(value);
+    public static final Map<String, LangObject> BUILTIN_MAP;
+
+    static {  // Initialize BUILTIN_MAP
+        Map<String, LangObject> temp = new HashMap<>();
+        temp.put("print", PRINT);
+        temp.put("callable", CALLABLE);
+        temp.put("int", INT);
+        temp.put("str", STR);
+        temp.put("bool", BOOL);
+        temp.put("range", RANGE);
+        temp.put("type", TYPE);
+        BUILTIN_MAP = temp;
+    }
+
+    public static int indexOf(LangObject value) {
+        return TRUE_BUILTINS.indexOf(value);
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    public static LangConstant constantOf(String name) {
+        return new BuiltinConstant(indexOf(BUILTIN_MAP.get(name)));
     }
 }

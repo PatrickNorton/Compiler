@@ -34,4 +34,9 @@ public final class IntConstant implements LangConstant {
         bytes.addAll(Util.intToBytes(value));
         return bytes;
     }
+
+    @Override
+    public TypeObject getType() {
+        return Builtins.INT;
+    }
 }

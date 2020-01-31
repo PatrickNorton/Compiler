@@ -37,6 +37,11 @@ public final class BigintConstant implements LangConstant {
         return bytes;
     }
 
+    @Override
+    public TypeObject getType() {
+        return Builtins.INT;
+    }
+
     @NotNull
     private List<Byte> bigintBytes() {
         var byteArray = value.toByteArray();
