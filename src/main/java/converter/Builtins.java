@@ -45,7 +45,7 @@ public final class Builtins {
 
     public static final TypeObject TYPE = new TypeTypeObject();
 
-    public static final LangConstant PRINT = new BuiltinConstant(BUILTIN_INDICES.indexOf("print"));
+    public static final LangObject PRINT = new LangInstance(CALLABLE);
 
     public static final LangConstant TRUE = new BoolConstant(true);
 
