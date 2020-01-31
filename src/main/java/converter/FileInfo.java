@@ -99,11 +99,11 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
 
     public int addConstant(LangConstant value) {
         constants.add(value);
-        return constIndex(value);
+        return constants.indexOf(value);
     }
 
     public int constIndex(LangConstant value) {
-        return constants.indexOf(value);
+        return constants.contains(value) ? constants.indexOf(value) : addConstant(value);
     }
 
     public FileInfo link() {
