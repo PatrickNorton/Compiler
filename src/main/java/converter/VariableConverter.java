@@ -24,6 +24,9 @@ public final class VariableConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         String name = node.getName();
+        if (name.equals("null")) {
+            return List.of(Bytecode.LOAD_NULL.value);
+        }
         boolean isConst = info.variableIsConstant(node.getName());
         var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
         List<Byte> bytes = new ArrayList<>(bytecode.size());
