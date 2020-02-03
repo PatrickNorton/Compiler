@@ -24,7 +24,7 @@ public final class ForConverter extends LoopConverter {
     public List<Byte> trueConvert(int start) {
         assert node.getVars().length == 1 : "'for' loops with multiple vars not yet implemented";
         assert node.getIterables().size() == 1 : "'for' loops with multiple vars not yet implemented";
-        var valueConverter = TestConverter.of(info, node.getIterables().get(0));
+        var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
         var iteratorType = getIteratorType();
         var iteratedName = node.getVars()[0].getVariable().toString();
         info.addVariable(iteratedName, iteratorType);
@@ -54,7 +54,7 @@ public final class ForConverter extends LoopConverter {
         if (iteratorType.isDecided()) {
             return info.getType(iteratorType);
         } else {
-            var valueConverter = TestConverter.of(info, node.getIterables().get(0));
+            var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
             return valueConverter.returnType().operatorReturnType(OpSpTypeNode.ITER);
         }
     }

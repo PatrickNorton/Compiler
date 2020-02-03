@@ -18,7 +18,7 @@ public final class ContinueConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getCond().isEmpty()) {
-            bytes.addAll(BaseConverter.bytes(start, node.getCond(), info));
+            bytes.addAll(TestConverter.bytes(start, node.getCond(), info, 1));
             bytes.add(Bytecode.JUMP_TRUE.value);
         } else {
             bytes.add(Bytecode.JUMP.value);

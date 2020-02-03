@@ -11,27 +11,33 @@ import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public interface TestConverter extends BaseConverter {
     TypeObject returnType();
 
+    static List<Byte> bytes(int start, @NotNull TestNode node, CompilerInfo info, int retCount) {
+        return of(info, node, retCount).convert(start);
+    }
+
     @NotNull
-    static TestConverter of(CompilerInfo info, @NotNull TestNode node) {
+    static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
         if (node instanceof FunctionCallNode) {
-            return new FunctionCallConverter(info, (FunctionCallNode) node);
+            return new FunctionCallConverter(info, (FunctionCallNode) node, retCount);
         } else if (node instanceof NumberNode) {
-            return new NumberConverter(info, (NumberNode) node);
+            return new NumberConverter(info, (NumberNode) node, retCount);
         } else if (node instanceof OperatorNode) {
-            return new OperatorConverter(info, (OperatorNode) node);
+            return new OperatorConverter(info, (OperatorNode) node, retCount);
         } else if (node instanceof RangeLiteralNode) {
-            return new RangeConverter(info, (RangeLiteralNode) node);
+            return new RangeConverter(info, (RangeLiteralNode) node, retCount);
         } else if (node instanceof StringNode) {
-            return new StringConverter(info, (StringNode) node);
+            return new StringConverter(info, (StringNode) node, retCount);
         } else if (node instanceof SwitchStatementNode) {
-            return new SwitchConverter(info, (SwitchStatementNode) node);
+            return new SwitchConverter(info, (SwitchStatementNode) node, retCount);
         } else if (node instanceof TernaryNode) {
-            return new TernaryConverter(info, (TernaryNode) node);
+            return new TernaryConverter(info, (TernaryNode) node, retCount);
         } else if (node instanceof VariableNode) {
-            return new VariableConverter(info, (VariableNode) node);
+            return new VariableConverter(info, (VariableNode) node, retCount);
         } else {
             throw new UnsupportedOperationException("Unknown type: " + node.getClass());
         }

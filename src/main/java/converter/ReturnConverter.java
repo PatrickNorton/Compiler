@@ -20,7 +20,7 @@ public final class ReturnConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getCond().isEmpty()) {
-            bytes.addAll(BaseConverter.bytes(start, node.getCond(), info));
+            bytes.addAll(TestConverter.bytes(start, node.getCond(), info, 1));
             int jumpTarget = start + bytes.size() + Bytecode.JUMP_FALSE.size() + Bytecode.RETURN.size();
             bytes.add(Bytecode.JUMP_FALSE.value);
             bytes.addAll(Util.intToBytes(jumpTarget));

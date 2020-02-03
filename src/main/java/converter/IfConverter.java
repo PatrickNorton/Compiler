@@ -17,9 +17,10 @@ public final class IfConverter implements BaseConverter {
         this.info = info;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
-        var bytes = new ArrayList<>(BaseConverter.bytes(start, node.getConditional(), info));
+        var bytes = new ArrayList<>(TestConverter.bytes(start, node.getConditional(), info, 1));
         boolean hasElse = !node.getElseStmt().isEmpty();
         addBody(bytes, start, node.getBody(), node.getElifs().length > 0 || hasElse);
         int elifsRemaining = node.getElifs().length - 1;
@@ -48,7 +49,7 @@ public final class IfConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP.value);
         var jumpTarget = bytes.size();
         bytes.addAll(Util.zeroToBytes());  // Set jump target as temp value
-        bytes.addAll(BaseConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond, info));
+        bytes.addAll(TestConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond, info, 1));
         addBody(bytes, start, body, trailingJump);
         // Set jump target
         var target = Util.intToBytes(start + bytes.size() + trailingJumpBytes(trailingJump));

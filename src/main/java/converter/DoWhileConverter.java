@@ -20,7 +20,7 @@ public final class DoWhileConverter extends LoopConverter {
         var body = BaseConverter.bytes(start, node.getBody(), info);
         List<Byte> bytes = new ArrayList<>(body);
         info.setContinuePoint(start + bytes.size());
-        var cond = BaseConverter.bytes(start + bytes.size(), node.getConditional(), info);
+        var cond = TestConverter.bytes(start + bytes.size(), node.getConditional(), info, 1);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);
         bytes.addAll(Util.intToBytes(start));

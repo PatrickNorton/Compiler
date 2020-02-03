@@ -4,15 +4,18 @@ import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class VariableConverter implements TestConverter {
     private CompilerInfo info;
     private VariableNode node;
+    private int retCount;
 
-    public VariableConverter(CompilerInfo info, VariableNode node) {
+    public VariableConverter(CompilerInfo info, VariableNode node, int retCount) {
         this.info = info;
         this.node = node;
+        this.retCount = retCount;
     }
 
     @Override
@@ -23,6 +26,10 @@ public final class VariableConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        if (retCount == 0) {
+            return Collections.emptyList();
+        }
+        assert retCount == 1;
         String name = node.getName();
         if (name.equals("null")) {
             return List.of(Bytecode.LOAD_NULL.value);

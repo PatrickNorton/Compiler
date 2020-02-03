@@ -5,15 +5,18 @@ import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RangeConverter implements TestConverter {
     private RangeLiteralNode node;
     private CompilerInfo info;
+    private int retCount;
 
-    public RangeConverter(CompilerInfo info, RangeLiteralNode node) {
+    public RangeConverter(CompilerInfo info, RangeLiteralNode node, int retCount) {
         this.info = info;
         this.node = node;
+        this.retCount = retCount;
     }
 
     @Override
@@ -23,6 +26,9 @@ public class RangeConverter implements TestConverter {
 
     @Override
     public List<Byte> convert(int start) {
+        if (retCount == 0) {
+            return Collections.emptyList();
+        }
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
         var constant = info.constIndex(Builtins.constantOf("range"));
@@ -37,7 +43,7 @@ public class RangeConverter implements TestConverter {
 
     private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node) {
         if (!node.isEmpty()) {
-            var converter = TestConverter.of(info, node);
+            var converter = TestConverter.of(info, node, 1);
             if (!converter.returnType().isSubclass(Builtins.INT)) {
                 throw CompilerException.format(
                         "TypeError: Type %s does not match required type %s",

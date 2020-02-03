@@ -31,7 +31,7 @@ public interface BaseConverter {
     @NotNull
     private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
         if (node instanceof TestNode) {
-            return TestConverter.of(info, (TestNode) node);
+            return TestConverter.of(info, (TestNode) node, 0);
         } else if (node instanceof AssignmentNode) {
             return new AssignmentConverter(info, (AssignmentNode) node);
         } else if (node instanceof AugmentedAssignmentNode) {

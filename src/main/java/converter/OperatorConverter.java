@@ -44,16 +44,18 @@ public class OperatorConverter implements TestConverter {
 
     private CompilerInfo info;
     private OperatorNode node;
+    private int retCount;
 
-    public OperatorConverter(CompilerInfo info, OperatorNode node) {
+    public OperatorConverter(CompilerInfo info, OperatorNode node, int retCount) {
         this.info = info;
         this.node = node;
+        this.retCount = retCount;
     }
 
     @Override
     @NotNull
     public TypeObject returnType() {
-        var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument());
+        var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType().operatorReturnType(node.getOperator());
         if (retType == null) {
             throw CompilerInternalError.of("Operator not implemented", node);
@@ -66,13 +68,16 @@ public class OperatorConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         int opCount = node.getOperands().length;
         for (var arg : node.getOperands()) {
-            bytes.addAll(BaseConverter.bytes(start + bytes.size(), arg.getArgument(), info));
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
         }
         var bytecode = BYTECODE_MAP.get(node.getOperator());
         if (opCount == (node.getOperator().isUnary() ? 1 : 2)) {
             bytes.add(bytecode.value);
         } else {
             throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
+        }
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
     }

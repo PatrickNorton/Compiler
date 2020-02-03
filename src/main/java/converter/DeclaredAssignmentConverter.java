@@ -25,7 +25,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         }
         var value = node.getValues().get(0);
         var assigned = node.getTypes()[0];
-        var converter = TestConverter.of(info, value);
+        var converter = TestConverter.of(info, value, 1);
         var valueType = converter.returnType();
         var rawType = assigned.getType();
         var assignedType = rawType.isDecided() ? info.getType(rawType) : valueType;

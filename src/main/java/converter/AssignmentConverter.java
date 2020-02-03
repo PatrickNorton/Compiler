@@ -24,7 +24,7 @@ public final class AssignmentConverter implements BaseConverter {
         assert node.getValues().size() == node.getNames().length;
         var name = node.getNames()[0];
         var value = node.getValues().get(0);
-        var valueConverter = TestConverter.of(info, value);
+        var valueConverter = TestConverter.of(info, value, 1);
         var valueType = valueConverter.returnType();
         List<Byte> bytes = new ArrayList<>();
         if (name instanceof VariableNode) {
@@ -41,9 +41,9 @@ public final class AssignmentConverter implements BaseConverter {
             var variable = (IndexNode) name;
             var indices = variable.getIndices();
             // FIXME: Check types
-            bytes.addAll(BaseConverter.bytes(start, variable.getVar(), info));
+            bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
             for (var indexParam : indices) {
-                bytes.addAll(BaseConverter.bytes(start + bytes.size(), indexParam, info));
+                bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
             }
             bytes.addAll(valueConverter.convert(start + bytes.size()));
             bytes.add(Bytecode.STORE_SUBSCRIPT.value);

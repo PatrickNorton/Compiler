@@ -12,16 +12,19 @@ import java.util.List;
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private SwitchStatementNode node;
     private Deque<Deque<Integer>> locations;
+    private int retCount;  // TODO: Make switch expressions work
 
-    public SwitchConverter(CompilerInfo info, SwitchStatementNode node) {
+    public SwitchConverter(CompilerInfo info, SwitchStatementNode node, int retCount) {
         super(info, false);
         this.node = node;
+        this.retCount = retCount;
         this.locations = new ArrayDeque<>();
     }
 
+    @NotNull
     public List<Byte> trueConvert(int start) {
         assert locations.isEmpty();
-        var switched = BaseConverter.bytes(start, node.getSwitched(), info);
+        var switched = TestConverter.bytes(start, node.getSwitched(), info, 1);
         List<Byte> bytes = new ArrayList<>(switched);  // FIXME: Check that all values are equal
         for (var caseStatement : node.getCases()) {
             addCaseCond(caseStatement, start, bytes);
@@ -46,7 +49,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private void addCaseCond(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {
         Deque<Integer> jumpLocations = new ArrayDeque<>();
         for (var label : stmt.getLabel()) {
-            bytes.addAll(BaseConverter.bytes(start + bytes.size(), label, info));
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), label, info, 1));
             bytes.add(Bytecode.JUMP_FALSE.value);
             jumpLocations.push(bytes.size());
             bytes.addAll(Util.zeroToBytes());

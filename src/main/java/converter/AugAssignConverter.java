@@ -19,8 +19,8 @@ public final class AugAssignConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        var assignedConverter = TestConverter.of(info, node.getName());
-        var valueConverter = TestConverter.of(info, node.getValue());
+        var assignedConverter = TestConverter.of(info, node.getName(), 1);
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var returnType = assignedConverter.returnType().operatorReturnType(node.getOperator().operator);
         if (returnType == null) {
             throw CompilerException.format("Value of type %s does not have an overloaded %s operator",

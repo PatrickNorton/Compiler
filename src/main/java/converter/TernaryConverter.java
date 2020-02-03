@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.TernaryNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,31 +9,34 @@ import java.util.List;
 public final class TernaryConverter implements TestConverter {
     private TernaryNode node;
     private CompilerInfo info;
+    private int retCount;
 
-    public TernaryConverter(CompilerInfo info, TernaryNode node) {
+    public TernaryConverter(CompilerInfo info, TernaryNode node, int retCount) {
         this.node = node;
         this.info = info;
+        this.retCount = retCount;
     }
 
     @Override
     public TypeObject returnType() {
-        var ifTrue = TestConverter.of(info, node.getIfTrue());
-        var ifFalse = TestConverter.of(info, node.getIfFalse());
+        var ifTrue = TestConverter.of(info, node.getIfTrue(), retCount);
+        var ifFalse = TestConverter.of(info, node.getIfFalse(), retCount);
         return TypeObject.union(ifTrue.returnType(), ifFalse.returnType());
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>(BaseConverter.bytes(start, node.getStatement(), info));
+        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getStatement(), info, 1));
         bytes.add(Bytecode.JUMP_FALSE.value);
         int jump1 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getIfTrue(), info));
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getIfTrue(), info, retCount));
         bytes.add(Bytecode.JUMP.value);
         int jump2 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump1);
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getIfFalse(), info));
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getIfFalse(), info, 1));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
         return bytes;
     }

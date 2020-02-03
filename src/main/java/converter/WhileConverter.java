@@ -26,7 +26,7 @@ public final class WhileConverter extends LoopConverter {
         var body = BaseConverter.bytes(start + bytes.size(), node.getBody(), info);
         bytes.addAll(body);
         info.setContinuePoint(start + bytes.size());
-        var cond = BaseConverter.bytes(start + bytes.size(), node.getCond(), info);
+        var cond = TestConverter.bytes(start + bytes.size(), node.getCond(), info, 1);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);
         bytes.addAll(Util.intToBytes(start + Bytecode.JUMP.size()));
