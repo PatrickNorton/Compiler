@@ -29,7 +29,7 @@ public final class CompilerInfo {
     private Deque<Integer> continueLocations;
 
     private List<Map<String, VariableInfo>> variables;
-    private Map<String, TypeObject> typeMap;
+    private Map<String, StdTypeObject> typeMap;
     private IntAllocator varNumbers;
 
     public CompilerInfo(FileInfo parent) {
@@ -149,6 +149,14 @@ public final class CompilerInfo {
         }
     }
 
+    public void addType(StdTypeObject type) {
+        typeMap.put(type.name(), type);
+    }
+
+    public void addClass(ClassInfo info) {
+        parent.addClass(info);
+    }
+
     /**
      * Get the type of a variable.
      *
@@ -261,7 +269,7 @@ public final class CompilerInfo {
 
     @NotNull
     @Contract(pure = true)
-    private TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
+    public TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
         var typeObjects = new TypeObject[types.length];
         for (int i = 0; i < types.length; i++) {
             typeObjects[i] = getType(types[i]);

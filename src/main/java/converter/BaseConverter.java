@@ -4,6 +4,7 @@ import main.java.parser.AssignmentNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.BaseNode;
 import main.java.parser.BreakStatementNode;
+import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContinueStatementNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
@@ -38,6 +39,8 @@ public interface BaseConverter {
             return new AugAssignConverter(info, (AugmentedAssignmentNode) node);
         } else if (node instanceof BreakStatementNode) {
             return new BreakConverter(info, (BreakStatementNode) node);
+        } else if (node instanceof ClassDefinitionNode) {
+            return new ClassConverter(info, (ClassDefinitionNode) node);
         } else if (node instanceof ContinueStatementNode) {
             return new ContinueConverter(info, (ContinueStatementNode) node);
         } else if (node instanceof DeclaredAssignmentNode) {

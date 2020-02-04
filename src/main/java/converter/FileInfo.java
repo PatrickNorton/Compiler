@@ -34,6 +34,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     private Map<String, TypeObject> importTypes;
     private List<List<Byte>> functions;
     private IndexedSet<LangConstant> constants;
+    private IndexedSet<ClassInfo> classes;
 
     private boolean allowSettingExports;
     private boolean linked;
@@ -46,6 +47,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         this.importTypes = new HashMap<>();
         this.functions = new ArrayList<>(Collections.singletonList(null));
         this.constants = new IndexedHashSet<>();
+        this.classes = new IndexedHashSet<>();
         this.allowSettingExports = false;
         this.linked = false;
     }
@@ -104,6 +106,10 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
 
     public int constIndex(LangConstant value) {
         return constants.contains(value) ? constants.indexOf(value) : addConstant(value);
+    }
+
+    public void addClass(ClassInfo info) {
+        classes.add(info);
     }
 
     public FileInfo link() {

@@ -205,4 +205,8 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
         }
         return "(" + sb + ")";
     }
+
+    public int size() {
+        return positionArgs.length + nameArgs.length + normalArgs.length;
+    }
 }
