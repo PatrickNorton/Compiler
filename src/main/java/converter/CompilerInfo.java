@@ -142,7 +142,12 @@ public final class CompilerInfo {
             assert type instanceof TypeNode;
             var value = typeMap.get(type.strName());
             if (value == null) {
-                throw new RuntimeException("Unknown type " + type);
+                var builtin = Builtins.BUILTIN_MAP.get(type.strName());
+                if (builtin instanceof TypeObject) {
+                    return (TypeObject) builtin;
+                } else {
+                    throw new RuntimeException("Unknown type " + type);
+                }
             } else {
                 return value;
             }
