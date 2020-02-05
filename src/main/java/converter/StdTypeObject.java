@@ -81,6 +81,10 @@ public class StdTypeObject implements TypeObject {
         return null;
     }
 
+    public List<TypeObject> getSupers() {
+        return supers;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

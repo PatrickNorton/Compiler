@@ -9,4 +9,5 @@ public enum ConstantBytes {
     BUILTIN,
     FUNCTION,
     BOOL,
+    CLASS,
 }

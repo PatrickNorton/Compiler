@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClassConverter implements BaseConverter {
+public final class ClassConverter implements BaseConverter {
     private ClassDefinitionNode node;
     private CompilerInfo info;
 
@@ -27,6 +27,7 @@ public class ClassConverter implements BaseConverter {
         this.info = info;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
@@ -47,8 +48,22 @@ public class ClassConverter implements BaseConverter {
         var trueSupers = Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
         var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), new ArrayList<>(), null);
         info.addType(type);
-        var classInfo = new ClassInfo(type, new HashMap<>(), convert(methods.nodeMap, type));
-        info.addClass(classInfo);
+        List<Integer> superConstants = new ArrayList<>();
+        for (var sup : type.getSupers()) {
+            superConstants.add(info.constIndex(sup.name()));
+        }
+        var cls = new ClassInfo.Factory()
+                .setType(type)
+                .setSuperConstants(superConstants)
+                .setVariables(declarations.getVars().keySet())
+                .setStaticVariables(declarations.getStaticVars().keySet())
+                .setOperatorDefs(new HashMap<>())
+                .setStaticOperators(new HashMap<>())
+                .setMethodDefs(convert(methods.getNodes(), type))
+                .setStaticMethods(convert(methods.getStaticNodes(), type))
+                .create();
+        int classIndex = info.addClass(cls);
+        info.addVariable(node.getName().strName(), Builtins.TYPE, new ClassConstant(classIndex));
         return Collections.emptyList();
     }
 
@@ -57,8 +72,8 @@ public class ClassConverter implements BaseConverter {
         Map<T, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             info.addStackFrame();
-            info.addVariable("self", type);
-            info.addVariable("cls", Builtins.TYPE);
+            info.addVariable("self", type, true);
+            info.addVariable("cls", Builtins.TYPE, true);
             result.put(pair.getKey(), BaseConverter.bytes(0, pair.getValue(), info));
             info.removeStackFrame();
         }
@@ -107,12 +122,16 @@ public class ClassConverter implements BaseConverter {
     private static final class MethodConverter {
         private Map<String, FunctionInfo> methodMap;
         private Map<String, StatementBodyNode> nodeMap;
+        private Map<String, FunctionInfo> staticMethods;
+        private Map<String, StatementBodyNode> staticNodes;
         private CompilerInfo info;
 
         MethodConverter(CompilerInfo info) {
             this.info = info;
             methodMap = new HashMap<>();
             nodeMap = new HashMap<>();
+            staticMethods = new HashMap<>();
+            staticNodes = new HashMap<>();
         }
 
         void parse(@NotNull MethodDefinitionNode node) {
@@ -123,8 +142,13 @@ public class ClassConverter implements BaseConverter {
             var kwArgs = getArguments(argNode.getNameArgs());
             var args = new ArgumentInfo(posArgs, normalArgs, kwArgs);
             var returns = info.typesOf(node.getRetval());
-            methodMap.put(name, new FunctionInfo(name, args, returns));
-            nodeMap.put(name, node.getBody());
+            if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
+                methodMap.put(name, new FunctionInfo(name, args, returns));
+                nodeMap.put(name, node.getBody());
+            } else {
+                staticMethods.put(name, new FunctionInfo(name, args, returns));
+                staticNodes.put(name, node.getBody());
+            }
         }
 
         public Map<String, FunctionInfo> getMethods() {
@@ -133,6 +157,14 @@ public class ClassConverter implements BaseConverter {
 
         public Map<String, StatementBodyNode> getNodes() {
             return nodeMap;
+        }
+
+        public Map<String, FunctionInfo> getStaticMethods() {
+            return staticMethods;
+        }
+
+        public Map<String, StatementBodyNode> getStaticNodes() {
+            return staticNodes;
         }
 
         private String methodName(@NotNull MethodDefinitionNode node) {

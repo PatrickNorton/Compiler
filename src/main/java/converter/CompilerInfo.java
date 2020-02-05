@@ -153,8 +153,8 @@ public final class CompilerInfo {
         typeMap.put(type.name(), type);
     }
 
-    public void addClass(ClassInfo info) {
-        parent.addClass(info);
+    public int addClass(ClassInfo info) {
+        return parent.addClass(info);
     }
 
     /**
@@ -215,6 +215,10 @@ public final class CompilerInfo {
     public void addVariable(String name, TypeObject type, LangConstant constValue) {
         addConstant(constValue);
         addVariable(name, new VariableInfo(type, constValue, -1));
+    }
+
+    public void addVariable(String name, TypeObject type, boolean isConst) {
+        addVariable(name, new VariableInfo(type, isConst, varNumbers.getNext()));
     }
 
     /**
