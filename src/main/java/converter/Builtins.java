@@ -15,12 +15,6 @@ public final class Builtins {
         throw new UnsupportedOperationException("No Builtins for you!");
     }
 
-    public static final List<String> BUILTIN_INDICES = List.of(
-            "print",
-            "true",
-            "false"
-    );
-
     public static final Set<String> FORBIDDEN_NAMES = Set.of(
             "true",
             "false",
@@ -48,10 +42,6 @@ public final class Builtins {
     public static final LangObject PRINT = new LangInstance(CALLABLE);
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
-
-    public static final LangConstant TRUE = new BoolConstant(true);
-
-    public static final LangConstant FALSE = new BoolConstant(false);
 
     static {  // Set int operators
         var intOpArgInfo = new ArgumentInfo(new Argument("", INT));
