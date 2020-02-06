@@ -51,6 +51,7 @@ public final class Tokenizer {
     private Tokenizer(Reader r, Path path) {
         file = new LineNumberReader(r);
         next = readLine();
+        if (next == null) next = "";
         fullLine = next;
         fileName = path;
         lbIndices = new TreeSet<>();
