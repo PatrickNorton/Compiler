@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.NumberNode;
 import main.java.parser.OperatorNode;
@@ -22,7 +23,9 @@ public interface TestConverter extends BaseConverter {
 
     @NotNull
     static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
-        if (node instanceof FunctionCallNode) {
+        if (node instanceof DottedVariableNode) {
+            return new DotConverter(info, (DottedVariableNode) node);
+        } else if (node instanceof FunctionCallNode) {
             return new FunctionCallConverter(info, (FunctionCallNode) node, retCount);
         } else if (node instanceof NumberNode) {
             return new NumberConverter(info, (NumberNode) node, retCount);
