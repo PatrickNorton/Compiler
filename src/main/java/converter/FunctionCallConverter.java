@@ -24,6 +24,11 @@ public final class FunctionCallConverter implements TestConverter {
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
         // ensureTypesMatch(callConverter.returnType());
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
+        convertCall(bytes, start);
+        return bytes;
+    }
+
+    void convertCall(List<Byte> bytes, int start) {
         for (var value : node.getParameters()) {
             // TODO: Varargs
             bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
@@ -34,7 +39,6 @@ public final class FunctionCallConverter implements TestConverter {
 //        if (retCount == 0) {
 //            bytes.add(Bytecode.POP_TOP.value);
 //        }
-        return bytes;
     }
 
     @Override

@@ -24,7 +24,7 @@ public interface TestConverter extends BaseConverter {
     @NotNull
     static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
         if (node instanceof DottedVariableNode) {
-            return new DotConverter(info, (DottedVariableNode) node);
+            return new DotConverter(info, (DottedVariableNode) node, retCount);
         } else if (node instanceof FunctionCallNode) {
             return new FunctionCallConverter(info, (FunctionCallNode) node, retCount);
         } else if (node instanceof NumberNode) {
