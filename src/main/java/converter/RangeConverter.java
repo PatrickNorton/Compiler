@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RangeConverter implements TestConverter {
+public final class RangeConverter implements TestConverter {
     private RangeLiteralNode node;
     private CompilerInfo info;
     private int retCount;

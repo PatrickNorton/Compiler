@@ -10,7 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public class OperatorConverter implements TestConverter {
+public final class OperatorConverter implements TestConverter {
     public static final Map<OperatorTypeNode, Bytecode> BYTECODE_MAP;
 
     static {  // TODO: Make these members of OperatorTypeNode

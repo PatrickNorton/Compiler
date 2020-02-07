@@ -8,7 +8,7 @@ import main.java.parser.VariableNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DotConverter implements TestConverter {
+public final class DotConverter implements TestConverter {
     private DottedVariableNode node;
     private CompilerInfo info;
     private int retCount;
