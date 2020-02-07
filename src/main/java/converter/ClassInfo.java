@@ -53,8 +53,6 @@ public final class ClassInfo {
         for (var superType : superConstants) {
             bytes.addAll(Util.intToBytes(superType));
         }
-        addSet(bytes, variables);
-        addSet(bytes, staticVariables);
         addMap(bytes, operatorDefs);
         addMap(bytes, staticOperators);
         addMap(bytes, methodDefs);
