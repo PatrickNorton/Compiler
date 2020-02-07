@@ -53,17 +53,30 @@ public final class ClassInfo {
         for (var superType : superConstants) {
             bytes.addAll(Util.intToBytes(superType));
         }
-        addMap(bytes, operatorDefs);
-        addMap(bytes, staticOperators);
-        addMap(bytes, methodDefs);
-        addMap(bytes, staticMethods);
+        addOperators(bytes, operatorDefs);
+        addOperators(bytes, staticOperators);
+        addMethods(bytes, methodDefs);
+        addMethods(bytes, staticMethods);
 
         return bytes;
     }
 
-    private static void addMap(@NotNull List<Byte> bytes, @NotNull Map<?, List<Byte>> byteMap) {
+    private static void addOperators(@NotNull List<Byte> bytes, @NotNull Map<OpSpTypeNode, List<Byte>> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
+            bytes.add((byte) pair.getKey().ordinal());
+            bytes.addAll(Util.intToBytes(pair.getValue().size()));
+            bytes.addAll(pair.getValue());
+        }
+    }
+
+    private static void addMethods(@NotNull List<Byte> bytes, @NotNull Map<String, List<Byte>> byteMap) {
+        bytes.addAll(Util.intToBytes(byteMap.size()));
+        for (var pair : byteMap.entrySet()) {
+            var strBytes = Util.strBytes(pair.getKey());
+            bytes.addAll(Util.intToBytes(strBytes.size()));
+            bytes.addAll(strBytes);
+            bytes.addAll(Util.intToBytes(pair.getValue().size()));
             bytes.addAll(pair.getValue());
         }
     }

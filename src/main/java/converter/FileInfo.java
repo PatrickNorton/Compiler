@@ -254,9 +254,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             writer.flush();
             writer.write(Util.toByteArray(classes.size()));
             for (var cls : classes) {
-                var byteArray = Util.toByteArray(cls.toBytes());
-                writer.write(byteArray.length);
-                writer.write(byteArray);
+                writer.write(Util.toByteArray(cls.toBytes()));
             }
             writer.flush();
         } catch (IOException e) {

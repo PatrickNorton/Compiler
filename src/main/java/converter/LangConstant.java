@@ -20,6 +20,12 @@ public interface LangConstant extends LangObject {
     }
 
     @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    static LangConstant of(String value) {
+        return new StringConstant(value);
+    }
+
+    @NotNull
     @Contract("_ -> new")
     static LangConstant of(@NotNull NumberNode node) {
         var value = node.getValue();
