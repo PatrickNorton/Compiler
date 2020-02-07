@@ -248,7 +248,7 @@ public final class CompilerInfo {
      */
     public boolean variableIsConstant(String name) {
         var info = varInfo(name);
-        return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.isConst();
+        return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.hasConstValue();
     }
 
     @Nullable
