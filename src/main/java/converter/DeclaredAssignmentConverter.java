@@ -20,6 +20,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        assert !node.isColon();
         if (node.getNames().length > 1) {
             throw new UnsupportedOperationException("Conversion of multiple-var assignment not implemented");
         }

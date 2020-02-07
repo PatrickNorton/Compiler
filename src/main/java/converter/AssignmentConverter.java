@@ -18,6 +18,7 @@ public final class AssignmentConverter implements BaseConverter {
 
     @Override
     public List<Byte> convert(int start) {
+        assert !node.isColon();
         if (node.getNames().length > 1) {
             throw new UnsupportedOperationException("Assignment to multiple values not yet supported");
         }
