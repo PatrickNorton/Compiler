@@ -68,6 +68,7 @@ public enum OpSpTypeNode {
     STR("str"),
     REPR("repr"),
     BOOL("bool"),
+    INT("int"),
     REVERSED("reversed"),
     HASH("hash"),
     ENTER("enter"),
