@@ -217,7 +217,10 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     public void writeToFile(File file) {
-        System.out.println(Bytecode.disassemble(functions.get(0)));
+        for (int i = 0; i < functions.size(); i++) {
+            System.out.printf("Function %d:%n", i);  // TODO: Get names
+            System.out.println(Bytecode.disassemble(functions.get(i)));
+        }
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.toByteArray(imports.size()));
