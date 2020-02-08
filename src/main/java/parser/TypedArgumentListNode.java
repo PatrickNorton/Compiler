@@ -222,7 +222,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
 
         @Override
         public boolean hasNext() {
-            return next + 1 < positionArgs.length + normalArgs.length + nameArgs.length;
+            return next < positionArgs.length + normalArgs.length + nameArgs.length;
         }
 
         @Override
