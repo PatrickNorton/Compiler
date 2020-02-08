@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.FunctionDefinitionNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,9 +16,13 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         info.addStackFrame();
+        for (var arg : node.getArgs()) {
+            info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
+        }
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node.getBody()) {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));

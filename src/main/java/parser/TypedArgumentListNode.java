@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -12,7 +13,7 @@ import java.util.StringJoiner;
  * @author Patrick Norton
  * @see TypedArgumentNode
  */
-public class TypedArgumentListNode implements BaseNode, EmptiableNode {
+public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<TypedArgumentNode> {
     private LineInfo lineInfo;
     private TypedArgumentNode[] positionArgs;
     private TypedArgumentNode[] normalArgs;
@@ -208,5 +209,31 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode {
 
     public int size() {
         return positionArgs.length + nameArgs.length + normalArgs.length;
+    }
+
+    @NotNull
+    @Override
+    public Iterator<TypedArgumentNode> iterator() {
+        return new ArgIterator();
+    }
+
+    private class ArgIterator implements Iterator<TypedArgumentNode> {
+        int next;
+
+        @Override
+        public boolean hasNext() {
+            return next + 1 < positionArgs.length + normalArgs.length + nameArgs.length;
+        }
+
+        @Override
+        public TypedArgumentNode next() {
+            if (next < positionArgs.length) {
+                return positionArgs[next++];
+            } else if (next < positionArgs.length + normalArgs.length) {
+                return normalArgs[(next++) - positionArgs.length];
+            } else {
+                return nameArgs[(next++) - positionArgs.length - normalArgs.length];
+            }
+        }
     }
 }
