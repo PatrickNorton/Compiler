@@ -21,9 +21,13 @@ public final class ReturnConverter implements BaseConverter {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getCond().isEmpty()) {
             bytes.addAll(TestConverter.bytes(start, node.getCond(), info, 1));
-            int jumpTarget = start + bytes.size() + Bytecode.JUMP_FALSE.size() + Bytecode.RETURN.size();
+            var returnBytes = TestConverter.bytes(start, node.getReturned().get(0), info, node.getReturned().size());
+            int jumpTarget = start + bytes.size() + Bytecode.JUMP_FALSE.size() + returnBytes.size() + Bytecode.RETURN.size();
             bytes.add(Bytecode.JUMP_FALSE.value);
             bytes.addAll(Util.intToBytes(jumpTarget));
+            bytes.addAll(returnBytes);
+        } else {
+            bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, node.getReturned().size()));
         }
         bytes.add(Bytecode.RETURN.value);
         bytes.addAll(Util.shortToBytes((short) node.getReturned().size()));

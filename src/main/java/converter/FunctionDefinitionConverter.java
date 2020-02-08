@@ -19,18 +19,18 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        List<Byte> bytes = new ArrayList<>();
+        int index = info.addFunction(bytes);
+        var constVal = new FunctionConstant(index);
+        info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
         info.addStackFrame();
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
         }
-        List<Byte> bytes = new ArrayList<>();
         for (var statement : node.getBody()) {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));
         }
         info.removeStackFrame();
-        int index = info.addFunction(bytes);
-        var constVal = new FunctionConstant(index);
-        info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
         return Collections.emptyList();
     }
 }
