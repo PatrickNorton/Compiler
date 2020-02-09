@@ -248,9 +248,9 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             }
             writer.flush();
             writer.write(Util.toByteArray(functions.size()));
-            for (var bytes : functions) {
-                var byteArray = Util.toByteArray(bytes.getBytes());
-                writer.write(Util.toByteArray(StringConstant.strBytes(bytes.getName())));
+            for (var function : functions) {
+                var byteArray = Util.toByteArray(function.getBytes());
+                writer.write(Util.toByteArray(StringConstant.strBytes(function.getName())));
                 writer.write(Util.toByteArray((short) 0));  // TODO: Put variable count
                 writer.write(Util.toByteArray(byteArray.length));
                 writer.write(byteArray);
