@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +13,7 @@ public final class BuiltinConstant implements LangConstant {
         builtinIndex = index;
     }
 
+    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
