@@ -30,11 +30,9 @@ public final class StringConstant implements LangConstant {
     @NotNull
     @Override
     public List<Byte> toBytes() {
-        List<Byte> bytes = new ArrayList<>();
-        var strBytes = strBytes();
+        List<Byte> bytes = new ArrayList<>(value.length() + Integer.BYTES + 1);  // Guess capacity
         bytes.add((byte) ConstantBytes.STR.ordinal());
-        bytes.addAll(Util.intToBytes(strBytes.size()));
-        bytes.addAll(strBytes);
+        bytes.addAll(strBytes(value));
         return bytes;
     }
 
@@ -44,9 +42,10 @@ public final class StringConstant implements LangConstant {
     }
 
     @NotNull
-    private List<Byte> strBytes() {
+    public static List<Byte> strBytes(@NotNull String value) {
         var byteArray = value.getBytes(StandardCharsets.UTF_8);
-        List<Byte> bytes = new ArrayList<>(byteArray.length);
+        List<Byte> bytes = new ArrayList<>(byteArray.length + Integer.BYTES);
+        bytes.addAll(Util.intToBytes(byteArray.length));
         for (byte b : byteArray) {
             bytes.add(b);
         }

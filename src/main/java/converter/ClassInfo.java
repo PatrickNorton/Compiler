@@ -46,7 +46,7 @@ public final class ClassInfo {
 
     @NotNull
     public List<Byte> toBytes() {
-        List<Byte> bytes = new ArrayList<>(Util.strBytes(type.name()));
+        List<Byte> bytes = new ArrayList<>(StringConstant.strBytes(type.name()));
         bytes.addAll(Util.intToBytes(superConstants.size()));
         for (var superType : superConstants) {
             bytes.addAll(Util.intToBytes(superType));
@@ -71,7 +71,7 @@ public final class ClassInfo {
     private static void addMethods(@NotNull List<Byte> bytes, @NotNull Map<String, List<Byte>> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
-            bytes.addAll(Util.strBytes(pair.getKey()));
+            bytes.addAll(StringConstant.strBytes(pair.getKey()));
             bytes.addAll(Util.intToBytes(pair.getValue().size()));
             bytes.addAll(pair.getValue());
         }
@@ -80,7 +80,7 @@ public final class ClassInfo {
     private static void addSet(@NotNull List<Byte> bytes, @NotNull Set<String> set) {
         bytes.addAll(Util.intToBytes(set.size()));
         for (var str : set) {
-            bytes.addAll(Util.strBytes(str));
+            bytes.addAll(StringConstant.strBytes(str));
         }
     }
 
