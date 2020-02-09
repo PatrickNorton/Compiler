@@ -69,17 +69,6 @@ public final class Util {
         return bytes;
     }
 
-    @NotNull
-    @Contract(pure = true)
-    static byte[] unBox(@NotNull Byte[] bytes) {
-        byte[] byteArray = new byte[bytes.length];
-        int index = 0;
-        for (byte b : bytes) {
-            byteArray[index++] = b;
-        }
-        return byteArray;
-    }
-
     static void emplace(List<Byte> original, @NotNull List<Byte> toInsert, int start) {
         for (int i = 0; i < toInsert.size(); i++) {
             original.set(start + i, toInsert.get(i));
@@ -89,7 +78,8 @@ public final class Util {
     @NotNull
     static List<Byte> strBytes(@NotNull String value) {
         var byteArray = value.getBytes(StandardCharsets.UTF_8);
-        List<Byte> bytes = new ArrayList<>(byteArray.length);
+        List<Byte> bytes = new ArrayList<>(byteArray.length + Integer.BYTES);
+        bytes.addAll(intToBytes(byteArray.length));
         for (byte b : byteArray) {
             bytes.add(b);
         }
