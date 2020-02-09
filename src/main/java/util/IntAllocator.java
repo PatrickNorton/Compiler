@@ -29,9 +29,10 @@ public class IntAllocator extends AbstractCollection<Integer> implements Collect
 
     public void remove(int num) {
         if (contains(num)) {
-            max--;
-            if (num != max) {
+            if (num != max - 1) {
                 removed.add(num);
+            } else {
+                max--;
             }
         }
     }
