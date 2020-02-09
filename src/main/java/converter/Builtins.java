@@ -43,6 +43,10 @@ public final class Builtins {
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
 
+    public static final LangConstant TRUE = new BoolConstant(true);
+
+    public static final LangConstant FALSE = new BoolConstant(false);
+
     static {  // Set int operators
         var intOpArgInfo = new ArgumentInfo(new Argument("", INT));
         var intOperatorInfo = new FunctionInfo("", intOpArgInfo, INT);
@@ -88,16 +92,16 @@ public final class Builtins {
         temp.put("range", RANGE);
         temp.put("type", TYPE);
         temp.put("iter", ITER);
+        temp.put("true", TRUE);
+        temp.put("false", FALSE);
         BUILTIN_MAP = temp;
-    }
-
-    public static int indexOf(LangObject value) {
-        return TRUE_BUILTINS.indexOf(value);
     }
 
     @NotNull
     @Contract("_ -> new")
     public static LangConstant constantOf(String name) {
-        return new BuiltinConstant(indexOf(BUILTIN_MAP.get(name)));
+        var builtin = BUILTIN_MAP.get(name);
+        var index = TRUE_BUILTINS.indexOf(builtin);
+        return index == -1 ? (LangConstant) builtin : new BuiltinConstant(index);
     }
 }
