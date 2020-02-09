@@ -309,8 +309,8 @@ public final class CompilerInfo {
                 : Builtins.constantOf(name));
     }
 
-    public int addFunction(List<Byte> bytes) {
-        return parent.addFunction(bytes);
+    public int addFunction(Function info) {
+        return parent.addFunction(info);
     }
 
     /**

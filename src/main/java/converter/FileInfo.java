@@ -32,7 +32,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     private Map<String, TypeObject> exportTypes;
     private IndexedSet<String> imports;
     private Map<String, TypeObject> importTypes;
-    private List<List<Byte>> functions;
+    private List<Function> functions;
     private IndexedSet<LangConstant> constants;
     private IndexedSet<ClassInfo> classes;
 
@@ -65,7 +65,8 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
         }
         compilerInfo.removeStackFrame();
-        functions.set(0, bytes);  // Put the default function at the beginning
+        // Put the default function at the beginning
+        functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
         return this;
     }
 
@@ -94,8 +95,8 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         return importTypes.get(name);
     }
 
-    public int addFunction(List<Byte> bytecode) {
-        functions.add(bytecode);
+    public int addFunction(Function info) {
+        functions.add(info);
         return functions.size() - 1;
     }
 
@@ -217,9 +218,9 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     public void writeToFile(File file) {
-        for (int i = 0; i < functions.size(); i++) {
-            System.out.printf("Function %d:%n", i);  // TODO: Get names
-            System.out.println(Bytecode.disassemble(functions.get(i)));
+        for (Function function : functions) {
+            System.out.printf("%s:%n", function.getName());
+            System.out.println(Bytecode.disassemble(function.getBytes()));
         }
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
@@ -248,7 +249,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             writer.flush();
             writer.write(Util.toByteArray(functions.size()));
             for (var bytes : functions) {
-                var byteArray = Util.unBox(bytes.toArray(new Byte[0]));
+                var byteArray = Util.toByteArray(bytes.getBytes());
                 writer.write(Util.toByteArray(0));  // TODO: Put function name
                 writer.write(Util.toByteArray((short) 0));  // TODO: Put variable count
                 writer.write(Util.toByteArray(byteArray.length));

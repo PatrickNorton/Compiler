@@ -20,7 +20,8 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        int index = info.addFunction(bytes);
+        var fnInfo = new FunctionInfo(node.getName().getName(), new ArgumentInfo());  // FIXME: Get args working
+        int index = info.addFunction(new Function(fnInfo, bytes));
         var constVal = new FunctionConstant(index);
         info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
         info.addStackFrame();
