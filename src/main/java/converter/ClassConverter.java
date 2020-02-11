@@ -63,10 +63,10 @@ public final class ClassConverter implements BaseConverter {
                 .setSuperConstants(superConstants)
                 .setVariables(declarations.getVars().keySet())
                 .setStaticVariables(declarations.getStaticVars().keySet())
-                .setOperatorDefs(convert(operators.getOpNodes(), type))
+                .setOperatorDefs(convert(operators.getOpNodes(), type, operators.getOperators()))
                 .setStaticOperators(new HashMap<>())
-                .setMethodDefs(convert(methods.getNodes(), type))
-                .setStaticMethods(convert(methods.getStaticNodes(), type))
+                .setMethodDefs(convert(methods.getNodes(), type, methods.getMethods()))
+                .setStaticMethods(convert(methods.getStaticNodes(), type, methods.getStaticMethods()))
                 .create();
         int classIndex = info.addClass(cls);
         info.addVariable(node.getName().strName(), Builtins.TYPE, new ClassConstant(classIndex));
@@ -74,12 +74,15 @@ public final class ClassConverter implements BaseConverter {
     }
 
     @NotNull
-    private <T> Map<T, List<Byte>> convert(@NotNull Map<T, StatementBodyNode> functions, StdTypeObject type) {
+    private <T> Map<T, List<Byte>> convert(@NotNull Map<T, StatementBodyNode> functions, StdTypeObject type, Map<T, FunctionInfo> args) {
         Map<T, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             info.addStackFrame();
             info.addVariable("self", type, true);
             info.addVariable("cls", Builtins.TYPE, true);
+            for (var arg : args.get(pair.getKey()).getArgs()) {
+                info.addVariable(arg.getName(), arg.getType());
+            }
             result.put(pair.getKey(), BaseConverter.bytes(0, pair.getValue(), info));
             info.removeStackFrame();
         }

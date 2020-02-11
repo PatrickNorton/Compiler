@@ -22,4 +22,8 @@ public final class FunctionInfo {
     public TypeObject[] getReturns() {
         return returns;
     }
+
+    public ArgumentInfo getArgs() {
+        return arguments;
+    }
 }

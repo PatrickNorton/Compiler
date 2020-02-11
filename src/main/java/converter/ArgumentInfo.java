@@ -4,7 +4,9 @@ import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.NotNull;
 
-public final class ArgumentInfo {
+import java.util.Iterator;
+
+public final class ArgumentInfo implements Iterable<Argument> {
     private final Argument[] positionArgs;
     private final Argument[] normalArgs;
     private final Argument[] keywordArgs;
@@ -38,5 +40,31 @@ public final class ArgumentInfo {
             result[i] = new Argument(args[i].getName().getName(), info.getType(args[i].getType()));
         }
         return result;
+    }
+
+    @NotNull
+    @Override
+    public Iterator<Argument> iterator() {
+        return new ArgIterator();
+    }
+
+    private class ArgIterator implements Iterator<Argument> {
+        int next;
+
+        @Override
+        public boolean hasNext() {
+            return next < positionArgs.length + normalArgs.length + keywordArgs.length;
+        }
+
+        @Override
+        public Argument next() {
+            if (next < positionArgs.length) {
+                return positionArgs[next++];
+            } else if (next < positionArgs.length + normalArgs.length) {
+                return normalArgs[(next++) - positionArgs.length];
+            } else {
+                return keywordArgs[(next++) - positionArgs.length - normalArgs.length];
+            }
+        }
     }
 }
