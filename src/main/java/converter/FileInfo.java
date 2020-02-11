@@ -13,6 +13,7 @@ import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +99,22 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     public int addFunction(Function info) {
         functions.add(info);
         return functions.size() - 1;
+    }
+
+    @Nullable
+    public FunctionInfo fnInfo(String name) {
+        var function = findFunction(name);
+        return function == null ? null : function.getInfo();
+    }
+
+    @Nullable
+    private Function findFunction(String name) {
+        for (var fn : functions) {
+            if (fn.getName().equals(name)) {
+                return fn;
+            }
+        }
+        return null;
     }
 
     public int addConstant(LangConstant value) {

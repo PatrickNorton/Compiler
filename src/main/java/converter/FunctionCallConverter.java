@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.FunctionCallNode;
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -43,7 +44,16 @@ public final class FunctionCallConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
-        return info.getType("");  // FIXME: Return meaningful type
+        var name = node.getVariable().getName();
+        var cls = info.classOf(name);
+        if (cls != null) {  // If the variable is a class, calling it will always return an instance
+            return cls;
+        }
+        var fn = info.fnInfo(name);
+        if (fn != null) {
+            return fn.getReturns()[0];
+        }
+        return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
     }
 
     private void ensureTypesMatch(@NotNull TypeObject callerType) {

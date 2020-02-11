@@ -154,6 +154,10 @@ public final class CompilerInfo {
         }
     }
 
+    public StdTypeObject classOf(String str) {
+        return typeMap.get(str);
+    }
+
     public void addType(StdTypeObject type) {
         typeMap.put(type.name(), type);
     }
@@ -311,6 +315,10 @@ public final class CompilerInfo {
 
     public int addFunction(Function info) {
         return parent.addFunction(info);
+    }
+
+    public FunctionInfo fnInfo(String name) {
+        return parent.fnInfo(name);
     }
 
     /**

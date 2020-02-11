@@ -26,4 +26,8 @@ public final class Function {
     public List<Byte> getBytes() {
         return bytes;
     }
+
+    public FunctionInfo getInfo() {
+        return info;
+    }
 }
