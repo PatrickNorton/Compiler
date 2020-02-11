@@ -4,7 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ public final class Builtins {
 
     public static final StdTypeObject DECIMAL = new StdTypeObject("dec");
 
-    public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT), Collections.emptyList());
+    public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT));
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
 

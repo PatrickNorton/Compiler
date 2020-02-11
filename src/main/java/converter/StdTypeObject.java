@@ -12,37 +12,16 @@ import java.util.Objects;
 public class StdTypeObject implements TypeObject {
     private final String name;
     private final List<TypeObject> supers;
-    private final List<TypeObject> declaredGenerics;
-    private final List<String> generics;
     private final Map<OpSpTypeNode, FunctionInfo> operators;
 
     public StdTypeObject(String name) {
-        this(name, Collections.emptyList(), Collections.emptyList());
+        this(name, Collections.emptyList());
     }
 
-    public StdTypeObject(String name, List<TypeObject> supers, Map<OpSpTypeNode, FunctionInfo> operators) {
+    public StdTypeObject(String name, List<TypeObject> supers) {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);
-        this.declaredGenerics = Collections.emptyList();
-        this.generics = Collections.emptyList();
-        this.operators = Collections.unmodifiableMap(operators);
-    }
-
-    public StdTypeObject(String name, List<TypeObject> supers, List<TypeObject> declaredGenerics) {
-        this.name = name;
-        this.supers = Collections.unmodifiableList(supers);
-        this.declaredGenerics = Collections.unmodifiableList(declaredGenerics);
-        this.generics = Collections.emptyList();
         this.operators = new EnumMap<>(OpSpTypeNode.class);
-    }
-
-    public StdTypeObject(String name, List<StdTypeObject> supers, List<String> generics, Object sentinel) {
-        this.name = name;
-        this.supers = Collections.unmodifiableList(supers);
-        this.generics = Collections.unmodifiableList(generics);
-        this.declaredGenerics = Collections.emptyList();
-        this.operators = new EnumMap<>(OpSpTypeNode.class);
-        assert sentinel == null;
     }
 
     public boolean isSubclass(TypeObject other) {
@@ -91,12 +70,12 @@ public class StdTypeObject implements TypeObject {
         if (o == null || getClass() != o.getClass()) return false;
         StdTypeObject that = (StdTypeObject) o;
         return Objects.equals(name, that.name) &&
-                Objects.equals(declaredGenerics, that.declaredGenerics) &&
-                Objects.equals(generics, that.generics);
+                Objects.equals(supers, that.supers) &&
+                Objects.equals(operators, that.operators);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, declaredGenerics, generics);
+        return Objects.hash(name, supers, operators);
     }
 }

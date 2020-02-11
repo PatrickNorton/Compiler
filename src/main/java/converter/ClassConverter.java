@@ -8,9 +8,7 @@ import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.StatementBodyNode;
-import main.java.parser.TypedArgumentNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,6 +35,9 @@ public final class ClassConverter implements BaseConverter {
         var methods = new MethodConverter(info);
         var operators = new OperatorConverter(info);
         assert node.getName().getSubtypes().length == 0;
+        var trueSupers = Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
+        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers));
+        info.addType(type);
         for (var stmt : node.getBody()) {  // FIXME: Get methods taking same type working
             if (stmt instanceof DeclarationNode) {
                 declarations.parse((DeclarationNode) stmt);
@@ -50,9 +51,9 @@ public final class ClassConverter implements BaseConverter {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
         }
-        var trueSupers = Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
-        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), new ArrayList<>(), null);
-        info.addType(type);
+        for (var opPair : operators.getOperators().entrySet()) {
+            type.setOperator(opPair.getKey(), opPair.getValue());
+        }
         List<Integer> superConstants = new ArrayList<>();
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
@@ -170,16 +171,6 @@ public final class ClassConverter implements BaseConverter {
 
         private String methodName(@NotNull MethodDefinitionNode node) {
             return node.getName().getName(); // TODO: Distinguish between args
-        }
-
-        @NotNull
-        @Contract(pure = true)
-        private Argument[] getArguments(@NotNull TypedArgumentNode[] args) {
-            var result = new Argument[args.length];
-            for (int i = 0; i < args.length; i++) {
-                result[i] = new Argument(args[i].getName().getName(), info.getType(args[i].getType()));
-            }
-            return result;
         }
     }
 
