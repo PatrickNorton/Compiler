@@ -235,10 +235,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     public void writeToFile(File file) {
-        for (Function function : functions) {
-            System.out.printf("%s:%n", function.getName());
-            System.out.println(Bytecode.disassemble(function.getBytes()));
-        }
+        printDisassembly();
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.toByteArray(imports.size()));
@@ -280,6 +277,23 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             writer.flush();
         } catch (IOException e) {
             throw new RuntimeException("Error in writing bytecode to file:\n" + e.getMessage());
+        }
+    }
+
+    private void printDisassembly() {
+        for (var function : functions) {
+            System.out.printf("%s:%n", function.getName());
+            System.out.println(Bytecode.disassemble(function.getBytes()));
+        }
+        for (var cls : classes) {
+            for (var fnPair : cls.getMethodDefs().entrySet()) {
+                System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
+                System.out.println(Bytecode.disassemble(fnPair.getValue()));
+            }
+            for (var opPair : cls.getOperatorDefs().entrySet()) {
+                System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
+                System.out.println(Bytecode.disassemble(opPair.getValue()));
+            }
         }
     }
 }
