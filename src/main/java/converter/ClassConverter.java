@@ -5,6 +5,8 @@ import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.MethodDefinitionNode;
+import main.java.parser.OpSpTypeNode;
+import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TypedArgumentNode;
 import main.java.parser.VariableNode;
@@ -33,14 +35,17 @@ public final class ClassConverter implements BaseConverter {
         var supers = info.typesOf(node.getSuperclasses());
         var declarations = new DeclarationConverter(info);
         var methods = new MethodConverter(info);
+        var operators = new OperatorConverter(info);
         assert node.getName().getSubtypes().length == 0;
-        for (var stmt : node.getBody()) {
+        for (var stmt : node.getBody()) {  // FIXME: Get methods taking same type working
             if (stmt instanceof DeclarationNode) {
                 declarations.parse((DeclarationNode) stmt);
             } else if (stmt instanceof DeclaredAssignmentNode) {
                 declarations.parse((DeclaredAssignmentNode) stmt);
             } else if (stmt instanceof MethodDefinitionNode) {
                 methods.parse((MethodDefinitionNode) stmt);
+            } else if (stmt instanceof OperatorDefinitionNode) {
+                operators.parse((OperatorDefinitionNode) stmt);
             } else {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
@@ -57,7 +62,7 @@ public final class ClassConverter implements BaseConverter {
                 .setSuperConstants(superConstants)
                 .setVariables(declarations.getVars().keySet())
                 .setStaticVariables(declarations.getStaticVars().keySet())
-                .setOperatorDefs(new HashMap<>())
+                .setOperatorDefs(convert(operators.getOpNodes(), type))
                 .setStaticOperators(new HashMap<>())
                 .setMethodDefs(convert(methods.getNodes(), type))
                 .setStaticMethods(convert(methods.getStaticNodes(), type))
@@ -136,11 +141,7 @@ public final class ClassConverter implements BaseConverter {
 
         void parse(@NotNull MethodDefinitionNode node) {
             var name = methodName(node);
-            var argNode = node.getArgs();
-            var posArgs = getArguments(argNode.getPositionArgs());
-            var normalArgs = getArguments(argNode.getArgs());
-            var kwArgs = getArguments(argNode.getNameArgs());
-            var args = new ArgumentInfo(posArgs, normalArgs, kwArgs);
+            var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetval());
             if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
                 methodMap.put(name, new FunctionInfo(name, args, returns));
@@ -179,6 +180,34 @@ public final class ClassConverter implements BaseConverter {
                 result[i] = new Argument(args[i].getName().getName(), info.getType(args[i].getType()));
             }
             return result;
+        }
+    }
+
+    private static final class OperatorConverter {
+        private CompilerInfo info;
+        private Map<OpSpTypeNode, FunctionInfo> operators;
+        private Map<OpSpTypeNode, StatementBodyNode> opNodes;
+
+        OperatorConverter(CompilerInfo info) {
+            this.operators = new HashMap<>();
+            this.opNodes = new HashMap<>();
+            this.info = info;
+        }
+
+        void parse(@NotNull OperatorDefinitionNode node) {
+            var op = node.getOpCode().getOperator();
+            var args = ArgumentInfo.of(node.getArgs(), info);
+            var returns = info.typesOf(node.getRetType());
+            operators.put(op, new FunctionInfo("", args, returns));
+            opNodes.put(op, node.getBody());
+        }
+
+        public Map<OpSpTypeNode, FunctionInfo> getOperators() {
+            return operators;
+        }
+
+        public Map<OpSpTypeNode, StatementBodyNode> getOpNodes() {
+            return opNodes;
         }
     }
 }
