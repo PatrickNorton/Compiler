@@ -24,6 +24,7 @@ public final class RangeConverter implements TestConverter {
         return Builtins.RANGE;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
@@ -33,15 +34,15 @@ public final class RangeConverter implements TestConverter {
         bytes.add(Bytecode.LOAD_CONST.value);
         var constant = info.constIndex(Builtins.constantOf("range"));
         bytes.addAll(Util.shortToBytes((short) constant));
-        convertPortion(start, bytes, node.getStart());
-        convertPortion(start, bytes, node.getEnd());
-        convertPortion(start, bytes, node.getStep());
+        convertPortion(start, bytes, node.getStart(), 0);
+        convertPortion(start, bytes, node.getEnd(), 0);
+        convertPortion(start, bytes, node.getStep(), 1);
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 3));
         return bytes;
     }
 
-    private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node) {
+    private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node, int defaultVal) {
         if (!node.isEmpty()) {
             var converter = TestConverter.of(info, node, 1);
             if (!converter.returnType().isSubclass(Builtins.INT)) {
@@ -51,6 +52,10 @@ public final class RangeConverter implements TestConverter {
                 );
             }
             bytes.addAll(converter.convert(start));
+        } else {
+            var constIndex = info.constIndex(LangConstant.of(defaultVal));
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes((short) constIndex));
         }
     }
 }
