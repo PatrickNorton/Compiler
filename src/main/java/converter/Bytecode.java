@@ -106,8 +106,12 @@ public enum Bytecode {  // FIXME: Missing bool_xor
         var map = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(t -> t.value, Function.identity()));
         for (int i = 0; i < bytes.size();) {
             var op = map.get(bytes.get(i));
-            var value = fromBytes(bytes.subList(i + 1, i + op.size()));
-            sb.append(String.format("%-7d%-16s%d%n", i, op, value));
+            if (op.operands != 0) {
+                var value = fromBytes(bytes.subList(i + 1, i + op.size()));
+                sb.append(String.format("%-7d%-16s%d%n", i, op, value));
+            } else {
+                sb.append(String.format("%-7d%s%n", i, op));
+            }
             i += op.size();
         }
         return sb.toString();
