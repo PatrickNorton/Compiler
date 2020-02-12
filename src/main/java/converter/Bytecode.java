@@ -3,9 +3,10 @@ package main.java.converter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public enum Bytecode {  // FIXME: Missing bool_xor
     NOP(0x0, 0),
@@ -100,12 +101,21 @@ public enum Bytecode {  // FIXME: Missing bool_xor
         return operands + 1;
     }
 
+    private static final Map<Byte, Bytecode> VALUE_MAP;
+
+    static {
+        Map<Byte, Bytecode> temp = new HashMap<>();
+        for (var value : values()) {
+            temp.put(value.value, value);
+        }
+        VALUE_MAP = Collections.unmodifiableMap(temp);
+    }
+
     @NotNull
     static String disassemble(@NotNull List<Byte> bytes) {
         var sb = new StringBuilder();
-        var map = Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(t -> t.value, Function.identity()));
         for (int i = 0; i < bytes.size();) {
-            var op = map.get(bytes.get(i));
+            var op = VALUE_MAP.get(bytes.get(i));
             if (op.operands != 0) {
                 var value = fromBytes(bytes.subList(i + 1, i + op.size()));
                 sb.append(String.format("%-7d%-16s%d%n", i, op, value));
