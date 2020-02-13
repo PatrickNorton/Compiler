@@ -45,6 +45,9 @@ public final class FunctionCallConverter implements TestConverter {
     @Override
     public TypeObject returnType() {
         var name = node.getVariable().getName();
+        if (info.varIsUndefined(name)) {
+            throw CompilerException.format("Undefined variable '%s'", node, name);
+        }
         var cls = info.classOf(name);
         if (cls != null) {  // If the variable is a class, calling it will always return an instance
             return cls;

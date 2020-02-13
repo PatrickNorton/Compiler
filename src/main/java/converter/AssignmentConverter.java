@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.AssignmentNode;
 import main.java.parser.IndexNode;
 import main.java.parser.VariableNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ public final class AssignmentConverter implements BaseConverter {
         this.node = node;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         assert !node.isColon();
@@ -30,6 +32,10 @@ public final class AssignmentConverter implements BaseConverter {
         List<Byte> bytes = new ArrayList<>();
         if (name instanceof VariableNode) {
             var variable = (VariableNode) name;
+            if (info.varIsUndefined(variable.getName())) {
+                throw CompilerException.format("Attempted to assign to undefined name %s",
+                        variable, variable.getName());
+            }
             var varType = info.getType(variable.getName());
             if (!valueType.isSubclass(varType)) {
                 throw CompilerException.format("Cannot assign type %s to variable of type %s",

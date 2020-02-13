@@ -177,6 +177,10 @@ public final class CompilerInfo {
         return info == null ? Builtins.constantOf(variable).getType() : info.getType();
     }
 
+    public boolean varIsUndefined(String name) {
+        return varInfo(name) == null && !Builtins.BUILTIN_MAP.containsKey(name);
+    }
+
     /**
      * Add a new set of variable names to the stack.
      */

@@ -20,6 +20,9 @@ public final class VariableConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
+        if (info.varIsUndefined(node.getName())) {
+            throw CompilerException.format("Variable '%s' not defined", node, node.getName());
+        }
         return info.getType(node.getName());
     }
 
@@ -33,6 +36,9 @@ public final class VariableConverter implements TestConverter {
         String name = node.getName();
         if (name.equals("null")) {
             return List.of(Bytecode.LOAD_NULL.value);
+        }
+        if (info.varIsUndefined(node.getName())) {
+            throw CompilerException.format("Variable '%s' not defined", node, node.getName());
         }
         boolean isConst = info.variableIsConstant(node.getName());
         var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
