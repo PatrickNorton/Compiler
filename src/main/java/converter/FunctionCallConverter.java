@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -44,19 +45,24 @@ public final class FunctionCallConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
-        var name = node.getVariable().getName();
-        if (info.varIsUndefined(name)) {
-            throw CompilerException.format("Undefined variable '%s'", node, name);
+        if (node.getCaller() instanceof VariableNode) {
+            var name = node.getVariable().getName();
+            if (info.varIsUndefined(name)) {
+                throw CompilerException.format("Undefined variable '%s'", node, name);
+            }
+            var cls = info.classOf(name);
+            if (cls != null) {  // If the variable is a class, calling it will always return an instance
+                return cls;
+            }
+            var fn = info.fnInfo(name);
+            if (fn != null) {
+                return fn.getReturns()[0];
+            }
+            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
+        } else {
+            return TestConverter.returnType(node.getCaller(), info, retCount).operatorReturnType(OpSpTypeNode.CALL);
         }
-        var cls = info.classOf(name);
-        if (cls != null) {  // If the variable is a class, calling it will always return an instance
-            return cls;
-        }
-        var fn = info.fnInfo(name);
-        if (fn != null) {
-            return fn.getReturns()[0];
-        }
-        return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
+
     }
 
     private void ensureTypesMatch(@NotNull TypeObject callerType) {

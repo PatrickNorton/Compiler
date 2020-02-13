@@ -21,6 +21,10 @@ public interface TestConverter extends BaseConverter {
         return of(info, node, retCount).convert(start);
     }
 
+    static TypeObject returnType(TestNode node, CompilerInfo info, int retCount) {
+        return of(info, node, retCount).returnType();
+    }
+
     @NotNull
     static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
         if (node instanceof DottedVariableNode) {
