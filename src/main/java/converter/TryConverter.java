@@ -38,22 +38,26 @@ public final class TryConverter implements BaseConverter {
             bytes.add(Bytecode.POP_TOP.value);
         }
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getExcept(), info));
+        bytes.add(Bytecode.JUMP.value);
+        var jump2 = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
         if (!node.getFinallyStmt().isEmpty()) {
-            int jump2;
+            int jump3;
             if (node.getExcepted().length > 0) {
                 bytes.add(Bytecode.JUMP.value);
-                jump2 = bytes.size();
+                jump3 = bytes.size();
                 bytes.addAll(Util.zeroToBytes());
             } else {
-                jump2 = -1;
+                jump3 = -1;
             }
             bytes.add(Bytecode.FINALLY.value);
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getFinallyStmt(), info));
-            if (jump2 != -1) {
+            if (jump3 != -1) {
                 Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
             }
         }
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump1);
+        Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
         bytes.add(Bytecode.END_TRY.value);
         return bytes;
     }
