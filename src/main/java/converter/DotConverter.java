@@ -2,8 +2,8 @@ package main.java.converter;
 
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
-import main.java.parser.NameNode;
 import main.java.parser.VariableNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +24,14 @@ public final class DotConverter implements TestConverter {
         throw new UnsupportedOperationException();
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getPreDot(), info, 1));
-        for (var postDot : node.getPostDots()) {
+        for (var dot : node.getPostDots()) {
+            assert dot.getDotPrefix().isEmpty();
+            var postDot = dot.getPostDot();
             bytes.add(Bytecode.LOAD_DOT.value);
-            assert postDot instanceof NameNode;
             if (postDot instanceof VariableNode) {
                 var name = LangConstant.of(((VariableNode) postDot).getName());
                 bytes.addAll(Util.shortToBytes((short) info.constIndex(name)));
