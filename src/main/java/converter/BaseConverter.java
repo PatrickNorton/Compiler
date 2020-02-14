@@ -17,6 +17,7 @@ import main.java.parser.IncrementNode;
 import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
+import main.java.parser.TryStatementNode;
 import main.java.parser.WhileStatementNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,6 +64,8 @@ public interface BaseConverter {
             return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof StatementBodyNode) {
             return new BodyConverter(info, (StatementBodyNode) node);
+        } else if (node instanceof TryStatementNode) {
+            return new TryConverter(info, (TryStatementNode) node);
         } else if (node instanceof WhileStatementNode) {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else {
