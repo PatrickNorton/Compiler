@@ -36,6 +36,8 @@ public final class Builtins {
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
 
+    public static final TypeObject OBJECT = new ObjectType();
+
     public static final TypeObject TYPE = new TypeTypeObject();
 
     public static final LangObject PRINT = new LangInstance(CALLABLE);

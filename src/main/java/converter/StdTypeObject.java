@@ -13,6 +13,7 @@ public class StdTypeObject implements TypeObject {
     private final String name;
     private final List<TypeObject> supers;
     private final Map<OpSpTypeNode, FunctionInfo> operators;
+    private final GenericInfo info;
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList());
@@ -22,10 +23,11 @@ public class StdTypeObject implements TypeObject {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);
         this.operators = new EnumMap<>(OpSpTypeNode.class);
+        this.info = GenericInfo.empty();
     }
 
     public boolean isSubclass(TypeObject other) {
-        if (this.equals(other)) {
+        if (this.equals(other) || other instanceof ObjectType) {
             return true;
         }
         for (var sup : supers) {
