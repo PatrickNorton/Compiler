@@ -20,11 +20,13 @@ public final class TryConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.ENTER_TRY.value);
-        bytes.addAll(Util.shortToBytes((short) 0));  // TODO: Figure out what this is for
+        var jump0 = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
         bytes.add(Bytecode.JUMP.value);
         var jump1 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
+        Util.emplace(bytes, Util.intToBytes(bytes.size()), jump0);
         for (var except : node.getExcepted()) {
             bytes.add(Bytecode.EXCEPT_N.value);
             var constIndex = (short) info.constIndex(info.getType(except).name());
@@ -55,10 +57,13 @@ public final class TryConverter implements BaseConverter {
             if (jump3 != -1) {
                 Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
             }
+            // Work out some kinks first
+            throw new UnsupportedOperationException("Finally not implemented yet");
         }
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump1);
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
         bytes.add(Bytecode.END_TRY.value);
+        bytes.addAll(Util.intToBytes(node.getExcepted().length));
         return bytes;
     }
 }
