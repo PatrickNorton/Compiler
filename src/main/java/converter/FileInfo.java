@@ -117,13 +117,16 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         return null;
     }
 
-    public int addConstant(LangConstant value) {
+    public short addConstant(LangConstant value) {
         constants.add(value);
-        return constants.indexOf(value);
+        if (constants.indexOf(value) > Short.MAX_VALUE) {
+            throw new RuntimeException("Too many constants");
+        }
+        return (short) constants.indexOf(value);
     }
 
-    public int constIndex(LangConstant value) {
-        return constants.contains(value) ? constants.indexOf(value) : addConstant(value);
+    public short constIndex(LangConstant value) {
+        return constants.contains(value) ? (short) constants.indexOf(value) : addConstant(value);
     }
 
     public int addClass(ClassInfo info) {

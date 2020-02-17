@@ -34,11 +34,11 @@ public final class DotConverter implements TestConverter {
             bytes.add(Bytecode.LOAD_DOT.value);
             if (postDot instanceof VariableNode) {
                 var name = LangConstant.of(((VariableNode) postDot).getName());
-                bytes.addAll(Util.shortToBytes((short) info.constIndex(name)));
+                bytes.addAll(Util.shortToBytes(info.constIndex(name)));
             } else if (postDot instanceof FunctionCallNode) {
                 var caller = ((FunctionCallNode) postDot).getCaller();
                 var name = LangConstant.of(((VariableNode) caller).getName());
-                bytes.addAll(Util.shortToBytes((short) info.constIndex(name)));
+                bytes.addAll(Util.shortToBytes(info.constIndex(name)));
                 var callConverter = new FunctionCallConverter(info, (FunctionCallNode) postDot, retCount);
                 callConverter.convertCall(bytes, start);
             } else {

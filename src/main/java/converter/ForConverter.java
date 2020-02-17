@@ -30,7 +30,7 @@ public final class ForConverter extends LoopConverter {
         info.addVariable(iteratedName, iteratorType);
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes((short) info.constIndex(Builtins.constantOf("iter"))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
         bytes.addAll(valueConverter.convert(start));
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 1));
@@ -39,7 +39,7 @@ public final class ForConverter extends LoopConverter {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes((short) info.varIndex(iteratedName)));
+        bytes.addAll(Util.shortToBytes(info.varIndex(iteratedName)));
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
         bytes.add(Bytecode.JUMP.value);
         info.addContinue(start + bytes.size());

@@ -33,7 +33,7 @@ public final class RangeConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
         var constant = info.constIndex(Builtins.constantOf("range"));
-        bytes.addAll(Util.shortToBytes((short) constant));
+        bytes.addAll(Util.shortToBytes(constant));
         convertPortion(start, bytes, node.getStart(), 0);
         convertPortion(start, bytes, node.getEnd(), 0);
         convertPortion(start, bytes, node.getStep(), 1);
@@ -55,7 +55,7 @@ public final class RangeConverter implements TestConverter {
         } else {
             var constIndex = info.constIndex(LangConstant.of(defaultVal));
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes((short) constIndex));
+            bytes.addAll(Util.shortToBytes(constIndex));
         }
     }
 }

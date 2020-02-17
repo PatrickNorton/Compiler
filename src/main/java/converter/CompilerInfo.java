@@ -227,11 +227,11 @@ public final class CompilerInfo {
      */
     public void addVariable(String name, TypeObject type, LangConstant constValue) {
         addConstant(constValue);
-        addVariable(name, new VariableInfo(type, constValue, -1));
+        addVariable(name, new VariableInfo(type, constValue));
     }
 
     public void addVariable(String name, TypeObject type, boolean isConst) {
-        addVariable(name, new VariableInfo(type, isConst, varNumbers.getNext()));
+        addVariable(name, new VariableInfo(type, isConst, (short) varNumbers.getNext()));
     }
 
     /**
@@ -241,7 +241,7 @@ public final class CompilerInfo {
      * @param type The type of the variable
      */
     public void addVariable(String name, TypeObject type) {
-        addVariable(name, new VariableInfo(type, varNumbers.getNext()));
+        addVariable(name, new VariableInfo(type, (short) varNumbers.getNext()));
     }
 
     private void addVariable(String name, VariableInfo info) {
@@ -280,8 +280,8 @@ public final class CompilerInfo {
      * @param name The name of the variable
      * @return The index in the stack
      */
-    public int varIndex(String name) {
-        return Objects.requireNonNull(varInfo(name)).getLocation();
+    public short varIndex(String name) {
+        return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
     }
 
     @NotNull
@@ -300,7 +300,7 @@ public final class CompilerInfo {
      * @param value The name of the variable
      * @return The index in the stack
      */
-    public int constIndex(LangConstant value) {
+    public short constIndex(LangConstant value) {
         return parent.constIndex(value);
     }
 
@@ -310,7 +310,7 @@ public final class CompilerInfo {
      * @param name The name of the variable
      * @return The index in the stack
      */
-    public int constIndex(String name) {
+    public short constIndex(String name) {
         var variableInfo = varInfo(name);
         return constIndex(variableInfo != null
                 ? variableInfo.constValue()

@@ -47,7 +47,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         info.addVariable(assignedName, assignedType);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes((short) info.varIndex(assignedName)));
+        bytes.addAll(Util.shortToBytes(info.varIndex(assignedName)));
         return bytes;
     }
 }

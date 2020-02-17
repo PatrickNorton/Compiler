@@ -4,24 +4,24 @@ public final class VariableInfo {
     private final TypeObject type;
     private final boolean isConst;
     private final LangConstant langConst;
-    private final int location;
+    private final short location;
 
-    public VariableInfo(TypeObject type, int location) {
+    public VariableInfo(TypeObject type, short location) {
         this(type, false, location);
     }
 
-    public VariableInfo(TypeObject type, boolean isConst, int location) {
+    public VariableInfo(TypeObject type, boolean isConst, short location) {
         this.type = type;
         this.isConst = isConst;
         this.langConst = null;
         this.location = location;
     }
 
-    public VariableInfo(TypeObject type, LangConstant constValue, int location) {
+    public VariableInfo(TypeObject type, LangConstant constValue) {
         this.type = type;
         this.isConst = true;
         this.langConst = constValue;
-        this.location = location;
+        this.location = -1;
     }
 
     public TypeObject getType() {
@@ -32,7 +32,7 @@ public final class VariableInfo {
         return isConst;
     }
 
-    public int getLocation() {
+    public short getLocation() {
         return location;
     }
 

@@ -44,7 +44,7 @@ public final class VariableConverter implements TestConverter {
         var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
         List<Byte> bytes = new ArrayList<>(bytecode.size());
         bytes.add(bytecode.value);
-        short index = (short) (isConst ? info.constIndex(name) : info.varIndex(name));
+        short index = isConst ? info.constIndex(name) : info.varIndex(name);
         bytes.addAll(Util.shortToBytes(index));
         return bytes;
     }

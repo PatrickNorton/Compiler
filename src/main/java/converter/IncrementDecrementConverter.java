@@ -36,9 +36,9 @@ public abstract class IncrementDecrementConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes((short) constIndex));
         bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
         if (node.getVariable() instanceof VariableNode) {
-            int varIndex = info.varIndex(((VariableNode) node.getVariable()).getName());
+            short varIndex = info.varIndex(((VariableNode) node.getVariable()).getName());
             bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes((short) varIndex));
+            bytes.addAll(Util.shortToBytes(varIndex));
         } else {
             throw CompilerInternalError.of("Non-variable increment not yet implemented", node);
         }
