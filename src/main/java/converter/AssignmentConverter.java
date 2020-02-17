@@ -20,44 +20,55 @@ public final class AssignmentConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert !node.isColon();
-        if (node.getNames().length > 1) {
-            throw new UnsupportedOperationException("Assignment to multiple values not yet supported");
+        assert !node.isColon() : "No colon assignment yet";
+        var names = node.getNames();
+        var values = node.getValues();
+        assert names.length == values.size() : "Multiple returns not supported yet";
+        List<Byte> assignBytes = new ArrayList<>();
+        List<Byte> storeBytes = new ArrayList<>(names.length * Bytecode.STORE.size());
+        for (int i = 0; i < names.length; i++) {
+            var name = names[i];
+            var value = values.get(i);
+            var valueConverter = TestConverter.of(info, value, 1);
+            if (name instanceof VariableNode) {
+                assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valueConverter);
+            } else if (name instanceof IndexNode) {
+                assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
+            } else {
+                throw new UnsupportedOperationException("Assignment to this type not yet supported");
+            }
         }
-        assert node.getValues().size() == node.getNames().length;
-        var name = node.getNames()[0];
-        var value = node.getValues().get(0);
-        var valueConverter = TestConverter.of(info, value, 1);
+        assignBytes.addAll(storeBytes);
+        return assignBytes;
+    }
+
+    private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
+                                  @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
         var valueType = valueConverter.returnType();
-        List<Byte> bytes = new ArrayList<>();
-        if (name instanceof VariableNode) {
-            var variable = (VariableNode) name;
-            if (info.varIsUndefined(variable.getName())) {
-                throw CompilerException.format("Attempted to assign to undefined name %s",
-                        variable, variable.getName());
-            }
-            var varType = info.getType(variable.getName());
-            if (!valueType.isSubclass(varType)) {
-                throw CompilerException.format("Cannot assign type %s to variable of type %s",
-                        node, valueType, varType);
-            }
-            bytes.addAll(valueConverter.convert(start));
-            bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes((short) info.varIndex(variable.getName())));
-        } else if (name instanceof IndexNode) {
-            var variable = (IndexNode) name;
-            var indices = variable.getIndices();
-            // FIXME: Check types
-            bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
-            for (var indexParam : indices) {
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
-            }
-            bytes.addAll(valueConverter.convert(start + bytes.size()));
-            bytes.add(Bytecode.STORE_SUBSCRIPT.value);
-            bytes.addAll(Util.shortToBytes((short) indices.length));
-        } else {
-            throw new UnsupportedOperationException("Assignment to this type not yet supported");
+        if (info.varIsUndefined(variable.getName())) {
+            throw CompilerException.format("Attempted to assign to undefined name %s",
+                    variable, variable.getName());
         }
-        return bytes;
+        var varType = info.getType(variable.getName());
+        if (!valueType.isSubclass(varType)) {
+            throw CompilerException.format("Cannot assign type %s to variable of type %s",
+                    node, valueType, varType);
+        }
+        bytes.addAll(valueConverter.convert(start));
+        storeBytes.add(0, Bytecode.STORE.value);
+        storeBytes.addAll(1, Util.shortToBytes((short) info.varIndex(variable.getName())));
+    }
+
+    private void assignToIndex(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
+                               @NotNull IndexNode variable, @NotNull TestConverter valueConverter) {
+        var indices = variable.getIndices();
+        // FIXME: Check types
+        bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
+        for (var indexParam : indices) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
+        }
+        bytes.addAll(valueConverter.convert(start + bytes.size()));
+        storeBytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
+        storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
     }
 }
