@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
+import main.java.parser.SpecialOpNameNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,6 +42,10 @@ public final class DotConverter implements TestConverter {
                 bytes.addAll(Util.shortToBytes(info.constIndex(name)));
                 var callConverter = new FunctionCallConverter(info, (FunctionCallNode) postDot, retCount);
                 callConverter.convertCall(bytes, start);
+            } else if (postDot instanceof SpecialOpNameNode) {
+                var op = ((SpecialOpNameNode) postDot).getOperator();
+                bytes.add(Bytecode.LOAD_OP.value);
+                bytes.addAll(Util.shortToBytes((short) op.ordinal()));
             } else {
                 throw new UnsupportedOperationException("This kind of post-dot not yet supported");
             }

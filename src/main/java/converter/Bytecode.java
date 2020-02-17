@@ -8,21 +8,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public enum Bytecode {  // FIXME: Missing bool_xor
+public enum Bytecode {
     NOP(0x0, 0),
     LOAD_NULL(0x1, 0),
     LOAD_CONST(0x2, 2),
     LOAD_VALUE(0x3, 2),
     LOAD_DOT(0x4, 2),
     LOAD_SUBSCRIPT(0x5, 2),
-    POP_TOP(0x6, 0),
-    DUP_TOP(0x7, 0),
-    SWAP_2(0x8, 0),
-    SWAP_3(0x9, 0),
-    SWAP_N(0xA, 4),
-    STORE(0xB, 2),
-    STORE_SUBSCRIPT(0xC, 2),
-    STORE_ATTR(0xD, 2),
+    LOAD_OP(0x6, 2),
+    POP_TOP(0x7, 0),
+    DUP_TOP(0x8, 0),
+    SWAP_2(0x9, 0),
+    SWAP_3(0xA, 0),
+    SWAP_N(0xB, 4),
+    STORE(0xC, 2),
+    STORE_SUBSCRIPT(0xD, 2),
+    STORE_ATTR(0xE, 2),
     // Binary operators
     PLUS(0x10, 0),
     MINUS(0x11, 0),
