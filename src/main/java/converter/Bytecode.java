@@ -77,6 +77,12 @@ public enum Bytecode {
     END_CLASS(0x42, 0),
     // Loop stuff
     FOR_ITER(0x50, 4),
+    LIST_CREATE(0x51, 2),
+    SET_CREATE(0x52, 2),
+    DICT_CREATE(0x53, 2),
+    LIST_ADD(0x54, 0),
+    SET_ADD(0x55, 0),
+    DICT_ADD(0x56, 0),
     ;
 
     public final byte value;

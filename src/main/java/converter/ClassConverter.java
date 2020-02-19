@@ -56,7 +56,7 @@ public final class ClassConverter implements BaseConverter {
         }
         List<Integer> superConstants = new ArrayList<>();
         for (var sup : type.getSupers()) {
-            superConstants.add(info.constIndex(sup.name()));
+            superConstants.add((int) info.constIndex(sup.name()));
         }
         var cls = new ClassInfo.Factory()
                 .setType(type)
