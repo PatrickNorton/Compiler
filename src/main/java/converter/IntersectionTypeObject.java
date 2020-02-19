@@ -10,6 +10,10 @@ import java.util.TreeSet;
 public class IntersectionTypeObject implements TypeObject {
     private final SortedSet<TypeObject> types;
 
+    public IntersectionTypeObject(SortedSet<TypeObject> types) {
+        this.types = Collections.unmodifiableSortedSet(types);
+    }
+
     public IntersectionTypeObject(TypeObject... types) {
         this.types = Collections.unmodifiableSortedSet(new TreeSet<>(List.of(types)));
     }

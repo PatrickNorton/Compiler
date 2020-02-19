@@ -2,6 +2,8 @@ package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.SortedSet;
@@ -26,10 +28,18 @@ public interface TypeObject extends LangObject {
     static TypeObject union(TypeObject... values) {
         SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));
         assert !sortedSet.isEmpty();
-        if (sortedSet.size() == 1) {
-            return sortedSet.first();
-        } else {
-            return new UnionTypeObject(sortedSet);
-        }
+        return sortedSet.size() == 1 ? sortedSet.first() : new UnionTypeObject(sortedSet);
+    }
+
+    static TypeObject intersection(TypeObject... values) {
+        SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));
+        assert !sortedSet.isEmpty();
+        return sortedSet.size() == 1 ? sortedSet.first() : new IntersectionTypeObject(sortedSet);
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    static TypeObject optional(@NotNull TypeObject value) {
+        return value instanceof OptionalTypeObject ? value : new OptionalTypeObject(value);
     }
 }
