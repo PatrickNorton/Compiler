@@ -10,7 +10,7 @@ import java.util.Set;
 
 public final class ClassInfo {
     private StdTypeObject type;
-    private List<Integer> superConstants;
+    private List<Short> superConstants;
     private Set<String> variables;
     private Set<String> staticVariables;
     private Map<OpSpTypeNode, List<Byte>> operatorDefs;
@@ -18,7 +18,7 @@ public final class ClassInfo {
     private Map<String, List<Byte>> methodDefs;
     private Map<String, List<Byte>> staticMethods;
 
-    private ClassInfo(StdTypeObject type, List<Integer> superConstants,
+    private ClassInfo(StdTypeObject type, List<Short> superConstants,
                       Set<String> variables, Set<String> staticVariables,
                       Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
                       Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods) {
@@ -86,7 +86,7 @@ public final class ClassInfo {
 
     public static class Factory {
         private StdTypeObject type;
-        private List<Integer> superConstants;
+        private List<Short> superConstants;
         private Set<String> variables;
         private Set<String> staticVariables;
         private Map<OpSpTypeNode, List<Byte>> operatorDefs;
@@ -100,7 +100,7 @@ public final class ClassInfo {
             return this;
         }
 
-        public Factory setSuperConstants(List<Integer> superConstants) {
+        public Factory setSuperConstants(List<Short> superConstants) {
             assert this.superConstants == null;
             this.superConstants = superConstants;
             return this;

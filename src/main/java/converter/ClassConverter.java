@@ -54,9 +54,9 @@ public final class ClassConverter implements BaseConverter {
         for (var opPair : operators.getOperators().entrySet()) {
             type.setOperator(opPair.getKey(), opPair.getValue());
         }
-        List<Integer> superConstants = new ArrayList<>();
+        List<Short> superConstants = new ArrayList<>();
         for (var sup : type.getSupers()) {
-            superConstants.add((int) info.constIndex(sup.name()));
+            superConstants.add(info.constIndex(sup.name()));
         }
         var cls = new ClassInfo.Factory()
                 .setType(type)
