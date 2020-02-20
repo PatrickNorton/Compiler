@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public interface TypeObject extends LangObject {
+public interface TypeObject extends LangObject, Comparable<TypeObject> {
     boolean isSubclass(TypeObject other);
     String name();
 
@@ -36,6 +36,11 @@ public interface TypeObject extends LangObject {
     default TypeObject attrType(String value) {
         throw new UnsupportedOperationException("Cannot get attribute type of object");
     }
+
+    @Override
+    default int compareTo(@NotNull TypeObject o) {
+        return this.hashCode() - o.hashCode();
+    };
 
     static TypeObject union(TypeObject... values) {
         SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));
