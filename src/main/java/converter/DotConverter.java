@@ -22,7 +22,11 @@ public final class DotConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
-        throw new UnsupportedOperationException();
+        var result = TestConverter.returnType(node.getPreDot(), info, 1);
+        for (var dot : node.getPostDots()) {
+            result = result.attrType(dot.getPostDot().toString());  // FIXME: Function calls &c.
+        }
+        return result;
     }
 
     @NotNull

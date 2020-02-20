@@ -58,11 +58,12 @@ public final class ClassConverter implements BaseConverter {
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
         }
+        type.setAttributes(declarations.getVars());
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
-                .setVariables(declarations.getVars().keySet())
-                .setStaticVariables(declarations.getStaticVars().keySet())
+                .setVariables(declarations.varsWithInts())
+                .setStaticVariables(declarations.staticVarsWithInts())
                 .setOperatorDefs(convert(operators.getOpNodes(), type, operators.getOperators()))
                 .setStaticOperators(new HashMap<>())
                 .setMethodDefs(convert(methods.getNodes(), type, methods.getMethods()))
@@ -84,7 +85,8 @@ public final class ClassConverter implements BaseConverter {
             for (var arg : args.get(pair.getKey()).getArgs()) {
                 info.addVariable(arg.getName(), arg.getType());
             }
-            result.put(pair.getKey(), BaseConverter.bytes(0, pair.getValue(), info));
+            var bytes = BaseConverter.bytes(0, pair.getValue(), info);
+            result.put(pair.getKey(), bytes);
             info.removeStackFrame();
         }
         return result;
@@ -124,8 +126,26 @@ public final class ClassConverter implements BaseConverter {
             return vars;
         }
 
+        @NotNull
+        public Map<String, Short> varsWithInts() {
+            Map<String, Short> result = new HashMap<>();
+            for (var pair : vars.entrySet()) {
+                result.put(pair.getKey(), (short) 0);  // TODO: Effectively serialize types (esp. union)
+            }
+            return result;
+        }
+
         public Map<String, TypeObject> getStaticVars() {
             return staticVars;
+        }
+
+        @NotNull
+        public Map<String, Short> staticVarsWithInts() {
+            Map<String, Short> result = new HashMap<>();
+            for (var pair : vars.entrySet()) {
+                result.put(pair.getKey(), (short) 0);
+            }
+            return result;
         }
     }
 

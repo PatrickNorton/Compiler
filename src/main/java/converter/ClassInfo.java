@@ -11,15 +11,15 @@ import java.util.Set;
 public final class ClassInfo {
     private StdTypeObject type;
     private List<Short> superConstants;
-    private Set<String> variables;
-    private Set<String> staticVariables;
+    private Map<String, Short> variables;
+    private Map<String, Short> staticVariables;
     private Map<OpSpTypeNode, List<Byte>> operatorDefs;
     private Map<OpSpTypeNode, List<Byte>> staticOperators;
     private Map<String, List<Byte>> methodDefs;
     private Map<String, List<Byte>> staticMethods;
 
     private ClassInfo(StdTypeObject type, List<Short> superConstants,
-                      Set<String> variables, Set<String> staticVariables,
+                      Map<String, Short> variables, Map<String, Short> staticVariables,
                       Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
                       Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods) {
         this.type = type;
@@ -52,12 +52,21 @@ public final class ClassInfo {
             bytes.addAll(Util.intToBytes(superType));
         }
         bytes.addAll(Util.shortToBytes((short) type.getGenericInfo().size()));
+        addVariables(bytes, variables);
+        addVariables(bytes, staticVariables);
         addOperators(bytes, operatorDefs);
         addOperators(bytes, staticOperators);
         addMethods(bytes, methodDefs);
         addMethods(bytes, staticMethods);
-
         return bytes;
+    }
+
+    private static void addVariables(@NotNull List<Byte> bytes, @NotNull Map<String, Short> byteMap) {
+        bytes.addAll(Util.intToBytes(byteMap.size()));
+        for (var pair : byteMap.entrySet()) {
+            bytes.addAll(StringConstant.strBytes(pair.getKey()));
+            bytes.addAll(Util.shortToBytes(pair.getValue()));
+        }
     }
 
     private static void addOperators(@NotNull List<Byte> bytes, @NotNull Map<OpSpTypeNode, List<Byte>> byteMap) {
@@ -88,8 +97,8 @@ public final class ClassInfo {
     public static class Factory {
         private StdTypeObject type;
         private List<Short> superConstants;
-        private Set<String> variables;
-        private Set<String> staticVariables;
+        private Map<String, Short> variables;
+        private Map<String, Short> staticVariables;
         private Map<OpSpTypeNode, List<Byte>> operatorDefs;
         private Map<OpSpTypeNode, List<Byte>> staticOperators;
         private Map<String, List<Byte>> methodDefs;
@@ -107,13 +116,13 @@ public final class ClassInfo {
             return this;
         }
 
-        public Factory setVariables(Set<String> variables) {
+        public Factory setVariables(Map<String, Short> variables) {
             assert this.variables == null;
             this.variables = variables;
             return this;
         }
 
-        public Factory setStaticVariables(Set<String> staticVariables) {
+        public Factory setStaticVariables(Map<String, Short> staticVariables) {
             assert this.staticVariables == null;
             this.staticVariables = staticVariables;
             return this;

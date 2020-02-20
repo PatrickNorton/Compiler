@@ -29,6 +29,10 @@ public interface TypeObject extends LangObject {
         throw new UnsupportedOperationException("Cannot generify object");
     }
 
+    default TypeObject attrType(String value) {
+        throw new UnsupportedOperationException("Cannot get attribute type of object");
+    }
+
     static TypeObject union(TypeObject... values) {
         SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));
         assert !sortedSet.isEmpty();

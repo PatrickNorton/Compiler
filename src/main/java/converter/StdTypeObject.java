@@ -15,6 +15,7 @@ public class StdTypeObject implements NameableType {
     private final List<TypeObject> supers;
     private final Map<OpSpTypeNode, FunctionInfo> operators;
     private final GenericInfo info;
+    private Map<String, TypeObject> attributes;
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList());
@@ -85,6 +86,16 @@ public class StdTypeObject implements NameableType {
 
     public List<TypeObject> getSupers() {
         return supers;
+    }
+
+    @Override
+    public TypeObject attrType(String value) {
+        return attributes.get(value);
+    }
+
+    public void setAttributes(Map<String, TypeObject> attributes) {
+        assert this.attributes == null;
+        this.attributes = attributes;
     }
 
     @Override
