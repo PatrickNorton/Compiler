@@ -15,12 +15,26 @@ public class GenerifiedTypeObject implements NameableType {
 
     @Override
     public boolean isSubclass(TypeObject other) {  // TODO: Check generics
+        if (other instanceof GenerifiedTypeObject) {
+            return parent.isSubclass(((GenerifiedTypeObject) other).parent);
+        }
         return parent.isSubclass(other);
     }
 
     @Override
+    public TypeObject attrType(String value) {
+        var parentReturn = parent.attrTypeWithGenerics(value);
+        if (parentReturn == null) return null;
+        if (parentReturn instanceof TemplateParam) {
+            return generics.get(((TemplateParam) parentReturn).getIndex());
+        } else {
+            return parentReturn;
+        }
+    }
+
+    @Override
     public TypeObject operatorReturnType(OpSpTypeNode o) {
-        var parentReturn = parent.operatorReturnType(o);
+        var parentReturn = parent.operatorReturnTypeWithGenerics(o);
         if (parentReturn == null) return null;
         if (parentReturn instanceof TemplateParam) {
             return generics.get(((TemplateParam) parentReturn).getIndex());

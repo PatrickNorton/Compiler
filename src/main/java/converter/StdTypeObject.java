@@ -70,8 +70,13 @@ public class StdTypeObject implements NameableType {
     }
 
     @Override
-    @Nullable
     public TypeObject operatorReturnType(OpSpTypeNode o) {
+        var type = operatorReturnTypeWithGenerics(o);
+        return type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
+    }
+
+    @Nullable
+    public TypeObject operatorReturnTypeWithGenerics(OpSpTypeNode o) {
         if (operators.containsKey(o)) {
             return operators.get(o).getReturns()[0];
         }
@@ -90,6 +95,11 @@ public class StdTypeObject implements NameableType {
 
     @Override
     public TypeObject attrType(String value) {
+        var type = attrTypeWithGenerics(value);
+        return type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
+    }
+
+    public TypeObject attrTypeWithGenerics(String value) {
         return attributes.get(value);
     }
 

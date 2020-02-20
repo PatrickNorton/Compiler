@@ -24,4 +24,8 @@ public final class TemplateParam implements NameableType {
     public int getIndex() {
         return index;
     }
+
+    public TypeObject getBound() {
+        return bound;
+    }
 }
