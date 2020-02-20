@@ -158,7 +158,7 @@ public final class CompilerInfo {
     public NameableType classOf(String str) {
         var cls = typeMap.get(str);
         if (cls == null) {
-            var builtin = Builtins.constantOf(str);
+            var builtin = Builtins.BUILTIN_MAP.get(str);
             return builtin instanceof NameableType ? (NameableType) builtin : null;
         }
         return cls;
