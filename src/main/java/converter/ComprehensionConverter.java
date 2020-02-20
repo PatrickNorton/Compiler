@@ -2,11 +2,12 @@ package main.java.converter;
 
 import main.java.parser.ComprehensionNode;
 import main.java.parser.TypedVariableNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComprehensionConverter implements TestConverter {  // FIXME: Generics
+public final class ComprehensionConverter implements TestConverter {  // FIXME: Generics
     private ComprehensionNode node;
     private CompilerInfo info;
     private int retCount;
@@ -19,9 +20,21 @@ public class ComprehensionConverter implements TestConverter {  // FIXME: Generi
 
     @Override
     public TypeObject returnType() {
-        throw new UnsupportedOperationException("Not supported yet");
+        var resultType = node.getBrace().equals("[") ? Builtins.LIST : Builtins.SET;
+        var variable = node.getVariables()[0];
+        if (variable instanceof TypedVariableNode) {
+            var typedVariable = (TypedVariableNode) variable;
+            info.addStackFrame();
+            info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()));
+            var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
+            info.removeStackFrame();
+            return resultType.generify(result);
+        } else {
+            return resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1));
+        }
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {  // TODO: While conditional
         assert retCount == 1 || retCount == 0;
