@@ -4,7 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,26 +106,26 @@ public final class Builtins {
             RANGE,
             TYPE,
             ITER,
-            INPUT
+            INPUT,
+            LIST,
+            SET
     );
 
-    public static final Map<String, LangObject> BUILTIN_MAP;
-
-    static {  // Initialize BUILTIN_MAP
-        Map<String, LangObject> temp = new HashMap<>();
-        temp.put("print", PRINT);
-        temp.put("callable", CALLABLE);
-        temp.put("int", INT);
-        temp.put("str", STR);
-        temp.put("bool", BOOL);
-        temp.put("range", RANGE);
-        temp.put("type", TYPE);
-        temp.put("iter", ITER);
-        temp.put("input", INPUT);
-        temp.put("true", TRUE);
-        temp.put("false", FALSE);
-        BUILTIN_MAP = temp;
-    }
+    public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
+            Map.entry("print", PRINT),
+            Map.entry("callable", CALLABLE),
+            Map.entry("int", INT),
+            Map.entry("str", STR),
+            Map.entry("bool", BOOL),
+            Map.entry("range", RANGE),
+            Map.entry("type", TYPE),
+            Map.entry("iter", ITER),
+            Map.entry("input", INPUT),
+            Map.entry("true", TRUE),
+            Map.entry("false", FALSE),
+            Map.entry("list", LIST),
+            Map.entry("set", SET)
+    );
 
     @NotNull
     @Contract("_ -> new")
