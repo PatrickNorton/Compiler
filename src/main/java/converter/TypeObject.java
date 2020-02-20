@@ -1,9 +1,13 @@
 package main.java.converter;
 
+import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
+import main.java.parser.TestNode;
+import main.java.parser.VariableNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.SortedSet;
@@ -49,5 +53,27 @@ public interface TypeObject extends LangObject {
     @Contract(pure = true)
     static TypeObject optional(@NotNull TypeObject value) {
         return value instanceof OptionalTypeObject ? value : new OptionalTypeObject(value);
+    }
+
+    @Nullable
+    static TypeObject of(CompilerInfo info, TestNode arg) {
+        if (arg instanceof VariableNode) {
+            return info.classOf(((VariableNode) arg).getName());
+        } else if (arg instanceof IndexNode) {
+            var node = (IndexNode) arg;
+            var cls = of(info, node.getVar());
+            var args = node.getIndices();
+            if (cls == null)
+                return null;
+            TypeObject[] generics = new TypeObject[args.length];
+            for (int i = 0; i < args.length; i++) {
+                generics[i] = of(info, args[i]);
+                if (generics[i] == null)
+                    return null;
+            }
+            return cls.generify(generics);
+        } else {
+            return null;
+        }
     }
 }

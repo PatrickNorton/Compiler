@@ -154,8 +154,14 @@ public final class CompilerInfo {
         }
     }
 
+    @Nullable
     public NameableType classOf(String str) {
-        return typeMap.get(str);
+        var cls = typeMap.get(str);
+        if (cls == null) {
+            var builtin = Builtins.constantOf(str);
+            return builtin instanceof NameableType ? (NameableType) builtin : null;
+        }
+        return cls;
     }
 
     public void addType(NameableType type) {

@@ -20,6 +20,10 @@ public final class IndexConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
+        var type = TypeObject.of(info, node);
+        if (type != null) {
+            return new GenerifiedTypeTypeObject(type);
+        }
         return TestConverter.returnType(node.getVar(), info, 1).operatorReturnType(OpSpTypeNode.GET_ATTR);
     }
 
