@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class StdTypeObject implements TypeObject {
+public class StdTypeObject implements NameableType {
     private final String name;
     private final List<TypeObject> supers;
     private final Map<OpSpTypeNode, FunctionInfo> operators;
@@ -24,6 +25,13 @@ public class StdTypeObject implements TypeObject {
         this.supers = Collections.unmodifiableList(supers);
         this.operators = new EnumMap<>(OpSpTypeNode.class);
         this.info = GenericInfo.empty();
+    }
+
+    public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info) {
+        this.name = name;
+        this.supers = Collections.unmodifiableList(supers);
+        this.operators = new EnumMap<>(OpSpTypeNode.class);
+        this.info = info;
     }
 
     public boolean isSubclass(TypeObject other) {
@@ -41,6 +49,19 @@ public class StdTypeObject implements TypeObject {
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public TypeObject generify(@NotNull TypeObject... args) {
+        if (args.length != info.getParams().size()) {
+            throw new UnsupportedOperationException("Cannot generify object in this manner");
+        } else {
+            return new GenerifiedTypeObject(this, List.of(args));
+        }
+    }
+
+    public GenericInfo getGenericInfo() {
+        return info;
     }
 
     public void setOperator(OpSpTypeNode o, FunctionInfo args) {

@@ -29,7 +29,7 @@ public final class CompilerInfo {
     private Deque<Integer> continueLocations;
 
     private List<Map<String, VariableInfo>> variables;
-    private Map<String, StdTypeObject> typeMap;
+    private Map<String, NameableType> typeMap;
     private IntAllocator varNumbers;
 
     public CompilerInfo(FileInfo parent) {
@@ -149,16 +149,16 @@ public final class CompilerInfo {
                     throw new RuntimeException("Unknown type " + type);
                 }
             } else {
-                return value;
+                return type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
             }
         }
     }
 
-    public StdTypeObject classOf(String str) {
+    public NameableType classOf(String str) {
         return typeMap.get(str);
     }
 
-    public void addType(StdTypeObject type) {
+    public void addType(NameableType type) {
         typeMap.put(type.name(), type);
     }
 

@@ -1,48 +1,74 @@
 package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
-import main.java.parser.TypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.RandomAccess;
 
-public final class GenericInfo {
-    private final List<String> generics;
-    private final List<TypeObject> bounds;
+public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess {
+    private final List<TemplateParam> params;
 
-    private GenericInfo(@NotNull List<String> generics, @NotNull List<TypeObject> bounds) {
-        assert generics.size() == bounds.size();
-        this.generics = generics;
-        this.bounds = bounds;
+    private GenericInfo(@NotNull List<TemplateParam> params) {
+        this.params = params;
     }
 
-    public List<String> getGenerics() {
-        return generics;
+    public List<TemplateParam> getParams() {
+        return params;
     }
 
-    public List<TypeObject> getBounds() {
-        return bounds;
+    public boolean isEmpty() {
+        return params.isEmpty();
+    }
+
+    public TemplateParam get(int i) {
+        return params.get(i);
+    }
+
+    public int size() {
+        return params.size();
+    }
+
+    @NotNull
+    @Override
+    public Iterator<TemplateParam> iterator() {
+        return new InfoIterator();
+    }
+
+    private class InfoIterator implements Iterator<TemplateParam> {
+        private int index = 0;
+
+        @Override
+        public boolean hasNext() {
+            return index < size();
+        }
+
+        @Override
+        public TemplateParam next() {
+            return params.get(index++);
+        }
     }
 
     @NotNull
     @Contract(pure = true)
     public static GenericInfo parse(CompilerInfo info, @NotNull TypeLikeNode... generics) {
-        List<String> genericNames = new ArrayList<>(generics.length);
-        List<TypeObject> bounds = new ArrayList<>(generics.length);
-        for (var generic : generics) {
-            assert generic instanceof TypeNode;
-            genericNames.add(generic.strName());
-            var subTypes = generic.getSubtypes();
-            assert subTypes.length == 0 || subTypes.length == 1;
-            bounds.add(subTypes.length == 0 ? Builtins.OBJECT : info.getType(subTypes[0]));
+        if (generics.length == 0) return empty();
+        List<TemplateParam> params = new ArrayList<>();
+        for (int i = 0; i < generics.length; i++) {
+            var generic = generics[i];
+            var bound = generic.getSubtypes().length == 1 ? info.getType(generic.getSubtypes()[0]) : Builtins.OBJECT;
+            var param = new TemplateParam(generic.strName(), i, bound);
+            info.addType(param);
+            params.add(param);
         }
-        return new GenericInfo(genericNames, bounds);
+        return new GenericInfo(Collections.unmodifiableList(params));
     }
 
-    private static GenericInfo EMPTY = new GenericInfo(Collections.emptyList(), Collections.emptyList());
+    private static final GenericInfo EMPTY = new GenericInfo(Collections.emptyList());
 
     @NotNull
     @Contract(" -> new")

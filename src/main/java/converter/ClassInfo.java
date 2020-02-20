@@ -51,6 +51,7 @@ public final class ClassInfo {
         for (var superType : superConstants) {
             bytes.addAll(Util.intToBytes(superType));
         }
+        bytes.addAll(Util.shortToBytes((short) type.getGenericInfo().size()));
         addOperators(bytes, operatorDefs);
         addOperators(bytes, staticOperators);
         addMethods(bytes, methodDefs);

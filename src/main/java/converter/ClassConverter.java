@@ -34,9 +34,9 @@ public final class ClassConverter implements BaseConverter {
         var declarations = new DeclarationConverter(info);
         var methods = new MethodConverter(info);
         var operators = new OperatorConverter(info);
-        assert node.getName().getSubtypes().length == 0;
         var trueSupers = Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
-        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers));
+        var generics = GenericInfo.parse(info, node.getName().getSubtypes());
+        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics);
         info.addType(type);
         for (var stmt : node.getBody()) {  // FIXME: Get methods taking same type working
             if (stmt instanceof DeclarationNode) {
@@ -74,7 +74,8 @@ public final class ClassConverter implements BaseConverter {
     }
 
     @NotNull
-    private <T> Map<T, List<Byte>> convert(@NotNull Map<T, StatementBodyNode> functions, StdTypeObject type, Map<T, FunctionInfo> args) {
+    private <T> Map<T, List<Byte>> convert(@NotNull Map<T, StatementBodyNode> functions,
+                                           StdTypeObject type, Map<T, FunctionInfo> args) {
         Map<T, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             info.addStackFrame();
