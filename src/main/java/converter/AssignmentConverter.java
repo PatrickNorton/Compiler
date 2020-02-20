@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.AssignmentNode;
+import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +35,8 @@ public final class AssignmentConverter implements BaseConverter {
                 assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valueConverter);
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
+            } else if (name instanceof DottedVariableNode) {
+                assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, valueConverter);
             } else {
                 throw new UnsupportedOperationException("Assignment to this type not yet supported");
             }
@@ -70,5 +73,15 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.addAll(valueConverter.convert(start + bytes.size()));
         storeBytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
         storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
+    }
+
+    private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+                             @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
+        assert variable.getPostDots().length == 1;
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), variable.getPreDot(), info, 1));
+        bytes.addAll(valueConverter.convert(start + bytes.size()));
+        storeBytes.add(0, Bytecode.STORE_ATTR.value);
+        var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
+        storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
     }
 }
