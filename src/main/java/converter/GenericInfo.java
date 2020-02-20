@@ -68,6 +68,12 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return new GenericInfo(Collections.unmodifiableList(params));
     }
 
+    @NotNull
+    @Contract("_ -> new")
+    public static GenericInfo of(TemplateParam... args) {
+        return new GenericInfo(Collections.unmodifiableList(List.of(args)));
+    }
+
     private static final GenericInfo EMPTY = new GenericInfo(Collections.emptyList());
 
     @NotNull

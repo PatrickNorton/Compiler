@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -66,5 +67,15 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 return keywordArgs[(next++) - positionArgs.length - normalArgs.length];
             }
         }
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    public static ArgumentInfo of(@NotNull TypeObject... args) {
+        Argument[] resultArgs = new Argument[args.length];
+        for (int i = 0; i < args.length; i++) {
+            resultArgs[i] = new Argument("", args[i]);
+        }
+        return new ArgumentInfo(resultArgs);
     }
 }

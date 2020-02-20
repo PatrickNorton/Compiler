@@ -46,6 +46,14 @@ public final class Builtins {
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
 
+    private static final TemplateParam LIST_PARAM = new TemplateParam("T", 0, OBJECT);
+
+    public static final StdTypeObject LIST = new StdTypeObject("list", GenericInfo.of(LIST_PARAM));
+
+    private static final TemplateParam SET_PARAM = new TemplateParam("T", 0, OBJECT);
+
+    public static final StdTypeObject SET = new StdTypeObject("list", GenericInfo.of(SET_PARAM));
+
     public static final LangConstant TRUE = new BoolConstant(true);
 
     public static final LangConstant FALSE = new BoolConstant(false);
@@ -70,6 +78,24 @@ public final class Builtins {
         var rangeIterInfo = new FunctionInfo("", new ArgumentInfo(), INT);
         RANGE.setOperator(OpSpTypeNode.ITER, rangeIterInfo);
         RANGE.setOperator(OpSpTypeNode.ITER_SLICE, rangeIterInfo);
+    }
+
+    static {  // Set list operators
+        var listIndexInfo = new FunctionInfo("", ArgumentInfo.of(INT), LIST_PARAM);
+        LIST.setOperator(OpSpTypeNode.GET_ATTR, listIndexInfo);
+        var listSetInfo = new FunctionInfo("", ArgumentInfo.of(INT, LIST_PARAM));
+        LIST.setOperator(OpSpTypeNode.SET_ATTR, listSetInfo);
+        var listDelInfo = new FunctionInfo("", ArgumentInfo.of(INT));
+        LIST.setOperator(OpSpTypeNode.DEL_ATTR, listDelInfo);
+        var listContainsInfo = new FunctionInfo("", ArgumentInfo.of(LIST_PARAM), BOOL);
+        LIST.setOperator(OpSpTypeNode.IN, listContainsInfo);
+    }
+
+    static {  // Set set operators
+        var setContainsInfo = new FunctionInfo("", ArgumentInfo.of(SET_PARAM), BOOL);
+        SET.setOperator(OpSpTypeNode.IN, setContainsInfo);
+        var setDelInfo = new FunctionInfo("", ArgumentInfo.of(SET_PARAM));
+        SET.setOperator(OpSpTypeNode.DEL_ATTR, setDelInfo);
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(

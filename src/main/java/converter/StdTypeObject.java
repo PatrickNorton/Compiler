@@ -28,6 +28,10 @@ public class StdTypeObject implements NameableType {
         this.info = GenericInfo.empty();
     }
 
+    public StdTypeObject(String name, GenericInfo info) {
+        this(name, Collections.emptyList(), info);
+    }
+
     public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info) {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);

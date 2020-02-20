@@ -1,11 +1,13 @@
 package main.java.converter;
 
 import main.java.parser.LiteralNode;
+import main.java.parser.TestNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class LiteralConverter implements TestConverter {  // FIXME: Generics
+public final class LiteralConverter implements TestConverter {  // FIXME: Generics
     private LiteralNode node;
     private CompilerInfo info;
     private int retCount;
@@ -18,9 +20,11 @@ public class LiteralConverter implements TestConverter {  // FIXME: Generics
 
     @Override
     public TypeObject returnType() {
-        throw new UnsupportedOperationException("Not supported yet");
+        var mainType = node.getBraceType().equals("[") ? Builtins.LIST : Builtins.SET;
+        return mainType.generify(TypeObject.union(returnTypes(node.getBuilders())));
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
@@ -38,5 +42,14 @@ public class LiteralConverter implements TestConverter {  // FIXME: Generics
             bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
         }
         return bytes;
+    }
+
+    @NotNull
+    private TypeObject[] returnTypes(@NotNull TestNode[] args) {
+        var result = new TypeObject[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = TestConverter.returnType(args[i], info, 1);
+        }
+        return result;
     }
 }
