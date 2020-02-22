@@ -60,10 +60,26 @@ public final class Builtins {
     static {  // Set int operators
         var intOpArgInfo = new ArgumentInfo(new Argument("", INT));
         var intOperatorInfo = new FunctionInfo("", intOpArgInfo, INT);
+        var intUnaryInfo = new FunctionInfo("", new ArgumentInfo(), INT);
         INT.setOperator(OpSpTypeNode.ADD, intOperatorInfo);
         INT.setOperator(OpSpTypeNode.SUBTRACT, intOperatorInfo);
         INT.setOperator(OpSpTypeNode.MULTIPLY, intOperatorInfo);
         INT.setOperator(OpSpTypeNode.DIVIDE, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.POWER, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.MODULO, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.LEFT_BITSHIFT, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.RIGHT_BITSHIFT, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.BITWISE_AND, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.BITWISE_OR, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.BITWISE_XOR, intOperatorInfo);
+        INT.setOperator(OpSpTypeNode.BITWISE_NOT, intUnaryInfo);
+
+        var intCompInfo = new FunctionInfo("", ArgumentInfo.of(INT), BOOL);
+        INT.setOperator(OpSpTypeNode.EQUALS, intCompInfo);
+        INT.setOperator(OpSpTypeNode.LESS_THAN, intCompInfo);
+        INT.setOperator(OpSpTypeNode.LESS_EQUAL, intCompInfo);
+        INT.setOperator(OpSpTypeNode.GREATER_THAN, intCompInfo);
+        INT.setOperator(OpSpTypeNode.GREATER_EQUAL, intCompInfo);
     }
 
     static {  // Set str operators
@@ -71,12 +87,16 @@ public final class Builtins {
         STR.setOperator(OpSpTypeNode.ADD, strPlusInfo);
         var strTimesInfo = new FunctionInfo("", new ArgumentInfo(new Argument("", INT)), STR);
         STR.setOperator(OpSpTypeNode.MULTIPLY, strTimesInfo);
+        var strEqInfo = new FunctionInfo("", ArgumentInfo.of(STR), BOOL);
+        STR.setOperator(OpSpTypeNode.EQUALS, strEqInfo);
     }
 
     static {  // Set range operators
         var rangeIterInfo = new FunctionInfo("", new ArgumentInfo(), INT);
         RANGE.setOperator(OpSpTypeNode.ITER, rangeIterInfo);
         RANGE.setOperator(OpSpTypeNode.ITER_SLICE, rangeIterInfo);
+        var rangeContainsInfo = new FunctionInfo("", ArgumentInfo.of(INT), BOOL);
+        RANGE.setOperator(OpSpTypeNode.IN, rangeContainsInfo);
     }
 
     static {  // Set list operators
@@ -95,6 +115,12 @@ public final class Builtins {
         SET.setOperator(OpSpTypeNode.IN, setContainsInfo);
         var setDelInfo = new FunctionInfo("", ArgumentInfo.of(SET_PARAM));
         SET.setOperator(OpSpTypeNode.DEL_ATTR, setDelInfo);
+        var setCompInfo = new FunctionInfo("", ArgumentInfo.of(SET), BOOL);
+        SET.setOperator(OpSpTypeNode.EQUALS, setCompInfo);
+        SET.setOperator(OpSpTypeNode.GREATER_THAN, setCompInfo);
+        SET.setOperator(OpSpTypeNode.GREATER_EQUAL, setCompInfo);
+        SET.setOperator(OpSpTypeNode.LESS_THAN, setCompInfo);
+        SET.setOperator(OpSpTypeNode.LESS_EQUAL, setCompInfo);
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(
