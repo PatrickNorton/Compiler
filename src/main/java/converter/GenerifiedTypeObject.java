@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.OpSpTypeNode;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 public class GenerifiedTypeObject implements NameableType {
     private StdTypeObject parent;
@@ -45,6 +46,10 @@ public class GenerifiedTypeObject implements NameableType {
 
     @Override
     public String name() {
-        return null;
+        var valueJoiner = new StringJoiner("[", ", ", "]");
+        for (var cls : generics) {
+            valueJoiner.add(cls.name());
+        }
+        return parent + valueJoiner.toString();
     }
 }

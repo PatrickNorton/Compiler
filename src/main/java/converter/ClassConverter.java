@@ -4,6 +4,7 @@ import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
+import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,7 +215,12 @@ public final class ClassConverter implements BaseConverter {
             var op = node.getOpCode().getOperator();
             var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetType());
-            operators.put(op, new FunctionInfo("", args, returns));
+            if (DEFAULT_RETURNS.containsKey(op)) {
+                var lineInfo = node.getRetType()[0].getLineInfo();
+                operators.put(op, new FunctionInfo("", args, validateReturns(lineInfo, op, returns)));
+            } else {
+                operators.put(op, new FunctionInfo("", args, returns));
+            }
             opNodes.put(op, node.getBody());
         }
 
@@ -223,6 +230,42 @@ public final class ClassConverter implements BaseConverter {
 
         public Map<OpSpTypeNode, StatementBodyNode> getOpNodes() {
             return opNodes;
+        }
+
+        @NotNull
+        private TypeObject[] validateReturns(LineInfo info, OpSpTypeNode op, @NotNull TypeObject... returns) {
+            if (returns.length > 0) {
+                if (DEFAULT_RETURNS.containsKey(op) && !returns[0].isSubclass(DEFAULT_RETURNS.get(op))) {
+                    throw CompilerException.format(
+                            "%s must return '%s', which clashes with the given type '%s'",
+                            info, op, returns[0].name(), DEFAULT_RETURNS.get(op).name()
+                    );
+                }
+                return returns;
+            } else {
+                return DEFAULT_RETURNS.containsKey(op) ? new TypeObject[] {DEFAULT_RETURNS.get(op)} : new TypeObject[0];
+            }
+        }
+
+        private static final Map<OpSpTypeNode, TypeObject> DEFAULT_RETURNS;
+
+        static {
+            var temp = new EnumMap<OpSpTypeNode, TypeObject>(OpSpTypeNode.class);
+            // Conversion methods
+            temp.put(OpSpTypeNode.STR, Builtins.STR);
+            temp.put(OpSpTypeNode.BOOL, Builtins.BOOL);
+            temp.put(OpSpTypeNode.REPR, Builtins.STR);
+            temp.put(OpSpTypeNode.INT, Builtins.INT);
+            temp.put(OpSpTypeNode.HASH, Builtins.INT);
+            // Boolean operators
+            temp.put(OpSpTypeNode.EQUALS, Builtins.BOOL);
+            temp.put(OpSpTypeNode.LESS_THAN, Builtins.BOOL);
+            temp.put(OpSpTypeNode.LESS_EQUAL, Builtins.BOOL);
+            temp.put(OpSpTypeNode.GREATER_THAN, Builtins.BOOL);
+            temp.put(OpSpTypeNode.GREATER_EQUAL, Builtins.BOOL);
+            temp.put(OpSpTypeNode.IN, Builtins.BOOL);
+
+            DEFAULT_RETURNS = Collections.unmodifiableMap(temp);
         }
     }
 }
