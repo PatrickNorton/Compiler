@@ -53,6 +53,12 @@ public final class Builtins {
 
     public static final StdTypeObject SET = new StdTypeObject("list", GenericInfo.of(SET_PARAM));
 
+    private static final TemplateParam DICT_KEY = new TemplateParam("K", 0, OBJECT);
+
+    private static final TemplateParam DICT_VAL = new TemplateParam("V", 1, OBJECT);
+
+    public static final StdTypeObject DICT = new StdTypeObject("dict", GenericInfo.of(DICT_KEY, DICT_VAL));
+
     public static final LangConstant TRUE = new BoolConstant(true);
 
     public static final LangConstant FALSE = new BoolConstant(false);
@@ -121,6 +127,19 @@ public final class Builtins {
         SET.setOperator(OpSpTypeNode.GREATER_EQUAL, setCompInfo);
         SET.setOperator(OpSpTypeNode.LESS_THAN, setCompInfo);
         SET.setOperator(OpSpTypeNode.LESS_EQUAL, setCompInfo);
+    }
+
+    static {
+        var dictContainsInfo = new FunctionInfo("", ArgumentInfo.of(DICT_KEY), BOOL);
+        DICT.setOperator(OpSpTypeNode.IN, dictContainsInfo);
+        var dictGetInfo = new FunctionInfo("", ArgumentInfo.of(DICT_KEY), DICT_VAL);
+        DICT.setOperator(OpSpTypeNode.GET_ATTR, dictGetInfo);
+        var dictDelInfo = new FunctionInfo("", ArgumentInfo.of(DICT_KEY));
+        DICT.setOperator(OpSpTypeNode.DEL_ATTR, dictDelInfo);
+        var dictIterInfo = new FunctionInfo("", ArgumentInfo.of(), DICT_KEY, DICT_VAL);
+        DICT.setOperator(OpSpTypeNode.ITER, dictIterInfo);
+        var dictEqInfo = new FunctionInfo("", ArgumentInfo.of(DICT), BOOL);
+        DICT.setOperator(OpSpTypeNode.EQUALS, dictEqInfo);
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(
