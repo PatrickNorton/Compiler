@@ -63,6 +63,10 @@ public final class Builtins {
 
     public static final LangConstant FALSE = new BoolConstant(false);
 
+    public static final LangConstant NULL = new NullConstant();
+
+    public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
+
     static {  // Set int operators
         var intOpArgInfo = new ArgumentInfo(new Argument("", INT));
         var intOperatorInfo = new FunctionInfo("", intOpArgInfo, INT);
@@ -169,7 +173,8 @@ public final class Builtins {
             Map.entry("true", TRUE),
             Map.entry("false", FALSE),
             Map.entry("list", LIST),
-            Map.entry("set", SET)
+            Map.entry("set", SET),
+            Map.entry("null", NULL)
     );
 
     @NotNull

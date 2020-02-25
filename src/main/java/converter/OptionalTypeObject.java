@@ -11,7 +11,7 @@ public class OptionalTypeObject implements TypeObject {
 
     @Override
     public boolean isSuperclass(TypeObject other) {
-        return type.isSuperclass(other);
+        return type.isSuperclass(other) || Builtins.NULL_TYPE.isSuperclass(other);
     }
 
     @Override
