@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.ComprehensionNode;
+import main.java.parser.DictComprehensionNode;
 import main.java.parser.DictLiteralNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
@@ -33,6 +34,8 @@ public interface TestConverter extends BaseConverter {
     static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
         if (node instanceof ComprehensionNode) {
             return new ComprehensionConverter(info, (ComprehensionNode) node, retCount);
+        } else if (node instanceof DictComprehensionNode) {
+            return new DictCompConverter(info, (DictComprehensionNode) node, retCount);
         } else if (node instanceof DictLiteralNode) {
             return new DictLiteralConverter(info, (DictLiteralNode) node, retCount);
         } else if (node instanceof DottedVariableNode) {
