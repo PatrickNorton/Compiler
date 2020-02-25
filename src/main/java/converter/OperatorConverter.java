@@ -63,9 +63,22 @@ public final class OperatorConverter implements TestConverter {
         return retType;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
+        switch (node.getOperator()) {
+            case NULL_COERCE:
+                return convertNullCoerce(start);
+            case BOOL_AND:
+            case BOOL_OR:
+                return convertBoolOp(start);
+            case NOT_NULL:
+                return convertNotNull(start);
+        }
+        if (node.getOperator() == OperatorTypeNode.NULL_COERCE) {
+            return convertNullCoerce(start);
+        }
         int opCount = node.getOperands().length;
         for (var arg : node.getOperands()) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
@@ -75,6 +88,80 @@ public final class OperatorConverter implements TestConverter {
             bytes.add(bytecode.value);
         } else {
             throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
+        }
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        return bytes;
+    }
+
+    @NotNull
+    private List<Byte> convertNullCoerce(int start) {
+        assert node.getOperator() == OperatorTypeNode.NULL_COERCE;
+        var firstConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
+        if (!(firstConverter.returnType() instanceof OptionalTypeObject)) {  // Non-optional return types won't be null
+            var lineInfo = node.getOperands()[0].getLineInfo();
+            CompilerWarning.warn("Using ?? operator on non-optional value", lineInfo);
+            return firstConverter.convert(start);
+        }
+        List<Byte> bytes = new ArrayList<>(firstConverter.convert(start));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.JUMP_NN.value);
+        addPostJump(start, bytes);
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        return bytes;
+    }
+
+    @NotNull
+    private List<Byte> convertBoolOp(int start) {
+        assert node.getOperator() == OperatorTypeNode.BOOL_AND || node.getOperator() == OperatorTypeNode.BOOL_OR;
+        List<Byte> bytes = new ArrayList<>();
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("true"))));
+        bytes.addAll(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
+        bytes.add(Bytecode.DUP_TOP.value);
+        var bytecode = node.getOperator() == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_FALSE : Bytecode.JUMP_TRUE;
+        bytes.add(bytecode.value);
+        addPostJump(start, bytes);
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) 1));
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        return bytes;
+    }
+
+    private void addPostJump(int start, @NotNull List<Byte> bytes) {
+        int jumpPos = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.add(Bytecode.POP_TOP.value);
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getOperands()[1].getArgument(), info, 1));
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+    }
+
+    @NotNull
+    private List<Byte> convertNotNull(int start) {
+        assert node.getOperator() == OperatorTypeNode.NOT_NULL;
+        var converter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
+        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        if (converter.returnType() instanceof OptionalTypeObject) {
+            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.add(Bytecode.JUMP_NN.value);
+            int jumpPos = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("str"))));  // TODO: Get errors
+            bytes.add(Bytecode.LOAD_CONST.value);
+            var message = String.format("Value %s asserted non-null, was null", node.getOperands()[0]);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
+            bytes.add(Bytecode.THROW_QUICK.value);
+            bytes.addAll(Util.shortToBytes((short) 1));
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        } else {
+            CompilerWarning.warn("Used !! operator on non-optional value",
+                    node.getOperands()[0].getLineInfo());
         }
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP.value);
