@@ -51,7 +51,7 @@ public final class Builtins {
 
     private static final TemplateParam SET_PARAM = new TemplateParam("T", 0, OBJECT);
 
-    public static final StdTypeObject SET = new StdTypeObject("list", GenericInfo.of(SET_PARAM));
+    public static final StdTypeObject SET = new StdTypeObject("set", GenericInfo.of(SET_PARAM));
 
     private static final TemplateParam DICT_KEY = new TemplateParam("K", 0, OBJECT);
 
