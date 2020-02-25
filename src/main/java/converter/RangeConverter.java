@@ -45,7 +45,7 @@ public final class RangeConverter implements TestConverter {
     private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node, int defaultVal) {
         if (!node.isEmpty()) {
             var converter = TestConverter.of(info, node, 1);
-            if (!converter.returnType().isSubclass(Builtins.INT)) {
+            if (!Builtins.INT.isSuperclass(converter.returnType())) {
                 throw CompilerException.format(
                         "TypeError: Type %s does not match required type %s",
                         node, converter.returnType(), Builtins.INT

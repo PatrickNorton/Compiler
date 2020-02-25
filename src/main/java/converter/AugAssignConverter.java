@@ -25,7 +25,7 @@ public final class AugAssignConverter implements BaseConverter {
         if (returnType == null) {
             throw CompilerException.format("Value of type %s does not have an overloaded %s operator",
                     node, assignedConverter.returnType(), node.getOperator().operator.name);
-        } else if (!returnType.isSubclass(assignedConverter.returnType())) {
+        } else if (!returnType.isSuperclass(assignedConverter.returnType())) {
             throw CompilerException.format(
                     "Value of type %s has a return type of %s, which is incompatible with the type of %s",
                     node, assignedConverter.returnType(), returnType, node.getName());

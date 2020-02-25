@@ -25,7 +25,7 @@ public abstract class IncrementDecrementConverter implements BaseConverter {
     public final List<Byte> convert(int start) {
         assert isDecrement ? node instanceof DecrementNode : node instanceof IncrementNode;
         var converter = TestConverter.of(info, node.getVariable(), 1);
-        if (!converter.returnType().isSubclass(Builtins.INT)) {
+        if (!Builtins.INT.isSuperclass(converter.returnType())) {
             throw CompilerException.format(
                     "TypeError: Object of type %s cannot be incremented",
                     node.getLineInfo(), converter.returnType());

@@ -66,7 +66,7 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     private void ensureTypesMatch(@NotNull TypeObject callerType) {
-        if (!callerType.isSubclass(Builtins.CALLABLE)) {
+        if (!Builtins.CALLABLE.isSuperclass(callerType)) {
             throw CompilerException.of("Cannot call " + node.getCaller(), node);
         }
     }

@@ -34,7 +34,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
             throw CompilerException.of("Illegal name " + assignedName, node);
         }
-        if (!valueType.isSubclass(assignedType)) {
+        if (!assignedType.isSuperclass(valueType)) {
             throw CompilerException.format(
                     "Object of type %s cannot be assigned to object of type %s",
                     node, valueType, assignedType);

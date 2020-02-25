@@ -15,11 +15,11 @@ public class GenerifiedTypeObject implements NameableType {
     }
 
     @Override
-    public boolean isSubclass(TypeObject other) {  // TODO: Check generics
+    public boolean isSuperclass(TypeObject other) {  // TODO: Check generics
         if (other instanceof GenerifiedTypeObject) {
-            return parent.isSubclass(((GenerifiedTypeObject) other).parent);
+            return parent.isSuperclass(((GenerifiedTypeObject) other).parent);
         }
-        return parent.isSubclass(other);
+        return parent.isSuperclass(other);
     }
 
     @Override

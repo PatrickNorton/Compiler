@@ -144,12 +144,15 @@ public final class CompilerInfo {
             if (value == null) {
                 var builtin = Builtins.BUILTIN_MAP.get(type.strName());
                 if (builtin instanceof TypeObject) {
-                    return (TypeObject) builtin;
+                    var typeObj = (TypeObject) builtin;
+                    var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
+                    return type.isOptional() ? TypeObject.optional(endType) : endType;
                 } else {
                     throw new RuntimeException("Unknown type " + type);
                 }
             } else {
-                return type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+                var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+                return type.isOptional() ? TypeObject.optional(endType) : endType;
             }
         }
     }

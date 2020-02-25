@@ -39,12 +39,15 @@ public class StdTypeObject implements NameableType {
         this.info = info;
     }
 
-    public boolean isSubclass(TypeObject other) {
-        if (this.equals(other) || other instanceof ObjectType) {
+    @Override
+    public boolean isSuperclass(TypeObject other) {
+        if (this.equals(other)) {
             return true;
+        } else if (!(other instanceof StdTypeObject)) {  // TODO: When is this not true?
+            return false;
         }
-        for (var sup : supers) {
-            if (sup.isSubclass(other)) {
+        for (var sup : ((StdTypeObject) other).supers) {
+            if (sup.isSuperclass(this)) {
                 return true;
             }
         }

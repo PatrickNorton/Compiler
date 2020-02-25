@@ -235,7 +235,7 @@ public final class ClassConverter implements BaseConverter {
         @NotNull
         private TypeObject[] validateReturns(LineInfo info, OpSpTypeNode op, @NotNull TypeObject... returns) {
             if (returns.length > 0) {
-                if (DEFAULT_RETURNS.containsKey(op) && !returns[0].isSubclass(DEFAULT_RETURNS.get(op))) {
+                if (DEFAULT_RETURNS.containsKey(op) && !DEFAULT_RETURNS.get(op).isSuperclass(returns[0])) {
                     throw CompilerException.format(
                             "%s must return '%s', which clashes with the given type '%s'",
                             info, op, returns[0].name(), DEFAULT_RETURNS.get(op).name()

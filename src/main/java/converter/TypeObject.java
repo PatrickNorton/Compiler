@@ -14,7 +14,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public interface TypeObject extends LangObject, Comparable<TypeObject> {
-    boolean isSubclass(TypeObject other);
+    boolean isSuperclass(TypeObject other);
     String name();
 
     default TypeObject getType() {

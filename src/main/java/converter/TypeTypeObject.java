@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class TypeTypeObject implements TypeObject {
     @Override
-    public boolean isSubclass(TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         return other instanceof TypeTypeObject
                 || other instanceof ObjectType
                 || other instanceof GenerifiedTypeTypeObject;

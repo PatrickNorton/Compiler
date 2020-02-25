@@ -10,8 +10,8 @@ public class OptionalTypeObject implements TypeObject {
     }
 
     @Override
-    public boolean isSubclass(TypeObject other) {
-        return type.isSubclass(other);
+    public boolean isSuperclass(TypeObject other) {
+        return type.isSuperclass(other);
     }
 
     @Override

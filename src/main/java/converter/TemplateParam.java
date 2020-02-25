@@ -12,8 +12,8 @@ public final class TemplateParam implements NameableType {
     }
 
     @Override
-    public boolean isSubclass(TypeObject other) {
-        return bound.isSubclass(other);
+    public boolean isSuperclass(TypeObject other) {
+        return bound.isSuperclass(other);
     }
 
     @Override

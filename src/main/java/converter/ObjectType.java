@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class ObjectType implements TypeObject {
     @Override
-    public boolean isSubclass(TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         return other instanceof ObjectType;
     }
 

@@ -10,7 +10,7 @@ public class GenerifiedTypeTypeObject implements TypeObject {
     }
 
     @Override
-    public boolean isSubclass(TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         return other instanceof GenerifiedTypeTypeObject && ((GenerifiedTypeTypeObject) other).type == this.type;
     }
 

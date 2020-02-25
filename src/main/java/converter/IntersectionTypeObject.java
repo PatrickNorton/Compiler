@@ -28,9 +28,9 @@ public class IntersectionTypeObject implements TypeObject {
     }
 
     @Override
-    public boolean isSubclass(TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         for (var subtype : types) {
-            if (!subtype.isSubclass(other)) {
+            if (!subtype.isSuperclass(other)) {
                 return false;
             }
         }
