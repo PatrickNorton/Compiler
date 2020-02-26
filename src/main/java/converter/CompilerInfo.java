@@ -140,6 +140,14 @@ public final class CompilerInfo {
             return new IntersectionTypeObject(typesOf(union.getSubtypes()));
         } else {
             assert type instanceof TypeNode;
+            if (((TypeNode) type).getName().toString().equals("null")) {
+                var nullType = (TypeNode) type;
+                assert nullType.getSubtypes().length == 0;
+                if (nullType.isOptional()) {
+                    CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
+                }
+                return Builtins.NULL_TYPE;
+            }
             var value = typeMap.get(type.strName());
             if (value == null) {
                 var builtin = Builtins.BUILTIN_MAP.get(type.strName());
