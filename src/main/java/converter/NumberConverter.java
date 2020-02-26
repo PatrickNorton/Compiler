@@ -22,6 +22,7 @@ public final class NumberConverter implements ConstantConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
+            CompilerWarning.warn("Numeric literal unused", node);
             return Collections.emptyList();
         }
         int constIndex = info.addConstant(constant());

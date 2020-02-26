@@ -30,6 +30,10 @@ public final class VariableConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
+            if (!node.getName().equals("null") && info.varIsUndefined(node.getName())) {
+                throw CompilerException.format("Variable '%s' not defined", node, node.getName());
+            }
+            CompilerWarning.warnf("Unused variable %s", node, node.getName());
             return Collections.emptyList();
         }
         assert retCount == 1;

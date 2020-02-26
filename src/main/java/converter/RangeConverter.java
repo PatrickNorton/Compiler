@@ -28,6 +28,7 @@ public final class RangeConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
+            CompilerWarning.warn("Range literal creation has unused result", node);
             return Collections.emptyList();
         }
         List<Byte> bytes = new ArrayList<>();
