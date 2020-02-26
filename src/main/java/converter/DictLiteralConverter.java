@@ -20,8 +20,8 @@ public final class DictLiteralConverter implements TestConverter {
 
     @Override
     public TypeObject returnType() {
-        var keyType = TypeObject.union(returnTypes(node.getKeys()));
-        var valType = TypeObject.union(returnTypes(node.getValues()));
+        var keyType = returnTypes(node.getKeys());
+        var valType = returnTypes(node.getValues());
         return Builtins.DICT.generify(keyType, valType);
     }
 
@@ -48,11 +48,11 @@ public final class DictLiteralConverter implements TestConverter {
     }
 
     @NotNull
-    private TypeObject[] returnTypes(@NotNull TestNode[] args) {
+    private TypeObject returnTypes(@NotNull TestNode[] args) {
         var result = new TypeObject[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = TestConverter.returnType(args[i], info, 1);
         }
-        return result;
+        return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
     }
 }

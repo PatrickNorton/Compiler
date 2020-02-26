@@ -21,7 +21,7 @@ public final class LiteralConverter implements TestConverter {  // FIXME: Generi
     @Override
     public TypeObject returnType() {
         var mainType = node.getBraceType().equals("[") ? Builtins.LIST : Builtins.SET;
-        return mainType.generify(TypeObject.union(returnTypes(node.getBuilders())));
+        return mainType.generify(returnTypes(node.getBuilders()));
     }
 
     @NotNull
@@ -46,11 +46,11 @@ public final class LiteralConverter implements TestConverter {  // FIXME: Generi
     }
 
     @NotNull
-    private TypeObject[] returnTypes(@NotNull TestNode[] args) {
+    private TypeObject returnTypes(@NotNull TestNode[] args) {
         var result = new TypeObject[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = TestConverter.returnType(args[i], info, 1);
         }
-        return result;
+        return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
     }
 }
