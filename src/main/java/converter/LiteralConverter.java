@@ -29,6 +29,7 @@ public final class LiteralConverter implements TestConverter {  // FIXME: Generi
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
+            CompilerWarning.warnf("Unnecessary %s creation", node, node.getBraceType().equals("[") ? "list" : "set");
             for (var value : node.getBuilders()) {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), value, info));
             }
