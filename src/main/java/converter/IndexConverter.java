@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.SliceNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -24,20 +25,32 @@ public final class IndexConverter implements TestConverter {
         if (type != null) {
             return new GenerifiedTypeTypeObject(type);
         }
-        return TestConverter.returnType(node.getVar(), info, 1).operatorReturnType(OpSpTypeNode.GET_ATTR);
+        var operator = node.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_ATTR : OpSpTypeNode.GET_SLICE;
+        return TestConverter.returnType(node.getVar(), info, 1).operatorReturnType(operator);
     }
 
     @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getVar(), info, 1));
-        for (var index : node.getIndices()) {
-            bytes.addAll(TestConverter.bytes(start, index, info, 1));
-        }
-        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
-        bytes.addAll(Util.shortToBytes((short) node.getIndices().length));
-        if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+        if (node.getIndices()[0] instanceof SliceNode) {
+            assert node.getIndices().length == 1;
+            var slice = (SliceNode) node.getIndices()[0];
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice.getStart(), info, 1));
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice.getEnd(), info, 1));
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice.getStep(), info, 1));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_SLICE.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 3));
+        } else {
+            for (var index : node.getIndices()) {
+                bytes.addAll(TestConverter.bytes(start, index, info, 1));
+            }
+            bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+            bytes.addAll(Util.shortToBytes((short) node.getIndices().length));
+            if (retCount == 0) {
+                bytes.add(Bytecode.POP_TOP.value);
+            }
         }
         return bytes;
     }
