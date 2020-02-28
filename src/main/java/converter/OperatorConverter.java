@@ -99,7 +99,7 @@ public final class OperatorConverter implements TestConverter {
     private List<Byte> convertNullCoerce(int start) {
         assert node.getOperator() == OperatorTypeNode.NULL_COERCE;
         var firstConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
-        if (!(firstConverter.returnType() instanceof OptionalTypeObject)) {  // Non-optional return types won't be null
+        if (!firstConverter.returnType().isSuperclass(Builtins.NULL_TYPE)) {  // Non-optional return types won't be null
             var lineInfo = node.getOperands()[0].getLineInfo();
             CompilerWarning.warn("Using ?? operator on non-optional value", lineInfo);
             return firstConverter.convert(start);
@@ -146,7 +146,7 @@ public final class OperatorConverter implements TestConverter {
         assert node.getOperator() == OperatorTypeNode.NOT_NULL;
         var converter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        if (converter.returnType() instanceof OptionalTypeObject) {
+        if (converter.returnType().isSuperclass(Builtins.NULL_TYPE)) {
             bytes.add(Bytecode.DUP_TOP.value);
             bytes.add(Bytecode.JUMP_NN.value);
             int jumpPos = bytes.size();
