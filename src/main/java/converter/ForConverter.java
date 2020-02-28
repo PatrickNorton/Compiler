@@ -2,6 +2,8 @@ package main.java.converter;
 
 import main.java.parser.ForStatementNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.TypedVariableNode;
+import main.java.parser.VariableNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,10 +30,12 @@ public final class ForConverter extends LoopConverter {
         var iteratorType = getIteratorType();
         var variable = node.getVars()[0].getVariable();
         var iteratedName = variable.toString();
-        if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
-            throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
+        if (node.getVars()[0] instanceof TypedVariableNode) {
+            if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
+                throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
+            }
+            info.addVariable(iteratedName, iteratorType);
         }
-        info.addVariable(iteratedName, iteratorType);
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
@@ -54,6 +58,9 @@ public final class ForConverter extends LoopConverter {
     }
 
     private TypeObject getIteratorType() {
+        if (node.getVars()[0] instanceof VariableNode) {
+            return info.getType(node.getVars()[0].getVariable().getName());
+        }
         var iteratorType = node.getVars()[0].getType();
         if (iteratorType.isDecided()) {
             return info.getType(iteratorType);
