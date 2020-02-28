@@ -26,7 +26,11 @@ public final class ForConverter extends LoopConverter {
         assert node.getIterables().size() == 1 : "'for' loops with multiple vars not yet implemented";
         var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
         var iteratorType = getIteratorType();
-        var iteratedName = node.getVars()[0].getVariable().toString();
+        var variable = node.getVars()[0].getVariable();
+        var iteratedName = variable.toString();
+        if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
+            throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
+        }
         info.addVariable(iteratedName, iteratorType);
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);

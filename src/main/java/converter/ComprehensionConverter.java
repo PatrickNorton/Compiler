@@ -25,7 +25,11 @@ public final class ComprehensionConverter implements TestConverter {  // FIXME: 
         if (variable instanceof TypedVariableNode) {
             var typedVariable = (TypedVariableNode) variable;
             info.addStackFrame();
-            info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()));
+            var name = typedVariable.getVariable().getName();
+            if (Builtins.FORBIDDEN_NAMES.contains(name)) {
+                throw CompilerException.format("Illegal name for variable '%s'", typedVariable.getVariable(), name);
+            }
+            info.addVariable(name, info.getType(typedVariable.getType()));
             var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.removeStackFrame();
             return resultType.generify(result);
