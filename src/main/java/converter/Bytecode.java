@@ -111,7 +111,7 @@ public enum Bytecode {
     }
 
     public int size() {
-        return sum;
+        return sum + 1;
     }
 
     private static final Map<Byte, Bytecode> VALUE_MAP;
