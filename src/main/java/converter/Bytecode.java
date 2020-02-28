@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -7,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 public enum Bytecode {
     NOP(0x0, 0),
@@ -47,7 +49,7 @@ public enum Bytecode {
     BOOL_XOR(0x23, 0),
     IDENTICAL(0x24, 0),
     INSTANCEOF(0x25, 0),
-    CALL_OP(0x26, 2+2),
+    CALL_OP(0x26, 2, 2),
     PACK_TUPLE(0x27, 0),
     UNPACK_TUPLE(0x28, 0),
     EQUAL(0x29, 0),
@@ -86,15 +88,18 @@ public enum Bytecode {
     ;
 
     public final byte value;
-    private final int operands;
+    private final int[] operands;
+    private final int sum;
 
-    Bytecode(int value, int operands) {
+    Bytecode(int value, int... operands) {
         this((byte) value, operands);
     }
 
-    Bytecode(byte value, int operands) {
+    @Contract(pure = true)
+    Bytecode(byte value, int... operands) {
         this.value = value;
         this.operands = operands;
+        this.sum = Util.sum(operands);
     }
 
     static {
@@ -106,7 +111,7 @@ public enum Bytecode {
     }
 
     public int size() {
-        return operands + 1;
+        return sum;
     }
 
     private static final Map<Byte, Bytecode> VALUE_MAP;
@@ -123,14 +128,20 @@ public enum Bytecode {
     static String disassemble(@NotNull List<Byte> bytes) {
         var sb = new StringBuilder();
         for (int i = 0; i < bytes.size();) {
-            var op = VALUE_MAP.get(bytes.get(i));
-            if (op.operands != 0) {
-                var value = fromBytes(bytes.subList(i + 1, i + op.size()));
-                sb.append(String.format("%-7d%-16s%d%n", i, op, value));
+            var op = VALUE_MAP.get(bytes.get(i++));
+            if (op.operands.length > 0) {
+                 sb.append(String.format("%-7d%-16s", i - 1, op));
+                StringJoiner sj = new StringJoiner(", ");
+                for (var operandSize : op.operands) {
+                    var value = fromBytes(bytes.subList(i, i + operandSize));
+                    i += operandSize;
+                    sj.add(Integer.toString(value));
+                }
+                sb.append(sj);
+                sb.append("\n");
             } else {
                 sb.append(String.format("%-7d%s%n", i, op));
             }
-            i += op.size();
         }
         return sb.toString();
     }

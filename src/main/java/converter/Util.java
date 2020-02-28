@@ -12,6 +12,14 @@ public final class Util {
 
     private Util() {}
 
+    public static int sum(int... args) {
+        int sum = 0;
+        for (var op : args) {
+            sum += op;
+        }
+        return sum;
+    }
+
     @NotNull
     @Contract(pure = true)
     static List<Byte> intToBytes(int value) {
