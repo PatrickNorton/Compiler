@@ -103,6 +103,10 @@ public final class OperatorConverter implements TestConverter {
             var lineInfo = node.getOperands()[0].getLineInfo();
             CompilerWarning.warn("Using ?? operator on non-optional value", lineInfo);
             return firstConverter.convert(start);
+        } else if (firstConverter.returnType().equals(Builtins.NULL_TYPE)) {
+            var lineInfo = node.getOperands()[0].getLineInfo();
+            CompilerWarning.warn("Using ?? operator on value that is always null", lineInfo);
+            return TestConverter.bytes(start, node.getOperands()[1].getArgument(), info, 1);
         }
         List<Byte> bytes = new ArrayList<>(firstConverter.convert(start));
         bytes.add(Bytecode.DUP_TOP.value);
@@ -146,7 +150,12 @@ public final class OperatorConverter implements TestConverter {
         assert node.getOperator() == OperatorTypeNode.NOT_NULL;
         var converter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        if (converter.returnType().isSuperclass(Builtins.NULL_TYPE)) {
+        if (converter.returnType().equals(Builtins.NULL_TYPE)) {
+            throw CompilerException.of(
+                    "Cannot use !! operator on variable on variable with type null",
+                    node.getOperands()[0]
+            );
+        } else if (converter.returnType().isSuperclass(Builtins.NULL_TYPE)) {
             bytes.add(Bytecode.DUP_TOP.value);
             bytes.add(Bytecode.JUMP_NN.value);
             int jumpPos = bytes.size();
