@@ -72,7 +72,7 @@ public final class ClassConverter implements BaseConverter {
                 .setStaticMethods(convert(methods.getStaticNodes(), type, methods.getStaticMethods()))
                 .create();
         int classIndex = info.addClass(cls);
-        info.addVariable(node.getName().strName(), Builtins.TYPE, new ClassConstant(classIndex));
+        info.addVariable(node.getName().strName(), Builtins.TYPE.generify(type), new ClassConstant(classIndex));
         return Collections.emptyList();
     }
 
