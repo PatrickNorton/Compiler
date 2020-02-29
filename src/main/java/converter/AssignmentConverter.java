@@ -54,8 +54,8 @@ public final class AssignmentConverter implements BaseConverter {
         }
         var varType = info.getType(variable.getName());
         if (!valueType.isSuperclass(varType)) {
-            throw CompilerException.format("Cannot assign type %s to variable of type %s",
-                    node, valueType, varType);
+            throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
+                    node, valueType.name(), varType.name());
         }
         bytes.addAll(valueConverter.convert(start));
         storeBytes.add(0, Bytecode.STORE.value);
