@@ -20,4 +20,9 @@ public class OptionalTypeObject implements TypeObject {
                 ? type.name() + "?"
                 : String.format("(%s)?", type.name());
     }
+
+    @Override
+    public TypeObject stripNull() {
+        return type.stripNull();
+    }
 }

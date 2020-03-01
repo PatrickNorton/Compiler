@@ -40,7 +40,11 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
     @Override
     default int compareTo(@NotNull TypeObject o) {
         return this.hashCode() - o.hashCode();
-    };
+    }
+
+    default TypeObject stripNull() {
+        return this;
+    }
 
     static TypeObject union(TypeObject... values) {
         SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));

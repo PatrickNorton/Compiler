@@ -55,6 +55,17 @@ public final class OperatorConverter implements TestConverter {
     @Override
     @NotNull
     public TypeObject returnType() {
+        switch (node.getOperator()) {
+            case BOOL_AND:
+            case BOOL_NOT:
+            case BOOL_OR:
+            case BOOL_XOR:
+                return Builtins.BOOL;
+            case NOT_NULL:
+                return notNullReturn();
+            case NULL_COERCE:
+                return nullCoerceReturn();
+        }
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType().operatorReturnType(node.getOperator());
         if (retType == null) {
@@ -176,5 +187,22 @@ public final class OperatorConverter implements TestConverter {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
+    }
+
+    @NotNull
+    private TypeObject notNullReturn() {
+        var retType = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1);
+        if (retType.equals(Builtins.NULL_TYPE)) {
+             // Doesn't particularly matter what, it'll fail later (Maybe return Builtins.THROWS once implemented?)
+            return retType;
+        } else {
+            return retType.stripNull();
+        }
+    }
+
+    public TypeObject nullCoerceReturn() {
+        var ret0 = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1);
+        var ret1 = TestConverter.returnType(node.getOperands()[1].getArgument(), info, 1);
+        return ret0.equals(Builtins.NULL_TYPE) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
     }
 }

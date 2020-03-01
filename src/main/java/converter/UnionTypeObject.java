@@ -38,6 +38,17 @@ public class UnionTypeObject implements TypeObject {
     }
 
     @Override
+    public TypeObject stripNull() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var t : types) {
+            if (!t.equals(Builtins.NULL_TYPE)) {
+                newTypes.add(t.stripNull());
+            }
+        }
+        return new UnionTypeObject(newTypes);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
