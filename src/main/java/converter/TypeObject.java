@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -46,14 +45,28 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
         return this;
     }
 
-    static TypeObject union(TypeObject... values) {
-        SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));
+    static TypeObject union(@NotNull TypeObject... values) {
+        SortedSet<TypeObject> sortedSet = new TreeSet<>();
+        for (var type : values) {
+            if (type instanceof UnionTypeObject) {
+                sortedSet.addAll(((UnionTypeObject) type).subTypes());
+            } else {
+                sortedSet.add(type);
+            }
+        }
         assert !sortedSet.isEmpty();
         return sortedSet.size() == 1 ? sortedSet.first() : new UnionTypeObject(sortedSet);
     }
 
-    static TypeObject intersection(TypeObject... values) {
-        SortedSet<TypeObject> sortedSet = new TreeSet<>(Arrays.asList(values));
+    static TypeObject intersection(@NotNull TypeObject... values) {
+        SortedSet<TypeObject> sortedSet = new TreeSet<>();
+        for (var type : values) {
+            if (type instanceof IntersectionTypeObject) {
+                sortedSet.addAll(((IntersectionTypeObject) type).subTypes());
+            } else {
+                sortedSet.add(type);
+            }
+        }
         assert !sortedSet.isEmpty();
         return sortedSet.size() == 1 ? sortedSet.first() : new IntersectionTypeObject(sortedSet);
     }

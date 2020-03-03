@@ -134,10 +134,10 @@ public final class CompilerInfo {
     public TypeObject getType(@NotNull TypeLikeNode type) {
         if (type instanceof TypeUnionNode) {
             var union = (TypeUnionNode) type;
-            return new UnionTypeObject(typesOf(union.getSubtypes()));
+            return TypeObject.union(typesOf(union.getSubtypes()));
         } else if (type instanceof TypewiseAndNode) {
             var union = (TypewiseAndNode) type;
-            return new IntersectionTypeObject(typesOf(union.getSubtypes()));
+            return TypeObject.intersection(typesOf(union.getSubtypes()));
         } else {
             assert type instanceof TypeNode;
             if (((TypeNode) type).getName().toString().equals("null")) {

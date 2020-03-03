@@ -49,4 +49,8 @@ public class IntersectionTypeObject implements TypeObject {
     public int hashCode() {
         return Objects.hash(types);
     }
+
+    public SortedSet<TypeObject> subTypes() {
+        return types;
+    }
 }
