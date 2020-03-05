@@ -29,6 +29,8 @@ public final class Builtins {
 
     public static final StdTypeObject STR = new StdTypeObject("str");
 
+    public static final StdTypeObject CHAR = new StdTypeObject("char");
+
     public static final StdTypeObject DECIMAL = new StdTypeObject("dec");
 
     public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT));
@@ -101,6 +103,12 @@ public final class Builtins {
         STR.setOperator(OpSpTypeNode.EQUALS, strEqInfo);
     }
 
+    static {  // Set char operators
+        // TODO: More char operators
+        var charPlusInfo = new FunctionInfo("", ArgumentInfo.of(CHAR), CHAR);
+        CHAR.setOperator(OpSpTypeNode.ADD, charPlusInfo);
+    }
+
     static {  // Set range operators
         var rangeIterInfo = new FunctionInfo("", new ArgumentInfo(), INT);
         RANGE.setOperator(OpSpTypeNode.ITER, rangeIterInfo);
@@ -157,7 +165,8 @@ public final class Builtins {
             ITER,
             INPUT,
             LIST,
-            SET
+            SET,
+            CHAR
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -165,6 +174,7 @@ public final class Builtins {
             Map.entry("callable", CALLABLE),
             Map.entry("int", INT),
             Map.entry("str", STR),
+            Map.entry("char", CHAR),
             Map.entry("bool", BOOL),
             Map.entry("range", RANGE),
             Map.entry("type", TYPE),
