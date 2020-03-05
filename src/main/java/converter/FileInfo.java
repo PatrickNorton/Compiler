@@ -97,7 +97,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         return importTypes.get(name);
     }
 
-    public int addFunction(Function info) {
+    public int addFunction(@NotNull Function info) {
         functions.add(info);
         return functions.size() - 1;
     }
@@ -111,7 +111,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     @Nullable
     private Function findFunction(String name) {
         for (var fn : functions) {
-            if (fn.getName().equals(name)) {
+            if (fn != null && fn.getName().equals(name)) {
                 return fn;
             }
         }
