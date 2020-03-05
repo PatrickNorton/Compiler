@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContextDefinitionNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
@@ -144,8 +145,8 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             if (stmt instanceof DefinitionNode) {
                 var name = ((DefinitionNode) stmt).getName();
                 TypeObject type;
-                if (stmt instanceof FunctionDefinitionNode) {
-                    type = null;
+                if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
+                    type = Builtins.CALLABLE;
                 } else if (stmt instanceof PropertyDefinitionNode) {
                     var typeNode = ((PropertyDefinitionNode) stmt).getType();
                     type = null;  // FIXME: Convert type properly
@@ -155,8 +156,10 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
                     throw CompilerInternalError.of("Illegal operator definition", stmt);
                 } else if (stmt instanceof MethodDefinitionNode) {
                     throw CompilerInternalError.of("Illegal method definition", stmt);
-                } else {
+                } else if (stmt instanceof ClassDefinitionNode) {
                     type = Builtins.TYPE;
+                } else {
+                    throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
                 }
                 globals.put(name.toString(), type);
             } else if (stmt instanceof ImportExportNode) {

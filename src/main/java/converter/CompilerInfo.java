@@ -277,7 +277,7 @@ public final class CompilerInfo {
     }
 
     @Nullable
-    private VariableInfo varInfo(String name) {
+    private VariableInfo varInfo(String name) {  // TODO: Universally accessible globals
         for (int i = variables.size() - 1; i >= 0; i--) {
             var map = variables.get(i);
             if (map.containsKey(name)) {
