@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.FunctionDefinitionNode;
+import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        var fnInfo = new FunctionInfo(node.getName().getName(), new ArgumentInfo());  // FIXME: Get args working
+        var fnInfo = new FunctionInfo(node.getName().getName(), convertArgs(), info.typesOf(node.getRetval()));
         int index = info.addFunction(new Function(fnInfo, bytes));
         var constVal = new FunctionConstant(index);
         info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
@@ -33,5 +34,24 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
         info.removeStackFrame();
         return Collections.emptyList();
+    }
+
+    @NotNull
+    private ArgumentInfo convertArgs() {
+        var args = node.getArgs();
+        var kwargs = convert(args.getNameArgs());
+        var normalArgs = convert(args.getArgs());
+        var posArgs = convert(args.getPositionArgs());
+        return new ArgumentInfo(kwargs, normalArgs, posArgs);
+    }
+
+    @NotNull
+    private Argument[] convert(@NotNull TypedArgumentNode[] args) {
+        var converted = new Argument[args.length];
+        for (int i = 0; i < args.length; i++) {
+            var arg = args[i];
+            converted[i] = new Argument(arg.getName().getName(), info.getType(arg.getType()));
+        }
+        return converted;
     }
 }
