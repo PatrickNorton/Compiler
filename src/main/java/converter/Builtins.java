@@ -101,6 +101,8 @@ public final class Builtins {
         STR.setOperator(OpSpTypeNode.MULTIPLY, strTimesInfo);
         var strEqInfo = new FunctionInfo("", ArgumentInfo.of(STR), BOOL);
         STR.setOperator(OpSpTypeNode.EQUALS, strEqInfo);
+        var strIndexInfo = new FunctionInfo("", ArgumentInfo.of(INT), CHAR);
+        STR.setOperator(OpSpTypeNode.GET_ATTR, strIndexInfo);
     }
 
     static {  // Set char operators
