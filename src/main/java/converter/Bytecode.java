@@ -85,6 +85,7 @@ public enum Bytecode {
     LIST_ADD(0x54, 0),
     SET_ADD(0x55, 0),
     DICT_ADD(0x56, 0),
+    DOTIMES(0x57, 4),
     ;
 
     public final byte value;

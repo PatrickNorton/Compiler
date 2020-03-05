@@ -9,6 +9,7 @@ import main.java.parser.ContinueStatementNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
 import main.java.parser.DoStatementNode;
+import main.java.parser.DotimesStatementNode;
 import main.java.parser.ForStatementNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.IfStatementNode;
@@ -51,6 +52,8 @@ public interface BaseConverter {
             return new DecrementConverter(info, (DecrementNode) node);
         } else if (node instanceof DoStatementNode) {
             return new DoWhileConverter(info, (DoStatementNode) node);
+        } else if (node instanceof DotimesStatementNode) {
+            return new DotimesConverter(info, (DotimesStatementNode) node);
         } else if (node instanceof ForStatementNode) {
             return new ForConverter(info, (ForStatementNode) node);
         } else if (node instanceof FunctionDefinitionNode) {
