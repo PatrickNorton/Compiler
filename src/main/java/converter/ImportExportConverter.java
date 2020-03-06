@@ -19,11 +19,11 @@ public final class ImportExportConverter implements BaseConverter {
     @Override
     public List<Byte> convert(int start) {
         switch (node.getType()) {
-            case "import":
-            case "typeget":
+            case IMPORT:
+            case TYPEGET:
                 addImport();
                 break;
-            case "export":
+            case EXPORT:
                 addExport();
                 break;
             default:
@@ -33,7 +33,7 @@ public final class ImportExportConverter implements BaseConverter {
     }
 
     private void addImport() {
-        assert node.getType().equals("import") || node.getType().equals("typeget");
+        assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         var from = node.getFrom().toString();
         boolean renamed = node.getAs().length > 0;
         for (int i = 0; i < node.getValues().length; i++) {
@@ -47,7 +47,7 @@ public final class ImportExportConverter implements BaseConverter {
     }
 
     private void addExport() {
-        assert node.getType().equals("export");
+        assert node.getType() == ImportExportNode.EXPORT;
         boolean hasAs = node.getAs().length > 0;
         if (!node.getFrom().isEmpty()) {
             var from = node.getFrom().toString();

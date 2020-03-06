@@ -61,7 +61,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node) {
             if (statement instanceof ImportExportNode
-                    && ((ImportExportNode) statement).getType().equals("export")) {
+                    && ((ImportExportNode) statement).getType() == ImportExportNode.IMPORT) {
                 continue;
             }
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
@@ -165,11 +165,11 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             } else if (stmt instanceof ImportExportNode) {
                 var ieNode = (ImportExportNode) stmt;
                 switch (ieNode.getType()) {
-                    case "import":
-                    case "typeget":
+                    case IMPORT:
+                    case TYPEGET:
                         addImports(ieNode, globals);
                         break;
-                    case "export":
+                    case EXPORT:
                         addExports(ieNode, exports);
                         break;
                     default:
@@ -197,7 +197,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     private void addImports(@NotNull ImportExportNode node, Map<String, TypeObject> globals) {
-        assert node.getType().equals("import");
+        assert node.getType() == ImportExportNode.IMPORT;
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
             var as = node.getAs()[i];
@@ -223,7 +223,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     private void addExports(@NotNull ImportExportNode node, Map<String, String> exports) {
-        assert node.getType().equals("export");
+        assert node.getType() == ImportExportNode.EXPORT;
         for (int i = 0; i < node.getValues().length; i++) {
             var as = node.getAs()[i];
             var value = node.getValues()[i];
