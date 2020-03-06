@@ -18,4 +18,13 @@ public class TypedefType implements NameableType {
     public String name() {
         return name;
     }
+
+    @Override
+    public TypeObject stripNull() {
+        return internal.stripNull();
+    }
+
+    public TypeObject getBase() {
+        return internal;
+    }
 }

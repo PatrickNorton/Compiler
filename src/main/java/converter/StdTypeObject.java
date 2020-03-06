@@ -41,6 +41,9 @@ public class StdTypeObject implements NameableType {
 
     @Override
     public boolean isSuperclass(TypeObject other) {
+        if (other instanceof TypedefType) {
+            return isSuperclass(((TypedefType) other).getBase());
+        }
         if (this.equals(other)) {
             return true;
         } else if (!(other instanceof StdTypeObject)) {  // TODO: When is this not true?

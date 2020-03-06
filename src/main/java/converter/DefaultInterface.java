@@ -15,7 +15,12 @@ public class DefaultInterface implements TypeObject {
 
     @Override
     public boolean isSuperclass(TypeObject other) {
-        return true;  // TODO: Implement
+        for (var op : operators) {
+            if (other.operatorReturnType(op) == null) {  // TODO: Ensure types match
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
