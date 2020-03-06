@@ -24,7 +24,7 @@ public final class FunctionCallConverter implements TestConverter {
     public List<Byte> convert(int start) {
         assert retCount == 1 || retCount == 0;  // TODO: Multiple returns
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
-        // ensureTypesMatch(callConverter.returnType());
+        ensureTypesMatch(callConverter.returnType());
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
         convertCall(bytes, start);
         return bytes;

@@ -10,11 +10,15 @@ public class DefaultInterface implements TypeObject {
     private Set<OpSpTypeNode> operators;
 
     public DefaultInterface(String name, OpSpTypeNode... operators) {
+        this.name = name;
         this.operators = EnumSet.of(operators[0], operators);
     }
 
     @Override
     public boolean isSuperclass(TypeObject other) {
+        if (other instanceof DefaultInterface) {
+            return ((DefaultInterface) other).operators.containsAll(operators);
+        }
         for (var op : operators) {
             if (other.operatorReturnType(op) == null) {  // TODO: Ensure types match
                 return false;

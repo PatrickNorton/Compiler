@@ -17,7 +17,7 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
     String name();
 
     default TypeObject getType() {
-        return new TypeTypeObject();
+        return new TypeTypeObject().generify(this);
     }
 
     default TypeObject operatorReturnType(OperatorTypeNode o) {
