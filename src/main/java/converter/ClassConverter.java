@@ -72,7 +72,11 @@ public final class ClassConverter implements BaseConverter {
                 .setStaticMethods(convert(methods.getStaticNodes(), type, methods.getStaticMethods()))
                 .create();
         int classIndex = info.addClass(cls);
-        info.addVariable(node.getName().strName(), Builtins.TYPE.generify(type), new ClassConstant(classIndex));
+        var name = node.getName().strName();
+        if (Builtins.FORBIDDEN_NAMES.contains(name)) {
+            throw CompilerException.format("Illegal name for class '%s'", node.getName(), name);
+        }
+        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(classIndex));
         return Collections.emptyList();
     }
 
@@ -83,7 +87,7 @@ public final class ClassConverter implements BaseConverter {
         for (var pair : functions.entrySet()) {
             info.addStackFrame();
             info.addVariable("self", type, true);
-            info.addVariable("cls", Builtins.TYPE, true);
+            info.addVariable("cls", Builtins.TYPE.generify(type), true);
             for (var arg : args.get(pair.getKey()).getArgs()) {
                 info.addVariable(arg.getName(), arg.getType());
             }
