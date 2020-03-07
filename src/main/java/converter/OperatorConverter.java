@@ -171,6 +171,7 @@ public final class OperatorConverter implements TestConverter {
             bytes.add(Bytecode.JUMP_NN.value);
             int jumpPos = bytes.size();
             bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.POP_TOP.value);
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("str"))));  // TODO: Get errors
             bytes.add(Bytecode.LOAD_CONST.value);
