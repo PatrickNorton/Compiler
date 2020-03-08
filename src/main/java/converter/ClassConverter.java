@@ -220,7 +220,7 @@ public final class ClassConverter implements BaseConverter {
             var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetType());
             if (DEFAULT_RETURNS.containsKey(op)) {
-                var lineInfo = node.getRetType()[0].getLineInfo();
+                var lineInfo = node.getRetType().length > 0 ? node.getRetType()[0].getLineInfo() : LineInfo.empty();
                 operators.put(op, new FunctionInfo("", args, validateReturns(lineInfo, op, returns)));
             } else {
                 operators.put(op, new FunctionInfo("", args, returns));

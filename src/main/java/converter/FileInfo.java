@@ -61,7 +61,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node) {
             if (statement instanceof ImportExportNode
-                    && ((ImportExportNode) statement).getType() == ImportExportNode.IMPORT) {
+                    && ((ImportExportNode) statement).getType() == ImportExportNode.EXPORT) {
                 continue;
             }
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, compilerInfo));
@@ -84,11 +84,12 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         return exportTypes.get(name);
     }
 
-    public int addImport(String name) {
+    public int addImport(@NotNull String name) {
+        var names = name.split("\\.");
         if (!imports.contains(name)) {
-            FileInfo f = Converter.findModule(name);
+            FileInfo f = Converter.findModule(names[0]);
             imports.add(name);
-            importTypes.put(name, f.exportTypes.get(name));
+            importTypes.put(name, f.exportTypes.get(names[1]));
         }
         return imports.indexOf(name);
     }
@@ -157,7 +158,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
                 } else if (stmt instanceof MethodDefinitionNode) {
                     throw CompilerInternalError.of("Illegal method definition", stmt);
                 } else if (stmt instanceof ClassDefinitionNode) {
-                    type = Builtins.TYPE;
+                    type = Builtins.TYPE;  // FIXME: Generify types correctly
                 } else {
                     throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
                 }
@@ -198,37 +199,36 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
 
     private void addImports(@NotNull ImportExportNode node, Map<String, TypeObject> globals) {
         assert node.getType() == ImportExportNode.IMPORT;
+        boolean notRenamed = node.getAs().length == 0;
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
-            var as = node.getAs()[i];
-            String importName;
-            if (as.isEmpty()) {
-                if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
-                    throw CompilerException.of("Illegal import " + value, value);
-                }
-                importName = (((VariableNode) value.getPreDot()).getName());
-            } else {
-                if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
-                    throw CompilerException.of("Illegal import " + value, value);
-                }
-                importName = (value.toString());
+            var as = notRenamed ? value : node.getAs()[i];
+            String moduleName = moduleName(node, i);
+            if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
+                throw CompilerException.of("Illegal import " + as, as);
             }
-            FileInfo f = Converter.findModule(importName);
+            String importName = value.toString();
+            FileInfo f = node.getPreDots() > 0
+                    ? Converter.findLocalModule(this.node.getPath().getParent(), moduleName)
+                    : Converter.findModule(moduleName);
+            f.compile();  // TODO: Write to file
             if (globals.containsKey(importName)) {
                 throw CompilerException.format("Name %s already defined", node, importName);
             } else {
                 globals.put(importName, f.exportType(importName));
+                addImport(node.getFrom().toString() + "." + value.toString());
             }
         }
     }
 
     private void addExports(@NotNull ImportExportNode node, Map<String, String> exports) {
         assert node.getType() == ImportExportNode.EXPORT;
+        boolean notRenamed = node.getAs().length == 0;
         for (int i = 0; i < node.getValues().length; i++) {
-            var as = node.getAs()[i];
             var value = node.getValues()[i];
+            var as = notRenamed ? value : node.getAs()[i];
             if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
-                throw CompilerException.of("Illegal import " + value, value);
+                throw CompilerException.of("Illegal export " + value, value);
             }
             var name = ((VariableNode) value.getPreDot()).getName();
             var asName = as.isEmpty() ? name : ((VariableNode) as.getPreDot()).getName();
@@ -237,6 +237,14 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             } else {
                 exports.put(name, asName);
             }
+        }
+    }
+
+    private String moduleName(@NotNull ImportExportNode node, int i) {
+        if (!node.getFrom().isEmpty()) {
+            return ((VariableNode) node.getFrom().getPreDot()).getName();
+        } else {
+            return ((VariableNode) node.getValues()[i].getPreDot()).getName();
         }
     }
 

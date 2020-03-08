@@ -62,6 +62,10 @@ public class ImportExportNode implements SimpleStatementNode {
         return as;
     }
 
+    public int getPreDots() {
+        return preDots;
+    }
+
     public boolean isWildcard() {
         return isWildcard;
     }
@@ -161,5 +165,12 @@ public class ImportExportNode implements SimpleStatementNode {
         IMPORT,
         EXPORT,
         TYPEGET,
+        ;
+
+        @NotNull
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
     }
 }

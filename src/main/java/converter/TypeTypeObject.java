@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -31,5 +32,14 @@ public class TypeTypeObject implements TypeObject {
     public TypeObject generify(@NotNull TypeObject... args) {
         assert args.length == 1;
         return new GenerifiedTypeTypeObject(args[0]);
+    }
+
+    @Override
+    public TypeObject operatorReturnType(OpSpTypeNode o) {
+        if (o == OpSpTypeNode.CALL) {
+            return Builtins.OBJECT;
+        } else {
+            throw new UnsupportedOperationException("Cannot get type");
+        }
     }
 }

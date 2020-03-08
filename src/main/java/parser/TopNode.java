@@ -22,6 +22,10 @@ public class TopNode implements BaseNode, Iterable<IndependentNode> {
         this.nodes = new LinkedList<>();
     }
 
+    public Path getPath() {
+        return path;
+    }
+
     @Override
     public LineInfo getLineInfo() {
         return LineInfo.empty();
