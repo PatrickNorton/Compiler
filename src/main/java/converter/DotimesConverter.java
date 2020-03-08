@@ -27,7 +27,7 @@ public final class DotimesConverter extends LoopConverter {
             );
         }
         List<Byte> bytes = new ArrayList<>(countConverter.convert(start));
-        int topJump = bytes.size();
+        int topJump = start + bytes.size();
         info.setContinuePoint(topJump);
         bytes.add(Bytecode.DOTIMES.value);
         int jumpLoc = bytes.size();
