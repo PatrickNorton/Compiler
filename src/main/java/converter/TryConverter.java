@@ -29,7 +29,7 @@ public final class TryConverter implements BaseConverter {
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump0);
         for (var except : node.getExcepted()) {
             bytes.add(Bytecode.EXCEPT_N.value);
-            var constIndex = (short) info.constIndex(info.getType(except).name());
+            var constIndex = info.constIndex(info.getType(except).name());
             bytes.addAll(Util.shortToBytes(constIndex));
         }
         if (!node.getAsVar().isEmpty()) {
