@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.StringJoiner;
@@ -12,10 +11,6 @@ public class UnionTypeObject implements TypeObject {
 
     public UnionTypeObject(SortedSet<TypeObject> types) {
         this.types = Collections.unmodifiableSortedSet(types);
-    }
-
-    public UnionTypeObject(TypeObject... types) {
-        this.types = Collections.unmodifiableSortedSet(new TreeSet<>(List.of(types)));
     }
 
     @Override

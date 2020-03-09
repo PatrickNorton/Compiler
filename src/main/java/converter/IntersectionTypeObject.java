@@ -1,21 +1,15 @@
 package main.java.converter;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.StringJoiner;
-import java.util.TreeSet;
 
 public class IntersectionTypeObject implements TypeObject {
     private final SortedSet<TypeObject> types;
 
     public IntersectionTypeObject(SortedSet<TypeObject> types) {
         this.types = Collections.unmodifiableSortedSet(types);
-    }
-
-    public IntersectionTypeObject(TypeObject... types) {
-        this.types = Collections.unmodifiableSortedSet(new TreeSet<>(List.of(types)));
     }
 
     @Override
