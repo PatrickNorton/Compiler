@@ -18,6 +18,7 @@ public final class ComprehensionConverter implements TestConverter {  // FIXME: 
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var resultType = node.getBrace().equals("[") ? Builtins.LIST : Builtins.SET;

@@ -22,6 +22,7 @@ public final class DotConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {  // TODO: Non-null dots, etc.
         var result = TestConverter.returnType(node.getPreDot(), info, 1);

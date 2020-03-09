@@ -36,6 +36,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var cases = node.getCases();

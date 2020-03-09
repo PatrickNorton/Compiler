@@ -18,6 +18,7 @@ public final class VariableConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         if (info.varIsUndefined(node.getName())) {

@@ -18,6 +18,7 @@ public final class DictCompConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var variable = node.getVariables()[0];

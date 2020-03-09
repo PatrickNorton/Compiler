@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.ContinueStatementNode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ public final class ContinueConverter implements BaseConverter {
         this.info = info;
     }
 
+    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();

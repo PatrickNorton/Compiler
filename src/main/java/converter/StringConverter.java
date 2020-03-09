@@ -38,6 +38,7 @@ public final class StringConverter implements ConstantConverter {
         return LangConstant.of(node);
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         return Builtins.STR;

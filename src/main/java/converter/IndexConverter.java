@@ -19,6 +19,7 @@ public final class IndexConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var type = TypeObject.of(info, node);

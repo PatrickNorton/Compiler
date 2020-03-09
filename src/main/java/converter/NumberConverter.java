@@ -38,6 +38,7 @@ public final class NumberConverter implements ConstantConverter {
         return LangConstant.of(node);
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         return constant() instanceof IntConstant ? Builtins.INT : Builtins.DECIMAL;

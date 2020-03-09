@@ -43,6 +43,7 @@ public final class FunctionCallConverter implements TestConverter {
 //        }
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         if (node.getCaller() instanceof VariableNode) {

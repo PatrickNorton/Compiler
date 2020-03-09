@@ -27,8 +27,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public interface BaseConverter {
+    @NotNull
     List<Byte> convert(int start);
 
+    @NotNull
     static List<Byte> bytes(int start, BaseNode tokens, CompilerInfo info) {
         return toBytes(tokens, info).convert(start);
     }

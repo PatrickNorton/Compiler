@@ -18,6 +18,7 @@ public final class LiteralConverter implements TestConverter {  // FIXME: Generi
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var mainType = node.getBraceType().equals("[") ? Builtins.LIST : Builtins.SET;

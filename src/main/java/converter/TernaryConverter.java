@@ -17,6 +17,7 @@ public final class TernaryConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var ifTrue = TestConverter.of(info, node.getIfTrue(), retCount);

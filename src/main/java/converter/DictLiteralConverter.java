@@ -18,6 +18,7 @@ public final class DictLiteralConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         var keyType = returnTypes(node.getKeys());

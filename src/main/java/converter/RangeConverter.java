@@ -19,6 +19,7 @@ public final class RangeConverter implements TestConverter {
         this.retCount = retCount;
     }
 
+    @NotNull
     @Override
     public TypeObject returnType() {
         return Builtins.RANGE;
