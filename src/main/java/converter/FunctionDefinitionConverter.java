@@ -23,7 +23,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         List<Byte> bytes = new ArrayList<>();
         var fnInfo = new FunctionInfo(node.getName().getName(), convertArgs(), info.typesOf(node.getRetval()));
         int index = info.addFunction(new Function(fnInfo, bytes));
-        var constVal = new FunctionConstant(index);
+        var constVal = new FunctionConstant(node.getName().getName(), index);
         info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
         info.addStackFrame();
         for (var arg : node.getArgs()) {

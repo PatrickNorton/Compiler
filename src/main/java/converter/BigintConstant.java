@@ -27,6 +27,7 @@ public final class BigintConstant implements LangConstant {
         return Objects.hash(value);
     }
 
+    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -37,6 +38,7 @@ public final class BigintConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.INT;
@@ -50,5 +52,11 @@ public final class BigintConstant implements LangConstant {
             bytes.add(b);
         }
         return bytes;
+    }
+
+    @NotNull
+    @Override
+    public String name() {
+        return value.toString();
     }
 }

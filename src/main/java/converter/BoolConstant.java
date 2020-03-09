@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -10,11 +12,13 @@ public class BoolConstant implements LangConstant {
         this.value = value;
     }
 
+    @NotNull
     @Override
     public List<Byte> toBytes() {
         return List.of((byte) ConstantBytes.BOOL.ordinal(), (byte) (value ? 1 : 0));
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.BOOL;
@@ -31,5 +35,11 @@ public class BoolConstant implements LangConstant {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @NotNull
+    @Override
+    public String name() {
+        return Boolean.toString(value);
     }
 }

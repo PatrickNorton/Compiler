@@ -1,15 +1,20 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionConstant implements LangConstant {
+    private String name;
     private int functionIndex;
 
-    public FunctionConstant(int index) {
+    public FunctionConstant(String name, int index) {
+        this.name = name;
         this.functionIndex = index;
     }
 
+    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
@@ -18,8 +23,15 @@ public class FunctionConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.CALLABLE;
+    }
+
+    @NotNull
+    @Override
+    public String name() {
+        return name;
     }
 }

@@ -22,6 +22,7 @@ public final class BuiltinConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.TRUE_BUILTINS.get(builtinIndex).getType();
@@ -38,5 +39,17 @@ public final class BuiltinConstant implements LangConstant {
     @Override
     public int hashCode() {
         return Objects.hash(builtinIndex);
+    }
+
+    @NotNull
+    @Override
+    public String name() {
+        var result = Builtins.TRUE_BUILTINS.get(builtinIndex);
+        for (var pair : Builtins.BUILTIN_MAP.entrySet()) {
+            if (pair.getValue() == result) {
+                return pair.getKey();
+            }
+        }
+        throw new RuntimeException();
     }
 }

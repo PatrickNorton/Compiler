@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ public class ImportConstant implements LangConstant {
         this.index = index;
     }
 
+    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -18,6 +21,7 @@ public class ImportConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         throw new RuntimeException("Cannot figure out type of this yet");

@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ClassConstant implements LangConstant {
+    private String name;
     private int index;
 
-    public ClassConstant(int index) {
+    public ClassConstant(String name, int index) {
+        this.name = name;
         this.index = index;
     }
 
@@ -21,8 +23,15 @@ public final class ClassConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.TYPE;
+    }
+
+    @NotNull
+    @Override
+    public String name() {
+        return name;
     }
 }

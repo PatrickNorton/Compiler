@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,7 @@ public final class StringConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.STR;
@@ -50,5 +52,12 @@ public final class StringConstant implements LangConstant {
             bytes.add(b);
         }
         return bytes;
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public String name() {
+        return '"' + value + '"';
     }
 }

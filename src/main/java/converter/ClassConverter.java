@@ -76,7 +76,7 @@ public final class ClassConverter implements BaseConverter {
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for class '%s'", node.getName(), name);
         }
-        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(classIndex));
+        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex));
         return Collections.emptyList();
     }
 

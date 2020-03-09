@@ -35,8 +35,14 @@ public final class IntConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.INT;
+    }
+
+    @Override
+    public @NotNull String name() {
+        return Integer.toString(value);
     }
 }

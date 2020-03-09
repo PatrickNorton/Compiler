@@ -9,9 +9,16 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface LangConstant extends LangObject {
+    @NotNull
     List<Byte> toBytes();
 
+    @NotNull
     TypeObject getType();
+
+    @NotNull
+    default String name() {
+        throw new UnsupportedOperationException();
+    }
 
     @NotNull
     @Contract("_ -> new")

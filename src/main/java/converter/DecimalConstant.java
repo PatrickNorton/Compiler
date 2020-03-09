@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,7 @@ public final class DecimalConstant implements LangConstant {
         return Objects.hash(value);
     }
 
+    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -39,8 +42,15 @@ public final class DecimalConstant implements LangConstant {
         return bytes;
     }
 
+    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.DECIMAL;
+    }
+
+    @NotNull
+    @Override
+    public String name() {
+        return value.toString();
     }
 }
