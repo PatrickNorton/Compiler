@@ -19,9 +19,10 @@ public class GenerifiedTypeTypeObject implements TypeObject {
         return String.format("type[%s]", type);
     }
 
-    public TypeObject operatorReturnType(OpSpTypeNode o) {
+    @Override
+    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
         if (o == OpSpTypeNode.CALL) {
-            return type;
+            return new TypeObject[] {type};
         }
         throw new UnsupportedOperationException("Cannot get type");
     }

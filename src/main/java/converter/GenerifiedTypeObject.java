@@ -34,14 +34,18 @@ public class GenerifiedTypeObject implements NameableType {
     }
 
     @Override
-    public TypeObject operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
         var parentReturn = parent.operatorReturnTypeWithGenerics(o);
         if (parentReturn == null) return null;
-        if (parentReturn instanceof TemplateParam) {
-            return generics.get(((TemplateParam) parentReturn).getIndex());
-        } else {
-            return parentReturn;
+        TypeObject[] result = new TypeObject[parentReturn.length];
+        for (int i = 0; i < parentReturn.length; i++) {
+            if (parentReturn[i] instanceof TemplateParam) {
+                result[i] = generics.get(((TemplateParam) parentReturn[i]).getIndex());
+            } else {
+                result[i] = parentReturn[i];
+            }
         }
+        return result;
     }
 
     @Override

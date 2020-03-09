@@ -16,15 +16,16 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
     boolean isSuperclass(TypeObject other);
     String name();
 
+    @Override
     default TypeObject getType() {
         return Builtins.TYPE.generify(this);
     }
 
-    default TypeObject operatorReturnType(OperatorTypeNode o) {
+    default TypeObject[] operatorReturnType(OperatorTypeNode o) {
         return operatorReturnType(OpSpTypeNode.translate(o));
     }
 
-    default TypeObject operatorReturnType(OpSpTypeNode o) {
+    default TypeObject[] operatorReturnType(OpSpTypeNode o) {
         return null;
     }
 

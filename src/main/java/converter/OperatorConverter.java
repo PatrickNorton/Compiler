@@ -71,7 +71,7 @@ public final class OperatorConverter implements TestConverter {
         if (retType == null) {
             throw CompilerInternalError.of("Operator not implemented", node);
         }
-        return new TypeObject[]{retType};
+        return retType;
     }
 
     @NotNull

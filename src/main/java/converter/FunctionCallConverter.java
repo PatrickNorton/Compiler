@@ -53,16 +53,15 @@ public final class FunctionCallConverter implements TestConverter {
             }
             var cls = info.classOf(name);
             if (cls != null) {  // If the variable is a class, calling it will always return an instance
-                return new NameableType[]{cls};
+                return new TypeObject[]{cls};
             }
             var fn = info.fnInfo(name);
             if (fn != null) {
-                return new TypeObject[]{fn.getReturns()[0]};
+                return fn.getReturns();
             }
-            return new TypeObject[]{info.getType(name).operatorReturnType(OpSpTypeNode.CALL)};
+            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
         } else {
-            var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0].operatorReturnType(OpSpTypeNode.CALL);
-            return new TypeObject[]{retType};
+            return TestConverter.returnType(node.getCaller(), info, retCount)[0].operatorReturnType(OpSpTypeNode.CALL);
         }
 
     }

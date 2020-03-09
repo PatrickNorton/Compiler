@@ -80,15 +80,21 @@ public class StdTypeObject implements NameableType {
     }
 
     @Override
-    public TypeObject operatorReturnType(OpSpTypeNode o) {
-        var type = operatorReturnTypeWithGenerics(o);
-        return type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
+    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
+        var types = operatorReturnTypeWithGenerics(o);
+        if (types == null) return null;
+        TypeObject[] result = new TypeObject[types.length];
+        for (int i = 0; i < types.length; i++) {
+            var type = types[i];
+            result[i] = type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
+        }
+        return result;
     }
 
     @Nullable
-    public TypeObject operatorReturnTypeWithGenerics(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o) {
         if (operators.containsKey(o)) {
-            return operators.get(o).getReturns()[0];
+            return operators.get(o).getReturns();
         }
         for (var sup : supers) {
             var opRet = sup.operatorReturnType(o);

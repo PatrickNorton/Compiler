@@ -35,9 +35,9 @@ public class TypeTypeObject implements TypeObject {
     }
 
     @Override
-    public TypeObject operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
         if (o == OpSpTypeNode.CALL) {
-            return Builtins.OBJECT;
+            return new TypeObject[] {Builtins.OBJECT};
         } else {
             throw new UnsupportedOperationException("Cannot get type");
         }
