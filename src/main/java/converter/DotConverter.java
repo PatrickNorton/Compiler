@@ -24,12 +24,12 @@ public final class DotConverter implements TestConverter {
 
     @NotNull
     @Override
-    public TypeObject returnType() {  // TODO: Non-null dots, etc.
-        var result = TestConverter.returnType(node.getPreDot(), info, 1);
+    public TypeObject[] returnType() {  // TODO: Non-null dots, etc.
+        var result = TestConverter.returnType(node.getPreDot(), info, 1)[0];
         for (var dot : node.getPostDots()) {
             result = result.attrType(dot.getPostDot().toString());  // FIXME: Function calls &c.
         }
-        return result;
+        return new TypeObject[]{result};
     }
 
     @NotNull

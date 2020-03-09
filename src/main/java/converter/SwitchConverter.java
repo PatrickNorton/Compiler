@@ -38,13 +38,13 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     @Override
-    public TypeObject returnType() {
+    public TypeObject[] returnType() {
         var cases = node.getCases();
         TypeObject[] types = new TypeObject[cases.length];
         for (int i = 0; i < cases.length; i++) {
             types[i] = null;  // TODO: Get actual types
         }
-        return TypeObject.union(types);
+        return new TypeObject[] {TypeObject.union(types)};
     }
 
     private void addCaseCond(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {

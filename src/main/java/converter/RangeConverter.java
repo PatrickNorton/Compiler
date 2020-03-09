@@ -21,8 +21,8 @@ public final class RangeConverter implements TestConverter {
 
     @NotNull
     @Override
-    public TypeObject returnType() {
-        return Builtins.RANGE;
+    public TypeObject[] returnType() {
+        return new TypeObject[] {Builtins.RANGE};
     }
 
     @NotNull
@@ -47,7 +47,7 @@ public final class RangeConverter implements TestConverter {
     private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node, int defaultVal) {
         if (!node.isEmpty()) {
             var converter = TestConverter.of(info, node, 1);
-            if (!Builtins.INT.isSuperclass(converter.returnType())) {
+            if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
                 throw CompilerException.format(
                         "TypeError: Type %s does not match required type %s",
                         node, converter.returnType(), Builtins.INT

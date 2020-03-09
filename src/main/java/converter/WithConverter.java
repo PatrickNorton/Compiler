@@ -25,7 +25,7 @@ public final class WithConverter implements BaseConverter {
         var contextConverter = TestConverter.of(info, node.getManaged().get(0), 1);
         var variable = node.getVars()[0];
         var valueType = node.getVars()[0].getType();
-        var returnType = contextConverter.returnType().operatorReturnType(OpSpTypeNode.ENTER);
+        var returnType = contextConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ENTER);
         var trueType = valueType.isDecided() ? info.getType(valueType) : returnType;
         if (!trueType.isSuperclass(returnType)) {
             throw CompilerException.format(

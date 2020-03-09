@@ -25,10 +25,10 @@ public abstract class IncrementDecrementConverter implements BaseConverter {
     public final List<Byte> convert(int start) {
         assert isDecrement ? node instanceof DecrementNode : node instanceof IncrementNode;
         var converter = TestConverter.of(info, node.getVariable(), 1);
-        if (!Builtins.INT.isSuperclass(converter.returnType())) {
+        if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
             throw CompilerException.format(
                     "TypeError: Object of type %s cannot be incremented",
-                    node.getLineInfo(), converter.returnType());
+                    node.getLineInfo(), converter.returnType()[0]);
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.LOAD_CONST.value);

@@ -54,24 +54,24 @@ public final class OperatorConverter implements TestConverter {
 
     @Override
     @NotNull
-    public TypeObject returnType() {
+    public TypeObject[] returnType() {
         switch (node.getOperator()) {
             case BOOL_AND:
             case BOOL_NOT:
             case BOOL_OR:
             case BOOL_XOR:
-                return Builtins.BOOL;
+                return new TypeObject[] {Builtins.BOOL};
             case NOT_NULL:
                 return notNullReturn();
             case NULL_COERCE:
                 return nullCoerceReturn();
         }
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
-        var retType = firstOpConverter.returnType().operatorReturnType(node.getOperator());
+        var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
         if (retType == null) {
             throw CompilerInternalError.of("Operator not implemented", node);
         }
-        return retType;
+        return new TypeObject[]{retType};
     }
 
     @NotNull
@@ -110,11 +110,11 @@ public final class OperatorConverter implements TestConverter {
     private List<Byte> convertNullCoerce(int start) {
         assert node.getOperator() == OperatorTypeNode.NULL_COERCE;
         var firstConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
-        if (!firstConverter.returnType().isSuperclass(Builtins.NULL_TYPE)) {  // Non-optional return types won't be null
+        if (!firstConverter.returnType()[0].isSuperclass(Builtins.NULL_TYPE)) {  // Non-optional return types won't be null
             var lineInfo = node.getOperands()[0].getLineInfo();
             CompilerWarning.warn("Using ?? operator on non-optional value", lineInfo);
             return firstConverter.convert(start);
-        } else if (firstConverter.returnType().equals(Builtins.NULL_TYPE)) {
+        } else if (firstConverter.returnType()[0].equals(Builtins.NULL_TYPE)) {
             var lineInfo = node.getOperands()[0].getLineInfo();
             CompilerWarning.warn("Using ?? operator on value that is always null", lineInfo);
             return TestConverter.bytes(start, node.getOperands()[1].getArgument(), info, 1);
@@ -161,12 +161,12 @@ public final class OperatorConverter implements TestConverter {
         assert node.getOperator() == OperatorTypeNode.NOT_NULL;
         var converter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        if (converter.returnType().equals(Builtins.NULL_TYPE)) {
+        if (converter.returnType()[0].equals(Builtins.NULL_TYPE)) {
             throw CompilerException.of(
                     "Cannot use !! operator on variable on variable with type null",
                     node.getOperands()[0]
             );
-        } else if (converter.returnType().isSuperclass(Builtins.NULL_TYPE)) {
+        } else if (converter.returnType()[0].isSuperclass(Builtins.NULL_TYPE)) {
             bytes.add(Bytecode.DUP_TOP.value);
             bytes.add(Bytecode.JUMP_NN.value);
             int jumpPos = bytes.size();
@@ -191,19 +191,21 @@ public final class OperatorConverter implements TestConverter {
     }
 
     @NotNull
-    private TypeObject notNullReturn() {
-        var retType = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1);
+    private TypeObject[] notNullReturn() {
+        var retType = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1)[0];
         if (retType.equals(Builtins.NULL_TYPE)) {
              // Doesn't particularly matter what, it'll fail later (Maybe return Builtins.THROWS once implemented?)
-            return retType;
+            return new TypeObject[] {retType};
         } else {
-            return retType.stripNull();
+            return new TypeObject[] {retType.stripNull()};
         }
     }
 
-    public TypeObject nullCoerceReturn() {
-        var ret0 = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1);
-        var ret1 = TestConverter.returnType(node.getOperands()[1].getArgument(), info, 1);
-        return ret0.equals(Builtins.NULL_TYPE) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
+    @NotNull
+    public TypeObject[] nullCoerceReturn() {
+        var ret0 = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1)[0];
+        var ret1 = TestConverter.returnType(node.getOperands()[1].getArgument(), info, 1)[0];
+        var result = ret0.equals(Builtins.NULL_TYPE) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
+        return new TypeObject[] {result};
     }
 }

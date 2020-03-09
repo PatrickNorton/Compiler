@@ -47,7 +47,7 @@ public final class AssignmentConverter implements BaseConverter {
 
     private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
                                   @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
-        var valueType = valueConverter.returnType();
+        var valueType = valueConverter.returnType()[0];
         if (info.varIsUndefined(variable.getName())) {
             throw CompilerException.format("Attempted to assign to undefined name %s",
                     variable, variable.getName());

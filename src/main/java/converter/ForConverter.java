@@ -66,7 +66,7 @@ public final class ForConverter extends LoopConverter {
             return info.getType(iteratorType);
         } else {
             var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
-            return valueConverter.returnType().operatorReturnType(OpSpTypeNode.ITER);
+            return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER);
         }
     }
 }

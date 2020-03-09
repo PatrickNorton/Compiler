@@ -21,7 +21,7 @@ import java.util.List;
 
 public interface TestConverter extends BaseConverter {
     @NotNull
-    TypeObject returnType();
+    TypeObject[] returnType();
 
     @NotNull
     static List<Byte> bytes(int start, @NotNull TestNode node, CompilerInfo info, int retCount) {
@@ -29,7 +29,7 @@ public interface TestConverter extends BaseConverter {
     }
 
     @NotNull
-    static TypeObject returnType(TestNode node, CompilerInfo info, int retCount) {
+    static TypeObject[] returnType(TestNode node, CompilerInfo info, int retCount) {
         return of(info, node, retCount).returnType();
     }
 

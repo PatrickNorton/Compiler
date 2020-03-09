@@ -24,7 +24,7 @@ public final class FunctionCallConverter implements TestConverter {
     public List<Byte> convert(int start) {
         assert retCount == 1 || retCount == 0;  // TODO: Multiple returns
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
-        ensureTypesMatch(callConverter.returnType());
+        ensureTypesMatch(callConverter.returnType()[0]);
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
         convertCall(bytes, start);
         return bytes;
@@ -45,7 +45,7 @@ public final class FunctionCallConverter implements TestConverter {
 
     @NotNull
     @Override
-    public TypeObject returnType() {
+    public TypeObject[] returnType() {
         if (node.getCaller() instanceof VariableNode) {
             var name = node.getVariable().getName();
             if (info.varIsUndefined(name)) {
@@ -53,15 +53,16 @@ public final class FunctionCallConverter implements TestConverter {
             }
             var cls = info.classOf(name);
             if (cls != null) {  // If the variable is a class, calling it will always return an instance
-                return cls;
+                return new NameableType[]{cls};
             }
             var fn = info.fnInfo(name);
             if (fn != null) {
-                return fn.getReturns()[0];
+                return new TypeObject[]{fn.getReturns()[0]};
             }
-            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
+            return new TypeObject[]{info.getType(name).operatorReturnType(OpSpTypeNode.CALL)};
         } else {
-            return TestConverter.returnType(node.getCaller(), info, retCount).operatorReturnType(OpSpTypeNode.CALL);
+            var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0].operatorReturnType(OpSpTypeNode.CALL);
+            return new TypeObject[]{retType};
         }
 
     }

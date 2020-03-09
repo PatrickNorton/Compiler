@@ -20,7 +20,7 @@ public final class ComprehensionConverter implements TestConverter {  // FIXME: 
 
     @NotNull
     @Override
-    public TypeObject returnType() {
+    public TypeObject[] returnType() {
         var resultType = node.getBrace().equals("[") ? Builtins.LIST : Builtins.SET;
         var variable = node.getVariables()[0];
         if (variable instanceof TypedVariableNode) {
@@ -33,9 +33,9 @@ public final class ComprehensionConverter implements TestConverter {  // FIXME: 
             info.addVariable(name, info.getType(typedVariable.getType()));
             var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.removeStackFrame();
-            return resultType.generify(result);
+            return new TypeObject[] {resultType.generify(result)};
         } else {
-            return resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1));
+            return new TypeObject[] {resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1))};
         }
     }
 

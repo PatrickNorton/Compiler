@@ -20,20 +20,20 @@ public final class DictCompConverter implements TestConverter {
 
     @NotNull
     @Override
-    public TypeObject returnType() {
+    public TypeObject[] returnType() {
         var variable = node.getVariables()[0];
         if (variable instanceof TypedVariableNode) {
             var typedVariable = (TypedVariableNode) variable;
             info.addStackFrame();
             info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()));
-            var keyType = TestConverter.returnType(node.getKey(), info, 1);
-            var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
+            var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
+            var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1)[0];
             info.removeStackFrame();
-            return Builtins.DICT.generify(keyType, valType);
+            return new TypeObject[] {Builtins.DICT.generify(keyType, valType)};
         } else {
-            var keyType = TestConverter.returnType(node.getKey(), info, 1);
-            var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
-            return Builtins.DICT.generify(keyType, valType);
+            var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
+            var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1)[0];
+            return new TypeObject[] {Builtins.DICT.generify(keyType, valType)};
         }
     }
 

@@ -40,7 +40,7 @@ public final class StringConverter implements ConstantConverter {
 
     @NotNull
     @Override
-    public TypeObject returnType() {
-        return Builtins.STR;
+    public TypeObject[] returnType() {
+        return new TypeObject[] {Builtins.STR};
     }
 }

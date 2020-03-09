@@ -20,10 +20,10 @@ public final class DotimesConverter extends LoopConverter {
     @Override
     public List<Byte> trueConvert(int start) {
         var countConverter = TestConverter.of(info, node.getIterations(), 1);
-        if (!Builtins.INT.isSuperclass(countConverter.returnType())) {
+        if (!Builtins.INT.isSuperclass(countConverter.returnType()[0])) {
             throw CompilerException.format(
                     "dotimes loop's iteration count has type '%s', which is not a subclass of int",
-                    node.getIterations(), countConverter.returnType()
+                    node.getIterations(), countConverter.returnType()[0]
             );
         }
         List<Byte> bytes = new ArrayList<>(countConverter.convert(start));
