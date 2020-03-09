@@ -34,7 +34,11 @@ public final class Builtins {
 
     public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
 
-    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CONTEXT_PARAM), Map.of(OpSpTypeNode.CALL, TypeObject.list()));
+    public static final TemplateParam CALLABLE_ARGS = new TemplateParam("K", 0, true);
+
+    public static final TemplateParam CALLABLE_RETURN = new TemplateParam("R", 1, TypeObject.list());
+
+    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), Map.of(OpSpTypeNode.CALL, CALLABLE_RETURN));
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
@@ -50,9 +54,9 @@ public final class Builtins {
 
     public static final TypeObject TYPE = new TypeTypeObject();
 
-    public static final LangObject PRINT = new LangInstance(CALLABLE);
+    public static final LangObject PRINT = new LangInstance(CALLABLE.generify(TypeObject.list()));
 
-    public static final LangObject INPUT = new LangInstance(CALLABLE);
+    public static final LangObject INPUT = new LangInstance(CALLABLE.generify(TypeObject.list(STR)));
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
 
