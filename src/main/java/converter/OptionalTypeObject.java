@@ -1,12 +1,12 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 public class OptionalTypeObject implements TypeObject {
     private TypeObject type;
 
-    public OptionalTypeObject(TypeObject type) {
-        this.type = type instanceof OptionalTypeObject
-                ? ((OptionalTypeObject) type).type
-                : type;
+    public OptionalTypeObject(@NotNull TypeObject type) {
+        this.type = type.stripNull();
     }
 
     @Override
