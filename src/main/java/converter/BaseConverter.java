@@ -6,6 +6,7 @@ import main.java.parser.BaseNode;
 import main.java.parser.BreakStatementNode;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContinueStatementNode;
+import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
 import main.java.parser.DoStatementNode;
@@ -49,6 +50,8 @@ public interface BaseConverter {
             return new ClassConverter(info, (ClassDefinitionNode) node);
         } else if (node instanceof ContinueStatementNode) {
             return new ContinueConverter(info, (ContinueStatementNode) node);
+        } else if (node instanceof DeclarationNode) {
+            return new DeclarationConverter(info, (DeclarationNode) node);
         } else if (node instanceof DeclaredAssignmentNode) {
             return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
         } else if (node instanceof DecrementNode) {
