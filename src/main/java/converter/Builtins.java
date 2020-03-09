@@ -34,11 +34,15 @@ public final class Builtins {
 
     public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
 
-    public static final TemplateParam CALLABLE_ARGS = new TemplateParam("K", 0, true);
+    private static final TemplateParam CALLABLE_ARGS = new TemplateParam("K", 0, true);
 
-    public static final TemplateParam CALLABLE_RETURN = new TemplateParam("R", 1, TypeObject.list());
+    private static final TemplateParam CALLABLE_RETURN = new TemplateParam("R", 1, TypeObject.list());
 
     public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), Map.of(OpSpTypeNode.CALL, CALLABLE_RETURN));
+
+    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
+
+    public static final TypeObject ITERABLE = new DefaultInterface("Iterable", GenericInfo.of(ITERABLE_PARAM), Map.of(OpSpTypeNode.ITER, ITERABLE_PARAM));
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
