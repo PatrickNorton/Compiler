@@ -131,6 +131,10 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         return constants.contains(value) ? (short) constants.indexOf(value) : addConstant(value);
     }
 
+    public LangConstant getConstant(short index) {
+        return constants.get(index);
+    }
+
     public int addClass(ClassInfo info) {
         classes.add(info);
         return classes.indexOf(info);
@@ -295,18 +299,22 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
     }
 
     private void printDisassembly() {
+        System.out.println("Constants:");
+        for (var constant : constants) {
+            System.out.printf("%d: %s%n", constants.indexOf(constant), constant.name());
+        }
         for (var function : functions) {
             System.out.printf("%s:%n", function.getName());
-            System.out.println(Bytecode.disassemble(function.getBytes()));
+            System.out.println(Bytecode.disassemble(this, function.getBytes()));
         }
         for (var cls : classes) {
             for (var fnPair : cls.getMethodDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(fnPair.getValue()));
+                System.out.println(Bytecode.disassemble(this, fnPair.getValue()));
             }
             for (var opPair : cls.getOperatorDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
-                System.out.println(Bytecode.disassemble(opPair.getValue()));
+                System.out.println(Bytecode.disassemble(this, opPair.getValue()));
             }
         }
     }
