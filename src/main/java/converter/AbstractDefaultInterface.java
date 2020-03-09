@@ -26,7 +26,7 @@ public abstract class AbstractDefaultInterface implements TypeObject {
                 if (selfRet.length > otherRet.length) {
                     return false;
                 }
-                for (int i = 0; i < otherRet.length; i++) {
+                for (int i = 0; i < selfRet.length; i++) {  // otherRet.length will always be >= selfRet.length
                     if (!selfRet[i].isSuperclass(otherRet[i])) {
                         return false;
                     }
