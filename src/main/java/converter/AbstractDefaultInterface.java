@@ -19,7 +19,7 @@ public abstract class AbstractDefaultInterface implements TypeObject {
     public boolean isSuperclass(TypeObject other) {
         for (var pair : operators.entrySet()) {
             var otherRet = other.operatorReturnType(pair.getKey());
-            if (otherRet == null) {  // TODO: Ensure types match
+            if (otherRet == null) {
                 return false;
             } else {
                 var selfRet = operatorReturnType(pair.getKey());
