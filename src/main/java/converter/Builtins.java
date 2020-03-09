@@ -23,6 +23,10 @@ public final class Builtins {
             "null"
     );
 
+    public static final TypeObject OBJECT = new ObjectType();
+
+    public static final TypeObject CONTEXT = new DefaultInterface("Context", OpSpTypeNode.ENTER, OpSpTypeNode.EXIT);
+
     public static final TypeObject CALLABLE = new DefaultInterface("Callable", OpSpTypeNode.CALL);
 
     public static final StdTypeObject INT = new StdTypeObject("int");
@@ -36,8 +40,6 @@ public final class Builtins {
     public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT));
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
-
-    public static final TypeObject OBJECT = new ObjectType();
 
     public static final TypeObject TYPE = new TypeTypeObject();
 
@@ -64,6 +66,8 @@ public final class Builtins {
     public static final LangConstant TRUE = new BoolConstant(true);
 
     public static final LangConstant FALSE = new BoolConstant(false);
+
+    public static final LangObject OPEN = new LangInstance(CONTEXT);
 
     public static final LangConstant NULL = new NullConstant();
 
