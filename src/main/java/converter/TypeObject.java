@@ -99,4 +99,10 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
             return null;
         }
     }
+
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    static TypeObject list(TypeObject... args) {
+        return new ListTypeObject(args);
+    }
 }

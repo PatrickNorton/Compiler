@@ -25,9 +25,16 @@ public final class Builtins {
 
     public static final TypeObject OBJECT = new ObjectType();
 
-    public static final TypeObject CONTEXT = new DefaultInterface("Context", OpSpTypeNode.ENTER, OpSpTypeNode.EXIT);
+    private static final TemplateParam CONTEXT_PARAM = new TemplateParam("T", 0, OBJECT);
 
-    public static final TypeObject CALLABLE = new DefaultInterface("Callable", OpSpTypeNode.CALL);
+    private static final Map<OpSpTypeNode, TypeObject> CONTEXT_MAP = Map.of(
+            OpSpTypeNode.ENTER, CONTEXT_PARAM,
+            OpSpTypeNode.EXIT, TypeObject.list()
+    );
+
+    public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
+
+    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CONTEXT_PARAM), Map.of(OpSpTypeNode.CALL, TypeObject.list()));
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
@@ -172,7 +179,8 @@ public final class Builtins {
             INPUT,
             LIST,
             SET,
-            CHAR
+            CHAR,
+            OPEN
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -190,6 +198,7 @@ public final class Builtins {
             Map.entry("false", FALSE),
             Map.entry("list", LIST),
             Map.entry("set", SET),
+            Map.entry("open", OPEN),
             Map.entry("null", NULL)
     );
 
