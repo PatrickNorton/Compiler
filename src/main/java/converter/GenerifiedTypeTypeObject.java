@@ -24,6 +24,6 @@ public class GenerifiedTypeTypeObject implements TypeObject {
         if (o == OpSpTypeNode.CALL) {
             return new TypeObject[] {type};
         }
-        throw new UnsupportedOperationException("Cannot get type");
+        return type.staticOperatorReturnType(o);
     }
 }

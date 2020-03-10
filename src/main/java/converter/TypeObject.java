@@ -37,6 +37,14 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
         throw new UnsupportedOperationException("Cannot get attribute type of object");
     }
 
+    default TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+        return null;
+    }
+
+    default TypeObject staticAttrType(String value) {
+        return null;
+    }
+
     @Override
     default int compareTo(@NotNull TypeObject o) {
         return this.hashCode() - o.hashCode();

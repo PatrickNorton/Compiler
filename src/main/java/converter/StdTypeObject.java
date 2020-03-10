@@ -14,6 +14,7 @@ public class StdTypeObject implements NameableType {
     private final String name;
     private final List<TypeObject> supers;
     private final Map<OpSpTypeNode, FunctionInfo> operators;
+    private final Map<OpSpTypeNode, FunctionInfo> staticOperators;
     private final GenericInfo info;
     private Map<String, TypeObject> attributes;
 
@@ -25,6 +26,7 @@ public class StdTypeObject implements NameableType {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);
         this.operators = new EnumMap<>(OpSpTypeNode.class);
+        this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
         this.info = GenericInfo.empty();
     }
 
@@ -36,6 +38,7 @@ public class StdTypeObject implements NameableType {
         this.name = name;
         this.supers = Collections.unmodifiableList(supers);
         this.operators = new EnumMap<>(OpSpTypeNode.class);
+        this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
         this.info = info;
     }
 
@@ -98,6 +101,20 @@ public class StdTypeObject implements NameableType {
         }
         for (var sup : supers) {
             var opRet = sup.operatorReturnType(o);
+            if (opRet != null) {
+                return opRet;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+        if (staticOperators.containsKey(o)) {
+            return staticOperators.get(o).getReturns();
+        }
+        for (var sup : supers) {
+            var opRet = sup.staticOperatorReturnType(o);
             if (opRet != null) {
                 return opRet;
             }
