@@ -20,9 +20,11 @@ public abstract class LoopConverter implements BaseConverter {
     @NotNull
     @Override
     public final List<Byte> convert(int start) {
-        info.enterLoop(hasContinue);
+        info.loopManager().enterLoop(hasContinue);
+        info.addStackFrame();
         var bytes = trueConvert(start);
-        info.exitLoop(start, bytes);
+        info.loopManager().exitLoop(start, bytes);
+        info.removeStackFrame();
         return bytes;
     }
 

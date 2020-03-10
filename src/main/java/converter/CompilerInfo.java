@@ -1,20 +1,12 @@
 package main.java.converter;
 
-import main.java.parser.ClassDefinitionNode;
-import main.java.parser.ContextDefinitionNode;
-import main.java.parser.DefinitionNode;
-import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
-import main.java.parser.MethodDefinitionNode;
-import main.java.parser.OperatorDefinitionNode;
-import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
-import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -26,10 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayDeque;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,43 +31,24 @@ import java.util.Set;
 // TODO? Split up a little
 public final class CompilerInfo {  // FIXME: LineInfo for exceptions
     private TopNode node;
-    private Set<String> exports;
-    private Map<String, TypeObject> exportTypes;
-    private IndexedSet<String> imports;
-    private Map<String, TypeObject> importTypes;
-    private List<Function> functions;
-    private IndexedSet<LangConstant> constants;
-    private IndexedSet<ClassInfo> classes;
-    private Deque<Boolean> loopLevel;
-    private Map<Integer, Set<Integer>> breakPointers;
-    private Map<Integer, Set<Integer>> continuePointers;
-    private Deque<Integer> continueLocations;
+    private Set<String> exports = new HashSet<>();
+    private Map<String, TypeObject> exportTypes = new HashMap<>();
+    private IndexedSet<String> imports = new IndexedHashSet<>();
+    private Map<String, TypeObject> importTypes = new HashMap<>();
+    private List<Function> functions = new ArrayList<>(Collections.singletonList(null));
+    private IndexedSet<LangConstant> constants = new IndexedHashSet<>();
+    private IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
+    private LoopManager loopManager = new LoopManager();
 
-    private List<Map<String, VariableInfo>> variables;
-    private Map<String, NameableType> typeMap;
-    private IntAllocator varNumbers;
+    private List<Map<String, VariableInfo>> variables = new ArrayList<>();
+    private Map<String, NameableType> typeMap = new HashMap<>();
+    private IntAllocator varNumbers = new IntAllocator();
 
-    private boolean allowSettingExports;
-    private boolean linked;
+    private boolean allowSettingExports = false;
+    private boolean linked = false;
 
     public CompilerInfo(TopNode node) {
         this.node = node;
-        this.exports = new HashSet<>();
-        this.exportTypes = new HashMap<>();
-        this.imports = new IndexedHashSet<>();
-        this.importTypes = new HashMap<>();
-        this.functions = new ArrayList<>(Collections.singletonList(null));
-        this.constants = new IndexedHashSet<>();
-        this.classes = new IndexedHashSet<>();
-        this.allowSettingExports = false;
-        this.linked = false;
-        this.loopLevel = new ArrayDeque<>();
-        this.breakPointers = new HashMap<>();
-        this.continuePointers = new HashMap<>();
-        this.continueLocations = new ArrayDeque<>();
-        this.variables = new ArrayList<>();
-        this.typeMap = new HashMap<>();
-        this.varNumbers = new IntAllocator();
     }
 
     public CompilerInfo compile() {
@@ -129,15 +101,9 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
 
     @Nullable
     public FunctionInfo fnInfo(String name) {
-        var function = findFunction(name);
-        return function == null ? null : function.getInfo();
-    }
-
-    @Nullable
-    private Function findFunction(String name) {
         for (var fn : functions) {
             if (fn != null && fn.getName().equals(name)) {
-                return fn;
+                return fn.getInfo();
             }
         }
         return null;
@@ -192,46 +158,9 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
         if (linked) {
             return this;
         }
-        Map<String, String> exports = new HashMap<>();
-        Map<String, TypeObject> globals = new HashMap<>();
-        for (var stmt : node) {
-            if (stmt instanceof DefinitionNode) {
-                var name = ((DefinitionNode) stmt).getName();
-                TypeObject type;
-                if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
-                    type = Builtins.CALLABLE;
-                } else if (stmt instanceof PropertyDefinitionNode) {
-                    var typeNode = ((PropertyDefinitionNode) stmt).getType();
-                    type = null;  // FIXME: Convert type properly
-                } else if (stmt instanceof ContextDefinitionNode) {
-                    type = null;
-                } else if (stmt instanceof OperatorDefinitionNode) {
-                    throw CompilerInternalError.of("Illegal operator definition", stmt);
-                } else if (stmt instanceof MethodDefinitionNode) {
-                    throw CompilerInternalError.of("Illegal method definition", stmt);
-                } else if (stmt instanceof ClassDefinitionNode) {
-                    type = Builtins.TYPE;  // FIXME: Generify types correctly
-                } else {
-                    throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
-                }
-                globals.put(name.toString(), type);
-            } else if (stmt instanceof ImportExportNode) {
-                var ieNode = (ImportExportNode) stmt;
-                switch (ieNode.getType()) {
-                    case IMPORT:
-                    case TYPEGET:
-                        addImports(ieNode, globals);
-                        break;
-                    case EXPORT:
-                        addExports(ieNode, exports);
-                        break;
-                    default:
-                        throw CompilerInternalError.of(
-                                "Unknown type of import/export", ieNode.getLineInfo()
-                        );
-                }
-            }
-        }
+        var pair = new Linker(this).link(node);
+        var exports = pair.getKey();
+        var globals = pair.getValue();
         try {
             allowSettingExports = true;
             for (var entry : exports.entrySet()) {
@@ -248,57 +177,6 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
         }
         linked = true;
         return this;
-    }
-
-    private void addImports(@NotNull ImportExportNode node, Map<String, TypeObject> globals) {
-        assert node.getType() == ImportExportNode.IMPORT;
-        boolean notRenamed = node.getAs().length == 0;
-        for (int i = 0; i < node.getValues().length; i++) {
-            var value = node.getValues()[i];
-            var as = notRenamed ? value : node.getAs()[i];
-            String moduleName = moduleName(node, i);
-            if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
-                throw CompilerException.of("Illegal import " + as, as);
-            }
-            String importName = value.toString();
-            CompilerInfo f = node.getPreDots() > 0
-                    ? Converter.findLocalModule(this.node.getPath().getParent(), moduleName)
-                    : Converter.findModule(moduleName);
-            f.compile().writeToFile(Converter.getDestFile().toPath().resolve(moduleName + ".nbyte").toFile());
-            if (globals.containsKey(importName)) {
-                throw CompilerException.format("Name %s already defined", node, importName);
-            } else {
-                globals.put(importName, f.exportType(importName));
-                addImport(node.getFrom().toString() + "." + value.toString());
-            }
-        }
-    }
-
-    private void addExports(@NotNull ImportExportNode node, Map<String, String> exports) {
-        assert node.getType() == ImportExportNode.EXPORT;
-        boolean notRenamed = node.getAs().length == 0;
-        for (int i = 0; i < node.getValues().length; i++) {
-            var value = node.getValues()[i];
-            var as = notRenamed ? value : node.getAs()[i];
-            if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
-                throw CompilerException.of("Illegal export " + value, value);
-            }
-            var name = ((VariableNode) value.getPreDot()).getName();
-            var asName = as.isEmpty() ? name : ((VariableNode) as.getPreDot()).getName();
-            if (exports.containsKey(asName)) {
-                throw CompilerException.format("Name %s already exported", node, asName);
-            } else {
-                exports.put(name, asName);
-            }
-        }
-    }
-
-    private String moduleName(@NotNull ImportExportNode node, int i) {
-        if (!node.getFrom().isEmpty()) {
-            return ((VariableNode) node.getFrom().getPreDot()).getName();
-        } else {
-            return ((VariableNode) node.getValues()[i].getPreDot()).getName();
-        }
     }
 
     public void writeToFile(@NotNull File file) {
@@ -383,52 +261,13 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
     }
 
     /**
-     * Enter another loop, implying another level of break/continue statements.
-     */
-    public void enterLoop(boolean hasContinue) {
-        loopLevel.push(hasContinue);
-        continueLocations.push(-1);
-        assert continueLocations.size() == loopLevel.size();
-        addStackFrame();
-    }
-
-    /**
-     * Exit a loop, and set all dangling pointers to the end of the loop.
-     *
-     * @param listStart The index of the beginning of the list relative to the
-     *                  start of the function
-     * @param bytes The list of bytes
-     */
-    public void exitLoop(int listStart, @NotNull List<Byte> bytes) {
-        int level = loopLevel.size();
-        boolean hasContinue = loopLevel.pop();
-        int endLoop = listStart + bytes.size();
-        for (int i : breakPointers.getOrDefault(level, Collections.emptySet())) {
-            setPointer(i - listStart, bytes, endLoop);
-        }
-        breakPointers.remove(level);
-        int continueLocation = continueLocations.pop();
-        if (hasContinue) {
-            assert continueLocation != -1 : "Continue location not defined";
-            for (int i : continuePointers.getOrDefault(level, Collections.emptySet())) {
-                setPointer(i - listStart, bytes, continueLocation);
-            }
-            continuePointers.remove(level);
-        } else {
-            assert continueLocation == -1 : "Continue location erroneously set";
-        }
-        removeStackFrame();
-    }
-
-    /**
      * Add a break statement to the pool of un-linked statements.
      *
      * @param levels The number of levels to break
      * @param location The location (absolute, by start of function)
      */
     public void addBreak(int levels, int location) {
-        var pointerSet = breakPointers.computeIfAbsent(loopLevel.size() - levels, k -> new HashSet<>());
-        pointerSet.add(location);
+        loopManager.addBreak(levels, location);
     }
 
     /**
@@ -437,8 +276,7 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
      * @param location The location (absolute, by start of function)
      */
     public void addContinue(int location) {
-        var pointerSet = continuePointers.computeIfAbsent(loopLevel.size(), k -> new HashSet<>());
-        pointerSet.add(location);
+        loopManager.addContinue(location);
     }
 
     /**
@@ -447,10 +285,11 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
      * @param location The location (absolute, by start of function)
      */
     public void setContinuePoint(int location) {
-        assert continueLocations.size() == loopLevel.size() : "Mismatch in continue levels";
-        int oldValue = continueLocations.pop();
-        assert oldValue == -1 : "Defined multiple continue points for loop";
-        continueLocations.push(location);
+        loopManager.setContinuePoint(location);
+    }
+
+    public LoopManager loopManager() {
+        return loopManager;
     }
 
     /**
@@ -613,17 +452,7 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
         return typeObjects;
     }
 
-    /**
-     * Set a pointer starting at a given index in the byte list.
-     *
-     * @param listIndex The index in the list to set
-     * @param bytes The list to be set
-     * @param value The pointer value to set it to
-     */
-    private void setPointer(int listIndex, List<Byte> bytes, int value) {
-        var ptrBytes = Util.intToBytes(value);
-        for (int i = 0; i < ptrBytes.size(); i++) {
-            bytes.set(listIndex + i, ptrBytes.get(i));
-        }
+    public Path path() {
+        return node.getPath();
     }
 }
