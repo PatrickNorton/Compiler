@@ -44,6 +44,10 @@ public final class ClassInfo {
         return methodDefs;
     }
 
+    public Map<String, List<Byte>> getStaticMethods() {
+        return staticMethods;
+    }
+
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(StringConstant.strBytes(type.name()));

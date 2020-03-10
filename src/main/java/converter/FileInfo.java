@@ -317,6 +317,10 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
                 System.out.println(Bytecode.disassemble(this, fnPair.getValue()));
             }
+            for (var fnPair : cls.getStaticMethods().entrySet()) {
+                System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
+                System.out.println(Bytecode.disassemble(this, fnPair.getValue()));
+            }
             for (var opPair : cls.getOperatorDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
                 System.out.println(Bytecode.disassemble(this, opPair.getValue()));
