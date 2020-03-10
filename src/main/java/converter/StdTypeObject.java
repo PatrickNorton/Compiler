@@ -17,6 +17,7 @@ public class StdTypeObject implements NameableType {
     private final Map<OpSpTypeNode, FunctionInfo> staticOperators;
     private final GenericInfo info;
     private Map<String, TypeObject> attributes;
+    private Map<String, TypeObject> staticAttributes;
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList());
@@ -139,6 +140,16 @@ public class StdTypeObject implements NameableType {
     public void setAttributes(Map<String, TypeObject> attributes) {
         assert this.attributes == null;
         this.attributes = attributes;
+    }
+
+    public void setStaticAttributes(Map<String, TypeObject> attributes) {
+        assert staticAttributes == null;
+        staticAttributes = attributes;
+    }
+
+    @Override
+    public TypeObject staticAttrType(String value) {
+        return staticAttributes.get(value);
     }
 
     @Override

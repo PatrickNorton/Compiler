@@ -60,13 +60,8 @@ public final class ClassConverter implements BaseConverter {
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
         }
-        var attributes = new HashMap<>(declarations.getVars());
-        for (var pair : methods.getMethods().entrySet()) {
-            var info = pair.getValue();
-            var methodType = Builtins.CALLABLE.generify(TypeObject.list(info.getReturns()));
-            attributes.put(pair.getKey(), methodType);
-        }
-        type.setAttributes(attributes);
+        type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods()));
+        type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getMethods()));
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
@@ -102,6 +97,18 @@ public final class ClassConverter implements BaseConverter {
             info.removeStackFrame();
         }
         return result;
+    }
+
+    @NotNull
+    private Map<String, TypeObject> allAttributes(Map<String, TypeObject> attrs,
+                                                  @NotNull Map<String, FunctionInfo> methods) {
+        var finalAttrs = new HashMap<>(attrs);
+        for (var pair : methods.entrySet()) {
+            var info = pair.getValue();
+            var methodType = Builtins.CALLABLE.generify(TypeObject.list(info.getReturns()));
+            finalAttrs.put(pair.getKey(), methodType);
+        }
+        return finalAttrs;
     }
 
     private static final class DeclarationConverter {
