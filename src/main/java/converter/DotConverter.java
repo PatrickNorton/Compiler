@@ -4,6 +4,7 @@ import main.java.parser.DottedVar;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.NameNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.SpecialOpNameNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -27,9 +28,60 @@ public final class DotConverter implements TestConverter {
     public TypeObject[] returnType() {  // TODO: Non-null dots, etc.
         var result = TestConverter.returnType(node.getPreDot(), info, 1)[0];
         for (var dot : node.getPostDots()) {
-            result = result.attrType(dot.getPostDot().toString());  // FIXME: Function calls &c.
+            result = dotReturnType(result, dot);
         }
         return new TypeObject[]{result};
+    }
+
+    private TypeObject dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+        switch (dot.getDotPrefix()) {
+            case "":
+                return normalDotReturnType(result, dot);
+            case "?":
+                return optionalDotReturnType(result, dot);
+            case "!!":
+                return nonNullReturnType(result, dot);
+            default:
+                throw new RuntimeException("Unknown type of dot " + dot.getDotPrefix());
+        }
+    }
+
+    private TypeObject normalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+        assert dot.getDotPrefix().isEmpty() || !result.isSuperclass(Builtins.NULL_TYPE);
+        var postDot = dot.getPostDot();
+        if (postDot instanceof VariableNode) {
+            return result.attrType(((VariableNode) postDot).getName());
+        } else if (postDot instanceof FunctionCallNode) {
+            var caller = ((FunctionCallNode) postDot).getCaller();
+            var attrType = result.attrType(((VariableNode) caller).getName());
+            return attrType.operatorReturnType(OpSpTypeNode.CALL)[0];
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private TypeObject optionalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+        assert dot.getDotPrefix().equals("?");
+        if (!result.isSuperclass(Builtins.NULL_TYPE)) {
+            return normalDotReturnType(result, dot);
+        }
+        var postDot = dot.getPostDot();
+        if (postDot instanceof VariableNode) {
+            var retType = result.stripNull().attrType(((VariableNode) postDot).getName());
+            return TypeObject.optional(retType);
+        } else if (postDot instanceof FunctionCallNode) {
+            var caller = ((FunctionCallNode) postDot).getCaller();
+            var attrType = result.stripNull().attrType(((VariableNode) caller).getName());
+            return TypeObject.optional(attrType.operatorReturnType(OpSpTypeNode.CALL)[0]);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private TypeObject nonNullReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+        var hasNull = result.isSuperclass(Builtins.NULL_TYPE);
+        var bangType = hasNull ? result.stripNull() : result;
+        return normalDotReturnType(bangType, dot);
     }
 
     @NotNull
@@ -46,6 +98,7 @@ public final class DotConverter implements TestConverter {
                     break;
                 case "!!":
                     convertNotNullDot(start, bytes, dot);
+                    break;
                 default:
                     throw new RuntimeException("Unknown value for dot prefix");
             }
@@ -60,7 +113,7 @@ public final class DotConverter implements TestConverter {
     }
 
     private void convertNullDot(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
-        assert dot.getDotPrefix().equals("?");
+        assert dot.getDotPrefix().equals("?");  // TODO: Optimizations & warnings for non-null types
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.JUMP_NULL.value);
@@ -71,7 +124,7 @@ public final class DotConverter implements TestConverter {
     }
 
     private void convertNotNullDot(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
-        assert dot.getDotPrefix().equals("!!");
+        assert dot.getDotPrefix().equals("!!");  // TODO: Optimizations & warnings for non-null types
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.JUMP_NN.value);

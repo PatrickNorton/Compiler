@@ -60,7 +60,13 @@ public final class ClassConverter implements BaseConverter {
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
         }
-        type.setAttributes(declarations.getVars());
+        var attributes = new HashMap<>(declarations.getVars());
+        for (var pair : methods.getMethods().entrySet()) {
+            var info = pair.getValue();
+            var methodType = Builtins.CALLABLE.generify(TypeObject.list(info.getReturns()));
+            attributes.put(pair.getKey(), methodType);
+        }
+        type.setAttributes(attributes);
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
