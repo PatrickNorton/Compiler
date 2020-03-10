@@ -86,7 +86,11 @@ public final class Linker {
             if (globals.containsKey(importName)) {
                 throw CompilerException.format("Name %s already defined", node, importName);
             } else {
-                globals.put(importName, f.exportType(importName));
+                var exportType = f.exportType(importName);
+                if (exportType == null) {
+                    throw CompilerException.format("'%s' not exported in module '%s'", node, importName, moduleName);
+                }
+                globals.put(importName, exportType);
                 info.addImport(node.getFrom().toString() + "." + value.toString());
             }
         }
