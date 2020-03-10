@@ -22,7 +22,7 @@ public class GenerifiedDefaultInterface extends AbstractDefaultInterface {
 
     @Override
     public String name() {
-        var sj = new StringJoiner(super.name() + "[", ", ", "]");
+        var sj = new StringJoiner(", ",super.name() + "[",  "]");
         for (var type : types) {
             sj.add(type.name());
         }

@@ -50,10 +50,10 @@ public class GenerifiedTypeObject implements NameableType {
 
     @Override
     public String name() {
-        var valueJoiner = new StringJoiner("[", ", ", "]");
+        var valueJoiner = new StringJoiner(", ", "[", "]");
         for (var cls : generics) {
             valueJoiner.add(cls.name());
         }
-        return parent + valueJoiner.toString();
+        return parent.name() + valueJoiner.toString();
     }
 }
