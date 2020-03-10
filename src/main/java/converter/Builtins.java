@@ -147,6 +147,8 @@ public final class Builtins {
         LIST.setOperator(OpSpTypeNode.DEL_ATTR, listDelInfo);
         var listContainsInfo = new FunctionInfo("", ArgumentInfo.of(LIST_PARAM), BOOL);
         LIST.setOperator(OpSpTypeNode.IN, listContainsInfo);
+        var listIterInfo = new FunctionInfo("", ArgumentInfo.of(), LIST_PARAM);
+        LIST.setOperator(OpSpTypeNode.ITER, listIterInfo);
     }
 
     static {  // Set set operators
@@ -160,6 +162,8 @@ public final class Builtins {
         SET.setOperator(OpSpTypeNode.GREATER_EQUAL, setCompInfo);
         SET.setOperator(OpSpTypeNode.LESS_THAN, setCompInfo);
         SET.setOperator(OpSpTypeNode.LESS_EQUAL, setCompInfo);
+        var setIterInfo = new FunctionInfo("", ArgumentInfo.of(), SET_PARAM);
+        SET.setOperator(OpSpTypeNode.ITER, setIterInfo);
     }
 
     static {

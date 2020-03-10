@@ -36,6 +36,13 @@ public final class ForConverter extends LoopConverter {
             }
             info.addVariable(iteratedName, iteratorType);
         }
+        var valueReturnedType = valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER)[0];
+        if (!iteratorType.isSuperclass(valueReturnedType)) {
+            throw CompilerException.format(
+                    "'for'-loop iterator returns '%s', variable requires '%s'",
+                    node.getIterables().get(0), valueReturnedType.name(), iteratorType.name()
+            );
+        }
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
