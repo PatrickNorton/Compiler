@@ -48,6 +48,10 @@ public final class ClassInfo {
         return staticMethods;
     }
 
+    public String name() {
+        return type.name();
+    }
+
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(StringConstant.strBytes(type.name()));

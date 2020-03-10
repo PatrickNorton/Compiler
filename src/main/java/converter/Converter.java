@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public final class Converter {
     private static final FilenameFilter EXPORT_FILTER = (f, s) -> s.equals(Util.EXPORTS_FILENAME);
-    private static final Map<String, FileInfo> modules = new HashMap<>();
+    private static final Map<String, CompilerInfo> modules = new HashMap<>();
 
     private static File destFile = null;
 
@@ -28,10 +28,10 @@ public final class Converter {
     public static void convertToFile(@NotNull File file, TopNode node) {
         assert destFile == null || destFile.equals(file.getParentFile());
         setDestFile(file.getParentFile());
-        new FileInfo(node).compile().writeToFile(file);
+        new CompilerInfo(node).compile().writeToFile(file);
     }
 
-    public static FileInfo findModule(String name) {
+    public static CompilerInfo findModule(String name) {
         if (modules.containsKey(name)) {
             return modules.get(name);
         }
@@ -60,7 +60,7 @@ public final class Converter {
     }
 
     @NotNull
-    public static FileInfo findLocalModule(@NotNull Path parentPath, String name) {
+    public static CompilerInfo findLocalModule(@NotNull Path parentPath, String name) {
         List<Path> result = new ArrayList<>();
         for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
             var path = file.toPath();
@@ -98,14 +98,14 @@ public final class Converter {
     }
 
     @NotNull
-    private static FileInfo getInfo(@NotNull List<Path> result, String name) {
+    private static CompilerInfo getInfo(@NotNull List<Path> result, String name) {
         var endFile = result.get(0).toFile();
         if (endFile.isDirectory()) {
             var exportFiles = endFile.listFiles(EXPORT_FILTER);
             assert exportFiles != null && exportFiles.length == 1;
             endFile = exportFiles[0];
         }
-        var info = new FileInfo(Parser.parse(endFile));
+        var info = new CompilerInfo(Parser.parse(endFile));
         modules.put(name, info);
         return info;
     }

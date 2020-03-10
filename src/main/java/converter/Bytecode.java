@@ -142,7 +142,7 @@ public enum Bytecode {
     }
 
     @NotNull
-    static String disassemble(FileInfo info, @NotNull List<Byte> bytes) {
+    static String disassemble(CompilerInfo info, @NotNull List<Byte> bytes) {
         var sb = new StringBuilder();
         for (int i = 0; i < bytes.size();) {
             var op = VALUE_MAP.get(bytes.get(i++));
