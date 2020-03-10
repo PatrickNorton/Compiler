@@ -49,6 +49,10 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return new ArgIterator();
     }
 
+    public int size() {
+        return positionArgs.length + normalArgs.length + keywordArgs.length;
+    }
+
     private class ArgIterator implements Iterator<Argument> {
         int next;
 

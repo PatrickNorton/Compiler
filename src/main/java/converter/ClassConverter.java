@@ -104,9 +104,7 @@ public final class ClassConverter implements BaseConverter {
                                                   @NotNull Map<String, FunctionInfo> methods) {
         var finalAttrs = new HashMap<>(attrs);
         for (var pair : methods.entrySet()) {
-            var info = pair.getValue();
-            var methodType = Builtins.CALLABLE.generify(TypeObject.list(info.getReturns()));
-            finalAttrs.put(pair.getKey(), methodType);
+            finalAttrs.put(pair.getKey(), pair.getValue().toCallable());
         }
         return finalAttrs;
     }
