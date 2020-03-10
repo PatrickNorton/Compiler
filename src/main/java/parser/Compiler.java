@@ -28,7 +28,8 @@ public class Compiler {
         for (File file : nodes) {
             TopNode node = Parser.parse(file);
             var fileName = file.getName();
-            var destFile = file.toPath().resolveSibling(fileName.replaceFirst("\\.newlang$", ".nbyte"));
+            var destFolder = file.toPath().resolveSibling("__ncache__");
+            var destFile = destFolder.resolve(fileName.replaceFirst("\\.newlang$", ".nbyte"));
             Converter.convertToFile(destFile.toFile(), node);
         }
     }

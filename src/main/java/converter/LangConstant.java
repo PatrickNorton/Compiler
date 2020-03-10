@@ -17,7 +17,7 @@ public interface LangConstant extends LangObject {
 
     @NotNull
     default String name() {
-        throw new UnsupportedOperationException();
+        return "";
     }
 
     @NotNull

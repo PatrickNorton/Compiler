@@ -39,10 +39,10 @@ public final class ImportExportConverter implements BaseConverter {
         for (int i = 0; i < node.getValues().length; i++) {
             String importName = from + "." + node.getValues()[i];
             int importNumber = info.addImport(importName);
-            var constant = new ImportConstant(importNumber);
-            info.addConstant(constant);
             var localName = (renamed ? node.getAs() : node.getValues())[i].toString();
-            info.addVariable(localName, info.importType(importName));
+            var constant = new ImportConstant(importNumber, localName);
+            info.addConstant(constant);
+            info.addVariable(localName, info.importType(importName), constant);
         }
     }
 

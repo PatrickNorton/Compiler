@@ -21,9 +21,13 @@ public final class Converter {
     private static final FilenameFilter EXPORT_FILTER = (f, s) -> s.equals(Util.EXPORTS_FILENAME);
     private static final Map<String, FileInfo> modules = new HashMap<>();
 
+    private static File destFile = null;
+
     private Converter() {}
 
-    public static void convertToFile(File file, TopNode node) {
+    public static void convertToFile(@NotNull File file, TopNode node) {
+        assert destFile == null || destFile.equals(file.getParentFile());
+        setDestFile(file.getParentFile());
         new FileInfo(node).compile().writeToFile(file);
     }
 
@@ -35,6 +39,7 @@ public final class Converter {
         for (String filename : path.split(":")) {
             try (var walker = Files.walk(Path.of(filename))) {
                 var result = walker.filter(Converter::isModule)
+                        .filter(f -> f.endsWith(name + Util.FILE_EXTENSION) || f.endsWith(name))
                         .collect(Collectors.toList());
                 if (!result.isEmpty()) {
                     return getInfo(result, name);
@@ -69,6 +74,10 @@ public final class Converter {
         throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
     }
 
+    static File getDestFile() {
+        return destFile;
+    }
+
     private static boolean isModule(Path path) {
         if (Files.isRegularFile(path)) {
             return path.toString().endsWith(Util.FILE_EXTENSION);
@@ -76,6 +85,11 @@ public final class Converter {
             var files = path.toFile().list(EXPORT_FILTER);
             return files != null && files.length > 0;
         }
+    }
+
+    private static void setDestFile(File file) {
+        assert destFile == null;
+        destFile = file;
     }
 
     @NotNull

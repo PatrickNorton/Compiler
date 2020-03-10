@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImportConstant implements LangConstant {
+    private String name;
     private int index;
 
-    public ImportConstant(int index) {
+    public ImportConstant(int index, String name) {
         this.index = index;
+        this.name = name;
     }
 
     @NotNull
@@ -25,5 +27,10 @@ public class ImportConstant implements LangConstant {
     @Override
     public TypeObject getType() {
         throw new RuntimeException("Cannot figure out type of this yet");
+    }
+
+    @Override
+    public @NotNull String name() {
+        return name;
     }
 }

@@ -215,7 +215,7 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
             FileInfo f = node.getPreDots() > 0
                     ? Converter.findLocalModule(this.node.getPath().getParent(), moduleName)
                     : Converter.findModule(moduleName);
-            f.compile();  // TODO: Write to file
+            f.compile().writeToFile(Converter.getDestFile().toPath().resolve(moduleName + ".nbyte").toFile());
             if (globals.containsKey(importName)) {
                 throw CompilerException.format("Name %s already defined", node, importName);
             } else {
@@ -252,8 +252,13 @@ public final class FileInfo {  // FIXME: LineInfo for exceptions
         }
     }
 
-    public void writeToFile(File file) {
+    public void writeToFile(@NotNull File file) {
         printDisassembly();
+        if (!file.getParentFile().exists()) {
+            if (!file.getParentFile().mkdir()) {
+                throw new RuntimeException("Could not create file " + file);
+            }
+        }
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.toByteArray(imports.size()));
