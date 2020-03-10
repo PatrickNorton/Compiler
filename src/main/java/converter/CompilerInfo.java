@@ -158,16 +158,17 @@ public final class CompilerInfo {  // FIXME: LineInfo for exceptions
         if (linked) {
             return this;
         }
-        var pair = new Linker(this).link(node);
-        var exports = pair.getKey();
-        var globals = pair.getValue();
+        var linker = new Linker(this).link(node);
+        var exports = linker.getExports();
+        var globals = linker.getGlobals();
         try {
             allowSettingExports = true;
             for (var entry : exports.entrySet()) {
-                var exportName = entry.getValue();
+                var exportName = entry.getValue().getKey();
                 var exportType = globals.get(entry.getKey());
                 if (exportType == null) {
-                    throw CompilerException.of("Undefined name for export: " + exportName, LineInfo.empty());
+                    var lineInfo = entry.getValue().getValue();
+                    throw CompilerException.of("Undefined name for export: " + exportName, lineInfo);
                 }
                 this.exports.add(exportName);
                 this.exportTypes.put(exportName, exportType);

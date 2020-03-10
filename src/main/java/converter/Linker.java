@@ -5,6 +5,7 @@ import main.java.parser.ContextDefinitionNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
+import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
@@ -18,15 +19,26 @@ import java.util.Map;
 
 public final class Linker {
     private CompilerInfo info;
+    private Map<String, Pair<String, LineInfo>> exports;
+    private Map<String, TypeObject> globals;
 
     public Linker(CompilerInfo info) {
         this.info = info;
+        this.exports = new HashMap<>();
+        this.globals = new HashMap<>();
+    }
+
+    public Map<String, Pair<String, LineInfo>> getExports() {
+        return exports;
+    }
+
+    public Map<String, TypeObject> getGlobals() {
+        return globals;
     }
 
     @NotNull
-    public Pair<Map<String, String>, Map<String, TypeObject>> link(@NotNull TopNode node) {
-        Map<String, String> exports = new HashMap<>();
-        Map<String, TypeObject> globals = new HashMap<>();
+    public Linker link(@NotNull TopNode node) {
+        assert exports.isEmpty() && globals.isEmpty();
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
                 var name = ((DefinitionNode) stmt).getName();
@@ -65,7 +77,7 @@ public final class Linker {
                 }
             }
         }
-        return Pair.of(exports, globals);
+        return this;
     }
 
     private void addImports(@NotNull ImportExportNode node, Map<String, TypeObject> globals) {
@@ -96,7 +108,7 @@ public final class Linker {
         }
     }
 
-    private void addExports(@NotNull ImportExportNode node, Map<String, String> exports) {
+    private void addExports(@NotNull ImportExportNode node, Map<String, Pair<String, LineInfo>> exports) {
         assert node.getType() == ImportExportNode.EXPORT;
         boolean notRenamed = node.getAs().length == 0;
         for (int i = 0; i < node.getValues().length; i++) {
@@ -110,7 +122,7 @@ public final class Linker {
             if (exports.containsKey(asName)) {
                 throw CompilerException.format("Name %s already exported", node, asName);
             } else {
-                exports.put(name, asName);
+                exports.put(name, Pair.of(asName, node.getLineInfo()));
             }
         }
     }
