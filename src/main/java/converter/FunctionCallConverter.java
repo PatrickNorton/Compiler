@@ -27,7 +27,7 @@ public final class FunctionCallConverter implements TestConverter {
         ensureTypesMatch(retTypes[0]);
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
         convertCall(bytes, start);
-        for (int i = retCount; i < retTypes.length; i++) {
+        for (int i = retCount; i < returnType().length; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
