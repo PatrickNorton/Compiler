@@ -44,12 +44,16 @@ public final class CompilerInfo {
 
     private boolean allowSettingExports = false;
     private boolean linked = false;
+    private boolean compiled = false;
 
     public CompilerInfo(TopNode node) {
         this.node = node;
     }
 
-    public CompilerInfo compile() {
+    public CompilerInfo compile(File file) {
+        if (compiled) {
+            return this;
+        }
         link();
         this.addStackFrame();
         List<Byte> bytes = new ArrayList<>();
@@ -63,6 +67,8 @@ public final class CompilerInfo {
         this.removeStackFrame();
         // Put the default function at the beginning
         functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
+        writeToFile(file);
+        compiled = true;
         return this;
     }
 

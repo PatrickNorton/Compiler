@@ -28,7 +28,7 @@ public final class Converter {
     public static void convertToFile(@NotNull File file, TopNode node) {
         assert destFile == null || destFile.equals(file.getParentFile());
         setDestFile(file.getParentFile());
-        new CompilerInfo(node).compile().writeToFile(file);
+        new CompilerInfo(node).compile(file);
     }
 
     public static CompilerInfo findModule(String name) {

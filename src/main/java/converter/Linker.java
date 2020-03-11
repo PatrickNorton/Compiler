@@ -95,7 +95,7 @@ public final class Linker {
                     ? Converter.findLocalModule(info.path().getParent(), moduleName)
                     : Converter.findModule(moduleName);
             var file = Converter.getDestFile().toPath().resolve(moduleName + Util.BYTECODE_EXTENSION).toFile();
-            f.compile().writeToFile(file);
+            f.compile(file);
             if (globals.containsKey(importName)) {
                 throw CompilerException.format("Name %s already defined", node, importName);
             } else {
