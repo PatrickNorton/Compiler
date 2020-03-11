@@ -37,7 +37,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         if (!assignedType.isSuperclass(valueType)) {
             throw CompilerException.format(
                     "Object of type %s cannot be assigned to object of type %s",
-                    node, valueType, assignedType);
+                    node, valueType.name(), assignedType.name());
         }
         if (converter instanceof ConstantConverter && node.getDescriptors().contains(DescriptorNode.CONST)) {
             var constant = ((ConstantConverter) converter).constant();

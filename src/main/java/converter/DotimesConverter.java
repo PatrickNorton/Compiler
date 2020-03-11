@@ -23,7 +23,7 @@ public final class DotimesConverter extends LoopConverter {
         if (!Builtins.INT.isSuperclass(countConverter.returnType()[0])) {
             throw CompilerException.format(
                     "dotimes loop's iteration count has type '%s', which is not a subclass of int",
-                    node.getIterations(), countConverter.returnType()[0]
+                    node.getIterations(), countConverter.returnType()[0].name()
             );
         }
         List<Byte> bytes = new ArrayList<>(countConverter.convert(start));

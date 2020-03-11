@@ -31,7 +31,7 @@ public final class WithConverter implements BaseConverter {
             throw CompilerException.format(
                     "Object in 'with' statement returns '%s' from operator enter(), " +
                             "attempted to assign it to variable of incompatible type '%s",
-                    node, returnType, valueType
+                    node, returnType.name(), trueType.name()
             );
         }
         List<Byte> bytes = new ArrayList<>(contextConverter.convert(start));

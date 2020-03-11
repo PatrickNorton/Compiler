@@ -24,11 +24,11 @@ public final class AugAssignConverter implements BaseConverter {
         var returnType = assignedConverter.returnType()[0].operatorReturnType(node.getOperator().operator)[0];
         if (returnType == null) {
             throw CompilerException.format("Value of type %s does not have an overloaded %s operator",
-                    node, assignedConverter.returnType(), node.getOperator().operator.name);
+                    node, assignedConverter.returnType()[0].name(), node.getOperator().operator.name);
         } else if (!returnType.isSuperclass(assignedConverter.returnType()[0])) {
             throw CompilerException.format(
                     "Value of type %s has a return type of %s, which is incompatible with the type of %s",
-                    node, assignedConverter.returnType(), returnType, node.getName());
+                    node, assignedConverter.returnType()[0].name(), returnType, node.getName());
         }
         List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
         bytes.addAll(valueConverter.convert(start));

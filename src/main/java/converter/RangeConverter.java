@@ -50,7 +50,7 @@ public final class RangeConverter implements TestConverter {
             if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
                 throw CompilerException.format(
                         "TypeError: Type %s does not match required type %s",
-                        node, converter.returnType(), Builtins.INT
+                        node, converter.returnType()[0].name(), Builtins.INT.name()
                 );
             }
             bytes.addAll(converter.convert(start));
