@@ -45,7 +45,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         if (i == args.length) return result;
         List<TypeObject> resultTypes = new ArrayList<>(args.length - i - 1);
         int j;
-        for (j = args.length - 1; j >= i && !params.get(params.size() - (j + 1 - args.length) - 1).isVararg(); j--) {
+        for (j = args.length - 1; j >= i && !params.get(Math.abs(args.length - params.size()) + j).isVararg(); j--) {
             resultTypes.add(0, args[j]);
         }
         List<TypeObject> varargTypes = new ArrayList<>(j - i + 1);
