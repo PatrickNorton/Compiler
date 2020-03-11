@@ -45,7 +45,7 @@ public final class Converter {
                     return getInfo(result, name);
                 }
             } catch (IOException e) {
-                // FIXME: Handle this
+                throw new RuntimeException(e);
             }
         }
         var builtinPath = builtinPath().toFile().list();

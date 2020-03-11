@@ -25,7 +25,7 @@ public final class DotConverter implements TestConverter {
 
     @NotNull
     @Override
-    public TypeObject[] returnType() {  // TODO: Non-null dots, etc.
+    public TypeObject[] returnType() {
         var result = TestConverter.returnType(node.getPreDot(), info, 1)[0];
         for (var dot : node.getPostDots()) {
             result = dotReturnType(result, dot);

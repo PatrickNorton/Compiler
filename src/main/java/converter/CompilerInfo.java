@@ -28,8 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-// TODO? Split up a little
-public final class CompilerInfo {  // FIXME: LineInfo for exceptions
+public final class CompilerInfo {
     private TopNode node;
     private Set<String> exports = new HashSet<>();
     private Map<String, TypeObject> exportTypes = new HashMap<>();

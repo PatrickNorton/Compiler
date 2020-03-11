@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ComprehensionConverter implements TestConverter {  // FIXME: Generics
+public final class ComprehensionConverter implements TestConverter {
     private ComprehensionNode node;
     private CompilerInfo info;
     private int retCount;

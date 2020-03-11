@@ -22,11 +22,14 @@ public final class FunctionCallConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert retCount == 1 || retCount == 0;  // TODO: Multiple returns
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
-        ensureTypesMatch(callConverter.returnType()[0]);
+        var retTypes = callConverter.returnType();
+        ensureTypesMatch(retTypes[0]);
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
         convertCall(bytes, start);
+        for (int i = retCount; i < retTypes.length; i++) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
         return bytes;
     }
 
@@ -37,10 +40,6 @@ public final class FunctionCallConverter implements TestConverter {
         }
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
-        // TODO: Pop when return type is not void
-//        if (retCount == 0) {
-//            bytes.add(Bytecode.POP_TOP.value);
-//        }
     }
 
     @NotNull

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class LiteralConverter implements TestConverter {  // FIXME: Generics
+public final class LiteralConverter implements TestConverter {
     private LiteralNode node;
     private CompilerInfo info;
     private int retCount;
