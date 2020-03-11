@@ -9,16 +9,9 @@ public final class Util {
     public static final byte[] MAGIC_NUMBER = toByteArray(0x0ABADE66);  // A bad egg :)
     public static final String FILE_EXTENSION = ".newlang";
     public static final String EXPORTS_FILENAME = "__exports__" + FILE_EXTENSION;
+    public static final String BYTECODE_EXTENSION = ".nbyte";
 
     private Util() {}
-
-    public static int sum(int... args) {
-        int sum = 0;
-        for (var op : args) {
-            sum += op;
-        }
-        return sum;
-    }
 
     @NotNull
     @Contract(pure = true)

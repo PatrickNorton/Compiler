@@ -16,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -190,19 +189,13 @@ public final class CompilerInfo {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.toByteArray(imports.size()));
             for (var name : imports) {
-                var keyArray = name.getBytes(StandardCharsets.UTF_8);
-                var valArray = name.getBytes(StandardCharsets.UTF_8);
-                writer.write(Util.toByteArray(keyArray.length));
-                writer.write(keyArray);
-                writer.write(Util.toByteArray(valArray.length));
-                writer.write(valArray);
+                writer.write(StringConstant.strByteArray(name));
+                writer.write(StringConstant.strByteArray(name));  // TODO: Make these meaningfully different
             }
             writer.flush();
             writer.write(Util.toByteArray(exports.size()));
             for (var export : exports) {
-                var byteArray = export.getBytes(StandardCharsets.UTF_8);
-                writer.write(Util.toByteArray(byteArray.length));
-                writer.write(byteArray);
+                writer.write(StringConstant.strByteArray(export));
                 for (int i = 0; i < constants.size(); i++) {
                     if (constants.get(i).name().equals(export)) {
                         writer.write(Util.toByteArray(i));

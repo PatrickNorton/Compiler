@@ -55,6 +55,15 @@ public final class StringConstant implements LangConstant {
     }
 
     @NotNull
+    public static byte[] strByteArray(@NotNull String value) {
+        var byteArray = value.getBytes(StandardCharsets.UTF_8);
+        var result = new byte[byteArray.length + Integer.BYTES];
+        System.arraycopy(byteArray, 0, result, Integer.BYTES, byteArray.length);
+        System.arraycopy(Util.toByteArray(byteArray.length), 0, result, 0, Integer.BYTES);
+        return result;
+    }
+
+    @NotNull
     @Contract(pure = true)
     @Override
     public String name() {

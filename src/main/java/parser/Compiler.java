@@ -1,6 +1,7 @@
 package main.java.parser;
 
 import main.java.converter.Converter;
+import main.java.converter.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class Compiler {
             TopNode node = Parser.parse(file);
             var fileName = file.getName();
             var destFolder = file.toPath().resolveSibling("__ncache__");
-            var destFile = destFolder.resolve(fileName.replaceFirst("\\.newlang$", ".nbyte"));
+            var destFile = destFolder.resolve(fileName.replaceFirst("\\.newlang$", Util.FILE_EXTENSION));
             Converter.convertToFile(destFile.toFile(), node);
         }
     }
