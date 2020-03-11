@@ -65,6 +65,8 @@ public final class OperatorConverter implements TestConverter {
                 return notNullReturn();
             case NULL_COERCE:
                 return nullCoerceReturn();
+            case NOT_EQUALS:
+                return notEqualsReturn();
         }
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
@@ -86,9 +88,8 @@ public final class OperatorConverter implements TestConverter {
                 return convertBoolOp(start);
             case NOT_NULL:
                 return convertNotNull(start);
-        }
-        if (node.getOperator() == OperatorTypeNode.NULL_COERCE) {
-            return convertNullCoerce(start);
+            case NOT_EQUALS:
+                return convertNotEquals(start);
         }
         int opCount = node.getOperands().length;
         TypeObject opType = null;
@@ -205,6 +206,24 @@ public final class OperatorConverter implements TestConverter {
     }
 
     @NotNull
+    private List<Byte> convertNotEquals(int start) {
+        int opCount = node.getOperands().length;
+        assert opCount == 2 && node.getOperator() == OperatorTypeNode.NOT_EQUALS;
+        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getOperands()[1].getArgument(), info, 1));
+        if (opCount == (node.getOperator().isUnary() ? 1 : 2)) {
+            bytes.add(Bytecode.EQUAL.value);
+        } else {
+            throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
+        }
+        bytes.add(Bytecode.BOOL_NOT.value);
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        return bytes;
+    }
+
+    @NotNull
     private TypeObject[] notNullReturn() {
         var retType = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1)[0];
         if (retType.equals(Builtins.NULL_TYPE)) {
@@ -221,5 +240,15 @@ public final class OperatorConverter implements TestConverter {
         var ret1 = TestConverter.returnType(node.getOperands()[1].getArgument(), info, 1)[0];
         var result = ret0.equals(Builtins.NULL_TYPE) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
         return new TypeObject[] {result};
+    }
+
+    @NotNull
+    public TypeObject[] notEqualsReturn() {
+        var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
+        var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
+        if (retType == null) {
+            throw CompilerInternalError.of("Operator != not implemented", node);
+        }
+        return retType;
     }
 }
