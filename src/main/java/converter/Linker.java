@@ -65,10 +65,10 @@ public final class Linker {
                 switch (ieNode.getType()) {
                     case IMPORT:
                     case TYPEGET:
-                        addImports(ieNode, globals);
+                        addImports(ieNode);
                         break;
                     case EXPORT:
-                        addExports(ieNode, exports);
+                        addExports(ieNode);
                         break;
                     default:
                         throw CompilerInternalError.of(
@@ -80,7 +80,7 @@ public final class Linker {
         return this;
     }
 
-    private void addImports(@NotNull ImportExportNode node, Map<String, TypeObject> globals) {
+    private void addImports(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT;
         boolean notRenamed = node.getAs().length == 0;
         for (int i = 0; i < node.getValues().length; i++) {
@@ -91,29 +91,36 @@ public final class Linker {
                 throw CompilerException.of("Illegal import " + as, as);
             }
             String importName = value.toString();
-            CompilerInfo f = node.getPreDots() > 0
-                    ? Converter.findLocalModule(info.path().getParent(), moduleName)
-                    : Converter.findModule(moduleName);
-            var file = Converter.getDestFile().toPath().resolve(moduleName + Util.BYTECODE_EXTENSION).toFile();
-            f.compile(file);
-            if (globals.containsKey(importName)) {
-                throw CompilerException.format("Name %s already defined", node, importName);
-            } else {
-                var exportType = f.exportType(importName);
-                if (exportType == null) {
-                    throw CompilerException.format("'%s' not exported in module '%s'", node, importName, moduleName);
-                }
-                globals.put(importName, exportType);
-                info.addImport(node.getFrom().toString() + "." + value.toString());
-            }
+            addImport(moduleName, importName, node);
         }
     }
 
-    private void addExports(@NotNull ImportExportNode node, Map<String, Pair<String, LineInfo>> exports) {
+    private void addImport(String moduleName, String importName, @NotNull ImportExportNode node) {
+        CompilerInfo f = node.getPreDots() > 0
+                ? Converter.findLocalModule(info.path().getParent(), moduleName)
+                : Converter.findModule(moduleName);
+        var file = Converter.getDestFile().toPath().resolve(moduleName + Util.BYTECODE_EXTENSION).toFile();
+        f.compile(file);
+        if (globals.containsKey(importName)) {
+            throw CompilerException.format("Name %s already defined", node, importName);
+        }
+        var exportType = f.exportType(importName);
+        if (exportType == null) {
+            throw CompilerException.format("'%s' not exported in module '%s'", node, importName, moduleName);
+        }
+        globals.put(importName, exportType);
+        info.addImport(node.getFrom().isEmpty() ? importName : node.getFrom().toString() + "." + importName);
+    }
+
+    private void addExports(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.EXPORT;
         boolean notRenamed = node.getAs().length == 0;
+        boolean isFrom = !node.getFrom().isEmpty();
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
+            if (isFrom) {
+                addImport(moduleName(node, i), value.toString(), node);
+            }
             var as = notRenamed ? value : node.getAs()[i];
             if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
                 throw CompilerException.of("Illegal export " + value, value);
