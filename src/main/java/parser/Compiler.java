@@ -30,7 +30,7 @@ public class Compiler {
             TopNode node = Parser.parse(file);
             var fileName = file.getName();
             var destFolder = file.toPath().resolveSibling("__ncache__");
-            var destFile = destFolder.resolve(fileName.replaceFirst("\\.newlang$", Util.FILE_EXTENSION));
+            var destFile = destFolder.resolve(fileName.replaceFirst("\\.newlang$", Util.BYTECODE_EXTENSION));
             Converter.convertToFile(destFile.toFile(), node);
         }
     }
