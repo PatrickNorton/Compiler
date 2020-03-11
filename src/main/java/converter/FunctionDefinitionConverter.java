@@ -24,7 +24,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var fnInfo = new FunctionInfo(node.getName().getName(), convertArgs(), info.typesOf(node.getRetval()));
         int index = info.addFunction(new Function(fnInfo, bytes));
         var constVal = new FunctionConstant(node.getName().getName(), index);
-        info.addVariable(node.getName().getName(), Builtins.CALLABLE, constVal);
+        info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal);
         info.addStackFrame();
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
