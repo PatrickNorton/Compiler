@@ -91,7 +91,21 @@ public final class OperatorConverter implements TestConverter {
             return convertNullCoerce(start);
         }
         int opCount = node.getOperands().length;
+        TypeObject opType = null;
         for (var arg : node.getOperands()) {
+            var converter = TestConverter.of(info, arg.getArgument(), 1);
+            var retTypes = converter.returnType();
+            if (retTypes.length == 0) {
+                throw CompilerException.of("Cannot use return type of function with 0 returns", arg);
+            }
+            var retType = retTypes[0];
+            if (opType != null && opType.operatorReturnType(node.getOperator()) == null) {
+                throw CompilerException.format(
+                        "'%s' returns type '%s', which has no overloaded '%s'",
+                        arg, arg, opType.name(), node.getOperator()
+                );
+            }
+            opType = opType == null ? retType : opType.operatorReturnType(node.getOperator())[0];
             bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
         }
         var bytecode = BYTECODE_MAP.get(node.getOperator());
