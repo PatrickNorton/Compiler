@@ -27,9 +27,9 @@ public final class Builtins {
 
     private static final TemplateParam CONTEXT_PARAM = new TemplateParam("T", 0, OBJECT);
 
-    private static final Map<OpSpTypeNode, TypeObject> CONTEXT_MAP = Map.of(
-            OpSpTypeNode.ENTER, CONTEXT_PARAM,
-            OpSpTypeNode.EXIT, TypeObject.list()
+    private static final Map<OpSpTypeNode, FunctionInfo> CONTEXT_MAP = Map.of(
+            OpSpTypeNode.ENTER, new FunctionInfo("", ArgumentInfo.of(), CONTEXT_PARAM),
+            OpSpTypeNode.EXIT, new FunctionInfo("", ArgumentInfo.of(), TypeObject.list())
     );
 
     public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
@@ -38,11 +38,19 @@ public final class Builtins {
 
     private static final TemplateParam CALLABLE_RETURN = new TemplateParam("R", 1, TypeObject.list());
 
-    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), Map.of(OpSpTypeNode.CALL, CALLABLE_RETURN));
+    private static final Map<OpSpTypeNode, FunctionInfo> CALLABLE_MAP = Map.of(
+            OpSpTypeNode.CALL, new FunctionInfo("", ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
+    );
+
+    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP);
 
     private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
-    public static final TypeObject ITERABLE = new DefaultInterface("Iterable", GenericInfo.of(ITERABLE_PARAM), Map.of(OpSpTypeNode.ITER, ITERABLE_PARAM));
+    private static final Map<OpSpTypeNode, FunctionInfo> ITERABLE_MAP = Map.of(
+            OpSpTypeNode.ITER, new FunctionInfo("", ArgumentInfo.of(), ITERABLE_PARAM)
+    );
+
+    public static final TypeObject ITERABLE = new DefaultInterface("Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP);
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
@@ -213,6 +221,8 @@ public final class Builtins {
             Map.entry("list", LIST),
             Map.entry("set", SET),
             Map.entry("open", OPEN),
+            Map.entry("Callable", CALLABLE),
+            Map.entry("Iterable", ITERABLE),
             Map.entry("null", NULL)
     );
 

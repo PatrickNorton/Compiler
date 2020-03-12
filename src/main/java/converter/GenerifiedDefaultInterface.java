@@ -16,8 +16,13 @@ public class GenerifiedDefaultInterface extends AbstractDefaultInterface {
 
     @Override
     public TypeObject[] operatorReturnType(OpSpTypeNode o) {
-        var ret = operators.get(o);
+        var ret = operators.get(o).getReturns()[0];
         return sanitizeType(ret instanceof TemplateParam ? types.get(((TemplateParam) ret).getIndex()) : ret);
+    }
+
+    @Override
+    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+        return operators.get(o).generify(types);
     }
 
     @Override

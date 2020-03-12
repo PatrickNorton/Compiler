@@ -8,9 +8,9 @@ import java.util.Map;
 
 public abstract class AbstractDefaultInterface implements TypeObject {
     private String name;
-    protected Map<OpSpTypeNode, TypeObject> operators;
+    protected Map<OpSpTypeNode, FunctionInfo> operators;
 
-    protected AbstractDefaultInterface(String name, Map<OpSpTypeNode, TypeObject> operators) {
+    protected AbstractDefaultInterface(String name, Map<OpSpTypeNode, FunctionInfo> operators) {
         this.name = name;
         this.operators = operators;
     }
