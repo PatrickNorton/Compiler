@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +43,8 @@ public final class CompilerInfo {
     private List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private Map<String, NameableType> typeMap = new HashMap<>();
     private IntAllocator varNumbers = new IntAllocator();
+
+    private Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
 
     private boolean allowSettingExports = false;
     private boolean linked = false;
@@ -453,5 +457,21 @@ public final class CompilerInfo {
 
     public Path path() {
         return node.getPath();
+    }
+
+    public void addFunctionReturns(TypeObject[] values) {
+        fnReturns.push(values);
+    }
+
+    public TypeObject[] currentFnReturns() {
+        return fnReturns.peekFirst();
+    }
+
+    public void popFnReturns() {
+        fnReturns.pop();
+    }
+
+    public boolean notInFunction() {
+        return fnReturns.isEmpty();
     }
 }
