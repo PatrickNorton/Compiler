@@ -63,7 +63,10 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
                 sortedSet.add(type);
             }
         }
-        assert !sortedSet.isEmpty();
+        sortedSet.remove(Builtins.THROWS);
+        if (sortedSet.isEmpty()) {
+            return Builtins.THROWS;
+        }
         return sortedSet.size() == 1 ? sortedSet.first() : new UnionTypeObject(sortedSet);
     }
 
@@ -76,7 +79,10 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
                 sortedSet.add(type);
             }
         }
-        assert !sortedSet.isEmpty();
+        sortedSet.remove(Builtins.THROWS);
+        if (sortedSet.isEmpty()) {
+            return Builtins.THROWS;
+        }
         return sortedSet.size() == 1 ? sortedSet.first() : new IntersectionTypeObject(sortedSet);
     }
 

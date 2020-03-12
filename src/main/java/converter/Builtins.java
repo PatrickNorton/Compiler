@@ -56,6 +56,8 @@ public final class Builtins {
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
 
+    public static final StdTypeObject THROWS = new StdTypeObject("throws");
+
     public static final TypeObject TYPE = new TypeTypeObject();
 
     public static final LangObject PRINT = new LangInstance(CALLABLE.generify(TypeObject.list()));
