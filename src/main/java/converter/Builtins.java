@@ -28,8 +28,8 @@ public final class Builtins {
     private static final TemplateParam CONTEXT_PARAM = new TemplateParam("T", 0, OBJECT);
 
     private static final Map<OpSpTypeNode, FunctionInfo> CONTEXT_MAP = Map.of(
-            OpSpTypeNode.ENTER, new FunctionInfo("", ArgumentInfo.of(), CONTEXT_PARAM),
-            OpSpTypeNode.EXIT, new FunctionInfo("", ArgumentInfo.of(), TypeObject.list())
+            OpSpTypeNode.ENTER, new FunctionInfo(CONTEXT_PARAM),
+            OpSpTypeNode.EXIT, new FunctionInfo(TypeObject.list())
     );
 
     public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
@@ -39,7 +39,7 @@ public final class Builtins {
     private static final TemplateParam CALLABLE_RETURN = new TemplateParam("R", 1, TypeObject.list());
 
     private static final Map<OpSpTypeNode, FunctionInfo> CALLABLE_MAP = Map.of(
-            OpSpTypeNode.CALL, new FunctionInfo("", ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
+            OpSpTypeNode.CALL, new FunctionInfo(ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
     );
 
     public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP);
@@ -47,7 +47,7 @@ public final class Builtins {
     private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
     private static final Map<OpSpTypeNode, FunctionInfo> ITERABLE_MAP = Map.of(
-            OpSpTypeNode.ITER, new FunctionInfo("", ArgumentInfo.of(), ITERABLE_PARAM)
+            OpSpTypeNode.ITER, new FunctionInfo(ITERABLE_PARAM)
     );
 
     public static final TypeObject ITERABLE = new DefaultInterface("Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP);
@@ -99,9 +99,9 @@ public final class Builtins {
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
 
     static {  // Set int operators
-        var intOpArgInfo = new ArgumentInfo(new Argument("", INT));
-        var intOperatorInfo = new FunctionInfo("", intOpArgInfo, INT);
-        var intUnaryInfo = new FunctionInfo("", new ArgumentInfo(), INT);
+        var intOpArgInfo = ArgumentInfo.of(INT);
+        var intOperatorInfo = new FunctionInfo(intOpArgInfo, INT);
+        var intUnaryInfo = new FunctionInfo(INT);
         INT.setOperator(OpSpTypeNode.ADD, intOperatorInfo);
         INT.setOperator(OpSpTypeNode.SUBTRACT, intOperatorInfo);
         INT.setOperator(OpSpTypeNode.MULTIPLY, intOperatorInfo);
@@ -115,7 +115,7 @@ public final class Builtins {
         INT.setOperator(OpSpTypeNode.BITWISE_XOR, intOperatorInfo);
         INT.setOperator(OpSpTypeNode.BITWISE_NOT, intUnaryInfo);
 
-        var intCompInfo = new FunctionInfo("", ArgumentInfo.of(INT), BOOL);
+        var intCompInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
         INT.setOperator(OpSpTypeNode.EQUALS, intCompInfo);
         INT.setOperator(OpSpTypeNode.LESS_THAN, intCompInfo);
         INT.setOperator(OpSpTypeNode.LESS_EQUAL, intCompInfo);
@@ -124,68 +124,68 @@ public final class Builtins {
     }
 
     static {  // Set str operators
-        var strPlusInfo = new FunctionInfo("", new ArgumentInfo(new Argument("", STR)), STR);
+        var strPlusInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
         STR.setOperator(OpSpTypeNode.ADD, strPlusInfo);
-        var strTimesInfo = new FunctionInfo("", new ArgumentInfo(new Argument("", INT)), STR);
+        var strTimesInfo = new FunctionInfo(ArgumentInfo.of(INT), STR);
         STR.setOperator(OpSpTypeNode.MULTIPLY, strTimesInfo);
-        var strEqInfo = new FunctionInfo("", ArgumentInfo.of(STR), BOOL);
+        var strEqInfo = new FunctionInfo(ArgumentInfo.of(STR), BOOL);
         STR.setOperator(OpSpTypeNode.EQUALS, strEqInfo);
-        var strIndexInfo = new FunctionInfo("", ArgumentInfo.of(INT), CHAR);
+        var strIndexInfo = new FunctionInfo(ArgumentInfo.of(INT), CHAR);
         STR.setOperator(OpSpTypeNode.GET_ATTR, strIndexInfo);
     }
 
     static {  // Set char operators
         // TODO: More char operators
-        var charPlusInfo = new FunctionInfo("", ArgumentInfo.of(CHAR), CHAR);
+        var charPlusInfo = new FunctionInfo(ArgumentInfo.of(CHAR), CHAR);
         CHAR.setOperator(OpSpTypeNode.ADD, charPlusInfo);
     }
 
     static {  // Set range operators
-        var rangeIterInfo = new FunctionInfo("", new ArgumentInfo(), INT);
+        var rangeIterInfo = new FunctionInfo(INT);
         RANGE.setOperator(OpSpTypeNode.ITER, rangeIterInfo);
         RANGE.setOperator(OpSpTypeNode.ITER_SLICE, rangeIterInfo);
-        var rangeContainsInfo = new FunctionInfo("", ArgumentInfo.of(INT), BOOL);
+        var rangeContainsInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
         RANGE.setOperator(OpSpTypeNode.IN, rangeContainsInfo);
     }
 
     static {  // Set list operators
-        var listIndexInfo = new FunctionInfo("", ArgumentInfo.of(INT), LIST_PARAM);
+        var listIndexInfo = new FunctionInfo(ArgumentInfo.of(INT), LIST_PARAM);
         LIST.setOperator(OpSpTypeNode.GET_ATTR, listIndexInfo);
-        var listSetInfo = new FunctionInfo("", ArgumentInfo.of(INT, LIST_PARAM));
+        var listSetInfo = new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM));
         LIST.setOperator(OpSpTypeNode.SET_ATTR, listSetInfo);
-        var listDelInfo = new FunctionInfo("", ArgumentInfo.of(INT));
+        var listDelInfo = new FunctionInfo(ArgumentInfo.of(INT));
         LIST.setOperator(OpSpTypeNode.DEL_ATTR, listDelInfo);
-        var listContainsInfo = new FunctionInfo("", ArgumentInfo.of(LIST_PARAM), BOOL);
+        var listContainsInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL);
         LIST.setOperator(OpSpTypeNode.IN, listContainsInfo);
-        var listIterInfo = new FunctionInfo("", ArgumentInfo.of(), LIST_PARAM);
+        var listIterInfo = new FunctionInfo(LIST_PARAM);
         LIST.setOperator(OpSpTypeNode.ITER, listIterInfo);
     }
 
     static {  // Set set operators
-        var setContainsInfo = new FunctionInfo("", ArgumentInfo.of(SET_PARAM), BOOL);
+        var setContainsInfo = new FunctionInfo(ArgumentInfo.of(SET_PARAM), BOOL);
         SET.setOperator(OpSpTypeNode.IN, setContainsInfo);
-        var setDelInfo = new FunctionInfo("", ArgumentInfo.of(SET_PARAM));
+        var setDelInfo = new FunctionInfo(ArgumentInfo.of(SET_PARAM));
         SET.setOperator(OpSpTypeNode.DEL_ATTR, setDelInfo);
-        var setCompInfo = new FunctionInfo("", ArgumentInfo.of(SET), BOOL);
+        var setCompInfo = new FunctionInfo(ArgumentInfo.of(SET), BOOL);
         SET.setOperator(OpSpTypeNode.EQUALS, setCompInfo);
         SET.setOperator(OpSpTypeNode.GREATER_THAN, setCompInfo);
         SET.setOperator(OpSpTypeNode.GREATER_EQUAL, setCompInfo);
         SET.setOperator(OpSpTypeNode.LESS_THAN, setCompInfo);
         SET.setOperator(OpSpTypeNode.LESS_EQUAL, setCompInfo);
-        var setIterInfo = new FunctionInfo("", ArgumentInfo.of(), SET_PARAM);
+        var setIterInfo = new FunctionInfo(SET_PARAM);
         SET.setOperator(OpSpTypeNode.ITER, setIterInfo);
     }
 
     static {
-        var dictContainsInfo = new FunctionInfo("", ArgumentInfo.of(DICT_KEY), BOOL);
+        var dictContainsInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), BOOL);
         DICT.setOperator(OpSpTypeNode.IN, dictContainsInfo);
-        var dictGetInfo = new FunctionInfo("", ArgumentInfo.of(DICT_KEY), DICT_VAL);
+        var dictGetInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), DICT_VAL);
         DICT.setOperator(OpSpTypeNode.GET_ATTR, dictGetInfo);
-        var dictDelInfo = new FunctionInfo("", ArgumentInfo.of(DICT_KEY));
+        var dictDelInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY));
         DICT.setOperator(OpSpTypeNode.DEL_ATTR, dictDelInfo);
-        var dictIterInfo = new FunctionInfo("", ArgumentInfo.of(), DICT_KEY, DICT_VAL);
+        var dictIterInfo = new FunctionInfo(DICT_KEY, DICT_VAL);
         DICT.setOperator(OpSpTypeNode.ITER, dictIterInfo);
-        var dictEqInfo = new FunctionInfo("", ArgumentInfo.of(DICT), BOOL);
+        var dictEqInfo = new FunctionInfo(ArgumentInfo.of(DICT), BOOL);
         DICT.setOperator(OpSpTypeNode.EQUALS, dictEqInfo);
     }
 

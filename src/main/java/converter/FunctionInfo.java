@@ -11,6 +11,14 @@ public final class FunctionInfo {
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
 
+    public FunctionInfo(TypeObject... returns) {
+        this("", ArgumentInfo.of(), returns);
+    }
+
+    public FunctionInfo(ArgumentInfo args, TypeObject... returns) {
+        this("", args, returns);
+    }
+
     public FunctionInfo(String name, ArgumentInfo args, TypeObject... returns) {
         this.name = name;
         this.arguments = args;
