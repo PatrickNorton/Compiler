@@ -26,4 +26,9 @@ public class GenerifiedTypeTypeObject implements TypeObject {
         }
         return type.staticOperatorReturnType(o);
     }
+
+    @Override
+    public TypeObject attrType(String value) {
+        return type.staticAttrType(value);
+    }
 }
