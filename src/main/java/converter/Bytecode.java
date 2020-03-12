@@ -164,7 +164,7 @@ public enum Bytecode {
                             sj.add(String.format("%d (%s)", value, info.getConstant((short) value).name()));
                             break;
                         case OPERATOR:
-                            sj.add(String.format("%d (%s)", value, OpSpTypeNode.values()[i]));
+                            sj.add(String.format("%d (%s)", value, OpSpTypeNode.values()[value]));
                             break;
                     }
                 }

@@ -26,6 +26,18 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return true;
     }
 
+    public Argument[] getKeywordArgs() {
+        return keywordArgs;
+    }
+
+    public Argument[] getNormalArgs() {
+        return normalArgs;
+    }
+
+    public Argument[] getPositionArgs() {
+        return positionArgs;
+    }
+
     @NotNull
     public static ArgumentInfo of(@NotNull TypedArgumentListNode args, CompilerInfo info) {
         var posArgs = getArgs(info, args.getPositionArgs());

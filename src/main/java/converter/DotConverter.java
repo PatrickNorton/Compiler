@@ -156,6 +156,7 @@ public final class DotConverter implements TestConverter {
             var callConverter = new FunctionCallConverter(info, (FunctionCallNode) postDot, retCount);
             callConverter.convertCall(bytes, start);
         } else if (postDot instanceof SpecialOpNameNode) {
+            bytes.remove(bytes.size() - 1);
             var op = ((SpecialOpNameNode) postDot).getOperator();
             bytes.add(Bytecode.LOAD_OP.value);
             bytes.addAll(Util.shortToBytes((short) op.ordinal()));
