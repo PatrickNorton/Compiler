@@ -58,6 +58,7 @@ public enum Bytecode {
     GREATER_THAN(0x2B),
     LESS_EQUAL(0x2C),
     GREATER_EQUAL(0x2D),
+    CONTAINS(0x2E),
     // Jumps, etc.
     JUMP(0x30, Type.LOCATION),
     JUMP_FALSE(0x31, Type.LOCATION),

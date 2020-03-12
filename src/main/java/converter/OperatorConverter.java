@@ -60,6 +60,7 @@ public final class OperatorConverter implements TestConverter {
             case BOOL_NOT:
             case BOOL_OR:
             case BOOL_XOR:
+            case IN:
                 return new TypeObject[] {Builtins.BOOL};
             case NOT_NULL:
                 return notNullReturn();
@@ -90,6 +91,8 @@ public final class OperatorConverter implements TestConverter {
                 return convertNotNull(start);
             case NOT_EQUALS:
                 return convertNotEquals(start);
+            case IN:
+                return convertContains(start);
         }
         int opCount = node.getOperands().length;
         TypeObject opType = null;
@@ -217,6 +220,20 @@ public final class OperatorConverter implements TestConverter {
             throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
         }
         bytes.add(Bytecode.BOOL_NOT.value);
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        return bytes;
+    }
+
+    @NotNull
+    private List<Byte> convertContains(int start) {
+        assert node.getOperands().length == 2 && node.getOperator() == OperatorTypeNode.IN;
+        var operands = node.getOperands();
+        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), operands[1].getArgument(), info, 1));
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(Bytecode.CONTAINS.value);
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP.value);
         }
