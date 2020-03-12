@@ -31,4 +31,13 @@ public class GenerifiedTypeTypeObject implements TypeObject {
     public TypeObject attrType(String value) {
         return type.staticAttrType(value);
     }
+
+    @Override
+    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+        if (o == OpSpTypeNode.CALL) {
+            return new FunctionInfo(type.operatorInfo(OpSpTypeNode.NEW).getArgs(), type);
+        } else {
+            return null;
+        }
+    }
 }

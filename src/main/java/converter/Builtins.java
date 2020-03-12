@@ -121,6 +121,9 @@ public final class Builtins {
         INT.setOperator(OpSpTypeNode.LESS_EQUAL, intCompInfo);
         INT.setOperator(OpSpTypeNode.GREATER_THAN, intCompInfo);
         INT.setOperator(OpSpTypeNode.GREATER_EQUAL, intCompInfo);
+
+        var intNewInfo = new FunctionInfo(ArgumentInfo.of(OBJECT));
+        INT.setOperator(OpSpTypeNode.NEW, intNewInfo);
     }
 
     static {  // Set str operators
@@ -132,6 +135,8 @@ public final class Builtins {
         STR.setOperator(OpSpTypeNode.EQUALS, strEqInfo);
         var strIndexInfo = new FunctionInfo(ArgumentInfo.of(INT), CHAR);
         STR.setOperator(OpSpTypeNode.GET_ATTR, strIndexInfo);
+        var strNewInfo = new FunctionInfo(ArgumentInfo.of(OBJECT));
+        STR.setOperator(OpSpTypeNode.NEW, strNewInfo);
     }
 
     static {  // Set char operators
