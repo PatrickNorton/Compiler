@@ -84,6 +84,15 @@ public class StdTypeObject implements NameableType {
     }
 
     @Override
+    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+        return trueOperatorInfo(o).boundify();
+    }
+
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o) {
+        return operators.get(o);
+    }
+
+    @Override
     public TypeObject[] operatorReturnType(OpSpTypeNode o) {
         var types = operatorReturnTypeWithGenerics(o);
         if (types == null) return null;

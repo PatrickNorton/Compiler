@@ -38,4 +38,12 @@ public final class FunctionInfo {
         argTypes.add(TypeObject.list(returns));
         return Builtins.CALLABLE.generify(argTypes.toArray(new TypeObject[0]));
     }
+
+    public FunctionInfo boundify() {
+        throw new UnsupportedOperationException();
+    }
+
+    public FunctionInfo generify(List<TypeObject> generics) {
+        throw new UnsupportedOperationException();
+    }
 }

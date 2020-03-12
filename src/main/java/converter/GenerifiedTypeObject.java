@@ -34,6 +34,11 @@ public class GenerifiedTypeObject implements NameableType {
     }
 
     @Override
+    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+        return parent.trueOperatorInfo(o).generify(generics);
+    }
+
+    @Override
     public TypeObject[] operatorReturnType(OpSpTypeNode o) {
         var parentReturn = parent.operatorReturnTypeWithGenerics(o);
         if (parentReturn == null) return null;
