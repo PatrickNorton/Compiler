@@ -66,7 +66,14 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     private void ensureTypesMatch(@NotNull TypeObject callerType) {
-        if (!Builtins.CALLABLE.isSuperclass(callerType)) {
+        var params = node.getParameters();
+        var args = new Argument[node.getParameters().length];
+        for (int i = 0; i < args.length; i++) {
+            var type = TestConverter.returnType(params[i].getArgument(), info, 1)[0];
+            args[i] = new Argument(params[i].getVariable().getName(), type);
+        }
+        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL);
+        if (operatorInfo == null || !operatorInfo.matches(args)) {
             throw CompilerException.of("Cannot call " + node.getCaller(), node);
         }
     }
