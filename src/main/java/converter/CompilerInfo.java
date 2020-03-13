@@ -44,6 +44,8 @@ public final class CompilerInfo {
     private Map<String, NameableType> typeMap = new HashMap<>();
     private IntAllocator varNumbers = new IntAllocator();
 
+    private IntAllocator anonymousNums = new IntAllocator();
+
     private Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
 
     private boolean allowSettingExports = false;
@@ -473,5 +475,13 @@ public final class CompilerInfo {
 
     public boolean notInFunction() {
         return fnReturns.isEmpty();
+    }
+
+    public String lambdaName() {
+        return String.format("lambda$%d", anonymousNums.getNext());
+    }
+
+    {  // Prevent "non-updating" compiler warning
+        anonymousNums.remove(0);
     }
 }

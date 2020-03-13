@@ -6,6 +6,7 @@ import main.java.parser.DictLiteralNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.IndexNode;
+import main.java.parser.LambdaNode;
 import main.java.parser.LiteralNode;
 import main.java.parser.NumberNode;
 import main.java.parser.OperatorNode;
@@ -47,6 +48,8 @@ public interface TestConverter extends BaseConverter {
             return new FunctionCallConverter(info, (FunctionCallNode) node, retCount);
         } else if (node instanceof IndexNode) {
             return new IndexConverter(info, (IndexNode) node, retCount);
+        } else if (node instanceof LambdaNode) {
+            return new LambdaConverter(info, (LambdaNode) node, retCount);
         } else if (node instanceof LiteralNode) {
             return new LiteralConverter(info, (LiteralNode) node, retCount);
         } else if (node instanceof NumberNode) {
