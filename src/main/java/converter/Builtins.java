@@ -99,99 +99,103 @@ public final class Builtins {
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
 
     static {  // Set int operators
-        var intOpArgInfo = ArgumentInfo.of(INT);
-        var intOperatorInfo = new FunctionInfo(intOpArgInfo, INT);
-        var intUnaryInfo = new FunctionInfo(INT);
-        INT.setOperator(OpSpTypeNode.ADD, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.SUBTRACT, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.MULTIPLY, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.DIVIDE, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.POWER, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.MODULO, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.LEFT_BITSHIFT, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.RIGHT_BITSHIFT, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.BITWISE_AND, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.BITWISE_OR, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.BITWISE_XOR, intOperatorInfo);
-        INT.setOperator(OpSpTypeNode.BITWISE_NOT, intUnaryInfo);
-
+        var intOperatorInfo = new FunctionInfo(ArgumentInfo.of(INT), INT);
         var intCompInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
-        INT.setOperator(OpSpTypeNode.EQUALS, intCompInfo);
-        INT.setOperator(OpSpTypeNode.LESS_THAN, intCompInfo);
-        INT.setOperator(OpSpTypeNode.LESS_EQUAL, intCompInfo);
-        INT.setOperator(OpSpTypeNode.GREATER_THAN, intCompInfo);
-        INT.setOperator(OpSpTypeNode.GREATER_EQUAL, intCompInfo);
 
-        var intNewInfo = new FunctionInfo(ArgumentInfo.of(OBJECT));
-        INT.setOperator(OpSpTypeNode.NEW, intNewInfo);
+        var intMap = Map.ofEntries(
+                Map.entry(OpSpTypeNode.ADD, intOperatorInfo),
+                Map.entry(OpSpTypeNode.SUBTRACT, intOperatorInfo),
+                Map.entry(OpSpTypeNode.MULTIPLY, intOperatorInfo),
+                Map.entry(OpSpTypeNode.DIVIDE, intOperatorInfo),
+                Map.entry(OpSpTypeNode.POWER, intOperatorInfo),
+                Map.entry(OpSpTypeNode.MODULO, intOperatorInfo),
+                Map.entry(OpSpTypeNode.LEFT_BITSHIFT, intOperatorInfo),
+                Map.entry(OpSpTypeNode.RIGHT_BITSHIFT, intOperatorInfo),
+                Map.entry(OpSpTypeNode.BITWISE_AND, intOperatorInfo),
+                Map.entry(OpSpTypeNode.BITWISE_OR, intOperatorInfo),
+                Map.entry(OpSpTypeNode.BITWISE_XOR, intOperatorInfo),
+                Map.entry(OpSpTypeNode.BITWISE_NOT, new FunctionInfo(INT)),
+
+                Map.entry(OpSpTypeNode.EQUALS, intCompInfo),
+                Map.entry(OpSpTypeNode.LESS_THAN, intCompInfo),
+                Map.entry(OpSpTypeNode.LESS_EQUAL, intCompInfo),
+                Map.entry(OpSpTypeNode.GREATER_THAN, intCompInfo),
+                Map.entry(OpSpTypeNode.GREATER_EQUAL, intCompInfo),
+
+                Map.entry(OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT)))
+        );
+
+        INT.setOperators(intMap);
     }
 
     static {  // Set str operators
-        var strPlusInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
-        STR.setOperator(OpSpTypeNode.ADD, strPlusInfo);
-        var strTimesInfo = new FunctionInfo(ArgumentInfo.of(INT), STR);
-        STR.setOperator(OpSpTypeNode.MULTIPLY, strTimesInfo);
-        var strEqInfo = new FunctionInfo(ArgumentInfo.of(STR), BOOL);
-        STR.setOperator(OpSpTypeNode.EQUALS, strEqInfo);
-        var strIndexInfo = new FunctionInfo(ArgumentInfo.of(INT), CHAR);
-        STR.setOperator(OpSpTypeNode.GET_ATTR, strIndexInfo);
-        var strNewInfo = new FunctionInfo(ArgumentInfo.of(OBJECT));
-        STR.setOperator(OpSpTypeNode.NEW, strNewInfo);
+        var strMap = Map.of(
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(STR), STR),
+                OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), STR),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(STR), BOOL),
+                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), CHAR),
+                OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
+        );
+        STR.setOperators(strMap);
     }
 
     static {  // Set char operators
         // TODO: More char operators
-        var charPlusInfo = new FunctionInfo(ArgumentInfo.of(CHAR), CHAR);
-        CHAR.setOperator(OpSpTypeNode.ADD, charPlusInfo);
+        var charMap = Map.of(
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR)
+        );
+        CHAR.setOperators(charMap);
     }
 
     static {  // Set range operators
-        var rangeIterInfo = new FunctionInfo(INT);
-        RANGE.setOperator(OpSpTypeNode.ITER, rangeIterInfo);
-        RANGE.setOperator(OpSpTypeNode.ITER_SLICE, rangeIterInfo);
-        var rangeContainsInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
-        RANGE.setOperator(OpSpTypeNode.IN, rangeContainsInfo);
+        var rangeMap = Map.of(
+                OpSpTypeNode.ITER, new FunctionInfo(INT),
+                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL)
+        );
+        RANGE.setOperators(rangeMap);
     }
 
     static {  // Set list operators
-        var listIndexInfo = new FunctionInfo(ArgumentInfo.of(INT), LIST_PARAM);
-        LIST.setOperator(OpSpTypeNode.GET_ATTR, listIndexInfo);
-        var listSetInfo = new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM));
-        LIST.setOperator(OpSpTypeNode.SET_ATTR, listSetInfo);
-        var listDelInfo = new FunctionInfo(ArgumentInfo.of(INT));
-        LIST.setOperator(OpSpTypeNode.DEL_ATTR, listDelInfo);
-        var listContainsInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL);
-        LIST.setOperator(OpSpTypeNode.IN, listContainsInfo);
-        var listIterInfo = new FunctionInfo(LIST_PARAM);
-        LIST.setOperator(OpSpTypeNode.ITER, listIterInfo);
+        var listMap = Map.of(
+                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), LIST_PARAM),
+                OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM)),
+                OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(INT)),
+                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
+                OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
+        );
+        LIST.setOperators(listMap);
     }
 
     static {  // Set set operators
-        var setContainsInfo = new FunctionInfo(ArgumentInfo.of(SET_PARAM), BOOL);
-        SET.setOperator(OpSpTypeNode.IN, setContainsInfo);
-        var setDelInfo = new FunctionInfo(ArgumentInfo.of(SET_PARAM));
-        SET.setOperator(OpSpTypeNode.DEL_ATTR, setDelInfo);
         var setCompInfo = new FunctionInfo(ArgumentInfo.of(SET), BOOL);
-        SET.setOperator(OpSpTypeNode.EQUALS, setCompInfo);
-        SET.setOperator(OpSpTypeNode.GREATER_THAN, setCompInfo);
-        SET.setOperator(OpSpTypeNode.GREATER_EQUAL, setCompInfo);
-        SET.setOperator(OpSpTypeNode.LESS_THAN, setCompInfo);
-        SET.setOperator(OpSpTypeNode.LESS_EQUAL, setCompInfo);
-        var setIterInfo = new FunctionInfo(SET_PARAM);
-        SET.setOperator(OpSpTypeNode.ITER, setIterInfo);
+        var setMap = Map.of(
+                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(SET_PARAM)),
+                OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(SET_PARAM)),
+                OpSpTypeNode.EQUALS, setCompInfo,
+                OpSpTypeNode.GREATER_THAN, setCompInfo,
+                OpSpTypeNode.GREATER_EQUAL, setCompInfo,
+                OpSpTypeNode.LESS_THAN, setCompInfo,
+                OpSpTypeNode.LESS_EQUAL, setCompInfo,
+                OpSpTypeNode.ITER, new FunctionInfo(SET_PARAM)
+        );
+        SET.setOperators(setMap);
     }
 
     static {
         var dictContainsInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), BOOL);
-        DICT.setOperator(OpSpTypeNode.IN, dictContainsInfo);
         var dictGetInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), DICT_VAL);
-        DICT.setOperator(OpSpTypeNode.GET_ATTR, dictGetInfo);
         var dictDelInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY));
-        DICT.setOperator(OpSpTypeNode.DEL_ATTR, dictDelInfo);
         var dictIterInfo = new FunctionInfo(DICT_KEY, DICT_VAL);
-        DICT.setOperator(OpSpTypeNode.ITER, dictIterInfo);
         var dictEqInfo = new FunctionInfo(ArgumentInfo.of(DICT), BOOL);
-        DICT.setOperator(OpSpTypeNode.EQUALS, dictEqInfo);
+
+        var dictMap = Map.of(
+                OpSpTypeNode.IN, dictContainsInfo,
+                OpSpTypeNode.GET_ATTR, dictGetInfo,
+                OpSpTypeNode.DEL_ATTR, dictDelInfo,
+                OpSpTypeNode.ITER, dictIterInfo,
+                OpSpTypeNode.EQUALS, dictEqInfo
+        );
+        DICT.setOperators(dictMap);
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(

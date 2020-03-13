@@ -13,8 +13,8 @@ import java.util.Objects;
 public class StdTypeObject implements NameableType {
     private final String name;
     private final List<TypeObject> supers;
-    private final Map<OpSpTypeNode, FunctionInfo> operators;
-    private final Map<OpSpTypeNode, FunctionInfo> staticOperators;
+    private Map<OpSpTypeNode, FunctionInfo> operators;
+    private Map<OpSpTypeNode, FunctionInfo> staticOperators;
     private final GenericInfo info;
     private Map<String, TypeObject> attributes;
     private Map<String, TypeObject> staticAttributes;
@@ -79,8 +79,9 @@ public class StdTypeObject implements NameableType {
         return info;
     }
 
-    public void setOperator(OpSpTypeNode o, FunctionInfo args) {
-        operators.put(o, args);
+    public void setOperators(Map<OpSpTypeNode, FunctionInfo> args) {
+        assert operators.isEmpty();
+        operators = args;
     }
 
     @Override

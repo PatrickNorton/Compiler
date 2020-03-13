@@ -53,9 +53,7 @@ public final class ClassConverter implements BaseConverter {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
         }
-        for (var opPair : operators.getOperators().entrySet()) {
-            type.setOperator(opPair.getKey(), opPair.getValue());
-        }
+        type.setOperators(operators.getOperators());
         List<Short> superConstants = new ArrayList<>();
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
