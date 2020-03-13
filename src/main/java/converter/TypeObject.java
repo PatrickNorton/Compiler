@@ -34,7 +34,8 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
     }
 
     default TypeObject[] operatorReturnType(OpSpTypeNode o) {
-        return null;
+        var info = operatorInfo(o);
+        return info == null ? null : info.getReturns();
     }
 
     default TypeObject generify(TypeObject... args) {
