@@ -13,10 +13,6 @@ public class ListTypeObject implements TypeObject, Iterable<TypeObject> {
         this.values = List.of(values);
     }
 
-    public List<TypeObject> getValues() {
-        return values;
-    }
-
     public TypeObject get(int i) {
         return values.get(i);
     }
@@ -39,5 +35,9 @@ public class ListTypeObject implements TypeObject, Iterable<TypeObject> {
     @Override
     public Iterator<TypeObject> iterator() {
         return values.iterator();
+    }
+
+    public TypeObject[] toArray() {
+        return values.toArray(new TypeObject[0]);
     }
 }

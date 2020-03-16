@@ -45,7 +45,6 @@ public abstract class AbstractDefaultInterface implements TypeObject {
     @Contract("null -> new")
     protected static TypeObject[] sanitizeType(TypeObject result) {
         return result instanceof ListTypeObject
-                ? ((ListTypeObject) result).getValues().toArray(new TypeObject[0])
-                : new TypeObject[] {result};
+                ? ((ListTypeObject) result).toArray() : new TypeObject[] {result};
     }
 }
