@@ -38,9 +38,8 @@ public final class LambdaConverter implements TestConverter {
         var name = info.lambdaName();
         var fnInfo = new FunctionInfo(name, convertArgs(), info.typesOf(node.getReturns()));
         int fnIndex = info.addFunction(new Function(fnInfo, convertBody()));
-        var constant = new FunctionConstant(name, fnIndex);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
+        bytes.add(Bytecode.MAKE_FUNCTION.value);
+        bytes.addAll(Util.shortToBytes((short) fnIndex));
         return bytes;
     }
 
@@ -66,7 +65,7 @@ public final class LambdaConverter implements TestConverter {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
         }
         List<Byte> fnBytes = new ArrayList<>(node.isArrow()
-                ? TestConverter.bytes(0, (TestNode) node.getBody().get(0), info, node.getReturns().length)
+                ? TestConverter.bytes(0, (TestNode) node.getBody().get(0), info, lambdaReturnType().length)
                 : BaseConverter.bytes(0, node.getBody(), info));
         info.removeStackFrame();
         info.popFnReturns();

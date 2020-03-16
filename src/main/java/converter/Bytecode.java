@@ -89,6 +89,8 @@ public enum Bytecode {
     SET_ADD(0x55),
     DICT_ADD(0x56),
     DOTIMES(0x57, Type.LOCATION),
+    // Misc.
+    MAKE_FUNCTION(0x60, Type.FUNCTION_NO)
     ;
 
     private enum Type {
@@ -97,6 +99,7 @@ public enum Bytecode {
         LOCATION(4),
         ARGC(2),
         OPERATOR(2),
+        FUNCTION_NO(2),
         ;
         final byte byteCount;
 
@@ -158,6 +161,7 @@ public enum Bytecode {
                         case ARGC:
                         case LOCATION:
                         case VARIABLE:
+                        case FUNCTION_NO:
                             sj.add(Integer.toString(value));
                             break;
                         case CONSTANT:
@@ -166,6 +170,8 @@ public enum Bytecode {
                         case OPERATOR:
                             sj.add(String.format("%d (%s)", value, OpSpTypeNode.values()[value]));
                             break;
+                        default:
+                            throw new UnsupportedOperationException("Unknown enum value");
                     }
                 }
                 sb.append(sj);
