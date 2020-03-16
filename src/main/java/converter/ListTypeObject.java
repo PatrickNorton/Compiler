@@ -28,7 +28,7 @@ public class ListTypeObject implements TypeObject, Iterable<TypeObject> {
 
     @Override
     public String name() {
-        var sj = new StringJoiner("[", ", ", "]");
+        var sj = new StringJoiner(", ", "[", "]");
         for (var value : values) {
             sj.add(value.name());
         }
