@@ -106,7 +106,7 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.ADD, intOperatorInfo),
                 Map.entry(OpSpTypeNode.SUBTRACT, intOperatorInfo),
                 Map.entry(OpSpTypeNode.MULTIPLY, intOperatorInfo),
-                Map.entry(OpSpTypeNode.DIVIDE, intOperatorInfo),
+                Map.entry(OpSpTypeNode.FLOOR_DIV, intOperatorInfo),
                 Map.entry(OpSpTypeNode.POWER, intOperatorInfo),
                 Map.entry(OpSpTypeNode.MODULO, intOperatorInfo),
                 Map.entry(OpSpTypeNode.LEFT_BITSHIFT, intOperatorInfo),

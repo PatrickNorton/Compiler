@@ -19,6 +19,7 @@ public final class OperatorConverter implements TestConverter {
         temp.put(OperatorTypeNode.SUBTRACT, Bytecode.MINUS);
         temp.put(OperatorTypeNode.MULTIPLY, Bytecode.TIMES);
         temp.put(OperatorTypeNode.DIVIDE, Bytecode.DIVIDE);
+        temp.put(OperatorTypeNode.FLOOR_DIV, Bytecode.FLOOR_DIV);
         temp.put(OperatorTypeNode.MODULO, Bytecode.MOD);
         temp.put(OperatorTypeNode.POWER, Bytecode.POWER);
         temp.put(OperatorTypeNode.LEFT_BITSHIFT, Bytecode.L_BITSHIFT);
