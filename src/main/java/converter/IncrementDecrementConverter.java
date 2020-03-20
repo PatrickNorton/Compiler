@@ -9,26 +9,25 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class IncrementDecrementConverter implements BaseConverter {
-    private boolean isDecrement;
+public final class IncrementDecrementConverter implements BaseConverter {
     private IncDecNode node;
     private CompilerInfo info;
 
-    public IncrementDecrementConverter(boolean isDecrement, CompilerInfo info, IncDecNode node) {
+    public IncrementDecrementConverter(CompilerInfo info, IncDecNode node) {
         this.node = node;
         this.info = info;
-        this.isDecrement = isDecrement;
     }
 
     @NotNull
     @Override
     public final List<Byte> convert(int start) {
-        assert isDecrement ? node instanceof DecrementNode : node instanceof IncrementNode;
+        boolean isDecrement = node instanceof DecrementNode;
+        assert isDecrement ^ node instanceof IncrementNode;
         var converter = TestConverter.of(info, node.getVariable(), 1);
         if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
             throw CompilerException.format(
-                    "TypeError: Object of type %s cannot be incremented",
-                    node.getLineInfo(), converter.returnType()[0].name());
+                    "TypeError: Object of type %s cannot be %s",
+                    node.getLineInfo(), converter.returnType()[0].name(), isDecrement ? "incremented" : "decremented");
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.LOAD_CONST.value);
@@ -40,7 +39,7 @@ public abstract class IncrementDecrementConverter implements BaseConverter {
             bytes.add(Bytecode.STORE.value);
             bytes.addAll(Util.shortToBytes(varIndex));
         } else {
-            throw CompilerInternalError.of("Non-variable increment not yet implemented", node);
+            throw CompilerInternalError.of("Non-variable in/decrement not yet implemented", node);
         }
         return bytes;
     }

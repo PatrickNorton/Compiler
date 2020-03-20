@@ -55,7 +55,7 @@ public interface BaseConverter {
         } else if (node instanceof DeclaredAssignmentNode) {
             return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
         } else if (node instanceof DecrementNode) {
-            return new DecrementConverter(info, (DecrementNode) node);
+            return new IncrementDecrementConverter(info, (DecrementNode) node);
         } else if (node instanceof DoStatementNode) {
             return new DoWhileConverter(info, (DoStatementNode) node);
         } else if (node instanceof DotimesStatementNode) {
@@ -69,7 +69,7 @@ public interface BaseConverter {
         } else if (node instanceof ImportExportNode) {
             return new ImportExportConverter(info, (ImportExportNode) node);
         } else if (node instanceof IncrementNode) {
-            return new IncrementConverter(info, (IncrementNode) node);
+            return new IncrementDecrementConverter(info, (IncrementNode) node);
         } else if (node instanceof ReturnStatementNode) {
             return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof StatementBodyNode) {
