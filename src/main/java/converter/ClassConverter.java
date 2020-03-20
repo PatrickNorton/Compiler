@@ -87,10 +87,13 @@ public final class ClassConverter implements BaseConverter {
             info.addStackFrame();
             info.addVariable("self", type, true);
             info.addVariable("cls", Builtins.TYPE.generify(type), true);
-            for (var arg : args.get(pair.getKey()).getArgs()) {
+            var fnInfo = args.get(pair.getKey());
+            for (var arg : fnInfo.getArgs()) {
                 info.addVariable(arg.getName(), arg.getType());
             }
+            info.addFunctionReturns(fnInfo.getReturns());
             var bytes = BaseConverter.bytes(0, pair.getValue(), info);
+            info.popFnReturns();
             result.put(pair.getKey(), bytes);
             info.removeStackFrame();
         }
