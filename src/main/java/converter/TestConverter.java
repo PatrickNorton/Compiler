@@ -4,6 +4,7 @@ import main.java.parser.ComprehensionNode;
 import main.java.parser.DictComprehensionNode;
 import main.java.parser.DictLiteralNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.FormattedStringNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.IndexNode;
 import main.java.parser.LambdaNode;
@@ -44,6 +45,8 @@ public interface TestConverter extends BaseConverter {
             return new DictLiteralConverter(info, (DictLiteralNode) node, retCount);
         } else if (node instanceof DottedVariableNode) {
             return new DotConverter(info, (DottedVariableNode) node, retCount);
+        } else if (node instanceof FormattedStringNode) {
+            return new FormattedStringConverter(info, (FormattedStringNode) node, retCount);
         } else if (node instanceof FunctionCallNode) {
             return new FunctionCallConverter(info, (FunctionCallNode) node, retCount);
         } else if (node instanceof IndexNode) {
