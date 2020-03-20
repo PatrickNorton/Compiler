@@ -53,9 +53,7 @@ public final class IfConverter implements BaseConverter {
         addBody(bytes, start, body, trailingJump);
         // Set jump target
         var target = Util.intToBytes(start + bytes.size() + trailingJumpBytes(trailingJump));
-        for (int i = 0; i < target.size(); i++) {
-            bytes.set(jumpTarget + i, target.get(i));
-        }
+        Util.emplace(bytes, target, jumpTarget);
     }
 
     private void addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body) {
