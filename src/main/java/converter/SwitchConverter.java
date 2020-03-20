@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.CaseStatementNode;
+import main.java.parser.DefaultStatementNode;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
@@ -32,27 +33,41 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     @Override
     public TypeObject[] returnType() {
         var cases = node.getCases();
-        TypeObject[] types = new TypeObject[cases.length];
+        TypeObject[][] types = new TypeObject[cases.length][retCount];
         for (int i = 0; i < cases.length; i++) {
-            types[i] = null;  // TODO: Get actual types
+            assert cases[i].isArrow();
+            types[i] = TestConverter.returnType((TestNode) cases[i].getBody().get(0), info, retCount);
         }
-        return new TypeObject[] {TypeObject.union(types)};
+        TypeObject[] finalTypes = new TypeObject[retCount];
+        for (int i = 0; i < retCount; i++) {
+            TypeObject[] posArray = new TypeObject[cases.length];
+            for (int j = 0; j < cases.length; j++) {
+                posArray[j] = types[j][i];
+            }
+            finalTypes[i] = TypeObject.union(posArray);
+        }
+        return finalTypes;
     }
 
-    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {  // TODO: 'default'
+    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {
+        // TODO: Ensure 'default' statement is at the end
         var label = stmt.getLabel();
         List<Integer> jumpLocations = new ArrayList<>(label.length);
-        assert label.length != 0;
-        if (label.length == 1) {
-            bytes.add(Bytecode.DUP_TOP.value);
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), label[0], info, 1));
-            bytes.add(Bytecode.EQUAL.value);
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            jumpLocations.add(bytes.size());
-            bytes.addAll(Util.zeroToBytes());
-            bytes.add(Bytecode.POP_TOP.value);
+        if (!(stmt instanceof DefaultStatementNode)) {
+            assert label.length != 0;
+            if (label.length == 1) {
+                bytes.add(Bytecode.DUP_TOP.value);
+                bytes.addAll(TestConverter.bytes(start + bytes.size(), label[0], info, 1));
+                bytes.add(Bytecode.EQUAL.value);
+                bytes.add(Bytecode.JUMP_FALSE.value);
+                jumpLocations.add(bytes.size());
+                bytes.addAll(Util.zeroToBytes());
+                bytes.add(Bytecode.POP_TOP.value);
+            } else {
+                throw new UnsupportedOperationException("Multiple clauses in switch not supported yet");
+            }
         } else {
-            throw new UnsupportedOperationException("Multiple clauses in switch not supported yet");
+            bytes.add(Bytecode.POP_TOP.value);
         }
         if (stmt.isArrow()) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), (TestNode) stmt.getBody().get(0), info, retCount));
