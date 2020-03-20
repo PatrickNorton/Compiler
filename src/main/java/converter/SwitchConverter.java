@@ -2,37 +2,29 @@ package main.java.converter;
 
 import main.java.parser.CaseStatementNode;
 import main.java.parser.SwitchStatementNode;
+import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private SwitchStatementNode node;
-    private Deque<Deque<Integer>> locations;
     private int retCount;  // TODO: Make switch expressions work
 
     public SwitchConverter(CompilerInfo info, SwitchStatementNode node, int retCount) {
         super(info, false);
         this.node = node;
         this.retCount = retCount;
-        this.locations = new ArrayDeque<>();
     }
 
     @NotNull
     public List<Byte> trueConvert(int start) {
-        assert locations.isEmpty();
         var switched = TestConverter.bytes(start, node.getSwitched(), info, 1);
-        List<Byte> bytes = new ArrayList<>(switched);  // FIXME: Check that all values are equal
-        for (var caseStatement : node.getCases()) {
-            addCaseCond(caseStatement, start, bytes);
-        }
+        List<Byte> bytes = new ArrayList<>(switched);
         for (var caseStatement : node.getCases()) {
             addCase(caseStatement, start, bytes);
         }
-        assert locations.isEmpty();
         return bytes;
     }
 
@@ -47,33 +39,35 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return new TypeObject[] {TypeObject.union(types)};
     }
 
-    private void addCaseCond(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {
-        Deque<Integer> jumpLocations = new ArrayDeque<>();
-        for (var label : stmt.getLabel()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), label, info, 1));
+    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {  // TODO: 'default'
+        var label = stmt.getLabel();
+        List<Integer> jumpLocations = new ArrayList<>(label.length);
+        assert label.length != 0;
+        if (label.length == 1) {
+            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), label[0], info, 1));
+            bytes.add(Bytecode.EQUAL.value);
             bytes.add(Bytecode.JUMP_FALSE.value);
-            jumpLocations.push(bytes.size());
+            jumpLocations.add(bytes.size());
             bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.POP_TOP.value);
+        } else {
+            throw new UnsupportedOperationException("Multiple clauses in switch not supported yet");
         }
-        locations.add(jumpLocations);
-    }
-
-    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {
-        var jumpLocations = locations.pop();
-        for (int loc : jumpLocations) {
-            adjustPointer(loc, start + bytes.size(), bytes);
+        if (stmt.isArrow()) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), (TestNode) stmt.getBody().get(0), info, retCount));
+        } else {
+            if (retCount > 0) {
+                throw new UnsupportedOperationException("Statements requiring 'break as' not supported yet");
+            }
+            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
         }
-        var bodyBytes = BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info);
-        bytes.addAll(bodyBytes);
         bytes.add(Bytecode.JUMP.value);
-        bytes.addAll(Util.zeroToBytes());
         info.addBreak(1, start + bytes.size());
-    }
-
-    private void adjustPointer(int location, int value, List<Byte> bytes) {
-        var ptrBytes = Util.intToBytes(value);
-        for (int i = 0; i < ptrBytes.size(); i++) {
-            bytes.set(location + i, ptrBytes.get(i));
+        bytes.addAll(Util.zeroToBytes());
+        var endCase = Util.intToBytes(start + bytes.size());
+        for (var jumpLoc : jumpLocations) {
+            Util.emplace(bytes, endCase, jumpLoc);
         }
     }
 }

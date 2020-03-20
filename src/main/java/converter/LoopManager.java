@@ -60,7 +60,7 @@ public final class LoopManager {
      * @param location The location (absolute, by start of function)
      */
     public void addBreak(int levels, int location) {
-        var pointerSet = breakPointers.computeIfAbsent(loopLevel.size() - levels, k -> new HashSet<>());
+        var pointerSet = breakPointers.computeIfAbsent(loopLevel.size() - levels + 1, k -> new HashSet<>());
         pointerSet.add(location);
     }
 
