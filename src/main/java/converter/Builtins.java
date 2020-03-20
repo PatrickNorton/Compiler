@@ -70,7 +70,7 @@ public final class Builtins {
 
     public static final LangObject PRINT = new LangInstance(CALLABLE.generify(TypeObject.list()));
 
-    public static final LangObject INPUT = new LangInstance(CALLABLE.generify(TypeObject.list(STR)));
+    public static final LangObject INPUT = new LangInstance(CALLABLE.generify(STR, TypeObject.list(STR)));
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
 
