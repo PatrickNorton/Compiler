@@ -178,7 +178,7 @@ public enum Bytecode {
                 sb.append(sj);
                 sb.append("\n");
             } else {
-                sb.append(String.format("%-7d%s%n", i, op));
+                sb.append(String.format("%-7d%s%n", i - 1, op));
             }
         }
         return sb.toString();
