@@ -1,3 +1,5 @@
+from types typeget Iterable, Sequence
+
 from .decorations import normalizeIndices
 from math import max, min
 from numtools import highestOneBit
@@ -78,6 +80,10 @@ final class Deque[V] {
         return self.length
     }
 
+    public operator repr {
+        return f"{type(self)}({list(self.values)})"
+    }
+
     public method popLeft() -> V {
         V value = self.values[self.start]
         self.start = (self.start + 1) % values.length
@@ -101,6 +107,24 @@ final class Deque[V] {
         self.ensureSize(self.length + 1)
         self.values[(self.start - 1) % self.values.length] = value
         self.length++
+    }
+
+    public method extend(Iterable[V] values) {
+        if values instanceof Sequence {  # Prevent multiple array resizes
+            self.ensureSize(self.length + values.length)
+        }
+        for V value in values {
+            self.push(value)
+        }
+    }
+
+    public method extendLeft(Iterable[V] values) {
+        if values instanceof Sequence {  # Prevent multiple array resizes
+            self.ensureSize(self.length + values.length)
+        }
+        for V value in values {
+            self.pushLeft(value)
+        }
     }
 
     private method ensureSize(int length) {

@@ -60,8 +60,12 @@ class IdentityMap[K, V] from dict[K, V] {
     }
 
     public operator == (dict[K, V] other) {
-        return (other instanceof IdentityMap and self.length == other.length
-                and all(k in other and other[k] is v for K key, V value in self))
+        return other instanceof IdentityMap and super == other
+    }
+
+    public operator repr {
+        str values = ", ".join(f"{i}: {j}" for K i, V j in self)
+        return "{type(self)}({values})"
     }
 
     public method keyOf(V value) -> K {
