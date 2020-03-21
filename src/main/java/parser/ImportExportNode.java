@@ -8,7 +8,11 @@ import org.jetbrains.annotations.NotNull;
  * @author Patrick Norton
  */
 public class ImportExportNode implements SimpleStatementNode {
-    private String type;
+    public static final Type IMPORT = Type.IMPORT;
+    public static final Type EXPORT = Type.EXPORT;
+    public static final Type TYPEGET = Type.TYPEGET;
+
+    private Type type;
     private LineInfo lineInfo;
     private DottedVariableNode[] ports;
     private DottedVariableNode from;
@@ -16,18 +20,18 @@ public class ImportExportNode implements SimpleStatementNode {
     private int preDots;
     private boolean isWildcard;
 
-    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode from, int preDots, boolean isWildcard) {
+    public ImportExportNode(Type type, LineInfo lineInfo, DottedVariableNode from, int preDots, boolean isWildcard) {
         this(type, lineInfo, new DottedVariableNode[0], from, preDots);
         this.isWildcard = isWildcard;
     }
 
-    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
+    public ImportExportNode(Type type, LineInfo lineInfo, DottedVariableNode[] ports,
                             DottedVariableNode from, int preDots) {
         this(type, lineInfo, ports, from, new DottedVariableNode[0], preDots);
     }
 
     @Contract(pure = true)
-    public ImportExportNode(String type, LineInfo lineInfo, DottedVariableNode[] ports,
+    public ImportExportNode(Type type, LineInfo lineInfo, DottedVariableNode[] ports,
                             DottedVariableNode from, DottedVariableNode[] as, int preDots) {
         this.type = type;
         this.lineInfo = lineInfo;
@@ -35,6 +39,10 @@ public class ImportExportNode implements SimpleStatementNode {
         this.from = from;
         this.as = as;
         this.preDots = preDots;
+    }
+
+    public ImportExportNode.Type getType() {
+        return type;
     }
 
     @Override
@@ -52,6 +60,10 @@ public class ImportExportNode implements SimpleStatementNode {
 
     public DottedVariableNode[] getAs() {
         return as;
+    }
+
+    public int getPreDots() {
+        return preDots;
     }
 
     public boolean isWildcard() {
@@ -83,7 +95,21 @@ public class ImportExportNode implements SimpleStatementNode {
         if (info == null) {
             info = tokens.lineInfo();
         }
-        String type = tokens.tokenSequence();
+        String strType = tokens.tokenSequence();
+        Type type;
+        switch (strType) {
+            case "import":
+                type = Type.IMPORT;
+                break;
+            case "export":
+                type = Type.EXPORT;
+                break;
+            case "typeget":
+                type = Type.TYPEGET;
+                break;
+            default:
+                throw new RuntimeException("Unknown type for ImportExportNode: " + strType);
+        }
         tokens.nextToken();
         if (tokens.tokenIs(TokenType.NEWLINE, TokenType.EPSILON)) {
             throw tokens.errorf("Empty %s statements are illegal", type);
@@ -132,6 +158,19 @@ public class ImportExportNode implements SimpleStatementNode {
             return str;
         } else {
             return str + " as " + TestNode.toString(as);
+        }
+    }
+
+    public enum Type {
+        IMPORT,
+        EXPORT,
+        TYPEGET,
+        ;
+
+        @NotNull
+        @Override
+        public String toString() {
+            return name().toLowerCase();
         }
     }
 }

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -67,6 +68,7 @@ public enum OpSpTypeNode {
     STR("str"),
     REPR("repr"),
     BOOL("bool"),
+    INT("int"),
     REVERSED("reversed"),
     HASH("hash"),
     ENTER("enter"),
@@ -109,6 +111,38 @@ public enum OpSpTypeNode {
             throw new ParserException("");
         }
         return values.get(sequence);
+    }
+
+    private static final Map<OperatorTypeNode, OpSpTypeNode> OP_SP_TRANSLATION_MAP;
+
+    static {
+        var temp = new EnumMap<OperatorTypeNode, OpSpTypeNode>(OperatorTypeNode.class);
+        temp.put(OperatorTypeNode.ADD, OpSpTypeNode.ADD);
+        temp.put(OperatorTypeNode.SUBTRACT, OpSpTypeNode.SUBTRACT);
+        temp.put(OperatorTypeNode.U_SUBTRACT, OpSpTypeNode.UNARY_MINUS);
+        temp.put(OperatorTypeNode.MULTIPLY, OpSpTypeNode.MULTIPLY);
+        temp.put(OperatorTypeNode.DIVIDE, OpSpTypeNode.DIVIDE);
+        temp.put(OperatorTypeNode.FLOOR_DIV, OpSpTypeNode.FLOOR_DIV);
+        temp.put(OperatorTypeNode.POWER, OpSpTypeNode.POWER);
+        temp.put(OperatorTypeNode.EQUALS, OpSpTypeNode.EQUALS);
+        temp.put(OperatorTypeNode.NOT_EQUALS, OpSpTypeNode.NOT_EQUALS);
+        temp.put(OperatorTypeNode.GREATER_THAN, OpSpTypeNode.GREATER_THAN);
+        temp.put(OperatorTypeNode.LESS_THAN, OpSpTypeNode.LESS_THAN);
+        temp.put(OperatorTypeNode.GREATER_EQUAL, OpSpTypeNode.GREATER_EQUAL);
+        temp.put(OperatorTypeNode.LESS_EQUAL, OpSpTypeNode.LESS_EQUAL);
+        temp.put(OperatorTypeNode.LEFT_BITSHIFT, OpSpTypeNode.LEFT_BITSHIFT);
+        temp.put(OperatorTypeNode.RIGHT_BITSHIFT, OpSpTypeNode.RIGHT_BITSHIFT);
+        temp.put(OperatorTypeNode.BITWISE_AND, OpSpTypeNode.BITWISE_AND);
+        temp.put(OperatorTypeNode.BITWISE_OR, OpSpTypeNode.BITWISE_OR);
+        temp.put(OperatorTypeNode.BITWISE_XOR, OpSpTypeNode.BITWISE_XOR);
+        temp.put(OperatorTypeNode.MODULO, OpSpTypeNode.MODULO);
+        temp.put(OperatorTypeNode.IN, OpSpTypeNode.IN);
+        temp.put(OperatorTypeNode.COMPARE, OpSpTypeNode.COMPARE);
+        OP_SP_TRANSLATION_MAP = Collections.unmodifiableMap(temp);
+    }
+
+    public static OpSpTypeNode translate(OperatorTypeNode node) {
+        return OP_SP_TRANSLATION_MAP.get(node);
     }
 
     @Contract(pure = true)

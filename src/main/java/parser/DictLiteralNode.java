@@ -1,9 +1,11 @@
 package main.java.parser;
 
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -45,6 +47,30 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
 
     public TestNode[] getValues() {
         return values;
+    }
+
+    public Iterable<Pair<TestNode, TestNode>> pairs() {
+        return PairIterator::new;
+    }
+
+    class PairIterator implements Iterator<Pair<TestNode, TestNode>> {
+        int number = 0;
+
+        @Override
+        public boolean hasNext() {
+            return number < size();
+        }
+
+        @Override
+        public Pair<TestNode, TestNode> next() {
+            Pair<TestNode, TestNode> pair = Pair.of(keys[number], values[number]);
+            number++;
+            return pair;
+        }
+    }
+
+    public int size() {
+        return keys.length;
     }
 
     /**

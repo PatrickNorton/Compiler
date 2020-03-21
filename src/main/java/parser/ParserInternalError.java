@@ -23,7 +23,7 @@ public class ParserInternalError extends RuntimeException {
      * Constructs a new runtime exception with the specified detail message.
      * @param message   the detail message.
      */
-    public ParserInternalError(String message) {
+    private ParserInternalError(String message) {
         super(message);
     }
 
@@ -47,5 +47,10 @@ public class ParserInternalError extends RuntimeException {
     @NotNull
     public static ParserInternalError of(String message, @NotNull Token info) {
         return of(message, info.lineInfo);
+    }
+
+    @NotNull
+    public static ParserInternalError of(String message, @NotNull BaseNode node) {
+        return of(message, node.getLineInfo());
     }
 }

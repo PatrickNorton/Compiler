@@ -8,12 +8,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EmptyStackException;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringJoiner;
 
 /**
@@ -197,7 +197,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      */
     private static TestNode parseExpression(@NotNull TokenList tokens, boolean ignoreNewlines) {
         Queue<TestNode> queue = new ArrayDeque<>();
-        Stack<DummyOp> stack = new Stack<>();
+        Deque<DummyOp> stack = new ArrayDeque<>();
         boolean parseCurly = true;
         while (true) {
             LineInfo lineInfo = tokens.lineInfo();
@@ -214,7 +214,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     throw tokens.defaultError();
                 }
                 // Push all operators that bind more tightly onto the queue
-                while (!stack.empty() && operator.precedence >= stack.peek().precedence) {
+                while (!stack.isEmpty() && operator.precedence >= stack.peek().precedence) {
                     queue.add(stack.pop());
                 }
                 // Postfix operators don't go on the stack, as they have no
@@ -234,7 +234,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 parseCurly = false;
             }
         }
-        while (!stack.empty()) {
+        while (!stack.isEmpty()) {
             queue.add(stack.pop());
         }
         if (queue.isEmpty()) {
@@ -244,7 +244,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
     }
 
     private static TestNode convertQueueToNode(@NotNull Queue<TestNode> queue) {
-        Stack<TestNode> temp = new Stack<>();
+        Deque<TestNode> temp = new ArrayDeque<>();
         for (TestNode t : queue) {
             if (t instanceof DummyOp) {
                 LineInfo info = t.getLineInfo();
@@ -256,7 +256,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                     for (int i = nodeCount - 1; i >= 0; i--) {
                         nodes[i] = temp.pop();
                     }
-                } catch (EmptyStackException e) {
+                } catch (NoSuchElementException e) {
                     throw ParserException.of("Illegal node combination", t);
                 }
                 temp.push(new OperatorNode(info, op, nodes));

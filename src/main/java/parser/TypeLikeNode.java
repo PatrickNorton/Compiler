@@ -10,6 +10,7 @@ public interface TypeLikeNode extends AtomicNode {
     TypeLikeNode[] getSubtypes();
     boolean isVararg();
     boolean isOptional();
+    String strName();
     default boolean isDecided() {
         return true;
     }
