@@ -122,7 +122,8 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.GREATER_THAN, intCompInfo),
                 Map.entry(OpSpTypeNode.GREATER_EQUAL, intCompInfo),
 
-                Map.entry(OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT)))
+                Map.entry(OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))),
+                Map.entry(OpSpTypeNode.UNARY_MINUS, new FunctionInfo(INT))
         );
 
         INT.setOperators(intMap);
