@@ -152,7 +152,7 @@ public enum Bytecode {
         for (int i = 0; i < bytes.size();) {
             var op = VALUE_MAP.get(bytes.get(i++));
             if (op.operands.length > 0) {
-                 sb.append(String.format("%-7d%-16s", i - 1, op));
+                sb.append(String.format("%-7d%-16s", i - 1, op));
                 StringJoiner sj = new StringJoiner(", ");
                 for (var operand : op.operands) {
                     var operandSize = operand.byteCount;
