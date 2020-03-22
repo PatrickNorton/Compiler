@@ -158,22 +158,7 @@ public enum Bytecode {
                     var operandSize = operand.byteCount;
                     var value = fromBytes(bytes.subList(i, i + operandSize));
                     i += operandSize;
-                    switch (operand) {
-                        case ARGC:
-                        case LOCATION:
-                        case VARIABLE:
-                        case FUNCTION_NO:
-                            sj.add(Integer.toString(value));
-                            break;
-                        case CONSTANT:
-                            sj.add(String.format("%d (%s)", value, info.getConstant((short) value).name()));
-                            break;
-                        case OPERATOR:
-                            sj.add(String.format("%d (%s)", value, OpSpTypeNode.values()[value]));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException("Unknown enum value");
-                    }
+                    sb.append(format(operand, value, info));
                 }
                 sb.append(sj);
                 sb.append("\n");
@@ -182,6 +167,22 @@ public enum Bytecode {
             }
         }
         return sb.toString();
+    }
+
+    private static String format(@NotNull Type operand, int value, CompilerInfo info) {
+        switch (operand) {
+            case ARGC:
+            case LOCATION:
+            case VARIABLE:
+            case FUNCTION_NO:
+                return Integer.toString(value);
+            case CONSTANT:
+                return String.format("%d (%s)", value, info.getConstant((short) value).name());
+            case OPERATOR:
+                return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
+            default:
+                throw new UnsupportedOperationException("Unknown enum value");
+        }
     }
 
     private static int fromBytes(@NotNull List<Byte> bytes) {
