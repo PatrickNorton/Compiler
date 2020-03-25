@@ -21,10 +21,6 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
         return Builtins.TYPE.generify(this);
     }
 
-    default FunctionInfo operatorInfo(OperatorTypeNode o) {
-        return operatorInfo(OpSpTypeNode.translate(o));
-    }
-
     default FunctionInfo operatorInfo(OpSpTypeNode o) {
         return null;
     }
