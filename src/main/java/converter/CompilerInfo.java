@@ -262,6 +262,12 @@ public final class CompilerInfo {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
                 System.out.println(Bytecode.disassemble(this, opPair.getValue()));
             }
+            for (var propPair : cls.getProperties().entrySet()) {
+                System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
+                System.out.println(Bytecode.disassemble(this, propPair.getValue().getKey()));
+                System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
+                System.out.println(Bytecode.disassemble(this, propPair.getValue().getValue()));
+            }
         }
     }
 

@@ -52,6 +52,10 @@ public final class ClassInfo {
         return staticMethods;
     }
 
+    public Map<String, Pair<List<Byte>, List<Byte>>> getProperties() {
+        return properties;
+    }
+
     public String name() {
         return type.name();
     }
