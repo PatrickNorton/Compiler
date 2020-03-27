@@ -74,7 +74,10 @@ public final class FunctionCallConverter implements TestConverter {
         }
         var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL);
         if (operatorInfo == null || !operatorInfo.matches(args)) {
-            throw CompilerException.of("Cannot call " + node.getCaller(), node);
+            throw CompilerException.format(
+                    "Cannot call '%s', arguments given do not match the arguments of the function",
+                    node, node.getCaller()
+            );
         }
     }
 }

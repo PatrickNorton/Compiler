@@ -68,9 +68,13 @@ public final class Builtins {
 
     public static final TypeObject TYPE = new TypeTypeObject();
 
-    public static final LangObject PRINT = new LangInstance(CALLABLE.generify(TypeObject.list()));
+    private static final FunctionInfo PRINT_INFO = new FunctionInfo("print", ArgumentInfo.of(OBJECT));
 
-    public static final LangObject INPUT = new LangInstance(CALLABLE.generify(STR, TypeObject.list(STR)));
+    public static final LangObject PRINT = new LangInstance(PRINT_INFO.toCallable());
+
+    private static final FunctionInfo INPUT_INFO = new FunctionInfo("input", ArgumentInfo.of(STR), STR);
+
+    public static final LangObject INPUT = new LangInstance(INPUT_INFO.toCallable());
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
 

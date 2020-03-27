@@ -22,7 +22,15 @@ public final class ArgumentInfo implements Iterable<Argument> {
         this.keywordArgs = keywordArgs;
     }
 
-    public boolean matches(Argument... values) {
+    public boolean matches(@NotNull Argument... values) {
+        if (values.length != normalArgs.length) {
+            return false;
+        }
+        for (int i = 0; i < values.length; i++) {  // TODO: Non-positional args
+            if (!normalArgs[i].getType().isSuperclass(values[i].getType())) {
+                return false;
+            }
+        }
         return true;
     }
 

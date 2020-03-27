@@ -5,7 +5,7 @@ import java.util.Objects;
 public class ObjectType implements TypeObject {
     @Override
     public boolean isSuperclass(TypeObject other) {
-        return other instanceof ObjectType;
+        return true;
     }
 
     @Override
