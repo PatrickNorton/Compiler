@@ -8,8 +8,10 @@ import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
+import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public final class ClassConverter implements BaseConverter {
         var declarations = new DeclarationConverter(info);
         var methods = new MethodConverter(info);
         var operators = new OperatorConverter(info);
+        var properties = new PropertyConverter(info);
         var trueSupers = Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics);
@@ -49,6 +52,8 @@ public final class ClassConverter implements BaseConverter {
                 methods.parse((MethodDefinitionNode) stmt);
             } else if (stmt instanceof OperatorDefinitionNode) {
                 operators.parse((OperatorDefinitionNode) stmt);
+            } else if (stmt instanceof PropertyDefinitionNode) {
+                properties.parse((PropertyDefinitionNode) stmt);
             } else {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
@@ -69,6 +74,8 @@ public final class ClassConverter implements BaseConverter {
                 .setStaticOperators(new HashMap<>())
                 .setMethodDefs(convert(methods.getNodes(), type, methods.getMethods()))
                 .setStaticMethods(convert(methods.getStaticNodes(), type, methods.getStaticMethods()))
+                .setProperties(merge(convert(properties.getGetters(), type, properties.getGetterInfos()),
+                        convert(properties.getSetters(), type, properties.getSetterInfos())))
                 .create();
         int classIndex = info.addClass(cls);
         var name = node.getName().strName();
@@ -96,6 +103,18 @@ public final class ClassConverter implements BaseConverter {
             info.popFnReturns();
             result.put(pair.getKey(), bytes);
             info.removeStackFrame();
+        }
+        return result;
+    }
+
+    @NotNull
+    private static <T, U> Map<T, Pair<U, U>> merge(@NotNull Map<T, U> first, @NotNull Map<T, U> second) {
+        assert first.size() == second.size();
+        Map<T, Pair<U, U>> result = new HashMap<>(first.size());
+        for (var pair : first.entrySet()) {
+            var key = pair.getKey();
+            assert second.containsKey(key);
+            result.put(key, Pair.of(pair.getValue(), second.get(key)));
         }
         return result;
     }
@@ -282,6 +301,63 @@ public final class ClassConverter implements BaseConverter {
             temp.put(OpSpTypeNode.IN, Builtins.BOOL);
 
             DEFAULT_RETURNS = Collections.unmodifiableMap(temp);
+        }
+    }
+
+    private static final class PropertyConverter {
+        private Map<String, TypeObject> properties;
+        private Map<String, StatementBodyNode> getters;
+        private Map<String, StatementBodyNode> setters;
+        private Map<String, LineInfo> lineInfos;
+        private CompilerInfo info;
+
+        PropertyConverter(CompilerInfo info) {
+            this.properties = new HashMap<>();
+            this.getters = new HashMap<>();
+            this.setters = new HashMap<>();
+            this.lineInfos = new HashMap<>();
+            this.info = info;
+        }
+
+        void parse(@NotNull PropertyDefinitionNode node) {
+            var name = node.getName().getName();
+            var type = info.getType(node.getType());
+            if (properties.containsKey(name)) {
+                throw CompilerException.format(
+                        "Illegal name: property with name '%s' already defined in this class (see line %d)",
+                        node, name, lineInfos.get(name).getLineNumber()
+                );
+            }
+            properties.put(name, type);
+            getters.put(name, node.getGet());
+            setters.put(name, node.getSet());  // TODO: If setter is empty
+            lineInfos.put(name, node.getLineInfo());
+        }
+
+        public Map<String, StatementBodyNode> getGetters() {
+            return getters;
+        }
+
+        public Map<String, StatementBodyNode> getSetters() {
+            return setters;
+        }
+
+        @NotNull
+        public Map<String, FunctionInfo> getGetterInfos() {
+            Map<String, FunctionInfo> result = new HashMap<>();
+            for (var key : getters.keySet()) {
+                result.put(key, new FunctionInfo(properties.get(key)));
+            }
+            return result;
+        }
+
+        @NotNull
+        public Map<String, FunctionInfo> getSetterInfos() {
+            Map<String, FunctionInfo> result = new HashMap<>();
+            for (var key : setters.keySet()) {
+                result.put(key, new FunctionInfo(ArgumentInfo.of(properties.get(key))));
+            }
+            return result;
         }
     }
 }
