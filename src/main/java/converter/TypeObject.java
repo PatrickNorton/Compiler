@@ -124,4 +124,13 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
     static TypeObject list(TypeObject... args) {
         return new ListTypeObject(args);
     }
+
+    @NotNull
+    static String[] name(@NotNull TypeObject... args) {
+        String[] result = new String[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = args[i].name();
+        }
+        return result;
+    }
 }

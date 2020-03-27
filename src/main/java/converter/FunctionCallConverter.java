@@ -73,10 +73,19 @@ public final class FunctionCallConverter implements TestConverter {
             args[i] = new Argument(params[i].getVariable().getName(), type);
         }
         var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL);
-        if (operatorInfo == null || !operatorInfo.matches(args)) {
+        if (operatorInfo == null) {
             throw CompilerException.format(
-                    "Cannot call '%s', arguments given do not match the arguments of the function",
-                    node, node.getCaller()
+                    "Object of type '%s' has no overloaded 'operator ()'",
+                    node, callerType.name()
+            );
+        } else if (!operatorInfo.matches(args)) {
+            var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
+            var nameArr = TypeObject.name(Argument.typesOf(operatorInfo.getArgs().getNormalArgs()));
+            var expectedStr = String.join(", ", nameArr);
+            throw CompilerException.format(
+                    "Cannot call object of type '%s': arguments given (%s)" +
+                            " do not match the arguments of the function (%s)",
+                    node, callerType.name(), argsString, expectedStr
             );
         }
     }

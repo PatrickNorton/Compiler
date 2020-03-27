@@ -16,7 +16,7 @@ public class GenerifiedTypeTypeObject implements TypeObject {
 
     @Override
     public String name() {
-        return String.format("type[%s]", type);
+        return String.format("type[%s]", type.name());
     }
 
     @Override
