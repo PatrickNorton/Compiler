@@ -25,19 +25,16 @@ public final class IfConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes;
         boolean hasAs = !node.getAs().isEmpty();
+        boolean hasElse = !node.getElseStmt().isEmpty();
         if (hasAs) {
             bytes = addAs(start, node.getConditional(), node.getAs());
-        } else {
-            bytes = new ArrayList<>(TestConverter.bytes(start, node.getConditional(), info, 1));
-        }
-        boolean hasElse = !node.getElseStmt().isEmpty();
-        boolean trailingJump = node.getElifs().length > 0 || hasElse;
-        if (hasAs) {
             var asName = node.getAs().getName();
             // 'as' always needs a jump to ensure the correct popping occurs
             addBodyWithAs(bytes, start, node.getBody(), true, asName);
             info.removeStackFrame();
         } else {
+            bytes = new ArrayList<>(TestConverter.bytes(start, node.getConditional(), info, 1));
+            boolean trailingJump = node.getElifs().length > 0 || hasElse;
             addBody(bytes, start, node.getBody(), trailingJump);
         }
         int elifsRemaining = node.getElifs().length - 1;
