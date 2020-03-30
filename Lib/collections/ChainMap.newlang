@@ -45,7 +45,7 @@ final class ChainMap[K, V] from dict[K, V] {
 
     public operator repr {
         var inner = ", ".join(f"{key}: {value}" for K key, V value in self)
-        return f"ChainMap[{K}, {V}]: \{{inner}\}"
+        return f"{type(self)}(\{{inner}\})"
     }
 
     public generator method keys() -> K {

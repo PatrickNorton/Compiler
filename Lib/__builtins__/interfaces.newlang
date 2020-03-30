@@ -31,6 +31,8 @@ interface int {
 
 @covariant
 interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
+    pubget uint length
+
     operator new (*T items, /)
     operator new (Iterable[T] items, /)
 
@@ -59,6 +61,8 @@ interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
 
 @covariant
 interface set[T] from Iterable[T], Comparable[Set[T]] {
+    pubget uint length
+
     operator new (*T items, /)
     operator new (Iterable[T] items, /)
 
@@ -91,6 +95,8 @@ interface set[T] from Iterable[T], Comparable[Set[T]] {
 
 @covariant
 interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
+    pubget uint length
+
     operator new (*tuple[K, V] items, /)
     operator new (dict[K, V] items, /)
 

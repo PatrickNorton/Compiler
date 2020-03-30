@@ -1,3 +1,5 @@
+from types typeget Iterable
+
 from types import Array
 
 export Stack
@@ -18,12 +20,22 @@ final class Stack[T] {
         yield from self.values[self.length::-1]
     }
 
+    public operator repr {
+        return f"{type(self)}({list(self.values[:self.length])})"
+    }
+
     public method push(T value) {
         if self.length == self.values.length {
             self.values = Array.copy(self.values, size=self.values.length*2)
         }
         self.values[self.length] = value
         self.length++
+    }
+
+    public method pushAll(Iterable[T] values) {
+        for T value in values {
+            self.push(value)
+        }
     }
 
     public method pop() -> T {
