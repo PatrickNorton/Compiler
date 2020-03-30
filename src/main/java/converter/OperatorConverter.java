@@ -77,10 +77,7 @@ public final class OperatorConverter implements TestConverter {
         }
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
-        if (retType == null) {
-            throw CompilerInternalError.of("Operator not implemented", node);
-        }
-        return retType;
+        return retType == null ? new TypeObject[] {Builtins.THROWS} : retType;
     }
 
     @NotNull
@@ -159,7 +156,7 @@ public final class OperatorConverter implements TestConverter {
             );
         }
         var condType = TestConverter.returnType(arg0, info, 1)[0];
-        if (!Builtins.NULL_TYPE.isSuperclass(condType)) {
+        if (!condType.isSuperclass(Builtins.NULL_TYPE)) {
             CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
         } else if (condType.equals(Builtins.NULL_TYPE)) {
             CompilerWarning.warn("Using 'is null' comparison on variable that must be null", arg0);
