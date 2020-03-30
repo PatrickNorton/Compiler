@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Contract;
 public class ElifStatementNode implements BaseNode {
     private LineInfo lineInfo;
     private TestNode test;
+    private VariableNode as;
     private StatementBodyNode body;
 
     /**
@@ -23,9 +24,10 @@ public class ElifStatementNode implements BaseNode {
      * @param body The body of the statement
      */
     @Contract(pure = true)
-    public ElifStatementNode(LineInfo lineInfo, TestNode test, StatementBodyNode body) {
+    public ElifStatementNode(LineInfo lineInfo, TestNode test, VariableNode as, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.test = test;
+        this.as = as;
         this.body = body;
     }
 
@@ -44,6 +46,6 @@ public class ElifStatementNode implements BaseNode {
 
     @Override
     public String toString() {
-        return "elif " + test + " " + body;
+        return "elif " + test + (as.isEmpty() ? "" : " as " + as) + " " + body;
     }
 }

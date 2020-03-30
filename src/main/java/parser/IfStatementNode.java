@@ -13,6 +13,7 @@ import java.util.LinkedList;
 public class IfStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
     private TestNode conditional;
+    private VariableNode as;
     private StatementBodyNode body;
     private ElifStatementNode[] elifs;
     private StatementBodyNode elseStmt;
@@ -25,10 +26,11 @@ public class IfStatementNode implements FlowStatementNode {
      * @param elseStmt The else statement at the end
      */
     @Contract(pure = true)
-    public IfStatementNode(LineInfo lineInfo, TestNode conditional, StatementBodyNode body,
+    public IfStatementNode(LineInfo lineInfo, TestNode conditional, VariableNode as, StatementBodyNode body,
                            ElifStatementNode[] elifs, StatementBodyNode elseStmt) {
         this.lineInfo = lineInfo;
         this.conditional = conditional;
+        this.as = as;
         this.body = body;
         this.elifs = elifs;
         this.elseStmt = elseStmt;
@@ -41,6 +43,10 @@ public class IfStatementNode implements FlowStatementNode {
 
     public TestNode getConditional() {
         return conditional;
+    }
+
+    public VariableNode getAs() {
+        return as;
     }
 
     @Override
@@ -74,20 +80,22 @@ public class IfStatementNode implements FlowStatementNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode test = TestNode.parse(tokens);
+        VariableNode as = VariableNode.parseOnToken(tokens, Keyword.AS);
         StatementBodyNode body = StatementBodyNode.parse(tokens);
         LinkedList<ElifStatementNode> elifs = new LinkedList<>();
         while (tokens.tokenIs(Keyword.ELIF)) {
             tokens.nextToken();
             TestNode elifCondition = TestNode.parse(tokens);
+            VariableNode elifAs = VariableNode.parseOnToken(tokens, Keyword.AS);
             StatementBodyNode elifBody = StatementBodyNode.parse(tokens);
-            elifs.add(new ElifStatementNode(info, elifCondition, elifBody));
+            elifs.add(new ElifStatementNode(info, elifCondition, elifAs, elifBody));
         }
         StatementBodyNode elseStmt = StatementBodyNode.parseOnToken(tokens, "else");
-        return new IfStatementNode(info, test, body, elifs.toArray(new ElifStatementNode[0]), elseStmt);
+        return new IfStatementNode(info, test, as, body, elifs.toArray(new ElifStatementNode[0]), elseStmt);
     }
 
     @Override
     public String toString() {
-        return "if " + conditional + " " + body;
+        return "if " + conditional + (as.isEmpty() ? "" : " as " + as) + " " + body;
     }
 }
