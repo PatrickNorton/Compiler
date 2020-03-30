@@ -44,6 +44,10 @@ public class ElifStatementNode implements BaseNode {
         return body;
     }
 
+    public VariableNode getAs() {
+        return as;
+    }
+
     @Override
     public String toString() {
         return "elif " + test + (as.isEmpty() ? "" : " as " + as) + " " + body;

@@ -1,7 +1,10 @@
 package main.java.converter;
 
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorNode;
 import main.java.parser.OperatorTypeNode;
+import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -62,6 +65,8 @@ public final class OperatorConverter implements TestConverter {
             case BOOL_OR:
             case BOOL_XOR:
             case IN:
+            case IS:
+            case IS_NOT:
                 return new TypeObject[] {Builtins.BOOL};
             case NOT_NULL:
                 return notNullReturn();
@@ -94,6 +99,9 @@ public final class OperatorConverter implements TestConverter {
                 return convertNotEquals(start);
             case IN:
                 return convertContains(start);
+            case IS:
+            case IS_NOT:
+                return convertIs(start);
         }
         int opCount = node.getOperands().length;
         TypeObject opType = null;
@@ -123,6 +131,65 @@ public final class OperatorConverter implements TestConverter {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
+    }
+
+    private Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+        switch (node.getOperator()) {  // TODO: not (x is null)
+            case IS_NOT:
+                return convertIsNot(start);
+            case INSTANCEOF:
+                return convertInstanceof(start);
+            default:
+                throw CompilerException.of(
+                        "Cannot use 'as' here, condition must be an " +
+                                "'instanceof' or 'is not null' statement", node
+                );
+        }
+    }
+
+    @NotNull
+    private Pair<List<Byte>, TypeObject> convertIsNot(int start) {
+        assert node.getOperands().length == 2;
+        var arg0 = node.getOperands()[0].getArgument();
+        var arg1 = node.getOperands()[1].getArgument();
+        if (!(arg1 instanceof VariableNode) || !((VariableNode) arg1).getName().equals("null")) {
+            throw CompilerException.of(
+                    "Cannot use 'as' here, 'is not' comparison must be done to null",
+                    arg1
+            );
+        }
+        var condType = TestConverter.returnType(arg0, info, 1)[0];
+        if (!Builtins.NULL_TYPE.isSuperclass(condType)) {
+            CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
+        } else if (condType.equals(Builtins.NULL_TYPE)) {
+            CompilerWarning.warn("Using 'is null' comparison on variable that must be null", arg0);
+        }
+        var asType = condType.stripNull();
+        var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), arg1, info, 1));
+        bytes.add(Bytecode.IDENTICAL.value);
+        bytes.add(Bytecode.BOOL_NOT.value);
+        return Pair.of(bytes, asType);
+    }
+
+    @NotNull
+    private Pair<List<Byte>, TypeObject> convertInstanceof(int start) {
+        assert node.getOperands().length == 2;
+        var arg0 = node.getOperands()[0].getArgument();
+        var arg1 = node.getOperands()[1].getArgument();
+        var converter1 = TestConverter.of(info, arg1, 1);
+        var arg1ret = converter1.returnType()[0];
+        if (!Builtins.TYPE.isSuperclass(arg1ret)) {
+            throw CompilerException.of(
+                    "'instanceof' operator requires return type that is an instance of 'type'", arg1
+            );
+        }
+        var instanceType = arg1ret.operatorReturnType(OpSpTypeNode.CALL)[0]; // calling a type will always return an instance
+        var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
+        bytes.addAll(converter1.convert(start + bytes.size()));
+        bytes.add(Bytecode.INSTANCEOF.value);
+        return Pair.of(bytes, instanceType);
     }
 
     @NotNull
@@ -242,6 +309,22 @@ public final class OperatorConverter implements TestConverter {
     }
 
     @NotNull
+    private List<Byte> convertIs(int start) {
+        assert node.getOperator() == OperatorTypeNode.IS || node.getOperator() == OperatorTypeNode.IS_NOT;
+        if (node.getOperands().length == 2) {
+            List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
+            bytes.addAll(TestConverter.bytes(start, node.getOperands()[1].getArgument(), info, 1));
+            bytes.add(Bytecode.IDENTICAL.value);
+            if (node.getOperator() == OperatorTypeNode.IS_NOT) {
+                bytes.add(Bytecode.BOOL_NOT.value);
+            }
+            return bytes;
+        } else {
+            throw new UnsupportedOperationException("'is' with more than 2 operands not yet supported");
+        }
+    }
+
+    @NotNull
     private TypeObject[] notNullReturn() {
         var retType = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1)[0];
         if (retType.equals(Builtins.NULL_TYPE)) {
@@ -253,7 +336,7 @@ public final class OperatorConverter implements TestConverter {
     }
 
     @NotNull
-    public TypeObject[] nullCoerceReturn() {
+    private TypeObject[] nullCoerceReturn() {
         var ret0 = TestConverter.returnType(node.getOperands()[0].getArgument(), info, 1)[0];
         var ret1 = TestConverter.returnType(node.getOperands()[1].getArgument(), info, 1)[0];
         var result = ret0.equals(Builtins.NULL_TYPE) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
@@ -261,12 +344,16 @@ public final class OperatorConverter implements TestConverter {
     }
 
     @NotNull
-    public TypeObject[] notEqualsReturn() {
+    private TypeObject[] notEqualsReturn() {
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
         if (retType == null) {
             throw CompilerInternalError.of("Operator != not implemented", node);
         }
         return retType;
+    }
+
+    public static Pair<List<Byte>, TypeObject> convertWithAs(int start, OperatorNode node, CompilerInfo info, int retCount) {
+        return new OperatorConverter(info, node, retCount).convertWithAs(start);
     }
 }
