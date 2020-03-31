@@ -40,15 +40,7 @@ public final class WhileConverter extends LoopConverter {
         info.addContinue(start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         if (!node.getNobreak().isEmpty()) {
-            var nobreak = BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info);
-            bytes.addAll(nobreak);
-            if (hasAs) {
-                int jumpPos = start + bytes.size() + Bytecode.JUMP.size() + Bytecode.POP_TOP.size();
-                bytes.add(Bytecode.JUMP.value);
-                bytes.addAll(Util.intToBytes(jumpPos));
-                Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
-                bytes.add(Bytecode.POP_TOP.value);
-            }
+            addNobreak(bytes, start, jumpLoc);
         } else if (hasAs) {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
             bytes.add(Bytecode.POP_TOP.value);
@@ -69,5 +61,17 @@ public final class WhileConverter extends LoopConverter {
         info.addStackFrame();
         info.addVariable(node.getAs().getName(), pair.getValue());
         bytes.addAll(pair.getKey());
+    }
+
+    private void addNobreak(@NotNull List<Byte> bytes, int start, int jumpLoc) {
+        var nobreak = BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info);
+        bytes.addAll(nobreak);
+        if (!node.getAs().isEmpty()) {
+            int jumpPos = start + bytes.size() + Bytecode.JUMP.size() + Bytecode.POP_TOP.size();
+            bytes.add(Bytecode.JUMP.value);
+            bytes.addAll(Util.intToBytes(jumpPos));
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+            bytes.add(Bytecode.POP_TOP.value);
+        }
     }
 }
