@@ -71,6 +71,9 @@ public interface TypeObject extends LangObject, Comparable<TypeObject> {
         sortedSet.remove(Builtins.THROWS);
         if (sortedSet.isEmpty()) {
             return Builtins.THROWS;
+        } else if (sortedSet.size() == 2 && sortedSet.contains(Builtins.NULL_TYPE)) {
+            sortedSet.remove(Builtins.NULL_TYPE);
+            return optional(sortedSet.first());
         }
         return sortedSet.size() == 1 ? sortedSet.first() : new UnionTypeObject(sortedSet);
     }
