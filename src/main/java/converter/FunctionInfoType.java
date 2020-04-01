@@ -7,17 +7,22 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class FunctionInfoType implements TypeObject {
+public final class FunctionInfoType extends TypeObject {
     private FunctionInfo info;
 
     public FunctionInfoType(FunctionInfo info) {
         this.info = info;
     }
 
-
     @Override
     public boolean isSuperclass(TypeObject other) {
         return other instanceof FunctionInfoType && ((FunctionInfoType) other).info.equals(info);
+    }
+
+    @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        return (other instanceof FunctionInfoType && ((FunctionInfoType) other).info.equals(info))
+                || (!other.superWillRecurse() && other.isSuperclass(this));
     }
 
     @Nullable
@@ -54,5 +59,10 @@ public final class FunctionInfoType implements TypeObject {
     @Override
     public String name() {
         return "";
+    }
+
+    @Override
+    public TypeObject typedefAs(String name) {
+        throw new UnsupportedOperationException("How on earth did you typedef this?");
     }
 }

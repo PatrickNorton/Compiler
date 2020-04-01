@@ -18,8 +18,8 @@ public final class TypedefConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {  // TODO: Recursive references in typedef
-        var type = new TypedefType(node.getName().strName(), info.getType(node.getType()));
-        info.addType(type);
+        var type = info.getType(node.getType()).typedefAs(node.getName().strName());
+        info.addType((NameableType) type);  // FIXME: Don't require cast
         info.addVariable(type.name(), type);
         return Collections.emptyList();
     }

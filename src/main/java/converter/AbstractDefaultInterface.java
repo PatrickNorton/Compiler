@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public abstract class AbstractDefaultInterface implements TypeObject {
+public abstract class AbstractDefaultInterface extends TypeObject {
     private String name;
     protected Map<OpSpTypeNode, FunctionInfo> operators;
 
@@ -33,6 +33,16 @@ public abstract class AbstractDefaultInterface implements TypeObject {
                 }
             }
         }
+        return true;
+    }
+
+    @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        return equals(other) || (!other.superWillRecurse() && other.isSuperclass(this));
+    }
+
+    @Override
+    public boolean subWillRecurse() {
         return true;
     }
 

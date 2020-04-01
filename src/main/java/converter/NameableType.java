@@ -1,4 +1,4 @@
 package main.java.converter;
 
-public interface NameableType extends TypeObject {
+public abstract class NameableType extends TypeObject {
 }

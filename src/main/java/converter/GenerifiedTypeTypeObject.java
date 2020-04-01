@@ -1,12 +1,20 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.NotNull;
 
-public class GenerifiedTypeTypeObject implements TypeObject {
+public class GenerifiedTypeTypeObject extends TypeObject {
     private TypeObject type;
+    private String typedefName;
 
     public GenerifiedTypeTypeObject(TypeObject type) {
         this.type = type;
+        this.typedefName = "";
+    }
+
+    private GenerifiedTypeTypeObject(TypeObject other, String typedefName) {
+        this.type = other;
+        this.typedefName = typedefName;
     }
 
     @Override
@@ -15,8 +23,18 @@ public class GenerifiedTypeTypeObject implements TypeObject {
     }
 
     @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        return false;
+    }
+
+    @Override
     public String name() {
-        return String.format("type[%s]", type.name());
+        return typedefName.isEmpty() ? String.format("type[%s]", type.name()) : typedefName;
+    }
+
+    @Override
+    public TypeObject typedefAs(String name) {
+        return new GenerifiedTypeTypeObject(type, name);
     }
 
     @Override

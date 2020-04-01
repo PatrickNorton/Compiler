@@ -1,14 +1,22 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class OptionalTypeObject implements TypeObject {
-    private TypeObject type;
+public final class OptionalTypeObject extends TypeObject {
+    private final TypeObject type;
+    private final String typedefName;
 
     public OptionalTypeObject(@NotNull TypeObject type) {
         this.type = type.stripNull();
+        this.typedefName = "";
+    }
+
+    private OptionalTypeObject(TypeObject type, String typedefName) {
+        this.type = type;
+        this.typedefName = typedefName;
     }
 
     @Override
@@ -17,10 +25,25 @@ public class OptionalTypeObject implements TypeObject {
     }
 
     @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        return type.isSubclass(other) && Builtins.NULL_TYPE.isSubclass(other);
+    }
+
+    @Override
     public String name() {
+        if (!typedefName.isEmpty()) {
+            return typedefName;
+        }
         return type instanceof StdTypeObject
                 ? type.name() + "?"
                 : String.format("(%s)?", type.name());
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    @Override
+    public TypeObject typedefAs(String name) {
+        return new OptionalTypeObject(type, name);
     }
 
     @Override

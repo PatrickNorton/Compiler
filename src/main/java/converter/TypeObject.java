@@ -12,50 +12,60 @@ import org.jetbrains.annotations.Nullable;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public interface TypeObject extends LangObject, Comparable<TypeObject> {
-    boolean isSuperclass(TypeObject other);
-    String name();
+public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
+    public abstract boolean isSuperclass(TypeObject other);
+    public abstract boolean isSubclass(@NotNull TypeObject other);
+    public abstract String name();
+    public abstract TypeObject typedefAs(String name);
+
+    boolean superWillRecurse() {
+        return false;
+    }
+
+    boolean subWillRecurse() {
+        return false;
+    }
 
     @Override
-    default TypeObject getType() {
+    public TypeObject getType() {
         return Builtins.TYPE.generify(this);
     }
 
-    default FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o) {
         return null;
     }
 
-    default TypeObject[] operatorReturnType(OperatorTypeNode o) {
+    public TypeObject[] operatorReturnType(OperatorTypeNode o) {
         return operatorReturnType(OpSpTypeNode.translate(o));
     }
 
-    default TypeObject[] operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
         var info = operatorInfo(o);
         return info == null ? null : info.getReturns();
     }
 
-    default TypeObject generify(TypeObject... args) {
+    public TypeObject generify(TypeObject... args) {
         throw new UnsupportedOperationException("Cannot generify object");
     }
 
-    default TypeObject attrType(String value) {
+    public TypeObject attrType(String value) {
         throw new UnsupportedOperationException("Cannot get attribute type of object");
     }
 
-    default TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
         return null;
     }
 
-    default TypeObject staticAttrType(String value) {
+    public TypeObject staticAttrType(String value) {
         return null;
     }
 
     @Override
-    default int compareTo(@NotNull TypeObject o) {
+    public int compareTo(@NotNull TypeObject o) {
         return this.hashCode() - o.hashCode();
     }
 
-    default TypeObject stripNull() {
+    TypeObject stripNull() {
         return this;
     }
 

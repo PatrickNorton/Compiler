@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class GenerifiedFnInfoType implements TypeObject {
+public final class GenerifiedFnInfoType extends TypeObject {
     private FunctionInfo info;
     private List<TypeObject> generics;
 
@@ -18,6 +18,11 @@ public final class GenerifiedFnInfoType implements TypeObject {
 
     @Override
     public boolean isSuperclass(TypeObject other) {
+        return false;  // TODO: Implement
+    }
+
+    @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
         return false;  // TODO: Implement
     }
 
@@ -36,5 +41,10 @@ public final class GenerifiedFnInfoType implements TypeObject {
     @Override
     public String name() {
         return "";
+    }
+
+    @Override
+    public TypeObject typedefAs(String name) {
+        throw new UnsupportedOperationException("How on earth did you typedef this?");
     }
 }

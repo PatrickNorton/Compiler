@@ -1,10 +1,14 @@
 package main.java.converter;
 
-public final class TemplateParam implements NameableType {
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+public final class TemplateParam extends NameableType {
     private String name;
     private int index;
     private TypeObject bound;
     private boolean isVararg;
+    private String typedefName;
 
     public TemplateParam(String name, int index, boolean isVararg) {
         this(name, index, TypeObject.list(), true);
@@ -22,14 +26,40 @@ public final class TemplateParam implements NameableType {
         this.isVararg = isVararg;
     }
 
+    @Contract(pure = true)
+    private TemplateParam(@NotNull TemplateParam other, String typedefName) {
+        this.name = other.name;
+        this.index = other.index;
+        this.bound = other.bound;
+        this.isVararg = other.isVararg;
+        this.typedefName = typedefName;
+    }
+
     @Override
     public boolean isSuperclass(TypeObject other) {
         return bound.isSuperclass(other);
     }
 
     @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        return equals(other) || (!other.subWillRecurse() && other.isSuperclass(this));
+    }
+
+    @Override
+    public boolean subWillRecurse() {
+        return true;
+    }
+
+    @Override
     public String name() {
-        return name;
+        return typedefName.isEmpty() ? name : typedefName;
+    }
+
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    @Override
+    public TypeObject typedefAs(String name) {
+        return new TemplateParam(this, name);
     }
 
     public int getIndex() {

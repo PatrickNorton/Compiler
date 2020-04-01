@@ -1,15 +1,24 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.StringJoiner;
 
-public class IntersectionTypeObject implements TypeObject {
+public class IntersectionTypeObject extends TypeObject {
     private final SortedSet<TypeObject> types;
+    private final String typedefName;
 
     public IntersectionTypeObject(SortedSet<TypeObject> types) {
         this.types = Collections.unmodifiableSortedSet(types);
+        this.typedefName = "";
+    }
+
+    private IntersectionTypeObject(SortedSet<TypeObject> types, String typedefName) {
+        this.types = types;
+        this.typedefName = typedefName;
     }
 
     @Override
@@ -22,6 +31,11 @@ public class IntersectionTypeObject implements TypeObject {
     }
 
     @Override
+    public TypeObject typedefAs(String name) {
+        return new IntersectionTypeObject(types, name);
+    }
+
+    @Override
     public boolean isSuperclass(TypeObject other) {
         for (var subtype : types) {
             if (!subtype.isSuperclass(other)) {
@@ -29,6 +43,16 @@ public class IntersectionTypeObject implements TypeObject {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        for (var subtype : types) {
+            if (other.isSubclass(subtype)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -10,25 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class StdTypeObject implements NameableType {
-    private final String name;
-    private final List<TypeObject> supers;
-    private Map<OpSpTypeNode, FunctionInfo> operators;
-    private Map<OpSpTypeNode, FunctionInfo> staticOperators;
-    private final GenericInfo info;
-    private Map<String, TypeObject> attributes;
-    private Map<String, TypeObject> staticAttributes;
+public class StdTypeObject extends NameableType {
+    private final Info info;
+    private final String typedefName;
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList());
     }
 
     public StdTypeObject(String name, List<TypeObject> supers) {
-        this.name = name;
-        this.supers = Collections.unmodifiableList(supers);
-        this.operators = new EnumMap<>(OpSpTypeNode.class);
-        this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
-        this.info = GenericInfo.empty();
+        this.info = new Info(name, supers);
+        this.typedefName = "";
     }
 
     public StdTypeObject(String name, GenericInfo info) {
@@ -36,25 +28,37 @@ public class StdTypeObject implements NameableType {
     }
 
     public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info) {
-        this.name = name;
-        this.supers = Collections.unmodifiableList(supers);
-        this.operators = new EnumMap<>(OpSpTypeNode.class);
-        this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
-        this.info = info;
+        this.info = new Info(name, supers, info);
+        this.typedefName = "";
+    }
+
+    private StdTypeObject(@NotNull StdTypeObject other, String typedefName) {
+        this.info = other.info;
+        this.typedefName = typedefName;
     }
 
     @Override
     public boolean isSuperclass(TypeObject other) {
-        if (other instanceof TypedefType) {
-            return isSuperclass(((TypedefType) other).getBase());
-        }
         if (this.equals(other)) {
             return true;
-        } else if (!(other instanceof StdTypeObject)) {  // TODO: When is this not true?
-            return false;
+        } else {
+            return other.isSubclass(this);
         }
-        for (var sup : ((StdTypeObject) other).supers) {
-            if (sup.isSuperclass(this)) {
+    }
+
+    @Override
+    public boolean superWillRecurse() {
+        return true;
+    }
+
+    public boolean isSubclass(@NotNull TypeObject other) {
+        if (this.equals(other)) {
+            return true;
+        } else if (other instanceof AbstractDefaultInterface) {
+            return other.isSuperclass(this);
+        }
+        for (var sup : info.supers) {
+            if (sup.isSubclass(other)) {
                 return true;
             }
         }
@@ -63,12 +67,17 @@ public class StdTypeObject implements NameableType {
 
     @Override
     public String name() {
-        return name;
+        return typedefName.isEmpty() ? info.name : typedefName;
+    }
+
+    @Override
+    public TypeObject typedefAs(String name) {
+        return new StdTypeObject(this, name);
     }
 
     @Override
     public TypeObject generify(@NotNull TypeObject... args) {
-        if (args.length != info.getParams().size()) {
+        if (args.length != info.info.getParams().size()) {
             throw new UnsupportedOperationException("Cannot generify object in this manner");
         } else {
             return new GenerifiedTypeObject(this, List.of(args));
@@ -76,12 +85,12 @@ public class StdTypeObject implements NameableType {
     }
 
     public GenericInfo getGenericInfo() {
-        return info;
+        return info.info;
     }
 
     public void setOperators(Map<OpSpTypeNode, FunctionInfo> args) {
-        assert operators.isEmpty();
-        operators = args;
+        assert info.operators.isEmpty();
+        info.operators = args;
     }
 
     @Override
@@ -90,7 +99,7 @@ public class StdTypeObject implements NameableType {
     }
 
     public FunctionInfo trueOperatorInfo(OpSpTypeNode o) {
-        return operators.get(o);
+        return info.operators.get(o);
     }
 
     @Override
@@ -107,34 +116,16 @@ public class StdTypeObject implements NameableType {
 
     @Nullable
     public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o) {
-        if (operators.containsKey(o)) {
-            return operators.get(o).getReturns();
-        }
-        for (var sup : supers) {
-            var opRet = sup.operatorReturnType(o);
-            if (opRet != null) {
-                return opRet;
-            }
-        }
-        return null;
+        return info.operatorReturnTypeWithGenerics(o);
     }
 
     @Override
     public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
-        if (staticOperators.containsKey(o)) {
-            return staticOperators.get(o).getReturns();
-        }
-        for (var sup : supers) {
-            var opRet = sup.staticOperatorReturnType(o);
-            if (opRet != null) {
-                return opRet;
-            }
-        }
-        return null;
+        return info.staticOperatorReturnType(o);
     }
 
     public List<TypeObject> getSupers() {
-        return supers;
+        return info.supers;
     }
 
     @Override
@@ -144,36 +135,100 @@ public class StdTypeObject implements NameableType {
     }
 
     public TypeObject attrTypeWithGenerics(String value) {
-        return attributes.get(value);
+        return info.attributes.get(value);
     }
 
     public void setAttributes(Map<String, TypeObject> attributes) {
-        assert this.attributes == null;
-        this.attributes = attributes;
+        assert info.attributes == null;
+        info.attributes = attributes;
     }
 
     public void setStaticAttributes(Map<String, TypeObject> attributes) {
-        assert staticAttributes == null;
-        staticAttributes = attributes;
+        assert info.staticAttributes == null;
+        info.staticAttributes = attributes;
     }
 
     @Override
     public TypeObject staticAttrType(String value) {
-        return staticAttributes.get(value);
+        return info.staticAttributes.get(value);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        StdTypeObject that = (StdTypeObject) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(supers, that.supers) &&
-                Objects.equals(operators, that.operators);
+        return o instanceof StdTypeObject && info.equals(((StdTypeObject) o).info);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, supers, operators);
+        return Objects.hash(info);
+    }
+
+    private static final class Info {
+        private final String name;
+        private final List<TypeObject> supers;
+        private Map<OpSpTypeNode, FunctionInfo> operators;
+        private Map<OpSpTypeNode, FunctionInfo> staticOperators;
+        private final GenericInfo info;
+        private Map<String, TypeObject> attributes;
+        private Map<String, TypeObject> staticAttributes;
+
+        public Info(String name, List<TypeObject> supers) {
+            this.name = name;
+            this.supers = Collections.unmodifiableList(supers);
+            this.operators = new EnumMap<>(OpSpTypeNode.class);
+            this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
+            this.info = GenericInfo.empty();
+        }
+
+        public Info(String name, List<TypeObject> supers, GenericInfo info) {
+            this.name = name;
+            this.supers = Collections.unmodifiableList(supers);
+            this.operators = new EnumMap<>(OpSpTypeNode.class);
+            this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
+            this.info = info;
+        }
+
+        @Nullable
+        public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o) {
+            if (operators.containsKey(o)) {
+                return operators.get(o).getReturns();
+            }
+            for (var sup : supers) {
+                var opRet = sup.operatorReturnType(o);
+                if (opRet != null) {
+                    return opRet;
+                }
+            }
+            return null;
+        }
+
+        @Nullable
+        public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+            if (staticOperators.containsKey(o)) {
+                return staticOperators.get(o).getReturns();
+            }
+            for (var sup : supers) {
+                var opRet = sup.staticOperatorReturnType(o);
+                if (opRet != null) {
+                    return opRet;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Info that = (Info) o;
+            return Objects.equals(name, that.name) &&
+                    Objects.equals(supers, that.supers) &&
+                    Objects.equals(operators, that.operators);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, supers, operators);
+        }
     }
 }

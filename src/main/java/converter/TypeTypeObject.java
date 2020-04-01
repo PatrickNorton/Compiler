@@ -5,7 +5,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class TypeTypeObject implements TypeObject {
+public class TypeTypeObject extends TypeObject {
+    private String typedefName;
+
+    public TypeTypeObject() {
+        this.typedefName = "";
+    }
+
+    private TypeTypeObject(String typedefName) {
+        this.typedefName = typedefName;
+    }
+
     @Override
     public boolean isSuperclass(TypeObject other) {
         return other instanceof TypeTypeObject
@@ -14,8 +24,18 @@ public class TypeTypeObject implements TypeObject {
     }
 
     @Override
+    public boolean isSubclass(@NotNull TypeObject other) {
+        return other instanceof TypeTypeObject || other instanceof ObjectType;
+    }
+
+    @Override
     public String name() {
-        return "type";
+        return typedefName.isEmpty() ? "type" : typedefName;
+    }
+
+    @Override
+    public TypeObject typedefAs(String name) {
+        return new TypeTypeObject(name);
     }
 
     @Override
