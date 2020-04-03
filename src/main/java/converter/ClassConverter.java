@@ -63,8 +63,8 @@ public final class ClassConverter implements BaseConverter {
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
         }
-        type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods()));
-        type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getMethods()));
+        type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
+        type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getMethods(), new HashMap<>()));
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
@@ -121,11 +121,13 @@ public final class ClassConverter implements BaseConverter {
 
     @NotNull
     private Map<String, TypeObject> allAttributes(Map<String, TypeObject> attrs,
-                                                  @NotNull Map<String, FunctionInfo> methods) {
+                                                  @NotNull Map<String, FunctionInfo> methods,
+                                                  Map<String, TypeObject> properties) {
         var finalAttrs = new HashMap<>(attrs);
         for (var pair : methods.entrySet()) {
             finalAttrs.put(pair.getKey(), pair.getValue().toCallable());
         }
+        finalAttrs.putAll(properties);
         return finalAttrs;
     }
 
@@ -340,6 +342,10 @@ public final class ClassConverter implements BaseConverter {
 
         public Map<String, StatementBodyNode> getSetters() {
             return setters;
+        }
+
+        public Map<String, TypeObject> getProperties() {
+            return properties;
         }
 
         @NotNull
