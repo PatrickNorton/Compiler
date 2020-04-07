@@ -47,6 +47,10 @@ public class FormattedStringNode extends StringLikeNode {
         return tests;
     }
 
+    public FormatInfo[] getFormats() {
+        return formats;
+    }
+
     /**
      * Parse a FormattedStringNode from a {@link String} representing its
      * contents.

@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.FormattedStringNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +41,8 @@ public final class FormattedStringConverter implements TestConverter {
                 bytes.add(Bytecode.PLUS.value);
             }
             if (i < tests.length) {
-                convertArgument(tests[i], start, bytes);
+                convertArgument(tests[i], start, bytes, node.getFormats()[i]);
+                bytes.add(Bytecode.PLUS.value);
             }
         }
         if (retCount == 0) {
@@ -50,18 +52,45 @@ public final class FormattedStringConverter implements TestConverter {
         return bytes;
     }
 
-    private void convertArgument(TestNode arg, int start, List<Byte> bytes) {
+    private void convertArgument(TestNode arg, int start, List<Byte> bytes,
+                                 @NotNull FormattedStringNode.FormatInfo format) {
+        if (format.size() > 0) {
+            convertFormatArgs(arg, start, bytes, format);
+        } else {
+            convertToStr(arg, start, bytes);
+        }
+    }
+
+    private void convertFormatArgs(TestNode arg, int start, List<Byte> bytes,
+                                   @NotNull FormattedStringNode.FormatInfo format) {
+        assert format.size() > 0;
+        var fStr = format.getSpecifier();
+        assert fStr.length() == 1 : "More complex f-string specifiers are not yet implemented";
+        switch (fStr.charAt(0)) {
+            case 's':
+                convertToStr(arg, start, bytes);
+                break;
+            case 'r':
+                convertToRepr(arg, start, bytes);
+                break;
+        }
+    }
+
+    private void convertToStr(TestNode arg, int start, @NotNull List<Byte> bytes) {
         var converter = TestConverter.of(info, arg, 1);
         boolean isNotStr = !Builtins.STR.isSuperclass(converter.returnType()[0]);
-        if (isNotStr) {
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("str"))));
-        }
         bytes.addAll(converter.convert(start + bytes.size()));
         if (isNotStr) {
-            bytes.add(Bytecode.CALL_TOS.value);
-            bytes.addAll(Util.shortToBytes((short) 1));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 0));
         }
-        bytes.add(Bytecode.PLUS.value);
+    }
+
+    private void convertToRepr(TestNode arg, int start, @NotNull List<Byte> bytes) {
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), arg, info, 1));
+        bytes.add(Bytecode.CALL_OP.value);
+        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.REPR.ordinal()));
+        bytes.addAll(Util.shortToBytes((short) 0));
     }
 }

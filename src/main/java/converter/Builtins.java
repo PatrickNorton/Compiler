@@ -78,6 +78,10 @@ public final class Builtins {
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
 
+    private static final FunctionInfo REPR_INFO = new FunctionInfo("repr", ArgumentInfo.of(OBJECT), STR);
+
+    public static final LangObject REPR = new LangInstance(REPR_INFO.toCallable());
+
     private static final TemplateParam LIST_PARAM = new TemplateParam("T", 0, OBJECT);
 
     public static final StdTypeObject LIST = new StdTypeObject("list", GenericInfo.of(LIST_PARAM));
@@ -212,6 +216,7 @@ public final class Builtins {
             RANGE,
             TYPE,
             ITER,
+            REPR,
             INPUT,
             LIST,
             SET,
@@ -237,6 +242,7 @@ public final class Builtins {
             Map.entry("open", OPEN),
             Map.entry("Callable", CALLABLE),
             Map.entry("Iterable", ITERABLE),
+            Map.entry("repr", REPR),
             Map.entry("null", NULL)
     );
 
