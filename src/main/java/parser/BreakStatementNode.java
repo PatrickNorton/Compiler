@@ -66,7 +66,7 @@ public class BreakStatementNode implements SimpleFlowNode {
             loops = Integer.parseInt(tokens.tokenSequence());
             tokens.nextToken();
         } else {
-            loops = 0;
+            loops = 1;
         }
         TestNode as = TestNode.empty(), cond = TestNode.empty();
         if (tokens.tokenIs(Keyword.AS)) {

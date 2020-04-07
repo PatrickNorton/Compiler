@@ -181,9 +181,10 @@ public class FormattedStringNode extends StringLikeNode {
      * @author Patrick Norton
      * @see FormattedStringNode
      */
-    private static class FormatInfo {
+    public static class FormatInfo {
         private static final Set<Character> FORMAT_INVALID = Set.of(
-            '"', '\'', '[', ']', '(', ')', '{', '}');
+            '"', '\'', '[', ']', '(', ')', '{', '}'
+        );
 
         private String specifier;
 
@@ -193,8 +194,12 @@ public class FormattedStringNode extends StringLikeNode {
         }
 
         @Contract(pure = true)
-        int size() {
+        public int size() {
             return specifier == null ? 0 : specifier.length() + 1;
+        }
+
+        public String getSpecifier() {
+            return specifier;
         }
 
         /**
@@ -202,9 +207,9 @@ public class FormattedStringNode extends StringLikeNode {
          * <p>
          *     F-string specifiers always start with an !, and that is how they
          *     are parsed. (More formally, and for reference later, they go
-         *     <code> "!" [conversion] ":" [see <a href=
+         *     <code> "!" [conversion] [":" [see <a href=
          *     https://www.python.org/dev/peps/pep-3101>Python's formatting
-         *     grammar</a>]</code>).
+         *     grammar</a>]]</code>).
          * </p>
          *
          * @param str The string to be parsed
@@ -216,7 +221,7 @@ public class FormattedStringNode extends StringLikeNode {
          */
         @NotNull
         @Contract("_, _, _ -> new")
-        public static FormatInfo parse(String str, int openBrace, int closeBrace) {
+        static FormatInfo parse(String str, int openBrace, int closeBrace) {
             String specifier = specifier(str, openBrace, closeBrace);
             return new FormatInfo(specifier);
         }
