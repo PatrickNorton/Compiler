@@ -142,12 +142,14 @@ public final class ClassConverter implements BaseConverter {
     }
 
     @NotNull
-    private Map<String, TypeObject> allAttributes(Map<String, TypeObject> attrs,
+    private Map<String, AttributeInfo> allAttributes(Map<String, AttributeInfo> attrs,
                                                   @NotNull Map<String, MethodInfo> methods,
-                                                  Map<String, TypeObject> properties) {
+                                                  Map<String, AttributeInfo> properties) {
         var finalAttrs = new HashMap<>(attrs);
         for (var pair : methods.entrySet()) {
-            finalAttrs.put(pair.getKey(), pair.getValue().getInfo().toCallable());
+            var methodInfo = pair.getValue();
+            var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());
+            finalAttrs.put(pair.getKey(), attrInfo);
         }
         finalAttrs.putAll(properties);
         return finalAttrs;
@@ -178,8 +180,8 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private static final class DeclarationConverter {
-        private Map<String, TypeObject> vars;
-        private Map<String, TypeObject> staticVars;
+        private Map<String, AttributeInfo> vars;
+        private Map<String, AttributeInfo> staticVars;
         private CompilerInfo info;
 
         DeclarationConverter(CompilerInfo info) {
@@ -191,23 +193,25 @@ public final class ClassConverter implements BaseConverter {
         void parse(@NotNull DeclarationNode node) {
             for (var name : node.getNames()) {
                 var strName = ((VariableNode) name).getName();
-                if (node.getDescriptors().contains(DescriptorNode.STATIC)) {
-                    staticVars.put(strName, info.getType(node.getType()));
+                var descriptors = node.getDescriptors();
+                if (descriptors.contains(DescriptorNode.STATIC)) {
+                    staticVars.put(strName, new AttributeInfo(descriptors, info.getType(node.getType())));
                 } else {
-                    vars.put(strName, info.getType(node.getType()));
+                    vars.put(strName, new AttributeInfo(descriptors, info.getType(node.getType())));
                 }
             }
         }
 
         void parse(@NotNull DeclaredAssignmentNode node) {
+            var attrInfo = new AttributeInfo(node.getDescriptors(), info.getType(node.getTypes()[0].getType()));
             if (node.getDescriptors().contains(DescriptorNode.STATIC)) {
-                staticVars.put(((VariableNode) node.getNames()[0]).getName(), info.getType(node.getTypes()[0].getType()));
+                staticVars.put(((VariableNode) node.getNames()[0]).getName(), attrInfo);
             } else {
-                vars.put(((VariableNode) node.getNames()[0]).getName(), info.getType(node.getTypes()[0].getType()));
+                vars.put(((VariableNode) node.getNames()[0]).getName(), attrInfo);
             }
         }
 
-        public Map<String, TypeObject> getVars() {
+        public Map<String, AttributeInfo> getVars() {
             return vars;
         }
 
@@ -220,7 +224,7 @@ public final class ClassConverter implements BaseConverter {
             return result;
         }
 
-        public Map<String, TypeObject> getStaticVars() {
+        public Map<String, AttributeInfo> getStaticVars() {
             return staticVars;
         }
 
@@ -342,7 +346,7 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private static final class PropertyConverter {
-        private Map<String, TypeObject> properties;
+        private Map<String, AttributeInfo> properties;
         private Map<String, StatementBodyNode> getters;
         private Map<String, StatementBodyNode> setters;
         private Map<String, LineInfo> lineInfos;
@@ -365,7 +369,7 @@ public final class ClassConverter implements BaseConverter {
                         node, name, lineInfos.get(name).getLineNumber()
                 );
             }
-            properties.put(name, type);
+            properties.put(name, new AttributeInfo(node.getDescriptors(), type));
             getters.put(name, node.getGet());
             setters.put(name, node.getSet());  // TODO: If setter is empty
             lineInfos.put(name, node.getLineInfo());
@@ -379,7 +383,7 @@ public final class ClassConverter implements BaseConverter {
             return setters;
         }
 
-        public Map<String, TypeObject> getProperties() {
+        public Map<String, AttributeInfo> getProperties() {
             return properties;
         }
 
@@ -387,7 +391,7 @@ public final class ClassConverter implements BaseConverter {
         public Map<String, FunctionInfo> getGetterInfos() {
             Map<String, FunctionInfo> result = new HashMap<>();
             for (var key : getters.keySet()) {
-                result.put(key, new FunctionInfo(properties.get(key)));
+                result.put(key, new FunctionInfo(properties.get(key).getType()));
             }
             return result;
         }
@@ -396,7 +400,7 @@ public final class ClassConverter implements BaseConverter {
         public Map<String, FunctionInfo> getSetterInfos() {
             Map<String, FunctionInfo> result = new HashMap<>();
             for (var key : setters.keySet()) {
-                result.put(key, new FunctionInfo(ArgumentInfo.of(properties.get(key))));
+                result.put(key, new FunctionInfo(ArgumentInfo.of(properties.get(key).getType())));
             }
             return result;
         }

@@ -135,22 +135,22 @@ public class StdTypeObject extends NameableType {
     }
 
     public TypeObject attrTypeWithGenerics(String value) {
-        return info.attributes.get(value);
+        return info.attributes.get(value).getType();
     }
 
-    public void setAttributes(Map<String, TypeObject> attributes) {
+    public void setAttributes(Map<String, AttributeInfo> attributes) {
         assert info.attributes == null;
         info.attributes = attributes;
     }
 
-    public void setStaticAttributes(Map<String, TypeObject> attributes) {
+    public void setStaticAttributes(Map<String, AttributeInfo> attributes) {
         assert info.staticAttributes == null;
         info.staticAttributes = attributes;
     }
 
     @Override
     public TypeObject staticAttrType(String value) {
-        return info.staticAttributes.get(value);
+        return info.staticAttributes.get(value).getType();
     }
 
     @Override
@@ -169,8 +169,8 @@ public class StdTypeObject extends NameableType {
         private Map<OpSpTypeNode, FunctionInfo> operators;
         private Map<OpSpTypeNode, FunctionInfo> staticOperators;
         private final GenericInfo info;
-        private Map<String, TypeObject> attributes;
-        private Map<String, TypeObject> staticAttributes;
+        private Map<String, AttributeInfo> attributes;
+        private Map<String, AttributeInfo> staticAttributes;
 
         public Info(String name, List<TypeObject> supers) {
             this.name = name;
