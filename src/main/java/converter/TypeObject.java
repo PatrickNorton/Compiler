@@ -35,7 +35,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return null;
     }
 
-    public TypeObject[] operatorReturnType(OperatorTypeNode o) {
+    public final TypeObject[] operatorReturnType(OperatorTypeNode o) {
         return operatorReturnType(OpSpTypeNode.translate(o));
     }
 

@@ -58,9 +58,4 @@ public final class OptionalTypeObject extends TypeObject {
         OptionalTypeObject that = (OptionalTypeObject) o;
         return Objects.equals(type, that.type);
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type);
-    }
 }

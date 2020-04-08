@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class StdTypeObject extends NameableType {
+public final class StdTypeObject extends NameableType {
     private final Info info;
     private final String typedefName;
 
