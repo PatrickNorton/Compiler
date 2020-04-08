@@ -100,7 +100,7 @@ public final class Builtins {
 
     public static final LangConstant FALSE = new BoolConstant(false);
 
-    public static final LangObject OPEN = new LangInstance(CONTEXT);
+    public static final LangObject OPEN = new LangInstance(CONTEXT.generify(OBJECT));  // TODO: File object
 
     public static final LangConstant NULL = new NullConstant();
 
