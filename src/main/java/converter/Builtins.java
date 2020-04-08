@@ -32,7 +32,7 @@ public final class Builtins {
             OpSpTypeNode.EXIT, new FunctionInfo(TypeObject.list())
     );
 
-    public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
+    public static final TypeObject CONTEXT = new DefaultInterface("Context", GenericInfo.of(CONTEXT_PARAM), CONTEXT_MAP);
 
     private static final TemplateParam CALLABLE_ARGS = new TemplateParam("K", 0, true);
 

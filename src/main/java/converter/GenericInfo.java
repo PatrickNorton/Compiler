@@ -40,7 +40,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         List<TypeObject> result = new ArrayList<>();
         int i;
         for (i = 0; i < args.length && !params.get(i).isVararg(); i++) {
-            assert params.get(i).getBound() instanceof ListTypeObject ^ args[i] instanceof ListTypeObject;
+            assert params.get(i).getBound() instanceof ListTypeObject == args[i] instanceof ListTypeObject;
             result.add(args[i]);
         }
         if (i == args.length) return result;
