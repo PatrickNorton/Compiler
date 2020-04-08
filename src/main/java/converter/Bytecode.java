@@ -158,7 +158,7 @@ public enum Bytecode {
                     var operandSize = operand.byteCount;
                     var value = fromBytes(bytes.subList(i, i + operandSize));
                     i += operandSize;
-                    sb.append(format(operand, value, info));
+                    sj.add(format(operand, value, info));
                 }
                 sb.append(sj);
                 sb.append("\n");
