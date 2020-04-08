@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class ClassConverter implements BaseConverter {
     private ClassDefinitionNode node;
@@ -58,7 +59,7 @@ public final class ClassConverter implements BaseConverter {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
         }
-        type.setOperators(operators.getOperators());
+        type.setOperators(operators.getOperatorInfos());
         List<Short> superConstants = new ArrayList<>();
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
@@ -70,10 +71,10 @@ public final class ClassConverter implements BaseConverter {
                 .setSuperConstants(superConstants)
                 .setVariables(declarations.varsWithInts())
                 .setStaticVariables(declarations.staticVarsWithInts())
-                .setOperatorDefs(convert(operators.getOpNodes(), type, operators.getOperators()))
+                .setOperatorDefs(convert(type, operators.getOperators()))
                 .setStaticOperators(new HashMap<>())
-                .setMethodDefs(convert(methods.getNodes(), type, methods.getMethods()))
-                .setStaticMethods(convert(methods.getStaticNodes(), type, methods.getStaticMethods()))
+                .setMethodDefs(convert(type, methods.getMethods()))
+                .setStaticMethods(convert(type, methods.getStaticMethods()))
                 .setProperties(merge(convert(properties.getGetters(), type, properties.getGetterInfos()),
                         convert(properties.getSetters(), type, properties.getSetterInfos())))
                 .create();
@@ -86,7 +87,7 @@ public final class ClassConverter implements BaseConverter {
         return Collections.emptyList();
     }
 
-    @NotNull
+    @NotNull  // TODO: Move properties to the other convert()
     private <T> Map<T, List<Byte>> convert(@NotNull Map<T, StatementBodyNode> functions,
                                            StdTypeObject type, Map<T, FunctionInfo> args) {
         Map<T, List<Byte>> result = new HashMap<>();
@@ -108,6 +109,27 @@ public final class ClassConverter implements BaseConverter {
     }
 
     @NotNull
+    private <T> Map<T, List<Byte>> convert(StdTypeObject type, @NotNull Map<T, MethodInfo> functions) {
+        Map<T, List<Byte>> result = new HashMap<>();
+        for (var pair : functions.entrySet()) {
+            var methodInfo = pair.getValue();
+            info.addStackFrame();
+            info.addVariable("self", type, !methodInfo.getDescriptors().contains(DescriptorNode.MUT));
+            info.addVariable("cls", Builtins.TYPE.generify(type), true);
+            var fnInfo = methodInfo.getInfo();
+            for (var arg : fnInfo.getArgs()) {
+                info.addVariable(arg.getName(), arg.getType());
+            }
+            info.addFunctionReturns(fnInfo.getReturns());
+            var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
+            info.popFnReturns();
+            result.put(pair.getKey(), bytes);
+            info.removeStackFrame();
+        }
+        return result;
+    }
+
+    @NotNull
     private static <T, U> Map<T, Pair<U, U>> merge(@NotNull Map<T, U> first, @NotNull Map<T, U> second) {
         assert first.size() == second.size();
         Map<T, Pair<U, U>> result = new HashMap<>(first.size());
@@ -121,14 +143,38 @@ public final class ClassConverter implements BaseConverter {
 
     @NotNull
     private Map<String, TypeObject> allAttributes(Map<String, TypeObject> attrs,
-                                                  @NotNull Map<String, FunctionInfo> methods,
+                                                  @NotNull Map<String, MethodInfo> methods,
                                                   Map<String, TypeObject> properties) {
         var finalAttrs = new HashMap<>(attrs);
         for (var pair : methods.entrySet()) {
-            finalAttrs.put(pair.getKey(), pair.getValue().toCallable());
+            finalAttrs.put(pair.getKey(), pair.getValue().getInfo().toCallable());
         }
         finalAttrs.putAll(properties);
         return finalAttrs;
+    }
+
+    private static final class MethodInfo {
+        private final Set<DescriptorNode> descriptors;
+        private final FunctionInfo info;
+        private final StatementBodyNode body;
+
+        MethodInfo(Set<DescriptorNode> descriptors, FunctionInfo info, StatementBodyNode body) {
+            this.descriptors = descriptors;
+            this.info = info;
+            this.body = body;
+        }
+
+        public Set<DescriptorNode> getDescriptors() {
+            return descriptors;
+        }
+
+        public FunctionInfo getInfo() {
+            return info;
+        }
+
+        public StatementBodyNode getBody() {
+            return body;
+        }
     }
 
     private static final class DeclarationConverter {
@@ -189,47 +235,34 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private static final class MethodConverter {
-        private Map<String, FunctionInfo> methodMap;
-        private Map<String, StatementBodyNode> nodeMap;
-        private Map<String, FunctionInfo> staticMethods;
-        private Map<String, StatementBodyNode> staticNodes;
+        private final Map<String, MethodInfo> methodMap;
+        private final Map<String, MethodInfo> staticMethods;
         private CompilerInfo info;
 
         MethodConverter(CompilerInfo info) {
             this.info = info;
             methodMap = new HashMap<>();
-            nodeMap = new HashMap<>();
             staticMethods = new HashMap<>();
-            staticNodes = new HashMap<>();
         }
 
         void parse(@NotNull MethodDefinitionNode node) {
             var name = methodName(node);
             var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetval());
+            var fnInfo = new FunctionInfo(name, args, returns);
             if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
-                methodMap.put(name, new FunctionInfo(name, args, returns));
-                nodeMap.put(name, node.getBody());
+                methodMap.put(name, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody()));
             } else {
-                staticMethods.put(name, new FunctionInfo(name, args, returns));
-                staticNodes.put(name, node.getBody());
+                staticMethods.put(name, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody()));
             }
         }
 
-        public Map<String, FunctionInfo> getMethods() {
+        public Map<String, MethodInfo> getMethods() {
             return methodMap;
         }
 
-        public Map<String, StatementBodyNode> getNodes() {
-            return nodeMap;
-        }
-
-        public Map<String, FunctionInfo> getStaticMethods() {
+        public Map<String, MethodInfo> getStaticMethods() {
             return staticMethods;
-        }
-
-        public Map<String, StatementBodyNode> getStaticNodes() {
-            return staticNodes;
         }
 
         private String methodName(@NotNull MethodDefinitionNode node) {
@@ -238,13 +271,13 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private static final class OperatorConverter {
-        private CompilerInfo info;
-        private Map<OpSpTypeNode, FunctionInfo> operators;
-        private Map<OpSpTypeNode, StatementBodyNode> opNodes;
+        private final CompilerInfo info;
+        private final Map<OpSpTypeNode, FunctionInfo> operatorInfos;
+        private final Map<OpSpTypeNode, MethodInfo> operators;
 
         OperatorConverter(CompilerInfo info) {
+            this.operatorInfos = new HashMap<>();
             this.operators = new HashMap<>();
-            this.opNodes = new HashMap<>();
             this.info = info;
         }
 
@@ -252,21 +285,23 @@ public final class ClassConverter implements BaseConverter {
             var op = node.getOpCode().getOperator();
             var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetType());
+            FunctionInfo fnInfo;
             if (DEFAULT_RETURNS.containsKey(op)) {
                 var lineInfo = node.getRetType().length > 0 ? node.getRetType()[0].getLineInfo() : LineInfo.empty();
-                operators.put(op, new FunctionInfo("", args, validateReturns(lineInfo, op, returns)));
+                fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
             } else {
-                operators.put(op, new FunctionInfo("", args, returns));
+                fnInfo = new FunctionInfo("", args, returns);
             }
-            opNodes.put(op, node.getBody());
+            operatorInfos.put(op, fnInfo);
+            operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody()));
         }
 
-        public Map<OpSpTypeNode, FunctionInfo> getOperators() {
+        public Map<OpSpTypeNode, FunctionInfo> getOperatorInfos() {
+            return operatorInfos;
+        }
+
+        public Map<OpSpTypeNode, MethodInfo> getOperators() {
             return operators;
-        }
-
-        public Map<OpSpTypeNode, StatementBodyNode> getOpNodes() {
-            return opNodes;
         }
 
         @NotNull

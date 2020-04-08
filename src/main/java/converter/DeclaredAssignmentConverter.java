@@ -39,13 +39,14 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                     "Object of type %s cannot be assigned to object of type %s",
                     node, valueType.name(), assignedType.name());
         }
-        if (converter instanceof ConstantConverter && !node.getDescriptors().contains(DescriptorNode.MUT)) {
+        boolean isConst = !node.getDescriptors().contains(DescriptorNode.MUT);
+        if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
             info.addVariable(assignedName, assignedType, constant);
             return Collections.emptyList();
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        info.addVariable(assignedName, assignedType);
+        info.addVariable(assignedName, assignedType, isConst);
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(assignedName)));
         return bytes;
