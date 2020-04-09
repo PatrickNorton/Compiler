@@ -85,4 +85,22 @@ public class UnionTypeObject extends TypeObject {
     public SortedSet<TypeObject> subTypes() {
         return types;
     }
+
+    @Override
+    public TypeObject makeMut() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var obj : types) {
+            newTypes.add(obj.makeMut());
+        }
+        return new UnionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
+    }
+
+    @Override
+    public TypeObject makeConst() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var obj : types) {
+            newTypes.add(obj.makeConst());
+        }
+        return new UnionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
+    }
 }

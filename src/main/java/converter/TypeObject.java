@@ -21,6 +21,14 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     public abstract String name();
     public abstract TypeObject typedefAs(String name);
 
+    public TypeObject makeConst() {
+        return this;
+    }
+
+    public TypeObject makeMut() {
+        return this;
+    }
+
     boolean superWillRecurse() {
         return false;
     }
@@ -81,6 +89,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                         "Cannot get '%s' from type '%s': operator has a too-strict access level",
                         lineInfo, o, name()
                 );
+            } else if (makeMut().operatorInfo(o, access) != null) {
+                throw CompilerException.format(
+                        "'%s' requires a mut variable for type '%s'",
+                        lineInfo, o, name()
+                );
             } else {
                 throw CompilerException.format("'%s' does not exist in type '%s'", lineInfo, o, name());
             }
@@ -96,6 +109,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
             if (access != DescriptorNode.PRIVATE && attrType(value, DescriptorNode.PRIVATE) != null) {
                 throw CompilerException.format(
                         "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
+                        lineInfo, value, name()
+                );
+            } else if (makeMut().attrType(value, access) != null) {
+                throw CompilerException.format(
+                        "Attribute '%s' requires a mut variable for type '%s'",
                         lineInfo, value, name()
                 );
             } else {

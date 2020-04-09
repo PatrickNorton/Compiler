@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +15,7 @@ import java.util.Objects;
 public final class StdTypeObject extends NameableType {
     private final Info info;
     private final String typedefName;
+    private final boolean isConst;
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList());
@@ -22,6 +24,7 @@ public final class StdTypeObject extends NameableType {
     public StdTypeObject(String name, List<TypeObject> supers) {
         this.info = new Info(name, supers);
         this.typedefName = "";
+        this.isConst = true;
     }
 
     public StdTypeObject(String name, GenericInfo info) {
@@ -31,11 +34,19 @@ public final class StdTypeObject extends NameableType {
     public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info) {
         this.info = new Info(name, supers, info);
         this.typedefName = "";
+        this.isConst = true;
     }
 
     private StdTypeObject(@NotNull StdTypeObject other, String typedefName) {
         this.info = other.info;
+        this.isConst = other.isConst;
         this.typedefName = typedefName;
+    }
+
+    private StdTypeObject(@NotNull StdTypeObject other, boolean isConst) {
+        this.info = other.info;
+        this.typedefName = other.typedefName;
+        this.isConst = isConst;
     }
 
     @Override
@@ -71,11 +82,15 @@ public final class StdTypeObject extends NameableType {
         return typedefName.isEmpty() ? info.name : typedefName;
     }
 
+    @NotNull
+    @Contract("_ -> new")
     @Override
     public TypeObject typedefAs(String name) {
         return new StdTypeObject(this, name);
     }
 
+    @NotNull
+    @Contract("_ -> new")
     @Override
     public TypeObject generify(@NotNull TypeObject... args) {
         if (args.length != info.info.getParams().size()) {
@@ -142,7 +157,9 @@ public final class StdTypeObject extends NameableType {
     @Nullable
     public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
         var attr = info.attributes.get(value);
-        if (attr == null) return null;
+        if (attr == null || (isConst && attr.getDescriptors().contains(DescriptorNode.MUT))) {
+            return null;
+        }
         return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
     }
 
@@ -169,6 +186,15 @@ public final class StdTypeObject extends NameableType {
     @Override
     public int hashCode() {
         return Objects.hash(info);
+    }
+
+    public TypeObject makeConst() {
+        return isConst ? this : new StdTypeObject(this, true);
+    }
+
+    @Override
+    public TypeObject makeMut() {
+        return isConst ? new StdTypeObject(this, false) : this;
     }
 
     private static final class Info {

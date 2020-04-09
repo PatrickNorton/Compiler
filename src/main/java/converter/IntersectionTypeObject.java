@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.StringJoiner;
+import java.util.TreeSet;
 
 public class IntersectionTypeObject extends TypeObject {
     private final SortedSet<TypeObject> types;
@@ -70,5 +71,23 @@ public class IntersectionTypeObject extends TypeObject {
 
     public SortedSet<TypeObject> subTypes() {
         return types;
+    }
+
+    @Override
+    public TypeObject makeMut() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var obj : types) {
+            newTypes.add(obj.makeMut());
+        }
+        return new IntersectionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
+    }
+
+    @Override
+    public TypeObject makeConst() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var obj : types) {
+            newTypes.add(obj.makeConst());
+        }
+        return new IntersectionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
     }
 }
