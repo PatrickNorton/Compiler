@@ -36,7 +36,7 @@ public final class ForConverter extends LoopConverter {
             }
             info.addVariable(iteratedName, iteratorType);
         }
-        var valueReturnedType = valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER)[0];
+        var valueReturnedType = valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[0];
         if (!iteratorType.isSuperclass(valueReturnedType)) {
             throw CompilerException.format(
                     "'for'-loop iterator returns '%s', variable requires '%s'",
@@ -73,7 +73,7 @@ public final class ForConverter extends LoopConverter {
             return info.getType(iteratorType);
         } else {
             var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
-            return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER)[0];
+            return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[0];
         }
     }
 }

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
 import main.java.parser.TopNode;
@@ -47,6 +48,8 @@ public final class CompilerInfo {
     private IntAllocator anonymousNums = new IntAllocator();
 
     private Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
+
+    private Set<TypeObject> classesWithAccess = new HashSet<>();
 
     private boolean allowSettingExports = false;
     private boolean linked = false;
@@ -485,6 +488,20 @@ public final class CompilerInfo {
 
     public String lambdaName() {
         return String.format("lambda$%d", anonymousNums.getNext());
+    }
+
+    public DescriptorNode accessLevel(TypeObject obj) {
+        return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE : DescriptorNode.PUBLIC;
+    }
+
+    public void allowPrivateAccess(TypeObject obj) {
+        assert !classesWithAccess.contains(obj);
+        classesWithAccess.add(obj);
+    }
+
+    public void removePrivateAccess(TypeObject obj) {
+        assert classesWithAccess.contains(obj);
+        classesWithAccess.remove(obj);
     }
 
     {  // Prevent "non-updating" compiler warning

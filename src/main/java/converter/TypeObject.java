@@ -1,6 +1,9 @@
 package main.java.converter;
 
+import main.java.parser.BaseNode;
+import main.java.parser.DescriptorNode;
 import main.java.parser.IndexNode;
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
@@ -31,25 +34,34 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return Builtins.TYPE.generify(this);
     }
 
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         return null;
     }
 
-    public final TypeObject[] operatorReturnType(OperatorTypeNode o) {
-        return operatorReturnType(OpSpTypeNode.translate(o));
+    public final TypeObject[] operatorReturnType(OperatorTypeNode o, DescriptorNode access) {
+        return operatorReturnType(OpSpTypeNode.translate(o), access);
     }
 
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
-        var info = operatorInfo(o);
+    public final TypeObject[] operatorReturnType(OperatorTypeNode o, @NotNull CompilerInfo info) {
+        return operatorReturnType(OpSpTypeNode.translate(o), info.accessLevel(this));
+    }
+
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
+        var info = operatorInfo(o, access);
         return info == null ? null : info.getReturns();
+    }
+
+    public final TypeObject[] operatorReturnType(OpSpTypeNode o, @NotNull CompilerInfo info) {
+        return operatorReturnType(o, info.accessLevel(this));
     }
 
     public TypeObject generify(TypeObject... args) {
         throw new UnsupportedOperationException("Cannot generify object");
     }
 
-    public TypeObject attrType(String value) {
-        throw new UnsupportedOperationException("Cannot get attribute type of object");
+    @Nullable
+    public TypeObject attrType(String value, DescriptorNode access) {
+        return null;
     }
 
     public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
@@ -58,6 +70,57 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     public TypeObject staticAttrType(String value) {
         return null;
+    }
+
+    @NotNull
+    public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, DescriptorNode access) {
+        var info = operatorInfo(o, access);
+        if (info == null) {
+            if (access != DescriptorNode.PRIVATE && operatorInfo(o, DescriptorNode.PRIVATE) != null) {
+                throw CompilerException.format(
+                        "Cannot get '%s' from type '%s': operator has a too-strict access level",
+                        lineInfo, o, name()
+                );
+            } else {
+                throw CompilerException.format("'%s' does not exist in type '%s'", lineInfo, o, name());
+            }
+        } else {
+            return info;
+        }
+    }
+
+    @NotNull
+    public final TypeObject tryAttrType(LineInfo lineInfo, String value, DescriptorNode access) {
+        var info = attrType(value, access);
+        if (info == null) {
+            if (access != DescriptorNode.PRIVATE && attrType(value, DescriptorNode.PRIVATE) != null) {
+                throw CompilerException.format(
+                        "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
+                        lineInfo, value, name()
+                );
+            } else {
+                throw CompilerException.format(
+                        "Attribute '%s' does not exist in type '%s'", lineInfo, value, name()
+                );
+            }
+        } else {
+            return info;
+        }
+    }
+
+    @NotNull
+    public final TypeObject[] tryOperatorReturnType(LineInfo lineInfo, OpSpTypeNode o, CompilerInfo info) {
+        return tryOperatorInfo(lineInfo, o, info).getReturns();
+    }
+
+    @NotNull
+    public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, @NotNull CompilerInfo info) {
+        return tryOperatorInfo(lineInfo, o, info.accessLevel(this));
+    }
+
+    @NotNull
+    public final TypeObject tryAttrType(@NotNull BaseNode node, String value, @NotNull CompilerInfo info) {
+        return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
     }
 
     @Override

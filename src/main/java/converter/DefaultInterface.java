@@ -1,11 +1,12 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class DefaultInterface extends AbstractDefaultInterface {
+public final class DefaultInterface extends AbstractDefaultInterface {
     private GenericInfo info;
     private String typedefName;
 
@@ -37,13 +38,15 @@ public class DefaultInterface extends AbstractDefaultInterface {
         return new DefaultInterface(super.name(), info, operators, name);
     }
 
+    @NotNull
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         return operators.get(o).boundify();
     }
 
+    @NotNull
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         return sanitizeType(internalReturnType(o));
     }
 

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -93,18 +94,22 @@ public final class StdTypeObject extends NameableType {
         info.operators = args;
     }
 
+    @Nullable
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
-        return trueOperatorInfo(o).boundify();
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        var trueInfo = trueOperatorInfo(o, access);
+        return trueInfo == null ? null : trueInfo.boundify();
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o) {
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        // TODO: Check access bounds
         return info.operators.get(o);
     }
 
+    @Nullable
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
-        var types = operatorReturnTypeWithGenerics(o);
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
+        var types = info.operatorReturnTypeWithGenerics(o, access);
         if (types == null) return null;
         TypeObject[] result = new TypeObject[types.length];
         for (int i = 0; i < types.length; i++) {
@@ -115,8 +120,8 @@ public final class StdTypeObject extends NameableType {
     }
 
     @Nullable
-    public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o) {
-        return info.operatorReturnTypeWithGenerics(o);
+    public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, DescriptorNode access) {
+        return info.operatorReturnTypeWithGenerics(o, access);
     }
 
     @Override
@@ -129,13 +134,16 @@ public final class StdTypeObject extends NameableType {
     }
 
     @Override
-    public TypeObject attrType(String value) {
-        var type = attrTypeWithGenerics(value);
+    public TypeObject attrType(String value, DescriptorNode access) {
+        var type = attrTypeWithGenerics(value, access);
         return type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
     }
 
-    public TypeObject attrTypeWithGenerics(String value) {
-        return info.attributes.get(value).getType();
+    @Nullable
+    public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
+        var attr = info.attributes.get(value);
+        if (attr == null) return null;
+        return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
     }
 
     public void setAttributes(Map<String, AttributeInfo> attributes) {
@@ -189,12 +197,12 @@ public final class StdTypeObject extends NameableType {
         }
 
         @Nullable
-        public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o) {
-            if (operators.containsKey(o)) {
+        public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, DescriptorNode access) {
+            if (operators.containsKey(o)) {  // TODO: Bounds-check
                 return operators.get(o).getReturns();
             }
             for (var sup : supers) {
-                var opRet = sup.operatorReturnType(o);
+                var opRet = sup.operatorReturnType(o, access);
                 if (opRet != null) {
                     return opRet;
                 }

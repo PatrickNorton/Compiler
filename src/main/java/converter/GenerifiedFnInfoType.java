@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +29,7 @@ public final class GenerifiedFnInfoType extends TypeObject {
 
     @Nullable
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {
             return info.generify(generics);
         } else {

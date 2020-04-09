@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +19,11 @@ public abstract class AbstractDefaultInterface extends TypeObject {
     @Override
     public boolean isSuperclass(TypeObject other) {
         for (var pair : operators.entrySet()) {
-            var otherRet = other.operatorReturnType(pair.getKey());
+            var otherRet = other.operatorReturnType(pair.getKey(), DescriptorNode.PUBLIC);
             if (otherRet == null) {
                 return false;
             } else {
-                var selfRet = operatorReturnType(pair.getKey());
+                var selfRet = operatorReturnType(pair.getKey(), DescriptorNode.PUBLIC);
                 if (selfRet.length > otherRet.length) {
                     return false;
                 }

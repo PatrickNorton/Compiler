@@ -76,7 +76,7 @@ public final class OperatorConverter implements TestConverter {
                 return notEqualsReturn();
         }
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
-        var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
+        var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator(), info);
         return retType == null ? new TypeObject[] {Builtins.THROWS} : retType;
     }
 
@@ -109,13 +109,13 @@ public final class OperatorConverter implements TestConverter {
                 throw CompilerException.of("Cannot use return type of function with 0 returns", arg);
             }
             var retType = retTypes[0];
-            if (opType != null && opType.operatorReturnType(node.getOperator()) == null) {
+            if (opType != null && opType.operatorReturnType(node.getOperator(), info) == null) {
                 throw CompilerException.format(
                         "'%s' returns type '%s', which has no overloaded '%s'",
                         arg, arg, opType.name(), node.getOperator()
                 );
             }
-            opType = opType == null ? retType : opType.operatorReturnType(node.getOperator())[0];
+            opType = opType == null ? retType : opType.operatorReturnType(node.getOperator(), info)[0];
             bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
         }
         var bytecode = BYTECODE_MAP.get(node.getOperator());
@@ -182,7 +182,7 @@ public final class OperatorConverter implements TestConverter {
                     "'instanceof' operator requires return type that is an instance of 'type'", arg1
             );
         }
-        var instanceType = arg1ret.operatorReturnType(OpSpTypeNode.CALL)[0]; // calling a type will always return an instance
+        var instanceType = arg1ret.operatorReturnType(OpSpTypeNode.CALL, info)[0]; // calling a type will always return an instance
         var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
         bytes.addAll(converter1.convert(start + bytes.size()));
         bytes.add(Bytecode.INSTANCEOF.value);
@@ -343,7 +343,7 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     private TypeObject[] notEqualsReturn() {
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
-        var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator());
+        var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator(), info);
         if (retType == null) {
             throw CompilerInternalError.of("Operator != not implemented", node);
         }

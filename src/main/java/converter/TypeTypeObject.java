@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +56,8 @@ public class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
+        assert access == DescriptorNode.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
             return new TypeObject[] {Builtins.OBJECT};
         } else {

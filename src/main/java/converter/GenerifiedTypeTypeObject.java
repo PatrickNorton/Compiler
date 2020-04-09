@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,7 @@ public class GenerifiedTypeTypeObject extends TypeObject {
     }
 
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {
             return new TypeObject[] {type};
         }
@@ -46,14 +47,14 @@ public class GenerifiedTypeTypeObject extends TypeObject {
     }
 
     @Override
-    public TypeObject attrType(String value) {
+    public TypeObject attrType(String value, DescriptorNode access) {
         return type.staticAttrType(value);
     }
 
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {
-            return new FunctionInfo(type.operatorInfo(OpSpTypeNode.NEW).getArgs(), type);
+            return new FunctionInfo(type.operatorInfo(OpSpTypeNode.NEW, access).getArgs(), type);
         } else {
             return null;
         }

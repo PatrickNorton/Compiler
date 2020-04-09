@@ -158,6 +158,20 @@ public enum DescriptorNode implements AtomicNode {
         return PATTERN;
     }
 
+    public static boolean isLessStrict(DescriptorNode x, @NotNull DescriptorNode y) {
+        assert EnumSet.range(PUBLIC, PRIVATE).contains(x) && EnumSet.range(PUBLIC, PRIVATE).contains(y);
+        return x.ordinal() <= y.ordinal();
+    }
+
+    public static boolean canAccess(Set<DescriptorNode> descriptors, DescriptorNode accessLevel) {
+        for (int i = 0; i <= PRIVATE.ordinal(); i++) {
+            if (descriptors.contains(values()[i])) {
+                return isLessStrict(values()[i], accessLevel);
+            }
+        }
+        throw new RuntimeException();
+    }
+
     @Contract(pure = true)
     @Override
     public String toString() {

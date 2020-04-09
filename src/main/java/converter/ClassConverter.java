@@ -95,15 +95,20 @@ public final class ClassConverter implements BaseConverter {
             info.addStackFrame();
             info.addVariable("self", type, true);
             info.addVariable("cls", Builtins.TYPE.generify(type), true);
-            var fnInfo = args.get(pair.getKey());
-            for (var arg : fnInfo.getArgs()) {
-                info.addVariable(arg.getName(), arg.getType());
+            try {
+                info.allowPrivateAccess(type);
+                var fnInfo = args.get(pair.getKey());
+                for (var arg : fnInfo.getArgs()) {
+                    info.addVariable(arg.getName(), arg.getType());
+                }
+                info.addFunctionReturns(fnInfo.getReturns());
+                var bytes = BaseConverter.bytes(0, pair.getValue(), info);
+                info.popFnReturns();
+                result.put(pair.getKey(), bytes);
+                info.removeStackFrame();
+            } finally {
+                info.removePrivateAccess(type);
             }
-            info.addFunctionReturns(fnInfo.getReturns());
-            var bytes = BaseConverter.bytes(0, pair.getValue(), info);
-            info.popFnReturns();
-            result.put(pair.getKey(), bytes);
-            info.removeStackFrame();
         }
         return result;
     }
@@ -116,15 +121,20 @@ public final class ClassConverter implements BaseConverter {
             info.addStackFrame();
             info.addVariable("self", type, !methodInfo.getDescriptors().contains(DescriptorNode.MUT));
             info.addVariable("cls", Builtins.TYPE.generify(type), true);
-            var fnInfo = methodInfo.getInfo();
-            for (var arg : fnInfo.getArgs()) {
-                info.addVariable(arg.getName(), arg.getType());
+            try {
+                info.allowPrivateAccess(type);
+                var fnInfo = methodInfo.getInfo();
+                for (var arg : fnInfo.getArgs()) {
+                    info.addVariable(arg.getName(), arg.getType());
+                }
+                info.addFunctionReturns(fnInfo.getReturns());
+                var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
+                info.popFnReturns();
+                result.put(pair.getKey(), bytes);
+                info.removeStackFrame();
+            } finally {
+                info.removePrivateAccess(type);
             }
-            info.addFunctionReturns(fnInfo.getReturns());
-            var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
-            info.popFnReturns();
-            result.put(pair.getKey(), bytes);
-            info.removeStackFrame();
         }
         return result;
     }

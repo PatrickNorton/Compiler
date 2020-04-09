@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +29,7 @@ public final class FunctionInfoType extends TypeObject {
     @Nullable
     @Contract(pure = true)
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {
             return info.boundify().getReturns();
         } else {
@@ -39,7 +40,7 @@ public final class FunctionInfoType extends TypeObject {
     @Nullable
     @Contract(pure = true)
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {
             return info.boundify();
         } else {

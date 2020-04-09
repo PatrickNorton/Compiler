@@ -58,9 +58,10 @@ public final class FunctionCallConverter implements TestConverter {
             if (fn != null) {
                 return fn.getReturns();
             }
-            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
+            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL, info);
         } else {
-            return TestConverter.returnType(node.getCaller(), info, retCount)[0].operatorReturnType(OpSpTypeNode.CALL);
+            var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
+            return retType.operatorReturnType(OpSpTypeNode.CALL, info);
         }
 
     }
@@ -72,7 +73,8 @@ public final class FunctionCallConverter implements TestConverter {
             var type = TestConverter.returnType(params[i].getArgument(), info, 1)[0];
             args[i] = new Argument(params[i].getVariable().getName(), type);
         }
-        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL);
+        var accessLevel = info.accessLevel(callerType);
+        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL, accessLevel);
         if (operatorInfo == null) {
             throw CompilerException.format(
                     "Object of type '%s' has no overloaded 'operator ()'",

@@ -1,7 +1,10 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,9 +44,10 @@ public final class GenerifiedTypeObject extends NameableType {
         return true;
     }
 
+    @Nullable
     @Override
-    public TypeObject attrType(String value) {
-        var parentReturn = parent.attrTypeWithGenerics(value);
+    public TypeObject attrType(String value, DescriptorNode access) {
+        var parentReturn = parent.attrTypeWithGenerics(value, access);
         if (parentReturn == null) return null;
         if (parentReturn instanceof TemplateParam) {
             return generics.get(((TemplateParam) parentReturn).getIndex());
@@ -52,14 +56,17 @@ public final class GenerifiedTypeObject extends NameableType {
         }
     }
 
+    @Nullable
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
-        return parent.trueOperatorInfo(o).generify(generics);
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        var opInfo = parent.trueOperatorInfo(o, access);
+        return opInfo == null ? null : opInfo.generify(generics);
     }
 
+    @Nullable
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
-        var parentReturn = parent.operatorReturnTypeWithGenerics(o);
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
+        var parentReturn = parent.operatorReturnTypeWithGenerics(o, access);
         if (parentReturn == null) return null;
         TypeObject[] result = new TypeObject[parentReturn.length];
         for (int i = 0; i < parentReturn.length; i++) {
@@ -84,6 +91,8 @@ public final class GenerifiedTypeObject extends NameableType {
         return parent.name() + valueJoiner.toString();
     }
 
+    @NotNull
+    @Contract("_ -> new")
     @Override
     public TypeObject typedefAs(String name) {
         return new GenerifiedTypeObject(parent, generics, name);

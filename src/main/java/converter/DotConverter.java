@@ -33,6 +33,7 @@ public final class DotConverter implements TestConverter {
         return new TypeObject[]{result};
     }
 
+    @NotNull
     private TypeObject dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         switch (dot.getDotPrefix()) {
             case "":
@@ -46,17 +47,20 @@ public final class DotConverter implements TestConverter {
         }
     }
 
+    @NotNull
     private TypeObject normalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().isEmpty() || !result.isSuperclass(Builtins.NULL_TYPE);
         var postDot = dot.getPostDot();
         if (postDot instanceof VariableNode) {
-            return result.attrType(((VariableNode) postDot).getName());
+            return result.tryAttrType(postDot, ((VariableNode) postDot).getName(), info);
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
-            var attrType = result.attrType(((VariableNode) caller).getName());
-            return attrType.operatorReturnType(OpSpTypeNode.CALL)[0];
+            var attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            return attrType.tryOperatorReturnType(postDot.getLineInfo(), OpSpTypeNode.CALL, info)[0];
         } else if (postDot instanceof SpecialOpNameNode) {
-            return result.operatorInfo(((SpecialOpNameNode) postDot).getOperator()).toCallable();
+            var operator = ((SpecialOpNameNode) postDot).getOperator();
+            var accessLevel = info.accessLevel(result);
+            return result.operatorInfo(operator, accessLevel).toCallable();
         } else {
             throw new UnsupportedOperationException();
         }
@@ -69,17 +73,18 @@ public final class DotConverter implements TestConverter {
         }
         var postDot = dot.getPostDot();
         if (postDot instanceof VariableNode) {
-            var retType = result.stripNull().attrType(((VariableNode) postDot).getName());
+            var retType = result.stripNull().tryAttrType(postDot, ((VariableNode) postDot).getName(), info);
             return TypeObject.optional(retType);
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
-            var attrType = result.stripNull().attrType(((VariableNode) caller).getName());
-            return TypeObject.optional(attrType.operatorReturnType(OpSpTypeNode.CALL)[0]);
+            var attrType = result.stripNull().tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            return TypeObject.optional(attrType.operatorReturnType(OpSpTypeNode.CALL, info)[0]);
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
+    @NotNull
     private TypeObject nonNullReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         var hasNull = result.isSuperclass(Builtins.NULL_TYPE);
         var bangType = hasNull ? result.stripNull() : result;

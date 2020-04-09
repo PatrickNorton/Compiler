@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,13 +24,13 @@ public class GenerifiedDefaultInterface extends AbstractDefaultInterface {
     }
 
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         var ret = operators.get(o).getReturns()[0];
         return sanitizeType(ret instanceof TemplateParam ? types.get(((TemplateParam) ret).getIndex()) : ret);
     }
 
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         return operators.get(o).generify(types);
     }
 
