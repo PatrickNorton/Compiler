@@ -75,8 +75,7 @@ public final class ClassConverter implements BaseConverter {
                 .setStaticOperators(new HashMap<>())
                 .setMethodDefs(convert(type, methods.getMethods()))
                 .setStaticMethods(convert(type, methods.getStaticMethods()))
-                .setProperties(merge(convert(properties.getGetters(), type, properties.getGetterInfos()),
-                        convert(properties.getSetters(), type, properties.getSetterInfos())))
+                .setProperties(merge(convert(type, properties.getGetters()), convert(type, properties.getSetters())))
                 .create();
         int classIndex = info.addClass(cls);
         var name = node.getName().strName();
@@ -85,32 +84,6 @@ public final class ClassConverter implements BaseConverter {
         }
         info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex));
         return Collections.emptyList();
-    }
-
-    @NotNull  // TODO: Move properties to the other convert()
-    private <T> Map<T, List<Byte>> convert(@NotNull Map<T, StatementBodyNode> functions,
-                                           StdTypeObject type, Map<T, FunctionInfo> args) {
-        Map<T, List<Byte>> result = new HashMap<>();
-        for (var pair : functions.entrySet()) {
-            info.addStackFrame();
-            info.addVariable("self", type, true);
-            info.addVariable("cls", Builtins.TYPE.generify(type), true);
-            try {
-                info.allowPrivateAccess(type);
-                var fnInfo = args.get(pair.getKey());
-                for (var arg : fnInfo.getArgs()) {
-                    info.addVariable(arg.getName(), arg.getType());
-                }
-                info.addFunctionReturns(fnInfo.getReturns());
-                var bytes = BaseConverter.bytes(0, pair.getValue(), info);
-                info.popFnReturns();
-                result.put(pair.getKey(), bytes);
-                info.removeStackFrame();
-            } finally {
-                info.removePrivateAccess(type);
-            }
-        }
-        return result;
     }
 
     @NotNull
@@ -385,32 +358,28 @@ public final class ClassConverter implements BaseConverter {
             lineInfos.put(name, node.getLineInfo());
         }
 
-        public Map<String, StatementBodyNode> getGetters() {
-            return getters;
-        }
-
-        public Map<String, StatementBodyNode> getSetters() {
-            return setters;
-        }
-
         public Map<String, AttributeInfo> getProperties() {
             return properties;
         }
 
         @NotNull
-        public Map<String, FunctionInfo> getGetterInfos() {
-            Map<String, FunctionInfo> result = new HashMap<>();
-            for (var key : getters.keySet()) {
-                result.put(key, new FunctionInfo(properties.get(key).getType()));
+        public Map<String, MethodInfo> getGetters() {
+            Map<String, MethodInfo> result = new HashMap<>();
+            for (var pair : getters.entrySet()) {
+                var property = properties.get(pair.getKey());
+                var fnInfo = new FunctionInfo(property.getType());
+                result.put(pair.getKey(), new MethodInfo(property.getDescriptors(), fnInfo, pair.getValue()));
             }
             return result;
         }
 
         @NotNull
-        public Map<String, FunctionInfo> getSetterInfos() {
-            Map<String, FunctionInfo> result = new HashMap<>();
-            for (var key : setters.keySet()) {
-                result.put(key, new FunctionInfo(ArgumentInfo.of(properties.get(key).getType())));
+        public Map<String, MethodInfo> getSetters() {
+            Map<String, MethodInfo> result = new HashMap<>();
+            for (var pair : setters.entrySet()) {
+                var property = properties.get(pair.getKey());
+                var fnInfo = new FunctionInfo(ArgumentInfo.of(properties.get(pair.getKey()).getType()));
+                result.put(pair.getKey(), new MethodInfo(property.getDescriptors(), fnInfo, pair.getValue()));
             }
             return result;
         }
