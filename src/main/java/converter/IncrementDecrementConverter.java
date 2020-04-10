@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class IncrementDecrementConverter implements BaseConverter {
-    private IncDecNode node;
-    private CompilerInfo info;
+    private final IncDecNode node;
+    private final CompilerInfo info;
 
     public IncrementDecrementConverter(CompilerInfo info, IncDecNode node) {
         this.node = node;

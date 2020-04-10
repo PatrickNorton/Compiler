@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class FormattedStringConverter implements TestConverter {
-    private FormattedStringNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final FormattedStringNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public FormattedStringConverter(CompilerInfo info, FormattedStringNode node, int retCount) {
         this.info = info;

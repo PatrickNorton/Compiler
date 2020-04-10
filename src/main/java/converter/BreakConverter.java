@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BreakConverter implements BaseConverter {
-    private BreakStatementNode node;
-    private CompilerInfo info;
+    private final BreakStatementNode node;
+    private final CompilerInfo info;
 
     public BreakConverter(CompilerInfo info, BreakStatementNode node) {
         this.node = node;

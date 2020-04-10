@@ -10,15 +10,15 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ClassInfo {
-    private StdTypeObject type;
-    private List<Short> superConstants;
-    private Map<String, Short> variables;
-    private Map<String, Short> staticVariables;
-    private Map<OpSpTypeNode, List<Byte>> operatorDefs;
-    private Map<OpSpTypeNode, List<Byte>> staticOperators;
-    private Map<String, List<Byte>> methodDefs;
-    private Map<String, List<Byte>> staticMethods;
-    private Map<String, Pair<List<Byte>, List<Byte>>> properties;
+    private final StdTypeObject type;
+    private final List<Short> superConstants;
+    private final Map<String, Short> variables;
+    private final Map<String, Short> staticVariables;
+    private final Map<OpSpTypeNode, List<Byte>> operatorDefs;
+    private final Map<OpSpTypeNode, List<Byte>> staticOperators;
+    private final Map<String, List<Byte>> methodDefs;
+    private final Map<String, List<Byte>> staticMethods;
+    private final Map<String, Pair<List<Byte>, List<Byte>>> properties;
 
     private ClassInfo(StdTypeObject type, List<Short> superConstants,
                       Map<String, Short> variables, Map<String, Short> staticVariables,

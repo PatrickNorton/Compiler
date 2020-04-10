@@ -11,9 +11,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 public final class GenerifiedTypeObject extends NameableType {
-    private StdTypeObject parent;
-    private List<TypeObject> generics;
-    private String typedefName;
+    private final StdTypeObject parent;
+    private final List<TypeObject> generics;
+    private final String typedefName;
 
     public GenerifiedTypeObject(StdTypeObject parent, List<TypeObject> generics) {
         this.parent = parent;

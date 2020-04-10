@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ComprehensionConverter implements TestConverter {
-    private ComprehensionNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final ComprehensionNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public ComprehensionConverter(CompilerInfo info, ComprehensionNode node, int retCount) {
         this.node = node;

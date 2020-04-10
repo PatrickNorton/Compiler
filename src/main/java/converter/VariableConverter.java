@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class VariableConverter implements TestConverter {
-    private CompilerInfo info;
-    private VariableNode node;
-    private int retCount;
+    private final CompilerInfo info;
+    private final VariableNode node;
+    private final int retCount;
 
     public VariableConverter(CompilerInfo info, VariableNode node, int retCount) {
         this.info = info;

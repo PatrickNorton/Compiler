@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class FunctionCallConverter implements TestConverter {
-    private CompilerInfo info;
-    private FunctionCallNode node;
-    private int retCount;
+    private final CompilerInfo info;
+    private final FunctionCallNode node;
+    private final int retCount;
 
     public FunctionCallConverter(CompilerInfo info, FunctionCallNode node, int retCount) {
         this.info = info;

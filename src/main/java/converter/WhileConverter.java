@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class WhileConverter extends LoopConverter {
-    private WhileStatementNode node;
+    private final WhileStatementNode node;
 
     public WhileConverter(CompilerInfo info, WhileStatementNode node) {
         super(info);

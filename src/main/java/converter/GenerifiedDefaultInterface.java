@@ -7,9 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class GenerifiedDefaultInterface extends AbstractDefaultInterface {
-    private List<TypeObject> types;
-    private String typedefName;
+public final class GenerifiedDefaultInterface extends AbstractDefaultInterface {
+    private final List<TypeObject> types;
+    private final String typedefName;
 
     public GenerifiedDefaultInterface(@NotNull DefaultInterface parent, List<TypeObject> types) {
         super(parent.name(), parent.operators);

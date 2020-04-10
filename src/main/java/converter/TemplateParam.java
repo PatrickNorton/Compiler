@@ -4,11 +4,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public final class TemplateParam extends NameableType {
-    private String name;
-    private int index;
-    private TypeObject bound;
-    private boolean isVararg;
-    private String typedefName;
+    private final String name;
+    private final int index;
+    private final TypeObject bound;
+    private final boolean isVararg;
+    private final String typedefName;
 
     public TemplateParam(String name, int index, boolean isVararg) {
         this(name, index, TypeObject.list(), true);
@@ -24,6 +24,7 @@ public final class TemplateParam extends NameableType {
         this.index = index;
         this.bound = bound;
         this.isVararg = isVararg;
+        this.typedefName = "";
     }
 
     @Contract(pure = true)

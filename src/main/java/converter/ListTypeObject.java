@@ -7,9 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class ListTypeObject extends TypeObject implements Iterable<TypeObject> {
-    private List<TypeObject> values;
-    private String typedefName;
+public final class ListTypeObject extends TypeObject implements Iterable<TypeObject> {
+    private final List<TypeObject> values;
+    private final String typedefName;
 
     public ListTypeObject(TypeObject... values) {
         this.values = List.of(values);
@@ -47,7 +47,9 @@ public class ListTypeObject extends TypeObject implements Iterable<TypeObject> {
         return sj.toString();
     }
 
+    @Contract(value = "_ -> new", pure = true)
     @Override
+    @NotNull
     public TypeObject typedefAs(String name) {
         return new ListTypeObject(this, name);
     }

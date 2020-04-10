@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -8,7 +9,7 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 
-public class UnionTypeObject extends TypeObject {
+public final class UnionTypeObject extends TypeObject {
     private final SortedSet<TypeObject> types;
     private final String typedefName;
 
@@ -34,7 +35,9 @@ public class UnionTypeObject extends TypeObject {
         return sj.toString();
     }
 
+    @Contract("_ -> new")
     @Override
+    @NotNull
     public TypeObject typedefAs(String name) {
         return new UnionTypeObject(types, name);
     }

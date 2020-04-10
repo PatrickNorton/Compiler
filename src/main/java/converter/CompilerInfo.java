@@ -31,25 +31,25 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class CompilerInfo {
-    private TopNode node;
-    private Set<String> exports = new HashSet<>();
-    private Map<String, TypeObject> exportTypes = new HashMap<>();
-    private IndexedSet<String> imports = new IndexedHashSet<>();
-    private Map<String, TypeObject> importTypes = new HashMap<>();
-    private List<Function> functions = new ArrayList<>(Collections.singletonList(null));
-    private IndexedSet<LangConstant> constants = new IndexedHashSet<>();
-    private IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
-    private LoopManager loopManager = new LoopManager();
+    private final TopNode node;
+    private final Set<String> exports = new HashSet<>();
+    private final Map<String, TypeObject> exportTypes = new HashMap<>();
+    private final IndexedSet<String> imports = new IndexedHashSet<>();
+    private final Map<String, TypeObject> importTypes = new HashMap<>();
+    private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
+    private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
+    private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
+    private final LoopManager loopManager = new LoopManager();
 
-    private List<Map<String, VariableInfo>> variables = new ArrayList<>();
-    private Map<String, NameableType> typeMap = new HashMap<>();
-    private IntAllocator varNumbers = new IntAllocator();
+    private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
+    private final Map<String, NameableType> typeMap = new HashMap<>();
+    private final IntAllocator varNumbers = new IntAllocator();
 
-    private IntAllocator anonymousNums = new IntAllocator();
+    private final IntAllocator anonymousNums = new IntAllocator();
 
-    private Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
+    private final Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
 
-    private Set<TypeObject> classesWithAccess = new HashSet<>();
+    private final Set<TypeObject> classesWithAccess = new HashSet<>();
 
     private boolean allowSettingExports = false;
     private boolean linked = false;

@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AugAssignConverter implements BaseConverter {
-    private CompilerInfo info;
-    private AugmentedAssignmentNode node;
+    private final CompilerInfo info;
+    private final AugmentedAssignmentNode node;
 
     public AugAssignConverter(CompilerInfo info, AugmentedAssignmentNode node) {
         this.info = info;

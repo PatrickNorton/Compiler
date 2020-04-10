@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionConstant implements LangConstant {
-    private String name;
-    private int functionIndex;
+    private final String name;
+    private final int functionIndex;
 
     public FunctionConstant(String name, int index) {
         this.name = name;

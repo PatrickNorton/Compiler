@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DotConverter implements TestConverter {
-    private DottedVariableNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final DottedVariableNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public DotConverter(CompilerInfo info, DottedVariableNode node, int retCount) {
         this.node = node;

@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class LambdaConverter implements TestConverter {
-    private LambdaNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final LambdaNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public LambdaConverter(CompilerInfo info, LambdaNode node, int retCount) {
         this.node = node;

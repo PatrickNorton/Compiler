@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class TryConverter implements BaseConverter {
-    private TryStatementNode node;
-    private CompilerInfo info;
+    private final TryStatementNode node;
+    private final CompilerInfo info;
 
     public TryConverter(CompilerInfo info, TryStatementNode node) {
         this.node = node;

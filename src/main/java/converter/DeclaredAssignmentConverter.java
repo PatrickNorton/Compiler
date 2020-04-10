@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 public final class DeclaredAssignmentConverter implements BaseConverter {
-    private CompilerInfo info;
-    private DeclaredAssignmentNode node;
+    private final CompilerInfo info;
+    private final DeclaredAssignmentNode node;
 
     public DeclaredAssignmentConverter(CompilerInfo info, DeclaredAssignmentNode node) {
         this.info = info;

@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AssignmentConverter implements BaseConverter {
-    private CompilerInfo info;
-    private AssignmentNode node;
+    private final CompilerInfo info;
+    private final AssignmentNode node;
 
     public AssignmentConverter(CompilerInfo info, AssignmentNode node) {
         this.info = info;

@@ -2,11 +2,13 @@ package main.java.converter;
 
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class GenerifiedTypeTypeObject extends TypeObject {
-    private TypeObject type;
-    private String typedefName;
+public final class GenerifiedTypeTypeObject extends TypeObject {
+    private final TypeObject type;
+    private final String typedefName;
 
     public GenerifiedTypeTypeObject(TypeObject type) {
         this.type = type;
@@ -33,7 +35,9 @@ public class GenerifiedTypeTypeObject extends TypeObject {
         return typedefName.isEmpty() ? String.format("type[%s]", type.name()) : typedefName;
     }
 
+    @Contract("_ -> new")
     @Override
+    @NotNull
     public TypeObject typedefAs(String name) {
         return new GenerifiedTypeTypeObject(type, name);
     }
@@ -51,6 +55,7 @@ public class GenerifiedTypeTypeObject extends TypeObject {
         return type.staticAttrType(value);
     }
 
+    @Nullable
     @Override
     public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {

@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ForConverter extends LoopConverter {
-    private ForStatementNode node;
-    private CompilerInfo info;
+    private final ForStatementNode node;
+    private final CompilerInfo info;
 
     public ForConverter(CompilerInfo info, ForStatementNode node) {
         super(info);

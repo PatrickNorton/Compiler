@@ -2,6 +2,7 @@ package main.java.converter;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public final class Util {
 
     @NotNull
     @Contract(pure = true)
+    @Unmodifiable
     static List<Byte> intToBytes(int value) {
         return List.of(
                 (byte) (value >>> 24),
@@ -38,6 +40,7 @@ public final class Util {
 
     @NotNull
     @Contract(pure = true)
+    @Unmodifiable
     static List<Byte> shortToBytes(short value) {
         return List.of(
                 (byte) (value >>> 8),

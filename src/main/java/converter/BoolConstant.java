@@ -1,11 +1,12 @@
 package main.java.converter;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.Objects;
 
-public class BoolConstant implements LangConstant {
+public final class BoolConstant implements LangConstant {
     private final boolean value;
 
     public BoolConstant(boolean value) {
@@ -14,6 +15,7 @@ public class BoolConstant implements LangConstant {
 
     @NotNull
     @Override
+    @Unmodifiable
     public List<Byte> toBytes() {
         return List.of((byte) ConstantBytes.BOOL.ordinal(), (byte) (value ? 1 : 0));
     }

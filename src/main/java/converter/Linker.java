@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Linker {
-    private CompilerInfo info;
-    private Map<String, Pair<String, LineInfo>> exports;
-    private Map<String, TypeObject> globals;
+    private final CompilerInfo info;
+    private final Map<String, Pair<String, LineInfo>> exports;
+    private final Map<String, TypeObject> globals;
 
     public Linker(CompilerInfo info) {
         this.info = info;

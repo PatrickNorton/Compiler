@@ -3,14 +3,15 @@ package main.java.converter;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public final class FunctionDefinitionConverter implements BaseConverter {
-    private CompilerInfo info;
-    private FunctionDefinitionNode node;
+    private final CompilerInfo info;
+    private final FunctionDefinitionNode node;
 
     public FunctionDefinitionConverter(CompilerInfo info, FunctionDefinitionNode node) {
         this.info = info;
@@ -19,7 +20,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public @Unmodifiable List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         var retTypes =  info.typesOf(node.getRetval());
         var fnInfo = new FunctionInfo(node.getName().getName(), convertArgs(), retTypes);

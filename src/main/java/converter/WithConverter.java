@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class WithConverter implements BaseConverter {
-    private WithStatementNode node;
-    private CompilerInfo info;
+    private final WithStatementNode node;
+    private final CompilerInfo info;
 
     public WithConverter(CompilerInfo info, WithStatementNode node) {
         this.info = info;

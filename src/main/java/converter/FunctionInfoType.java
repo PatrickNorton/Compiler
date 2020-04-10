@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class FunctionInfoType extends TypeObject {
-    private FunctionInfo info;
+    private final FunctionInfo info;
 
     public FunctionInfoType(FunctionInfo info) {
         this.info = info;

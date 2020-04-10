@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class GenerifiedFnInfoType extends TypeObject {
-    private FunctionInfo info;
-    private List<TypeObject> generics;
+    private final FunctionInfo info;
+    private final List<TypeObject> generics;
 
     public GenerifiedFnInfoType(FunctionInfo info, List<TypeObject> generics) {
         this.info = info;

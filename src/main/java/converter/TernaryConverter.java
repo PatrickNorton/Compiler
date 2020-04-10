@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class TernaryConverter implements TestConverter {
-    private TernaryNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final TernaryNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public TernaryConverter(CompilerInfo info, TernaryNode node, int retCount) {
         this.node = node;

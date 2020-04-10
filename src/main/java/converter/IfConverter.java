@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class IfConverter implements BaseConverter {
-    private IfStatementNode node;
-    private CompilerInfo info;
+    private final IfStatementNode node;
+    private final CompilerInfo info;
 
     public IfConverter(CompilerInfo info, IfStatementNode node) {
         this.node = node;

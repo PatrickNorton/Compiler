@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 public final class DeclarationConverter implements BaseConverter {
-    private DeclarationNode node;
-    private CompilerInfo info;
+    private final DeclarationNode node;
+    private final CompilerInfo info;
 
     public DeclarationConverter(CompilerInfo info, DeclarationNode node) {
         this.info = info;

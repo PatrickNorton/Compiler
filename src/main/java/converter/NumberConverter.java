@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class NumberConverter implements ConstantConverter {
-    private CompilerInfo info;
-    private NumberNode node;
-    private int retCount;
+    private final CompilerInfo info;
+    private final NumberNode node;
+    private final int retCount;
 
     public NumberConverter(CompilerInfo info, NumberNode node, int retCount) {
         this.info = info;

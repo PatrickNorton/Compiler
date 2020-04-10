@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ReturnConverter implements BaseConverter {
-    private ReturnStatementNode node;
-    private CompilerInfo info;
+    private final ReturnStatementNode node;
+    private final CompilerInfo info;
 
     public ReturnConverter(CompilerInfo info, ReturnStatementNode node) {
         this.info = info;

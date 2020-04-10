@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ClassConverter implements BaseConverter {
-    private ClassDefinitionNode node;
-    private CompilerInfo info;
+    private final ClassDefinitionNode node;
+    private final CompilerInfo info;
 
     public ClassConverter(CompilerInfo info, ClassDefinitionNode node) {
         this.node = node;
@@ -163,9 +163,9 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private static final class DeclarationConverter {
-        private Map<String, AttributeInfo> vars;
-        private Map<String, AttributeInfo> staticVars;
-        private CompilerInfo info;
+        private final Map<String, AttributeInfo> vars;
+        private final Map<String, AttributeInfo> staticVars;
+        private final CompilerInfo info;
 
         DeclarationConverter(CompilerInfo info) {
             this.info = info;
@@ -224,7 +224,7 @@ public final class ClassConverter implements BaseConverter {
     private static final class MethodConverter {
         private final Map<String, MethodInfo> methodMap;
         private final Map<String, MethodInfo> staticMethods;
-        private CompilerInfo info;
+        private final CompilerInfo info;
 
         MethodConverter(CompilerInfo info) {
             this.info = info;
@@ -329,11 +329,11 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private static final class PropertyConverter {
-        private Map<String, AttributeInfo> properties;
-        private Map<String, StatementBodyNode> getters;
-        private Map<String, StatementBodyNode> setters;
-        private Map<String, LineInfo> lineInfos;
-        private CompilerInfo info;
+        private final Map<String, AttributeInfo> properties;
+        private final Map<String, StatementBodyNode> getters;
+        private final Map<String, StatementBodyNode> setters;
+        private final Map<String, LineInfo> lineInfos;
+        private final CompilerInfo info;
 
         PropertyConverter(CompilerInfo info) {
             this.properties = new HashMap<>();

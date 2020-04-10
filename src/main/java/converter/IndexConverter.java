@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class IndexConverter implements TestConverter {
-    private IndexNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final IndexNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public IndexConverter(CompilerInfo info, IndexNode node, int retCount) {
         this.info = info;

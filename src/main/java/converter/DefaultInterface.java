@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 public final class DefaultInterface extends AbstractDefaultInterface {
-    private GenericInfo info;
-    private String typedefName;
+    private final GenericInfo info;
+    private final String typedefName;
 
     public DefaultInterface(String name, GenericInfo info, Map<OpSpTypeNode, FunctionInfo> operators) {
         super(name, operators);
@@ -48,6 +48,10 @@ public final class DefaultInterface extends AbstractDefaultInterface {
     @Override
     public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         return sanitizeType(internalReturnType(o));
+    }
+
+    public String name() {
+        return typedefName.isEmpty() ? super.name() : typedefName;
     }
 
     private TypeObject internalReturnType(OpSpTypeNode o) {

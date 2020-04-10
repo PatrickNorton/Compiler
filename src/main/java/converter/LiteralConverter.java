@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class LiteralConverter implements TestConverter {
-    private LiteralNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final LiteralNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public LiteralConverter(CompilerInfo info, LiteralNode node, int retCount) {
         this.node = node;

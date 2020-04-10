@@ -1,10 +1,11 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class ObjectType extends TypeObject {
+public final class ObjectType extends TypeObject {
     private final String typedefName;
 
     public ObjectType() {
@@ -29,7 +30,9 @@ public class ObjectType extends TypeObject {
         return typedefName.isEmpty() ? "object" : typedefName;
     }
 
+    @Contract("_ -> new")
     @Override
+    @NotNull
     public TypeObject typedefAs(String name) {
         return new ObjectType(name);
     }

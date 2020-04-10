@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DictCompConverter implements TestConverter {
-    private DictComprehensionNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final DictComprehensionNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public DictCompConverter(CompilerInfo info, DictComprehensionNode node, int retCount) {
         this.info = info;
