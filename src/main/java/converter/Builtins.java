@@ -107,6 +107,7 @@ public final class Builtins {
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
 
     static {  // Set int operators
+        INT.isConstClass();
         var intOperatorInfo = new FunctionInfo(ArgumentInfo.of(INT), INT);
         var intCompInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
 
@@ -138,6 +139,7 @@ public final class Builtins {
     }
 
     static {  // Set str operators
+        STR.isConstClass();
         var strMap = Map.of(
                 OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(STR), STR),
                 OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), STR),
@@ -149,6 +151,7 @@ public final class Builtins {
     }
 
     static {  // Set char operators
+        CHAR.isConstClass();
         // TODO: More char operators
         var charMap = Map.of(
                 OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR)
@@ -157,6 +160,7 @@ public final class Builtins {
     }
 
     static {  // Set range operators
+        RANGE.isConstClass();
         var rangeMap = Map.of(
                 OpSpTypeNode.ITER, new FunctionInfo(INT),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL)

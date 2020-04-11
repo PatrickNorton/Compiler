@@ -13,6 +13,7 @@ import main.java.parser.StatementBodyNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public final class ClassConverter implements BaseConverter {
 
     @NotNull
     @Override
+    @Unmodifiable
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
         var declarations = new DeclarationConverter(info);
@@ -58,6 +60,9 @@ public final class ClassConverter implements BaseConverter {
             } else {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
+        }
+        if (classIsConstant(declarations, methods, operators, properties)) {
+            type.isConstClass();
         }
         type.setOperators(operators.getOperatorInfos());
         List<Short> superConstants = new ArrayList<>();
@@ -110,6 +115,31 @@ public final class ClassConverter implements BaseConverter {
             }
         }
         return result;
+    }
+
+    private static boolean classIsConstant(@NotNull DeclarationConverter decls, @NotNull MethodConverter methods,
+                                    @NotNull OperatorConverter ops, @NotNull PropertyConverter props) {
+        for (var info : decls.getVars().values()) {
+            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+                return true;
+            }
+        }
+        for (var info : methods.getMethods().values()) {
+            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+                return true;
+            }
+        }
+        for (var info : ops.getOperators().values()) {
+            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+                return true;
+            }
+        }
+        for (var info : props.getProperties().values()) {
+            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NotNull

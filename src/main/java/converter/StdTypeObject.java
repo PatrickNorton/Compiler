@@ -182,12 +182,17 @@ public final class StdTypeObject extends NameableType {
         return info.staticAttributes.get(value).getType();
     }
 
+    void isConstClass() {
+        assert !info.isConstClass;
+        info.isConstClass = true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StdTypeObject that = (StdTypeObject) o;
-        return isConst == that.isConst && info == that.info;
+        return (info.isConstClass || isConst == that.isConst) && info == that.info;
     }
 
     @Override
@@ -212,6 +217,7 @@ public final class StdTypeObject extends NameableType {
         private final GenericInfo info;
         private Map<String, AttributeInfo> attributes;
         private Map<String, AttributeInfo> staticAttributes;
+        private boolean isConstClass;
 
         public Info(String name, List<TypeObject> supers) {
             this.name = name;
@@ -219,6 +225,7 @@ public final class StdTypeObject extends NameableType {
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
             this.info = GenericInfo.empty();
+            this.isConstClass = false;
         }
 
         public Info(String name, List<TypeObject> supers, GenericInfo info) {
@@ -227,6 +234,7 @@ public final class StdTypeObject extends NameableType {
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
             this.info = info;
+            this.isConstClass = false;
         }
 
         @Nullable
