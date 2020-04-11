@@ -53,6 +53,8 @@ public final class StdTypeObject extends NameableType {
     public boolean isSuperclass(TypeObject other) {
         if (this.equals(other)) {
             return true;
+        } else if (isConst && this.equals(other.makeConst())) {
+            return true;
         } else {
             return other.isSubclass(this);
         }
@@ -65,6 +67,8 @@ public final class StdTypeObject extends NameableType {
 
     public boolean isSubclass(@NotNull TypeObject other) {
         if (this.equals(other)) {
+            return true;
+        } else if (!isConst && this.makeConst().equals(other)) {
             return true;
         } else if (other instanceof AbstractDefaultInterface) {
             return other.isSuperclass(this);
@@ -180,12 +184,15 @@ public final class StdTypeObject extends NameableType {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof StdTypeObject && info.equals(((StdTypeObject) o).info);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StdTypeObject that = (StdTypeObject) o;
+        return isConst == that.isConst && info == that.info;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(info);
+        return Objects.hash(info, isConst);
     }
 
     public TypeObject makeConst() {
