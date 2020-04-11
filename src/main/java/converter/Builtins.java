@@ -211,6 +211,10 @@ public final class Builtins {
         DICT.setOperators(dictMap);
     }
 
+    static {  // null is const
+        NULL_TYPE.isConstClass();
+    }
+
     public static final List<LangObject> TRUE_BUILTINS = List.of(
             PRINT,
             CALLABLE,
