@@ -12,23 +12,23 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public enum AugAssignTypeNode {
-    ADD("+"),
-    SUBTRACT("-"),
-    MULTIPLY("*"),
-    DIVIDE("/"),
-    FLOOR_DIV("//"),
-    POWER("**"),
-    LEFT_BITSHIFT("<<"),
-    RIGHT_BITSHIFT(">>"),
-    BITWISE_AND("&"),
-    BITWISE_OR("|"),
-    BITWISE_XOR("^"),
-    BITWISE_NOT("~"),
-    MODULO("%"),
-    NULL_COERCE("??"),
-    BOOL_AND("and"),
-    BOOL_OR("or"),
-    BOOL_XOR("xor"),
+    ADD("+", OperatorTypeNode.ADD),
+    SUBTRACT("-", OperatorTypeNode.SUBTRACT),
+    MULTIPLY("*", OperatorTypeNode.MULTIPLY),
+    DIVIDE("/", OperatorTypeNode.DIVIDE),
+    FLOOR_DIV("//", OperatorTypeNode.FLOOR_DIV),
+    POWER("**", OperatorTypeNode.POWER),
+    LEFT_BITSHIFT("<<", OperatorTypeNode.LEFT_BITSHIFT),
+    RIGHT_BITSHIFT(">>", OperatorTypeNode.RIGHT_BITSHIFT),
+    BITWISE_AND("&", OperatorTypeNode.BITWISE_AND),
+    BITWISE_OR("|", OperatorTypeNode.BITWISE_OR),
+    BITWISE_XOR("^", OperatorTypeNode.BITWISE_XOR),
+    BITWISE_NOT("~", OperatorTypeNode.BITWISE_NOT),
+    MODULO("%", OperatorTypeNode.MODULO),
+    NULL_COERCE("??", OperatorTypeNode.NULL_COERCE),
+    BOOL_AND("and", OperatorTypeNode.BOOL_AND),
+    BOOL_OR("or", OperatorTypeNode.BOOL_OR),
+    BOOL_XOR("xor", OperatorTypeNode.BOOL_XOR),
     ;
 
     private static final Map<String, AugAssignTypeNode> values;
@@ -42,6 +42,7 @@ public enum AugAssignTypeNode {
     );
 
     public final String sequence;
+    public final OperatorTypeNode operator;
 
     static {
         Map<String, AugAssignTypeNode> temp = new HashMap<>();
@@ -52,8 +53,9 @@ public enum AugAssignTypeNode {
     }
 
     @Contract(pure = true)
-    AugAssignTypeNode(String sequence) {
+    AugAssignTypeNode(String sequence, OperatorTypeNode op) {
         this.sequence = sequence;
+        this.operator = op;
     }
 
     public static AugAssignTypeNode parse(@NotNull TokenList tokens) {

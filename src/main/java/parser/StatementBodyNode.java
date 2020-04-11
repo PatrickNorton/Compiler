@@ -4,12 +4,14 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * The class representing the body of a statement.
  * @author Patrick Norton
  */
-public class StatementBodyNode implements BodyNode {
+public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
     private LineInfo lineInfo;
     private IndependentNode[] statements;
 
@@ -131,5 +133,11 @@ public class StatementBodyNode implements BodyNode {
     @Override
     public String toString() {
         return isEmpty() ? "{}" : "{...}";
+    }
+
+    @NotNull
+    @Override
+    public Iterator<IndependentNode> iterator() {
+        return Arrays.asList(statements).iterator();
     }
 }

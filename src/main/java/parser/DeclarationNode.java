@@ -49,6 +49,10 @@ public class DeclarationNode implements DeclaredStatementNode, ClassStatementNod
         return new TypedVariableNode[] {new TypedVariableNode(type, name)};
     }
 
+    public VariableNode getName() {
+        return name;
+    }
+
     @Override
     public NameNode[] getNames() {
         return new NameNode[] {name};

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class TypeUnionNode implements TypeLikeNode {
@@ -39,6 +40,15 @@ public class TypeUnionNode implements TypeLikeNode {
     @Override
     public boolean isOptional() {
         return false;
+    }
+
+    @Override
+    public String strName() {
+        StringJoiner sj = new StringJoiner("|");
+        for (TypeLikeNode node : subtypes) {
+            sj.add(node.strName());
+        }
+        return sj.toString();
     }
 
     @Contract("_, _, _ -> new")

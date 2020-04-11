@@ -47,12 +47,8 @@ public class DottedVariableNode implements NameNode {
         return preDot;
     }
 
-    public TestNode[] getPostDots() {
-        List<TestNode> nodes = new ArrayList<>();
-        for (DottedVar d : newPostDots) {
-            nodes.add(d.getPostDot());
-        }
-        return nodes.toArray(new TestNode[0]);
+    public DottedVar[] getPostDots() {
+        return newPostDots;
     }
 
     @Override
@@ -93,6 +89,12 @@ public class DottedVariableNode implements NameNode {
     }
 
     static TestNode parsePostDots(@NotNull TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
+        return tokens.tokenIs(TokenType.DOT)
+                ? DottedVariableNode.fromExpr(tokens, preDot, ignoreNewlines)
+                : preDot;
+    }
+
+    static NameNode parsePostDots(@NotNull TokenList tokens, NameNode preDot, boolean ignoreNewlines) {
         return tokens.tokenIs(TokenType.DOT)
                 ? DottedVariableNode.fromExpr(tokens, preDot, ignoreNewlines)
                 : preDot;

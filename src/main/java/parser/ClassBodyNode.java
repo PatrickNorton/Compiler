@@ -4,6 +4,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -12,7 +14,7 @@ import java.util.List;
  * @author Patrick Norton
  * @see StatementBodyNode
  */
-public class ClassBodyNode implements BodyNode {
+public class ClassBodyNode implements BodyNode, Iterable<ClassStatementNode> {
     private LineInfo lineInfo;
     private ClassStatementNode[] statements;
 
@@ -45,6 +47,12 @@ public class ClassBodyNode implements BodyNode {
     @Override
     public ClassStatementNode get(int i) {
         return statements[i];
+    }
+
+    @NotNull
+    @Override
+    public Iterator<ClassStatementNode> iterator() {
+        return Arrays.asList(statements).iterator();
     }
 
     /**

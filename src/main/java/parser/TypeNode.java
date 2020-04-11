@@ -46,6 +46,11 @@ public class TypeNode implements TypeLikeNode {
     }
 
     @Override
+    public String strName() {
+        return ((VariableNode) name.getPreDot()).getName();
+    }
+
+    @Override
     public TypeLikeNode[] getSubtypes() {
         return subtypes;
     }
