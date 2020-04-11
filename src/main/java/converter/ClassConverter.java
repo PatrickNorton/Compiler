@@ -64,7 +64,7 @@ public final class ClassConverter implements BaseConverter {
                 throw new UnsupportedOperationException("Node not yet supported");
             }
         }
-        if (classIsConstant(declarations, methods, operators, properties)) {
+        if (type.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
             type.isConstClass();
         }
         type.setOperators(operators.getOperatorInfos());
