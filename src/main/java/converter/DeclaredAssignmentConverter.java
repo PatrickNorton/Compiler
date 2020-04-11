@@ -30,7 +30,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var valueType = converter.returnType()[0];
         var rawType = assigned.getType();
         var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
-        var assignedType = node.getDescriptors().contains(DescriptorNode.MUT)
+        var descriptors = node.getDescriptors();
+        var assignedType = descriptors.contains(DescriptorNode.MUT)
                 ? nonConstAssignedType.makeMut() : nonConstAssignedType.makeConst();
         var assignedName = assigned.getVariable().getName();
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
@@ -41,7 +42,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                     "Object of type %s cannot be assigned to object of type %s",
                     node, valueType.name(), assignedType.name());
         }
-        boolean isConst = !node.getDescriptors().contains(DescriptorNode.MUT);
+        boolean isConst = !descriptors.contains(DescriptorNode.MUT)
+                && !descriptors.contains(DescriptorNode.MREF);
         if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
             info.addVariable(assignedName, assignedType, constant);
