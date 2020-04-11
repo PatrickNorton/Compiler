@@ -42,9 +42,12 @@ public final class ClassConverter implements BaseConverter {
         var methods = new MethodConverter(info);
         var operators = new OperatorConverter(info);
         var properties = new PropertyConverter(info);
-        var trueSupers = Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
+        var trueSupers = convertSupers(supers);
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
-        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics);
+        var descriptors = node.getDescriptors();
+        var isFinal = !descriptors.contains(DescriptorNode.NONFINAL);
+        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
+        ensureProperInheritance(type, trueSupers);
         info.addType(type);
         for (var stmt : node.getBody()) {  // FIXME: Get methods taking same type working
             if (stmt instanceof DeclarationNode) {
@@ -89,6 +92,28 @@ public final class ClassConverter implements BaseConverter {
         }
         info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex));
         return Collections.emptyList();
+    }
+
+    private StdTypeObject[] convertSupers(TypeObject[] supers) {
+        try {
+            return Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
+        } catch (ArrayStoreException e) {
+            throw CompilerException.format(
+                    "Class '%s' inherits from a non-standard type",
+                    node, node.getName()
+            );
+        }
+    }
+
+    private void ensureProperInheritance(StdTypeObject type, @NotNull StdTypeObject... supers) {
+        for (var superCls : supers) {
+            if (superCls.isFinal()) {
+                throw CompilerException.format(
+                        "Class '%s' inherits from class '%s', which is not marked 'nonfinal'",
+                        node, type.name(), superCls.name()
+                );
+            }
+        }
     }
 
     @NotNull

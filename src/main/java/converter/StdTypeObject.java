@@ -28,11 +28,11 @@ public final class StdTypeObject extends NameableType {
     }
 
     public StdTypeObject(String name, GenericInfo info) {
-        this(name, Collections.emptyList(), info);
+        this(name, Collections.emptyList(), info, true);
     }
 
-    public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info) {
-        this.info = new Info(name, supers, info);
+    public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
+        this.info = new Info(name, supers, info, isFinal);
         this.typedefName = "";
         this.isConst = true;
     }
@@ -209,6 +209,10 @@ public final class StdTypeObject extends NameableType {
         return isConst ? new StdTypeObject(this, false) : this;
     }
 
+    public boolean isFinal() {
+        return info.isFinal;
+    }
+
     private static final class Info {
         private final String name;
         private final List<TypeObject> supers;
@@ -218,9 +222,11 @@ public final class StdTypeObject extends NameableType {
         private Map<String, AttributeInfo> attributes;
         private Map<String, AttributeInfo> staticAttributes;
         private boolean isConstClass;
+        private final boolean isFinal;
 
         public Info(String name, List<TypeObject> supers) {
             this.name = name;
+            this.isFinal = true;
             this.supers = Collections.unmodifiableList(supers);
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
@@ -228,8 +234,9 @@ public final class StdTypeObject extends NameableType {
             this.isConstClass = false;
         }
 
-        public Info(String name, List<TypeObject> supers, GenericInfo info) {
+        public Info(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
             this.name = name;
+            this.isFinal = isFinal;
             this.supers = Collections.unmodifiableList(supers);
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
