@@ -33,6 +33,7 @@ public enum DescriptorNode implements AtomicNode {
     PUBGET("pubget"),
     STATIC("static"),
     MUT("mut"),
+    MREF("mref"),
     READONLY("readonly"),
     FINAL("final"),
     NATIVE("native"),
@@ -53,7 +54,7 @@ public enum DescriptorNode implements AtomicNode {
 
     private static final Set<DescriptorNode> ACCESS = Collections.unmodifiableSet(EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED));
     private static final Set<DescriptorNode> STATIC_SET = Collections.unmodifiableSet(EnumSet.of(STATIC));
-    private static final Set<DescriptorNode> CONST_SET = Collections.unmodifiableSet(EnumSet.of(MUT, READONLY));
+    private static final Set<DescriptorNode> CONST_SET = Collections.unmodifiableSet(EnumSet.of(MUT, MREF, READONLY));
     private static final Set<DescriptorNode> FINAL_SET = Collections.unmodifiableSet(EnumSet.of(FINAL));
     private static final Set<DescriptorNode> NATIVE_SET = Collections.unmodifiableSet(EnumSet.of(NATIVE));
     private static final Set<DescriptorNode> GENERATOR_SET = Collections.unmodifiableSet(EnumSet.of(GENERATOR));
@@ -68,7 +69,7 @@ public enum DescriptorNode implements AtomicNode {
     static final Set<DescriptorNode> FUNCTION_VALID = Collections.unmodifiableSet(
             EnumSet.of(GENERATOR, SYNCED, NATIVE));
     static final Set<DescriptorNode> DECLARATION_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED, MUT, FINAL, STATIC, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED, MUT, MREF, FINAL, STATIC, NATIVE));
     static final Set<DescriptorNode> CONTEXT_VALID = Collections.unmodifiableSet(
             EnumSet.of(PUBLIC, PRIVATE, PROTECTED, MUT, GENERATOR, STATIC, FINAL, SYNCED, NATIVE));
     static final Set<DescriptorNode> METHOD_VALID = Collections.unmodifiableSet(
