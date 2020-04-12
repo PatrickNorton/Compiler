@@ -40,6 +40,10 @@ public class AssertStatementNode implements SimpleStatementNode {
         return lineInfo;
     }
 
+    public TestNode getAs() {
+        return null;
+    }
+
     /**
      * Parse AssertStatementNode from a list of tokens. This will use the
      * definition of an assertion in order to create a new node, taking up the
