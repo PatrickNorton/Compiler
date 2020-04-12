@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class LoopConverter implements BaseConverter {
     protected final CompilerInfo info;
-    private boolean hasContinue;
+    private final boolean hasContinue;
 
     public LoopConverter(CompilerInfo info) {
         this(info, true);
