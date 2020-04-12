@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionConstant implements LangConstant {
+public final class FunctionConstant implements LangConstant {
     private final String name;
     private final int functionIndex;
 
