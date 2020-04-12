@@ -127,6 +127,9 @@ public final class ClassConverter implements BaseConverter {
             info.addVariable("cls", Builtins.TYPE.generify(type), true);
             try {
                 info.allowPrivateAccess(type);
+                for (var superCls : type.getSupers()) {
+                    info.allowProtectedAccess(superCls);
+                }
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
                     info.addVariable(arg.getName(), arg.getType());
@@ -138,6 +141,9 @@ public final class ClassConverter implements BaseConverter {
                 info.removeStackFrame();
             } finally {
                 info.removePrivateAccess(type);
+                for (var superCls : type.getSupers()) {
+                    info.removeProtectedAccess(superCls);
+                }
             }
         }
         return result;

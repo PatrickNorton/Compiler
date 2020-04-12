@@ -8,6 +8,8 @@ import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
+import main.java.util.Counter;
+import main.java.util.HashCounter;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -49,7 +51,8 @@ public final class CompilerInfo {
 
     private final Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
 
-    private final Set<TypeObject> classesWithAccess = new HashSet<>();
+    private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
+    private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
 
     private boolean allowSettingExports = false;
     private boolean linked = false;
@@ -491,17 +494,26 @@ public final class CompilerInfo {
     }
 
     public DescriptorNode accessLevel(TypeObject obj) {
-        return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE : DescriptorNode.PUBLIC;
+        return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE
+                : classesWithProtected.contains(obj) ? DescriptorNode.PROTECTED : DescriptorNode.PUBLIC;
     }
 
     public void allowPrivateAccess(TypeObject obj) {
-        assert !classesWithAccess.contains(obj);
-        classesWithAccess.add(obj);
+        classesWithAccess.increment(obj);
     }
 
     public void removePrivateAccess(TypeObject obj) {
         assert classesWithAccess.contains(obj);
-        classesWithAccess.remove(obj);
+        classesWithAccess.decrement(obj);
+    }
+
+    public void allowProtectedAccess(TypeObject obj) {
+        classesWithProtected.increment(obj);
+    }
+
+    public void removeProtectedAccess(TypeObject obj) {
+        assert classesWithProtected.contains(obj);
+        classesWithProtected.decrement(obj);
     }
 
     {  // Prevent "non-updating" compiler warning
