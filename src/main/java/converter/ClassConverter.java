@@ -121,8 +121,9 @@ public final class ClassConverter implements BaseConverter {
         Map<T, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
+            var isConstMethod = !methodInfo.getDescriptors().contains(DescriptorNode.MUT);
             info.addStackFrame();
-            info.addVariable("self", type, !methodInfo.getDescriptors().contains(DescriptorNode.MUT));
+            info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod);
             info.addVariable("cls", Builtins.TYPE.generify(type), true);
             try {
                 info.allowPrivateAccess(type);
