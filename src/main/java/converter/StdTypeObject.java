@@ -109,7 +109,7 @@ public final class StdTypeObject extends NameableType {
     }
 
     public void setOperators(Map<OpSpTypeNode, FunctionInfo> args) {
-        assert info.operators.isEmpty();
+        assert !info.isSealed && info.operators.isEmpty();
         info.operators = args;
     }
 
@@ -168,12 +168,12 @@ public final class StdTypeObject extends NameableType {
     }
 
     public void setAttributes(Map<String, AttributeInfo> attributes) {
-        assert info.attributes == null;
+        assert !info.isSealed && info.attributes == null;
         info.attributes = attributes;
     }
 
     public void setStaticAttributes(Map<String, AttributeInfo> attributes) {
-        assert info.staticAttributes == null;
+        assert !info.isSealed && info.staticAttributes == null;
         info.staticAttributes = attributes;
     }
 
@@ -183,7 +183,7 @@ public final class StdTypeObject extends NameableType {
     }
 
     void isConstClass() {
-        assert !info.isConstClass;
+        assert !info.isSealed && !info.isConstClass;
         info.isConstClass = true;
     }
 
@@ -213,6 +213,10 @@ public final class StdTypeObject extends NameableType {
         return info.isFinal;
     }
 
+    public void seal() {
+        info.seal();
+    }
+
     private static final class Info {
         private final String name;
         private final List<TypeObject> supers;
@@ -223,6 +227,7 @@ public final class StdTypeObject extends NameableType {
         private Map<String, AttributeInfo> staticAttributes;
         private boolean isConstClass;
         private final boolean isFinal;
+        private boolean isSealed;
 
         public Info(String name, List<TypeObject> supers) {
             this.name = name;
@@ -285,6 +290,23 @@ public final class StdTypeObject extends NameableType {
         @Override
         public int hashCode() {
             return Objects.hash(name, supers, operators);
+        }
+
+        public void seal() {
+            assert !isSealed;
+            isSealed = true;
+            if (operators == null) {
+                operators = Collections.emptyMap();
+            }
+            if (staticOperators == null) {
+                staticOperators = Collections.emptyMap();
+            }
+            if (attributes == null) {
+                attributes = Collections.emptyMap();
+            }
+            if (staticAttributes == null) {
+                staticAttributes = Collections.emptyMap();
+            }
         }
     }
 }

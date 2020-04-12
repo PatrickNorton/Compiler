@@ -1,9 +1,11 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,6 +138,7 @@ public final class Builtins {
         );
 
         INT.setOperators(intMap);
+        INT.seal();
     }
 
     static {  // Set str operators
@@ -148,6 +151,11 @@ public final class Builtins {
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
+        var strAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        STR.setAttributes(strAttrs);
+        STR.seal();
     }
 
     static {  // Set char operators
@@ -157,6 +165,7 @@ public final class Builtins {
                 OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR)
         );
         CHAR.setOperators(charMap);
+        CHAR.seal();
     }
 
     static {  // Set range operators
@@ -166,6 +175,7 @@ public final class Builtins {
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL)
         );
         RANGE.setOperators(rangeMap);
+        RANGE.seal();
     }
 
     static {  // Set list operators
@@ -177,6 +187,11 @@ public final class Builtins {
                 OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
         );
         LIST.setOperators(listMap);
+        var listAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        LIST.setAttributes(listAttrs);
+        LIST.seal();
     }
 
     static {  // Set set operators
@@ -192,6 +207,11 @@ public final class Builtins {
                 OpSpTypeNode.ITER, new FunctionInfo(SET_PARAM)
         );
         SET.setOperators(setMap);
+        var setAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        SET.setAttributes(setAttrs);
+        SET.seal();
     }
 
     static {
@@ -209,10 +229,22 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, dictEqInfo
         );
         DICT.setOperators(dictMap);
+        var dictAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        DICT.setAttributes(dictAttrs);
+        DICT.seal();
     }
 
     static {  // null is const
         NULL_TYPE.isConstClass();
+        NULL_TYPE.seal();
+    }
+
+    static {  // seal everything else
+        DECIMAL.seal();
+        BOOL.seal();
+        THROWS.seal();
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(
