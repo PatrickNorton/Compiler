@@ -33,14 +33,21 @@ public final class AssertConverter implements BaseConverter {
     }
 
     private @NotNull List<Byte> convertMessage(int start) {
-        var converter = TestConverter.of(info, node.getAs(), 1);
-        var retType = converter.returnType()[0];
-        if (!Builtins.STR.isSuperclass(retType)) {
-            throw CompilerException.format(
-                    "'as' clause in an assert statement must return a 'str', not '%s'",
-                    node.getAs(), retType.name()
-            );
+        if (node.getAs().isEmpty()) {
+            List<Byte> bytes = new ArrayList<>();
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(""))));
+            return bytes;
+        } else {
+            var converter = TestConverter.of(info, node.getAs(), 1);
+            var retType = converter.returnType()[0];
+            if (!Builtins.STR.isSuperclass(retType)) {
+                throw CompilerException.format(
+                        "'as' clause in an assert statement must return a 'str', not '%s'",
+                        node.getAs(), retType.name()
+                );
+            }
+            return converter.convert(start);
         }
-        return converter.convert(start);
     }
 }
