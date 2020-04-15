@@ -150,23 +150,28 @@ public final class DotConverter implements TestConverter {
     }
 
     private void convertPostDot(int start, @NotNull List<Byte> bytes, @NotNull NameNode postDot) {
-        bytes.add(Bytecode.LOAD_DOT.value);
         if (postDot instanceof VariableNode) {
+            bytes.add(Bytecode.LOAD_DOT.value);
             var name = LangConstant.of(((VariableNode) postDot).getName());
             bytes.addAll(Util.shortToBytes(info.constIndex(name)));
         } else if (postDot instanceof FunctionCallNode) {
-            var caller = ((FunctionCallNode) postDot).getCaller();
-            var name = LangConstant.of(((VariableNode) caller).getName());
-            bytes.addAll(Util.shortToBytes(info.constIndex(name)));
-            var callConverter = new FunctionCallConverter(info, (FunctionCallNode) postDot, retCount);
-            callConverter.convertCall(bytes, start);
+            convertMethod(start, bytes, (FunctionCallNode) postDot);
         } else if (postDot instanceof SpecialOpNameNode) {
-            bytes.remove(bytes.size() - 1);
             var op = ((SpecialOpNameNode) postDot).getOperator();
             bytes.add(Bytecode.LOAD_OP.value);
             bytes.addAll(Util.shortToBytes((short) op.ordinal()));
         } else {
             throw new UnsupportedOperationException("This kind of post-dot not yet supported");
         }
+    }
+
+    private void convertMethod(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+        var name = ((VariableNode) postDot.getCaller()).getName();
+        for (var value : postDot.getParameters()) {  // TODO: Varargs, merge with FunctionCallNode
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
+        }
+        bytes.add(Bytecode.CALL_METHOD.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
+        bytes.addAll(Util.shortToBytes((short) postDot.getParameters().length));
     }
 }

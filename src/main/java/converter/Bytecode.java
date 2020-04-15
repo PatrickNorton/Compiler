@@ -66,7 +66,7 @@ public enum Bytecode {
     JUMP_TRUE(0x32, Type.LOCATION),
     JUMP_NN(0x33, Type.LOCATION),
     JUMP_NULL(0x34, Type.LOCATION),
-    CALL_METHOD(0x35, Type.ARGC),
+    CALL_METHOD(0x35, Type.CONSTANT, Type.ARGC),
     CALL_TOS(0x36, Type.ARGC),
     TAIL_METHOD(0x37, Type.ARGC),
     TAIL_TOS(0x38, Type.ARGC),
