@@ -94,7 +94,8 @@ public enum Bytecode {
     DICT_ADD(0x56),
     DOTIMES(0x57, Type.LOCATION),
     // Misc.
-    MAKE_FUNCTION(0x60, Type.FUNCTION_NO)
+    MAKE_FUNCTION(0x60, Type.FUNCTION_NO),
+    GET_TYPE(0x61),
     ;
 
     private enum Type {

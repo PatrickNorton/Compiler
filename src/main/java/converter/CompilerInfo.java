@@ -125,6 +125,16 @@ public final class CompilerInfo {
         return null;
     }
 
+    public short fnIndex(String name) {
+        for (int i = 0; i < functions.size(); i++) {
+            var fn = functions.get(i);
+            if (fn != null && fn.getName().equals(name)) {
+                return (short) i;
+            }
+        }
+        return -1;
+    }
+
     /**
      * Add a constant to the constant pool.
      *
