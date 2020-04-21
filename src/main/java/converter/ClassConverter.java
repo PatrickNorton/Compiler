@@ -72,6 +72,8 @@ public final class ClassConverter implements BaseConverter {
         for (var sup : type.getSupers()) {
             superConstants.add(info.constIndex(sup.name()));
         }
+        checkAttributes(declarations.getVars(), declarations.getStaticVars(),
+                methods.getMethods(), methods.getStaticMethods());
         type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
         type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getMethods(), new HashMap<>()));
         var cls = new ClassInfo.Factory()
@@ -127,9 +129,7 @@ public final class ClassConverter implements BaseConverter {
             info.addVariable("cls", Builtins.TYPE.generify(type), true);
             try {
                 info.allowPrivateAccess(type);
-                for (var superCls : type.getSupers()) {
-                    info.allowProtectedAccess(superCls);
-                }
+                recursivelyAllowProtectedAccess(type);
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
                     info.addVariable(arg.getName(), arg.getType());
@@ -141,9 +141,7 @@ public final class ClassConverter implements BaseConverter {
                 info.removeStackFrame();
             } finally {
                 info.removePrivateAccess(type);
-                for (var superCls : type.getSupers()) {
-                    info.removeProtectedAccess(superCls);
-                }
+                recursivelyRemovePrivateAccess(type);
             }
         }
         return result;
@@ -153,25 +151,25 @@ public final class ClassConverter implements BaseConverter {
                                     @NotNull OperatorConverter ops, @NotNull PropertyConverter props) {
         for (var info : decls.getVars().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
-                return true;
+                return false;
             }
         }
         for (var info : methods.getMethods().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
-                return true;
+                return false;
             }
         }
         for (var info : ops.getOperators().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
-                return true;
+                return false;
             }
         }
         for (var info : props.getProperties().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     @NotNull
@@ -200,15 +198,67 @@ public final class ClassConverter implements BaseConverter {
         return finalAttrs;
     }
 
+    private void recursivelyAllowProtectedAccess(@NotNull StdTypeObject type) {
+        for (var superCls : type.getSupers()) {
+            info.allowProtectedAccess(superCls);
+            if (superCls instanceof StdTypeObject) {
+                recursivelyAllowProtectedAccess((StdTypeObject) superCls);
+            }
+        }
+    }
+
+    private void recursivelyRemovePrivateAccess(@NotNull StdTypeObject type) {
+        for (var superCls : type.getSupers()) {
+            info.removeProtectedAccess(superCls);
+            if (superCls instanceof StdTypeObject) {
+                recursivelyRemovePrivateAccess((StdTypeObject) superCls);
+            }
+        }
+    }
+
+    private void checkAttributes(@NotNull Map<String, AttributeInfo> vars, Map<String, AttributeInfo> staticVars,
+                                 Map<String, MethodInfo> methods, Map<String, MethodInfo> staticMethods) {
+        checkVars(vars, methods, staticMethods);
+        checkVars(staticVars, methods, staticMethods);
+        checkMethods(methods, vars, staticVars);
+        checkMethods(staticMethods, vars, staticVars);
+    }
+
+    private void checkVars(@NotNull Map<String, AttributeInfo> vars, Map<String, MethodInfo> methods,
+                           Map<String, MethodInfo> staticMethods) {
+        for (var pair : vars.entrySet()) {
+            if (methods.containsKey(pair.getKey()) || staticMethods.containsKey(pair.getKey())) {
+                throw CompilerException.format(
+                        "Name '%s' defined twice",
+                        pair.getValue().getLineInfo(), pair.getKey()
+                );
+            }
+        }
+    }
+
+    private void checkMethods(@NotNull Map<String, MethodInfo> methods, Map<String, AttributeInfo> vars,
+                              Map<String, AttributeInfo> staticVars) {
+        for (var pair : methods.entrySet()) {
+            if (vars.containsKey(pair.getKey()) || staticVars.containsKey(pair.getKey())) {
+                throw CompilerException.format(
+                        "Name '%s' defined twice",
+                        pair.getValue().getLineInfo(), pair.getKey()
+                );
+            }
+        }
+    }
+
     private static final class MethodInfo {
         private final Set<DescriptorNode> descriptors;
         private final FunctionInfo info;
         private final StatementBodyNode body;
+        private final LineInfo lineInfo;
 
-        MethodInfo(Set<DescriptorNode> descriptors, FunctionInfo info, StatementBodyNode body) {
+        MethodInfo(Set<DescriptorNode> descriptors, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
             this.descriptors = descriptors;
             this.info = info;
             this.body = body;
+            this.lineInfo = lineInfo;
         }
 
         public Set<DescriptorNode> getDescriptors() {
@@ -221,6 +271,10 @@ public final class ClassConverter implements BaseConverter {
 
         public StatementBodyNode getBody() {
             return body;
+        }
+
+        public LineInfo getLineInfo() {
+            return lineInfo;
         }
     }
 
@@ -239,16 +293,23 @@ public final class ClassConverter implements BaseConverter {
             for (var name : node.getNames()) {
                 var strName = ((VariableNode) name).getName();
                 var descriptors = node.getDescriptors();
+                if (vars.containsKey(strName) || staticVars.containsKey(strName)) {
+                    throw CompilerException.format(
+                            "Name '%s' defined twice for one class", name.getLineInfo(), strName
+                    );
+                }
+                var attrInfo = new AttributeInfo(descriptors, info.getType(node.getType()), node.getLineInfo());
                 if (descriptors.contains(DescriptorNode.STATIC)) {
-                    staticVars.put(strName, new AttributeInfo(descriptors, info.getType(node.getType())));
+                    staticVars.put(strName, attrInfo);
                 } else {
-                    vars.put(strName, new AttributeInfo(descriptors, info.getType(node.getType())));
+                    vars.put(strName, attrInfo);
                 }
             }
         }
 
         void parse(@NotNull DeclaredAssignmentNode node) {
-            var attrInfo = new AttributeInfo(node.getDescriptors(), info.getType(node.getTypes()[0].getType()));
+            var attrType = info.getType(node.getTypes()[0].getType());
+            var attrInfo = new AttributeInfo(node.getDescriptors(), attrType, node.getLineInfo());
             if (node.getDescriptors().contains(DescriptorNode.STATIC)) {
                 staticVars.put(((VariableNode) node.getNames()[0]).getName(), attrInfo);
             } else {
@@ -299,10 +360,16 @@ public final class ClassConverter implements BaseConverter {
             var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetval());
             var fnInfo = new FunctionInfo(name, args, returns);
+            if (methodMap.containsKey(name) || staticMethods.containsKey(name)) {
+                throw CompilerException.format(
+                        "Name '%s' defined twice for one class", node, name
+                );
+            }
+            var mInfo = new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo());
             if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
-                methodMap.put(name, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody()));
+                methodMap.put(name, mInfo);
             } else {
-                staticMethods.put(name, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody()));
+                staticMethods.put(name, mInfo);
             }
         }
 
@@ -341,8 +408,11 @@ public final class ClassConverter implements BaseConverter {
             } else {
                 fnInfo = new FunctionInfo("", args, returns);
             }
+            if (operators.containsKey(op)) {
+                throw CompilerException.format("'%s' defined twice within the same class", node, op);
+            }
             operatorInfos.put(op, fnInfo);
-            operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody()));
+            operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));
         }
 
         public Map<OpSpTypeNode, FunctionInfo> getOperatorInfos() {
@@ -430,7 +500,9 @@ public final class ClassConverter implements BaseConverter {
             for (var pair : getters.entrySet()) {
                 var property = properties.get(pair.getKey());
                 var fnInfo = new FunctionInfo(property.getType());
-                result.put(pair.getKey(), new MethodInfo(property.getDescriptors(), fnInfo, pair.getValue()));
+                var mInfo = new MethodInfo(property.getDescriptors(), fnInfo,
+                        pair.getValue(), pair.getValue().getLineInfo());
+                result.put(pair.getKey(), mInfo);
             }
             return result;
         }
@@ -441,7 +513,9 @@ public final class ClassConverter implements BaseConverter {
             for (var pair : setters.entrySet()) {
                 var property = properties.get(pair.getKey());
                 var fnInfo = new FunctionInfo(ArgumentInfo.of(properties.get(pair.getKey()).getType()));
-                result.put(pair.getKey(), new MethodInfo(property.getDescriptors(), fnInfo, pair.getValue()));
+                var mInfo = new MethodInfo(property.getDescriptors(), fnInfo,
+                        pair.getValue(), pair.getValue().getLineInfo());
+                result.put(pair.getKey(), mInfo);
             }
             return result;
         }
