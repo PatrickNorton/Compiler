@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.BaseNode;
 import main.java.parser.LineInfo;
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,5 +35,33 @@ public class CompilerException extends RuntimeException {
     @NotNull
     public static CompilerException format(String message, LineInfo lineInfo, Object... args) {
         return of(String.format(message, args), lineInfo);
+    }
+
+    @NotNull
+    public static CompilerException doubleDef(String name, @NotNull LineInfo info1, @NotNull LineInfo info2) {
+        return new CompilerException(
+                String.format(
+                        "Error: name '%s' defined twice:%n" +
+                                "Definition 1: File %s Line %d%n%s%n" +
+                                "Definition 2: File %s Line %d%n%s%n",
+                        name,
+                        info1.getPath(), info1.getLineNumber(), info1.infoString(),
+                        info2.getPath(), info2.getLineNumber(), info2.infoString()
+                )
+        );
+    }
+
+    @NotNull
+    public static CompilerException doubleDef(OpSpTypeNode op, @NotNull LineInfo info1, @NotNull LineInfo info2) {
+        return new CompilerException(
+                String.format(
+                        "Error: '%s' defined twice:%n" +
+                                "Definition 1: File %s Line %d%n%s%n" +
+                                "Definition 2: File %s Line %d%n%s%n",
+                        op,
+                        info1.getPath(), info1.getLineNumber(), info1.infoString(),
+                        info2.getPath(), info2.getLineNumber(), info2.infoString()
+                )
+        );
     }
 }

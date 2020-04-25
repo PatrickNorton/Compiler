@@ -5,6 +5,7 @@ import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
@@ -218,37 +219,38 @@ public final class ClassConverter implements BaseConverter {
 
     private void checkAttributes(@NotNull Map<String, AttributeInfo> vars, Map<String, AttributeInfo> staticVars,
                                  Map<String, MethodInfo> methods, Map<String, MethodInfo> staticMethods) {
-        checkVars(vars, methods, staticMethods);
-        checkVars(staticVars, methods, staticMethods);
-        checkMethods(methods, vars, staticVars);
-        checkMethods(staticMethods, vars, staticVars);
+        checkMaps(vars, methods, staticMethods);
+        checkMaps(staticVars, methods, staticMethods);
+        checkMaps(methods, vars, staticVars);
+        checkMaps(staticMethods, vars, staticVars);
     }
 
-    private void checkVars(@NotNull Map<String, AttributeInfo> vars, Map<String, MethodInfo> methods,
-                           Map<String, MethodInfo> staticMethods) {
+    private void checkMaps(@NotNull Map<String, ? extends Lined> vars, Map<String, ? extends Lined> methods,
+                           Map<String, ? extends Lined> staticMethods) {
         for (var pair : vars.entrySet()) {
-            if (methods.containsKey(pair.getKey()) || staticMethods.containsKey(pair.getKey())) {
-                throw CompilerException.format(
-                        "Name '%s' defined twice",
-                        pair.getValue().getLineInfo(), pair.getKey()
+            if (methods.containsKey(pair.getKey())) {
+                throw CompilerException.doubleDef(
+                        pair.getKey(),
+                        pair.getValue().getLineInfo(),
+                        methods.get(pair.getKey()).getLineInfo()
+                );
+            } else if (staticMethods.containsKey(pair.getKey())) {
+                throw CompilerException.doubleDef(
+                        pair.getKey(),
+                        pair.getValue().getLineInfo(),
+                        staticMethods.get(pair.getKey()).getLineInfo()
                 );
             }
         }
     }
 
-    private void checkMethods(@NotNull Map<String, MethodInfo> methods, Map<String, AttributeInfo> vars,
-                              Map<String, AttributeInfo> staticVars) {
-        for (var pair : methods.entrySet()) {
-            if (vars.containsKey(pair.getKey()) || staticVars.containsKey(pair.getKey())) {
-                throw CompilerException.format(
-                        "Name '%s' defined twice",
-                        pair.getValue().getLineInfo(), pair.getKey()
-                );
-            }
+    private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {
+        if (vars.containsKey(strName)) {
+            throw CompilerException.doubleDef(strName, name.getLineInfo(), vars.get(strName).getLineInfo());
         }
     }
 
-    private static final class MethodInfo {
+    private static final class MethodInfo implements Lined {
         private final Set<DescriptorNode> descriptors;
         private final FunctionInfo info;
         private final StatementBodyNode body;
@@ -293,11 +295,8 @@ public final class ClassConverter implements BaseConverter {
             for (var name : node.getNames()) {
                 var strName = ((VariableNode) name).getName();
                 var descriptors = node.getDescriptors();
-                if (vars.containsKey(strName) || staticVars.containsKey(strName)) {
-                    throw CompilerException.format(
-                            "Name '%s' defined twice for one class", name.getLineInfo(), strName
-                    );
-                }
+                checkVars(strName, name, vars);
+                checkVars(strName, name, staticVars);
                 var attrInfo = new AttributeInfo(descriptors, info.getType(node.getType()), node.getLineInfo());
                 if (descriptors.contains(DescriptorNode.STATIC)) {
                     staticVars.put(strName, attrInfo);
@@ -360,11 +359,8 @@ public final class ClassConverter implements BaseConverter {
             var args = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetval());
             var fnInfo = new FunctionInfo(name, args, returns);
-            if (methodMap.containsKey(name) || staticMethods.containsKey(name)) {
-                throw CompilerException.format(
-                        "Name '%s' defined twice for one class", node, name
-                );
-            }
+            checkVars(name, node, methodMap);
+            checkVars(name, node, staticMethods);
             var mInfo = new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo());
             if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
                 methodMap.put(name, mInfo);
@@ -409,7 +405,7 @@ public final class ClassConverter implements BaseConverter {
                 fnInfo = new FunctionInfo("", args, returns);
             }
             if (operators.containsKey(op)) {
-                throw CompilerException.format("'%s' defined twice within the same class", node, op);
+                throw CompilerException.doubleDef(op, node.getLineInfo(), operators.get(op).getLineInfo());
             }
             operatorInfos.put(op, fnInfo);
             operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));

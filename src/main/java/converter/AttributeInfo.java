@@ -2,11 +2,12 @@ package main.java.converter;
 
 import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 
 import java.util.Collections;
 import java.util.Set;
 
-public final class AttributeInfo {
+public final class AttributeInfo implements Lined {
     private final Set<DescriptorNode> descriptors;
     private final TypeObject type;
     private final LineInfo lineInfo;
