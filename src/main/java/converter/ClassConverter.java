@@ -76,7 +76,7 @@ public final class ClassConverter implements BaseConverter {
         checkAttributes(declarations.getVars(), declarations.getStaticVars(),
                 methods.getMethods(), methods.getStaticMethods());
         type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
-        type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getMethods(), new HashMap<>()));
+        type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()));
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
