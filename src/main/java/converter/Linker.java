@@ -99,15 +99,17 @@ public final class Linker {
     @Nullable
     private Map<String, TypeObject> declareTypes(@NotNull TopNode node) {
         Map<String, TypeObject> types = new HashMap<>();
+        Map<String, LineInfo> lineInfos = new HashMap<>();
         boolean isModule = false;
         for (var stmt : node) {
             if (stmt instanceof ClassDefinitionNode) {
                 var cls = (ClassDefinitionNode) stmt;
-                if (types.containsKey(cls.strName())) {
-                    // TODO: Other LineInfo
-                    throw CompilerException.doubleDef(cls.strName(), stmt.getLineInfo(), LineInfo.empty());
+                var strName = cls.strName();
+                if (types.containsKey(strName)) {
+                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                types.put(cls.strName(), new StdTypeObject(cls.strName()));
+                types.put(strName, new StdTypeObject(strName));
+                lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof ImportExportNode) {
                 var ieStmt = (ImportExportNode) stmt;
                 // TODO: Types from imports
