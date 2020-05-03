@@ -1,7 +1,7 @@
 package main.java.converter;
 
-import main.java.parser.BaseNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +35,12 @@ public class CompilerInternalError extends RuntimeException {
     }
 
     @NotNull
-    public static CompilerInternalError of(String message, @NotNull BaseNode node) {
+    public static CompilerInternalError of(String message, @NotNull Lined node) {
         return of(message, node.getLineInfo());
+    }
+
+    @NotNull
+    public static CompilerInternalError format(String message, Lined node, Object... values) {
+        return of(String.format(message, values), node);
     }
 }
