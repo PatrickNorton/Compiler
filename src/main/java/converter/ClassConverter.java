@@ -47,30 +47,21 @@ public final class ClassConverter implements BaseConverter {
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         var descriptors = node.getDescriptors();
         var isFinal = !descriptors.contains(DescriptorNode.NONFINAL);
-        var type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
-        ensureProperInheritance(type, trueSupers);
-        info.addType(type);
-        for (var stmt : node.getBody()) {  // FIXME: Get methods taking same type working
-            if (stmt instanceof DeclarationNode) {
-                declarations.parse((DeclarationNode) stmt);
-            } else if (stmt instanceof DeclaredAssignmentNode) {
-                declarations.parse((DeclaredAssignmentNode) stmt);
-            } else if (stmt instanceof MethodDefinitionNode) {
-                methods.parse((MethodDefinitionNode) stmt);
-            } else if (stmt instanceof OperatorDefinitionNode) {
-                operators.parse((OperatorDefinitionNode) stmt);
-            } else if (stmt instanceof PropertyDefinitionNode) {
-                properties.parse((PropertyDefinitionNode) stmt);
-            } else {
-                throw new UnsupportedOperationException("Node not yet supported");
-            }
+        StdTypeObject type;
+        if (!info.hasType(node.strName())) {
+            type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
+            ensureProperInheritance(type, trueSupers);
+            info.addType(type);
+            parseStatements(declarations, methods, operators, properties);
+        } else {
+            type = (StdTypeObject) info.getType(node.strName());
         }
         if (type.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
             type.isConstClass();
         }
         type.setOperators(operators.getOperatorInfos());
         List<Short> superConstants = new ArrayList<>();
-        for (var sup : type.getSupers()) {
+        for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
         }
         checkAttributes(declarations.getVars(), declarations.getStaticVars(),
@@ -247,6 +238,49 @@ public final class ClassConverter implements BaseConverter {
     private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {
         if (vars.containsKey(strName)) {
             throw CompilerException.doubleDef(strName, name.getLineInfo(), vars.get(strName).getLineInfo());
+        }
+    }
+
+    public static void completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj) {
+        new ClassConverter(info, node).completeType(obj);
+    }
+
+    private void completeType(StdTypeObject obj) {
+        var declarations = new DeclarationConverter(info);
+        var methods = new MethodConverter(info);
+        var operators = new OperatorConverter(info);
+        var properties = new PropertyConverter(info);
+        parseStatements(declarations, methods, operators, properties);
+        if (obj.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
+            obj.isConstClass();
+        }
+        obj.setOperators(operators.getOperatorInfos());
+        checkAttributes(declarations.getVars(), declarations.getStaticVars(),
+                methods.getMethods(), methods.getStaticMethods());
+        obj.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
+        obj.seal();
+    }
+
+    private void parseStatements(
+            DeclarationConverter declarations,
+            MethodConverter methods,
+            OperatorConverter operators,
+            PropertyConverter properties
+    ) {
+        for (var stmt : node.getBody()) {
+            if (stmt instanceof DeclarationNode) {
+                declarations.parse((DeclarationNode) stmt);
+            } else if (stmt instanceof DeclaredAssignmentNode) {
+                declarations.parse((DeclaredAssignmentNode) stmt);
+            } else if (stmt instanceof MethodDefinitionNode) {
+                methods.parse((MethodDefinitionNode) stmt);
+            } else if (stmt instanceof OperatorDefinitionNode) {
+                operators.parse((OperatorDefinitionNode) stmt);
+            } else if (stmt instanceof PropertyDefinitionNode) {
+                properties.parse((PropertyDefinitionNode) stmt);
+            } else {
+                throw new UnsupportedOperationException("Node not yet supported");
+            }
         }
     }
 

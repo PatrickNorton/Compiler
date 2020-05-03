@@ -13,6 +13,7 @@ import main.java.parser.TopNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,26 +37,36 @@ public final class Linker {
         return globals;
     }
 
-    @NotNull
-    public Linker link(@NotNull TopNode node) {
+    public Linker link(TopNode node) {
         assert exports.isEmpty() && globals.isEmpty();
+        var declaredTypes = declareTypes(node);
+        if (declaredTypes == null) {  // declaredTypes is null if not a module
+            return this;
+        }
+        info.addPredeclaredTypes(declaredTypes);
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
                 var name = ((DefinitionNode) stmt).getName();
                 TypeObject type;
                 if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
-                    type = Builtins.CALLABLE;
+                    var fnNode = (FunctionDefinitionNode) stmt;
+                    var argInfo = ArgumentInfo.of(fnNode.getArgs(), info);
+                    var fnInfo = new FunctionInfo(argInfo, info.typesOf(fnNode.getRetval()));
+                    type = new FunctionInfoType(fnInfo);
                 } else if (stmt instanceof PropertyDefinitionNode) {
                     var typeNode = ((PropertyDefinitionNode) stmt).getType();
-                    type = null;  // FIXME: Convert type properly
+                    type = info.getType(typeNode);
                 } else if (stmt instanceof ContextDefinitionNode) {
-                    type = null;
+                    type = null;  // FIXME: Type for context definitions
                 } else if (stmt instanceof OperatorDefinitionNode) {
-                    throw CompilerInternalError.of("Illegal operator definition", stmt);
+                    throw CompilerInternalError.of("Operator must defined in a class", stmt);
                 } else if (stmt instanceof MethodDefinitionNode) {
-                    throw CompilerInternalError.of("Illegal method definition", stmt);
+                    throw CompilerInternalError.of("Method must be defined in a class", stmt);
                 } else if (stmt instanceof ClassDefinitionNode) {
-                    type = Builtins.TYPE;  // FIXME: Generify types correctly
+                    var clsNode = (ClassDefinitionNode) stmt;
+                    var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName());
+                    ClassConverter.completeType(info, clsNode, predeclaredType);
+                    type = Builtins.TYPE.generify(predeclaredType);
                 } else {
                     throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
                 }
@@ -75,9 +86,37 @@ public final class Linker {
                                 "Unknown type of import/export", ieNode.getLineInfo()
                         );
                 }
+            } else {
+                throw CompilerException.of(
+                        "Only definition and import/export statements are allowed in file with exports",
+                        stmt
+                );
             }
         }
         return this;
+    }
+
+    @Nullable
+    private Map<String, TypeObject> declareTypes(@NotNull TopNode node) {
+        Map<String, TypeObject> types = new HashMap<>();
+        boolean isModule = false;
+        for (var stmt : node) {
+            if (stmt instanceof ClassDefinitionNode) {
+                var cls = (ClassDefinitionNode) stmt;
+                if (types.containsKey(cls.strName())) {
+                    // TODO: Other LineInfo
+                    throw CompilerException.doubleDef(cls.strName(), stmt.getLineInfo(), LineInfo.empty());
+                }
+                types.put(cls.strName(), new StdTypeObject(cls.strName()));
+            } else if (stmt instanceof ImportExportNode) {
+                var ieStmt = (ImportExportNode) stmt;
+                // TODO: Types from imports
+                if (ieStmt.getType() == ImportExportNode.EXPORT) {
+                    isModule = true;
+                }
+            }
+        }
+        return isModule ? types : null;
     }
 
     private void addImports(@NotNull ImportExportNode node) {

@@ -82,6 +82,10 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
         this.annotations = annotations;
     }
 
+    public String strName() {
+        return name.strName();
+    }
+
     /**
      * Parse a ClassDefinitionNode from list of tokens.
      * <p>

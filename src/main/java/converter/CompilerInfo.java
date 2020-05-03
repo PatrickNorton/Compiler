@@ -44,7 +44,7 @@ public final class CompilerInfo {
     private final LoopManager loopManager = new LoopManager();
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
-    private final Map<String, NameableType> typeMap = new HashMap<>();
+    private final Map<String, TypeObject> typeMap = new HashMap<>();
     private final IntAllocator varNumbers = new IntAllocator();
 
     private final IntAllocator anonymousNums = new IntAllocator();
@@ -99,7 +99,7 @@ public final class CompilerInfo {
     public int addImport(@NotNull String name) {
         var names = name.split("\\.");
         if (!imports.contains(name)) {
-            CompilerInfo f = Converter.findModule(names[0]);
+            CompilerInfo f = Converter.findModule(names[0]).link();
             imports.add(name);
             importTypes.put(name, f.exportTypes.get(names[1]));
         }
@@ -362,17 +362,21 @@ public final class CompilerInfo {
     }
 
     @Nullable
-    public NameableType classOf(String str) {
+    public TypeObject classOf(String str) {
         var cls = typeMap.get(str);
         if (cls == null) {
             var builtin = Builtins.BUILTIN_MAP.get(str);
-            return builtin instanceof NameableType ? (NameableType) builtin : null;
+            return builtin instanceof TypeObject ? (TypeObject) builtin : null;
         }
         return cls;
     }
 
     public void addType(NameableType type) {
         typeMap.put(type.name(), type);
+    }
+
+    public boolean hasType(String typeName) {
+        return typeMap.containsKey(typeName);
     }
 
     /**
@@ -524,6 +528,18 @@ public final class CompilerInfo {
     public void removeProtectedAccess(TypeObject obj) {
         assert classesWithProtected.contains(obj);
         classesWithProtected.decrement(obj);
+    }
+
+    /**
+     * Add the predeclared {@link TypeObject type objects} to the info.
+     *
+     * This function may only be called once.
+     *
+     * @param types The types to add
+     */
+    void addPredeclaredTypes(Map<String, TypeObject> types) {
+        assert !linked && typeMap.isEmpty();
+        typeMap.putAll(types);
     }
 
     {  // Prevent "non-updating" compiler warning
