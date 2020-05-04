@@ -32,6 +32,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * The class representing all information needing to be held during compilation.
+ * @author Patrick Norton
+ */
 public final class CompilerInfo {
     private final TopNode node;
     private final Set<String> exports = new HashSet<>();
@@ -62,6 +66,19 @@ public final class CompilerInfo {
         this.node = node;
     }
 
+    /**
+     * Compiles this, taking the name of the file to write to.
+     * <p>
+     *     If this is already compiled, nothing will happen. Otherwise, it
+     *     compiles the {@link TopNode} represented by this, and writes it to
+     *     å file. Furthermore, it will compile all files upon which it depends.
+     * </p>
+     *
+     * @throws CompilerException If a compilation error occurs
+     * @throws CompilerInternalError An unexpected internal error
+     * @param file The name of the file to be compiled
+     * @return Itself
+     */
     public CompilerInfo compile(File file) {
         if (compiled) {
             return this;
@@ -84,6 +101,21 @@ public final class CompilerInfo {
         return this;
     }
 
+    /**
+     * Adds an export.
+     * <p>
+     *     If setting exports is not allowed, (e.g. this is not in the process
+     *     of {@link #link linking}), a {@link CompilerException} will be
+     *     thrown. This is not a {@link CompilerInternalError} because it is
+     *     most likely to be thrown due to an illegally-placed {@link
+     *     ImportExportNode 'export'} statement, as opposed to a compiler bug.
+     * </p>
+     *
+     * @see #link
+     * @param name The name of the export
+     * @param type The type of the export
+     * @param info The {@link LineInfo} for the export statement
+     */
     public void addExport(String name, TypeObject type, LineInfo info) {
         if (!allowSettingExports) {
             throw CompilerException.of("Illegal position for export statement", info);
@@ -92,10 +124,22 @@ public final class CompilerInfo {
         exportTypes.put(name, type);
     }
 
+    /**
+     * Gets the type of an export.
+     *
+     * @param name The name of the export
+     * @return The export type
+     */
     public TypeObject exportType(String name) {
         return exportTypes.get(name);
     }
 
+    /**
+     * Adds an import.
+     *
+     * @param name The name if the import
+     * @return The index of the import in the imports set
+     */
     public int addImport(@NotNull String name) {
         var names = name.split("\\.");
         if (!imports.contains(name)) {
@@ -106,15 +150,42 @@ public final class CompilerInfo {
         return imports.indexOf(name);
     }
 
+    /**
+     * Gets the type of an import.
+     *
+     * @param name The name of the import
+     * @return THe type of the import
+     */
     public TypeObject importType(String name) {
         return importTypes.get(name);
     }
 
+    /**
+     * Adds a function to the global pool of functions.
+     * <p>
+     *     This will not add the name of the function to any set of in-scope
+     *     variables, so the function's name will need to be added separately
+     *     using {@link #addVariable(String, TypeObject)}. This is for things
+     *     such as {@link main.java.parser.LambdaNode lambdae}, which should
+     *     not be put into scope automatically, being anonymous. This will,
+     *     however, ensure the bytecode of all functions gets written to the
+     *     output file.
+     * </p>
+     *
+     * @param info The (already-compiled) function info
+     * @return The index of the function when written
+     */
     public int addFunction(@NotNull Function info) {
         functions.add(info);
         return functions.size() - 1;
     }
 
+    /**
+     * Get the {@link FunctionInfo} representing a function.
+     *
+     * @param name The name of the function
+     * @return The function info, or {@code null} if not found
+     */
     @Nullable
     public FunctionInfo fnInfo(String name) {
         for (var fn : functions) {
@@ -125,6 +196,12 @@ public final class CompilerInfo {
         return null;
     }
 
+    /**
+     * Get the index of a function in the function list.
+     *
+     * @param name The name of the function
+     * @return The index, or {@code -1} if not found
+     */
     public short fnIndex(String name) {
         for (int i = 0; i < functions.size(); i++) {
             var fn = functions.get(i);
@@ -171,15 +248,54 @@ public final class CompilerInfo {
                 : Builtins.constantOf(name));
     }
 
+    /**
+     * Gets the {@link LangConstant} given the index.
+     * Currently used only for {@link Bytecode} formatting.
+     *
+     * @param index The index of the constant
+     * @return The constant itself
+     */
     public LangConstant getConstant(short index) {
         return constants.get(index);
     }
 
+    /**
+     * Adds a class to the class pool.
+     * <p>
+     *     Like its friend {@link #addFunction}, this does not link a name
+     *     to the class, that must be done separately. This is both for local
+     *     classes, which may have different scoping rules, and internal
+     *     consistency. This will ensure the class gets written to the bytecode
+     *     file at the end of compilation.
+     * </p>
+     *
+     * @param info The {@link ClassInfo} representing the class
+     * @return The index of the class in the class pool
+     */
     public int addClass(ClassInfo info) {
         classes.add(info);
         return classes.indexOf(info);
     }
 
+    /**
+     * Links this.
+     * <p>
+     *     Most of linking is done using the {@link Linker}, and is described
+     *     {@link Linker#link there}. If this has already been linked, nothing
+     *     happens. Otherwise, it runs the Linker, and then takes its exports
+     *     and globals and makes them accessible for later compilation. Linking
+     *     is run as part of {@link #compile compilation}, as well as before
+     *     getting imports.
+     * </p><p>
+     *     Because of the link-check that occurs at the beginning of the
+     *     function, calling this multiple times is (almost) zero-cost.
+     *     Accordingly, one should call this method before doing
+     *     anything that might require information being processed at link-time
+     *     if the link status is in any doubt.
+     * </p>
+     *
+     * @return Itself
+     */
     public CompilerInfo link() {
         if (linked) {
             return this;
@@ -206,6 +322,32 @@ public final class CompilerInfo {
         return this;
     }
 
+    /**
+     * Writes itself to the file specified.
+     * <p>
+     *     The file layout is as follows:
+     * <code><pre>
+     * Magic number: 0xABADE66
+     * Imports:
+     *     Name of import
+     *     Name of import
+     * Exports:
+     *     Name of export
+     *     Index of constant
+     * Constants:
+     *     Byte representation of each constant ({@link LangConstant#toBytes})
+     * Functions:
+     *     Function name
+     *     Number of local variables (currently unused)
+     *     Length of the bytecode
+     *     Bytecode
+     * Classes:
+     *     Byte representation of the class ({@link ClassInfo#toBytes})
+     * </pre></code>
+     * </p>
+     *
+     * @param file The file to write to
+     */
     public void writeToFile(@NotNull File file) {
         printDisassembly();
         if (!file.getParentFile().exists()) {
@@ -361,6 +503,12 @@ public final class CompilerInfo {
         }
     }
 
+    /**
+     * Gets the class, given its name.
+     *
+     * @param str The name of the class
+     * @return The class, or {@code null} if not found
+     */
     @Nullable
     public TypeObject classOf(String str) {
         var cls = typeMap.get(str);
@@ -371,10 +519,21 @@ public final class CompilerInfo {
         return cls;
     }
 
+    /**
+     * Adds a type to the map.
+     *
+     * @param type The type to add
+     */
     public void addType(NameableType type) {
         typeMap.put(type.name(), type);
     }
 
+    /**
+     * If the type has been previously been defined.
+     *
+     * @param typeName The name of the type
+     * @return If the type has been defined
+     */
     public boolean hasType(String typeName) {
         return typeMap.containsKey(typeName);
     }
@@ -473,6 +632,15 @@ public final class CompilerInfo {
         return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
     }
 
+    /**
+     * Converts multiple {@link TypeLikeNode}s to the corresponding
+     * {@link TypeObject}s.
+     *
+     * @apiNote The single-value version of this is {@link
+     *      #getType(TypeLikeNode)}, not {@code typeOf} as might be expected.
+     * @param types The types
+     * @return The array of translated types
+     */
     @NotNull
     @Contract(pure = true)
     public TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
@@ -483,48 +651,137 @@ public final class CompilerInfo {
         return typeObjects;
     }
 
+    /**
+     * Gets the path to the compiled file.
+     *
+     * @return The path
+     */
     public Path path() {
         return node.getPath();
     }
 
+    /**
+     * Adds the given function returns to the file.
+     *
+     * @param values The values to be added
+     * @see #currentFnReturns()
+     */
     public void addFunctionReturns(TypeObject[] values) {
         fnReturns.push(values);
     }
 
+    /**
+     * Gets the return values of the currently-being-compiled function, as
+     * given in {@link #addFunctionReturns}.
+     *
+     * @return The returns of the current function
+     * @see #addFunctionReturns(TypeObject[])
+     */
     public TypeObject[] currentFnReturns() {
         return fnReturns.peekFirst();
     }
 
+    /**
+     * Pops the function returns, for when the function is done being compiled.
+     *
+     * @see #addFunctionReturns(TypeObject[])
+     * @see #currentFnReturns()
+     */
     public void popFnReturns() {
         fnReturns.pop();
     }
 
+    /**
+     * If the compiler is currently not compiling a function.
+     *
+     * @return If no function returns exist
+     */
     public boolean notInFunction() {
         return fnReturns.isEmpty();
     }
 
+    /**
+     * Get a globally-unique lambda name.
+     * <p>
+     *     This name is guaranteed to not match any valid variable name, as well
+     *     as not match any other lambda name generated using this function.
+     * </p>
+     *
+     * @implNote This name is of the form {@code lambda$[x]}, where {@code [x]}
+     *      is a unique integer.
+     * @return The unique lambda name
+     */
     public String lambdaName() {
         return String.format("lambda$%d", anonymousNums.getNext());
     }
 
+    /**
+     * The current access level of the given {@link TypeObject}.
+     * <p>
+     *     The access level is the highest-security level which is allowed
+     *     to be accessed by values in the current scope. All security levels
+     *     less strict than the one given may be used. Others will throw an
+     *     exception at some point in compilation
+     * </p>
+     * @param obj The object to get the access level for
+     * @return The security access level of the type
+     */
     public DescriptorNode accessLevel(TypeObject obj) {
         return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE
                 : classesWithProtected.contains(obj) ? DescriptorNode.PROTECTED : DescriptorNode.PUBLIC;
     }
 
+    /**
+     * Allows private access to the {@link TypeObject} given.
+     *
+     * @param obj The object to allow private access for
+     * @see #removePrivateAccess
+     */
     public void allowPrivateAccess(TypeObject obj) {
         classesWithAccess.increment(obj);
     }
 
+    /**
+     * Removes private access for the {@link TypeObject} given.
+     * <p>
+     *     This does not guarantee that the value returned by {@link
+     *     #accessLevel} will be more strict than {@code private}, as it is
+     *     possible that private access was given in another location. Private
+     *     access will last until this has been called as many times as {@link
+     *     #allowPrivateAccess}, in order to allow correct access.
+     * </p>
+     *
+     * @param obj The object to remove private access for
+     * @see #allowPrivateAccess
+     */
     public void removePrivateAccess(TypeObject obj) {
         assert classesWithAccess.contains(obj);
         classesWithAccess.decrement(obj);
     }
 
+    /**
+     * Allows protected access to the {@link TypeObject} given.
+     *
+     * @param obj The object to allow protected access for
+     * @see #removeProtectedAccess
+     */
     public void allowProtectedAccess(TypeObject obj) {
         classesWithProtected.increment(obj);
     }
 
+    /**
+     * Removes protected access for the {@link TypeObject} given.
+     * <p>
+     *     This does not guarantee that the value returned by {@link
+     *     #accessLevel} will be more strict than {@code protected}, as it is
+     *     possible that protected access was given in another location.
+     *     Protected access will last until this has been called as many times
+     *     as {@link #allowProtectedAccess}, in order to allow correct access.
+     * </p>
+     *
+     * @param obj The object to remove private access for
+     * @see #allowProtectedAccess
+     */
     public void removeProtectedAccess(TypeObject obj) {
         assert classesWithProtected.contains(obj);
         classesWithProtected.decrement(obj);
