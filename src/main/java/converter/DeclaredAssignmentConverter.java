@@ -49,10 +49,23 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             info.addVariable(assignedName, assignedType, constant);
             return Collections.emptyList();
         }
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        boolean isStatic = descriptors.contains(DescriptorNode.STATIC);
+        List<Byte> bytes = new ArrayList<>();
+        int fillPos;
+        if (isStatic) {
+            bytes.add(Bytecode.DO_STATIC.value);
+            fillPos = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+        } else {
+            fillPos = -1;
+        }
+        bytes.addAll(converter.convert(start));
         info.addVariable(assignedName, assignedType, isConst);
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(assignedName)));
+        if (isStatic) {
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
+        }
         return bytes;
     }
 }

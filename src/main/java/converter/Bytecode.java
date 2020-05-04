@@ -96,6 +96,7 @@ public enum Bytecode {
     // Misc.
     MAKE_FUNCTION(0x60, Type.FUNCTION_NO),
     GET_TYPE(0x61),
+    DO_STATIC(0x62, Type.LOCATION),
     ;
 
     private enum Type {
