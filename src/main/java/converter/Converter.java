@@ -17,6 +17,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * A static class containing the methods needed to find modules for compilation.
+ *
+ * @author Patrick Norton
+ */
 public final class Converter {
     private static final FilenameFilter EXPORT_FILTER = (f, s) -> s.equals(Util.EXPORTS_FILENAME);
     private static final Map<String, CompilerInfo> modules = new HashMap<>();
@@ -25,12 +30,31 @@ public final class Converter {
 
     private Converter() {}
 
+    /**
+     * Compiles a source file, with a path and a {@link TopNode} representing
+     * the parsed contents, and writes it to a file.
+     *
+     * @param file The name of the file compiled
+     * @param node The AST node to compile
+     */
     public static void convertToFile(@NotNull File file, TopNode node) {
         assert destFile == null || destFile.equals(file.getParentFile());
         setDestFile(file.getParentFile());
         new CompilerInfo(node).compile(file);
     }
 
+    /**
+     * Finds a non-local module given its name from the source code.
+     * <p>
+     *     The module name is resolved as follows: If the internal cache of
+     *     pre-compiled modules contains the name, it uses it. Otherwise, it
+     *     uses the environment variable {@code NEWLANG_PATH} and searches for
+     *     an identically-named file there. Otherwise, it checks the builtins
+     *     folder.
+     * </p>
+     * @param name The name of the module
+     * @return The {@link CompilerInfo} for the module
+     */
     public static CompilerInfo findModule(String name) {
         if (modules.containsKey(name)) {
             return modules.get(name);
@@ -59,6 +83,18 @@ public final class Converter {
         throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
     }
 
+    /**
+     * Finds a local module given its name and the path to the current file's
+     * parent folder.
+     * <p>
+     *     Local modules are found by searching the parent file for the name
+     *     given. More dots at the beginning means higher-up files are
+     *     searched.
+     * </p>
+     * @param parentPath The path to the parent file
+     * @param name The name of the module
+     * @return The {@link CompilerInfo} representing the file
+     */
     @NotNull
     public static CompilerInfo findLocalModule(@NotNull Path parentPath, String name) {
         List<Path> result = new ArrayList<>();

@@ -18,7 +18,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The class to link the {@link TopNode} representing a file.
+ * <p>
+ *     Linking consists of multiple actions. If the file does not export
+ *     anything, then it is not a module. If it is not a module, arbitrary code
+ *     is allowed at the top level and all types must be referenced after they
+ *     are defined, and as such linking is not run. Otherwise, only {@link
+ *     DefinitionNode definitions} or {@link ImportExportNode import/export
+ *     statements} are allowed. If this is the case, linking is run. To link
+ *     a file, use the {@link #link link method}. To see more of what happens
+ *     during linking, see that method's documentation
+ * </p>
+ * @author Patrick Norton
+ * @see #link
+ */
 public final class Linker {
+    //  TODO? Should this link regardless?
+    //        How should that interact with circular references?
+    //        What should be allowed/not allowed?
     private final CompilerInfo info;
     private final Map<String, Pair<String, LineInfo>> exports;
     private final Map<String, TypeObject> globals;
@@ -37,6 +55,23 @@ public final class Linker {
         return globals;
     }
 
+    /**
+     * Link the TopNode passed.
+     * <p>
+     *     This assumes that the {@link CompilerInfo} associated with the
+     *     Linker has not already been linked.
+     * </p>
+     * <p>
+     *     If the module is not a module, i.e. it has (has no {@link
+     *     ImportExportNode 'export' statements}), no pre-declarations will
+     *     be parsed, in accordance with the language spec. Otherwise, this
+     *     will parse each top-level statement, put the names into its globals
+     *     map, check for double-definitions, and check to ensure all statements
+     *     are legal for an exporting module.
+     * </p>
+     * @param node The node to link using
+     * @return Itself
+     */
     public Linker link(TopNode node) {
         assert exports.isEmpty() && globals.isEmpty();
         var declaredTypes = declareTypes(node);
@@ -96,6 +131,17 @@ public final class Linker {
         return this;
     }
 
+    /**
+     * Return a map with all pre-declared types in the file.
+     * If the file is not a module (has no {@link ImportExportNode 'export'
+     * statements}), return null.
+     * <p>
+     * Pre-declared types have no associated attributes, and are there solely
+     * to assist in linking in the second pass, where they will be filled out.
+     *
+     * @param node The {@link TopNode} to run through
+     * @return The map of types, or null if not a module
+     */
     @Nullable
     private Map<String, TypeObject> declareTypes(@NotNull TopNode node) {
         Map<String, TypeObject> types = new HashMap<>();
