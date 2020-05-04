@@ -45,12 +45,21 @@ public final class VariableConverter implements TestConverter {
         if (info.varIsUndefined(node.getName())) {
             throw CompilerException.format("Variable '%s' not defined", node, node.getName());
         }
-        boolean isConst = info.variableIsConstant(node.getName());
-        var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
-        List<Byte> bytes = new ArrayList<>(bytecode.size());
-        bytes.add(bytecode.value);
-        short index = isConst ? info.constIndex(name) : info.varIndex(name);
-        bytes.addAll(Util.shortToBytes(index));
-        return bytes;
+        if (info.variableIsStatic(node.getName())) {
+            var bytecode = Bytecode.LOAD_STATIC;
+            List<Byte> bytes = new ArrayList<>(bytecode.size());
+            bytes.add(bytecode.value);
+            short index = info.staticVarIndex(name);
+            bytes.addAll(Util.shortToBytes(index));
+            return bytes;
+        } else {
+            boolean isConst = info.variableIsConstant(node.getName());
+            var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
+            List<Byte> bytes = new ArrayList<>(bytecode.size());
+            bytes.add(bytecode.value);
+            short index = isConst ? info.constIndex(name) : info.varIndex(name);
+            bytes.addAll(Util.shortToBytes(index));
+            return bytes;
+        }
     }
 }

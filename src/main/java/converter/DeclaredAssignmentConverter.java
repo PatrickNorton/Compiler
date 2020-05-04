@@ -62,9 +62,11 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         }
         bytes.addAll(converter.convert(start));
         info.checkDefinition(assignedName, node);
-        info.addVariable(assignedName, assignedType, isConst, node);
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(assignedName)));
+        var index = isStatic
+                ? info.addStaticVar(assignedName, assignedType, isConst, node)
+                : info.addVariable(assignedName, assignedType, isConst, node);
+        bytes.add(isStatic ? Bytecode.STORE_STATIC.value : Bytecode.STORE.value);
+        bytes.addAll(Util.shortToBytes(index));
         if (isStatic) {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
         }

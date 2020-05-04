@@ -5,6 +5,7 @@ import main.java.parser.LineInfo;
 public final class VariableInfo {
     private final TypeObject type;
     private final boolean isConst;
+    private final boolean isStatic;
     private final LangConstant langConst;
     private final short location;
     private final LineInfo declarationInfo;
@@ -14,8 +15,13 @@ public final class VariableInfo {
     }
 
     public VariableInfo(TypeObject type, boolean isConst, short location, LineInfo info) {
+        this(type, isConst, false, location, info);
+    }
+
+    public VariableInfo(TypeObject type, boolean isConst, boolean isStatic, short location, LineInfo info) {
         this.type = type;
         this.isConst = isConst;
+        this.isStatic = isStatic;
         this.langConst = null;
         this.location = location;
         this.declarationInfo = info;
@@ -24,6 +30,7 @@ public final class VariableInfo {
     public VariableInfo(TypeObject type, LangConstant constValue, LineInfo info) {
         this.type = type;
         this.isConst = true;
+        this.isStatic = false;
         this.langConst = constValue;
         this.location = -1;
         this.declarationInfo = info;
@@ -37,8 +44,16 @@ public final class VariableInfo {
         return isConst;
     }
 
+    public boolean isStatic() {
+        return isStatic;
+    }
+
     public short getLocation() {
-        return location;
+        return isStatic ? -1 : location;
+    }
+
+    public short getStaticLocation() {
+        return isStatic ? location : -1;
     }
 
     public LangConstant constValue() {

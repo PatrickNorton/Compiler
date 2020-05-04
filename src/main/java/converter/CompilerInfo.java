@@ -51,6 +51,7 @@ public final class CompilerInfo {
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
     private final IntAllocator varNumbers = new IntAllocator();
+    private final IntAllocator staticVarNumbers = new IntAllocator();
 
     private final IntAllocator anonymousNums = new IntAllocator();
 
@@ -593,8 +594,19 @@ public final class CompilerInfo {
         addVariable(name, new VariableInfo(type, constValue, info.getLineInfo()));
     }
 
-    public void addVariable(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
-        addVariable(name, new VariableInfo(type, isConst, (short) varNumbers.getNext(), info.getLineInfo()));
+    /**
+     * Adds a variable to the stack.
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param isConst If the variable is const
+     * @param info The {@link LineInfo} for the variable's definition
+     * @return The index of the variable for {@link Bytecode#LOAD_VALUE}
+     */
+    public short addVariable(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+        var index = (short) varNumbers.getNext();
+        addVariable(name, new VariableInfo(type, isConst, index, info.getLineInfo()));
+        return index;
     }
 
     /**
@@ -612,6 +624,28 @@ public final class CompilerInfo {
     }
 
     /**
+     * Adds a static variable to the stack.
+     * <p>
+     *     Static variables get their static index through {@link
+     *     VariableInfo#getStaticLocation()} as opposed to non-static variables,
+     *     which get their index through {@link VariableInfo#getLocation()}.
+     *     This prevents accidental mishaps with loading a static variable
+     *     non-statically and vice versa.
+     * </p>
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param isConst If the variable is const
+     * @param info The {@link LineInfo} representing the variable
+     * @return The index of the variable for {@link Bytecode#LOAD_STATIC}
+     */
+    public short addStaticVar(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+        var index = (short) staticVarNumbers.getNext();
+        addVariable(name, new VariableInfo(type, isConst, true, index, info.getLineInfo()));
+        return index;
+    }
+
+    /**
      * Check if a variable is constant.
      *
      * @param name The name of the variable to check
@@ -620,6 +654,17 @@ public final class CompilerInfo {
     public boolean variableIsConstant(String name) {
         var info = varInfo(name);
         return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.hasConstValue();
+    }
+
+    /**
+     * Checks if a variable is static.
+     *
+     * @param name The name of the variable to check
+     * @return If the variable is static
+     */
+    public boolean variableIsStatic(String name) {
+        var info = varInfo(name);
+        return info != null && info.isStatic();
     }
 
     @Nullable
@@ -641,6 +686,16 @@ public final class CompilerInfo {
      */
     public short varIndex(String name) {
         return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
+    }
+
+    /**
+     * The index of the variable in the static variable set.
+     *
+     * @param name The name of the variable
+     * @return The index
+     */
+    public short staticVarIndex(String name) {
+        return Objects.requireNonNull(varInfo(name), "Unknown variable").getStaticLocation();
     }
 
     /**
@@ -826,5 +881,6 @@ public final class CompilerInfo {
 
     {  // Prevent "non-updating" compiler warning
         anonymousNums.remove(0);
+        staticVarNumbers.remove(0);
     }
 }

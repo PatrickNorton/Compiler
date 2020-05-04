@@ -93,10 +93,13 @@ public enum Bytecode {
     SET_ADD(0x55),
     DICT_ADD(0x56),
     DOTIMES(0x57, Type.LOCATION),
+    // Statics
+    DO_STATIC(0x60, Type.LOCATION),
+    STORE_STATIC(0x61, Type.VARIABLE),
+    LOAD_STATIC(0x62, Type.VARIABLE),
     // Misc.
-    MAKE_FUNCTION(0x60, Type.FUNCTION_NO),
-    GET_TYPE(0x61),
-    DO_STATIC(0x62, Type.LOCATION),
+    MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
+    GET_TYPE(0x71),
     ;
 
     private enum Type {
