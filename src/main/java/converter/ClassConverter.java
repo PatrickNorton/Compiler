@@ -84,7 +84,8 @@ public final class ClassConverter implements BaseConverter {
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for class '%s'", node.getName(), name);
         }
-        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex));
+        info.checkDefinition(name, node);
+        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex), node);
         return Collections.emptyList();
     }
 
@@ -117,14 +118,14 @@ public final class ClassConverter implements BaseConverter {
             var methodInfo = pair.getValue();
             var isConstMethod = !methodInfo.getDescriptors().contains(DescriptorNode.MUT);
             info.addStackFrame();
-            info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod);
-            info.addVariable("cls", Builtins.TYPE.generify(type), true);
+            info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
+            info.addVariable("cls", Builtins.TYPE.generify(type), true, node);
             try {
                 info.allowPrivateAccess(type);
                 recursivelyAllowProtectedAccess(type);
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
-                    info.addVariable(arg.getName(), arg.getType());
+                    info.addVariable(arg.getName(), arg.getType(), methodInfo);
                 }
                 info.addFunctionReturns(fnInfo.getReturns());
                 var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
@@ -222,14 +223,14 @@ public final class ClassConverter implements BaseConverter {
             if (methods.containsKey(pair.getKey())) {
                 throw CompilerException.doubleDef(
                         pair.getKey(),
-                        pair.getValue().getLineInfo(),
-                        methods.get(pair.getKey()).getLineInfo()
+                        pair.getValue(),
+                        methods.get(pair.getKey())
                 );
             } else if (staticMethods.containsKey(pair.getKey())) {
                 throw CompilerException.doubleDef(
                         pair.getKey(),
-                        pair.getValue().getLineInfo(),
-                        staticMethods.get(pair.getKey()).getLineInfo()
+                        pair.getValue(),
+                        staticMethods.get(pair.getKey())
                 );
             }
         }
@@ -237,7 +238,7 @@ public final class ClassConverter implements BaseConverter {
 
     private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {
         if (vars.containsKey(strName)) {
-            throw CompilerException.doubleDef(strName, name.getLineInfo(), vars.get(strName).getLineInfo());
+            throw CompilerException.doubleDef(strName, name, vars.get(strName));
         }
     }
 
@@ -439,7 +440,7 @@ public final class ClassConverter implements BaseConverter {
                 fnInfo = new FunctionInfo("", args, returns);
             }
             if (operators.containsKey(op)) {
-                throw CompilerException.doubleDef(op, node.getLineInfo(), operators.get(op).getLineInfo());
+                throw CompilerException.doubleDef(op, node, operators.get(op));
             }
             operatorInfos.put(op, fnInfo);
             operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));

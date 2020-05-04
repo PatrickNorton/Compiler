@@ -35,7 +35,8 @@ public final class WithConverter implements BaseConverter {
             );
         }
         List<Byte> bytes = new ArrayList<>(contextConverter.convert(start));
-        info.addVariable(variable.getVariable().getName(), trueType);
+        info.checkDefinition(variable.getVariable().getName(), variable);
+        info.addVariable(variable.getVariable().getName(), trueType, variable);
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.CALL_OP.value);
         bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.ENTER.ordinal()));

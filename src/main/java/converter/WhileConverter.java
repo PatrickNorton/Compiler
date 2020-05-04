@@ -59,7 +59,7 @@ public final class WhileConverter extends LoopConverter {
         }
         var pair = OperatorConverter.convertWithAs(start + bytes.size(), (OperatorNode) condition, info, 1);
         info.addStackFrame();
-        info.addVariable(node.getAs().getName(), pair.getValue());
+        info.addVariable(node.getAs().getName(), pair.getValue(), node.getAs());
         bytes.addAll(pair.getKey());
     }
 

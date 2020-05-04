@@ -30,7 +30,8 @@ public final class ComprehensionConverter implements TestConverter {
             if (Builtins.FORBIDDEN_NAMES.contains(name)) {
                 throw CompilerException.format("Illegal name for variable '%s'", typedVariable.getVariable(), name);
             }
-            info.addVariable(name, info.getType(typedVariable.getType()));
+            info.checkDefinition(name, variable);
+            info.addVariable(name, info.getType(typedVariable.getType()), variable);
             var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.removeStackFrame();
             return new TypeObject[] {resultType.generify(result)};
@@ -61,7 +62,8 @@ public final class ComprehensionConverter implements TestConverter {
         info.addStackFrame();
         if (variable instanceof TypedVariableNode) {
             var typedVar = (TypedVariableNode) variable;
-            info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()));
+            info.checkDefinition(typedVar.getVariable().getName(), variable);
+            info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), variable);
         }
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));

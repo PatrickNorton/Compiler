@@ -46,7 +46,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                 && !descriptors.contains(DescriptorNode.MREF);
         if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
-            info.addVariable(assignedName, assignedType, constant);
+            info.checkDefinition(assignedName, node);
+            info.addVariable(assignedName, assignedType, constant, node);
             return Collections.emptyList();
         }
         boolean isStatic = descriptors.contains(DescriptorNode.STATIC);
@@ -60,7 +61,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             fillPos = -1;
         }
         bytes.addAll(converter.convert(start));
-        info.addVariable(assignedName, assignedType, isConst);
+        info.checkDefinition(assignedName, node);
+        info.addVariable(assignedName, assignedType, isConst, node);
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(assignedName)));
         if (isStatic) {

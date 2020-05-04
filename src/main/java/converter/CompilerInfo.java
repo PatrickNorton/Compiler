@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
@@ -165,11 +166,11 @@ public final class CompilerInfo {
      * <p>
      *     This will not add the name of the function to any set of in-scope
      *     variables, so the function's name will need to be added separately
-     *     using {@link #addVariable(String, TypeObject)}. This is for things
-     *     such as {@link main.java.parser.LambdaNode lambdae}, which should
-     *     not be put into scope automatically, being anonymous. This will,
-     *     however, ensure the bytecode of all functions gets written to the
-     *     output file.
+     *     using {@link #addVariable(String, TypeObject, Lined)}. This is for
+     *     things such as {@link main.java.parser.LambdaNode lambdae}, which
+     *     should not be put into scope automatically, being anonymous. This
+     *     will, however, ensure the bytecode of all functions gets written to
+     *     the output file.
      * </p>
      *
      * @param info The (already-compiled) function info
@@ -553,6 +554,16 @@ public final class CompilerInfo {
         return varInfo(name) == null && !Builtins.BUILTIN_MAP.containsKey(name);
     }
 
+    public boolean varDefinedInCurrentFrame(String name) {
+        return variables.get(variables.size() - 1).get(name) != null;
+    }
+
+    public void checkDefinition(String name, Lined info) {
+        if (varDefinedInCurrentFrame(name)) {
+            throw CompilerException.doubleDef(name, declarationInfo(name), info.getLineInfo());
+        }
+    }
+
     /**
      * Add a new set of variable names to the stack.
      */
@@ -577,13 +588,13 @@ public final class CompilerInfo {
      * @param type The type of the variable
      * @param constValue The constant value the variable has
      */
-    public void addVariable(String name, TypeObject type, LangConstant constValue) {
+    public void addVariable(String name, TypeObject type, LangConstant constValue, @NotNull Lined info) {
         addConstant(constValue);
-        addVariable(name, new VariableInfo(type, constValue));
+        addVariable(name, new VariableInfo(type, constValue, info.getLineInfo()));
     }
 
-    public void addVariable(String name, TypeObject type, boolean isConst) {
-        addVariable(name, new VariableInfo(type, isConst, (short) varNumbers.getNext()));
+    public void addVariable(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+        addVariable(name, new VariableInfo(type, isConst, (short) varNumbers.getNext(), info.getLineInfo()));
     }
 
     /**
@@ -592,8 +603,8 @@ public final class CompilerInfo {
      * @param name The name of the variable
      * @param type The type of the variable
      */
-    public void addVariable(String name, TypeObject type) {
-        addVariable(name, new VariableInfo(type, (short) varNumbers.getNext()));
+    public void addVariable(String name, TypeObject type, @NotNull Lined info) {
+        addVariable(name, new VariableInfo(type, (short) varNumbers.getNext(), info.getLineInfo()));
     }
 
     private void addVariable(String name, VariableInfo info) {
@@ -630,6 +641,20 @@ public final class CompilerInfo {
      */
     public short varIndex(String name) {
         return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
+    }
+
+    /**
+     * Get the {@link LineInfo} for the declaration of a variable.
+     * <p>
+     *     This requires that the variable is defined, or it will throw a
+     *     {@link NullPointerException}.
+     * </p>
+     * @param name The name to check for
+     * @return The {@link LineInfo} for the declaration
+     */
+    @NotNull
+    public LineInfo declarationInfo(String name) {
+        return Objects.requireNonNull(varInfo(name)).getDeclarationInfo();
     }
 
     /**

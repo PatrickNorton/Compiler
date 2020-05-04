@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.BaseNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -63,5 +64,15 @@ public class CompilerException extends RuntimeException {
                         info2.getPath(), info2.getLineNumber(), info2.infoString()
                 )
         );
+    }
+
+    @NotNull
+    public static CompilerException doubleDef(String name, @NotNull Lined info1, @NotNull Lined info2) {
+        return doubleDef(name, info1.getLineInfo(), info2.getLineInfo());
+    }
+
+    @NotNull
+    public static CompilerException doubleDef(OpSpTypeNode op, @NotNull Lined info1, @NotNull Lined info2) {
+        return doubleDef(op, info1.getLineInfo(), info2.getLineInfo());
     }
 }

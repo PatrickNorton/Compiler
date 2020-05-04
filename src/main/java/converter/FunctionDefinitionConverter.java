@@ -26,11 +26,12 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var fnInfo = new FunctionInfo(node.getName().getName(), convertArgs(), retTypes);
         int index = info.addFunction(new Function(fnInfo, bytes));
         var constVal = new FunctionConstant(node.getName().getName(), index);
-        info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal);
+        info.checkDefinition(node.getName().getName(), node);
+        info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
         info.addFunctionReturns(retTypes);
         for (var arg : node.getArgs()) {
-            info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
+            info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
         for (var statement : node.getBody()) {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));

@@ -34,7 +34,8 @@ public final class ForConverter extends LoopConverter {
             if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
                 throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
             }
-            info.addVariable(iteratedName, iteratorType);
+            info.checkDefinition(iteratedName, node.getVars()[0]);
+            info.addVariable(iteratedName, iteratorType, node.getVars()[0]);
         }
         var valueReturnedType = valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[0];
         if (!iteratorType.isSuperclass(valueReturnedType)) {

@@ -1,27 +1,32 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
+
 public final class VariableInfo {
     private final TypeObject type;
     private final boolean isConst;
     private final LangConstant langConst;
     private final short location;
+    private final LineInfo declarationInfo;
 
-    public VariableInfo(TypeObject type, short location) {
-        this(type, false, location);
+    public VariableInfo(TypeObject type, short location, LineInfo info) {
+        this(type, false, location, info);
     }
 
-    public VariableInfo(TypeObject type, boolean isConst, short location) {
+    public VariableInfo(TypeObject type, boolean isConst, short location, LineInfo info) {
         this.type = type;
         this.isConst = isConst;
         this.langConst = null;
         this.location = location;
+        this.declarationInfo = info;
     }
 
-    public VariableInfo(TypeObject type, LangConstant constValue) {
+    public VariableInfo(TypeObject type, LangConstant constValue, LineInfo info) {
         this.type = type;
         this.isConst = true;
         this.langConst = constValue;
         this.location = -1;
+        this.declarationInfo = info;
     }
 
     public TypeObject getType() {
@@ -46,5 +51,9 @@ public final class VariableInfo {
 
     public boolean hasConstValue() {
         return langConst != null;
+    }
+
+    public LineInfo getDeclarationInfo() {
+        return declarationInfo;
     }
 }

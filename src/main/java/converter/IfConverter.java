@@ -119,7 +119,8 @@ public final class IfConverter implements BaseConverter {
         var bytes = result.getKey();
         var asType = result.getValue();
         info.addStackFrame();
-        info.addVariable(as.getName(), asType);
+        info.checkDefinition(as.getName(), as);
+        info.addVariable(as.getName(), asType, as);
         return bytes;
     }
 
