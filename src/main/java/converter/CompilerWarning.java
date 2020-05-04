@@ -12,7 +12,7 @@ public final class CompilerWarning {
                 info.getPath(), info.getLineNumber(), message, info.infoString());
     }
 
-    public static void warn(String message, @NotNull BaseNode node) {
+    public static void warn(String message, @NotNull Lined node) {
         warn(message, node.getLineInfo());
     }
 
@@ -20,7 +20,7 @@ public final class CompilerWarning {
         warn(String.format(message, args), info);
     }
 
-    public static void warnf(String message, @NotNull BaseNode node, Object... args) {
+    public static void warnf(String message, @NotNull Lined node, Object... args) {
         warn(String.format(message, args), node.getLineInfo());
     }
 }
