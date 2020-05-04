@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.StringNode;
+import main.java.parser.StringPrefix;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -24,6 +25,9 @@ public final class StringConverter implements ConstantConverter {
         if (retCount == 0) {
             CompilerWarning.warn("String literal unused", node);
             return Collections.emptyList();
+        }
+        if (node.getPrefixes().contains(StringPrefix.REGEX) || node.getPrefixes().contains(StringPrefix.BYTES)) {
+            throw new UnsupportedOperationException("Regex/byte-arr strings not yet supported");
         }
         int constIndex = info.addConstant(constant());
         List<Byte> bytes = new ArrayList<>();
