@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -28,12 +29,16 @@ public final class DefaultInterface extends AbstractDefaultInterface {
         this.typedefName = typedefName;
     }
 
+    @Contract("_ -> new")
     @Override
+    @NotNull
     public TypeObject generify(@NotNull TypeObject... args) {
         return new GenerifiedDefaultInterface(this, info.generify(args));
     }
 
+    @Contract("_ -> new")
     @Override
+    @NotNull
     public TypeObject typedefAs(String name) {
         return new DefaultInterface(super.name(), info, operators, name);
     }
