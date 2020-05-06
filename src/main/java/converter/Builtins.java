@@ -162,7 +162,8 @@ public final class Builtins {
         CHAR.isConstClass();
         // TODO: More char operators
         var charMap = Map.of(
-                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR)
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(CHAR), BOOL)
         );
         CHAR.setOperators(charMap);
         CHAR.seal();
@@ -172,7 +173,8 @@ public final class Builtins {
         RANGE.isConstClass();
         var rangeMap = Map.of(
                 OpSpTypeNode.ITER, new FunctionInfo(INT),
-                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL)
+                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(RANGE), BOOL)
         );
         RANGE.setOperators(rangeMap);
         RANGE.seal();
