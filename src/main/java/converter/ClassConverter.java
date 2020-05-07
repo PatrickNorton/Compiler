@@ -1,6 +1,6 @@
 package main.java.converter;
 
-import main.java.converter.classbody.ClassDeclarationConverter;
+import main.java.converter.classbody.AttributeConverter;
 import main.java.converter.classbody.MethodConverter;
 import main.java.converter.classbody.MethodInfo;
 import main.java.converter.classbody.OperatorDefConverter;
@@ -38,7 +38,7 @@ public final class ClassConverter implements BaseConverter {
     @Unmodifiable
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
-        var declarations = new ClassDeclarationConverter(info);
+        var declarations = new AttributeConverter(info);
         var methods = new MethodConverter(info);
         var operators = new OperatorDefConverter(info);
         var properties = new PropertyConverter(info);
@@ -139,8 +139,8 @@ public final class ClassConverter implements BaseConverter {
         return result;
     }
 
-    private static boolean classIsConstant(@NotNull ClassDeclarationConverter decls, @NotNull MethodConverter methods,
-                                    @NotNull OperatorDefConverter ops, @NotNull PropertyConverter props) {
+    private static boolean classIsConstant(@NotNull AttributeConverter decls, @NotNull MethodConverter methods,
+                                           @NotNull OperatorDefConverter ops, @NotNull PropertyConverter props) {
         for (var info : decls.getVars().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
                 return false;
@@ -240,7 +240,7 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private void completeType(@NotNull StdTypeObject obj) {
-        var declarations = new ClassDeclarationConverter(info);
+        var declarations = new AttributeConverter(info);
         var methods = new MethodConverter(info);
         var operators = new OperatorDefConverter(info);
         var properties = new PropertyConverter(info);
@@ -256,7 +256,7 @@ public final class ClassConverter implements BaseConverter {
     }
 
     private void parseStatements(
-            ClassDeclarationConverter declarations,
+            AttributeConverter declarations,
             MethodConverter methods,
             OperatorDefConverter operators,
             PropertyConverter properties

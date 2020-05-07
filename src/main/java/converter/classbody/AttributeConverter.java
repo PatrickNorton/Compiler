@@ -13,12 +13,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class ClassDeclarationConverter {
+public final class AttributeConverter {
     private final Map<String, AttributeInfo> vars;
     private final Map<String, AttributeInfo> staticVars;
     private final CompilerInfo info;
 
-    public ClassDeclarationConverter(CompilerInfo info) {
+    public AttributeConverter(CompilerInfo info) {
         this.info = info;
         vars = new HashMap<>();
         staticVars = new HashMap<>();
