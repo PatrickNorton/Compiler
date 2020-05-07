@@ -33,13 +33,21 @@ public final class Converter {
     /**
      * Compiles a source file, with a path and a {@link TopNode} representing
      * the parsed contents, and writes it to a file.
+     * <p>
+     *     This method may not be called more than once per compilation.
+     * </p>
      *
+     * @throws CompilerInternalError if called more than once
      * @param file The name of the file compiled
      * @param node The AST node to compile
      */
     public static void convertToFile(@NotNull File file, TopNode node) {
-        assert destFile == null || destFile.equals(file.getParentFile());
-        setDestFile(file.getParentFile());
+        if (destFile != null) {
+            throw CompilerInternalError.of(
+                    "Cannot call Converter#convertToFile more than once per compilation", node
+            );
+        }
+        destFile = file.getParentFile();
         new CompilerInfo(node).compile(file);
     }
 
@@ -121,11 +129,6 @@ public final class Converter {
             var files = path.toFile().list(EXPORT_FILTER);
             return files != null && files.length > 0;
         }
-    }
-
-    private static void setDestFile(File file) {
-        assert destFile == null;
-        destFile = file;
     }
 
     @NotNull
