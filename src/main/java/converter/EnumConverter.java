@@ -87,6 +87,8 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         bytes.add(Bytecode.DO_STATIC.value);
         int doStaticPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(node.getName().strName())));
         for (var name : node.getNames()) {
             if (name instanceof VariableNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
@@ -96,6 +98,9 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                             name
                     );
                 }
+                bytes.add(Bytecode.DUP_TOP.value);
+                bytes.add(Bytecode.CALL_TOS.value);
+                bytes.addAll(Util.shortZeroBytes());
             } else if (name instanceof FunctionCallNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
                     throw CompilerException.of(
@@ -103,14 +108,22 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                             name
                     );
                 }
+                var fnNode = ((FunctionCallNode) name);
+                bytes.add(Bytecode.DUP_TOP.value);
+                for (var arg : fnNode.getParameters()) {
+                    bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
+                }
+                bytes.add(Bytecode.CALL_TOS.value);
+                bytes.addAll(Util.shortToBytes((short) fnNode.getParameters().length));
             } else {
                 throw CompilerInternalError.format(
                         "Node of type %s not a known EnumKeywordNode", name, name.getClass()
                 );
             }
         }
+        bytes.add(Bytecode.POP_TOP.value);
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), doStaticPos);
-        throw new UnsupportedOperationException();
+        return bytes;
     }
 
     @NotNull
