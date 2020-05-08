@@ -170,6 +170,19 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     }
 
     private void completeType(@NotNull StdTypeObject obj) {
-        throw new UnsupportedOperationException();
+        var declarations = new AttributeConverter(info);
+        var methods = new MethodConverter(info);
+        var operators = new OperatorDefConverter(info);
+        var properties = new PropertyConverter(info);
+        parseStatements(declarations, methods, operators, properties);
+        obj.isConstClass();
+        var statics = staticInfos(Arrays.asList(node.getNames()), declarations.getStaticVars(), obj);
+        var operatorInfos = new HashMap<>(operators.getOperatorInfos());
+        operatorInfos.remove(OpSpTypeNode.NEW);
+        obj.setOperators(operatorInfos);
+        checkAttributes(declarations.getVars(), statics, methods.getMethods(), methods.getStaticMethods());
+        obj.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
+        obj.setStaticAttributes(allAttributes(statics, methods.getStaticMethods(), new HashMap<>()));
+        obj.seal();
     }
 }
