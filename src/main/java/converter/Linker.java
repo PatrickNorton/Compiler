@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContextDefinitionNode;
 import main.java.parser.DefinitionNode;
+import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
@@ -102,6 +103,11 @@ public final class Linker {
                     var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName());
                     ClassConverter.completeType(info, clsNode, predeclaredType);
                     type = Builtins.TYPE.generify(predeclaredType);
+                } else if (stmt instanceof EnumDefinitionNode) {
+                    var enumNode = (EnumDefinitionNode) stmt;
+                    var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName());
+                    EnumConverter.completeType(info, enumNode, predeclaredType);
+                    type = Builtins.TYPE.generify(predeclaredType);
                 } else {
                     throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
                 }
@@ -151,6 +157,14 @@ public final class Linker {
             if (stmt instanceof ClassDefinitionNode) {
                 var cls = (ClassDefinitionNode) stmt;
                 var strName = cls.strName();
+                if (types.containsKey(strName)) {
+                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                }
+                types.put(strName, new StdTypeObject(strName));
+                lineInfos.put(strName, cls.getLineInfo());
+            } else if (stmt instanceof EnumDefinitionNode) {
+                var cls = (EnumDefinitionNode) stmt;
+                var strName = cls.getName().strName();
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
