@@ -105,7 +105,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             OperatorDefConverter operators,
             PropertyConverter properties
     ) {
-        for (var stmt : node.getBody()) {
+        for (var stmt : node.getBody().getStatements()) {
             if (stmt instanceof DeclarationNode) {
                 declarations.parse((DeclarationNode) stmt);
             } else if (stmt instanceof DeclaredAssignmentNode) {

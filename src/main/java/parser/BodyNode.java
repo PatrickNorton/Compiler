@@ -6,7 +6,7 @@ package main.java.parser;
  *
  * @author Patrick Norton
  */
-public interface BodyNode extends BaseNode, EmptiableNode, Iterable<IndependentNode> {
+public interface BodyNode extends BaseNode, EmptiableNode {
     IndependentNode[] getStatements();
     IndependentNode get(int i);
 }
