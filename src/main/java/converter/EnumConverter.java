@@ -120,6 +120,8 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                         "Node of type %s not a known EnumKeywordNode", name, name.getClass()
                 );
             }
+            bytes.add(Bytecode.STORE_ATTR.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(new StringConstant(name.getVariable().getName()))));
         }
         bytes.add(Bytecode.POP_TOP.value);
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), doStaticPos);
