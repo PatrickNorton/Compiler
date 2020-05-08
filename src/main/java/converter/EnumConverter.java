@@ -13,7 +13,6 @@ import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +28,6 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
 
     @Override
     @NotNull
-    @Unmodifiable
     public List<Byte> convert(int start) {
         var names = getNames();
         var declarations = new AttributeConverter(info);
