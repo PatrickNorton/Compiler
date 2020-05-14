@@ -41,6 +41,9 @@ public final class NumberConverter implements ConstantConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        return new TypeObject[]{constant() instanceof IntConstant ? Builtins.INT : Builtins.DECIMAL};
+        var constant = constant();
+        return new TypeObject[] {
+                constant instanceof IntConstant || constant instanceof BigintConstant ? Builtins.INT : Builtins.DECIMAL
+        };
     }
 }
