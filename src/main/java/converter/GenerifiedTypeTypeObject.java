@@ -59,7 +59,12 @@ public final class GenerifiedTypeTypeObject extends TypeObject {
     @Override
     public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
         if (o == OpSpTypeNode.CALL) {
-            return new FunctionInfo(type.operatorInfo(OpSpTypeNode.NEW, access).getArgs(), type);
+            var opInfo = type.operatorInfo(OpSpTypeNode.NEW, access);
+            if (opInfo == null) {
+                return null;
+            } else {
+                return new FunctionInfo(type.operatorInfo(OpSpTypeNode.NEW, access).getArgs(), type);
+            }
         } else {
             return null;
         }
