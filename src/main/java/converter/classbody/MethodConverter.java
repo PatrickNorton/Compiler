@@ -5,8 +5,10 @@ import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
 import main.java.parser.DescriptorNode;
+import main.java.parser.GenericFunctionNode;
 import main.java.parser.Lined;
 import main.java.parser.MethodDefinitionNode;
+import main.java.parser.StatementBodyNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -31,6 +33,21 @@ public final class MethodConverter {
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
         var mInfo = new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo());
+        if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
+            methodMap.put(name, mInfo);
+        } else {
+            staticMethods.put(name, mInfo);
+        }
+    }
+
+    public void parse(@NotNull GenericFunctionNode node) {
+        var name = node.getName().getName();
+        var args = ArgumentInfo.of(node.getArgs(), info);
+        var returns = info.typesOf(node.getRetvals());
+        var fnInfo = new FunctionInfo(name, args, returns);
+        checkVars(name, node, methodMap);
+        checkVars(name, node, staticMethods);
+        var mInfo = new MethodInfo(node.getDescriptors(), fnInfo, StatementBodyNode.empty(), node.getLineInfo());
         if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
             methodMap.put(name, mInfo);
         } else {

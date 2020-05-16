@@ -97,11 +97,12 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         if (stmt instanceof GenericOperatorNode) {
             var opNode = (GenericOperatorNode) stmt;
             this.genericOps.add(opNode.getOpCode().getOperator());
+            operators.parse(opNode);
 
         } else if (stmt instanceof GenericFunctionNode) {
             var fnNode = (GenericFunctionNode) stmt;
             this.genericAttrs.add(fnNode.getName().getName());
-            throw new UnsupportedOperationException();
+            methods.parse(fnNode);
         } else {
             super.parseStatement(stmt, declarations, methods, operators, properties);
         }

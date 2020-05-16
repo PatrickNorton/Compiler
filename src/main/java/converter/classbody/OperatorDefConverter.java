@@ -10,6 +10,7 @@ import main.java.parser.GenericOperatorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
+import main.java.parser.StatementBodyNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -61,6 +62,8 @@ public final class OperatorDefConverter {
                 throw CompilerException.doubleDef(op, node, operators.get(op));
             }
             operatorInfos.put(op, fnInfo);
+            operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo,
+                    StatementBodyNode.empty(), node.getLineInfo()));
         }
 
         public Map<OpSpTypeNode, FunctionInfo> getOperatorInfos() {
