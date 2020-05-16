@@ -87,6 +87,26 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         return Collections.emptyList();
     }
 
+    public static void completeType(CompilerInfo info, InterfaceDefinitionNode node, InterfaceType obj) {
+        new InterfaceConverter(info, node).completeType(obj);
+    }
+
+    private void completeType(@NotNull InterfaceType obj) {
+        var declarations = new AttributeConverter(info);
+        var methods = new MethodConverter(info);
+        var operators = new OperatorDefConverter(info);
+        var properties = new PropertyConverter(info);
+        parseStatements(declarations, methods, operators, properties);
+        obj.setOperators(operators.getOperatorInfos(), genericOps);
+        checkAttributes(declarations.getVars(), declarations.getStaticVars(),
+                methods.getMethods(), methods.getStaticMethods());
+        obj.setAttributes(
+                allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()),
+                genericAttrs
+        );
+        obj.seal();
+    }
+
     @Override
     protected final void parseStatement(
             IndependentNode stmt,

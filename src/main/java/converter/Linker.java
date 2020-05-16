@@ -6,6 +6,7 @@ import main.java.parser.DefinitionNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
+import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
@@ -108,6 +109,11 @@ public final class Linker {
                     var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName());
                     EnumConverter.completeType(info, enumNode, predeclaredType);
                     type = Builtins.TYPE.generify(predeclaredType);
+                } else if (stmt instanceof InterfaceDefinitionNode) {
+                    var interfaceNode = (InterfaceDefinitionNode) stmt;
+                    var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName());
+                    InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
+                    type = Builtins.TYPE.generify(predeclaredType);
                 } else {
                     throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
                 }
@@ -169,6 +175,14 @@ public final class Linker {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
                 types.put(strName, new StdTypeObject(strName));
+                lineInfos.put(strName, cls.getLineInfo());
+            } else if (stmt instanceof InterfaceDefinitionNode) {
+                var cls = (InterfaceDefinitionNode) stmt;
+                var strName = cls.getName().strName();
+                if (types.containsKey(strName)) {
+                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                }
+                types.put(strName, new InterfaceType(strName));
                 lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof ImportExportNode) {
                 var ieStmt = (ImportExportNode) stmt;

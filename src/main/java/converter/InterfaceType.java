@@ -18,6 +18,10 @@ public final class InterfaceType extends UserType {
     private final String typedefName;
     private final boolean isConst;
 
+    public InterfaceType(String name) {
+        this(name, Collections.emptyList());
+    }
+
     public InterfaceType(String name, List<TypeObject> supers) {
         this.info = new Info(name, supers);
         this.typedefName = "";
