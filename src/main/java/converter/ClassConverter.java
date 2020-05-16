@@ -38,21 +38,24 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
             parseStatements(declarations, methods, operators, properties);
+            if (type.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
+                type.isConstClass();
+            }
+            type.setOperators(operators.getOperatorInfos());
+            checkAttributes(declarations.getVars(), declarations.getStaticVars(),
+                    methods.getMethods(), methods.getStaticMethods());
+            type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
+            type.setStaticAttributes(
+                    allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>())
+            );
         } else {
             type = (StdTypeObject) info.getType(node.strName());
+            parseStatements(declarations, methods, operators, properties);
         }
-        if (type.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
-            type.isConstClass();
-        }
-        type.setOperators(operators.getOperatorInfos());
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
         }
-        checkAttributes(declarations.getVars(), declarations.getStaticVars(),
-                methods.getMethods(), methods.getStaticMethods());
-        type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
-        type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()));
         checkContract(type, trueSupers);
         var cls = new ClassInfo.Factory()
                 .setType(type)
