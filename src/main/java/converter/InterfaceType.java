@@ -110,7 +110,7 @@ public final class InterfaceType extends UserType {
         assert !info.isSealed && info.attributes == null;
         Map<String, InterfaceAttrInfo> result = new HashMap<>();
         for (var pair : attributes.entrySet()) {
-            result.put(pair.getKey(), new InterfaceAttrInfo(pair.getValue(), generics.contains(pair.getKey())));
+            result.put(pair.getKey(), new InterfaceAttrInfo(pair.getValue(), !generics.contains(pair.getKey())));
         }
         info.attributes = result;
     }
@@ -119,7 +119,7 @@ public final class InterfaceType extends UserType {
         assert !info.isSealed && info.staticAttributes == null;
         Map<String, InterfaceAttrInfo> result = new HashMap<>();
         for (var pair : attributes.entrySet()) {
-            result.put(pair.getKey(), new InterfaceAttrInfo(pair.getValue(), generics.contains(pair.getKey())));
+            result.put(pair.getKey(), new InterfaceAttrInfo(pair.getValue(), !generics.contains(pair.getKey())));
         }
         info.staticAttributes = result;
     }
@@ -128,7 +128,7 @@ public final class InterfaceType extends UserType {
         assert !info.isSealed && info.operators.isEmpty();
         Map<OpSpTypeNode, InterfaceFnInfo> result = new HashMap<>();
         for (var pair : args.entrySet()) {
-            result.put(pair.getKey(), new InterfaceFnInfo(pair.getValue(), generics.contains(pair.getKey())));
+            result.put(pair.getKey(), new InterfaceFnInfo(pair.getValue(), !generics.contains(pair.getKey())));
         }
         info.operators = result;
     }
