@@ -9,6 +9,7 @@ import main.java.parser.BaseClassNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
+import main.java.parser.IndependentNode;
 import main.java.parser.Lined;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
@@ -31,7 +32,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     @NotNull
-    protected final <U> Map<U, List<Byte>> convert(StdTypeObject type, @NotNull Map<U, MethodInfo> functions) {
+    protected final <U> Map<U, List<Byte>> convert(UserType type, @NotNull Map<U, MethodInfo> functions) {
         Map<U, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
@@ -59,7 +60,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         return result;
     }
 
-    private void recursivelyAllowProtectedAccess(@NotNull StdTypeObject type) {
+    private void recursivelyAllowProtectedAccess(@NotNull UserType type) {
         for (var superCls : type.getSupers()) {
             info.allowProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
@@ -68,7 +69,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    private void recursivelyRemovePrivateAccess(@NotNull StdTypeObject type) {
+    private void recursivelyRemovePrivateAccess(@NotNull UserType type) {
         for (var superCls : type.getSupers()) {
             info.removeProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
@@ -77,9 +78,9 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final StdTypeObject[] convertSupers(TypeObject[] supers) {
+    protected final UserType[] convertSupers(TypeObject[] supers) {
         try {
-            return Arrays.copyOf(supers, supers.length, StdTypeObject[].class);
+            return Arrays.copyOf(supers, supers.length, UserType[].class);
         } catch (ArrayStoreException e) {
             throw CompilerException.format(
                     "Class '%s' inherits from a non-standard type",
@@ -88,7 +89,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final void ensureProperInheritance(StdTypeObject type, @NotNull StdTypeObject... supers) {
+    protected final void ensureProperInheritance(UserType type, @NotNull UserType... supers) {
         for (var superCls : supers) {
             if (superCls.isFinal()) {
                 throw CompilerException.format(
@@ -106,19 +107,29 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             PropertyConverter properties
     ) {
         for (var stmt : node.getBody().getStatements()) {
-            if (stmt instanceof DeclarationNode) {
-                declarations.parse((DeclarationNode) stmt);
-            } else if (stmt instanceof DeclaredAssignmentNode) {
-                declarations.parse((DeclaredAssignmentNode) stmt);
-            } else if (stmt instanceof MethodDefinitionNode) {
-                methods.parse((MethodDefinitionNode) stmt);
-            } else if (stmt instanceof OperatorDefinitionNode) {
-                operators.parse((OperatorDefinitionNode) stmt);
-            } else if (stmt instanceof PropertyDefinitionNode) {
-                properties.parse((PropertyDefinitionNode) stmt);
-            } else {
-                throw new UnsupportedOperationException("Node not yet supported");
-            }
+            parseStatement(stmt, declarations, methods, operators, properties);
+        }
+    }
+
+    protected void parseStatement(
+            IndependentNode stmt,
+            AttributeConverter declarations,
+            MethodConverter methods,
+            OperatorDefConverter operators,
+            PropertyConverter properties
+    ) {
+        if (stmt instanceof DeclarationNode) {
+            declarations.parse((DeclarationNode) stmt);
+        } else if (stmt instanceof DeclaredAssignmentNode) {
+            declarations.parse((DeclaredAssignmentNode) stmt);
+        } else if (stmt instanceof MethodDefinitionNode) {
+            methods.parse((MethodDefinitionNode) stmt);
+        } else if (stmt instanceof OperatorDefinitionNode) {
+            operators.parse((OperatorDefinitionNode) stmt);
+        } else if (stmt instanceof PropertyDefinitionNode) {
+            properties.parse((PropertyDefinitionNode) stmt);
+        } else {
+            throw new UnsupportedOperationException("Node not yet supported");
         }
     }
 

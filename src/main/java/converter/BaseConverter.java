@@ -18,6 +18,7 @@ import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.IncrementNode;
+import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
@@ -76,6 +77,8 @@ public interface BaseConverter {
             return new ImportExportConverter(info, (ImportExportNode) node);
         } else if (node instanceof IncrementNode) {
             return new IncrementDecrementConverter(info, (IncrementNode) node);
+        } else if (node instanceof InterfaceDefinitionNode) {
+            return new InterfaceConverter(info, (InterfaceDefinitionNode) node);
         } else if (node instanceof ReturnStatementNode) {
             return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof StatementBodyNode) {

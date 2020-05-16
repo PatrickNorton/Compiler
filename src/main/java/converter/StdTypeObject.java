@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public final class StdTypeObject extends NameableType {
+public final class StdTypeObject extends UserType {
     private final Info info;
     private final String typedefName;
     private final boolean isConst;
@@ -200,6 +200,7 @@ public final class StdTypeObject extends NameableType {
         return Objects.hash(info, isConst);
     }
 
+    @Override
     public TypeObject makeConst() {
         return isConst ? this : new StdTypeObject(this, true);
     }

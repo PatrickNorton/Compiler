@@ -6,6 +6,7 @@ import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
 import main.java.converter.TypeObject;
+import main.java.parser.GenericOperatorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
@@ -38,11 +39,28 @@ public final class OperatorDefConverter {
             } else {
                 fnInfo = new FunctionInfo("", args, returns);
             }
-            if (operators.containsKey(op)) {
+            if (operatorInfos.containsKey(op)) {
                 throw CompilerException.doubleDef(op, node, operators.get(op));
             }
             operatorInfos.put(op, fnInfo);
             operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));
+        }
+
+        public void parse(@NotNull GenericOperatorNode node) {
+            var op = node.getOpCode().getOperator();
+            var args = ArgumentInfo.of(node.getArgs(), info);
+            var returns = info.typesOf(node.getRetvals());
+            FunctionInfo fnInfo;
+            if (DEFAULT_RETURNS.containsKey(op)) {
+                var lineInfo = node.getRetvals().length > 0 ? node.getRetvals()[0].getLineInfo() : LineInfo.empty();
+                fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
+            } else {
+                fnInfo = new FunctionInfo("", args, returns);
+            }
+            if (operatorInfos.containsKey(op)) {
+                throw CompilerException.doubleDef(op, node, operators.get(op));
+            }
+            operatorInfos.put(op, fnInfo);
         }
 
         public Map<OpSpTypeNode, FunctionInfo> getOperatorInfos() {
