@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class FunctionInfo {
+public final class FunctionInfo implements IntoFnInfo {
     private final String name;
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
@@ -44,6 +44,11 @@ public final class FunctionInfo {
     @Contract(value = " -> new", pure = true)
     public TypeObject toCallable() {
         return new FunctionInfoType(this);
+    }
+
+    @Override
+    public FunctionInfo intoFnInfo() {
+        return this;
     }
 
     @NotNull

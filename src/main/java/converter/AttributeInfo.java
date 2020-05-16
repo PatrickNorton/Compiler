@@ -7,7 +7,7 @@ import main.java.parser.Lined;
 import java.util.Collections;
 import java.util.Set;
 
-public final class AttributeInfo implements Lined {
+public final class AttributeInfo implements Lined, IntoAttrInfo {
     private final Set<DescriptorNode> descriptors;
     private final TypeObject type;
     private final LineInfo lineInfo;
@@ -38,5 +38,10 @@ public final class AttributeInfo implements Lined {
 
     public LineInfo getLineInfo() {
         return lineInfo;
+    }
+
+    @Override
+    public AttributeInfo intoAttrInfo() {
+        return this;
     }
 }

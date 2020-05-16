@@ -8,25 +8,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public final class StdTypeObject extends UserType {
-    private final Info info;
-    private final String typedefName;
-    private final boolean isConst;
+public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
     public StdTypeObject(String name) {
         this(name, Collections.emptyList());
     }
 
     public StdTypeObject(String name, List<TypeObject> supers) {
-        this.info = new Info(name, supers);
-        this.typedefName = "";
-        this.isConst = true;
+        super(new Info(name, supers), "", true);
     }
 
     public StdTypeObject(String name, GenericInfo info) {
@@ -34,53 +28,15 @@ public final class StdTypeObject extends UserType {
     }
 
     public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
-        this.info = new Info(name, supers, info, isFinal);
-        this.typedefName = "";
-        this.isConst = true;
+        super(new Info(name, supers, info, isFinal), "", true);
     }
 
     private StdTypeObject(@NotNull StdTypeObject other, String typedefName) {
-        this.info = other.info;
-        this.isConst = other.isConst;
-        this.typedefName = typedefName;
+        super(other.info, typedefName, other.isConst);
     }
 
     private StdTypeObject(@NotNull StdTypeObject other, boolean isConst) {
-        this.info = other.info;
-        this.typedefName = other.typedefName;
-        this.isConst = isConst;
-    }
-
-    @Override
-    public boolean isSuperclass(TypeObject other) {
-        if (this.equals(other)) {
-            return true;
-        } else if (isConst && this.equals(other.makeConst())) {
-            return true;
-        } else {
-            return other.isSubclass(this);
-        }
-    }
-
-    @Override
-    public boolean superWillRecurse() {
-        return true;
-    }
-
-    public boolean isSubclass(@NotNull TypeObject other) {
-        if (this.equals(other)) {
-            return true;
-        } else if (!isConst && this.makeConst().equals(other)) {
-            return true;
-        } else if (other instanceof AbstractDefaultInterface) {
-            return other.isSuperclass(this);
-        }
-        for (var sup : info.supers) {
-            if (sup.isSubclass(other)) {
-                return true;
-            }
-        }
-        return false;
+        super(other.info, other.typedefName, isConst);
     }
 
     @Override
@@ -125,24 +81,6 @@ public final class StdTypeObject extends UserType {
     public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
         // TODO: Check access bounds
         return info.operators.get(o);
-    }
-
-    @Nullable
-    @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
-        var types = info.operatorReturnTypeWithGenerics(o, access);
-        if (types == null) return null;
-        TypeObject[] result = new TypeObject[types.length];
-        for (int i = 0; i < types.length; i++) {
-            var type = types[i];
-            result[i] = type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
-        }
-        return result;
-    }
-
-    @Nullable
-    public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, DescriptorNode access) {
-        return info.operatorReturnTypeWithGenerics(o, access);
     }
 
     @Override
@@ -226,96 +164,35 @@ public final class StdTypeObject extends UserType {
         return Pair.of(Collections.emptySet(), Collections.emptySet());
     }
 
-    private static final class Info {
-        private final String name;
-        private final List<TypeObject> supers;
-        private Map<OpSpTypeNode, FunctionInfo> operators;
-        private Map<OpSpTypeNode, FunctionInfo> staticOperators;
-        private final GenericInfo info;
-        private Map<String, AttributeInfo> attributes;
-        private Map<String, AttributeInfo> staticAttributes;
+    protected static final class Info extends UserType.Info<FunctionInfo, AttributeInfo> {
         private boolean isConstClass;
         private final boolean isFinal;
-        private boolean isSealed;
 
         public Info(String name, List<TypeObject> supers) {
-            this.name = name;
+            super(name, supers, GenericInfo.empty());
             this.isFinal = true;
-            this.supers = Collections.unmodifiableList(supers);
-            this.operators = new EnumMap<>(OpSpTypeNode.class);
-            this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
-            this.info = GenericInfo.empty();
             this.isConstClass = false;
         }
 
         public Info(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
-            this.name = name;
+            super(name, supers, info);
             this.isFinal = isFinal;
-            this.supers = Collections.unmodifiableList(supers);
-            this.operators = new EnumMap<>(OpSpTypeNode.class);
-            this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
-            this.info = info;
             this.isConstClass = false;
-        }
-
-        @Nullable
-        public TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, DescriptorNode access) {
-            if (operators.containsKey(o)) {  // TODO: Bounds-check
-                return operators.get(o).getReturns();
-            }
-            for (var sup : supers) {
-                var opRet = sup.operatorReturnType(o, access);
-                if (opRet != null) {
-                    return opRet;
-                }
-            }
-            return null;
-        }
-
-        @Nullable
-        public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
-            if (staticOperators.containsKey(o)) {
-                return staticOperators.get(o).getReturns();
-            }
-            for (var sup : supers) {
-                var opRet = sup.staticOperatorReturnType(o);
-                if (opRet != null) {
-                    return opRet;
-                }
-            }
-            return null;
         }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Info that = (Info) o;
-            return Objects.equals(name, that.name) &&
-                    Objects.equals(supers, that.supers) &&
-                    Objects.equals(operators, that.operators);
+            if (!super.equals(o)) return false;
+            Info info = (Info) o;
+            return isConstClass == info.isConstClass &&
+                    isFinal == info.isFinal;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(name, supers, operators);
-        }
-
-        public void seal() {
-            assert !isSealed;
-            isSealed = true;
-            if (operators == null) {
-                operators = Collections.emptyMap();
-            }
-            if (staticOperators == null) {
-                staticOperators = Collections.emptyMap();
-            }
-            if (attributes == null) {
-                attributes = Collections.emptyMap();
-            }
-            if (staticAttributes == null) {
-                staticAttributes = Collections.emptyMap();
-            }
+            return Objects.hash(super.hashCode(), isConstClass, isFinal);
         }
     }
 }

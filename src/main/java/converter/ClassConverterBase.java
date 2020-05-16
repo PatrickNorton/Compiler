@@ -32,7 +32,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     @NotNull
-    protected final <U> Map<U, List<Byte>> convert(UserType type, @NotNull Map<U, MethodInfo> functions) {
+    protected final <U> Map<U, List<Byte>> convert(UserType<?> type, @NotNull Map<U, MethodInfo> functions) {
         Map<U, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
@@ -60,7 +60,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         return result;
     }
 
-    private void recursivelyAllowProtectedAccess(@NotNull UserType type) {
+    private void recursivelyAllowProtectedAccess(@NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
             info.allowProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
@@ -69,7 +69,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    private void recursivelyRemovePrivateAccess(@NotNull UserType type) {
+    private void recursivelyRemovePrivateAccess(@NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
             info.removeProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
@@ -78,7 +78,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final UserType[] convertSupers(TypeObject[] supers) {
+    protected final UserType<?>[] convertSupers(TypeObject[] supers) {
         try {
             return Arrays.copyOf(supers, supers.length, UserType[].class);
         } catch (ArrayStoreException e) {
@@ -89,7 +89,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final void ensureProperInheritance(UserType type, @NotNull UserType... supers) {
+    protected final void ensureProperInheritance(UserType<?> type, @NotNull UserType<?>... supers) {
         for (var superCls : supers) {
             if (superCls.isFinal()) {
                 throw CompilerException.format(

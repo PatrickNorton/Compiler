@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ClassInfo {
-    private final UserType type;
+    private final UserType<?> type;
     private final List<Short> superConstants;
     private final Map<String, Short> variables;
     private final Map<String, Short> staticVariables;
@@ -20,7 +20,7 @@ public final class ClassInfo {
     private final Map<String, List<Byte>> staticMethods;
     private final Map<String, Pair<List<Byte>, List<Byte>>> properties;
 
-    private ClassInfo(UserType type, List<Short> superConstants,
+    private ClassInfo(UserType<?> type, List<Short> superConstants,
                       Map<String, Short> variables, Map<String, Short> staticVariables,
                       Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
                       Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods,
@@ -36,7 +36,7 @@ public final class ClassInfo {
         this.properties = properties;
     }
 
-    public UserType getType() {
+    public UserType<?> getType() {
         return type;
     }
 
@@ -123,7 +123,7 @@ public final class ClassInfo {
     }
 
     public static class Factory {
-        private UserType type;
+        private UserType<?> type;
         private List<Short> superConstants;
         private Map<String, Short> variables;
         private Map<String, Short> staticVariables;
@@ -133,7 +133,7 @@ public final class ClassInfo {
         private Map<String, List<Byte>> staticMethods;
         private Map<String, Pair<List<Byte>, List<Byte>>> properties;
 
-        public Factory setType(UserType type) {
+        public Factory setType(UserType<?> type) {
             assert this.type == null;
             this.type = type;
             return this;

@@ -11,43 +11,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-public final class InterfaceType extends UserType {
-    private final Info info;
-    private final String typedefName;
-    private final boolean isConst;
-
+public final class InterfaceType extends UserType<InterfaceType.Info> {
     public InterfaceType(String name) {
         this(name, Collections.emptyList());
     }
 
     public InterfaceType(String name, List<TypeObject> supers) {
-        this.info = new Info(name, supers);
-        this.typedefName = "";
-        this.isConst = true;
+        super(new Info(name, supers), "", true);
     }
 
     private InterfaceType(@NotNull InterfaceType other, String typedefName) {
-        this.info = other.info;
-        this.isConst = other.isConst;
-        this.typedefName = typedefName;
+        super(other.info, typedefName, other.isConst);
     }
 
     private InterfaceType(@NotNull InterfaceType other, boolean isConst) {
-        this.info = other.info;
-        this.typedefName = other.typedefName;
-        this.isConst = isConst;
-    }
-
-    @Override
-    public boolean isSuperclass(TypeObject other) {
-        return false;
-    }
-
-    @Override
-    public boolean isSubclass(@NotNull TypeObject other) {
-        return false;
+        super(other.info, other.typedefName, isConst);
     }
 
     @Override
@@ -100,7 +81,7 @@ public final class InterfaceType extends UserType {
         }
         for (var sup : info.supers) {
             if (sup instanceof UserType) {
-                var contract = ((UserType) sup).contract();
+                var contract = ((UserType<?>) sup).contract();
                 methods.addAll(contract.getKey());
                 ops.addAll(contract.getValue());
             }
@@ -148,38 +129,40 @@ public final class InterfaceType extends UserType {
     }
 
     public void seal() {
-        info.isSealed = true;
+        info.seal();
     }
 
-    private static final class Info {
-        private final String name;
-        private final List<TypeObject> supers;
-        private Map<OpSpTypeNode, InterfaceFnInfo> operators;
-        private Map<OpSpTypeNode, InterfaceFnInfo> staticOperators;
-        private final GenericInfo info;
-        private Map<String, InterfaceAttrInfo> attributes;
-        private Map<String, InterfaceAttrInfo> staticAttributes;
-        private boolean isSealed;
+    protected static final class Info extends UserType.Info<InterfaceFnInfo, InterfaceAttrInfo> {
         private Pair<Set<String>, Set<OpSpTypeNode>> cachedContract;
 
         public Info(String name, List<TypeObject> supers) {
-            this.name = name;
-            this.supers = Collections.unmodifiableList(supers);
+            super(name, supers, GenericInfo.empty());
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
-            this.info = GenericInfo.empty();
         }
 
         public Info(String name, List<TypeObject> supers, GenericInfo info) {
-            this.name = name;
-            this.supers = Collections.unmodifiableList(supers);
+            super(name, supers, info);
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
-            this.info = info;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            Info info = (Info) o;
+            return Objects.equals(cachedContract, info.cachedContract);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), cachedContract);
         }
     }
 
-    private static final class InterfaceFnInfo {
+    private static final class InterfaceFnInfo implements IntoFnInfo {
         private final FunctionInfo info;
         private final boolean hasImpl;
 
@@ -187,15 +170,29 @@ public final class InterfaceType extends UserType {
             this.info = info;
             this.hasImpl = hasImpl;
         }
+
+        public TypeObject[] getReturns() {
+            return info.getReturns();
+        }
+
+        @Override
+        public FunctionInfo intoFnInfo() {
+            return info;
+        }
     }
 
-    private static final class InterfaceAttrInfo {
+    private static final class InterfaceAttrInfo implements IntoAttrInfo {
         private final AttributeInfo info;
         private final boolean hasImpl;
 
         public InterfaceAttrInfo(AttributeInfo info, boolean hasImpl) {
             this.info = info;
             this.hasImpl = hasImpl;
+        }
+
+        @Override
+        public AttributeInfo intoAttrInfo() {
+            return info;
         }
     }
 }

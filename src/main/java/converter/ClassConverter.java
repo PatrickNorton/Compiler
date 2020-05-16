@@ -103,7 +103,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return true;
     }
 
-    private void checkContract(StdTypeObject type, @NotNull UserType... supers) {
+    private void checkContract(StdTypeObject type, @NotNull UserType<?>... supers) {
         for (var sup : supers) {
             var contract = sup.contract();
             for (var attr : contract.getKey()) {
