@@ -176,8 +176,8 @@ public final class InterfaceType extends UserType {
     }
 
     private static final class InterfaceFnInfo {
-        private FunctionInfo info;
-        private boolean hasImpl;
+        private final FunctionInfo info;
+        private final boolean hasImpl;
 
         public InterfaceFnInfo(FunctionInfo info, boolean hasImpl) {
             this.info = info;
@@ -186,8 +186,8 @@ public final class InterfaceType extends UserType {
     }
 
     private static final class InterfaceAttrInfo {
-        private AttributeInfo info;
-        private boolean hasImpl;
+        private final AttributeInfo info;
+        private final boolean hasImpl;
 
         public InterfaceAttrInfo(AttributeInfo info, boolean hasImpl) {
             this.info = info;
