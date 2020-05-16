@@ -1,11 +1,14 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,10 +17,6 @@ public final class InterfaceType extends UserType {
     private final Info info;
     private final String typedefName;
     private final boolean isConst;
-
-    public InterfaceType(String name) {
-        this(name, Collections.emptyList());
-    }
 
     public InterfaceType(String name, List<TypeObject> supers) {
         this.info = new Info(name, supers);
@@ -72,6 +71,41 @@ public final class InterfaceType extends UserType {
         return info.info;
     }
 
+    @Override
+    @NotNull
+    public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
+        if (info.cachedContract != null) {
+            return info.cachedContract;
+        }
+        Set<String> methods = new HashSet<>(info.attributes.size() + info.staticAttributes.size());
+        for (var pair : info.attributes.entrySet()) {
+            if (!pair.getValue().hasImpl) {
+                methods.add(pair.getKey());
+            }
+        }
+        for (var pair : info.staticAttributes.entrySet()) {
+            if (!pair.getValue().hasImpl) {
+                methods.add(pair.getKey());
+            }
+        }
+        Set<OpSpTypeNode> ops = EnumSet.noneOf(OpSpTypeNode.class);
+        for (var pair : info.operators.entrySet()) {
+            if (!pair.getValue().hasImpl) {
+                ops.add(pair.getKey());
+            }
+        }
+        for (var sup : info.supers) {
+            if (sup instanceof UserType) {
+                var contract = ((UserType) sup).contract();
+                methods.addAll(contract.getKey());
+                ops.addAll(contract.getValue());
+            }
+        }
+        var contract = Pair.of(methods, ops);
+        info.cachedContract = contract;
+        return contract;
+    }
+
     public void setAttributes(@NotNull Map<String, AttributeInfo> attributes, Set<String> generics) {
         assert !info.isSealed && info.attributes == null;
         Map<String, InterfaceAttrInfo> result = new HashMap<>();
@@ -109,6 +143,9 @@ public final class InterfaceType extends UserType {
         return isConst ? new InterfaceType(this, false) : this;
     }
 
+    public void seal() {
+        info.isSealed = true;
+    }
 
     private static final class Info {
         private final String name;
@@ -118,8 +155,8 @@ public final class InterfaceType extends UserType {
         private final GenericInfo info;
         private Map<String, InterfaceAttrInfo> attributes;
         private Map<String, InterfaceAttrInfo> staticAttributes;
-        private boolean isConstClass;
         private boolean isSealed;
+        private Pair<Set<String>, Set<OpSpTypeNode>> cachedContract;
 
         public Info(String name, List<TypeObject> supers) {
             this.name = name;
@@ -127,7 +164,6 @@ public final class InterfaceType extends UserType {
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
             this.info = GenericInfo.empty();
-            this.isConstClass = false;
         }
 
         public Info(String name, List<TypeObject> supers, GenericInfo info) {
@@ -136,7 +172,6 @@ public final class InterfaceType extends UserType {
             this.operators = new EnumMap<>(OpSpTypeNode.class);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
             this.info = info;
-            this.isConstClass = false;
         }
     }
 

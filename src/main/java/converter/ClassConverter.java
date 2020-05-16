@@ -53,6 +53,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
                 methods.getMethods(), methods.getStaticMethods());
         type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
         type.setStaticAttributes(allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()));
+        checkContract(type, trueSupers);
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
@@ -97,6 +98,28 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             }
         }
         return true;
+    }
+
+    private void checkContract(StdTypeObject type, @NotNull UserType... supers) {
+        for (var sup : supers) {
+            var contract = sup.contract();
+            for (var attr : contract.getKey()) {
+                if (type.attrType(attr, DescriptorNode.PUBLIC) == null) {
+                    throw CompilerException.format(
+                            "Missing impl for method '%s' (defined by interface %s)",
+                            node, attr, sup.name()
+                    );
+                }
+            }
+            for (var op : contract.getValue()) {
+                if (type.operatorInfo(op, DescriptorNode.PUBLIC) == null) {
+                    throw CompilerException.format(
+                            "Missing impl for %s (defined by interface %s)",
+                            node, op, sup.name()
+                    );
+                }
+            }
+        }
     }
 
     public static void completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj) {

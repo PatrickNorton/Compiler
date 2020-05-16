@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,6 +12,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public final class StdTypeObject extends UserType {
     private final Info info;
@@ -216,6 +218,12 @@ public final class StdTypeObject extends UserType {
 
     public void seal() {
         info.seal();
+    }
+
+    @Override
+    @NotNull
+    public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
+        return Pair.of(Collections.emptySet(), Collections.emptySet());
     }
 
     private static final class Info {

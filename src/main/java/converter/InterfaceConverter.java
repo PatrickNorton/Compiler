@@ -65,6 +65,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
                 allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()),
                 new HashSet<>()
         );
+        type.seal();
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
