@@ -47,6 +47,16 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
             parseStatements(declarations, methods, operators, properties);
+            type.setOperators(operators.getOperatorInfos(), genericOps);
+            type.setAttributes(
+                    allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()),
+                    genericAttrs
+            );
+            type.setStaticAttributes(
+                    allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()),
+                    new HashSet<>()
+            );
+            type.seal();
         } else {
             type = (InterfaceType) info.getType(node.getName().strName());
         }
@@ -56,16 +66,6 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         }
         checkAttributes(declarations.getVars(), declarations.getStaticVars(),
                 methods.getMethods(), methods.getStaticMethods());
-        type.setOperators(operators.getOperatorInfos(), genericOps);
-        type.setAttributes(
-                allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()),
-                genericAttrs
-        );
-        type.setStaticAttributes(
-                allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()),
-                new HashSet<>()
-        );
-        type.seal();
         var cls = new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
