@@ -52,6 +52,8 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
         type.setStaticAttributes(allAttributes(staticVars, methods.getStaticMethods(), new HashMap<>()));
         type.setOperators(operatorDefs);
+        type.addFulfilledInterfaces();
+        type.seal();
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));

@@ -6,6 +6,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -79,9 +80,46 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
+    public final void addFulfilledInterfaces() {
+        assert info.isSealed;
+        var fulfilled = fulfilledInterfaces();
+        if (!fulfilled.isEmpty()) {
+            var result = new ArrayList<>(info.supers);
+            result.addAll(fulfilledInterfaces());
+            info.supers = result;
+        }
+    }
+
+    @NotNull
+    private List<TypeObject> fulfilledInterfaces() {
+        List<TypeObject> result = new ArrayList<>();
+        for (var inter : Builtins.DEFAULT_INTERFACES) {
+            if (!isSubclass(inter) && fulfillsContract(inter)) {
+                result.add(inter);
+            }
+        }
+        return result;
+    }
+
+    private boolean fulfillsContract(@NotNull UserType<?> contractor) {
+        var contract = contractor.contract();
+        for (var attr : contract.getKey()) {
+            if (attrType(attr, DescriptorNode.PUBLIC) == null) {
+                return false;
+            }
+        }
+        for (var op : contract.getValue()) {
+            if (operatorInfo(op, DescriptorNode.PUBLIC) == null) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+
     protected static abstract class Info<O extends IntoFnInfo, A extends IntoAttrInfo> {
         protected final String name;
-        protected final List<TypeObject> supers;
+        protected List<TypeObject> supers;
         protected Map<OpSpTypeNode, O> operators;
         protected Map<OpSpTypeNode, O> staticOperators;
         protected final GenericInfo info;

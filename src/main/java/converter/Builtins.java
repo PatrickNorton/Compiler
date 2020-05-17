@@ -34,7 +34,9 @@ public final class Builtins {
             OpSpTypeNode.EXIT, new FunctionInfo(TypeObject.list())
     );
 
-    public static final TypeObject CONTEXT = new DefaultInterface("Context", GenericInfo.of(CONTEXT_PARAM), CONTEXT_MAP);
+    public static final InterfaceType CONTEXT = new InterfaceType(
+            "Context", GenericInfo.of(CONTEXT_PARAM), CONTEXT_MAP
+    );
 
     private static final TemplateParam CALLABLE_ARGS = new TemplateParam("K", 0, true);
 
@@ -44,7 +46,9 @@ public final class Builtins {
             OpSpTypeNode.CALL, new FunctionInfo(ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
     );
 
-    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP);
+    public static final InterfaceType CALLABLE = new InterfaceType(
+            "Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP
+    );
 
     private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
@@ -52,7 +56,9 @@ public final class Builtins {
             OpSpTypeNode.ITER, new FunctionInfo(ITERABLE_PARAM)
     );
 
-    public static final TypeObject ITERABLE = new DefaultInterface("Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP);
+    public static final InterfaceType ITERABLE = new InterfaceType(
+            "Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP
+    );
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
@@ -107,6 +113,10 @@ public final class Builtins {
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
+
+    public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
+            CONTEXT, CALLABLE, ITERABLE
+    );
 
     static {  // Set int operators
         INT.isConstClass();

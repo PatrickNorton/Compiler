@@ -23,6 +23,10 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         super(new Info(name, supers), "", true);
     }
 
+    public InterfaceType(String name, GenericInfo info, Map<OpSpTypeNode, FunctionInfo> operators) {
+        super(new Info(name, operators, info), "", true);
+    }
+
     private InterfaceType(@NotNull InterfaceType other, String typedefName) {
         super(other.info, typedefName, other.isConst);
     }
@@ -137,13 +141,11 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
         public Info(String name, List<TypeObject> supers) {
             super(name, supers, GenericInfo.empty());
-            this.operators = new EnumMap<>(OpSpTypeNode.class);
-            this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
         }
 
-        public Info(String name, List<TypeObject> supers, GenericInfo info) {
-            super(name, supers, info);
-            this.operators = new EnumMap<>(OpSpTypeNode.class);
+        public Info(String name, Map<OpSpTypeNode, FunctionInfo> operators, GenericInfo info) {
+            super(name, Collections.emptyList(), info);
+            this.operators = convertMap(operators);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
         }
 
@@ -159,6 +161,15 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         @Override
         public int hashCode() {
             return Objects.hash(super.hashCode(), cachedContract);
+        }
+
+        @NotNull
+        private <T> Map<T, InterfaceFnInfo> convertMap(@NotNull Map<T, FunctionInfo> arg) {
+            Map<T, InterfaceFnInfo> result = new HashMap<>();
+            for (var pair : arg.entrySet()) {
+                result.put(pair.getKey(), new InterfaceFnInfo(pair.getValue(), false));
+            }
+            return result;
         }
     }
 

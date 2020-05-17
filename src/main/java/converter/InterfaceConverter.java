@@ -56,6 +56,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
                     allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>()),
                     new HashSet<>()
             );
+            type.addFulfilledInterfaces();
             type.seal();
         } else {
             type = (InterfaceType) info.getType(node.getName().strName());
