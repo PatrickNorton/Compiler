@@ -60,8 +60,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             return true;
         } else if (!isConst && this.makeConst().equals(other)) {
             return true;
-        } else if (other instanceof AbstractDefaultInterface) {
-            return other.isSuperclass(this);
         }
         for (var sup : info.supers) {
             if (sup.isSubclass(other)) {
