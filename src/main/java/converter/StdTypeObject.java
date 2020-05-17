@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
@@ -39,9 +40,21 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         super(other.info, other.typedefName, isConst);
     }
 
+    private StdTypeObject(@NotNull StdTypeObject other, List<TypeObject> generics) {
+        super(other.info, other.typedefName, generics, other.isConst);
+    }
+
     @Override
     public String name() {
-        return typedefName.isEmpty() ? info.name : typedefName;
+        if (generics.isEmpty()) {
+            return typedefName.isEmpty() ? info.name : typedefName;
+        } else {
+            var valueJoiner = new StringJoiner(", ", "[", "]");
+            for (var cls : generics) {
+                valueJoiner.add(cls.name());
+            }
+            return info.name + valueJoiner.toString();
+        }
     }
 
     @NotNull
@@ -55,10 +68,11 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     @Contract("_ -> new")
     @Override
     public TypeObject generify(@NotNull TypeObject... args) {
-        if (args.length != info.info.getParams().size()) {
+        var trueArgs = info.info.generify(args);
+        if (trueArgs.size() != info.info.getParams().size()) {
             throw new UnsupportedOperationException("Cannot generify object in this manner");
         } else {
-            return new GenerifiedTypeObject(this, List.of(args));
+            return new StdTypeObject(this, trueArgs);
         }
     }
 
@@ -93,9 +107,17 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @Override
+    @Nullable
     public TypeObject attrType(String value, DescriptorNode access) {
         var type = attrTypeWithGenerics(value, access);
-        return type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
+        if (type == null) return null;
+        if (type instanceof TemplateParam) {
+            return generics.isEmpty()
+                    ? ((TemplateParam) type).getBound()
+                    : generics.get(((TemplateParam) type).getIndex());
+        } else {
+            return type;
+        }
     }
 
     @Nullable

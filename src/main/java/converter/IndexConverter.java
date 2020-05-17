@@ -24,7 +24,7 @@ public final class IndexConverter implements TestConverter {
     public TypeObject[] returnType() {
         var type = TypeObject.of(info, node);
         if (type != null) {
-            return new TypeObject[]{new GenerifiedTypeTypeObject(type)};
+            return new TypeObject[]{Builtins.TYPE.generify(type)};
         }
         var operator = node.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
         return TestConverter.returnType(node.getVar(), info, 1)[0].operatorReturnType(operator, info);

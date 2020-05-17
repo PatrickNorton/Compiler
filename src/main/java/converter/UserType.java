@@ -17,11 +17,20 @@ import java.util.Set;
 public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableType {
     protected final I info;
     protected final String typedefName;
+    protected final List<TypeObject> generics;
     protected final boolean isConst;
 
     public UserType(I info, String typedefName, boolean isConst) {
         this.info = info;
         this.typedefName = typedefName;
+        this.generics = Collections.emptyList();
+        this.isConst = isConst;
+    }
+
+    public UserType(I info, String typedefName, List<TypeObject> generics, boolean isConst) {
+        this.info = info;
+        this.typedefName = typedefName;
+        this.generics = generics;
         this.isConst = isConst;
     }
 
@@ -75,13 +84,19 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         TypeObject[] result = new TypeObject[types.length];
         for (int i = 0; i < types.length; i++) {
             var type = types[i];
-            result[i] = type instanceof TemplateParam ? ((TemplateParam) type).getBound() : type;
+            if (type instanceof TemplateParam) {
+                result[i] = generics.isEmpty()
+                        ? ((TemplateParam) type).getBound()
+                        : generics.get(((TemplateParam) type).getIndex());
+            } else {
+                result[i] = type;
+            }
         }
         return result;
     }
 
     public final void addFulfilledInterfaces() {
-        assert info.isSealed;
+        assert !info.isSealed;
         var fulfilled = fulfilledInterfaces();
         if (!fulfilled.isEmpty()) {
             var result = new ArrayList<>(info.supers);

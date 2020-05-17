@@ -4,25 +4,28 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 public final class TypeTypeObject extends TypeObject {
     private final String typedefName;
+    private final TypeObject generic;
 
     public TypeTypeObject() {
         this.typedefName = "";
+        this.generic = null;
     }
 
-    private TypeTypeObject(String typedefName) {
+    private TypeTypeObject(TypeObject generic, String typedefName) {
+        this.generic = generic;
         this.typedefName = typedefName;
     }
 
     @Override
     public boolean isSuperclass(TypeObject other) {
         return other instanceof TypeTypeObject
-                || other instanceof ObjectType
-                || other instanceof GenerifiedTypeTypeObject;
+                || other instanceof ObjectType;
     }
 
     @Override
@@ -35,9 +38,11 @@ public final class TypeTypeObject extends TypeObject {
         return typedefName.isEmpty() ? "type" : typedefName;
     }
 
+    @Contract("_ -> new")
     @Override
+    @NotNull
     public TypeObject typedefAs(String name) {
-        return new TypeTypeObject(name);
+        return new TypeTypeObject(this.generic, name);
     }
 
     @Override
@@ -55,7 +60,7 @@ public final class TypeTypeObject extends TypeObject {
     @NotNull
     public TypeObject generify(@NotNull TypeObject... args) {
         assert args.length == 1;
-        return new GenerifiedTypeTypeObject(args[0]);
+        return new TypeTypeObject(args[0], this.typedefName);
     }
 
     @Contract(value = "_, _ -> new", pure = true)
@@ -64,9 +69,28 @@ public final class TypeTypeObject extends TypeObject {
     public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         assert access == DescriptorNode.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
-            return new TypeObject[] {Builtins.OBJECT};
+            return new TypeObject[] {generic == null ? Builtins.OBJECT : generic};
         } else {
             throw new UnsupportedOperationException("Cannot get type");
+        }
+    }
+
+    @Override
+    @Nullable
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        if (generic != null) {
+            if (o == OpSpTypeNode.CALL) {
+                var opInfo = generic.operatorInfo(OpSpTypeNode.NEW, access);
+                if (opInfo == null) {
+                    return null;
+                } else {
+                    return new FunctionInfo(generic.operatorInfo(OpSpTypeNode.NEW, access).getArgs(), generic);
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
     }
 }

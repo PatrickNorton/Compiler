@@ -1,8 +1,11 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -25,6 +28,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
     public InterfaceType(String name, GenericInfo info, Map<OpSpTypeNode, FunctionInfo> operators) {
         super(new Info(name, operators, info), "", true);
+        this.seal();
     }
 
     private InterfaceType(@NotNull InterfaceType other, String typedefName) {
@@ -33,6 +37,10 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
     private InterfaceType(@NotNull InterfaceType other, boolean isConst) {
         super(other.info, other.typedefName, isConst);
+    }
+
+    private InterfaceType(@NotNull InterfaceType other, List<TypeObject> generics) {
+        super(other.info, other.typedefName, generics, other.isConst);
     }
 
     @Override
@@ -58,6 +66,59 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     @Override
     public GenericInfo getGenericInfo() {
         return info.info;
+    }
+
+    @NotNull
+    @Contract("_ -> new")
+    @Override
+    public TypeObject generify(@NotNull TypeObject... args) {
+        var trueArgs = info.info.generify(args);
+        if (trueArgs.size() != info.info.getParams().size()) {
+            throw new UnsupportedOperationException("Cannot generify object in this manner");
+        } else {
+            return new InterfaceType(this, trueArgs);
+        }
+    }
+
+    @Nullable
+    @Override
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        var trueInfo = trueOperatorInfo(o, access);
+        return trueInfo == null ? null : trueInfo.boundify();
+    }
+
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        // TODO: Check access bounds
+        return info.operators.get(o).intoFnInfo();
+    }
+
+    @Override
+    public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+        return info.staticOperatorReturnType(o);
+    }
+
+    @Override
+    @Nullable
+    public TypeObject attrType(String value, DescriptorNode access) {
+        var type = attrTypeWithGenerics(value, access);
+        if (type == null) return null;
+        if (type instanceof TemplateParam) {
+            return generics.isEmpty()
+                    ? ((TemplateParam) type).getBound()
+                    : generics.get(((TemplateParam) type).getIndex());
+        } else {
+            return type;
+        }
+    }
+
+    @Nullable
+    public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
+        var attr = info.attributes.get(value);
+        if (attr == null || (isConst && attr.intoAttrInfo().getDescriptors().contains(DescriptorNode.MUT))) {
+            return null;
+        }
+        return DescriptorNode.canAccess(attr.intoAttrInfo().getDescriptors(), access)
+                ? attr.intoAttrInfo().getType() : null;
     }
 
     @Override
