@@ -42,7 +42,7 @@ public final class IntersectionTypeObject extends TypeObject {
     @Override
     public boolean isSuperclass(@NotNull TypeObject other) {
         for (var subtype : types) {
-            if (!other.isSuperclass(subtype)) {
+            if (!subtype.isSuperclass(other)) {
                 return false;
             }
         }
@@ -52,7 +52,7 @@ public final class IntersectionTypeObject extends TypeObject {
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
         for (var subtype : types) {
-            if (subtype.isSuperclass(other)) {
+            if (other.isSuperclass(subtype)) {
                 return true;
             }
         }

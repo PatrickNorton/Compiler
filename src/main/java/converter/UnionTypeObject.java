@@ -45,7 +45,7 @@ public final class UnionTypeObject extends TypeObject {
     @Override
     public boolean isSuperclass(@NotNull TypeObject other) {
         for (var subtype : types) {
-            if (other.isSuperclass(subtype)) {
+            if (subtype.isSuperclass(other)) {
                 return true;
             }
         }
@@ -54,7 +54,7 @@ public final class UnionTypeObject extends TypeObject {
 
     protected boolean isSubclass(@NotNull TypeObject other) {
         for (var subtype : types) {
-            if (!subtype.isSuperclass(other)) {
+            if (!other.isSuperclass(subtype)) {
                 return false;
             }
         }
