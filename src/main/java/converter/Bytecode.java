@@ -185,6 +185,7 @@ public enum Bytecode {
             case LOCATION:
             case VARIABLE:
             case FUNCTION_NO:
+            case STACK_POS:
                 return Integer.toString(value);
             case CONSTANT:
                 return String.format("%d (%s)", value, info.getConstant((short) value).name());
