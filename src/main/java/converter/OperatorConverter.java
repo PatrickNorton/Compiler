@@ -46,9 +46,9 @@ public final class OperatorConverter implements TestConverter {
         BYTECODE_MAP = Collections.unmodifiableMap(temp);
     }
 
-    private CompilerInfo info;
-    private OperatorNode node;
-    private int retCount;
+    private final CompilerInfo info;
+    private final OperatorNode node;
+    private final int retCount;
 
     public OperatorConverter(CompilerInfo info, OperatorNode node, int retCount) {
         this.info = info;
