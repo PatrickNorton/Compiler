@@ -92,14 +92,17 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * Computes the position in the function's argument list relative to the
      * argument list passed.
      * <p>
-     *     The {@code int[]} returned by this upholds several invariants:
+     *     Several invariants are associated with this function:
      *     <ul>
+     *         <li><code>this.{@link #matches}(args)</code>.</li>
      *         <li>Each number from {@code 0} to {@code arr.length - 1} occurs
-     *         <i>exactly</i> once in arr.</li>
+     *         <i>exactly</i> once in {@code arr}.</li>
      *         <li>{@code arr[args[i]]} represents the index of where {@code
      *         args[i]} should be in the stack passed to the function at
      *         runtime.</li>
      *     </ul>
+     *     In this code, {@code arr} represents the {@code int[]} returned by
+     *     this function.
      * </p>
      *
      * @param args The arguments to get the final order
