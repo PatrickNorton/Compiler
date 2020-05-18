@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 public final class DeclaredAssignmentConverter implements BaseConverter {
-    private CompilerInfo info;
-    private DeclaredAssignmentNode node;
+    private final CompilerInfo info;
+    private final DeclaredAssignmentNode node;
 
     public DeclaredAssignmentConverter(CompilerInfo info, DeclaredAssignmentNode node) {
         this.info = info;
@@ -20,7 +20,9 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert !node.isColon();
+        if (node.isColon()) {
+            throw CompilerException.of(":= is only allowed for defining class members", node);
+        }
         if (node.getNames().length > 1) {
             throw new UnsupportedOperationException("Conversion of multiple-var assignment not implemented");
         }
@@ -29,7 +31,10 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var converter = TestConverter.of(info, value, 1);
         var valueType = converter.returnType()[0];
         var rawType = assigned.getType();
-        var assignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
+        var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
+        var descriptors = node.getDescriptors();
+        var assignedType = descriptors.contains(DescriptorNode.MUT)
+                ? nonConstAssignedType.makeMut() : nonConstAssignedType.makeConst();
         var assignedName = assigned.getVariable().getName();
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
             throw CompilerException.of("Illegal name " + assignedName, node);
@@ -39,15 +44,34 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                     "Object of type %s cannot be assigned to object of type %s",
                     node, valueType.name(), assignedType.name());
         }
-        if (converter instanceof ConstantConverter && !node.getDescriptors().contains(DescriptorNode.MUT)) {
+        boolean isConst = !descriptors.contains(DescriptorNode.MUT)
+                && !descriptors.contains(DescriptorNode.MREF);
+        if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
-            info.addVariable(assignedName, assignedType, constant);
+            info.checkDefinition(assignedName, node);
+            info.addVariable(assignedName, assignedType, constant, node);
             return Collections.emptyList();
         }
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        info.addVariable(assignedName, assignedType);
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(assignedName)));
+        boolean isStatic = descriptors.contains(DescriptorNode.STATIC);
+        List<Byte> bytes = new ArrayList<>();
+        int fillPos;
+        if (isStatic) {
+            bytes.add(Bytecode.DO_STATIC.value);
+            fillPos = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+        } else {
+            fillPos = -1;
+        }
+        bytes.addAll(converter.convert(start));
+        info.checkDefinition(assignedName, node);
+        var index = isStatic
+                ? info.addStaticVar(assignedName, assignedType, isConst, node)
+                : info.addVariable(assignedName, assignedType, isConst, node);
+        bytes.add(isStatic ? Bytecode.STORE_STATIC.value : Bytecode.STORE.value);
+        bytes.addAll(Util.shortToBytes(index));
+        if (isStatic) {
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
+        }
         return bytes;
     }
 }

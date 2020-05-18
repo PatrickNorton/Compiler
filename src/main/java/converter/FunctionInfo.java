@@ -3,10 +3,9 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public final class FunctionInfo {
+public final class FunctionInfo implements IntoFnInfo {
     private final String name;
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
@@ -41,13 +40,15 @@ public final class FunctionInfo {
         return arguments;
     }
 
+    @NotNull
+    @Contract(value = " -> new", pure = true)
     public TypeObject toCallable() {
-        List<TypeObject> argTypes = new ArrayList<>(arguments.size() + 1);
-        for (var arg : arguments) {
-            argTypes.add(arg.getType());
-        }
-        argTypes.add(TypeObject.list(returns));
-        return Builtins.CALLABLE.generify(argTypes.toArray(new TypeObject[0]));
+        return new FunctionInfoType(this);
+    }
+
+    @Override
+    public FunctionInfo intoFnInfo() {
+        return this;
     }
 
     @NotNull
@@ -94,7 +95,7 @@ public final class FunctionInfo {
     private static Argument[] generifyArray(@NotNull Argument[] arr, List<TypeObject> generics) {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            var argType = arr[i].getType();
+            var argType = arr[i].getType();  // TODO: Proper generification of subtypes (e.g. list[T] => list[something])
             var type = argType instanceof TemplateParam ? generics.get(((TemplateParam) argType).getIndex()) : argType;
             result[i] = new Argument(arr[i].getName(), type);
         }

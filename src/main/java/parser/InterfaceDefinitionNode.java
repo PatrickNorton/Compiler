@@ -10,7 +10,7 @@ import java.util.EnumSet;
  * @author Patrick Norton
  * @see ClassDefinitionNode
  */
-public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNode, BaseClassNode {
     private LineInfo lineInfo;
     private TypeNode name;
     private TypeLikeNode[] superclasses;

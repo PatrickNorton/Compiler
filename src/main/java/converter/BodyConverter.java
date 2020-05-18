@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BodyConverter implements BaseConverter {
-    private StatementBodyNode node;
-    private CompilerInfo info;
+    private final StatementBodyNode node;
+    private final CompilerInfo info;
 
     public BodyConverter(CompilerInfo info, StatementBodyNode node) {
         this.node = node;

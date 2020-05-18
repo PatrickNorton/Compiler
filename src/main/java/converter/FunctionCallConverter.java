@@ -1,17 +1,21 @@
 package main.java.converter;
 
+import main.java.parser.ArgumentNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class FunctionCallConverter implements TestConverter {
-    private CompilerInfo info;
-    private FunctionCallNode node;
-    private int retCount;
+    private final CompilerInfo info;
+    private final FunctionCallNode node;
+    private final int retCount;
 
     public FunctionCallConverter(CompilerInfo info, FunctionCallNode node, int retCount) {
         this.info = info;
@@ -24,22 +28,32 @@ public final class FunctionCallConverter implements TestConverter {
     public List<Byte> convert(int start) {
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
         var retTypes = callConverter.returnType();
-        ensureTypesMatch(retTypes[0]);
+        var fnInfo = ensureTypesMatch(retTypes[0]);
+        if (isDeterminedFunction(node.getCaller())) {
+            return convertOptimized(start, fnInfo);
+        }
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
-        convertCall(bytes, start);
+        convertArgs(bytes, start, fnInfo);
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
         for (int i = retCount; i < returnType().length; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
     }
 
-    void convertCall(List<Byte> bytes, int start) {
-        for (var value : node.getParameters()) {
-            // TODO: Varargs
+    private void convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo) {
+        var params = node.getParameters();
+        var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
+        for (var value : params) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
         }
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
+        var swaps = swapsToOrder(argPositions);
+        for (var pair : swaps) {
+            bytes.add(Bytecode.SWAP_STACK.value);
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey())));
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue())));
+        }
     }
 
     @NotNull
@@ -58,23 +72,142 @@ public final class FunctionCallConverter implements TestConverter {
             if (fn != null) {
                 return fn.getReturns();
             }
-            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL);
+            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL, info);
         } else {
-            return TestConverter.returnType(node.getCaller(), info, retCount)[0].operatorReturnType(OpSpTypeNode.CALL);
+            var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
+            return retType.operatorReturnType(OpSpTypeNode.CALL, info);
         }
 
     }
 
-    private void ensureTypesMatch(@NotNull TypeObject callerType) {
-        var params = node.getParameters();
-        var args = new Argument[node.getParameters().length];
+    @NotNull
+    private FunctionInfo ensureTypesMatch(@NotNull TypeObject callerType) {
+        var args = getArgs(node.getParameters());
+        var accessLevel = info.accessLevel(callerType);
+        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL, accessLevel);
+        if (operatorInfo == null) {
+            throw CompilerException.format(
+                    "Object of type '%s' has no overloaded 'operator ()'",
+                    node, callerType.name()
+            );
+        } else if (!operatorInfo.matches(args)) {
+            var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
+            var nameArr = TypeObject.name(Argument.typesOf(operatorInfo.getArgs().getNormalArgs()));
+            var expectedStr = String.join(", ", nameArr);
+            throw CompilerException.format(
+                    "Cannot call object of type '%s': arguments given (%s)" +
+                            " do not match the arguments of the function (%s)",
+                    node, callerType.name(), argsString, expectedStr
+            );
+        }
+        return operatorInfo;
+    }
+
+    @NotNull
+    private Argument[] getArgs(@NotNull ArgumentNode... args) {
+        var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
-            var type = TestConverter.returnType(params[i].getArgument(), info, 1)[0];
-            args[i] = new Argument(params[i].getVariable().getName(), type);
+            var type = TestConverter.returnType(args[i].getArgument(), info, 1)[0];
+            result[i] = new Argument(args[i].getVariable().getName(), type);
         }
-        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL);
-        if (operatorInfo == null || !operatorInfo.matches(args)) {
-            throw CompilerException.of("Cannot call " + node.getCaller(), node);
+        return result;
+    }
+
+    private boolean isDeterminedFunction(TestNode name) {
+        if (!(name instanceof VariableNode)) {
+            return false;
         }
+        var variableName = (VariableNode) name;
+        var strName = variableName.getName();
+        return info.fnInfo(strName) != null || (Builtins.BUILTIN_MAP.containsKey(strName)
+                && (BUILTINS_TO_OPERATORS.containsKey(strName) || strName.equals("type")));
+    }
+
+    @NotNull
+    private List<Byte> convertOptimized(int start, FunctionInfo fnInfo) {
+        assert node.getCaller() instanceof VariableNode;
+        var strName = ((VariableNode) node.getCaller()).getName();
+        if (Builtins.BUILTIN_MAP.containsKey(strName)) {
+            return convertBuiltin(start, strName);
+        } else {
+            return convertCallFn(start, strName, fnInfo);
+        }
+    }
+
+    private static final Map<String, OpSpTypeNode> BUILTINS_TO_OPERATORS = Map.of(
+            "int", OpSpTypeNode.INT,
+            "str", OpSpTypeNode.STR,
+            "bool", OpSpTypeNode.BOOL,
+            "repr", OpSpTypeNode.REPR,
+            "iter", OpSpTypeNode.ITER
+    );
+
+    @NotNull
+    private List<Byte> convertBuiltin(int start, String strName) {
+        assert Builtins.BUILTIN_MAP.containsKey(strName);
+        List<Byte> bytes = new ArrayList<>();
+        if (BUILTINS_TO_OPERATORS.containsKey(strName)) {
+            var params = node.getParameters();
+            assert params.length == 1;  // No operator needs more than self
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), params[0].getArgument(), info, 1));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) BUILTINS_TO_OPERATORS.get(strName).ordinal()));
+            bytes.addAll(Util.shortZeroBytes());
+            return bytes;
+        } else if (strName.equals("type")) {
+            var params = node.getParameters();
+            assert params.length == 1;
+            var converter = TestConverter.of(info, params[0].getArgument(), 1);
+            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.add(Bytecode.GET_TYPE.value);
+            return bytes;
+        } else {
+            throw new RuntimeException();
+        }
+
+    }
+
+    @NotNull
+    private List<Byte> convertCallFn(int start, String strName, FunctionInfo fnInfo) {
+        var fnIndex = info.fnIndex(strName);
+        assert fnIndex != -1;
+        List<Byte> bytes = new ArrayList<>();
+        convertArgs(bytes, start, fnInfo);
+        bytes.add(Bytecode.CALL_FN.value);
+        bytes.addAll(Util.shortToBytes(fnIndex));
+        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
+        return bytes;
+    }
+
+    /**
+     * Calculates the sequence of swaps in order to make {@code values} be in
+     * strictly ascending order.
+     * <p>
+     *     This assumes that {@code values} contains all ints from {@code 0} to
+     *     {@code values.length - 1}.
+     * </p>
+     *
+     * @param values The values to figure out how to sort
+     * @return The pairs of values to swap
+     */
+    @NotNull
+    private List<Pair<Integer, Integer>> swapsToOrder(@NotNull int... values) {
+        List<Pair<Integer, Integer>> swaps = new ArrayList<>();
+        int[] currentState = values.clone();
+        for (int i = 0; i < values.length; i++) {
+            int ptr = i;
+            while (currentState[ptr] != ptr) {
+                swaps.add(Pair.of(currentState[ptr], ptr));
+                arrSwap(currentState, currentState[ptr], ptr);
+                ptr = currentState[ptr];
+            }
+        }
+        return swaps;
+    }
+
+    private static void arrSwap(@NotNull int[] values, int a, int b) {
+        int temp = values[a];
+        values[a] = values[b];
+        values[b] = temp;
     }
 }

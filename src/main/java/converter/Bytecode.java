@@ -27,6 +27,7 @@ public enum Bytecode {
     STORE(0xC, Type.VARIABLE),
     STORE_SUBSCRIPT(0xD, Type.ARGC),
     STORE_ATTR(0xE, Type.CONSTANT),
+    SWAP_STACK(0xF, Type.STACK_POS, Type.STACK_POS),
     // Binary operators
     PLUS(0x10),
     MINUS(0x11),
@@ -66,21 +67,24 @@ public enum Bytecode {
     JUMP_TRUE(0x32, Type.LOCATION),
     JUMP_NN(0x33, Type.LOCATION),
     JUMP_NULL(0x34, Type.LOCATION),
-    CALL_METHOD(0x35, Type.ARGC),
+    CALL_METHOD(0x35, Type.CONSTANT, Type.ARGC),
     CALL_TOS(0x36, Type.ARGC),
-    TAIL_METHOD(0x37, Type.ARGC),
-    TAIL_TOS(0x38, Type.ARGC),
-    RETURN(0x39, Type.ARGC),
-    THROW(0x3A),
-    THROW_QUICK(0x3B, Type.ARGC),
-    ENTER_TRY(0x3C, Type.LOCATION),
-    EXCEPT_N(0x3D, Type.ARGC),
-    FINALLY(0x3E),
-    END_TRY(0x3F, Type.ARGC),
+    CALL_FN(0x37, Type.FUNCTION_NO, Type.ARGC),
+    TAIL_METHOD(0x38, Type.ARGC),
+    TAIL_TOS(0x39, Type.ARGC),
+    TAIL_FN(0x3A, Type.FUNCTION_NO, Type.ARGC),
+    RETURN(0x3B, Type.ARGC),
+    // Exception stuff
+    THROW(0x40),
+    THROW_QUICK(0x41, Type.ARGC),
+    ENTER_TRY(0x42, Type.LOCATION),
+    EXCEPT_N(0x43, Type.ARGC),
+    FINALLY(0x44),
+    END_TRY(0x45, Type.ARGC),
     // Markers
-    FUNC_DEF(0x40),
-    CLASS_DEF(0x41),
-    END_CLASS(0x42),
+    FUNC_DEF(0x48),
+    CLASS_DEF(0x49),
+    END_CLASS(0x4A),
     // Loop stuff
     FOR_ITER(0x50, Type.LOCATION),
     LIST_CREATE(0x51, Type.ARGC),
@@ -90,8 +94,13 @@ public enum Bytecode {
     SET_ADD(0x55),
     DICT_ADD(0x56),
     DOTIMES(0x57, Type.LOCATION),
+    // Statics
+    DO_STATIC(0x60, Type.LOCATION),
+    STORE_STATIC(0x61, Type.VARIABLE),
+    LOAD_STATIC(0x62, Type.VARIABLE),
     // Misc.
-    MAKE_FUNCTION(0x60, Type.FUNCTION_NO)
+    MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
+    GET_TYPE(0x71),
     ;
 
     private enum Type {
@@ -101,6 +110,7 @@ public enum Bytecode {
         ARGC(2),
         OPERATOR(2),
         FUNCTION_NO(2),
+        STACK_POS(2),
         ;
         final byte byteCount;
 
@@ -152,28 +162,13 @@ public enum Bytecode {
         for (int i = 0; i < bytes.size();) {
             var op = VALUE_MAP.get(bytes.get(i++));
             if (op.operands.length > 0) {
-                 sb.append(String.format("%-7d%-16s", i - 1, op));
+                sb.append(String.format("%-7d%-16s", i - 1, op));
                 StringJoiner sj = new StringJoiner(", ");
                 for (var operand : op.operands) {
                     var operandSize = operand.byteCount;
                     var value = fromBytes(bytes.subList(i, i + operandSize));
                     i += operandSize;
-                    switch (operand) {
-                        case ARGC:
-                        case LOCATION:
-                        case VARIABLE:
-                        case FUNCTION_NO:
-                            sj.add(Integer.toString(value));
-                            break;
-                        case CONSTANT:
-                            sj.add(String.format("%d (%s)", value, info.getConstant((short) value).name()));
-                            break;
-                        case OPERATOR:
-                            sj.add(String.format("%d (%s)", value, OpSpTypeNode.values()[value]));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException("Unknown enum value");
-                    }
+                    sj.add(format(operand, value, info));
                 }
                 sb.append(sj);
                 sb.append("\n");
@@ -182,6 +177,23 @@ public enum Bytecode {
             }
         }
         return sb.toString();
+    }
+
+    private static String format(@NotNull Type operand, int value, CompilerInfo info) {
+        switch (operand) {
+            case ARGC:
+            case LOCATION:
+            case VARIABLE:
+            case FUNCTION_NO:
+            case STACK_POS:
+                return Integer.toString(value);
+            case CONSTANT:
+                return String.format("%d (%s)", value, info.getConstant((short) value).name());
+            case OPERATOR:
+                return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
+            default:
+                throw new UnsupportedOperationException("Unknown enum value");
+        }
     }
 
     private static int fromBytes(@NotNull List<Byte> bytes) {

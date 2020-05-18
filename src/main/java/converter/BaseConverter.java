@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.AssertStatementNode;
 import main.java.parser.AssignmentNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.BaseNode;
@@ -11,11 +12,13 @@ import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
 import main.java.parser.DoStatementNode;
 import main.java.parser.DotimesStatementNode;
+import main.java.parser.EnumDefinitionNode;
 import main.java.parser.ForStatementNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.IncrementNode;
+import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
@@ -40,6 +43,8 @@ public interface BaseConverter {
     private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
         if (node instanceof TestNode) {
             return TestConverter.of(info, (TestNode) node, 0);
+        } else if (node instanceof AssertStatementNode) {
+            return new AssertConverter(info, (AssertStatementNode) node);
         } else if (node instanceof AssignmentNode) {
             return new AssignmentConverter(info, (AssignmentNode) node);
         } else if (node instanceof AugmentedAssignmentNode) {
@@ -60,6 +65,8 @@ public interface BaseConverter {
             return new DoWhileConverter(info, (DoStatementNode) node);
         } else if (node instanceof DotimesStatementNode) {
             return new DotimesConverter(info, (DotimesStatementNode) node);
+        } else if (node instanceof EnumDefinitionNode) {
+            return new EnumConverter(info, (EnumDefinitionNode) node);
         } else if (node instanceof ForStatementNode) {
             return new ForConverter(info, (ForStatementNode) node);
         } else if (node instanceof FunctionDefinitionNode) {
@@ -70,6 +77,8 @@ public interface BaseConverter {
             return new ImportExportConverter(info, (ImportExportNode) node);
         } else if (node instanceof IncrementNode) {
             return new IncrementDecrementConverter(info, (IncrementNode) node);
+        } else if (node instanceof InterfaceDefinitionNode) {
+            return new InterfaceConverter(info, (InterfaceDefinitionNode) node);
         } else if (node instanceof ReturnStatementNode) {
             return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof StatementBodyNode) {

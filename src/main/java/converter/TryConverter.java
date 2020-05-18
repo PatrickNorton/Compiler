@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class TryConverter implements BaseConverter {
-    private TryStatementNode node;
-    private CompilerInfo info;
+    private final TryStatementNode node;
+    private final CompilerInfo info;
 
     public TryConverter(CompilerInfo info, TryStatementNode node) {
         this.node = node;
@@ -33,7 +33,8 @@ public final class TryConverter implements BaseConverter {
             bytes.addAll(Util.shortToBytes(constIndex));
         }
         if (!node.getAsVar().isEmpty()) {
-            info.addVariable(node.getAsVar().getName(), TypeObject.union(info.typesOf(node.getExcepted())));
+            var asVar = node.getAsVar();
+            info.addVariable(asVar.getName(), TypeObject.union(info.typesOf(node.getExcepted())), asVar);
             bytes.add(Bytecode.STORE.value);
             bytes.addAll(Util.shortToBytes(info.varIndex(node.getAsVar().getName())));
         } else {

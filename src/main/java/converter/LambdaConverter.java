@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class LambdaConverter implements TestConverter {
-    private LambdaNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final LambdaNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public LambdaConverter(CompilerInfo info, LambdaNode node, int retCount) {
         this.node = node;
@@ -47,7 +47,7 @@ public final class LambdaConverter implements TestConverter {
         if (node.isArrow() && node.getReturns().length == 0) {
             info.addStackFrame();
             for (var arg : node.getArgs()) {
-                info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
+                info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
             }
             var retType = TestConverter.returnType((TestNode) node.getBody().get(0), info, 1);
             info.removeStackFrame();
@@ -62,7 +62,7 @@ public final class LambdaConverter implements TestConverter {
         info.addStackFrame();
         info.addFunctionReturns(lambdaReturnType());
         for (var arg : node.getArgs()) {
-            info.addVariable(arg.getName().getName(), info.getType(arg.getType()));
+            info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
         List<Byte> fnBytes = new ArrayList<>(node.isArrow()
                 ? TestConverter.bytes(0, (TestNode) node.getBody().get(0), info, lambdaReturnType().length)

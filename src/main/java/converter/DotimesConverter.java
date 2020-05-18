@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DotimesConverter extends LoopConverter {
-    private DotimesStatementNode node;
-    private CompilerInfo info;
+    private final DotimesStatementNode node;
+    private final CompilerInfo info;
 
     public DotimesConverter(CompilerInfo info, DotimesStatementNode node) {
         super(info);

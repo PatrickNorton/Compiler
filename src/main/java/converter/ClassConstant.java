@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ClassConstant implements LangConstant {
-    private String name;
-    private int index;
+    private final String name;
+    private final int index;
 
     public ClassConstant(String name, int index) {
         this.name = name;

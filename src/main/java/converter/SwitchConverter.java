@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
-    private SwitchStatementNode node;
-    private int retCount;  // TODO: Make switch expressions work
+    private final SwitchStatementNode node;
+    private final int retCount;  // TODO: Make switch expressions work
 
     public SwitchConverter(CompilerInfo info, SwitchStatementNode node, int retCount) {
         super(info, false);

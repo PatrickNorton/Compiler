@@ -1,9 +1,11 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +34,9 @@ public final class Builtins {
             OpSpTypeNode.EXIT, new FunctionInfo(TypeObject.list())
     );
 
-    public static final TypeObject CONTEXT = new DefaultInterface("Context", CONTEXT_MAP);
+    public static final InterfaceType CONTEXT = new InterfaceType(
+            "Context", GenericInfo.of(CONTEXT_PARAM), CONTEXT_MAP
+    );
 
     private static final TemplateParam CALLABLE_ARGS = new TemplateParam("K", 0, true);
 
@@ -42,7 +46,9 @@ public final class Builtins {
             OpSpTypeNode.CALL, new FunctionInfo(ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
     );
 
-    public static final TypeObject CALLABLE = new DefaultInterface("Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP);
+    public static final InterfaceType CALLABLE = new InterfaceType(
+            "Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP
+    );
 
     private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
@@ -50,7 +56,9 @@ public final class Builtins {
             OpSpTypeNode.ITER, new FunctionInfo(ITERABLE_PARAM)
     );
 
-    public static final TypeObject ITERABLE = new DefaultInterface("Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP);
+    public static final InterfaceType ITERABLE = new InterfaceType(
+            "Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP
+    );
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
@@ -68,11 +76,19 @@ public final class Builtins {
 
     public static final TypeObject TYPE = new TypeTypeObject();
 
-    public static final LangObject PRINT = new LangInstance(CALLABLE.generify(TypeObject.list()));
+    private static final FunctionInfo PRINT_INFO = new FunctionInfo("print", ArgumentInfo.of(OBJECT));
 
-    public static final LangObject INPUT = new LangInstance(CALLABLE.generify(STR, TypeObject.list(STR)));
+    public static final LangObject PRINT = new LangInstance(PRINT_INFO.toCallable());
+
+    private static final FunctionInfo INPUT_INFO = new FunctionInfo("input", ArgumentInfo.of(STR), STR);
+
+    public static final LangObject INPUT = new LangInstance(INPUT_INFO.toCallable());
 
     public static final LangObject ITER = new LangInstance(CALLABLE);
+
+    private static final FunctionInfo REPR_INFO = new FunctionInfo("repr", ArgumentInfo.of(OBJECT), STR);
+
+    public static final LangObject REPR = new LangInstance(REPR_INFO.toCallable());
 
     private static final TemplateParam LIST_PARAM = new TemplateParam("T", 0, OBJECT);
 
@@ -92,13 +108,18 @@ public final class Builtins {
 
     public static final LangConstant FALSE = new BoolConstant(false);
 
-    public static final LangObject OPEN = new LangInstance(CONTEXT);
+    public static final LangObject OPEN = new LangInstance(CONTEXT.generify(OBJECT));  // TODO: File object
 
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
 
+    public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
+            CONTEXT, CALLABLE, ITERABLE
+    );
+
     static {  // Set int operators
+        INT.isConstClass();
         var intOperatorInfo = new FunctionInfo(ArgumentInfo.of(INT), INT);
         var intCompInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
 
@@ -122,37 +143,57 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.GREATER_THAN, intCompInfo),
                 Map.entry(OpSpTypeNode.GREATER_EQUAL, intCompInfo),
 
-                Map.entry(OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT)))
+                Map.entry(OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))),
+                Map.entry(OpSpTypeNode.UNARY_MINUS, new FunctionInfo(INT))
         );
 
         INT.setOperators(intMap);
+        INT.seal();
     }
 
     static {  // Set str operators
+        STR.isConstClass();
         var strMap = Map.of(
                 OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(STR), STR),
                 OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), STR),
                 OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(STR), BOOL),
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), CHAR),
+                OpSpTypeNode.ITER, new FunctionInfo(CHAR),
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
+        var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), STR));
+        var upperLowerInfo = new FunctionInfo(STR);
+        var strAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
+                "join", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), joinInfo.toCallable()),
+                "upper", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), upperLowerInfo.toCallable()),
+                "lower", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), upperLowerInfo.toCallable())
+        );
+        STR.setAttributes(strAttrs);
+        STR.seal();
     }
 
     static {  // Set char operators
+        CHAR.isConstClass();
         // TODO: More char operators
         var charMap = Map.of(
-                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR)
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(CHAR), BOOL)
         );
         CHAR.setOperators(charMap);
+        CHAR.seal();
     }
 
     static {  // Set range operators
+        RANGE.isConstClass();
         var rangeMap = Map.of(
                 OpSpTypeNode.ITER, new FunctionInfo(INT),
-                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL)
+                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(RANGE), BOOL)
         );
         RANGE.setOperators(rangeMap);
+        RANGE.seal();
     }
 
     static {  // Set list operators
@@ -164,6 +205,11 @@ public final class Builtins {
                 OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
         );
         LIST.setOperators(listMap);
+        var listAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        LIST.setAttributes(listAttrs);
+        LIST.seal();
     }
 
     static {  // Set set operators
@@ -179,6 +225,11 @@ public final class Builtins {
                 OpSpTypeNode.ITER, new FunctionInfo(SET_PARAM)
         );
         SET.setOperators(setMap);
+        var setAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        SET.setAttributes(setAttrs);
+        SET.seal();
     }
 
     static {
@@ -196,6 +247,22 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, dictEqInfo
         );
         DICT.setOperators(dictMap);
+        var dictAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+        );
+        DICT.setAttributes(dictAttrs);
+        DICT.seal();
+    }
+
+    static {  // null is const
+        NULL_TYPE.isConstClass();
+        NULL_TYPE.seal();
+    }
+
+    static {  // seal everything else
+        DECIMAL.seal();
+        BOOL.seal();
+        THROWS.seal();
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(
@@ -207,6 +274,7 @@ public final class Builtins {
             RANGE,
             TYPE,
             ITER,
+            REPR,
             INPUT,
             LIST,
             SET,
@@ -232,6 +300,7 @@ public final class Builtins {
             Map.entry("open", OPEN),
             Map.entry("Callable", CALLABLE),
             Map.entry("Iterable", ITERABLE),
+            Map.entry("repr", REPR),
             Map.entry("null", NULL)
     );
 

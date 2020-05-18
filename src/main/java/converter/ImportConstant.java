@@ -5,9 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImportConstant implements LangConstant {
-    private String name;
-    private int index;
+public final class ImportConstant implements LangConstant {
+    private final String name;
+    private final int index;
 
     public ImportConstant(int index, String name) {
         this.index = index;

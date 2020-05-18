@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AssignmentConverter implements BaseConverter {
-    private CompilerInfo info;
-    private AssignmentNode node;
+    private final CompilerInfo info;
+    private final AssignmentNode node;
 
     public AssignmentConverter(CompilerInfo info, AssignmentNode node) {
         this.info = info;
@@ -48,18 +48,21 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
                                   @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
         var valueType = valueConverter.returnType()[0];
-        if (info.varIsUndefined(variable.getName())) {
-            throw CompilerException.format("Attempted to assign to undefined name %s",
-                    variable, variable.getName());
+        var name = variable.getName();
+        if (info.varIsUndefined(name)) {
+            throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
         }
-        var varType = info.getType(variable.getName());
-        if (!valueType.isSuperclass(varType)) {
+        if (info.variableIsConstant(name)) {
+            throw CompilerException.format("Cannot assign to const variable %s", variable, name);
+        }
+        var varType = info.getType(name);
+        if (!varType.isSuperclass(valueType)) {
             throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
                     node, valueType.name(), varType.name());
         }
         bytes.addAll(valueConverter.convert(start));
         storeBytes.add(0, Bytecode.STORE.value);
-        storeBytes.addAll(1, Util.shortToBytes(info.varIndex(variable.getName())));
+        storeBytes.addAll(1, Util.shortToBytes(info.varIndex(name)));
     }
 
     private void assignToIndex(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,

@@ -1,16 +1,40 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
-public class ObjectType implements TypeObject {
+public final class ObjectType extends TypeObject {
+    private final String typedefName;
+
+    public ObjectType() {
+        this.typedefName = "";
+    }
+
+    private ObjectType(String typedefName) {
+        this.typedefName = typedefName;
+    }
+
     @Override
-    public boolean isSuperclass(TypeObject other) {
-        return other instanceof ObjectType;
+    public boolean isSuperclass(@NotNull TypeObject other) {
+        return true;
+    }
+
+    protected boolean isSubclass(@NotNull TypeObject other) {
+        return other.equals(this);
     }
 
     @Override
     public String name() {
-        return "object";
+        return typedefName.isEmpty() ? "object" : typedefName;
+    }
+
+    @Contract("_ -> new")
+    @Override
+    @NotNull
+    public TypeObject typedefAs(String name) {
+        return new ObjectType(name);
     }
 
     @Override

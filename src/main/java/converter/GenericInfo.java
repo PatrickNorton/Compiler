@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
+import main.java.parser.TypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +40,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         List<TypeObject> result = new ArrayList<>();
         int i;
         for (i = 0; i < args.length && !params.get(i).isVararg(); i++) {
-            assert params.get(i).getBound() instanceof ListTypeObject ^ args[i] instanceof ListTypeObject;
+            assert params.get(i).getBound() instanceof ListTypeObject == args[i] instanceof ListTypeObject;
             result.add(args[i]);
         }
         if (i == args.length) return result;
@@ -84,8 +85,16 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         List<TemplateParam> params = new ArrayList<>();
         for (int i = 0; i < generics.length; i++) {
             var generic = generics[i];
-            var bound = generic.getSubtypes().length == 1 ? info.getType(generic.getSubtypes()[0]) : Builtins.OBJECT;
-            var param = new TemplateParam(generic.strName(), i, bound);
+            TemplateParam param;
+            if (generic.isVararg()) {
+                param = new TemplateParam(generic.strName(), i, true);
+            } else if (generic instanceof TypeNode && ((TypeNode) generic).getName().isEmpty()) {
+                assert generic.getSubtypes().length == 1 && generic.getSubtypes()[0].isVararg();  // => [*T]
+                param = new TemplateParam(generic.getSubtypes()[0].strName(), i, TypeObject.list());
+            } else {
+                var bound = generic.getSubtypes().length == 1 ? info.getType(generic.getSubtypes()[0]) : Builtins.OBJECT;
+                param = new TemplateParam(generic.strName(), i, bound);
+            }
             info.addType(param);
             params.add(param);
         }

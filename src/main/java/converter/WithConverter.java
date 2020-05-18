@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class WithConverter implements BaseConverter {
-    private WithStatementNode node;
-    private CompilerInfo info;
+    private final WithStatementNode node;
+    private final CompilerInfo info;
 
     public WithConverter(CompilerInfo info, WithStatementNode node) {
         this.info = info;
@@ -25,7 +25,7 @@ public final class WithConverter implements BaseConverter {
         var contextConverter = TestConverter.of(info, node.getManaged().get(0), 1);
         var variable = node.getVars()[0];
         var valueType = node.getVars()[0].getType();
-        var returnType = contextConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ENTER)[0];
+        var returnType = contextConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ENTER, info)[0];
         var trueType = valueType.isDecided() ? info.getType(valueType) : returnType;
         if (!trueType.isSuperclass(returnType)) {
             throw CompilerException.format(
@@ -35,7 +35,8 @@ public final class WithConverter implements BaseConverter {
             );
         }
         List<Byte> bytes = new ArrayList<>(contextConverter.convert(start));
-        info.addVariable(variable.getVariable().getName(), trueType);
+        info.checkDefinition(variable.getVariable().getName(), variable);
+        info.addVariable(variable.getVariable().getName(), trueType, variable);
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.CALL_OP.value);
         bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.ENTER.ordinal()));

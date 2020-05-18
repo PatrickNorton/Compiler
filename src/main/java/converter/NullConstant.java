@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class NullConstant implements LangConstant {
+public final class NullConstant implements LangConstant {
     public static final StdTypeObject TYPE = new StdTypeObject("null");
 
     @NotNull

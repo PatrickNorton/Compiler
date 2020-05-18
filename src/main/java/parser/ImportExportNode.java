@@ -123,6 +123,7 @@ public class ImportExportNode implements SimpleStatementNode {
         }
         DottedVariableNode[] imports = DottedVariableNode.parseNameOnlyList(tokens);
         if (tokens.tokenIs(Keyword.AS)) {
+            tokens.nextToken();
             DottedVariableNode[] as = DottedVariableNode.parseNameOnlyList(tokens);
             return new ImportExportNode(type, info, imports, from, as, preDots);
         }

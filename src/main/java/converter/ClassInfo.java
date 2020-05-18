@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -9,19 +10,21 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ClassInfo {
-    private StdTypeObject type;
-    private List<Short> superConstants;
-    private Map<String, Short> variables;
-    private Map<String, Short> staticVariables;
-    private Map<OpSpTypeNode, List<Byte>> operatorDefs;
-    private Map<OpSpTypeNode, List<Byte>> staticOperators;
-    private Map<String, List<Byte>> methodDefs;
-    private Map<String, List<Byte>> staticMethods;
+    private final UserType<?> type;
+    private final List<Short> superConstants;
+    private final Map<String, Short> variables;
+    private final Map<String, Short> staticVariables;
+    private final Map<OpSpTypeNode, List<Byte>> operatorDefs;
+    private final Map<OpSpTypeNode, List<Byte>> staticOperators;
+    private final Map<String, List<Byte>> methodDefs;
+    private final Map<String, List<Byte>> staticMethods;
+    private final Map<String, Pair<List<Byte>, List<Byte>>> properties;
 
-    private ClassInfo(StdTypeObject type, List<Short> superConstants,
+    private ClassInfo(UserType<?> type, List<Short> superConstants,
                       Map<String, Short> variables, Map<String, Short> staticVariables,
                       Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
-                      Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods) {
+                      Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods,
+                      Map<String, Pair<List<Byte>, List<Byte>>> properties) {
         this.type = type;
         this.superConstants = superConstants;
         this.variables = variables;
@@ -30,9 +33,10 @@ public final class ClassInfo {
         this.staticOperators = staticOperators;
         this.staticMethods = staticMethods;
         this.methodDefs = methodDefs;
+        this.properties = properties;
     }
 
-    public StdTypeObject getType() {
+    public UserType<?> getType() {
         return type;
     }
 
@@ -46,6 +50,10 @@ public final class ClassInfo {
 
     public Map<String, List<Byte>> getStaticMethods() {
         return staticMethods;
+    }
+
+    public Map<String, Pair<List<Byte>, List<Byte>>> getProperties() {
+        return properties;
     }
 
     public String name() {
@@ -66,6 +74,7 @@ public final class ClassInfo {
         addOperators(bytes, staticOperators);
         addMethods(bytes, methodDefs);
         addMethods(bytes, staticMethods);
+        addProperties(bytes, properties);
         return bytes;
     }
 
@@ -95,6 +104,17 @@ public final class ClassInfo {
         }
     }
 
+    private static void addProperties(@NotNull List<Byte> bytes, @NotNull Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+        bytes.addAll(Util.intToBytes(properties.size()));
+        for (var pair : properties.entrySet()) {
+            bytes.addAll(StringConstant.strBytes(pair.getKey()));
+            bytes.addAll(Util.intToBytes(pair.getValue().getKey().size()));
+            bytes.addAll(pair.getValue().getKey());
+            bytes.addAll(Util.intToBytes(pair.getValue().getValue().size()));
+            bytes.addAll(pair.getValue().getValue());
+        }
+    }
+
     private static void addSet(@NotNull List<Byte> bytes, @NotNull Set<String> set) {
         bytes.addAll(Util.intToBytes(set.size()));
         for (var str : set) {
@@ -103,7 +123,7 @@ public final class ClassInfo {
     }
 
     public static class Factory {
-        private StdTypeObject type;
+        private UserType<?> type;
         private List<Short> superConstants;
         private Map<String, Short> variables;
         private Map<String, Short> staticVariables;
@@ -111,8 +131,9 @@ public final class ClassInfo {
         private Map<OpSpTypeNode, List<Byte>> staticOperators;
         private Map<String, List<Byte>> methodDefs;
         private Map<String, List<Byte>> staticMethods;
+        private Map<String, Pair<List<Byte>, List<Byte>>> properties;
 
-        public Factory setType(StdTypeObject type) {
+        public Factory setType(UserType<?> type) {
             assert this.type == null;
             this.type = type;
             return this;
@@ -160,9 +181,15 @@ public final class ClassInfo {
             return this;
         }
 
+        public Factory setProperties(Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+            assert this.properties == null;
+            this.properties = properties;
+            return this;
+        }
+
         public ClassInfo create() {
             return new ClassInfo(type, superConstants, variables, staticVariables,
-                    operatorDefs, staticOperators, methodDefs, staticMethods);
+                    operatorDefs, staticOperators, methodDefs, staticMethods, properties);
         }
     }
 }

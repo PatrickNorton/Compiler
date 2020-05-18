@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Patrick Norton
  */
-public class EnumDefinitionNode implements ClassStatementNode, DefinitionNode {
+public class EnumDefinitionNode implements BaseClassNode {
     private LineInfo lineInfo;
     private TypeNode name;
     private TypeLikeNode[] superclasses;

@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 public final class Argument {
@@ -31,5 +34,15 @@ public final class Argument {
     @Override
     public int hashCode() {
         return Objects.hash(name, type);
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    public static TypeObject[] typesOf(@NotNull Argument... args) {
+        TypeObject[] result = new TypeObject[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = args[i].getType();
+        }
+        return result;
     }
 }

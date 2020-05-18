@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ForConverter extends LoopConverter {
-    private ForStatementNode node;
-    private CompilerInfo info;
+    private final ForStatementNode node;
+    private final CompilerInfo info;
 
     public ForConverter(CompilerInfo info, ForStatementNode node) {
         super(info);
@@ -34,9 +34,10 @@ public final class ForConverter extends LoopConverter {
             if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
                 throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
             }
-            info.addVariable(iteratedName, iteratorType);
+            info.checkDefinition(iteratedName, node.getVars()[0]);
+            info.addVariable(iteratedName, iteratorType, node.getVars()[0]);
         }
-        var valueReturnedType = valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER)[0];
+        var valueReturnedType = valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[0];
         if (!iteratorType.isSuperclass(valueReturnedType)) {
             throw CompilerException.format(
                     "'for'-loop iterator returns '%s', variable requires '%s'",
@@ -73,7 +74,7 @@ public final class ForConverter extends LoopConverter {
             return info.getType(iteratorType);
         } else {
             var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
-            return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER)[0];
+            return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[0];
         }
     }
 }

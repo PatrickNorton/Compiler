@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DoWhileConverter extends LoopConverter {
-    private DoStatementNode node;
+    private final DoStatementNode node;
 
     public DoWhileConverter(CompilerInfo info, DoStatementNode node) {
         super(info);

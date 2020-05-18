@@ -1,12 +1,16 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypeUnionNode;
 import main.java.parser.TypewiseAndNode;
+import main.java.util.Counter;
+import main.java.util.HashCounter;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -29,24 +33,32 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * The class representing all information needing to be held during compilation.
+ * @author Patrick Norton
+ */
 public final class CompilerInfo {
-    private TopNode node;
-    private Set<String> exports = new HashSet<>();
-    private Map<String, TypeObject> exportTypes = new HashMap<>();
-    private IndexedSet<String> imports = new IndexedHashSet<>();
-    private Map<String, TypeObject> importTypes = new HashMap<>();
-    private List<Function> functions = new ArrayList<>(Collections.singletonList(null));
-    private IndexedSet<LangConstant> constants = new IndexedHashSet<>();
-    private IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
-    private LoopManager loopManager = new LoopManager();
+    private final TopNode node;
+    private final Set<String> exports = new HashSet<>();
+    private final Map<String, TypeObject> exportTypes = new HashMap<>();
+    private final IndexedSet<String> imports = new IndexedHashSet<>();
+    private final Map<String, TypeObject> importTypes = new HashMap<>();
+    private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
+    private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
+    private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
+    private final LoopManager loopManager = new LoopManager();
 
-    private List<Map<String, VariableInfo>> variables = new ArrayList<>();
-    private Map<String, NameableType> typeMap = new HashMap<>();
-    private IntAllocator varNumbers = new IntAllocator();
+    private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
+    private final Map<String, TypeObject> typeMap = new HashMap<>();
+    private final IntAllocator varNumbers = new IntAllocator();
+    private final IntAllocator staticVarNumbers = new IntAllocator();
 
-    private IntAllocator anonymousNums = new IntAllocator();
+    private final IntAllocator anonymousNums = new IntAllocator();
 
-    private Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
+    private final Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
+
+    private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
+    private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
 
     private boolean allowSettingExports = false;
     private boolean linked = false;
@@ -56,6 +68,19 @@ public final class CompilerInfo {
         this.node = node;
     }
 
+    /**
+     * Compiles this, taking the name of the file to write to.
+     * <p>
+     *     If this is already compiled, nothing will happen. Otherwise, it
+     *     compiles the {@link TopNode} represented by this, and writes it to
+     *     å file. Furthermore, it will compile all files upon which it depends.
+     * </p>
+     *
+     * @throws CompilerException If a compilation error occurs
+     * @throws CompilerInternalError An unexpected internal error
+     * @param file The name of the file to be compiled
+     * @return Itself
+     */
     public CompilerInfo compile(File file) {
         if (compiled) {
             return this;
@@ -78,6 +103,21 @@ public final class CompilerInfo {
         return this;
     }
 
+    /**
+     * Adds an export.
+     * <p>
+     *     If setting exports is not allowed, (e.g. this is not in the process
+     *     of {@link #link linking}), a {@link CompilerException} will be
+     *     thrown. This is not a {@link CompilerInternalError} because it is
+     *     most likely to be thrown due to an illegally-placed {@link
+     *     ImportExportNode 'export'} statement, as opposed to a compiler bug.
+     * </p>
+     *
+     * @see #link
+     * @param name The name of the export
+     * @param type The type of the export
+     * @param info The {@link LineInfo} for the export statement
+     */
     public void addExport(String name, TypeObject type, LineInfo info) {
         if (!allowSettingExports) {
             throw CompilerException.of("Illegal position for export statement", info);
@@ -86,29 +126,68 @@ public final class CompilerInfo {
         exportTypes.put(name, type);
     }
 
+    /**
+     * Gets the type of an export.
+     *
+     * @param name The name of the export
+     * @return The export type
+     */
     public TypeObject exportType(String name) {
         return exportTypes.get(name);
     }
 
+    /**
+     * Adds an import.
+     *
+     * @param name The name if the import
+     * @return The index of the import in the imports set
+     */
     public int addImport(@NotNull String name) {
         var names = name.split("\\.");
         if (!imports.contains(name)) {
-            CompilerInfo f = Converter.findModule(names[0]);
+            CompilerInfo f = Converter.findModule(names[0]).link();
             imports.add(name);
             importTypes.put(name, f.exportTypes.get(names[1]));
         }
         return imports.indexOf(name);
     }
 
+    /**
+     * Gets the type of an import.
+     *
+     * @param name The name of the import
+     * @return THe type of the import
+     */
     public TypeObject importType(String name) {
         return importTypes.get(name);
     }
 
+    /**
+     * Adds a function to the global pool of functions.
+     * <p>
+     *     This will not add the name of the function to any set of in-scope
+     *     variables, so the function's name will need to be added separately
+     *     using {@link #addVariable(String, TypeObject, Lined)}. This is for
+     *     things such as {@link main.java.parser.LambdaNode lambdae}, which
+     *     should not be put into scope automatically, being anonymous. This
+     *     will, however, ensure the bytecode of all functions gets written to
+     *     the output file.
+     * </p>
+     *
+     * @param info The (already-compiled) function info
+     * @return The index of the function when written
+     */
     public int addFunction(@NotNull Function info) {
         functions.add(info);
         return functions.size() - 1;
     }
 
+    /**
+     * Get the {@link FunctionInfo} representing a function.
+     *
+     * @param name The name of the function
+     * @return The function info, or {@code null} if not found
+     */
     @Nullable
     public FunctionInfo fnInfo(String name) {
         for (var fn : functions) {
@@ -117,6 +196,22 @@ public final class CompilerInfo {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the index of a function in the function list.
+     *
+     * @param name The name of the function
+     * @return The index, or {@code -1} if not found
+     */
+    public short fnIndex(String name) {
+        for (int i = 0; i < functions.size(); i++) {
+            var fn = functions.get(i);
+            if (fn != null && fn.getName().equals(name)) {
+                return (short) i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -155,15 +250,54 @@ public final class CompilerInfo {
                 : Builtins.constantOf(name));
     }
 
+    /**
+     * Gets the {@link LangConstant} given the index.
+     * Currently used only for {@link Bytecode} formatting.
+     *
+     * @param index The index of the constant
+     * @return The constant itself
+     */
     public LangConstant getConstant(short index) {
         return constants.get(index);
     }
 
+    /**
+     * Adds a class to the class pool.
+     * <p>
+     *     Like its friend {@link #addFunction}, this does not link a name
+     *     to the class, that must be done separately. This is both for local
+     *     classes, which may have different scoping rules, and internal
+     *     consistency. This will ensure the class gets written to the bytecode
+     *     file at the end of compilation.
+     * </p>
+     *
+     * @param info The {@link ClassInfo} representing the class
+     * @return The index of the class in the class pool
+     */
     public int addClass(ClassInfo info) {
         classes.add(info);
         return classes.indexOf(info);
     }
 
+    /**
+     * Links this.
+     * <p>
+     *     Most of linking is done using the {@link Linker}, and is described
+     *     {@link Linker#link there}. If this has already been linked, nothing
+     *     happens. Otherwise, it runs the Linker, and then takes its exports
+     *     and globals and makes them accessible for later compilation. Linking
+     *     is run as part of {@link #compile compilation}, as well as before
+     *     getting imports.
+     * </p><p>
+     *     Because of the link-check that occurs at the beginning of the
+     *     function, calling this multiple times is (almost) zero-cost.
+     *     Accordingly, one should call this method before doing
+     *     anything that might require information being processed at link-time
+     *     if the link status is in any doubt.
+     * </p>
+     *
+     * @return Itself
+     */
     public CompilerInfo link() {
         if (linked) {
             return this;
@@ -190,6 +324,32 @@ public final class CompilerInfo {
         return this;
     }
 
+    /**
+     * Writes itself to the file specified.
+     * <p>
+     *     The file layout is as follows:
+     * <code><pre>
+     * Magic number: 0xABADE66
+     * Imports:
+     *     Name of import
+     *     Name of import
+     * Exports:
+     *     Name of export
+     *     Index of constant
+     * Constants:
+     *     Byte representation of each constant ({@link LangConstant#toBytes})
+     * Functions:
+     *     Function name
+     *     Number of local variables (currently unused)
+     *     Length of the bytecode
+     *     Bytecode
+     * Classes:
+     *     Byte representation of the class ({@link ClassInfo#toBytes})
+     * </pre></code>
+     * </p>
+     *
+     * @param file The file to write to
+     */
     public void writeToFile(@NotNull File file) {
         printDisassembly();
         if (!file.getParentFile().exists()) {
@@ -261,6 +421,12 @@ public final class CompilerInfo {
             for (var opPair : cls.getOperatorDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
                 System.out.println(Bytecode.disassemble(this, opPair.getValue()));
+            }
+            for (var propPair : cls.getProperties().entrySet()) {
+                System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
+                System.out.println(Bytecode.disassemble(this, propPair.getValue().getKey()));
+                System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
+                System.out.println(Bytecode.disassemble(this, propPair.getValue().getValue()));
             }
         }
     }
@@ -339,18 +505,39 @@ public final class CompilerInfo {
         }
     }
 
+    /**
+     * Gets the class, given its name.
+     *
+     * @param str The name of the class
+     * @return The class, or {@code null} if not found
+     */
     @Nullable
-    public NameableType classOf(String str) {
+    public TypeObject classOf(String str) {
         var cls = typeMap.get(str);
         if (cls == null) {
             var builtin = Builtins.BUILTIN_MAP.get(str);
-            return builtin instanceof NameableType ? (NameableType) builtin : null;
+            return builtin instanceof TypeObject ? (TypeObject) builtin : null;
         }
         return cls;
     }
 
+    /**
+     * Adds a type to the map.
+     *
+     * @param type The type to add
+     */
     public void addType(NameableType type) {
         typeMap.put(type.name(), type);
+    }
+
+    /**
+     * If the type has been previously been defined.
+     *
+     * @param typeName The name of the type
+     * @return If the type has been defined
+     */
+    public boolean hasType(String typeName) {
+        return typeMap.containsKey(typeName);
     }
 
     /**
@@ -366,6 +553,16 @@ public final class CompilerInfo {
 
     public boolean varIsUndefined(String name) {
         return varInfo(name) == null && !Builtins.BUILTIN_MAP.containsKey(name);
+    }
+
+    public boolean varDefinedInCurrentFrame(String name) {
+        return variables.get(variables.size() - 1).get(name) != null;
+    }
+
+    public void checkDefinition(String name, Lined info) {
+        if (varDefinedInCurrentFrame(name)) {
+            throw CompilerException.doubleDef(name, declarationInfo(name), info.getLineInfo());
+        }
     }
 
     /**
@@ -392,13 +589,24 @@ public final class CompilerInfo {
      * @param type The type of the variable
      * @param constValue The constant value the variable has
      */
-    public void addVariable(String name, TypeObject type, LangConstant constValue) {
+    public void addVariable(String name, TypeObject type, LangConstant constValue, @NotNull Lined info) {
         addConstant(constValue);
-        addVariable(name, new VariableInfo(type, constValue));
+        addVariable(name, new VariableInfo(type, constValue, info.getLineInfo()));
     }
 
-    public void addVariable(String name, TypeObject type, boolean isConst) {
-        addVariable(name, new VariableInfo(type, isConst, (short) varNumbers.getNext()));
+    /**
+     * Adds a variable to the stack.
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param isConst If the variable is const
+     * @param info The {@link LineInfo} for the variable's definition
+     * @return The index of the variable for {@link Bytecode#LOAD_VALUE}
+     */
+    public short addVariable(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+        var index = (short) varNumbers.getNext();
+        addVariable(name, new VariableInfo(type, isConst, index, info.getLineInfo()));
+        return index;
     }
 
     /**
@@ -407,12 +615,34 @@ public final class CompilerInfo {
      * @param name The name of the variable
      * @param type The type of the variable
      */
-    public void addVariable(String name, TypeObject type) {
-        addVariable(name, new VariableInfo(type, (short) varNumbers.getNext()));
+    public void addVariable(String name, TypeObject type, @NotNull Lined info) {
+        addVariable(name, new VariableInfo(type, (short) varNumbers.getNext(), info.getLineInfo()));
     }
 
     private void addVariable(String name, VariableInfo info) {
          variables.get(variables.size() - 1).put(name, info);
+    }
+
+    /**
+     * Adds a static variable to the stack.
+     * <p>
+     *     Static variables get their static index through {@link
+     *     VariableInfo#getStaticLocation()} as opposed to non-static variables,
+     *     which get their index through {@link VariableInfo#getLocation()}.
+     *     This prevents accidental mishaps with loading a static variable
+     *     non-statically and vice versa.
+     * </p>
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param isConst If the variable is const
+     * @param info The {@link LineInfo} representing the variable
+     * @return The index of the variable for {@link Bytecode#LOAD_STATIC}
+     */
+    public short addStaticVar(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+        var index = (short) staticVarNumbers.getNext();
+        addVariable(name, new VariableInfo(type, isConst, true, index, info.getLineInfo()));
+        return index;
     }
 
     /**
@@ -424,6 +654,17 @@ public final class CompilerInfo {
     public boolean variableIsConstant(String name) {
         var info = varInfo(name);
         return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.hasConstValue();
+    }
+
+    /**
+     * Checks if a variable is static.
+     *
+     * @param name The name of the variable to check
+     * @return If the variable is static
+     */
+    public boolean variableIsStatic(String name) {
+        var info = varInfo(name);
+        return info != null && info.isStatic();
     }
 
     @Nullable
@@ -447,6 +688,39 @@ public final class CompilerInfo {
         return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
     }
 
+    /**
+     * The index of the variable in the static variable set.
+     *
+     * @param name The name of the variable
+     * @return The index
+     */
+    public short staticVarIndex(String name) {
+        return Objects.requireNonNull(varInfo(name), "Unknown variable").getStaticLocation();
+    }
+
+    /**
+     * Get the {@link LineInfo} for the declaration of a variable.
+     * <p>
+     *     This requires that the variable is defined, or it will throw a
+     *     {@link NullPointerException}.
+     * </p>
+     * @param name The name to check for
+     * @return The {@link LineInfo} for the declaration
+     */
+    @NotNull
+    public LineInfo declarationInfo(String name) {
+        return Objects.requireNonNull(varInfo(name)).getDeclarationInfo();
+    }
+
+    /**
+     * Converts multiple {@link TypeLikeNode}s to the corresponding
+     * {@link TypeObject}s.
+     *
+     * @apiNote The single-value version of this is {@link
+     *      #getType(TypeLikeNode)}, not {@code typeOf} as might be expected.
+     * @param types The types
+     * @return The array of translated types
+     */
     @NotNull
     @Contract(pure = true)
     public TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
@@ -457,31 +731,156 @@ public final class CompilerInfo {
         return typeObjects;
     }
 
+    /**
+     * Gets the path to the compiled file.
+     *
+     * @return The path
+     */
     public Path path() {
         return node.getPath();
     }
 
+    /**
+     * Adds the given function returns to the file.
+     *
+     * @param values The values to be added
+     * @see #currentFnReturns()
+     */
     public void addFunctionReturns(TypeObject[] values) {
         fnReturns.push(values);
     }
 
+    /**
+     * Gets the return values of the currently-being-compiled function, as
+     * given in {@link #addFunctionReturns}.
+     *
+     * @return The returns of the current function
+     * @see #addFunctionReturns(TypeObject[])
+     */
     public TypeObject[] currentFnReturns() {
         return fnReturns.peekFirst();
     }
 
+    /**
+     * Pops the function returns, for when the function is done being compiled.
+     *
+     * @see #addFunctionReturns(TypeObject[])
+     * @see #currentFnReturns()
+     */
     public void popFnReturns() {
         fnReturns.pop();
     }
 
+    /**
+     * If the compiler is currently not compiling a function.
+     *
+     * @return If no function returns exist
+     */
     public boolean notInFunction() {
         return fnReturns.isEmpty();
     }
 
+    /**
+     * Get a globally-unique lambda name.
+     * <p>
+     *     This name is guaranteed to not match any valid variable name, as well
+     *     as not match any other lambda name generated using this function.
+     * </p>
+     *
+     * @implNote This name is of the form {@code lambda$[x]}, where {@code [x]}
+     *      is a unique integer.
+     * @return The unique lambda name
+     */
     public String lambdaName() {
         return String.format("lambda$%d", anonymousNums.getNext());
     }
 
+    /**
+     * The current access level of the given {@link TypeObject}.
+     * <p>
+     *     The access level is the highest-security level which is allowed
+     *     to be accessed by values in the current scope. All security levels
+     *     less strict than the one given may be used. Others will throw an
+     *     exception at some point in compilation
+     * </p>
+     * @param obj The object to get the access level for
+     * @return The security access level of the type
+     */
+    public DescriptorNode accessLevel(TypeObject obj) {
+        return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE
+                : classesWithProtected.contains(obj) ? DescriptorNode.PROTECTED : DescriptorNode.PUBLIC;
+    }
+
+    /**
+     * Allows private access to the {@link TypeObject} given.
+     *
+     * @param obj The object to allow private access for
+     * @see #removePrivateAccess
+     */
+    public void allowPrivateAccess(TypeObject obj) {
+        classesWithAccess.increment(obj);
+    }
+
+    /**
+     * Removes private access for the {@link TypeObject} given.
+     * <p>
+     *     This does not guarantee that the value returned by {@link
+     *     #accessLevel} will be more strict than {@code private}, as it is
+     *     possible that private access was given in another location. Private
+     *     access will last until this has been called as many times as {@link
+     *     #allowPrivateAccess}, in order to allow correct access.
+     * </p>
+     *
+     * @param obj The object to remove private access for
+     * @see #allowPrivateAccess
+     */
+    public void removePrivateAccess(TypeObject obj) {
+        assert classesWithAccess.contains(obj);
+        classesWithAccess.decrement(obj);
+    }
+
+    /**
+     * Allows protected access to the {@link TypeObject} given.
+     *
+     * @param obj The object to allow protected access for
+     * @see #removeProtectedAccess
+     */
+    public void allowProtectedAccess(TypeObject obj) {
+        classesWithProtected.increment(obj);
+    }
+
+    /**
+     * Removes protected access for the {@link TypeObject} given.
+     * <p>
+     *     This does not guarantee that the value returned by {@link
+     *     #accessLevel} will be more strict than {@code protected}, as it is
+     *     possible that protected access was given in another location.
+     *     Protected access will last until this has been called as many times
+     *     as {@link #allowProtectedAccess}, in order to allow correct access.
+     * </p>
+     *
+     * @param obj The object to remove private access for
+     * @see #allowProtectedAccess
+     */
+    public void removeProtectedAccess(TypeObject obj) {
+        assert classesWithProtected.contains(obj);
+        classesWithProtected.decrement(obj);
+    }
+
+    /**
+     * Add the predeclared {@link TypeObject type objects} to the info.
+     *
+     * This function may only be called once.
+     *
+     * @param types The types to add
+     */
+    void addPredeclaredTypes(Map<String, TypeObject> types) {
+        assert !linked && typeMap.isEmpty();
+        typeMap.putAll(types);
+    }
+
     {  // Prevent "non-updating" compiler warning
         anonymousNums.remove(0);
+        staticVarNumbers.remove(0);
     }
 }

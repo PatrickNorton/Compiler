@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AugAssignConverter implements BaseConverter {
-    private CompilerInfo info;
-    private AugmentedAssignmentNode node;
+    private final CompilerInfo info;
+    private final AugmentedAssignmentNode node;
 
     public AugAssignConverter(CompilerInfo info, AugmentedAssignmentNode node) {
         this.info = info;
@@ -21,7 +21,8 @@ public final class AugAssignConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         var assignedConverter = TestConverter.of(info, node.getName(), 1);
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
-        var returnType = assignedConverter.returnType()[0].operatorReturnType(node.getOperator().operator)[0];
+        var converterReturn = assignedConverter.returnType()[0];
+        var returnType = converterReturn.operatorReturnType(node.getOperator().operator, info.accessLevel(converterReturn))[0];
         if (returnType == null) {
             throw CompilerException.format("Value of type %s does not have an overloaded %s operator",
                     node, assignedConverter.returnType()[0].name(), node.getOperator().operator.name);

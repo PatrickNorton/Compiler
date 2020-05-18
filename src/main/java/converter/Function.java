@@ -3,8 +3,8 @@ package main.java.converter;
 import java.util.List;
 
 public final class Function {
-    private FunctionInfo info;
-    private List<Byte> bytes;
+    private final FunctionInfo info;
+    private final List<Byte> bytes;
 
     public Function(FunctionInfo info, List<Byte> bytes) {
         this.info = info;

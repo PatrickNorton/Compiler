@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class IndexConverter implements TestConverter {
-    private IndexNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final IndexNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public IndexConverter(CompilerInfo info, IndexNode node, int retCount) {
         this.info = info;
@@ -24,10 +24,10 @@ public final class IndexConverter implements TestConverter {
     public TypeObject[] returnType() {
         var type = TypeObject.of(info, node);
         if (type != null) {
-            return new TypeObject[]{new GenerifiedTypeTypeObject(type)};
+            return new TypeObject[]{Builtins.TYPE.generify(type)};
         }
         var operator = node.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
-        return TestConverter.returnType(node.getVar(), info, 1)[0].operatorReturnType(operator);
+        return TestConverter.returnType(node.getVar(), info, 1)[0].operatorReturnType(operator, info);
     }
 
     @NotNull

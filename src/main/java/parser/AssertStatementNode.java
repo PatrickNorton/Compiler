@@ -15,11 +15,13 @@ public class AssertStatementNode implements SimpleStatementNode {
      */
     private TestNode assertion;
     private LineInfo lineInfo;
+    private TestNode asStatement;
 
     @Contract(pure = true)
-    public AssertStatementNode(LineInfo lineInfo, TestNode assertion) {
+    public AssertStatementNode(LineInfo lineInfo, TestNode assertion, TestNode as) {
         this.assertion = assertion;
         this.lineInfo = lineInfo;
+        this.asStatement = as;
     }
 
     /**
@@ -27,8 +29,8 @@ public class AssertStatementNode implements SimpleStatementNode {
      * @param assertion The assertion to be tested
      */
     @Contract(pure = true)
-    public AssertStatementNode(TestNode assertion) {
-        this(assertion.getLineInfo(), assertion);
+    public AssertStatementNode(TestNode assertion, TestNode as) {
+        this(assertion.getLineInfo(), assertion, as);
     }
 
     public TestNode getAssertion() {
@@ -38,6 +40,10 @@ public class AssertStatementNode implements SimpleStatementNode {
     @Override
     public LineInfo getLineInfo() {
         return lineInfo;
+    }
+
+    public TestNode getAs() {
+        return asStatement;
     }
 
     /**
@@ -54,7 +60,8 @@ public class AssertStatementNode implements SimpleStatementNode {
         assert tokens.tokenIs(Keyword.ASSERT);
         tokens.nextToken();
         TestNode assertion = TestNode.parse(tokens);
-        return new AssertStatementNode(assertion);
+        TestNode as = TestNode.parseOnToken(tokens, Keyword.AS, false);
+        return new AssertStatementNode(assertion, as);
     }
 
     @Override

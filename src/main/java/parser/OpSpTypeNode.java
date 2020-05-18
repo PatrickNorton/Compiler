@@ -135,6 +135,7 @@ public enum OpSpTypeNode {
         temp.put(OperatorTypeNode.BITWISE_AND, OpSpTypeNode.BITWISE_AND);
         temp.put(OperatorTypeNode.BITWISE_OR, OpSpTypeNode.BITWISE_OR);
         temp.put(OperatorTypeNode.BITWISE_XOR, OpSpTypeNode.BITWISE_XOR);
+        temp.put(OperatorTypeNode.BITWISE_NOT, OpSpTypeNode.BITWISE_NOT);
         temp.put(OperatorTypeNode.MODULO, OpSpTypeNode.MODULO);
         temp.put(OperatorTypeNode.IN, OpSpTypeNode.IN);
         temp.put(OperatorTypeNode.COMPARE, OpSpTypeNode.COMPARE);

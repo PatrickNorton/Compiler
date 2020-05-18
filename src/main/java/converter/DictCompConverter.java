@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DictCompConverter implements TestConverter {
-    private DictComprehensionNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final DictComprehensionNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public DictCompConverter(CompilerInfo info, DictComprehensionNode node, int retCount) {
         this.info = info;
@@ -25,7 +25,7 @@ public final class DictCompConverter implements TestConverter {
         if (variable instanceof TypedVariableNode) {
             var typedVariable = (TypedVariableNode) variable;
             info.addStackFrame();
-            info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()));
+            info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()), typedVariable);
             var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
             var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1)[0];
             info.removeStackFrame();
@@ -58,7 +58,8 @@ public final class DictCompConverter implements TestConverter {
         info.addStackFrame();
         if (variable instanceof TypedVariableNode) {
             var typedVar = (TypedVariableNode) variable;
-            info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()));
+            info.checkDefinition(typedVar.getVariable().getName(), typedVar);
+            info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), typedVar);
         }
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));

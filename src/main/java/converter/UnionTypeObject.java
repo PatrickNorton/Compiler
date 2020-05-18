@@ -1,20 +1,33 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 
-public class UnionTypeObject implements TypeObject {
+public final class UnionTypeObject extends TypeObject {
     private final SortedSet<TypeObject> types;
+    private final String typedefName;
 
     public UnionTypeObject(SortedSet<TypeObject> types) {
         this.types = Collections.unmodifiableSortedSet(types);
+        this.typedefName = "";
+    }
+
+    private UnionTypeObject(SortedSet<TypeObject> types, String typedefName) {
+        this.types = types;
+        this.typedefName = typedefName;
     }
 
     @Override
     public String name() {
+        if (!typedefName.isEmpty()) {
+            return typedefName;
+        }
         var sj = new StringJoiner("|");
         for (var type : types) {
             sj.add(type.name());
@@ -22,8 +35,15 @@ public class UnionTypeObject implements TypeObject {
         return sj.toString();
     }
 
+    @Contract("_ -> new")
     @Override
-    public boolean isSuperclass(TypeObject other) {
+    @NotNull
+    public TypeObject typedefAs(String name) {
+        return new UnionTypeObject(types, name);
+    }
+
+    @Override
+    public boolean isSuperclass(@NotNull TypeObject other) {
         for (var subtype : types) {
             if (subtype.isSuperclass(other)) {
                 return true;
@@ -32,7 +52,18 @@ public class UnionTypeObject implements TypeObject {
         return false;
     }
 
+    protected boolean isSubclass(@NotNull TypeObject other) {
+        for (var subtype : types) {
+            if (!other.isSuperclass(subtype)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Contract(" -> new")
     @Override
+    @NotNull
     public TypeObject stripNull() {
         SortedSet<TypeObject> newTypes = new TreeSet<>();
         for (var t : types) {
@@ -58,5 +89,23 @@ public class UnionTypeObject implements TypeObject {
 
     public SortedSet<TypeObject> subTypes() {
         return types;
+    }
+
+    @Override
+    public TypeObject makeMut() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var obj : types) {
+            newTypes.add(obj.makeMut());
+        }
+        return new UnionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
+    }
+
+    @Override
+    public TypeObject makeConst() {
+        SortedSet<TypeObject> newTypes = new TreeSet<>();
+        for (var obj : types) {
+            newTypes.add(obj.makeConst());
+        }
+        return new UnionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
     }
 }

@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DictLiteralConverter implements TestConverter {
-    private DictLiteralNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final DictLiteralNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public DictLiteralConverter(CompilerInfo info, DictLiteralNode node, int retCount) {
         this.node = node;

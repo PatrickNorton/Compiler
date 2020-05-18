@@ -9,9 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 public final class RangeConverter implements TestConverter {
-    private RangeLiteralNode node;
-    private CompilerInfo info;
-    private int retCount;
+    private final RangeLiteralNode node;
+    private final CompilerInfo info;
+    private final int retCount;
 
     public RangeConverter(CompilerInfo info, RangeLiteralNode node, int retCount) {
         this.info = info;

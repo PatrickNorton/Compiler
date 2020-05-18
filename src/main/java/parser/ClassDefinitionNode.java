@@ -10,7 +10,7 @@ import java.util.EnumSet;
  *
  * @author Patrick Norton
  */
-public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
+public class ClassDefinitionNode implements BaseClassNode {
     private LineInfo lineInfo;
     private TypeNode name;
     private TypeLikeNode[] superclasses;
@@ -80,6 +80,10 @@ public class ClassDefinitionNode implements DefinitionNode, ClassStatementNode {
     @Override
     public void addAnnotations(NameNode... annotations) {
         this.annotations = annotations;
+    }
+
+    public String strName() {
+        return name.strName();
     }
 
     /**

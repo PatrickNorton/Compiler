@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ContinueConverter implements BaseConverter {
-    private ContinueStatementNode node;
-    private CompilerInfo info;
+    private final ContinueStatementNode node;
+    private final CompilerInfo info;
 
     public ContinueConverter(CompilerInfo info, ContinueStatementNode node) {
         this.node = node;

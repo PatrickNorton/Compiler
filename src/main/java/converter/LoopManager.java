@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Set;
 
 public final class LoopManager {
-    private Deque<Boolean> loopLevel = new ArrayDeque<>();
-    private Map<Integer, Set<Integer>> breakPointers = new HashMap<>();
-    private Map<Integer, Set<Integer>> continuePointers = new HashMap<>();
-    private Deque<Integer> continueLocations = new ArrayDeque<>();
+    private final Deque<Boolean> loopLevel = new ArrayDeque<>();
+    private final Map<Integer, Set<Integer>> breakPointers = new HashMap<>();
+    private final Map<Integer, Set<Integer>> continuePointers = new HashMap<>();
+    private final Deque<Integer> continueLocations = new ArrayDeque<>();
 
     /**
      * Enter another loop, implying another level of break/continue statements.
