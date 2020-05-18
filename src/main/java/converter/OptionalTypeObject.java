@@ -20,13 +20,13 @@ public final class OptionalTypeObject extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
-        return type.isSuperclass(other) || Builtins.NULL_TYPE.isSuperclass(other) || equals(other);
+    public boolean isSuperclass(@NotNull TypeObject other) {
+        return equals(other) || type.isSuperclass(other) || Builtins.NULL_TYPE.isSuperclass(other);
     }
 
     @Override
-    public boolean isSubclass(@NotNull TypeObject other) {
-        return type.isSubclass(other) && Builtins.NULL_TYPE.isSubclass(other);
+    protected boolean isSubclass(@NotNull TypeObject other) {
+        return equals(other) || (other.isSuperclass(type) && other.isSuperclass(Builtins.NULL_TYPE));
     }
 
     @Override

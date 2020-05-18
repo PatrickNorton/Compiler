@@ -16,10 +16,36 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
-    public abstract boolean isSuperclass(TypeObject other);
-    public abstract boolean isSubclass(@NotNull TypeObject other);
+    /**
+     * Checks if this is a subclass of the other type.
+     * <p>
+     *     <b>IMPORTANT:</b> This should not be called outside of {@link
+     *     #isSuperclass} (as a default implementation). This is due to the
+     *     weird super/subclassing rules for {@link UnionTypeObject unions} and
+     *     {@link IntersectionTypeObject intersections}.
+     * </p>
+     *
+     * @param other The type to test for inheritance
+     * @return If this is a subtype
+     * @see #isSuperclass
+     */
+    protected abstract boolean isSubclass(@NotNull TypeObject other);
     public abstract String name();
     public abstract TypeObject typedefAs(String name);
+
+    /**
+     * Checks if this is a superclass of another type.
+     * <p>
+     *     Type T being a supertype of type U means that the code {@code T x =
+     *     y} is valid (where y is of type U).
+     * </p>
+     *
+     * @param other The type to test for inheritance
+     * @return If this is a supertype
+     */
+    public boolean isSuperclass(@NotNull TypeObject other) {
+        return other.isSubclass(this);
+    }
 
     public TypeObject makeConst() {
         return this;
@@ -27,14 +53,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     public TypeObject makeMut() {
         return this;
-    }
-
-    boolean superWillRecurse() {
-        return false;
-    }
-
-    boolean subWillRecurse() {
-        return false;
     }
 
     @Override
@@ -73,10 +91,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
-        return null;
-    }
-
-    public TypeObject staticAttrType(String value) {
         return null;
     }
 

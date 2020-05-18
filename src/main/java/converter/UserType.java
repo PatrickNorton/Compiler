@@ -39,22 +39,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public abstract GenericInfo getGenericInfo();
     public abstract Pair<Set<String>, Set<OpSpTypeNode>> contract();
 
-    @Override
-    public final boolean isSuperclass(TypeObject other) {
-        if (this.equals(other)) {
-            return true;
-        } else if (isConst && this.equals(other.makeConst())) {
-            return true;
-        } else {
-            return other.isSubclass(this);
-        }
-    }
-
-    @Override
-    public final boolean superWillRecurse() {
-        return true;
-    }
-
     public final boolean isSubclass(@NotNull TypeObject other) {
         if (this.equals(other)) {
             return true;
@@ -62,7 +46,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             return true;
         }
         for (var sup : info.supers) {
-            if (sup.isSubclass(other)) {
+            if (other.isSuperclass(sup)) {
                 return true;
             }
         }

@@ -16,14 +16,8 @@ public final class FunctionInfoType extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
-        return other instanceof FunctionInfoType && ((FunctionInfoType) other).info.equals(info);
-    }
-
-    @Override
-    public boolean isSubclass(@NotNull TypeObject other) {
-        return (other instanceof FunctionInfoType && ((FunctionInfoType) other).info.equals(info))
-                || (!other.superWillRecurse() && other.isSuperclass(this));
+    protected boolean isSubclass(@NotNull TypeObject other) {
+        return this.equals(other);
     }
 
     @Nullable

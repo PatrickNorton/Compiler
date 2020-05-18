@@ -23,13 +23,13 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
+    public boolean isSuperclass(@NotNull TypeObject other) {
         return other instanceof TypeTypeObject
                 || other instanceof ObjectType;
     }
 
     @Override
-    public boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(@NotNull TypeObject other) {
         return other instanceof TypeTypeObject || other instanceof ObjectType;
     }
 

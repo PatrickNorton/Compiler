@@ -37,18 +37,8 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
-        return bound.isSuperclass(other);
-    }
-
-    @Override
-    public boolean isSubclass(@NotNull TypeObject other) {
-        return equals(other) || (!other.subWillRecurse() && other.isSuperclass(this));
-    }
-
-    @Override
-    public boolean subWillRecurse() {
-        return true;
+    protected boolean isSubclass(@NotNull TypeObject other) {
+        return other.isSuperclass(bound);
     }
 
     @Override

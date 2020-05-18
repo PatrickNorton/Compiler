@@ -43,25 +43,27 @@ public final class UnionTypeObject extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
+    public boolean isSuperclass(@NotNull TypeObject other) {
         for (var subtype : types) {
-            if (subtype.isSuperclass(other)) {
+            if (other.isSuperclass(subtype)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(@NotNull TypeObject other) {
         for (var subtype : types) {
-            if (!subtype.isSubclass(other)) {
+            if (!subtype.isSuperclass(other)) {
                 return false;
             }
         }
         return true;
     }
 
+    @Contract(" -> new")
     @Override
+    @NotNull
     public TypeObject stripNull() {
         SortedSet<TypeObject> newTypes = new TreeSet<>();
         for (var t : types) {

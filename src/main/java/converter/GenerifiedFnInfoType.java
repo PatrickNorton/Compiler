@@ -18,12 +18,7 @@ public final class GenerifiedFnInfoType extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
-        return false;  // TODO: Implement
-    }
-
-    @Override
-    public boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(@NotNull TypeObject other) {
         return false;  // TODO: Implement
     }
 

@@ -139,11 +139,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.staticAttributes = attributes;
     }
 
-    @Override
-    public TypeObject staticAttrType(String value) {
-        return info.staticAttributes.get(value).getType();
-    }
-
     void isConstClass() {
         assert !info.isSealed && !info.isConstClass;
         info.isConstClass = true;

@@ -17,11 +17,11 @@ public final class ObjectType extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
+    public boolean isSuperclass(@NotNull TypeObject other) {
         return true;
     }
 
-    public boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(@NotNull TypeObject other) {
         return other.equals(this);
     }
 

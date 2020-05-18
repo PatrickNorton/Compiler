@@ -27,11 +27,11 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
     }
 
     @Override
-    public boolean isSuperclass(TypeObject other) {
+    public boolean isSuperclass(@NotNull TypeObject other) {
         throw new UnsupportedOperationException("Should not be instancing list types");
     }
 
-    public boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(@NotNull TypeObject other) {
         throw new UnsupportedOperationException("Should not be instancing list types");
     }
 
