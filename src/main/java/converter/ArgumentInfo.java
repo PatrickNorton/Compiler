@@ -63,7 +63,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         for (var arg : normalArgs) {
             var name = arg.getName();
             if (keywordMap.containsKey(name)) {
-                if (arg.getType().isSuperclass(keywordMap.get(name))) {
+                if (!arg.getType().isSuperclass(keywordMap.get(name))) {
                     return false;
                 }
             } else {
