@@ -27,6 +27,7 @@ public enum Bytecode {
     STORE(0xC, Type.VARIABLE),
     STORE_SUBSCRIPT(0xD, Type.ARGC),
     STORE_ATTR(0xE, Type.CONSTANT),
+    SWAP_STACK(0xF, Type.STACK_POS, Type.STACK_POS),
     // Binary operators
     PLUS(0x10),
     MINUS(0x11),
@@ -109,6 +110,7 @@ public enum Bytecode {
         ARGC(2),
         OPERATOR(2),
         FUNCTION_NO(2),
+        STACK_POS(2),
         ;
         final byte byteCount;
 

@@ -1,9 +1,11 @@
 package main.java.converter;
 
+import main.java.parser.ArgumentNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,25 +28,32 @@ public final class FunctionCallConverter implements TestConverter {
     public List<Byte> convert(int start) {
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
         var retTypes = callConverter.returnType();
-        ensureTypesMatch(retTypes[0]);
+        var fnInfo = ensureTypesMatch(retTypes[0]);
         if (isDeterminedFunction(node.getCaller())) {
-            return convertOptimized(start);
+            return convertOptimized(start, fnInfo);
         }
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
-        convertCall(bytes, start);
+        convertArgs(bytes, start, fnInfo);
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
         for (int i = retCount; i < returnType().length; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
     }
 
-    void convertCall(List<Byte> bytes, int start) {
-        for (var value : node.getParameters()) {
-            // TODO: Varargs
+    private void convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo) {
+        var params = node.getParameters();
+        var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
+        for (var value : params) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
         }
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
+        var swaps = swapsToOrder(argPositions);
+        for (var pair : swaps) {
+            bytes.add(Bytecode.SWAP_STACK.value);
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey())));
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue())));
+        }
     }
 
     @NotNull
@@ -71,13 +80,9 @@ public final class FunctionCallConverter implements TestConverter {
 
     }
 
-    private void ensureTypesMatch(@NotNull TypeObject callerType) {
-        var params = node.getParameters();
-        var args = new Argument[node.getParameters().length];
-        for (int i = 0; i < args.length; i++) {
-            var type = TestConverter.returnType(params[i].getArgument(), info, 1)[0];
-            args[i] = new Argument(params[i].getVariable().getName(), type);
-        }
+    @NotNull
+    private FunctionInfo ensureTypesMatch(@NotNull TypeObject callerType) {
+        var args = getArgs(node.getParameters());
         var accessLevel = info.accessLevel(callerType);
         var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL, accessLevel);
         if (operatorInfo == null) {
@@ -95,6 +100,17 @@ public final class FunctionCallConverter implements TestConverter {
                     node, callerType.name(), argsString, expectedStr
             );
         }
+        return operatorInfo;
+    }
+
+    @NotNull
+    private Argument[] getArgs(@NotNull ArgumentNode... args) {
+        var result = new Argument[args.length];
+        for (int i = 0; i < args.length; i++) {
+            var type = TestConverter.returnType(args[i].getArgument(), info, 1)[0];
+            result[i] = new Argument(args[i].getVariable().getName(), type);
+        }
+        return result;
     }
 
     private boolean isDeterminedFunction(TestNode name) {
@@ -108,13 +124,13 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     @NotNull
-    private List<Byte> convertOptimized(int start) {
+    private List<Byte> convertOptimized(int start, FunctionInfo fnInfo) {
         assert node.getCaller() instanceof VariableNode;
         var strName = ((VariableNode) node.getCaller()).getName();
         if (Builtins.BUILTIN_MAP.containsKey(strName)) {
             return convertBuiltin(start, strName);
         } else {
-            return convertCallFn(start, strName);
+            return convertCallFn(start, strName, fnInfo);
         }
     }
 
@@ -152,17 +168,46 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     @NotNull
-    private List<Byte> convertCallFn(int start, String strName) {
+    private List<Byte> convertCallFn(int start, String strName, FunctionInfo fnInfo) {
         var fnIndex = info.fnIndex(strName);
         assert fnIndex != -1;
         List<Byte> bytes = new ArrayList<>();
-        for (var value : node.getParameters()) {
-            // TODO: Varargs
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
-        }
+        convertArgs(bytes, start, fnInfo);
         bytes.add(Bytecode.CALL_FN.value);
         bytes.addAll(Util.shortToBytes(fnIndex));
         bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
         return bytes;
+    }
+
+    /**
+     * Calculates the sequence of swaps in order to make {@code values} be in
+     * strictly ascending order.
+     * <p>
+     *     This assumes that {@code values} contains all ints from {@code 0} to
+     *     {@code values.length - 1}.
+     * </p>
+     *
+     * @param values The values to figure out how to sort
+     * @return The pairs of values to swap
+     */
+    @NotNull
+    private List<Pair<Integer, Integer>> swapsToOrder(@NotNull int... values) {
+        List<Pair<Integer, Integer>> swaps = new ArrayList<>();
+        int[] currentState = values.clone();
+        for (int i = 0; i < values.length; i++) {
+            int ptr = i;
+            while (currentState[ptr] != ptr) {
+                swaps.add(Pair.of(currentState[ptr], ptr));
+                arrSwap(currentState, currentState[ptr], ptr);
+                ptr = currentState[ptr];
+            }
+        }
+        return swaps;
+    }
+
+    private static void arrSwap(@NotNull int[] values, int a, int b) {
+        int temp = values[a];
+        values[a] = values[b];
+        values[b] = temp;
     }
 }

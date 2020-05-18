@@ -24,6 +24,25 @@ public final class ArgumentInfo implements Iterable<Argument> {
         this.keywordArgs = keywordArgs;
     }
 
+    /**
+     * Checks if the list of arguments (representing arguments passed to a
+     * function) match this function, or if they throw an exception.
+     * <p>
+     *     Arguments are checked as follows:
+     *    <ul>
+     *        <li>Args passed with names are logged and their types noted.
+     *        This ensures they will not be double-defined later on.</li>
+     *        <li>Each argument is checked in order:<br>
+     *        Non-keyword arguments (members whose '{@code name}' attribute
+     *        is empty) are matched against the next non-keyword item in the
+     *        {@link ArgumentInfo}, and keyword items are matched against the
+     *        map created in step 1.</li>
+     *    </ul>
+     * </p>
+     *
+     * @param args The arguments to check for validity
+     * @return If they match this function signature
+     */
     public boolean matches(@NotNull Argument... args) {
         Map<String, TypeObject> keywordMap = new HashMap<>();
         for (var arg : args) {
@@ -69,6 +88,59 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return true;
     }
 
+    /**
+     * Computes the position in the function's argument list relative to the
+     * argument list passed.
+     * <p>
+     *     The {@code int[]} returned by this upholds several invariants:
+     *     <ul>
+     *         <li>Each number from {@code 0} to {@code arr.length - 1} occurs
+     *         <i>exactly</i> once in arr.</li>
+     *         <li>{@code arr[args[i]]} represents the index of where {@code
+     *         args[i]} should be in the stack passed to the function at
+     *         runtime.</li>
+     *     </ul>
+     * </p>
+     *
+     * @param args The arguments to get the final order
+     * @return The array containing that order
+     */
+    @NotNull
+    public int[] argPositions(@NotNull Argument... args) {
+        Map<String, Integer> kwPositions = new HashMap<>();
+        for (var arg : args) {
+            if (!arg.getName().isEmpty()) {
+                kwPositions.put(arg.getName(), 0);
+            }
+        }
+        for (int i = 0; i < normalArgs.length; i++) {
+            var name = normalArgs[i].getName();
+            if (kwPositions.containsKey(name)) {
+                kwPositions.put(name, i + positionArgs.length);
+            }
+        }
+        for (int i = 0; i < keywordArgs.length; i++) {
+            var name = keywordArgs[i].getName();
+            if (kwPositions.containsKey(name)) {
+                kwPositions.put(name, i + normalArgs.length + positionArgs.length);
+            }
+        }
+        int[] result = new int[args.length];
+        int nonKwPos = 0;
+        for (int i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (!arg.getName().isEmpty()) {
+                result[i] = kwPositions.get(arg.getName());
+            } else {
+                while (kwPositions.containsKey(get(nonKwPos).getName())) {
+                    nonKwPos++;
+                }
+                result[i] = nonKwPos++;
+            }
+        }
+        return result;
+    }
+
     public Argument[] getKeywordArgs() {
         return keywordArgs;
     }
@@ -79,6 +151,16 @@ public final class ArgumentInfo implements Iterable<Argument> {
 
     public Argument[] getPositionArgs() {
         return positionArgs;
+    }
+
+    private Argument get(int i) {
+        if (i < positionArgs.length) {
+            return positionArgs[i];
+        } else if (i - positionArgs.length < normalArgs.length) {
+            return normalArgs[i - positionArgs.length];
+        } else {
+            return keywordArgs[i - normalArgs.length - positionArgs.length];
+        }
     }
 
     @NotNull
