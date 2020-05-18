@@ -5,7 +5,9 @@ import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public final class ArgumentInfo implements Iterable<Argument> {
     private final Argument[] positionArgs;
@@ -22,13 +24,46 @@ public final class ArgumentInfo implements Iterable<Argument> {
         this.keywordArgs = keywordArgs;
     }
 
-    public boolean matches(@NotNull Argument... values) {
-        if (values.length != normalArgs.length) {
-            return false;
+    public boolean matches(@NotNull Argument... args) {
+        Map<String, TypeObject> keywordMap = new HashMap<>();
+        for (var arg : args) {
+            if (!arg.getName().isEmpty()) {
+                keywordMap.put(arg.getName(), arg.getType());
+            }
         }
-        for (int i = 0; i < values.length; i++) {  // TODO: Non-positional args
-            if (!normalArgs[i].getType().isSuperclass(values[i].getType())) {
+        int argNo = 0;
+        for (var arg : positionArgs) {
+            while (!args[argNo].getName().isEmpty()) {
+                argNo++;
+            }
+            var passedArg = args[argNo++];
+            if (!arg.getType().isSuperclass(passedArg.getType())) {
                 return false;
+            }
+        }
+        for (var arg : normalArgs) {
+            var name = arg.getName();
+            if (keywordMap.containsKey(name)) {
+                if (arg.getType().isSuperclass(keywordMap.get(name))) {
+                    return false;
+                }
+            } else {
+                while (!args[argNo].getName().isEmpty()) {
+                    argNo++;
+                }
+                var passedArg = args[argNo++];
+                if (!arg.getType().isSuperclass(passedArg.getType())) {
+                    return false;
+                }
+            }
+        }
+        for (var arg : keywordArgs) {
+            if (keywordMap.containsKey(arg.getName())) {
+                if (!arg.getType().isSuperclass(keywordMap.get(arg.getName()))) {
+                    return false;
+                }
+            } else {
+                return false;  // TODO: Default values
             }
         }
         return true;
