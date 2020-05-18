@@ -154,6 +154,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
     }
 
     private Argument get(int i) {
+        if (i > size()) {
+            throw new IndexOutOfBoundsException(i);
+        }
         if (i < positionArgs.length) {
             return positionArgs[i];
         } else if (i - positionArgs.length < normalArgs.length) {
