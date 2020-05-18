@@ -195,18 +195,12 @@ public final class ArgumentInfo implements Iterable<Argument> {
 
         @Override
         public boolean hasNext() {
-            return next < positionArgs.length + normalArgs.length + keywordArgs.length;
+            return next < size();
         }
 
         @Override
         public Argument next() {
-            if (next < positionArgs.length) {
-                return positionArgs[next++];
-            } else if (next < positionArgs.length + normalArgs.length) {
-                return normalArgs[(next++) - positionArgs.length];
-            } else {
-                return keywordArgs[(next++) - positionArgs.length - normalArgs.length];
-            }
+            return get(next++);
         }
     }
 
