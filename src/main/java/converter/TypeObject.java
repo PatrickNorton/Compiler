@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -94,6 +96,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return null;
     }
 
+    public Map<Integer, TypeObject> generifyAs(TypeObject other) {
+        return new HashMap<>();
+    }
+
     @NotNull
     public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, DescriptorNode access) {
         var info = operatorInfo(o, access);
@@ -153,6 +159,14 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     @NotNull
     public final TypeObject tryAttrType(@NotNull BaseNode node, String value, @NotNull CompilerInfo info) {
         return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
+    }
+
+    public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
+        return attrType(value, access);
+    }
+
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        return operatorInfo(o, access);
     }
 
     @Override

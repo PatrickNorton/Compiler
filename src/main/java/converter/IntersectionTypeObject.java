@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.StringJoiner;
@@ -96,5 +97,10 @@ public final class IntersectionTypeObject extends TypeObject {
             newTypes.add(obj.makeConst());
         }
         return new IntersectionTypeObject(Collections.unmodifiableSortedSet(newTypes), typedefName);
+    }
+
+    @Override
+    public Map<Integer, TypeObject> generifyAs(TypeObject other) {
+        throw new UnsupportedOperationException();
     }
 }
