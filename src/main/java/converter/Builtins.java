@@ -50,7 +50,7 @@ public final class Builtins {
             "Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP
     );
 
-    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
+    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, OBJECT);
 
     private static final Map<OpSpTypeNode, FunctionInfo> ITERABLE_MAP = Map.of(
             OpSpTypeNode.ITER, new FunctionInfo(ITERABLE_PARAM)

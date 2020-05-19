@@ -48,7 +48,6 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             type.setStaticAttributes(
                     allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>())
             );
-            type.addFulfilledInterfaces();
             type.seal();
         } else {
             type = (StdTypeObject) info.getType(node.strName());

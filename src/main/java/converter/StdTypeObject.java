@@ -172,6 +172,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     public void seal() {
+        addFulfilledInterfaces();
         info.seal();
     }
 

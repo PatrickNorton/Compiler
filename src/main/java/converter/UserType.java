@@ -110,7 +110,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 return false;
             }
         }
-        return false;
+        return true;
     }
 
 
