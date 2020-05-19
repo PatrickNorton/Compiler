@@ -145,7 +145,8 @@ public final class CompilerInfo {
     public int addImport(@NotNull String name) {
         var names = name.split("\\.");
         if (!imports.contains(name)) {
-            CompilerInfo f = Converter.findModule(names[0]).link();
+            var file = Converter.resolveFile(names[0]);
+            CompilerInfo f = Converter.findModule(names[0]).compile(file);
             imports.add(name);
             importTypes.put(name, f.exportTypes.get(names[1]));
         }

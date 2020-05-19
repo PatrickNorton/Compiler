@@ -214,7 +214,7 @@ public final class Linker {
         CompilerInfo f = node.getPreDots() > 0
                 ? Converter.findLocalModule(info.path().getParent(), moduleName)
                 : Converter.findModule(moduleName);
-        var file = Converter.getDestFile().toPath().resolve(moduleName + Util.BYTECODE_EXTENSION).toFile();
+        var file = Converter.resolveFile(moduleName);
         f.compile(file);
         if (globals.containsKey(importName)) {
             throw CompilerException.format("Name %s already defined", node, importName);
@@ -231,6 +231,9 @@ public final class Linker {
         assert node.getType() == ImportExportNode.EXPORT;
         boolean notRenamed = node.getAs().length == 0;
         boolean isFrom = !node.getFrom().isEmpty();
+        if (node.isWildcard()) {
+            throw CompilerInternalError.of("Wildcard exports not supported yet", node);
+        }
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
             if (isFrom) {
