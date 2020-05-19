@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.ComprehensionNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,8 +32,9 @@ public final class ComprehensionConverter implements TestConverter {
                 throw CompilerException.format("Illegal name for variable '%s'", typedVariable.getVariable(), name);
             }
             info.checkDefinition(name, variable);
-            info.addVariable(name, info.getType(typedVariable.getType()), variable);
+            var trueType = varType(typedVariable);
             var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
+            info.addVariable(name, trueType, variable);
             info.removeStackFrame();
             return new TypeObject[] {resultType.generify(result)};
         } else {
@@ -63,7 +65,8 @@ public final class ComprehensionConverter implements TestConverter {
         if (variable instanceof TypedVariableNode) {
             var typedVar = (TypedVariableNode) variable;
             info.checkDefinition(typedVar.getVariable().getName(), variable);
-            info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), variable);
+            var trueType = varType(typedVar);
+            info.addVariable(typedVar.getVariable().getName(), trueType, variable);
         }
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));
@@ -84,5 +87,13 @@ public final class ComprehensionConverter implements TestConverter {
         }
         info.removeStackFrame();
         return bytes;
+    }
+
+    private TypeObject varType(@NotNull TypedVariableNode typedVar) {
+        var tvType = typedVar.getType();
+        return tvType.isDecided()
+                ? info.getType(tvType)
+                : TestConverter.returnType(node.getLooped().get(0), info, 1)[0]
+                    .operatorReturnType(OpSpTypeNode.ITER, info)[0];
     }
 }
