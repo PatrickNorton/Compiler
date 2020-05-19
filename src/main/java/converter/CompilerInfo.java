@@ -137,6 +137,15 @@ public final class CompilerInfo {
     }
 
     /**
+     * Gets the set of names exported by this file.
+     *
+     * @return The set of exports
+     */
+    public Set<String> getExports() {
+        return exports;
+    }
+
+    /**
      * Adds an import.
      *
      * @param name The name if the import

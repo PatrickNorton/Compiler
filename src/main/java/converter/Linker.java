@@ -196,8 +196,12 @@ public final class Linker {
     }
 
     private void addImports(@NotNull ImportExportNode node) {
-        assert node.getType() == ImportExportNode.IMPORT;
+        assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         boolean notRenamed = node.getAs().length == 0;
+        if (node.isWildcard()) {
+            addWildcardImport(moduleName(node, 0), node);
+            return;
+        }
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
             var as = notRenamed ? value : node.getAs()[i];
@@ -207,6 +211,7 @@ public final class Linker {
             }
             String importName = value.toString();
             addImport(moduleName, importName, node);
+
         }
     }
 
@@ -227,12 +232,29 @@ public final class Linker {
         info.addImport(node.getFrom().isEmpty() ? importName : node.getFrom().toString() + "." + importName);
     }
 
+    private void addWildcardImport(String moduleName, @NotNull ImportExportNode node) {
+        CompilerInfo f = node.getPreDots() > 0
+                ? Converter.findLocalModule(info.path().getParent(), moduleName)
+                : Converter.findModule(moduleName);
+        var file = Converter.resolveFile(moduleName);
+        f.compile(file);
+        for (var name : f.getExports()) {
+            globals.put(name, f.exportType(name));
+            info.addImport(moduleName + "." + name);
+        }
+    }
+
     private void addExports(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.EXPORT;
         boolean notRenamed = node.getAs().length == 0;
         boolean isFrom = !node.getFrom().isEmpty();
         if (node.isWildcard()) {
-            throw CompilerInternalError.of("Wildcard exports not supported yet", node);
+            if (node.getFrom().isEmpty()) {
+                throw CompilerException.of("Cannot 'export *' without a 'from' clause", node);
+            }
+            var moduleName = moduleName(node, 0);
+            addWildcardImport(moduleName, node);
+            return;
         }
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
