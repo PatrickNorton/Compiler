@@ -301,6 +301,7 @@ public final class Builtins {
             Map.entry("Callable", CALLABLE),
             Map.entry("Iterable", ITERABLE),
             Map.entry("repr", REPR),
+            Map.entry("object", OBJECT),
             Map.entry("null", NULL)
     );
 
