@@ -44,6 +44,19 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public final boolean isSubclass(@NotNull TypeObject other) {
         if (this.equals(other)) {
             return true;
+        } else if (other instanceof UserType && ((UserType<?>) other).info == info) {
+            if (((UserType<?>) other).generics.isEmpty()) {
+                return true;
+            } else if (generics.isEmpty()) {
+                return false;
+            } else {
+                for (int i = 0; i < generics.size(); i++) {
+                    if (!((UserType<?>) other).generics.get(i).isSuperclass(generics.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         } else if (!isConst && this.makeConst().equals(other)) {
             return true;
         }
