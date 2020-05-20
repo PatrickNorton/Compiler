@@ -99,13 +99,24 @@ public final class ConverterHolder {
         }
 
     @NotNull
-    public Map<String, MethodInfo> getGetters() {
-        return props.getGetters();
+    public Map<String, MethodInfo> allGetters() {
+        Map<String, MethodInfo> result = new HashMap<>(props.getGetters());
+        result.putAll(attrs.getColons());
+        return result;
     }
 
     @NotNull
     public Map<String, MethodInfo> getSetters() {
         return props.getSetters();
+    }
+
+    public Map<String, MethodInfo> staticGetters() {
+        return attrs.getStaticColons();
+    }
+
+    @NotNull
+    public Map<String, MethodInfo> staticSetters() {
+        return new HashMap<>();
     }
 
     public void checkAttributes() {
@@ -136,21 +147,27 @@ public final class ConverterHolder {
 
     @NotNull
     public Map<String, AttributeInfo> allAttrs() {
-        return mergeAttrs(attrs.getVars(), methods.getMethods(), properties().getProperties());
+        return mergeAttrs(attrs.getVars(), attrs.getColons(), methods.getMethods(), props.getProperties());
     }
 
     @NotNull
     public Map<String, AttributeInfo> staticAttrs() {
-        return mergeAttrs(attrs.getStaticVars(), methods.getMethods(), new HashMap<>());
+        return mergeAttrs(attrs.getStaticVars(), attrs.getStaticColons(), methods.getMethods(), new HashMap<>());
     }
 
     @NotNull
     private Map<String, AttributeInfo> mergeAttrs(
             Map<String, AttributeInfo> attrs,
+            @NotNull Map<String, MethodInfo> colons,
             @NotNull Map<String, MethodInfo> methods,
             Map<String, AttributeInfo> properties
     ) {
         var finalAttrs = new HashMap<>(attrs);
+        for (var pair : colons.entrySet()) {
+            var methodInfo = pair.getValue();
+            var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());
+            finalAttrs.put(pair.getKey(), attrInfo);
+        }
         for (var pair : methods.entrySet()) {
             var methodInfo = pair.getValue();
             var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());

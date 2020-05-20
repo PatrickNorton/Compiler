@@ -86,7 +86,9 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 .setStaticOperators(new HashMap<>())
                 .setMethodDefs(convert(type, converter.getMethods()))
                 .setStaticMethods(convert(type, converter.getStaticMethods()))
-                .setProperties(merge(convert(type, converter.getGetters()), convert(type, converter.getSetters())))
+                .setProperties(merge(convert(type, converter.allGetters()), convert(type, converter.getSetters())))
+                .setStaticProperties(merge(convert(type, converter.staticGetters()),
+                        convert(type, converter.staticSetters())))
                 .create();
     }
 

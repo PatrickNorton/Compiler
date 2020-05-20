@@ -94,7 +94,7 @@ public final class AttributeConverter {
         return staticColons;
     }
 
-    public void addEnumStatics(List<EnumKeywordNode> names, TypeObject type) {
+    public void addEnumStatics(@NotNull List<EnumKeywordNode> names, TypeObject type) {
         for (var name : names) {
             var strName = name.getVariable().getName();
             if (staticVars.containsKey(strName)) {
@@ -107,10 +107,15 @@ public final class AttributeConverter {
     private void parseNonColon(@NotNull DeclaredAssignmentNode node) {
         var attrType = info.getType(node.getTypes()[0].getType());
         var attrInfo = new AttributeInfo(node.getDescriptors(), attrType, node.getLineInfo());
+        var name = ((VariableNode) node.getNames()[0]).getName();
         if (node.getDescriptors().contains(DescriptorNode.STATIC)) {
-            staticVars.put(((VariableNode) node.getNames()[0]).getName(), attrInfo);
+            checkVars(name, node, staticVars);
+            checkVars(name, node, staticColons);
+            staticVars.put(name, attrInfo);
         } else {
-            vars.put(((VariableNode) node.getNames()[0]).getName(), attrInfo);
+            checkVars(name, node, vars);
+            checkVars(name, node, colons);
+            vars.put(name, attrInfo);
         }
     }
 
@@ -120,15 +125,13 @@ public final class AttributeConverter {
         var retStmt = new ReturnStatementNode(lineInfo, node.getValues(), TestNode.empty());
         var body = new StatementBodyNode(lineInfo, retStmt);
         var strName = node.getNames()[0].toString();
-        checkVars(strName, node, colons);
-        checkVars(strName, node, staticColons);
-        checkVars(strName, node, vars);
-        checkVars(strName, node, staticVars);
+        var descriptors = node.getDescriptors();
+        boolean isStatic = descriptors.contains(DescriptorNode.STATIC);
+        checkVars(strName, node, isStatic ? staticColons : colons);
+        checkVars(strName, node, isStatic ? staticVars : vars);
         var retType = TestConverter.returnType(node.getValues().get(0), info, 1)[0];
         var fnInfo = new FunctionInfo(retType);
-        var descriptors = node.getDescriptors();
-        (descriptors.contains(DescriptorNode.STATIC) ? staticColons : colons)
-                .put(strName, new MethodInfo(descriptors, fnInfo, body, lineInfo));
+        (isStatic ? staticColons : colons).put(strName, new MethodInfo(descriptors, fnInfo, body, lineInfo));
     }
 
     private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {

@@ -19,12 +19,14 @@ public final class ClassInfo {
     private final Map<String, List<Byte>> methodDefs;
     private final Map<String, List<Byte>> staticMethods;
     private final Map<String, Pair<List<Byte>, List<Byte>>> properties;
+    private final Map<String, Pair<List<Byte>, List<Byte>>> staticProperties;
 
     private ClassInfo(UserType<?> type, List<Short> superConstants,
                       Map<String, Short> variables, Map<String, Short> staticVariables,
                       Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
                       Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods,
-                      Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+                      Map<String, Pair<List<Byte>, List<Byte>>> properties,
+                      Map<String, Pair<List<Byte>, List<Byte>>> staticProperties) {
         this.type = type;
         this.superConstants = superConstants;
         this.variables = variables;
@@ -34,6 +36,7 @@ public final class ClassInfo {
         this.staticMethods = staticMethods;
         this.methodDefs = methodDefs;
         this.properties = properties;
+        this.staticProperties = staticProperties;
     }
 
     public UserType<?> getType() {
@@ -132,6 +135,7 @@ public final class ClassInfo {
         private Map<String, List<Byte>> methodDefs;
         private Map<String, List<Byte>> staticMethods;
         private Map<String, Pair<List<Byte>, List<Byte>>> properties;
+        private Map<String, Pair<List<Byte>, List<Byte>>> staticProperties;
 
         public Factory setType(UserType<?> type) {
             assert this.type == null;
@@ -187,9 +191,16 @@ public final class ClassInfo {
             return this;
         }
 
+        public Factory setStaticProperties(Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+            assert this.staticProperties == null;
+            this.properties = properties;
+            return this;
+        }
+
         public ClassInfo create() {
             return new ClassInfo(type, superConstants, variables, staticVariables,
-                    operatorDefs, staticOperators, methodDefs, staticMethods, properties);
+                    operatorDefs, staticOperators, methodDefs, staticMethods,
+                    properties, staticProperties);
         }
     }
 }
