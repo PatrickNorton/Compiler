@@ -1,10 +1,7 @@
 package main.java.converter;
 
-import main.java.converter.classbody.AttributeConverter;
-import main.java.converter.classbody.MethodConverter;
+import main.java.converter.classbody.ConverterHolder;
 import main.java.converter.classbody.MethodInfo;
-import main.java.converter.classbody.OperatorDefConverter;
-import main.java.converter.classbody.PropertyConverter;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
@@ -54,7 +51,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 info.removeStackFrame();
             } finally {
                 info.removePrivateAccess(type);
-                recursivelyRemovePrivateAccess(type);
+                recursivelyRemoveProtectedAccess(type);
             }
         }
         return result;
@@ -69,13 +66,39 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    private void recursivelyRemovePrivateAccess(@NotNull UserType<?> type) {
+    private void recursivelyRemoveProtectedAccess(@NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
             info.removeProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
-                recursivelyRemovePrivateAccess((StdTypeObject) superCls);
+                recursivelyRemoveProtectedAccess((StdTypeObject) superCls);
             }
         }
+    }
+
+    protected final ClassInfo createClass(
+            UserType<?> type, List<Short> superConstants, @NotNull ConverterHolder converter
+    ) {
+        return new ClassInfo.Factory()
+                .setType(type)
+                .setSuperConstants(superConstants)
+                .setVariables(converter.varsWithInts())
+                .setStaticVariables(converter.staticVarsWithInts())
+                .setOperatorDefs(convert(type, converter.getOperators()))
+                .setStaticOperators(new HashMap<>())
+                .setMethodDefs(convert(type, converter.getMethods()))
+                .setStaticMethods(convert(type, converter.getStaticMethods()))
+                .setProperties(merge(convert(type, converter.getGetters()), convert(type, converter.getSetters())))
+                .create();
+    }
+
+    protected final void addToInfo(ClassInfo cls, UserType<?> type, String defType) {
+        int classIndex = info.addClass(cls);
+        var name = node.getName().strName();
+        if (Builtins.FORBIDDEN_NAMES.contains(name)) {
+            throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
+        }
+        info.checkDefinition(name, node);
+        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex), node);
     }
 
     protected final UserType<?>[] convertSupers(TypeObject[] supers) {
@@ -100,34 +123,23 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final void parseStatements(
-            AttributeConverter declarations,
-            MethodConverter methods,
-            OperatorDefConverter operators,
-            PropertyConverter properties
-    ) {
+    protected final void parseStatements(ConverterHolder converter) {
         for (var stmt : node.getBody().getStatements()) {
-            parseStatement(stmt, declarations, methods, operators, properties);
+            parseStatement(stmt, converter);
         }
     }
 
-    protected void parseStatement(
-            IndependentNode stmt,
-            AttributeConverter declarations,
-            MethodConverter methods,
-            OperatorDefConverter operators,
-            PropertyConverter properties
-    ) {
+    protected void parseStatement(IndependentNode stmt, ConverterHolder converter) {
         if (stmt instanceof DeclarationNode) {
-            declarations.parse((DeclarationNode) stmt);
+            converter.attributes().parse((DeclarationNode) stmt);
         } else if (stmt instanceof DeclaredAssignmentNode) {
-            declarations.parse((DeclaredAssignmentNode) stmt);
+            converter.attributes().parse((DeclaredAssignmentNode) stmt);
         } else if (stmt instanceof MethodDefinitionNode) {
-            methods.parse((MethodDefinitionNode) stmt);
+            converter.methods().parse((MethodDefinitionNode) stmt);
         } else if (stmt instanceof OperatorDefinitionNode) {
-            operators.parse((OperatorDefinitionNode) stmt);
+            converter.operators().parse((OperatorDefinitionNode) stmt);
         } else if (stmt instanceof PropertyDefinitionNode) {
-            properties.parse((PropertyDefinitionNode) stmt);
+            converter.properties().parse((PropertyDefinitionNode) stmt);
         } else {
             throw new UnsupportedOperationException("Node not yet supported");
         }
@@ -158,20 +170,6 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 );
             }
         }
-    }
-
-    @NotNull
-    protected final Map<String, AttributeInfo> allAttributes(Map<String, AttributeInfo> attrs,
-                                                  @NotNull Map<String, MethodInfo> methods,
-                                                  Map<String, AttributeInfo> properties) {
-        var finalAttrs = new HashMap<>(attrs);
-        for (var pair : methods.entrySet()) {
-            var methodInfo = pair.getValue();
-            var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());
-            finalAttrs.put(pair.getKey(), attrInfo);
-        }
-        finalAttrs.putAll(properties);
-        return finalAttrs;
     }
 
     @NotNull

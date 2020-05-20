@@ -5,9 +5,11 @@ import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
 import main.java.converter.TestConverter;
+import main.java.converter.TypeObject;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
+import main.java.parser.EnumKeywordNode;
 import main.java.parser.Lined;
 import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
@@ -16,7 +18,9 @@ import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class AttributeConverter {
     private final Map<String, AttributeInfo> vars;
@@ -88,6 +92,16 @@ public final class AttributeConverter {
 
     public Map<String, MethodInfo> getStaticColons() {
         return staticColons;
+    }
+
+    public void addEnumStatics(List<EnumKeywordNode> names, TypeObject type) {
+        for (var name : names) {
+            var strName = name.getVariable().getName();
+            if (staticVars.containsKey(strName)) {
+                throw CompilerException.doubleDef(strName, staticVars.get(strName), name);
+            }
+            staticVars.put(strName, new AttributeInfo(Set.of(DescriptorNode.PUBLIC), type, name.getLineInfo()));
+        }
     }
 
     private void parseNonColon(@NotNull DeclaredAssignmentNode node) {
