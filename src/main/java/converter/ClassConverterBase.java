@@ -7,7 +7,6 @@ import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
-import main.java.parser.Lined;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
@@ -142,33 +141,6 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             converter.properties().parse((PropertyDefinitionNode) stmt);
         } else {
             throw new UnsupportedOperationException("Node not yet supported");
-        }
-    }
-
-    protected final void checkAttributes(@NotNull Map<String, AttributeInfo> vars, Map<String, AttributeInfo> staticVars,
-                                 Map<String, MethodInfo> methods, Map<String, MethodInfo> staticMethods) {
-        checkMaps(vars, methods, staticMethods);
-        checkMaps(staticVars, methods, staticMethods);
-        checkMaps(methods, vars, staticVars);
-        checkMaps(staticMethods, vars, staticVars);
-    }
-
-    private void checkMaps(@NotNull Map<String, ? extends Lined> vars, Map<String, ? extends Lined> methods,
-                           Map<String, ? extends Lined> staticMethods) {
-        for (var pair : vars.entrySet()) {
-            if (methods.containsKey(pair.getKey())) {
-                throw CompilerException.doubleDef(
-                        pair.getKey(),
-                        pair.getValue(),
-                        methods.get(pair.getKey())
-                );
-            } else if (staticMethods.containsKey(pair.getKey())) {
-                throw CompilerException.doubleDef(
-                        pair.getKey(),
-                        pair.getValue(),
-                        staticMethods.get(pair.getKey())
-                );
-            }
         }
     }
 
