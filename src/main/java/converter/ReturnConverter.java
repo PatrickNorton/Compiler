@@ -28,7 +28,9 @@ public final class ReturnConverter implements BaseConverter {
             bytes.addAll(Util.intToBytes(jumpTarget));
             bytes.addAll(returnBytes);
         } else {
-            bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, node.getReturned().size()));
+            if (node.getReturned().size() != 0) {
+                bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, node.getReturned().size()));
+            }
         }
         bytes.add(Bytecode.RETURN.value);
         bytes.addAll(Util.shortToBytes((short) node.getReturned().size()));
@@ -39,10 +41,20 @@ public final class ReturnConverter implements BaseConverter {
         if (info.notInFunction()) {
             throw CompilerException.of("Cannot return from here", node);
         }
+        if (info.isGenerator()) {
+            if (node.getReturned().size() != 0) {
+                throw CompilerException.of(
+                        "Return with arguments invalid in generator",
+                        node
+                );
+            } else {
+                return;
+            }
+        }
         var fnReturns = info.currentFnReturns();
         if (fnReturns.length != node.getReturned().size()) {  // TODO: Multi-returning values
             throw CompilerException.format("Incorrect number of values returned: expected %d, got %d",
-                    node.getReturned(), fnReturns.length, node.getReturned().size());
+                    node, fnReturns.length, node.getReturned().size());
         }
         for (int i = 0; i < fnReturns.length; i++) {
             var retType = TestConverter.returnType(node.getReturned().get(i), info, 1)[0];

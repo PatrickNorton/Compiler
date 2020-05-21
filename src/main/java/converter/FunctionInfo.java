@@ -7,6 +7,7 @@ import java.util.List;
 
 public final class FunctionInfo implements IntoFnInfo {
     private final String name;
+    private final boolean isGenerator;
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
 
@@ -19,7 +20,12 @@ public final class FunctionInfo implements IntoFnInfo {
     }
 
     public FunctionInfo(String name, ArgumentInfo args, TypeObject... returns) {
+        this(name, false, args, returns);
+    }
+
+    public FunctionInfo(String name, boolean isGenerator, ArgumentInfo args, TypeObject... returns) {
         this.name = name;
+        this.isGenerator = isGenerator;
         this.arguments = args;
         this.returns = properReturns(returns);
     }
@@ -38,6 +44,10 @@ public final class FunctionInfo implements IntoFnInfo {
 
     public ArgumentInfo getArgs() {
         return arguments;
+    }
+
+    public boolean isGenerator() {
+        return isGenerator;
     }
 
     @NotNull

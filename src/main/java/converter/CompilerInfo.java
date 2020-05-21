@@ -14,6 +14,7 @@ import main.java.util.HashCounter;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +56,7 @@ public final class CompilerInfo {
 
     private final IntAllocator anonymousNums = new IntAllocator();
 
-    private final Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
+    private final Deque<Pair<Boolean, TypeObject[]>> fnReturns = new ArrayDeque<>();
 
     private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
     private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
@@ -350,6 +351,7 @@ public final class CompilerInfo {
      *     Byte representation of each constant ({@link LangConstant#toBytes})
      * Functions:
      *     Function name
+     *     Whether it is a generator or not
      *     Number of local variables (currently unused)
      *     Length of the bytecode
      *     Bytecode
@@ -395,6 +397,7 @@ public final class CompilerInfo {
             for (var function : functions) {
                 var byteArray = Util.toByteArray(function.getBytes());
                 writer.write(Util.toByteArray(StringConstant.strBytes(function.getName())));
+                writer.write(function.isGenerator() ? 1 : 0);
                 writer.write(Util.toByteArray((short) 0));  // TODO: Put variable count
                 writer.write(Util.toByteArray(byteArray.length));
                 writer.write(byteArray);
@@ -757,7 +760,11 @@ public final class CompilerInfo {
      * @see #currentFnReturns()
      */
     public void addFunctionReturns(TypeObject[] values) {
-        fnReturns.push(values);
+        fnReturns.push(Pair.of(false, values));
+    }
+
+    public void addFunctionReturns(boolean isGen, TypeObject[] values) {
+        fnReturns.push(Pair.of(isGen, values));
     }
 
     /**
@@ -768,7 +775,13 @@ public final class CompilerInfo {
      * @see #addFunctionReturns(TypeObject[])
      */
     public TypeObject[] currentFnReturns() {
-        return fnReturns.peekFirst();
+        assert fnReturns.peekFirst() != null;
+        return fnReturns.peekFirst().getValue();
+    }
+
+    public boolean isGenerator() {
+        assert fnReturns.peekFirst() != null;
+        return fnReturns.peekFirst().getKey();
     }
 
     /**

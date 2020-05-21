@@ -74,6 +74,7 @@ public enum Bytecode {
     TAIL_TOS(0x39, Type.ARGC),
     TAIL_FN(0x3A, Type.FUNCTION_NO, Type.ARGC),
     RETURN(0x3B, Type.ARGC),
+    YIELD(0x3C, Type.ARGC),
     // Exception stuff
     THROW(0x40),
     THROW_QUICK(0x41, Type.ARGC),

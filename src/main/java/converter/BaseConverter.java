@@ -26,6 +26,7 @@ import main.java.parser.TryStatementNode;
 import main.java.parser.TypedefStatementNode;
 import main.java.parser.WhileStatementNode;
 import main.java.parser.WithStatementNode;
+import main.java.parser.YieldStatementNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -91,6 +92,8 @@ public interface BaseConverter {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else if (node instanceof WithStatementNode) {
             return new WithConverter(info, (WithStatementNode) node);
+        } else if (node instanceof YieldStatementNode) {
+            return new YieldConverter(info, (YieldStatementNode) node);
         } else {
             throw new UnsupportedOperationException("Unsupported node");
         }

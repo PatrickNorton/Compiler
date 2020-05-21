@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypedArgumentNode;
@@ -27,14 +28,16 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         List<Byte> bytes = new ArrayList<>();
         var generics = getGenerics();
         var retTypes =  info.typesOf(node.getRetval());
-        var fnInfo = new FunctionInfo(node.getName().getName(), convertArgs(generics), retTypes);
-        int index = info.addFunction(new Function(fnInfo, bytes));
+        var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
+        var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(retTypes)} : retTypes;
+        var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, convertArgs(generics), trueRet);
+        int index = info.addFunction(new Function(fnInfo, bytes, isGenerator));
         var constVal = new FunctionConstant(node.getName().getName(), index);
         info.checkDefinition(node.getName().getName(), node);
         info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
         addGenerics(generics);
-        info.addFunctionReturns(retTypes);
+        info.addFunctionReturns(isGenerator, retTypes);
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
