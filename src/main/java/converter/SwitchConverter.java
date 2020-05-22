@@ -102,6 +102,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         int defaultVal = 0;
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
         bytes.add(Bytecode.SWITCH_TABLE.value);
+        int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
@@ -124,9 +125,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             assert lblConverter instanceof ConstantConverter;  // TODO: Variable switch arguments
             var constant = ((ConstantConverter) lblConverter).constant();
             if (constant instanceof IntConstant) {
-                jumps.put(BigInteger.valueOf(((IntConstant) constant).getValue()), bytes.size());
+                jumps.put(BigInteger.valueOf(((IntConstant) constant).getValue()), start + bytes.size());
             } else if (constant instanceof BigintConstant) {
-                jumps.put(((BigintConstant) constant).getValue(), bytes.size());
+                jumps.put(((BigintConstant) constant).getValue(), start + bytes.size());
             } else {
                 throw new UnsupportedOperationException();
             }
@@ -136,7 +137,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             bytes.addAll(Util.zeroToBytes());
         }
         var switchTable = getTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
-        info.addSwitchTable(switchTable);
+        int tblIndex = info.addSwitchTable(switchTable);
+        Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
         return bytes;
     }
 
