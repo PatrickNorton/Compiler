@@ -206,7 +206,7 @@ public final class Builtins {
         );
         LIST.setOperators(listMap);
         var listAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
@@ -226,7 +226,7 @@ public final class Builtins {
         );
         SET.setOperators(setMap);
         var setAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
         );
         SET.setAttributes(setAttrs);
         SET.seal();
@@ -248,7 +248,7 @@ public final class Builtins {
         );
         DICT.setOperators(dictMap);
         var dictAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
