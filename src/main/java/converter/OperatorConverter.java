@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.ArgumentNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorNode;
 import main.java.parser.OperatorTypeNode;
@@ -102,6 +103,7 @@ public final class OperatorConverter implements TestConverter {
         }
         int opCount = node.getOperands().length;
         TypeObject opType = null;
+        ArgumentNode previousArg = null;
         for (var arg : node.getOperands()) {
             var converter = TestConverter.of(info, arg.getArgument(), 1);
             var retTypes = converter.returnType();
@@ -109,13 +111,15 @@ public final class OperatorConverter implements TestConverter {
                 throw CompilerException.of("Cannot use return type of function with 0 returns", arg);
             }
             var retType = retTypes[0];
-            if (opType != null && opType.operatorReturnType(node.getOperator(), info) == null) {
+            if (opType != null
+                    && opType.operatorReturnType(node.getOperator(), info) == null) {
                 throw CompilerException.format(
                         "'%s' returns type '%s', which has no overloaded '%s'",
-                        arg, arg, opType.name(), node.getOperator()
+                        previousArg, previousArg, opType.name(), node.getOperator()
                 );
             }
             opType = opType == null ? retType : opType.operatorReturnType(node.getOperator(), info)[0];
+            previousArg = arg;
             bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
         }
         var bytecode = BYTECODE_MAP.get(node.getOperator());
