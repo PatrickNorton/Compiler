@@ -37,7 +37,8 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
         addGenerics(generics);
-        info.addFunctionReturns(isGenerator, retTypes);
+        var retInfo = info.getFnReturns();
+        retInfo.addFunctionReturns(isGenerator, retTypes);
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
@@ -45,7 +46,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));
         }
         info.removeStackFrame();
-        info.popFnReturns();
+        retInfo.popFnReturns();
         return Collections.emptyList();
     }
 

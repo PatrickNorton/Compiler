@@ -38,10 +38,11 @@ public final class ReturnConverter implements BaseConverter {
     }
 
     private void checkReturnTypes() {
-        if (info.notInFunction()) {
+        var retInfo = info.getFnReturns();
+        if (retInfo.notInFunction()) {
             throw CompilerException.of("Cannot return from here", node);
         }
-        if (info.isGenerator()) {
+        if (retInfo.isGenerator()) {
             if (node.getReturned().size() != 0) {
                 throw CompilerException.of(
                         "Return with arguments invalid in generator",
@@ -51,7 +52,7 @@ public final class ReturnConverter implements BaseConverter {
                 return;
             }
         }
-        var fnReturns = info.currentFnReturns();
+        var fnReturns = retInfo.currentFnReturns();
         if (fnReturns.length != node.getReturned().size()) {  // TODO: Multi-returning values
             throw CompilerException.format("Incorrect number of values returned: expected %d, got %d",
                     node, fnReturns.length, node.getReturned().size());

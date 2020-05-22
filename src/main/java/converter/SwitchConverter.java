@@ -88,7 +88,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
         }
         bytes.add(Bytecode.JUMP.value);
-        info.addBreak(1, start + bytes.size());
+        info.loopManager().addBreak(1, start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         var endCase = Util.intToBytes(start + bytes.size());
         for (var jumpLoc : jumpLocations) {
@@ -109,7 +109,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 defaultVal = start + bytes.size();
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
                 bytes.add(Bytecode.JUMP.value);
-                info.addBreak(1, start + bytes.size());
+                info.loopManager().addBreak(1, start + bytes.size());
                 bytes.addAll(Util.zeroToBytes());
                 continue;
             }
@@ -132,7 +132,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
             bytes.add(Bytecode.JUMP.value);
-            info.addBreak(1, start + bytes.size());
+            info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
         }
         var switchTable = getTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);

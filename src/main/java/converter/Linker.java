@@ -224,12 +224,13 @@ public final class Linker {
         if (globals.containsKey(importName)) {
             throw CompilerException.format("Name %s already defined", node, importName);
         }
-        var exportType = f.exportType(importName);
+        var exportType = f.importHandler().exportType(importName);
         if (exportType == null) {
             throw CompilerException.format("'%s' not exported in module '%s'", node, importName, moduleName);
         }
         globals.put(importName, exportType);
-        info.addImport(node.getFrom().isEmpty() ? importName : node.getFrom().toString() + "." + importName);
+        var name = node.getFrom().isEmpty() ? importName : node.getFrom().toString() + "." + importName;
+        info.importHandler().addImport(name);
     }
 
     private void addWildcardImport(String moduleName, @NotNull ImportExportNode node) {
@@ -238,9 +239,9 @@ public final class Linker {
                 : Converter.findModule(moduleName);
         var file = Converter.resolveFile(moduleName);
         f.compile(file);
-        for (var name : f.getExports()) {
-            globals.put(name, f.exportType(name));
-            info.addImport(moduleName + "." + name);
+        for (var name : f.importHandler().getExports()) {
+            globals.put(name, f.importHandler().exportType(name));
+            info.importHandler().addImport(moduleName + "." + name);
         }
     }
 

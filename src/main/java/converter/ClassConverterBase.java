@@ -36,40 +36,42 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             info.addStackFrame();
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
             info.addVariable("cls", Builtins.TYPE.generify(type), true, node);
+            var handler = info.accessHandler();
             try {
-                info.allowPrivateAccess(type);
-                recursivelyAllowProtectedAccess(type);
+                handler.allowPrivateAccess(type);
+                recursivelyAllowProtectedAccess(handler, type);
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
                     info.addVariable(arg.getName(), arg.getType(), methodInfo);
                 }
-                info.addFunctionReturns(fnInfo.getReturns());
+                var retInfo = info.getFnReturns();
+                retInfo.addFunctionReturns(fnInfo.getReturns());
                 var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
-                info.popFnReturns();
+                retInfo.popFnReturns();
                 result.put(pair.getKey(), bytes);
                 info.removeStackFrame();
             } finally {
-                info.removePrivateAccess(type);
-                recursivelyRemoveProtectedAccess(type);
+                handler.removePrivateAccess(type);
+                recursivelyRemoveProtectedAccess(handler, type);
             }
         }
         return result;
     }
 
-    private void recursivelyAllowProtectedAccess(@NotNull UserType<?> type) {
+    private void recursivelyAllowProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
-            info.allowProtectedAccess(superCls);
+            handler.allowProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
-                recursivelyAllowProtectedAccess((StdTypeObject) superCls);
+                recursivelyAllowProtectedAccess(handler, (StdTypeObject) superCls);
             }
         }
     }
 
-    private void recursivelyRemoveProtectedAccess(@NotNull UserType<?> type) {
+    private void recursivelyRemoveProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
-            info.removeProtectedAccess(superCls);
+            handler.removeProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
-                recursivelyRemoveProtectedAccess((StdTypeObject) superCls);
+                recursivelyRemoveProtectedAccess(handler, (StdTypeObject) superCls);
             }
         }
     }

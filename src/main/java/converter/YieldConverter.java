@@ -31,15 +31,16 @@ public final class YieldConverter implements BaseConverter {
         if (node.getYielded().size() > 1) {
             throw new UnsupportedOperationException("Cannot yield more than one value yet");
         }
-        if (!info.isGenerator()) {
+        var retInfo = info.getFnReturns();
+        if (!retInfo.isGenerator()) {
             throw CompilerException.of("'yield' is only valid in a generator", node);
         }
-        var converter = TestConverter.of(info, node.getYielded().get(0), info.currentFnReturns().length);
+        var converter = TestConverter.of(info, node.getYielded().get(0), retInfo.currentFnReturns().length);
         var retType = converter.returnType();
-        checkReturnType(info.currentFnReturns(), retType);
+        checkReturnType(retInfo.currentFnReturns(), retType);
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.YIELD.value);
-        bytes.addAll(Util.shortToBytes((short) info.currentFnReturns().length));
+        bytes.addAll(Util.shortToBytes((short) retInfo.currentFnReturns().length));
         if (jumpPos != -1) {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
         }
