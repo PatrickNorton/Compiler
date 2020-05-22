@@ -14,6 +14,10 @@ public final class BigintConstant implements LangConstant {
         this.value = value;
     }
 
+    public BigInteger getValue() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -42,6 +46,16 @@ public final class BigintConstant implements LangConstant {
     @Override
     public TypeObject getType() {
         return Builtins.INT;
+    }
+
+    @NotNull
+    public static List<Byte> convertBigint(BigInteger val) {
+        var inst = new BigintConstant(val);
+        List<Byte> bytes = new ArrayList<>();
+        var biBytes = inst.bigintBytes();
+        bytes.addAll(Util.intToBytes(biBytes.size() / Integer.BYTES));
+        bytes.addAll(biBytes);
+        return bytes;
     }
 
     @NotNull

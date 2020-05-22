@@ -48,6 +48,7 @@ public final class CompilerInfo {
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
     private final LoopManager loopManager = new LoopManager();
+    private final List<SwitchTable> tables = new ArrayList<>();
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
@@ -406,6 +407,11 @@ public final class CompilerInfo {
             writer.write(Util.toByteArray(classes.size()));
             for (var cls : classes) {
                 writer.write(Util.toByteArray(cls.toBytes()));
+            }
+            writer.flush();
+            writer.write(Util.toByteArray(tables.size()));
+            for (var tbl : tables) {
+                writer.write(Util.toByteArray(tbl.toBytes()));
             }
             writer.flush();
         } catch (IOException e) {
@@ -888,6 +894,11 @@ public final class CompilerInfo {
     public void removeProtectedAccess(TypeObject obj) {
         assert classesWithProtected.contains(obj);
         classesWithProtected.decrement(obj);
+    }
+
+    public int addSwitchTable(SwitchTable val) {
+        tables.add(val);
+        return tables.size() - 1;
     }
 
     /**

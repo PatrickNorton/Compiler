@@ -75,6 +75,7 @@ public enum Bytecode {
     TAIL_FN(0x3A, Type.FUNCTION_NO, Type.ARGC),
     RETURN(0x3B, Type.ARGC),
     YIELD(0x3C, Type.ARGC),
+    SWITCH_TABLE(0x3D, Type.TABLE_NO),
     // Exception stuff
     THROW(0x40),
     THROW_QUICK(0x41, Type.ARGC),
@@ -112,6 +113,7 @@ public enum Bytecode {
         OPERATOR(2),
         FUNCTION_NO(2),
         STACK_POS(2),
+        TABLE_NO(2),
         ;
         final byte byteCount;
 
@@ -187,6 +189,7 @@ public enum Bytecode {
             case VARIABLE:
             case FUNCTION_NO:
             case STACK_POS:
+            case TABLE_NO:
                 return Integer.toString(value);
             case CONSTANT:
                 return String.format("%d (%s)", value, info.getConstant((short) value).name());
