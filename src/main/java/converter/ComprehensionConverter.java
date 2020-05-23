@@ -35,8 +35,8 @@ public final class ComprehensionConverter implements TestConverter {
             }
             info.checkDefinition(name, variable);
             var trueType = varType(typedVariable);
-            var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.addVariable(name, trueType, variable);
+            var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.removeStackFrame();
             return new TypeObject[] {resultType.generify(result)};
         } else {
