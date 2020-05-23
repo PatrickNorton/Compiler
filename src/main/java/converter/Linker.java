@@ -84,55 +84,10 @@ public final class Linker {
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
                 var name = ((DefinitionNode) stmt).getName();
-                TypeObject type;
-                if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
-                    var fnNode = (FunctionDefinitionNode) stmt;
-                    var argInfo = ArgumentInfo.of(fnNode.getArgs(), info);
-                    var fnInfo = new FunctionInfo(argInfo, info.typesOf(fnNode.getRetval()));
-                    type = new FunctionInfoType(fnInfo);
-                } else if (stmt instanceof PropertyDefinitionNode) {
-                    var typeNode = ((PropertyDefinitionNode) stmt).getType();
-                    type = info.getType(typeNode);
-                } else if (stmt instanceof ContextDefinitionNode) {
-                    type = null;  // FIXME: Type for context definitions
-                } else if (stmt instanceof OperatorDefinitionNode) {
-                    throw CompilerInternalError.of("Operator must defined in a class", stmt);
-                } else if (stmt instanceof MethodDefinitionNode) {
-                    throw CompilerInternalError.of("Method must be defined in a class", stmt);
-                } else if (stmt instanceof ClassDefinitionNode) {
-                    var clsNode = (ClassDefinitionNode) stmt;
-                    var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName());
-                    ClassConverter.completeType(info, clsNode, predeclaredType);
-                    type = Builtins.TYPE.generify(predeclaredType);
-                } else if (stmt instanceof EnumDefinitionNode) {
-                    var enumNode = (EnumDefinitionNode) stmt;
-                    var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName());
-                    EnumConverter.completeType(info, enumNode, predeclaredType);
-                    type = Builtins.TYPE.generify(predeclaredType);
-                } else if (stmt instanceof InterfaceDefinitionNode) {
-                    var interfaceNode = (InterfaceDefinitionNode) stmt;
-                    var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName());
-                    InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
-                    type = Builtins.TYPE.generify(predeclaredType);
-                } else {
-                    throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
-                }
+                TypeObject type = linkDefinition((DefinitionNode) stmt);
                 globals.put(name.toString(), type);
             } else if (stmt instanceof ImportExportNode) {
-                var ieNode = (ImportExportNode) stmt;
-                switch (ieNode.getType()) {
-                    case IMPORT:
-                    case TYPEGET:
-                        addImports(ieNode);
-                        break;
-                    case EXPORT:
-                        addExports(ieNode);
-                        break;
-                    default:
-                        throw CompilerInternalError.of(
-                                "Unknown type of import/export", ieNode.getLineInfo()
-                        );
-                }
+                linkIENode((ImportExportNode) stmt);
             } else {
                 throw CompilerException.of(
                         "Only definition and import/export statements are allowed in file with exports",
@@ -141,6 +96,56 @@ public final class Linker {
             }
         }
         return this;
+    }
+
+    private TypeObject linkDefinition(@NotNull DefinitionNode stmt) {
+        var name = stmt.getName();
+        if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
+            var fnNode = (FunctionDefinitionNode) stmt;
+            var argInfo = ArgumentInfo.of(fnNode.getArgs(), info);
+            var fnInfo = new FunctionInfo(argInfo, info.typesOf(fnNode.getRetval()));
+            return new FunctionInfoType(fnInfo);
+        } else if (stmt instanceof PropertyDefinitionNode) {
+            var typeNode = ((PropertyDefinitionNode) stmt).getType();
+            return info.getType(typeNode);
+        } else if (stmt instanceof ContextDefinitionNode) {
+            throw new UnsupportedOperationException();  // FIXME: Type for context definitions
+        } else if (stmt instanceof OperatorDefinitionNode) {
+            throw CompilerInternalError.of("Operator must defined in a class", stmt);
+        } else if (stmt instanceof MethodDefinitionNode) {
+            throw CompilerInternalError.of("Method must be defined in a class", stmt);
+        } else if (stmt instanceof ClassDefinitionNode) {
+            var clsNode = (ClassDefinitionNode) stmt;
+            var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName());
+            ClassConverter.completeType(info, clsNode, predeclaredType);
+            return Builtins.TYPE.generify(predeclaredType);
+        } else if (stmt instanceof EnumDefinitionNode) {
+            var enumNode = (EnumDefinitionNode) stmt;
+            var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName());
+            EnumConverter.completeType(info, enumNode, predeclaredType);
+            return Builtins.TYPE.generify(predeclaredType);
+        } else if (stmt instanceof InterfaceDefinitionNode) {
+            var interfaceNode = (InterfaceDefinitionNode) stmt;
+            var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName());
+            InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
+            return Builtins.TYPE.generify(predeclaredType);
+        } else {
+            throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
+        }
+    }
+
+    private void linkIENode(@NotNull ImportExportNode stmt) {
+        switch (stmt.getType()) {
+            case IMPORT:
+            case TYPEGET:
+                addImports(stmt);
+                break;
+            case EXPORT:
+                addExports(stmt);
+                break;
+            default:
+                throw CompilerInternalError.of("Unknown type of import/export", stmt);
+        }
     }
 
     /**
