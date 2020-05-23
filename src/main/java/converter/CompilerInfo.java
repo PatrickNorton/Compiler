@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.converter.classbody.FunctionReturnInfo;
 import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;

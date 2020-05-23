@@ -1,6 +1,4 @@
-package main.java.converter.classbody;
-
-import main.java.converter.TypeObject;
+package main.java.converter;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
