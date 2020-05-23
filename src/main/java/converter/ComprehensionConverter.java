@@ -29,7 +29,9 @@ public final class ComprehensionConverter implements TestConverter {
             info.addStackFrame();
             var name = typedVariable.getVariable().getName();
             if (Builtins.FORBIDDEN_NAMES.contains(name)) {
-                throw CompilerException.format("Illegal name for variable '%s'", typedVariable.getVariable(), name);
+                throw CompilerException.format(
+                        "Illegal name for variable '%s'", typedVariable.getVariable(), name
+                );
             }
             info.checkDefinition(name, variable);
             var trueType = varType(typedVariable);
@@ -38,7 +40,9 @@ public final class ComprehensionConverter implements TestConverter {
             info.removeStackFrame();
             return new TypeObject[] {resultType.generify(result)};
         } else {
-            return new TypeObject[] {resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1))};
+            return new TypeObject[] {
+                    resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1))
+            };
         }
     }
 
