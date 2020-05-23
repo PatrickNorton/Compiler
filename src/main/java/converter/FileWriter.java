@@ -146,5 +146,9 @@ public final class FileWriter {
                 System.out.println(Bytecode.disassemble(info, propPair.getValue().getValue()));
             }
         }
+        for (int i = 0; i < info.getTables().size(); i++) {
+            System.out.printf("Table %d:%n", i);
+            System.out.println(info.getTables().get(i).strDisassembly());
+        }
     }
 }

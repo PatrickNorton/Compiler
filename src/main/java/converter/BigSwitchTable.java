@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,7 @@ public final class BigSwitchTable implements SwitchTable {
     }
 
     @Override
+    @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add((byte) 1);
@@ -25,5 +28,16 @@ public final class BigSwitchTable implements SwitchTable {
         }
         bytes.addAll(Util.intToBytes(defaultVal));
         return bytes;
+    }
+
+    @Override
+    @NotNull
+    public String strDisassembly() {
+        var value = new StringBuilder();
+        for (var pair : values.entrySet()) {
+            value.append(String.format("%d: %d%n", pair.getKey(), pair.getKey()));
+        }
+        value.append(String.format("default: %d%n", defaultVal));
+        return value.toString();
     }
 }
