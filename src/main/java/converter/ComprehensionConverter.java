@@ -44,7 +44,7 @@ public final class ComprehensionConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {  // TODO: While conditional
+    public List<Byte> convert(int start) {
         assert retCount == 1 || retCount == 0;
         boolean isList = node.getBrace().equals("[");
         List<Byte> bytes = new ArrayList<>();
@@ -75,6 +75,7 @@ public final class ComprehensionConverter implements TestConverter {
             bytes.add(Bytecode.JUMP_FALSE.value);
             bytes.addAll(Util.intToBytes(topJump));
         }
+        int whileJmp = addWhileCond(start, bytes);
         bytes.add(Bytecode.SWAP_2.value);  // The iterator object will be atop the list, swap it and back again
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getBuilder()[0].getArgument(), info, 1));
         bytes.add(isList ? Bytecode.LIST_ADD.value : Bytecode.SET_ADD.value);
@@ -82,11 +83,31 @@ public final class ComprehensionConverter implements TestConverter {
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(topJump));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), forJump);
+        if (whileJmp != -1) {
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), whileJmp);
+        }
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         info.removeStackFrame();
         return bytes;
+    }
+
+    private int addWhileCond(int start, List<Byte> bytes) {
+        if (!node.getWhileCond().isEmpty()) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getWhileCond(), info, 1));
+            bytes.add(Bytecode.JUMP_TRUE.value);
+            int innerWhileJump = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.JUMP.value);
+            int whileJmp = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), innerWhileJump);
+            return whileJmp;
+        } else {
+            return -1;
+        }
     }
 
     private TypeObject varType(@NotNull TypedVariableNode typedVar) {
