@@ -106,20 +106,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.supers;
     }
 
-    @Override
-    @Nullable
-    public TypeObject attrType(String value, DescriptorNode access) {
-        var type = attrTypeWithGenerics(value, access);
-        if (type == null) return null;
-        if (type instanceof TemplateParam) {
-            return generics.isEmpty()
-                    ? ((TemplateParam) type).getBound()
-                    : generics.get(((TemplateParam) type).getIndex());
-        } else {
-            return type;
-        }
-    }
-
     @Nullable
     public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
         var attr = info.attributes.get(value);
