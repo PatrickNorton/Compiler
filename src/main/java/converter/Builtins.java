@@ -90,7 +90,7 @@ public final class Builtins {
 
     public static final LangObject REPR = new LangInstance(REPR_INFO.toCallable());
 
-    private static final TemplateParam REVERSED_PARAM = new TemplateParam("T", 0, false);
+    private static final TemplateParam REVERSED_PARAM = new TemplateParam("T", 0, Builtins.OBJECT);
 
     private static final FunctionInfo REVERSED_INFO = new FunctionInfo(
             "reversed", ArgumentInfo.of(REVERSED_PARAM), REVERSED_PARAM
