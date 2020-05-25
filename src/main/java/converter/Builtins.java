@@ -202,6 +202,7 @@ public final class Builtins {
                 OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM)),
                 OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(INT)),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
+                OpSpTypeNode.REVERSED, new FunctionInfo(LIST),
                 OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
         );
         LIST.setOperators(listMap);
