@@ -90,6 +90,14 @@ public final class Builtins {
 
     public static final LangObject REPR = new LangInstance(REPR_INFO.toCallable());
 
+    private static final TemplateParam REVERSED_PARAM = new TemplateParam("T", 0, false);
+
+    private static final FunctionInfo REVERSED_INFO = new FunctionInfo(
+            "reversed", ArgumentInfo.of(REVERSED_PARAM), REVERSED_PARAM
+    );
+
+    public static final LangObject REVERSED = new LangInstance(REVERSED_INFO.toCallable());
+
     private static final TemplateParam LIST_PARAM = new TemplateParam("T", 0, OBJECT);
 
     public static final StdTypeObject LIST = new StdTypeObject("list", GenericInfo.of(LIST_PARAM));
@@ -280,7 +288,8 @@ public final class Builtins {
             LIST,
             SET,
             CHAR,
-            OPEN
+            OPEN,
+            REVERSED
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -303,6 +312,7 @@ public final class Builtins {
             Map.entry("Iterable", ITERABLE),
             Map.entry("repr", REPR),
             Map.entry("object", OBJECT),
+            Map.entry("reversed", REVERSED),
             Map.entry("null", NULL)
     );
 
