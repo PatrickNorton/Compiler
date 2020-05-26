@@ -35,7 +35,7 @@ public final class BigSwitchTable implements SwitchTable {
     public String strDisassembly() {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {
-            value.append(String.format("%d: %d%n", pair.getKey(), pair.getKey()));
+            value.append(String.format("%d: %d%n", pair.getKey(), pair.getValue()));
         }
         value.append(String.format("default: %d%n", defaultVal));
         return value.toString();
