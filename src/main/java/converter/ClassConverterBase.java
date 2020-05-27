@@ -76,9 +76,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final ClassInfo createClass(
-            UserType<?> type, List<Short> superConstants, @NotNull ConverterHolder converter
-    ) {
+    private ClassInfo createClass(UserType<?> type, List<Short> superConstants, @NotNull ConverterHolder converter) {
         return new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
@@ -94,14 +92,17 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 .create();
     }
 
-    protected final void addToInfo(ClassInfo cls, UserType<?> type, String defType) {
-        int classIndex = info.addClass(cls);
+    protected final void addToInfo(UserType<?> type, String defType,
+                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
         var name = node.getName().strName();
+        info.checkDefinition(name, node);
+        info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
+        var cls = createClass(type, superConstants, converter);
+        int classIndex = info.addClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
         }
-        info.checkDefinition(name, node);
-        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex), node);
+        info.setReservedVar(name, new ClassConstant(name, classIndex, type));
     }
 
     protected final UserType<?>[] convertSupers(TypeObject[] supers) {

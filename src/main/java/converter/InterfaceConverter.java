@@ -48,8 +48,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             superConstants.add(info.constIndex(sup.name()));
         }
         converter.checkAttributes();
-        var cls = createClass(type, superConstants, converter);
-        addToInfo(cls, type, "interface");
+        addToInfo(type, "interface", superConstants, converter);
         return Collections.emptyList();
     }
 

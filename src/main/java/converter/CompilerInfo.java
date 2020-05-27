@@ -194,6 +194,35 @@ public final class CompilerInfo {
     }
 
     /**
+     * Reserves a constant value for later use.
+     *
+     * @param type The type of the constant
+     * @return The constant index
+     * @see TempConst
+     */
+    public short reserveConst(TypeObject type) {
+        return addConstant(new TempConst(type));
+    }
+
+    /**
+     * Sets the value of a constant to the one given.
+     * <p>
+     *     The constant to be redefined must be a {@link TempConst}.
+     * </p>
+     *
+     * @param index The index to redefine
+     * @param value The value to set this to
+     */
+    public void setReserved(short index, @NotNull LangConstant value) {
+        var constant = constants.get(index);
+        if (!(constant instanceof TempConst)) {
+            throw CompilerInternalError.of("Cannot redefine constant not a TempConst", LineInfo.empty());
+        }
+        assert constant.getType().equals(value.getType());
+        constants.set(index, value);
+    }
+
+    /**
      * Gets the {@link LangConstant} given the index.
      * Currently used only for {@link Bytecode} formatting.
      *
@@ -438,6 +467,51 @@ public final class CompilerInfo {
     }
 
     /**
+     * Reserves a constant variable for future use.
+     * <p>
+     *     This allows for the variable to be used normally, and does not expose
+     *     the fact that this is undefined to the rest of the bytecode
+     *     generator, but it does require that the constant be changed from a
+     *     temporary (using {@link #setReservedVar} before the compiled unit is
+     *     written out to a file. As such, this
+     * </p>
+     *
+     * @param name The name of the variable to add
+     * @param type The type of the variable
+     * @param info The info for the declaration of the variable
+     * @see #setReservedVar
+     * @see TempConst
+     * @see #addVariable(String, TypeObject, LangConstant, Lined)
+     */
+    public void reserveConstVar(String name, TypeObject type, @NotNull Lined info) {
+        var constant = new TempConst(type);
+        addConstant(constant);
+        addVariable(name, new VariableInfo(type, constant, info.getLineInfo()));
+    }
+
+    /**
+     * Sets the previously-reserved variable to the {@link LangConstant} value
+     * given.
+     * <p>
+     *     This requires three things: That the variable whose name is given is
+     *     defined, that the variable was defined using {@link
+     *     #reserveConstVar}, and that this function has not yet been called on
+     *     this variable.
+     * </p>
+     *
+     * @param name The name to set
+     * @param value The value
+     * @see #reserveConstVar
+     */
+    public void setReservedVar(String name, LangConstant value) {
+        var varInfo = Objects.requireNonNull(varInfo(name));
+        var constant = varInfo.constValue();
+        var constIndex = constIndex(constant);
+        setReserved(constIndex, value);
+        replaceVarInfo(name, new VariableInfo(value.getType(), value, varInfo.getDeclarationInfo()));
+    }
+
+    /**
      * Adds a static variable to the stack.
      * <p>
      *     Static variables get their static index through {@link
@@ -490,6 +564,15 @@ public final class CompilerInfo {
             }
         }
         return null;
+    }
+
+    private void replaceVarInfo(String name, VariableInfo varInfo) {
+        for (int i = variables.size() - 1; i >= 0; i--) {
+            var map = variables.get(i);
+            if (map.containsKey(name)) {
+                map.put(name, varInfo);
+            }
+        }
     }
 
     /**

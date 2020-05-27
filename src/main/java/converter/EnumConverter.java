@@ -36,8 +36,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
         }
-        var cls = createClass(type, superConstants, converter);
-        addToInfo(cls, type, "enum");
+        addToInfo(type, "enum", superConstants, converter);
         return getInitBytes(start, converter.getOperators().get(OpSpTypeNode.NEW));
     }
 

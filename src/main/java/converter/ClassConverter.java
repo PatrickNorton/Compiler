@@ -40,8 +40,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             superConstants.add(info.constIndex(sup.name()));
         }
         checkContract(type, trueSupers);
-        var cls = createClass(type, superConstants, converter);
-        addToInfo(cls, type, "class");
+        addToInfo(type, "class", superConstants, converter);
         return Collections.emptyList();
     }
 
