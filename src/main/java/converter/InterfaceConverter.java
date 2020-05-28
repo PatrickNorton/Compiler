@@ -42,6 +42,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             parseIntoObject(converter, type);
         } else {
             type = (InterfaceType) info.getType(node.getName().strName());
+            parseStatements(converter);
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {

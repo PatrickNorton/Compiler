@@ -31,6 +31,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
             parseIntoObject(converter, type);
         } else {
             type = (StdTypeObject) info.getType(node.getName().strName());
+            parseStatements(converter);
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
