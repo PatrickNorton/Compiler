@@ -10,6 +10,7 @@ import main.java.parser.ContinueStatementNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
+import main.java.parser.DeleteStatementNode;
 import main.java.parser.DoStatementNode;
 import main.java.parser.DotimesStatementNode;
 import main.java.parser.EnumDefinitionNode;
@@ -62,6 +63,8 @@ public interface BaseConverter {
             return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
         } else if (node instanceof DecrementNode) {
             return new IncrementDecrementConverter(info, (DecrementNode) node);
+        } else if (node instanceof DeleteStatementNode) {
+            return new DeleteConverter(info, (DeleteStatementNode) node);
         } else if (node instanceof DoStatementNode) {
             return new DoWhileConverter(info, (DoStatementNode) node);
         } else if (node instanceof DotimesStatementNode) {
