@@ -61,6 +61,7 @@ public enum Keyword {
     VAR("var", IndependentNode::parseVar),
     SYNC("sync", SynchronizedStatementNode::parse),
     GENERIC("generic", GeneralizableNode::parse),
+    UNION("union", UnionDefinitionNode::parse),
     ;
 
     private static final Map<String, Keyword> values;
