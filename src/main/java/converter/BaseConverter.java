@@ -25,6 +25,7 @@ import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
 import main.java.parser.TryStatementNode;
 import main.java.parser.TypedefStatementNode;
+import main.java.parser.UnionDefinitionNode;
 import main.java.parser.WhileStatementNode;
 import main.java.parser.WithStatementNode;
 import main.java.parser.YieldStatementNode;
@@ -91,6 +92,8 @@ public interface BaseConverter {
             return new TryConverter(info, (TryStatementNode) node);
         } else if (node instanceof TypedefStatementNode) {
             return new TypedefConverter(info, (TypedefStatementNode) node);
+        } else if (node instanceof UnionDefinitionNode) {
+            return new UnionConverter(info, (UnionDefinitionNode) node);
         } else if (node instanceof WhileStatementNode) {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else if (node instanceof WithStatementNode) {
