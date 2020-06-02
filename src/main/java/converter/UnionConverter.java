@@ -9,7 +9,6 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.LineInfo;
 import main.java.parser.StatementBodyNode;
-import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
@@ -124,11 +123,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
         parseStatements(converter);
-        converter.attributes().addUnionMethods(variantMethods());
+        converter.attributes().addUnionMethods(variantMethods(obj));
         obj.setOperators(converter.getOperatorInfos());
         converter.checkAttributes();
         obj.setAttributes(withVariantInfos(converter.allAttrs()));
-        obj.setStaticAttributes(withStaticVariants(converter.staticAttrs()));
+        obj.setStaticAttributes(withStaticVariants(converter.staticAttrs(), obj));
         obj.seal();
     }
 
@@ -144,28 +143,39 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     @NotNull
-    private Map<String, AttributeInfo> withStaticVariants(@NotNull Map<String, AttributeInfo> vars) {
+    private Map<String, AttributeInfo> withStaticVariants(
+            @NotNull Map<String, AttributeInfo> vars, StdTypeObject selfType
+    ) {
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
-            var fnInfo = Builtins.CALLABLE.generify(pair.getValue().getValue());
+            var fnInfo = variantInfo(pair.getValue().getValue(), selfType).toCallable();
             result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
         }
         return result;
     }
 
+    private static final String VARIANT_NAME = "val";
+
     @NotNull
-    private Map<String, MethodInfo> variantMethods() {
+    private Map<String, MethodInfo> variantMethods(StdTypeObject selfType) {
         Map<String, MethodInfo> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
-            var fnInfo = new FunctionInfo(pair.getValue().getValue());
-            var selfVar = new VariableNode(LineInfo.empty(), "self");
+            var fnInfo = variantInfo(pair.getValue().getValue(), selfType);
+            var selfVar = new VariableNode(LineInfo.empty(), selfType.name());
             var variantNo = 0;  // TODO: Get variant number
-            var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, TestNode.empty());
+            var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
+            var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, variantVal);
             var body = new StatementBodyNode(LineInfo.empty(), stmt);
             var descriptors = EnumSet.of(DescriptorNode.PUBLIC);
             result.put(pair.getKey(), new MethodInfo(descriptors, fnInfo, body, node.getLineInfo()));
         }
         return result;
+    }
+
+    @NotNull
+    private FunctionInfo variantInfo(TypeObject val, StdTypeObject type) {
+        var arg = new Argument(VARIANT_NAME, val);
+        return new FunctionInfo(new ArgumentInfo(arg), type);
     }
 }

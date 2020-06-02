@@ -8,6 +8,7 @@ import main.java.converter.TypeObject;
 import main.java.parser.EnumKeywordNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.StatementBodyNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -116,7 +117,18 @@ public final class ConverterHolder {
 
     @NotNull
     public Map<String, MethodInfo> staticSetters() {
-        return new HashMap<>();
+        Map<String, MethodInfo> result = new HashMap<>(attrs.getStaticColons().size());
+        for (var pair : attrs.getStaticColons().entrySet()) {
+            var mInfo = pair.getValue();
+            var newMethodInfo = new MethodInfo(
+                    mInfo.getDescriptors(),
+                    mInfo.getInfo(),
+                    new StatementBodyNode(),
+                    mInfo.getLineInfo()
+            );
+            result.put(pair.getKey(), newMethodInfo);
+        }
+        return result;
     }
 
     public void checkAttributes() {

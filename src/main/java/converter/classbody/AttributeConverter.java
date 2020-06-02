@@ -109,6 +109,7 @@ public final class AttributeConverter {
             checkVars(pair.getKey(), pair.getValue(), staticVars);
             checkVars(pair.getKey(), pair.getValue(), staticColons);
         }
+        staticColons.putAll(variantMethods);
     }
 
     private void parseNonColon(@NotNull DeclaredAssignmentNode node) {
