@@ -12,6 +12,7 @@ import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopNode;
+import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -128,6 +129,11 @@ public final class Linker {
             var interfaceNode = (InterfaceDefinitionNode) stmt;
             var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName());
             InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
+            return Builtins.TYPE.generify(predeclaredType);
+        } else if (stmt instanceof UnionDefinitionNode) {
+            var unionNode = (UnionDefinitionNode) stmt;
+            var predeclaredType = (StdTypeObject) info.classOf(unionNode.getName().strName());
+            UnionConverter.completeType(info, unionNode, predeclaredType);
             return Builtins.TYPE.generify(predeclaredType);
         } else {
             throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
