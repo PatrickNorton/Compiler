@@ -106,6 +106,20 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
+    @Override
+    @Nullable
+    public final TypeObject staticAttrType(String value, DescriptorNode access) {
+        var type = staticAttrTypeWithGenerics(value, access);
+        if (type == null) return null;
+        if (type instanceof TemplateParam) {
+            return generics.isEmpty()
+                    ? ((TemplateParam) type).getBound()
+                    : generics.get(((TemplateParam) type).getIndex());
+        } else {
+            return type;
+        }
+    }
+
     public final void addFulfilledInterfaces() {
         assert !info.isSealed;
         var fulfilled = fulfilledInterfaces();

@@ -92,6 +92,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return null;
     }
 
+    @Nullable
+    public TypeObject staticAttrType(String value, DescriptorNode access) {
+        return null;
+    }
+
     public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
         return null;
     }
@@ -147,6 +152,31 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     @NotNull
+    public final TypeObject tryStaticAttrType(LineInfo lineInfo, String value, DescriptorNode access) {
+        var info = staticAttrType(value, access);
+        if (info == null) {
+            if (access != DescriptorNode.PRIVATE && staticAttrType(value, DescriptorNode.PRIVATE) != null) {
+                throw CompilerException.format(
+                        "Cannot get static attribute '%s' from type '%s':" +
+                                " too-strict of an access level required",
+                        lineInfo, value, name()
+                );
+            } else if (makeMut().staticAttrType(value, access) != null) {
+                throw CompilerException.format(
+                        "Static attribute '%s' requires a mut variable for type '%s'",
+                        lineInfo, value, name()
+                );
+            } else {
+                throw CompilerException.format(
+                        "Static attribute '%s' does not exist in type '%s'", lineInfo, value, name()
+                );
+            }
+        } else {
+            return info;
+        }
+    }
+
+    @NotNull
     public final TypeObject[] tryOperatorReturnType(LineInfo lineInfo, OpSpTypeNode o, CompilerInfo info) {
         return tryOperatorInfo(lineInfo, o, info).getReturns();
     }
@@ -163,6 +193,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
         return attrType(value, access);
+    }
+
+    public TypeObject staticAttrTypeWithGenerics(String value, DescriptorNode access) {
+        return staticAttrType(value, access);
     }
 
     public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
