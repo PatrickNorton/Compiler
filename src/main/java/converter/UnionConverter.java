@@ -1,19 +1,24 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
+import main.java.converter.classbody.MethodInfo;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescribableNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.LineInfo;
+import main.java.parser.StatementBodyNode;
+import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
+import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,10 +124,48 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
         parseStatements(converter);
+        converter.attributes().addUnionMethods(variantMethods());
         obj.setOperators(converter.getOperatorInfos());
         converter.checkAttributes();
-        obj.setAttributes(converter.allAttrs());
-        obj.setStaticAttributes(converter.staticAttrs());
+        obj.setAttributes(withVariantInfos(converter.allAttrs()));
+        obj.setStaticAttributes(withStaticVariants(converter.staticAttrs()));
         obj.seal();
+    }
+
+    @NotNull
+    private Map<String, AttributeInfo> withVariantInfos(@NotNull Map<String, AttributeInfo> vars) {
+        Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
+        result.putAll(vars);
+        for (var pair : variants.entrySet()) {
+            var fnInfo = new OptionTypeObject(pair.getValue().getValue());
+            result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
+        }
+        return result;
+    }
+
+    @NotNull
+    private Map<String, AttributeInfo> withStaticVariants(@NotNull Map<String, AttributeInfo> vars) {
+        Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
+        result.putAll(vars);
+        for (var pair : variants.entrySet()) {
+            var fnInfo = Builtins.CALLABLE.generify(pair.getValue().getValue());
+            result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
+        }
+        return result;
+    }
+
+    @NotNull
+    private Map<String, MethodInfo> variantMethods() {
+        Map<String, MethodInfo> result = new HashMap<>(variants.size());
+        for (var pair : variants.entrySet()) {
+            var fnInfo = new FunctionInfo(pair.getValue().getValue());
+            var selfVar = new VariableNode(LineInfo.empty(), "self");
+            var variantNo = 0;  // TODO: Get variant number
+            var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, TestNode.empty());
+            var body = new StatementBodyNode(LineInfo.empty(), stmt);
+            var descriptors = EnumSet.of(DescriptorNode.PUBLIC);
+            result.put(pair.getKey(), new MethodInfo(descriptors, fnInfo, body, node.getLineInfo()));
+        }
+        return result;
     }
 }

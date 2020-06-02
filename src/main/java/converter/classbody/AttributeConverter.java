@@ -104,6 +104,13 @@ public final class AttributeConverter {
         }
     }
 
+    public void addUnionMethods(@NotNull Map<String, MethodInfo> variantMethods) {
+        for (var pair : variantMethods.entrySet()) {
+            checkVars(pair.getKey(), pair.getValue(), staticVars);
+            checkVars(pair.getKey(), pair.getValue(), staticColons);
+        }
+    }
+
     private void parseNonColon(@NotNull DeclaredAssignmentNode node) {
         var attrType = info.getType(node.getTypes()[0].getType());
         var attrInfo = new AttributeInfo(node.getDescriptors(), attrType, node.getLineInfo());

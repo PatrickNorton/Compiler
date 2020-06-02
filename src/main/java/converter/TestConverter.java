@@ -69,6 +69,8 @@ public interface TestConverter extends BaseConverter {
             return new TernaryConverter(info, (TernaryNode) node, retCount);
         } else if (node instanceof VariableNode) {
             return new VariableConverter(info, (VariableNode) node, retCount);
+        } else if (node instanceof VariantCreationNode) {
+            return new VariantConverter(info, (VariantCreationNode) node, retCount);
         } else {
             throw new UnsupportedOperationException("Unknown type: " + node.getClass());
         }

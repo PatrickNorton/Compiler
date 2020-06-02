@@ -100,6 +100,9 @@ public enum Bytecode {
     DO_STATIC(0x60, Type.LOCATION),
     STORE_STATIC(0x61, Type.VARIABLE),
     LOAD_STATIC(0x62, Type.VARIABLE),
+    // Union/Option stuff
+    GET_VARIANT(0x68, Type.FUNCTION_NO),
+    MAKE_VARIANT(0x69, Type.FUNCTION_NO),
     // Misc.
     MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
     GET_TYPE(0x71),

@@ -14,7 +14,7 @@ public final class MethodInfo implements Lined {
         private final StatementBodyNode body;
         private final LineInfo lineInfo;
 
-        MethodInfo(Set<DescriptorNode> descriptors, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
+        public MethodInfo(Set<DescriptorNode> descriptors, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
             this.descriptors = descriptors;
             this.info = info;
             this.body = body;
