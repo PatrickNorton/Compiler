@@ -93,4 +93,10 @@ public final class TypeTypeObject extends TypeObject {
             return null;
         }
     }
+
+    @Override
+    @Nullable
+    public TypeObject attrType(String value, DescriptorNode access) {
+        return generic == null ? null : generic.staticAttrType(value, access);
+    }
 }

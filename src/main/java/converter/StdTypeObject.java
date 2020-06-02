@@ -115,6 +115,16 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
     }
 
+    @Nullable
+    @Override
+    public TypeObject staticAttrTypeWithGenerics(String value, DescriptorNode access) {
+        var attr = info.staticAttributes.get(value);
+        if (attr == null || (isConst && attr.getDescriptors().contains(DescriptorNode.MUT))) {
+            return null;
+        }
+        return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
+    }
+
     public void setAttributes(Map<String, AttributeInfo> attributes) {
         assert !info.isSealed && info.attributes == null;
         info.attributes = attributes;
