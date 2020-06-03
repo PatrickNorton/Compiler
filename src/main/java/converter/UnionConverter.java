@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode> implements BaseConverter {
-    private final Map<String, Pair<LineInfo, TypeObject>> variants = new HashMap<>();
+    private final Map<String, Pair<Integer, AttributeInfo>> variants = new HashMap<>();
 
     public UnionConverter(CompilerInfo info, UnionDefinitionNode node) {
         super(info, node);
@@ -52,7 +52,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             superConstants.add(info.constIndex(sup.name()));
         }
         checkContract(type, trueSupers);
-        addToInfo(type, "union", superConstants, converter);
+        addToInfo(type, "union", convertVariants(), superConstants, converter);
         return Collections.emptyList();
     }
 
@@ -80,9 +80,9 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         var name = decl.getName().getName();
         var type = info.getType(decl.getType());
         if (variants.containsKey(name)) {
-            throw CompilerException.doubleDef(name, variants.get(name).getKey(), decl.getLineInfo());
+            throw CompilerException.doubleDef(name, variants.get(name).getValue(), decl);
         } else {
-            variants.put(name, Pair.of(decl.getLineInfo(), type));
+            variants.put(name, Pair.of(variants.size(), new AttributeInfo(type, decl.getLineInfo())));
         }
     }
 
@@ -136,7 +136,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
-            var fnInfo = new OptionTypeObject(pair.getValue().getValue());
+            var fnInfo = new OptionTypeObject(pair.getValue().getValue().getType());
             result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
         }
         return result;
@@ -149,9 +149,20 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
-            var fnInfo = variantInfo(pair.getValue().getValue(), selfType).toCallable();
+            var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType).toCallable();
             result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
         }
+        return result;
+    }
+
+    @NotNull
+    private List<String> convertVariants() {
+        List<String> result = new ArrayList<>(Collections.nCopies(variants.size(), null));
+        for (var pair : variants.entrySet()) {
+            assert result.get(pair.getValue().getKey()) == null;
+            result.set(pair.getValue().getKey(), pair.getKey());
+        }
+        assert !result.contains(null);
         return result;
     }
 
@@ -161,7 +172,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     private Map<String, MethodInfo> variantMethods(StdTypeObject selfType) {
         Map<String, MethodInfo> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
-            var fnInfo = variantInfo(pair.getValue().getValue(), selfType);
+            var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType);
             var selfVar = new VariableNode(LineInfo.empty(), selfType.name());
             var variantNo = 0;  // TODO: Get variant number
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);

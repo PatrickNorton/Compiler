@@ -76,7 +76,8 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    private ClassInfo createClass(UserType<?> type, List<Short> superConstants, @NotNull ConverterHolder converter) {
+    private ClassInfo createClass(UserType<?> type, List<String> variants,
+                                  List<Short> superConstants, @NotNull ConverterHolder converter) {
         return new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
@@ -89,20 +90,26 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 .setProperties(merge(convert(type, converter.allGetters()), convert(type, converter.getSetters())))
                 .setStaticProperties(merge(convert(type, converter.staticGetters()),
                         convert(type, converter.staticSetters())))
+                .setVariants(variants)
                 .create();
     }
 
-    protected final void addToInfo(UserType<?> type, String defType,
+    protected final void addToInfo(UserType<?> type, String defType, List<String> variants,
                                    List<Short> superConstants, @NotNull ConverterHolder converter) {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
         info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
-        var cls = createClass(type, superConstants, converter);
+        var cls = createClass(type, variants, superConstants, converter);
         int classIndex = info.addClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
         }
         info.setReservedVar(name, new ClassConstant(name, classIndex, type));
+    }
+
+    protected final void addToInfo(UserType<?> type, String defType,
+                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+        addToInfo(type, defType, null, superConstants, converter);
     }
 
     protected final UserType<?>[] convertSupers(TypeObject[] supers) {
