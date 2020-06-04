@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.CaseStatementNode;
 import main.java.parser.DefaultStatementNode;
+import main.java.parser.DottedVariableNode;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.Contract;
@@ -107,11 +108,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
                 assert defaultVal == 0;
-                defaultVal = start + bytes.size();
-                bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
-                bytes.add(Bytecode.JUMP.value);
-                info.loopManager().addBreak(1, start + bytes.size());
-                bytes.addAll(Util.zeroToBytes());
+                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
                 continue;
             }
             var lblConverter = TestConverter.of(info, stmt.getLabel()[0], 1);
@@ -158,5 +155,76 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             return new CompactSwitchTable(table, defaultVal);
         }
+    }
+
+    private int convertDefault(int start, @NotNull List<Byte> bytes, @NotNull DefaultStatementNode stmt) {
+        var defaultVal = start + bytes.size();
+        bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+        bytes.add(Bytecode.JUMP.value);
+        info.loopManager().addBreak(1, start + bytes.size());
+        bytes.addAll(Util.zeroToBytes());
+        return defaultVal;
+    }
+
+    @NotNull
+    private List<Byte> convertUnion(int start, StdTypeObject union) {
+        Map<Integer, Integer> jumps = new HashMap<>();
+        int defaultVal = 0;
+        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
+        bytes.add(Bytecode.VARIANT_NO.value);
+        bytes.add(Bytecode.SWITCH_TABLE.value);  // TODO: 'as' clause in switch
+        int tblPos = bytes.size();
+        bytes.addAll(Util.shortZeroBytes());
+        for (var stmt : node.getCases()) {
+            if (stmt instanceof DefaultStatementNode) {
+                assert defaultVal == 0;
+                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
+                continue;
+            }
+            var lblConverter = stmt.getLabel()[0];
+            var lblNo = labelToVariantNo(lblConverter, union);
+            jumps.put(lblNo, start + bytes.size());
+            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+            bytes.add(Bytecode.JUMP.value);
+            info.loopManager().addBreak(1, start + bytes.size());
+            bytes.addAll(Util.zeroToBytes());
+        }
+        var switchTable = smallTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
+        int tblIndex = info.addSwitchTable(switchTable);
+        Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
+        return bytes;
+    }
+
+    private int labelToVariantNo(TestNode label, StdTypeObject switchedType) {
+        if (label instanceof DottedVariableNode) {
+            var dottedLbl = (DottedVariableNode) label;
+            var lblFirst = dottedLbl.getPreDot();
+            var lblSecond = dottedLbl.getPostDots();
+            var firstConverter = TestConverter.of(info, lblFirst, 1);
+            var firstRetType = firstConverter.returnType()[0];
+            if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
+                var firstType = (TypeTypeObject) firstRetType;
+                var retType = firstType.representedType();
+                if (retType.equals(switchedType)) {
+                    // TODO: Get label
+                    return 0;
+                } else {
+                    throw CompilerException.of("Mismatched types in label", label);
+                }
+            }
+        }
+        throw CompilerException.of("Switch on a union must have properly-formed variants", label);
+    }
+
+    @NotNull
+    @Contract("_, _ -> new")
+    private SwitchTable smallTbl(@NotNull Map<Integer, Integer> jumps, int defaultVal) {
+        var max = Collections.max(jumps.keySet());
+        var tblSize = max + 1;
+        List<Integer> table = new ArrayList<>(tblSize);
+        for (int i = 0; i < tblSize; i++) {
+            table.add(jumps.getOrDefault(i, defaultVal));
+        }
+        return new CompactSwitchTable(table, defaultVal);
     }
 }
