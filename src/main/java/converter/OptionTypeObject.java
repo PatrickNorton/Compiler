@@ -3,6 +3,7 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public final class OptionTypeObject extends TypeObject {  // TODO: Properly make options
@@ -54,5 +55,28 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     @Override
     public int hashCode() {
         return Objects.hash(typedefName, optionVal);
+    }
+
+    public static List<Byte> maybeWrapBytes(@NotNull List<Byte> bytes, boolean wrap) {
+        if (wrap) {
+            return wrapBytes(bytes);
+        }
+        return bytes;
+    }
+
+    @Contract("_ -> param1")
+    @NotNull
+    public static List<Byte> wrapBytes(@NotNull List<Byte> bytes) {
+        bytes.add(Bytecode.MAKE_OPTION.value);
+        return bytes;
+    }
+
+    public static boolean needsMakeOption(TypeObject maybeOption, TypeObject other) {
+        if (maybeOption instanceof OptionTypeObject) {
+            var option = (OptionTypeObject) maybeOption;
+            return Builtins.NULL_TYPE.isSuperclass(other) || option.optionVal.isSuperclass(other);
+        } else {
+            return false;
+        }
     }
 }

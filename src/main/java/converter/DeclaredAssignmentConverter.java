@@ -39,10 +39,17 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
             throw CompilerException.of("Illegal name " + assignedName, node);
         }
+        boolean needsMakeOption;
         if (!assignedType.isSuperclass(valueType)) {
-            throw CompilerException.format(
-                    "Object of type %s cannot be assigned to object of type %s",
-                    node, valueType.name(), assignedType.name());
+            if (OptionTypeObject.needsMakeOption(assignedType, valueType)) {
+                needsMakeOption = true;
+            } else {
+                throw CompilerException.format(
+                        "Object of type %s cannot be assigned to object of type %s",
+                        node, valueType.name(), assignedType.name());
+            }
+        } else {
+            needsMakeOption = false;
         }
         boolean isConst = !descriptors.contains(DescriptorNode.MUT)
                 && !descriptors.contains(DescriptorNode.MREF);
@@ -62,7 +69,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         } else {
             fillPos = -1;
         }
-        bytes.addAll(converter.convert(start));
+        bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
         info.checkDefinition(assignedName, node);
         var index = isStatic
                 ? info.addStaticVar(assignedName, assignedType, isConst, node)
