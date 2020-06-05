@@ -3,7 +3,9 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public final class OptionTypeObject extends TypeObject {
+import java.util.Objects;
+
+public final class OptionTypeObject extends TypeObject {  // TODO: Properly make options
     private final String typedefName;
     private final TypeObject optionVal;
 
@@ -19,6 +21,12 @@ public final class OptionTypeObject extends TypeObject {
 
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
+        if (equals(other)) {
+            return true;
+        }
+        if (other instanceof OptionTypeObject) {
+            return ((OptionTypeObject) other).optionVal.isSuperclass(optionVal);
+        }
         return false;
     }
 
@@ -32,5 +40,19 @@ public final class OptionTypeObject extends TypeObject {
     @NotNull
     public TypeObject typedefAs(String name) {
         return new OptionTypeObject(name, this.optionVal);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OptionTypeObject that = (OptionTypeObject) o;
+        return Objects.equals(typedefName, that.typedefName) &&
+                Objects.equals(optionVal, that.optionVal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(typedefName, optionVal);
     }
 }

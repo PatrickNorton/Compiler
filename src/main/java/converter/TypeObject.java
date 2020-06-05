@@ -250,7 +250,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     @NotNull
     @Contract(pure = true)
     static TypeObject optional(@NotNull TypeObject value) {
-        return value instanceof OptionalTypeObject ? value : new OptionalTypeObject(value);
+        return value instanceof OptionTypeObject ? value : new OptionTypeObject(value);
     }
 
     @Nullable
