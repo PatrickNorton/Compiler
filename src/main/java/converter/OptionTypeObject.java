@@ -3,6 +3,7 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,6 +58,15 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
         return Objects.hash(typedefName, optionVal);
     }
 
+    public TypeObject getOptionVal() {
+        return optionVal;
+    }
+
+    @Override
+    public TypeObject stripNull() {
+        return optionVal;
+    }
+
     public static List<Byte> maybeWrapBytes(@NotNull List<Byte> bytes, boolean wrap) {
         if (wrap) {
             return wrapBytes(bytes);
@@ -67,8 +77,9 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     @Contract("_ -> param1")
     @NotNull
     public static List<Byte> wrapBytes(@NotNull List<Byte> bytes) {
-        bytes.add(Bytecode.MAKE_OPTION.value);
-        return bytes;
+        List<Byte> result = new ArrayList<>(bytes);
+        result.add(Bytecode.MAKE_OPTION.value);
+        return result;
     }
 
     public static boolean needsMakeOption(TypeObject maybeOption, TypeObject other) {

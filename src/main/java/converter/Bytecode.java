@@ -105,6 +105,8 @@ public enum Bytecode {
     MAKE_VARIANT(0x69, Type.FUNCTION_NO),
     VARIANT_NO(0x6A),
     MAKE_OPTION(0x6B),
+    IS_SOME(0x6C),
+    UNWRAP_OPTION(0x6D),
     // Misc.
     MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
     GET_TYPE(0x71),

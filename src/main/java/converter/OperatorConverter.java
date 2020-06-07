@@ -68,6 +68,7 @@ public final class OperatorConverter implements TestConverter {
             case IN:
             case IS:
             case IS_NOT:
+            case OPTIONAL:
                 return new TypeObject[] {Builtins.BOOL};
             case NOT_NULL:
                 return notNullReturn();
@@ -100,6 +101,8 @@ public final class OperatorConverter implements TestConverter {
             case IS:
             case IS_NOT:
                 return convertIs(start);
+            case OPTIONAL:
+                return convertQuestion(start);
         }
         int opCount = node.getOperands().length;
         TypeObject opType = null;
@@ -140,10 +143,12 @@ public final class OperatorConverter implements TestConverter {
                 return convertIsNot(start);
             case INSTANCEOF:
                 return convertInstanceof(start);
+            case OPTIONAL:
+                return convertQuestionAs(start);
             default:
                 throw CompilerException.of(
                         "Cannot use 'as' here, condition must be an " +
-                                "'instanceof' or 'is not null' statement", node
+                                "'instanceof', '?', or 'is not null' statement", node
                 );
         }
     }
@@ -160,7 +165,7 @@ public final class OperatorConverter implements TestConverter {
             );
         }
         var condType = TestConverter.returnType(arg0, info, 1)[0];
-        if (!condType.isSuperclass(Builtins.NULL_TYPE)) {
+        if (!(condType instanceof OptionTypeObject)) {
             CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
         } else if (condType.equals(Builtins.NULL_TYPE)) {
             CompilerWarning.warn("Using 'is null' comparison on variable that must be null", arg0);
@@ -197,7 +202,7 @@ public final class OperatorConverter implements TestConverter {
     private List<Byte> convertNullCoerce(int start) {
         assert node.getOperator() == OperatorTypeNode.NULL_COERCE;
         var firstConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
-        if (!firstConverter.returnType()[0].isSuperclass(Builtins.NULL_TYPE)) {  // Non-optional return types won't be null
+        if (!(firstConverter.returnType()[0] instanceof OptionTypeObject)) {  // Non-optional return types won't be null
             var lineInfo = node.getOperands()[0].getLineInfo();
             CompilerWarning.warn("Using ?? operator on non-optional value", lineInfo);
             return firstConverter.convert(start);
@@ -208,6 +213,9 @@ public final class OperatorConverter implements TestConverter {
         }
         List<Byte> bytes = new ArrayList<>(firstConverter.convert(start));
         bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(Bytecode.UNWRAP_OPTION.value);
+        bytes.add(Bytecode.SWAP_2.value);
         bytes.add(Bytecode.JUMP_NN.value);
         addPostJump(start, bytes);
         if (retCount == 0) {
@@ -253,7 +261,7 @@ public final class OperatorConverter implements TestConverter {
                     "Cannot use !! operator on variable on variable with type null",
                     node.getOperands()[0]
             );
-        } else if (converter.returnType()[0].isSuperclass(Builtins.NULL_TYPE)) {
+        } else if (converter.returnType()[0] instanceof OptionTypeObject) {
             bytes.add(Bytecode.DUP_TOP.value);
             bytes.add(Bytecode.JUMP_NN.value);
             int jumpPos = bytes.size();
@@ -267,6 +275,7 @@ public final class OperatorConverter implements TestConverter {
             bytes.add(Bytecode.THROW_QUICK.value);
             bytes.addAll(Util.shortToBytes((short) 1));
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+            bytes.add(Bytecode.UNWRAP_OPTION.value);
         } else {
             CompilerWarning.warn("Used !! operator on non-optional value",
                     node.getOperands()[0].getLineInfo());
@@ -275,6 +284,38 @@ public final class OperatorConverter implements TestConverter {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
+    }
+
+    @NotNull
+    private List<Byte> convertQuestion(int start) {
+        var converter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
+        var retType = converter.returnType()[0];
+        if (!(retType instanceof OptionTypeObject)) {
+            throw CompilerException.format("Cannot use ? on a non-optional type '%s", node.getOperands()[0], retType);
+        }
+        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        bytes.add(Bytecode.IS_SOME.value);
+        if (retCount == 0) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        return bytes;
+    }
+
+    @NotNull
+    private Pair<List<Byte>, TypeObject> convertQuestionAs(int start) {
+        var converter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
+        var retType = converter.returnType()[0];
+        if (!(retType instanceof OptionTypeObject)) {
+            throw CompilerException.format("Cannot use ? on a non-optional type '%s", node.getOperands()[0], retType);
+        }
+        var resultType = ((OptionTypeObject) retType).getOptionVal();
+        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(Bytecode.UNWRAP_OPTION.value);
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(Bytecode.IS_SOME.value);
+        return Pair.of(bytes, resultType);
     }
 
     @NotNull
