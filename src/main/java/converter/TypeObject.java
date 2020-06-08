@@ -8,22 +8,29 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     /**
      * Checks if this is a subclass of the other type.
      * <p>
      *     <b>IMPORTANT:</b> This should not be called outside of {@link
-     *     #isSuperclass} (as a default implementation). This is due to the
-     *     weird super/subclassing rules for {@link UnionTypeObject unions}.
+     *     #isSuperclass} (as a default implementation).
      * </p>
      *
      * @param other The type to test for inheritance
@@ -212,22 +219,89 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     static TypeObject union(@NotNull TypeObject... values) {
-        SortedSet<TypeObject> sortedSet = new TreeSet<>();
-        for (var type : values) {
-            if (type instanceof UnionTypeObject) {
-                sortedSet.addAll(((UnionTypeObject) type).subTypes());
+        Set<TypeObject> valueSet = new HashSet<>(Arrays.asList(values));
+        if (valueSet.size() == 1) {
+            return valueSet.iterator().next();
+        } else {
+            valueSet.remove(Builtins.THROWS);
+            TypeObject currentSuper = null;
+            boolean isOptional = false;
+            for (var value : valueSet) {
+                if (value instanceof OptionTypeObject) {
+                    isOptional = true;
+                    var option = ((OptionTypeObject) value).getOptionVal();
+                    currentSuper = currentSuper == null ? option : getSuper(currentSuper, option);
+                } else {
+                    currentSuper = currentSuper == null ? value : getSuper(currentSuper, value);
+                }
+            }
+            return isOptional ? new OptionTypeObject(currentSuper) : currentSuper;
+        }
+    }
+
+    @NotNull
+    private static TypeObject getSuper(@NotNull TypeObject a, TypeObject b) {
+        if (a.isSuperclass(b)) {
+            return a;
+        } else if (b.isSuperclass(a)) {
+            return b;
+        }
+        assert a instanceof UserType && b instanceof UserType;
+        var userA = (UserType<?>) a;
+        var userB = (UserType<?>) b;
+        Set<TypeObject> aSupers = new HashSet<>();
+        Set<TypeObject> bSupers = new HashSet<>();
+        for (var pair : new Zipper<>(new RecursiveSuperIterator(userA), new RecursiveSuperIterator(userB))) {
+            if (bSupers.contains(pair.getKey())) {
+                return pair.getKey();
+            } else if (aSupers.contains(pair.getValue())) {
+                return pair.getValue();
             } else {
-                sortedSet.add(type);
+                aSupers.add(pair.getKey());
+                bSupers.add(pair.getValue());
             }
         }
-        sortedSet.remove(Builtins.THROWS);
-        if (sortedSet.isEmpty()) {
-            return Builtins.THROWS;
-        } else if (sortedSet.size() == 2 && sortedSet.contains(Builtins.NULL_TYPE)) {
-            sortedSet.remove(Builtins.NULL_TYPE);
-            return optional(sortedSet.first());
+        return Builtins.OBJECT;
+    }
+
+    private static final class RecursiveSuperIterator implements Iterator<TypeObject>, Iterable<TypeObject> {
+        private final Deque<Iterator<TypeObject>> iterators;
+
+        public RecursiveSuperIterator(@NotNull UserType<?> val) {
+            this.iterators = new ArrayDeque<>();
+            iterators.addLast(val.getSupers().iterator());
         }
-        return sortedSet.size() == 1 ? sortedSet.first() : new UnionTypeObject(sortedSet);
+
+        @NotNull
+        @Override
+        public Iterator<TypeObject> iterator() {
+            return this;
+        }
+
+        public boolean hasNext() {
+            while (!iterators.isEmpty() && !iterators.peek().hasNext()) {
+                iterators.pop();
+            }
+            return !iterators.isEmpty();
+        }
+
+        @Override
+        public TypeObject next() {
+            while (!iterators.isEmpty() && !iterators.peek().hasNext()) {
+                iterators.pop();
+            }
+            if (iterators.isEmpty()) {
+                throw new NoSuchElementException();
+            } else {
+                var value = iterators.peek().next();
+                List<TypeObject> supers = value instanceof UserType<?>
+                        ? ((UserType<?>) value).getSupers() : Collections.emptyList();
+                if (!supers.isEmpty()) {
+                    iterators.addLast(supers.iterator());
+                }
+                return value;
+            }
+        }
     }
 
     @NotNull
