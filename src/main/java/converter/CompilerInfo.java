@@ -8,7 +8,6 @@ import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypeUnionNode;
-import main.java.parser.TypewiseAndNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -318,9 +317,6 @@ public final class CompilerInfo {
         if (type instanceof TypeUnionNode) {
             var union = (TypeUnionNode) type;
             return TypeObject.union(typesOf(union.getSubtypes()));
-        } else if (type instanceof TypewiseAndNode) {
-            var union = (TypewiseAndNode) type;
-            return TypeObject.intersection(typesOf(union.getSubtypes()));
         } else {
             assert type instanceof TypeNode;
             if (((TypeNode) type).getName().toString().equals("null")) {

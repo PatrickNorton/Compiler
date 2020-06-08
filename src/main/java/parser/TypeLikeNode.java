@@ -33,8 +33,6 @@ public interface TypeLikeNode extends AtomicNode {
         TypeLikeNode type = TypeNode.parse(tokens, ignoreNewlines);
         if (tokens.tokenIs("|")) {
             return TypeUnionNode.fromType(tokens, type, ignoreNewlines);
-        } else if (tokens.tokenIs("&")) {
-            return TypewiseAndNode.fromType(tokens, type, ignoreNewlines);
         } else {
             return type;
         }

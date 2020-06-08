@@ -23,8 +23,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * <p>
      *     <b>IMPORTANT:</b> This should not be called outside of {@link
      *     #isSuperclass} (as a default implementation). This is due to the
-     *     weird super/subclassing rules for {@link UnionTypeObject unions} and
-     *     {@link IntersectionTypeObject intersections}.
+     *     weird super/subclassing rules for {@link UnionTypeObject unions}.
      * </p>
      *
      * @param other The type to test for inheritance
@@ -229,22 +228,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
             return optional(sortedSet.first());
         }
         return sortedSet.size() == 1 ? sortedSet.first() : new UnionTypeObject(sortedSet);
-    }
-
-    static TypeObject intersection(@NotNull TypeObject... values) {
-        SortedSet<TypeObject> sortedSet = new TreeSet<>();
-        for (var type : values) {
-            if (type instanceof IntersectionTypeObject) {
-                sortedSet.addAll(((IntersectionTypeObject) type).subTypes());
-            } else {
-                sortedSet.add(type);
-            }
-        }
-        sortedSet.remove(Builtins.THROWS);
-        if (sortedSet.isEmpty()) {
-            return Builtins.THROWS;
-        }
-        return sortedSet.size() == 1 ? sortedSet.first() : new IntersectionTypeObject(sortedSet);
     }
 
     @NotNull
