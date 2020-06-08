@@ -227,7 +227,9 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
             TypeObject currentSuper = null;
             boolean isOptional = false;
             for (var value : valueSet) {
-                if (value instanceof OptionTypeObject) {
+                if (value == Builtins.NULL_TYPE) {
+                    isOptional = true;
+                } else if (value instanceof OptionTypeObject) {
                     isOptional = true;
                     var option = ((OptionTypeObject) value).getOptionVal();
                     currentSuper = currentSuper == null ? option : getSuper(currentSuper, option);
