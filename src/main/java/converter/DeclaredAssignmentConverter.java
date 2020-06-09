@@ -56,7 +56,13 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
             info.checkDefinition(assignedName, node);
-            info.addVariable(assignedName, assignedType, constant, node);
+            if (needsMakeOption) {
+                short constIndex = info.addConstant(constant);
+                var trueConst = new OptionConstant(valueType, constIndex);
+                info.addVariable(assignedName, assignedType, trueConst, node);
+            } else {
+                info.addVariable(assignedName, assignedType, constant, node);
+            }
             return Collections.emptyList();
         }
         boolean isStatic = descriptors.contains(DescriptorNode.STATIC);
