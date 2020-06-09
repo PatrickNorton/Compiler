@@ -30,12 +30,7 @@ public interface TypeLikeNode extends AtomicNode {
             return type;
         }
         assert tokens.tokenIs(TokenType.NAME, Keyword.VAR);
-        TypeLikeNode type = TypeNode.parse(tokens, ignoreNewlines);
-        if (tokens.tokenIs("|")) {
-            return TypeUnionNode.fromType(tokens, type, ignoreNewlines);
-        } else {
-            return type;
-        }
+        return TypeNode.parse(tokens, ignoreNewlines);
     }
 
     @NotNull

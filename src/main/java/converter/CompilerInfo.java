@@ -7,7 +7,6 @@ import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
-import main.java.parser.TypeUnionNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -314,33 +313,28 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
-        if (type instanceof TypeUnionNode) {
-            var union = (TypeUnionNode) type;
-            return TypeObject.union(typesOf(union.getSubtypes()));
-        } else {
-            assert type instanceof TypeNode;
-            if (((TypeNode) type).getName().toString().equals("null")) {
-                var nullType = (TypeNode) type;
-                assert nullType.getSubtypes().length == 0;
-                if (nullType.isOptional()) {
-                    CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
-                }
-                return Builtins.NULL_TYPE;
+        assert type instanceof TypeNode;
+        if (((TypeNode) type).getName().toString().equals("null")) {
+            var nullType = (TypeNode) type;
+            assert nullType.getSubtypes().length == 0;
+            if (nullType.isOptional()) {
+                CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
             }
-            var value = typeMap.get(type.strName());
-            if (value == null) {
-                var builtin = Builtins.BUILTIN_MAP.get(type.strName());
-                if (builtin instanceof TypeObject) {
-                    var typeObj = (TypeObject) builtin;
-                    var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
-                    return type.isOptional() ? TypeObject.optional(endType) : endType;
-                } else {
-                    throw new RuntimeException("Unknown type " + type);
-                }
-            } else {
-                var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+            return Builtins.NULL_TYPE;
+        }
+        var value = typeMap.get(type.strName());
+        if (value == null) {
+            var builtin = Builtins.BUILTIN_MAP.get(type.strName());
+            if (builtin instanceof TypeObject) {
+                var typeObj = (TypeObject) builtin;
+                var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
                 return type.isOptional() ? TypeObject.optional(endType) : endType;
+            } else {
+                throw new RuntimeException("Unknown type " + type);
             }
+        } else {
+            var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+            return type.isOptional() ? TypeObject.optional(endType) : endType;
         }
     }
 
