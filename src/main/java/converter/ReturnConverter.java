@@ -28,8 +28,12 @@ public final class ReturnConverter implements BaseConverter {
             bytes.addAll(Util.intToBytes(jumpTarget));
             bytes.addAll(returnBytes);
         } else {
-            if (node.getReturned().size() != 0) {
-                bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, node.getReturned().size()));
+            var fnReturns = info.getFnReturns();
+            var currentReturns = fnReturns.currentFnReturns();
+            if (currentReturns.length == 1) {
+                bytes.addAll(TestConverter.bytesMaybeOption(start, node.getReturned().get(0), info, 1, currentReturns[0]));
+            } else if (node.getReturned().size() != 0) {
+                bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, currentReturns.length));
             }
         }
         bytes.add(Bytecode.RETURN.value);
