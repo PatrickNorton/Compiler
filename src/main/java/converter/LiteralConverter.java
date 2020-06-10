@@ -36,9 +36,10 @@ public final class LiteralConverter implements TestConverter {
             }
         } else {
             assert retCount == 1;
+            var retType = returnTypes(node.getBuilders());
             boolean isList = node.getBraceType().equals("[");
             for (var value : node.getBuilders()) {
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, 1));
+                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
             }
             bytes.add((isList ? Bytecode.LIST_CREATE : Bytecode.SET_CREATE).value);
             bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
