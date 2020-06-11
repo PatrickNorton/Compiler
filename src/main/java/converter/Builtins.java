@@ -72,6 +72,8 @@ public final class Builtins {
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
 
+    public static final StdTypeObject BYTES = new StdTypeObject("bytes");
+
     public static final StdTypeObject THROWS = new StdTypeObject("throws");
 
     public static final TypeObject TYPE = new TypeTypeObject();
@@ -180,6 +182,26 @@ public final class Builtins {
         );
         STR.setAttributes(strAttrs);
         STR.seal();
+    }
+
+    static {  // Set bytes operators
+        var bytesMap = Map.of(
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(BYTES), BYTES),
+                OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), BYTES),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(BYTES), BOOL),
+                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), INT),
+                OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, INT)),
+                OpSpTypeNode.ITER, new FunctionInfo(INT),
+                OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
+        );
+        BYTES.setOperators(bytesMap);
+        var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
+        var bytesAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
+                "join", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), joinInfo.toCallable())
+        );
+        BYTES.setAttributes(bytesAttrs);
+        BYTES.seal();
     }
 
     static {  // Set char operators

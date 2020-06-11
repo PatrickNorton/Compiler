@@ -11,4 +11,5 @@ public enum ConstantBytes {
     BOOL,
     CLASS,
     OPTION,
+    BYTES,
 }
