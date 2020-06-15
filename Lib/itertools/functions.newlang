@@ -1,9 +1,9 @@
-from types typeget Boolable, Callable, Iterable
+from types typeget Callable, Iterable
 
 export all, any, count, countEqual, countFalse, countNotEqual, first, last
 
 
-func all(Iterable[Boolable] values) -> bool {
+func all(Iterable[Any] values) -> bool {
     for var i in values {
         return false if not i
     }
@@ -11,7 +11,7 @@ func all(Iterable[Boolable] values) -> bool {
 }
 
 
-func any(Iterable[Boolable] values) -> bool {
+func any(Iterable[Any] values) -> bool {
     for var i in values {
         return true if i
     }
@@ -20,7 +20,7 @@ func any(Iterable[Boolable] values) -> bool {
 
 
 generic T
-func count(Callable[T, Boolable] predicate = bool, Iterable[T] values, /) -> uint {
+func count(Callable[T, Any] predicate = bool, Iterable[T] values, /) -> uint {
     return \+(1 for T i in values if predicate(i))
 }
 
@@ -32,7 +32,7 @@ func countEqual(T sentinel, Iterable[T] values, /) -> uint {
 
 
 generic T
-func countFalse(Callable[T, Boolable] predicate = bool, Iterable[T] values, /) -> uint {
+func countFalse(Callable[T, Any] predicate = bool, Iterable[T] values, /) -> uint {
     return \+(1 for T i in values if not predicate(i))
 }
 
@@ -44,7 +44,7 @@ func countNotEqual(T sentinel, Iterable[T] values, /) -> uint {
 
 
 generic T
-func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
+func first(Callable[T, Any] predicate, Iterable[T] values, T fallback) -> T {
     for T value in values {
         return value if predicate(value)
     }
@@ -53,8 +53,8 @@ func first(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T
 
 
 generic T
-func last(Callable[T, Boolable] predicate, Iterable[T] values, T fallback) -> T {
-    T lastSoFar = fallback
+func last(Callable[T, Any] predicate, Iterable[T] values, T fallback) -> T {
+    mut T lastSoFar = fallback
     for T value in values {
         if predicate(value) {
             lastSoFar = value

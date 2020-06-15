@@ -12,16 +12,3 @@ generator func cycle(Iterable[T] p) -> T {
         yield from p
     }
 }
-
-generic T
-generator func repeat(T value, int? times = null) -> T {
-    if times is null {
-        while true {
-            yield value
-        }
-    } else {
-        dotimes times!! {
-            yield value
-        }
-    }
-}

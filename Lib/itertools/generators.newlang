@@ -107,7 +107,7 @@ generator func traverse(T sequence) -> U {
 generic T
 generator func withNext(Iterable[T] values) -> T, T {
     var iter = iter(values)
-    T previous
+    mut T previous
     try {
         previous = iter.next()
     } except StopIteration {
@@ -124,24 +124,22 @@ generator func zip(Iterable[T] value1, Iterable[T] values2) -> T, U {
     var iter1 = iter(value1)
     var iter2 = iter(value2)
     while true {
-        T next1
-        U next2
         try {
-            next1 = iter1.next()
-            next2 = iter2.next()
+            T next1 = iter1.next()
+            U next2 = iter2.next()
+            yield next1, next2
         } except StopIteration {
             return
         }
-        yield next1, next2
     }
 }
 
 generic T
 generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
-    Array[Iterator[T]] iterators = Array(values.length, *apply(iter, values))
-    Array[bool] hasNext = Array(values.length, false)
+    final Array[Iterator[T]] iterators = Array(values.length, *apply(iter, values))
+    final Array[bool] hasNext = Array(values.length, false)
     while any(hasNext) {
-        Array[T] next = Array(values.length, defaultVal)
+        final Array[T] next = Array(values.length, defaultVal)
         for int i, var j in enumerate(iterators) {
             if hasNext[i] {
                 try {
