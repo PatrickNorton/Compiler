@@ -4,26 +4,26 @@ export ChainMap
 
 # FIXME?? Value changes act on sub-maps themselves... should that happen?
 final class ChainMap[K, V] from dict[K, V] {
-    private const tuple[*dict[K, V]] values
+    private final list[dict[K, V]] values
 
     public operator new (*dict[K, V] values) {
-        self.values = values
+        self.values = list(values)
     }
 
     public operator [] (K key) -> V {
         for var dict in self.values {
             try {
                 return dict[key]
-            } except ValueError {}
+            } except KeyError {}
         }
-        raise ValueError(f"Key {key} not found")
+        raise KeyError(f"Key {key} not found")
     }
 
-    public operator []= (K key, V value) {
+    public mut operator []= (K key, V value) {
         self.values[0] = value
     }
 
-    public operator del[] (K key) {
+    public mut operator del[] (K key) {
         for var subDict in self.values {
             if key in subDict {
                 del subDict[key]
@@ -32,7 +32,9 @@ final class ChainMap[K, V] from dict[K, V] {
     }
 
     public operator iter -> K, V {
-        yield from (*d for var d in self.values)
+        for var d in self.values {
+            yield from d
+        }
     }
 
     public operator in (K key) {

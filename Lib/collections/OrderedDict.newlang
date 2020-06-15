@@ -9,9 +9,9 @@ const dec RESIZE_THRESHOLD = 1.5
 
 
 class OrderedDict[K, V] from AbstractDict[K, V] {
-    private list[Tuple[int, K, V]?] items
-    private dict[K, uint] values
-    pubget uint length := self.values.length
+    private mut list[Tuple[int, K, V]?] items
+    private mut dict[K, uint] values
+    public readonly uint length := self.values.length
 
     public operator new (*tuple[K, V] values) {
         self.items = list(values)
@@ -23,7 +23,7 @@ class OrderedDict[K, V] from AbstractDict[K, V] {
         return (self.items[self.values[K]]!!)[2]
     }
 
-    public operator []= (K key, V value) {
+    public mut operator []= (K key, V value) {
         if key in self {
             self.items[self.values[key]] = (hash(key), key, value)
         } else {
@@ -37,22 +37,21 @@ class OrderedDict[K, V] from AbstractDict[K, V] {
         }
     }
 
-    private method shrink() {
-        uint reduceIndex = 0
+    private mut method shrink() {
+        mut uint reduceIndex = 0
         var tmpItems = self.items
         self.items = []
         for uint i, var keyVal in enumerate(tmpItems) {
-            if keyVal is null {
-                reduceIndex++
-            } else {
-                var kvNotNull = keyVal!!
+            if keyVal? as kvNotNull {
                 self.items.append(kvNotNull)
                 self.values[kvNotNull[1]] = i - reduceIndex
+            } else {
+                reduceIndex++
             }
         }
     }
 
-    public operator del[] (K key) {
+    public mut operator del[] (K key) {
         self.items[self.values[key]] = null
         del self.values[key]
     }

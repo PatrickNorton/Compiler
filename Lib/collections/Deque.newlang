@@ -84,32 +84,32 @@ final class Deque[V] {
         return f"{type(self)}({list(self.values)})"
     }
 
-    public method popLeft() -> V {
+    public mut method popLeft() -> V {
         V value = self.values[self.start]
         self.start = (self.start + 1) % values.length
         self.length--
         return value
     }
 
-    public method pop() -> V {
+    public mut method pop() -> V {
         V value = self.values[(self.start + self.size) % values.length]
         self.length--
         return value
     }
 
-    public method push(V value) {
+    public mut method push(V value) {
         self.ensureSize(self.length + 1)
         self.values[self.end] = value
         self.length++
     }
 
-    public method pushLeft(V value) {
+    public mut method pushLeft(V value) {
         self.ensureSize(self.length + 1)
         self.values[(self.start - 1) % self.values.length] = value
         self.length++
     }
 
-    public method extend(Iterable[V] values) {
+    public mut method extend(Iterable[V] values) {
         if values instanceof Sequence {  # Prevent multiple array resizes
             self.ensureSize(self.length + values.length)
         }
@@ -118,7 +118,7 @@ final class Deque[V] {
         }
     }
 
-    public method extendLeft(Iterable[V] values) {
+    public mut method extendLeft(Iterable[V] values) {
         if values instanceof Sequence {  # Prevent multiple array resizes
             self.ensureSize(self.length + values.length)
         }
@@ -127,7 +127,7 @@ final class Deque[V] {
         }
     }
 
-    private method ensureSize(int length) {
+    private mut method ensureSize(int length) {
         return if size <= self.values.length
         var new = Array[V?](highestOneBit(length) << 1, null)
         if self.start <= self.end {
