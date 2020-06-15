@@ -40,12 +40,12 @@ public final class ImportExportConverter implements BaseConverter {
         boolean renamed = node.getAs().length > 0;
         for (int i = 0; i < node.getValues().length; i++) {
             String importName = from + "." + node.getValues()[i];
-            int importNumber = info.addImport(importName);
+            int importNumber = info.importHandler().addImport(importName);
             var localName = (renamed ? node.getAs() : node.getValues())[i].toString();
             var constant = new ImportConstant(importNumber, localName);
             info.addConstant(constant);
             info.checkDefinition(localName, node.getValues()[i]);
-            info.addVariable(localName, info.importType(importName), constant, node.getValues()[i]);
+            info.addVariable(localName, info.importHandler().importType(importName), constant, node.getValues()[i]);
         }
     }
 
@@ -55,14 +55,16 @@ public final class ImportExportConverter implements BaseConverter {
         if (!node.getFrom().isEmpty()) {
             var from = node.getFrom().toString();
             for (int i = 0; i < node.getValues().length; i++) {
-                info.addImport(from + node.getValues()[i]);
+                info.importHandler().addImport(from + node.getValues()[i]);
                 var exportedName = hasAs ? node.getAs()[i].toString() : node.getValues()[i].toString();
-                info.addExport(exportedName, info.importType(from + node.getValues()[i]), node.getLineInfo());
+                var importType = info.importHandler().importType(from + node.getValues()[i]);
+                info.importHandler().addExport(exportedName, importType, node.getLineInfo());
             }
         } else {
             for (int i = 0; i < node.getValues().length; i++) {
                 var exportedName = hasAs ? node.getAs()[i].toString() : node.getValues()[i].toString();
-                info.addExport(exportedName, info.getType(node.getValues()[i].toString()), node.getLineInfo());
+                var exportType = info.getType(node.getValues()[i].toString());
+                info.importHandler().addExport(exportedName, exportType, node.getLineInfo());
             }
         }
     }

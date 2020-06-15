@@ -7,8 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +44,19 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public final boolean isSubclass(@NotNull TypeObject other) {
         if (this.equals(other)) {
             return true;
+        } else if (other instanceof UserType && ((UserType<?>) other).info == info) {
+            if (((UserType<?>) other).generics.isEmpty()) {
+                return true;
+            } else if (generics.isEmpty()) {
+                return false;
+            } else {
+                for (int i = 0; i < generics.size(); i++) {
+                    if (!((UserType<?>) other).generics.get(i).isSuperclass(generics.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         } else if (!isConst && this.makeConst().equals(other)) {
             return true;
         }
@@ -77,6 +92,34 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
+    @Override
+    @Nullable
+    public final TypeObject attrType(String value, DescriptorNode access) {
+        var type = attrTypeWithGenerics(value, access);
+        if (type == null) return null;
+        if (type instanceof TemplateParam) {
+            return generics.isEmpty()
+                    ? ((TemplateParam) type).getBound()
+                    : generics.get(((TemplateParam) type).getIndex());
+        } else {
+            return type;
+        }
+    }
+
+    @Override
+    @Nullable
+    public final TypeObject staticAttrType(String value, DescriptorNode access) {
+        var type = staticAttrTypeWithGenerics(value, access);
+        if (type == null) return null;
+        if (type instanceof TemplateParam) {
+            return generics.isEmpty()
+                    ? ((TemplateParam) type).getBound()
+                    : generics.get(((TemplateParam) type).getIndex());
+        } else {
+            return type;
+        }
+    }
+
     public final void addFulfilledInterfaces() {
         assert !info.isSealed;
         var fulfilled = fulfilledInterfaces();
@@ -87,12 +130,24 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
+    @Override
+    @NotNull
+    public final Map<Integer, TypeObject> generifyAs(TypeObject other) {
+        assert other instanceof UserType;
+        var otherT = (UserType<?>) other;
+        Map<Integer, TypeObject> result = new HashMap<>();
+        for (int i = 0; i < generics.size(); i++) {
+            result.putAll(generics.get(i).generifyAs(otherT.generics.get(i)));
+        }
+        return result;
+    }
+
     @NotNull
     private List<TypeObject> fulfilledInterfaces() {
         List<TypeObject> result = new ArrayList<>();
         for (var inter : Builtins.DEFAULT_INTERFACES) {
             if (!isSubclass(inter) && fulfillsContract(inter)) {
-                result.add(inter);
+                result.add(inter.generify(generifiedParams(inter)));
             }
         }
         return result;
@@ -110,9 +165,48 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 return false;
             }
         }
-        return false;
+        return true;
     }
 
+    @NotNull
+    private TypeObject[] generifiedParams(@NotNull UserType<?> contractor) {
+        var genericCount = contractor.info.info.size();
+        if (genericCount == 0) {
+            return new TypeObject[0];
+        }
+        var result = new TypeObject[genericCount];
+        var contract = contractor.contract();
+        for (var attr : contract.getKey()) {
+            var attrT = attrTypeWithGenerics(attr, DescriptorNode.PUBLIC);
+            var contractorAttr = contractor.attrTypeWithGenerics(attr, DescriptorNode.PUBLIC);
+            assert contractorAttr != null;
+            for (var pair : contractorAttr.generifyAs(attrT).entrySet()) {
+                var index = pair.getKey();
+                var val = pair.getValue();
+                if (result[index] == null) {
+                    result[index] = val;
+                } else {
+                    result[index] = TypeObject.union(result[index], val);
+                }
+            }
+        }
+        for (var op : contract.getValue()) {
+            var attrT = trueOperatorInfo(op, DescriptorNode.PUBLIC);
+            var contractorAttr = contractor.trueOperatorInfo(op, DescriptorNode.PUBLIC);
+            assert contractorAttr != null;
+            for (var pair : contractorAttr.toCallable().generifyAs(attrT.toCallable()).entrySet()) {
+                var index = pair.getKey();
+                var val = pair.getValue();
+                if (result[index] == null) {
+                    result[index] = val;
+                } else {
+                    result[index] = TypeObject.union(result[index], val);
+                }
+            }
+        }
+        assert Arrays.stream(result).noneMatch(Objects::isNull);
+        return result;
+    }
 
     protected static abstract class Info<O extends IntoFnInfo, A extends IntoAttrInfo> {
         protected final String name;

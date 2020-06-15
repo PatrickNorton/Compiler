@@ -59,7 +59,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
         Pair<TestListNode, TestNode> loopedAndCondition = TestListNode.parsePostIf(tokens, false);
         TestListNode returned = loopedAndCondition.getKey();
         TestNode cond = loopedAndCondition.getValue();
-        return new ReturnStatementNode(lineInfo, returned, cond);
+        return new ReturnStatementNode(lineInfo, returned, cond == null ? TestNode.empty() : cond);
     }
 
     @Override

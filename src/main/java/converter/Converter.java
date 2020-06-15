@@ -118,8 +118,9 @@ public final class Converter {
         throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
     }
 
-    static File getDestFile() {
-        return destFile;
+    @NotNull
+    static File resolveFile(String name) {
+        return destFile.toPath().resolve(name + Util.BYTECODE_EXTENSION).toFile();
     }
 
     private static boolean isModule(Path path) {

@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.ComprehensionNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,21 +29,26 @@ public final class ComprehensionConverter implements TestConverter {
             info.addStackFrame();
             var name = typedVariable.getVariable().getName();
             if (Builtins.FORBIDDEN_NAMES.contains(name)) {
-                throw CompilerException.format("Illegal name for variable '%s'", typedVariable.getVariable(), name);
+                throw CompilerException.format(
+                        "Illegal name for variable '%s'", typedVariable.getVariable(), name
+                );
             }
             info.checkDefinition(name, variable);
-            info.addVariable(name, info.getType(typedVariable.getType()), variable);
+            var trueType = varType(typedVariable);
+            info.addVariable(name, trueType, variable);
             var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.removeStackFrame();
             return new TypeObject[] {resultType.generify(result)};
         } else {
-            return new TypeObject[] {resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1))};
+            return new TypeObject[] {
+                    resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1))
+            };
         }
     }
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {  // TODO: While conditional
+    public List<Byte> convert(int start) {
         assert retCount == 1 || retCount == 0;
         boolean isList = node.getBrace().equals("[");
         List<Byte> bytes = new ArrayList<>();
@@ -63,7 +69,8 @@ public final class ComprehensionConverter implements TestConverter {
         if (variable instanceof TypedVariableNode) {
             var typedVar = (TypedVariableNode) variable;
             info.checkDefinition(typedVar.getVariable().getName(), variable);
-            info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), variable);
+            var trueType = varType(typedVar);
+            info.addVariable(typedVar.getVariable().getName(), trueType, variable);
         }
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));
@@ -72,6 +79,7 @@ public final class ComprehensionConverter implements TestConverter {
             bytes.add(Bytecode.JUMP_FALSE.value);
             bytes.addAll(Util.intToBytes(topJump));
         }
+        int whileJmp = addWhileCond(start, bytes);
         bytes.add(Bytecode.SWAP_2.value);  // The iterator object will be atop the list, swap it and back again
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getBuilder()[0].getArgument(), info, 1));
         bytes.add(isList ? Bytecode.LIST_ADD.value : Bytecode.SET_ADD.value);
@@ -79,10 +87,38 @@ public final class ComprehensionConverter implements TestConverter {
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(topJump));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), forJump);
+        if (whileJmp != -1) {
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), whileJmp);
+        }
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         info.removeStackFrame();
         return bytes;
+    }
+
+    private int addWhileCond(int start, List<Byte> bytes) {
+        if (!node.getWhileCond().isEmpty()) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getWhileCond(), info, 1));
+            bytes.add(Bytecode.JUMP_TRUE.value);
+            int innerWhileJump = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.JUMP.value);
+            int whileJmp = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), innerWhileJump);
+            return whileJmp;
+        } else {
+            return -1;
+        }
+    }
+
+    private TypeObject varType(@NotNull TypedVariableNode typedVar) {
+        var tvType = typedVar.getType();
+        return tvType.isDecided()
+                ? info.getType(tvType)
+                : TestConverter.returnType(node.getLooped().get(0), info, 1)[0]
+                    .operatorReturnType(OpSpTypeNode.ITER, info)[0];
     }
 }

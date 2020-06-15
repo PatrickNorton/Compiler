@@ -32,12 +32,22 @@ public final class TernaryConverter implements TestConverter {
         bytes.add(Bytecode.JUMP_FALSE.value);
         int jump1 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getIfTrue(), info, retCount));
+        var ifTrueConverter = TestConverter.of(info, node.getIfTrue(), retCount);
+        bytes.addAll(ifTrueConverter.convert(start + bytes.size()));
+        if (retCount == 1 && returnType()[0] instanceof OptionTypeObject
+                && !(ifTrueConverter.returnType()[0] instanceof OptionTypeObject)) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
         bytes.add(Bytecode.JUMP.value);
         int jump2 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump1);
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getIfFalse(), info, 1));
+        var ifFalseConverter = TestConverter.of(info, node.getIfFalse(), retCount);
+        bytes.addAll(ifFalseConverter.convert(start + bytes.size()));
+        if (retCount == 1 && returnType()[0] instanceof OptionTypeObject
+                && !(ifFalseConverter.returnType()[0] instanceof OptionTypeObject)) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
         return bytes;
     }

@@ -2,6 +2,9 @@ package main.java.converter;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.Map;
 
 public final class TemplateParam extends NameableType {
     private final String name;
@@ -63,5 +66,12 @@ public final class TemplateParam extends NameableType {
 
     public boolean isVararg() {
         return isVararg;
+    }
+
+    @Override
+    @NotNull
+    @Unmodifiable
+    public Map<Integer, TypeObject> generifyAs(TypeObject other) {
+        return Map.of(index, other);
     }
 }

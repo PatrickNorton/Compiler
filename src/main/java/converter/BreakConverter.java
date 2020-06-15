@@ -25,7 +25,7 @@ public final class BreakConverter implements BaseConverter {
         } else {
             bytes.add(Bytecode.JUMP.value);
         }
-        info.addBreak(node.getLoops(), start + bytes.size());
+        info.loopManager().addBreak(node.getLoops(), start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         return bytes;
     }

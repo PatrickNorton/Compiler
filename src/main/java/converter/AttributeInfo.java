@@ -12,8 +12,8 @@ public final class AttributeInfo implements Lined, IntoAttrInfo {
     private final TypeObject type;
     private final LineInfo lineInfo;
 
-    public AttributeInfo(TypeObject type) {
-        this(Collections.emptySet(), type);
+    public AttributeInfo(TypeObject type, LineInfo lineInfo) {
+        this(Collections.emptySet(), type, lineInfo);
     }
 
     public AttributeInfo(Set<DescriptorNode> descriptors, TypeObject info) {

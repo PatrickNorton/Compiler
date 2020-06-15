@@ -38,9 +38,11 @@ public final class DictLiteralConverter implements TestConverter {
             }
         } else {
             assert retCount == 1;
+            var keyType = returnTypes(node.getKeys());
+            var valType = returnTypes(node.getValues());
             for (var pair : node.pairs()) {
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), pair.getKey(), info, 1));
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), pair.getValue(), info, 1));
+                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), pair.getKey(), info, 1, keyType));
+                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), pair.getValue(), info, 1, valType));
             }
             bytes.add(Bytecode.DICT_CREATE.value);
             bytes.addAll(Util.shortToBytes((short) node.size()));

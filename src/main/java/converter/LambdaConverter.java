@@ -60,7 +60,8 @@ public final class LambdaConverter implements TestConverter {
     @NotNull
     private List<Byte> convertBody() {
         info.addStackFrame();
-        info.addFunctionReturns(lambdaReturnType());
+        var retInfo = info.getFnReturns();
+        retInfo.addFunctionReturns(lambdaReturnType());
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
@@ -68,7 +69,7 @@ public final class LambdaConverter implements TestConverter {
                 ? TestConverter.bytes(0, (TestNode) node.getBody().get(0), info, lambdaReturnType().length)
                 : BaseConverter.bytes(0, node.getBody(), info));
         info.removeStackFrame();
-        info.popFnReturns();
+        retInfo.popFnReturns();
         return fnBytes;
     }
 

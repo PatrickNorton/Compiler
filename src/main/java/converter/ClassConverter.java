@@ -1,9 +1,6 @@
 package main.java.converter;
 
-import main.java.converter.classbody.AttributeConverter;
-import main.java.converter.classbody.MethodConverter;
-import main.java.converter.classbody.OperatorDefConverter;
-import main.java.converter.classbody.PropertyConverter;
+import main.java.converter.classbody.ConverterHolder;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +8,6 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode> implements BaseConverter {
@@ -24,10 +20,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     @Unmodifiable
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
-        var declarations = new AttributeConverter(info);
-        var methods = new MethodConverter(info);
-        var operators = new OperatorDefConverter(info);
-        var properties = new PropertyConverter(info);
+        var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(supers);
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         var descriptors = node.getDescriptors();
@@ -37,67 +30,37 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
-            parseStatements(declarations, methods, operators, properties);
-            if (type.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
-                type.isConstClass();
-            }
-            type.setOperators(operators.getOperatorInfos());
-            checkAttributes(declarations.getVars(), declarations.getStaticVars(),
-                    methods.getMethods(), methods.getStaticMethods());
-            type.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
-            type.setStaticAttributes(
-                    allAttributes(declarations.getStaticVars(), methods.getStaticMethods(), new HashMap<>())
-            );
-            type.addFulfilledInterfaces();
-            type.seal();
+            parseIntoObject(converter, type);
         } else {
             type = (StdTypeObject) info.getType(node.strName());
-            parseStatements(declarations, methods, operators, properties);
+            parseStatements(converter);
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
         }
         checkContract(type, trueSupers);
-        var cls = new ClassInfo.Factory()
-                .setType(type)
-                .setSuperConstants(superConstants)
-                .setVariables(declarations.varsWithInts())
-                .setStaticVariables(declarations.staticVarsWithInts())
-                .setOperatorDefs(convert(type, operators.getOperators()))
-                .setStaticOperators(new HashMap<>())
-                .setMethodDefs(convert(type, methods.getMethods()))
-                .setStaticMethods(convert(type, methods.getStaticMethods()))
-                .setProperties(merge(convert(type, properties.getGetters()), convert(type, properties.getSetters())))
-                .create();
-        int classIndex = info.addClass(cls);
-        var name = node.getName().strName();
-        if (Builtins.FORBIDDEN_NAMES.contains(name)) {
-            throw CompilerException.format("Illegal name for class '%s'", node.getName(), name);
-        }
-        info.checkDefinition(name, node);
-        info.addVariable(name, Builtins.TYPE.generify(type), new ClassConstant(name, classIndex), node);
+        addToInfo(type, "class", superConstants, converter);
         return Collections.emptyList();
     }
 
-    private static boolean classIsConstant(@NotNull AttributeConverter decls, @NotNull MethodConverter methods,
-                                           @NotNull OperatorDefConverter ops, @NotNull PropertyConverter props) {
-        for (var info : decls.getVars().values()) {
+    private static boolean classIsConstant(@NotNull ConverterHolder holder) {
+        for (var info : holder.getVars().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
                 return false;
             }
         }
-        for (var info : methods.getMethods().values()) {
+        for (var info : holder.getMethods().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
                 return false;
             }
         }
-        for (var info : ops.getOperators().values()) {
+        for (var info : holder.getOperators().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
                 return false;
             }
         }
-        for (var info : props.getProperties().values()) {
+        for (var info : holder.getProperties().values()) {
             if (info.getDescriptors().contains(DescriptorNode.MUT)) {
                 return false;
             }
@@ -132,18 +95,19 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     }
 
     private void completeType(@NotNull StdTypeObject obj) {
-        var declarations = new AttributeConverter(info);
-        var methods = new MethodConverter(info);
-        var operators = new OperatorDefConverter(info);
-        var properties = new PropertyConverter(info);
-        parseStatements(declarations, methods, operators, properties);
-        if (obj.isFinal() && classIsConstant(declarations, methods, operators, properties)) {
+        var converter = new ConverterHolder(info);
+        parseIntoObject(converter, obj);
+    }
+
+    private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
+        parseStatements(converter);
+        if (obj.isFinal() && classIsConstant(converter)) {
             obj.isConstClass();
         }
-        obj.setOperators(operators.getOperatorInfos());
-        checkAttributes(declarations.getVars(), declarations.getStaticVars(),
-                methods.getMethods(), methods.getStaticMethods());
-        obj.setAttributes(allAttributes(declarations.getVars(), methods.getMethods(), properties.getProperties()));
+        obj.setOperators(converter.getOperatorInfos());
+        converter.checkAttributes();
+        obj.setAttributes(converter.allAttrs());
+        obj.setStaticAttributes(converter.staticAttrs());
         obj.seal();
     }
 }

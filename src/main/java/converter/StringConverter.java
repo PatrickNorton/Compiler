@@ -4,6 +4,7 @@ import main.java.parser.StringNode;
 import main.java.parser.StringPrefix;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,11 +24,11 @@ public final class StringConverter implements ConstantConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
-            CompilerWarning.warn("String literal unused", node);
+            CompilerWarning.warn("String-like literal unused", node);
             return Collections.emptyList();
         }
-        if (node.getPrefixes().contains(StringPrefix.REGEX) || node.getPrefixes().contains(StringPrefix.BYTES)) {
-            throw new UnsupportedOperationException("Regex/byte-arr strings not yet supported");
+        if (node.getPrefixes().contains(StringPrefix.REGEX)) {
+            throw new UnsupportedOperationException("Regex strings not yet supported");
         }
         int constIndex = info.addConstant(constant());
         List<Byte> bytes = new ArrayList<>();
@@ -39,12 +40,25 @@ public final class StringConverter implements ConstantConverter {
     @NotNull
     @Override
     public LangConstant constant() {
-        return LangConstant.of(node);
+        if (isBytes()) {
+            var contents = node.getContents().getBytes(StandardCharsets.UTF_8);
+            List<Byte> bytes = new ArrayList<>(contents.length);
+            for (var b : contents) {
+                bytes.add(b);
+            }
+            return new BytesConstant(bytes);
+        } else {
+            return LangConstant.of(node);
+        }
     }
 
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        return new TypeObject[] {Builtins.STR};
+        return new TypeObject[] {isBytes() ? Builtins.BYTES : Builtins.STR};
+    }
+
+    private boolean isBytes() {
+        return node.getPrefixes().contains(StringPrefix.BYTES);
     }
 }

@@ -50,7 +50,7 @@ public final class Builtins {
             "Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP
     );
 
-    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
+    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, OBJECT);
 
     private static final Map<OpSpTypeNode, FunctionInfo> ITERABLE_MAP = Map.of(
             OpSpTypeNode.ITER, new FunctionInfo(ITERABLE_PARAM)
@@ -72,6 +72,8 @@ public final class Builtins {
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
 
+    public static final StdTypeObject BYTES = new StdTypeObject("bytes");
+
     public static final StdTypeObject THROWS = new StdTypeObject("throws");
 
     public static final TypeObject TYPE = new TypeTypeObject();
@@ -89,6 +91,14 @@ public final class Builtins {
     private static final FunctionInfo REPR_INFO = new FunctionInfo("repr", ArgumentInfo.of(OBJECT), STR);
 
     public static final LangObject REPR = new LangInstance(REPR_INFO.toCallable());
+
+    private static final TemplateParam REVERSED_PARAM = new TemplateParam("T", 0, Builtins.OBJECT);
+
+    private static final FunctionInfo REVERSED_INFO = new FunctionInfo(
+            "reversed", ArgumentInfo.of(REVERSED_PARAM), REVERSED_PARAM
+    );
+
+    public static final LangObject REVERSED = new LangInstance(REVERSED_INFO.toCallable());
 
     private static final TemplateParam LIST_PARAM = new TemplateParam("T", 0, OBJECT);
 
@@ -174,6 +184,26 @@ public final class Builtins {
         STR.seal();
     }
 
+    static {  // Set bytes operators
+        var bytesMap = Map.of(
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(BYTES), BYTES),
+                OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), BYTES),
+                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(BYTES), BOOL),
+                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), INT),
+                OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, INT)),
+                OpSpTypeNode.ITER, new FunctionInfo(INT),
+                OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
+        );
+        BYTES.setOperators(bytesMap);
+        var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
+        var bytesAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
+                "join", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), joinInfo.toCallable())
+        );
+        BYTES.setAttributes(bytesAttrs);
+        BYTES.seal();
+    }
+
     static {  // Set char operators
         CHAR.isConstClass();
         // TODO: More char operators
@@ -202,11 +232,12 @@ public final class Builtins {
                 OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM)),
                 OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(INT)),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
+                OpSpTypeNode.REVERSED, new FunctionInfo(LIST),
                 OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
         );
         LIST.setOperators(listMap);
         var listAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
@@ -226,7 +257,7 @@ public final class Builtins {
         );
         SET.setOperators(setMap);
         var setAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
         );
         SET.setAttributes(setAttrs);
         SET.seal();
@@ -248,7 +279,7 @@ public final class Builtins {
         );
         DICT.setOperators(dictMap);
         var dictAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), CALLABLE.generify(INT))
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
@@ -279,7 +310,8 @@ public final class Builtins {
             LIST,
             SET,
             CHAR,
-            OPEN
+            OPEN,
+            REVERSED
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -301,6 +333,8 @@ public final class Builtins {
             Map.entry("Callable", CALLABLE),
             Map.entry("Iterable", ITERABLE),
             Map.entry("repr", REPR),
+            Map.entry("object", OBJECT),
+            Map.entry("reversed", REVERSED),
             Map.entry("null", NULL)
     );
 

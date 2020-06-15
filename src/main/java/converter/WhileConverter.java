@@ -20,7 +20,7 @@ public final class WhileConverter extends LoopConverter {
     protected List<Byte> trueConvert(int start) {
         List<Byte> bytes = new ArrayList<>();
         boolean hasAs = !node.getAs().isEmpty();
-        info.setContinuePoint(start + bytes.size());
+        info.loopManager().setContinuePoint(start + bytes.size());
         if (!hasAs) {
             var cond = TestConverter.bytes(start + bytes.size(), node.getCond(), info, 1);
             bytes.addAll(cond);
@@ -37,7 +37,7 @@ public final class WhileConverter extends LoopConverter {
         var body = BaseConverter.bytes(start + bytes.size(), node.getBody(), info);
         bytes.addAll(body);
         bytes.add(Bytecode.JUMP.value);
-        info.addContinue(start + bytes.size());
+        info.loopManager().addContinue(start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         if (!node.getNobreak().isEmpty()) {
             addNobreak(bytes, start, jumpLoc);

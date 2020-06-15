@@ -22,6 +22,10 @@ public final class TypeTypeObject extends TypeObject {
         this.typedefName = typedefName;
     }
 
+    public TypeObject representedType() {
+        return generic;
+    }
+
     @Override
     public boolean isSuperclass(@NotNull TypeObject other) {
         return other instanceof TypeTypeObject
@@ -92,5 +96,11 @@ public final class TypeTypeObject extends TypeObject {
         } else {
             return null;
         }
+    }
+
+    @Override
+    @Nullable
+    public TypeObject attrType(String value, DescriptorNode access) {
+        return generic == null ? null : generic.staticAttrType(value, access);
     }
 }

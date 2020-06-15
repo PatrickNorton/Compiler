@@ -19,6 +19,7 @@ import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface TestConverter extends BaseConverter {
@@ -33,6 +34,20 @@ public interface TestConverter extends BaseConverter {
     @NotNull
     static TypeObject[] returnType(TestNode node, CompilerInfo info, int retCount) {
         return of(info, node, retCount).returnType();
+    }
+
+    @NotNull
+    static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
+                                       int retCount, TypeObject endType) {
+        var converter = of(info, node, retCount);
+        var retType = converter.returnType()[0];
+        if (endType instanceof OptionTypeObject && !(retType instanceof OptionTypeObject)) {
+            List<Byte> bytes = new ArrayList<>(converter.convert(start));
+            bytes.add(Bytecode.MAKE_OPTION.value);
+            return bytes;
+        } else {
+            return converter.convert(start);
+        }
     }
 
     @NotNull
@@ -69,6 +84,8 @@ public interface TestConverter extends BaseConverter {
             return new TernaryConverter(info, (TernaryNode) node, retCount);
         } else if (node instanceof VariableNode) {
             return new VariableConverter(info, (VariableNode) node, retCount);
+        } else if (node instanceof VariantCreationNode) {
+            return new VariantConverter(info, (VariantCreationNode) node, retCount);
         } else {
             throw new UnsupportedOperationException("Unknown type: " + node.getClass());
         }

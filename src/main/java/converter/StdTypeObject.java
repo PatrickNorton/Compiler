@@ -106,23 +106,19 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.supers;
     }
 
-    @Override
-    @Nullable
-    public TypeObject attrType(String value, DescriptorNode access) {
-        var type = attrTypeWithGenerics(value, access);
-        if (type == null) return null;
-        if (type instanceof TemplateParam) {
-            return generics.isEmpty()
-                    ? ((TemplateParam) type).getBound()
-                    : generics.get(((TemplateParam) type).getIndex());
-        } else {
-            return type;
-        }
-    }
-
     @Nullable
     public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
         var attr = info.attributes.get(value);
+        if (attr == null || (isConst && attr.getDescriptors().contains(DescriptorNode.MUT))) {
+            return null;
+        }
+        return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
+    }
+
+    @Nullable
+    @Override
+    public TypeObject staticAttrTypeWithGenerics(String value, DescriptorNode access) {
+        var attr = info.staticAttributes.get(value);
         if (attr == null || (isConst && attr.getDescriptors().contains(DescriptorNode.MUT))) {
             return null;
         }
@@ -172,6 +168,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     public void seal() {
+        addFulfilledInterfaces();
         info.seal();
     }
 

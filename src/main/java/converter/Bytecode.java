@@ -74,6 +74,8 @@ public enum Bytecode {
     TAIL_TOS(0x39, Type.ARGC),
     TAIL_FN(0x3A, Type.FUNCTION_NO, Type.ARGC),
     RETURN(0x3B, Type.ARGC),
+    YIELD(0x3C, Type.ARGC),
+    SWITCH_TABLE(0x3D, Type.TABLE_NO),
     // Exception stuff
     THROW(0x40),
     THROW_QUICK(0x41, Type.ARGC),
@@ -98,6 +100,13 @@ public enum Bytecode {
     DO_STATIC(0x60, Type.LOCATION),
     STORE_STATIC(0x61, Type.VARIABLE),
     LOAD_STATIC(0x62, Type.VARIABLE),
+    // Union/Option stuff
+    GET_VARIANT(0x68, Type.FUNCTION_NO),
+    MAKE_VARIANT(0x69, Type.FUNCTION_NO),
+    VARIANT_NO(0x6A),
+    MAKE_OPTION(0x6B),
+    IS_SOME(0x6C),
+    UNWRAP_OPTION(0x6D),
     // Misc.
     MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
     GET_TYPE(0x71),
@@ -111,6 +120,7 @@ public enum Bytecode {
         OPERATOR(2),
         FUNCTION_NO(2),
         STACK_POS(2),
+        TABLE_NO(2),
         ;
         final byte byteCount;
 
@@ -186,6 +196,7 @@ public enum Bytecode {
             case VARIABLE:
             case FUNCTION_NO:
             case STACK_POS:
+            case TABLE_NO:
                 return Integer.toString(value);
             case CONSTANT:
                 return String.format("%d (%s)", value, info.getConstant((short) value).name());

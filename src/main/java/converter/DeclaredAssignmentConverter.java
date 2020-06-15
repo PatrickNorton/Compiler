@@ -39,17 +39,30 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
             throw CompilerException.of("Illegal name " + assignedName, node);
         }
+        boolean needsMakeOption;
         if (!assignedType.isSuperclass(valueType)) {
-            throw CompilerException.format(
-                    "Object of type %s cannot be assigned to object of type %s",
-                    node, valueType.name(), assignedType.name());
+            if (OptionTypeObject.needsMakeOption(assignedType, valueType)) {
+                needsMakeOption = true;
+            } else {
+                throw CompilerException.format(
+                        "Object of type %s cannot be assigned to object of type %s",
+                        node, valueType.name(), assignedType.name());
+            }
+        } else {
+            needsMakeOption = false;
         }
         boolean isConst = !descriptors.contains(DescriptorNode.MUT)
                 && !descriptors.contains(DescriptorNode.MREF);
         if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
             info.checkDefinition(assignedName, node);
-            info.addVariable(assignedName, assignedType, constant, node);
+            if (needsMakeOption) {
+                short constIndex = info.addConstant(constant);
+                var trueConst = new OptionConstant(valueType, constIndex);
+                info.addVariable(assignedName, assignedType, trueConst, node);
+            } else {
+                info.addVariable(assignedName, assignedType, constant, node);
+            }
             return Collections.emptyList();
         }
         boolean isStatic = descriptors.contains(DescriptorNode.STATIC);
@@ -62,7 +75,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         } else {
             fillPos = -1;
         }
-        bytes.addAll(converter.convert(start));
+        bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
         info.checkDefinition(assignedName, node);
         var index = isStatic
                 ? info.addStaticVar(assignedName, assignedType, isConst, node)

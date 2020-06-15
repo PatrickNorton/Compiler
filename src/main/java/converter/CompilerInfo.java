@@ -7,10 +7,6 @@ import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
-import main.java.parser.TypeUnionNode;
-import main.java.parser.TypewiseAndNode;
-import main.java.util.Counter;
-import main.java.util.HashCounter;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -19,19 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * The class representing all information needing to be held during compilation.
@@ -39,14 +29,12 @@ import java.util.Set;
  */
 public final class CompilerInfo {
     private final TopNode node;
-    private final Set<String> exports = new HashSet<>();
-    private final Map<String, TypeObject> exportTypes = new HashMap<>();
-    private final IndexedSet<String> imports = new IndexedHashSet<>();
-    private final Map<String, TypeObject> importTypes = new HashMap<>();
+    private final ImportHandler importHandler = new ImportHandler();
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
     private final LoopManager loopManager = new LoopManager();
+    private final List<SwitchTable> tables = new ArrayList<>();
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
@@ -55,12 +43,10 @@ public final class CompilerInfo {
 
     private final IntAllocator anonymousNums = new IntAllocator();
 
-    private final Deque<TypeObject[]> fnReturns = new ArrayDeque<>();
+    private final FunctionReturnInfo fnReturns = new FunctionReturnInfo();
 
-    private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
-    private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
+    private final AccessHandler accessHandler = new AccessHandler();
 
-    private boolean allowSettingExports = false;
     private boolean linked = false;
     private boolean compiled = false;
 
@@ -104,62 +90,13 @@ public final class CompilerInfo {
     }
 
     /**
-     * Adds an export.
-     * <p>
-     *     If setting exports is not allowed, (e.g. this is not in the process
-     *     of {@link #link linking}), a {@link CompilerException} will be
-     *     thrown. This is not a {@link CompilerInternalError} because it is
-     *     most likely to be thrown due to an illegally-placed {@link
-     *     ImportExportNode 'export'} statement, as opposed to a compiler bug.
-     * </p>
+     * Get the {@link ImportHandler} for this file.
      *
-     * @see #link
-     * @param name The name of the export
-     * @param type The type of the export
-     * @param info The {@link LineInfo} for the export statement
+     * @return The handler
+     * @see ImportHandler
      */
-    public void addExport(String name, TypeObject type, LineInfo info) {
-        if (!allowSettingExports) {
-            throw CompilerException.of("Illegal position for export statement", info);
-        }
-        this.exports.add(name);
-        exportTypes.put(name, type);
-    }
-
-    /**
-     * Gets the type of an export.
-     *
-     * @param name The name of the export
-     * @return The export type
-     */
-    public TypeObject exportType(String name) {
-        return exportTypes.get(name);
-    }
-
-    /**
-     * Adds an import.
-     *
-     * @param name The name if the import
-     * @return The index of the import in the imports set
-     */
-    public int addImport(@NotNull String name) {
-        var names = name.split("\\.");
-        if (!imports.contains(name)) {
-            CompilerInfo f = Converter.findModule(names[0]).link();
-            imports.add(name);
-            importTypes.put(name, f.exportTypes.get(names[1]));
-        }
-        return imports.indexOf(name);
-    }
-
-    /**
-     * Gets the type of an import.
-     *
-     * @param name The name of the import
-     * @return THe type of the import
-     */
-    public TypeObject importType(String name) {
-        return importTypes.get(name);
+    public ImportHandler importHandler() {
+        return importHandler;
     }
 
     /**
@@ -214,6 +151,10 @@ public final class CompilerInfo {
         return -1;
     }
 
+    public List<Function> getFunctions() {
+        return functions;
+    }
+
     /**
      * Add a constant to the constant pool.
      *
@@ -251,6 +192,35 @@ public final class CompilerInfo {
     }
 
     /**
+     * Reserves a constant value for later use.
+     *
+     * @param type The type of the constant
+     * @return The constant index
+     * @see TempConst
+     */
+    public short reserveConst(TypeObject type) {
+        return addConstant(new TempConst(type));
+    }
+
+    /**
+     * Sets the value of a constant to the one given.
+     * <p>
+     *     The constant to be redefined must be a {@link TempConst}.
+     * </p>
+     *
+     * @param index The index to redefine
+     * @param value The value to set this to
+     */
+    public void setReserved(short index, @NotNull LangConstant value) {
+        var constant = constants.get(index);
+        if (!(constant instanceof TempConst)) {
+            throw CompilerInternalError.of("Cannot redefine constant not a TempConst", LineInfo.empty());
+        }
+        assert constant.getType().equals(value.getType());
+        constants.set(index, value);
+    }
+
+    /**
      * Gets the {@link LangConstant} given the index.
      * Currently used only for {@link Bytecode} formatting.
      *
@@ -259,6 +229,10 @@ public final class CompilerInfo {
      */
     public LangConstant getConstant(short index) {
         return constants.get(index);
+    }
+
+    public IndexedSet<LangConstant> getConstants() {
+        return constants;
     }
 
     /**
@@ -277,6 +251,10 @@ public final class CompilerInfo {
     public int addClass(ClassInfo info) {
         classes.add(info);
         return classes.indexOf(info);
+    }
+
+    public IndexedSet<ClassInfo> getClasses() {
+        return classes;
     }
 
     /**
@@ -303,23 +281,7 @@ public final class CompilerInfo {
             return this;
         }
         var linker = new Linker(this).link(node);
-        var exports = linker.getExports();
-        var globals = linker.getGlobals();
-        try {
-            allowSettingExports = true;
-            for (var entry : exports.entrySet()) {
-                var exportName = entry.getValue().getKey();
-                var exportType = globals.get(entry.getKey());
-                if (exportType == null) {
-                    var lineInfo = entry.getValue().getValue();
-                    throw CompilerException.of("Undefined name for export: " + exportName, lineInfo);
-                }
-                this.exports.add(exportName);
-                this.exportTypes.put(exportName, exportType);
-            }
-        } finally {
-            allowSettingExports = false;
-        }
+        importHandler.setFromLinker(linker);
         linked = true;
         return this;
     }
@@ -327,136 +289,15 @@ public final class CompilerInfo {
     /**
      * Writes itself to the file specified.
      * <p>
-     *     The file layout is as follows:
-     * <code><pre>
-     * Magic number: 0xABADE66
-     * Imports:
-     *     Name of import
-     *     Name of import
-     * Exports:
-     *     Name of export
-     *     Index of constant
-     * Constants:
-     *     Byte representation of each constant ({@link LangConstant#toBytes})
-     * Functions:
-     *     Function name
-     *     Number of local variables (currently unused)
-     *     Length of the bytecode
-     *     Bytecode
-     * Classes:
-     *     Byte representation of the class ({@link ClassInfo#toBytes})
-     * </pre></code>
+     *    For more information on the file layout, see {@link
+     *    FileWriter#writeToFile}.
      * </p>
      *
      * @param file The file to write to
+     * @see FileWriter#writeToFile
      */
     public void writeToFile(@NotNull File file) {
-        printDisassembly();
-        if (!file.getParentFile().exists()) {
-            if (!file.getParentFile().mkdir()) {
-                throw new RuntimeException("Could not create file " + file);
-            }
-        }
-        try (var writer = Files.newOutputStream(file.toPath())) {
-            writer.write(Util.MAGIC_NUMBER);
-            writer.write(Util.toByteArray(imports.size()));
-            for (var name : imports) {
-                writer.write(StringConstant.strByteArray(name));
-                writer.write(StringConstant.strByteArray(name));  // TODO: Make these meaningfully different
-            }
-            writer.flush();
-            writer.write(Util.toByteArray(exports.size()));
-            for (var export : exports) {
-                writer.write(StringConstant.strByteArray(export));
-                for (int i = 0; i < constants.size(); i++) {
-                    if (constants.get(i).name().equals(export)) {
-                        writer.write(Util.toByteArray(i));
-                    }
-                }
-            }
-            writer.flush();
-            writer.write(Util.toByteArray(constants.size()));
-            for (var constant : constants) {
-                var byteArray = Util.toByteArray(constant.toBytes());
-                writer.write(byteArray);
-            }
-            writer.flush();
-            writer.write(Util.toByteArray(functions.size()));
-            for (var function : functions) {
-                var byteArray = Util.toByteArray(function.getBytes());
-                writer.write(Util.toByteArray(StringConstant.strBytes(function.getName())));
-                writer.write(Util.toByteArray((short) 0));  // TODO: Put variable count
-                writer.write(Util.toByteArray(byteArray.length));
-                writer.write(byteArray);
-            }
-            writer.flush();
-            writer.write(Util.toByteArray(classes.size()));
-            for (var cls : classes) {
-                writer.write(Util.toByteArray(cls.toBytes()));
-            }
-            writer.flush();
-        } catch (IOException e) {
-            throw new RuntimeException("Error in writing bytecode to file:\n" + e.getMessage());
-        }
-    }
-
-    private void printDisassembly() {
-        System.out.println("Constants:");
-        for (var constant : constants) {
-            System.out.printf("%d: %s%n", constants.indexOf(constant), constant.name());
-        }
-        for (var function : functions) {
-            System.out.printf("%s:%n", function.getName());
-            System.out.println(Bytecode.disassemble(this, function.getBytes()));
-        }
-        for (var cls : classes) {
-            for (var fnPair : cls.getMethodDefs().entrySet()) {
-                System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(this, fnPair.getValue()));
-            }
-            for (var fnPair : cls.getStaticMethods().entrySet()) {
-                System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(this, fnPair.getValue()));
-            }
-            for (var opPair : cls.getOperatorDefs().entrySet()) {
-                System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
-                System.out.println(Bytecode.disassemble(this, opPair.getValue()));
-            }
-            for (var propPair : cls.getProperties().entrySet()) {
-                System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(this, propPair.getValue().getKey()));
-                System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(this, propPair.getValue().getValue()));
-            }
-        }
-    }
-
-    /**
-     * Add a break statement to the pool of un-linked statements.
-     *
-     * @param levels The number of levels to break
-     * @param location The location (absolute, by start of function)
-     */
-    public void addBreak(int levels, int location) {
-        loopManager.addBreak(levels, location);
-    }
-
-    /**
-     * Add a continue statement's pointer to the list.
-     *
-     * @param location The location (absolute, by start of function)
-     */
-    public void addContinue(int location) {
-        loopManager.addContinue(location);
-    }
-
-    /**
-     * Set the point where a {@code continue} statement should jump to.
-     *
-     * @param location The location (absolute, by start of function)
-     */
-    public void setContinuePoint(int location) {
-        loopManager.setContinuePoint(location);
+        new FileWriter(this).writeToFile(file);
     }
 
     public LoopManager loopManager() {
@@ -472,36 +313,28 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
-        if (type instanceof TypeUnionNode) {
-            var union = (TypeUnionNode) type;
-            return TypeObject.union(typesOf(union.getSubtypes()));
-        } else if (type instanceof TypewiseAndNode) {
-            var union = (TypewiseAndNode) type;
-            return TypeObject.intersection(typesOf(union.getSubtypes()));
-        } else {
-            assert type instanceof TypeNode;
-            if (((TypeNode) type).getName().toString().equals("null")) {
-                var nullType = (TypeNode) type;
-                assert nullType.getSubtypes().length == 0;
-                if (nullType.isOptional()) {
-                    CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
-                }
-                return Builtins.NULL_TYPE;
+        assert type instanceof TypeNode;
+        if (((TypeNode) type).getName().toString().equals("null")) {
+            var nullType = (TypeNode) type;
+            assert nullType.getSubtypes().length == 0;
+            if (nullType.isOptional()) {
+                CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
             }
-            var value = typeMap.get(type.strName());
-            if (value == null) {
-                var builtin = Builtins.BUILTIN_MAP.get(type.strName());
-                if (builtin instanceof TypeObject) {
-                    var typeObj = (TypeObject) builtin;
-                    var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
-                    return type.isOptional() ? TypeObject.optional(endType) : endType;
-                } else {
-                    throw new RuntimeException("Unknown type " + type);
-                }
-            } else {
-                var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+            return Builtins.NULL_TYPE;
+        }
+        var value = typeMap.get(type.strName());
+        if (value == null) {
+            var builtin = Builtins.BUILTIN_MAP.get(type.strName());
+            if (builtin instanceof TypeObject) {
+                var typeObj = (TypeObject) builtin;
+                var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
                 return type.isOptional() ? TypeObject.optional(endType) : endType;
+            } else {
+                throw new RuntimeException("Unknown type " + type);
             }
+        } else {
+            var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+            return type.isOptional() ? TypeObject.optional(endType) : endType;
         }
     }
 
@@ -624,6 +457,51 @@ public final class CompilerInfo {
     }
 
     /**
+     * Reserves a constant variable for future use.
+     * <p>
+     *     This allows for the variable to be used normally, and does not expose
+     *     the fact that this is undefined to the rest of the bytecode
+     *     generator, but it does require that the constant be changed from a
+     *     temporary (using {@link #setReservedVar} before the compiled unit is
+     *     written out to a file. As such, this
+     * </p>
+     *
+     * @param name The name of the variable to add
+     * @param type The type of the variable
+     * @param info The info for the declaration of the variable
+     * @see #setReservedVar
+     * @see TempConst
+     * @see #addVariable(String, TypeObject, LangConstant, Lined)
+     */
+    public void reserveConstVar(String name, TypeObject type, @NotNull Lined info) {
+        var constant = new TempConst(type);
+        addConstant(constant);
+        addVariable(name, new VariableInfo(type, constant, info.getLineInfo()));
+    }
+
+    /**
+     * Sets the previously-reserved variable to the {@link LangConstant} value
+     * given.
+     * <p>
+     *     This requires three things: That the variable whose name is given is
+     *     defined, that the variable was defined using {@link
+     *     #reserveConstVar}, and that this function has not yet been called on
+     *     this variable.
+     * </p>
+     *
+     * @param name The name to set
+     * @param value The value
+     * @see #reserveConstVar
+     */
+    public void setReservedVar(String name, LangConstant value) {
+        var varInfo = Objects.requireNonNull(varInfo(name));
+        var constant = varInfo.constValue();
+        var constIndex = constIndex(constant);
+        setReserved(constIndex, value);
+        replaceVarInfo(name, new VariableInfo(value.getType(), value, varInfo.getDeclarationInfo()));
+    }
+
+    /**
      * Adds a static variable to the stack.
      * <p>
      *     Static variables get their static index through {@link
@@ -676,6 +554,15 @@ public final class CompilerInfo {
             }
         }
         return null;
+    }
+
+    private void replaceVarInfo(String name, VariableInfo varInfo) {
+        for (int i = variables.size() - 1; i >= 0; i--) {
+            var map = variables.get(i);
+            if (map.containsKey(name)) {
+                map.put(name, varInfo);
+            }
+        }
     }
 
     /**
@@ -740,44 +627,8 @@ public final class CompilerInfo {
         return node.getPath();
     }
 
-    /**
-     * Adds the given function returns to the file.
-     *
-     * @param values The values to be added
-     * @see #currentFnReturns()
-     */
-    public void addFunctionReturns(TypeObject[] values) {
-        fnReturns.push(values);
-    }
-
-    /**
-     * Gets the return values of the currently-being-compiled function, as
-     * given in {@link #addFunctionReturns}.
-     *
-     * @return The returns of the current function
-     * @see #addFunctionReturns(TypeObject[])
-     */
-    public TypeObject[] currentFnReturns() {
-        return fnReturns.peekFirst();
-    }
-
-    /**
-     * Pops the function returns, for when the function is done being compiled.
-     *
-     * @see #addFunctionReturns(TypeObject[])
-     * @see #currentFnReturns()
-     */
-    public void popFnReturns() {
-        fnReturns.pop();
-    }
-
-    /**
-     * If the compiler is currently not compiling a function.
-     *
-     * @return If no function returns exist
-     */
-    public boolean notInFunction() {
-        return fnReturns.isEmpty();
+    public FunctionReturnInfo getFnReturns() {
+        return fnReturns;
     }
 
     /**
@@ -807,64 +658,25 @@ public final class CompilerInfo {
      * @return The security access level of the type
      */
     public DescriptorNode accessLevel(TypeObject obj) {
-        return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE
-                : classesWithProtected.contains(obj) ? DescriptorNode.PROTECTED : DescriptorNode.PUBLIC;
+        return accessHandler.accessLevel(obj);
     }
 
     /**
-     * Allows private access to the {@link TypeObject} given.
+     * The object in charge of access levels for the file.
      *
-     * @param obj The object to allow private access for
-     * @see #removePrivateAccess
+     * @return The handler
      */
-    public void allowPrivateAccess(TypeObject obj) {
-        classesWithAccess.increment(obj);
+    public AccessHandler accessHandler() {
+        return accessHandler;
     }
 
-    /**
-     * Removes private access for the {@link TypeObject} given.
-     * <p>
-     *     This does not guarantee that the value returned by {@link
-     *     #accessLevel} will be more strict than {@code private}, as it is
-     *     possible that private access was given in another location. Private
-     *     access will last until this has been called as many times as {@link
-     *     #allowPrivateAccess}, in order to allow correct access.
-     * </p>
-     *
-     * @param obj The object to remove private access for
-     * @see #allowPrivateAccess
-     */
-    public void removePrivateAccess(TypeObject obj) {
-        assert classesWithAccess.contains(obj);
-        classesWithAccess.decrement(obj);
+    public int addSwitchTable(SwitchTable val) {
+        tables.add(val);
+        return tables.size() - 1;
     }
 
-    /**
-     * Allows protected access to the {@link TypeObject} given.
-     *
-     * @param obj The object to allow protected access for
-     * @see #removeProtectedAccess
-     */
-    public void allowProtectedAccess(TypeObject obj) {
-        classesWithProtected.increment(obj);
-    }
-
-    /**
-     * Removes protected access for the {@link TypeObject} given.
-     * <p>
-     *     This does not guarantee that the value returned by {@link
-     *     #accessLevel} will be more strict than {@code protected}, as it is
-     *     possible that protected access was given in another location.
-     *     Protected access will last until this has been called as many times
-     *     as {@link #allowProtectedAccess}, in order to allow correct access.
-     * </p>
-     *
-     * @param obj The object to remove private access for
-     * @see #allowProtectedAccess
-     */
-    public void removeProtectedAccess(TypeObject obj) {
-        assert classesWithProtected.contains(obj);
-        classesWithProtected.decrement(obj);
+    public List<SwitchTable> getTables() {
+        return tables;
     }
 
     /**

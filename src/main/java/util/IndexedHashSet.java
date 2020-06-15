@@ -42,9 +42,9 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
 
     @Override
     public void set(int index, E value) {
-        valueList.set(index, value);
+        var old = valueList.set(index, value);
         if (index < size()) {
-            values.remove(value);
+            values.remove(old);
         }
         values.add(value);
     }

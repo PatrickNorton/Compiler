@@ -19,7 +19,7 @@ public final class DoWhileConverter extends LoopConverter {
     protected List<Byte> trueConvert(int start) {
         var body = BaseConverter.bytes(start, node.getBody(), info);
         List<Byte> bytes = new ArrayList<>(body);
-        info.setContinuePoint(start + bytes.size());
+        info.loopManager().setContinuePoint(start + bytes.size());
         var cond = TestConverter.bytes(start + bytes.size(), node.getConditional(), info, 1);
         bytes.addAll(cond);
         bytes.add(Bytecode.JUMP_TRUE.value);

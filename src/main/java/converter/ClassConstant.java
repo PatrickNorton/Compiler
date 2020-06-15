@@ -8,10 +8,12 @@ import java.util.List;
 public final class ClassConstant implements LangConstant {
     private final String name;
     private final int index;
+    private final UserType<?> type;
 
-    public ClassConstant(String name, int index) {
+    public ClassConstant(String name, int index, UserType<?> type) {
         this.name = name;
         this.index = index;
+        this.type = type;
     }
 
     @NotNull
@@ -26,7 +28,7 @@ public final class ClassConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.TYPE;
+        return Builtins.TYPE.generify(type);
     }
 
     @NotNull

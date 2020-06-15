@@ -19,12 +19,16 @@ public final class ClassInfo {
     private final Map<String, List<Byte>> methodDefs;
     private final Map<String, List<Byte>> staticMethods;
     private final Map<String, Pair<List<Byte>, List<Byte>>> properties;
+    private final Map<String, Pair<List<Byte>, List<Byte>>> staticProperties;
+    private final List<String> variants;
 
     private ClassInfo(UserType<?> type, List<Short> superConstants,
                       Map<String, Short> variables, Map<String, Short> staticVariables,
                       Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
                       Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods,
-                      Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+                      Map<String, Pair<List<Byte>, List<Byte>>> properties,
+                      Map<String, Pair<List<Byte>, List<Byte>>> staticProperties,
+                      List<String> variants) {
         this.type = type;
         this.superConstants = superConstants;
         this.variables = variables;
@@ -34,6 +38,8 @@ public final class ClassInfo {
         this.staticMethods = staticMethods;
         this.methodDefs = methodDefs;
         this.properties = properties;
+        this.staticProperties = staticProperties;
+        this.variants = variants;
     }
 
     public UserType<?> getType() {
@@ -68,6 +74,15 @@ public final class ClassInfo {
             bytes.addAll(Util.intToBytes(superType));
         }
         bytes.addAll(Util.shortToBytes((short) type.getGenericInfo().size()));
+        if (variants == null) {
+            bytes.add((byte) 0);
+        } else {
+            bytes.add((byte) 1);
+            bytes.addAll(Util.intToBytes(variants.size()));
+            for (var variant : variants) {
+                bytes.addAll(StringConstant.strBytes(variant));
+            }
+        }
         addVariables(bytes, variables);
         addVariables(bytes, staticVariables);
         addOperators(bytes, operatorDefs);
@@ -132,6 +147,8 @@ public final class ClassInfo {
         private Map<String, List<Byte>> methodDefs;
         private Map<String, List<Byte>> staticMethods;
         private Map<String, Pair<List<Byte>, List<Byte>>> properties;
+        private Map<String, Pair<List<Byte>, List<Byte>>> staticProperties;
+        private List<String> variants;
 
         public Factory setType(UserType<?> type) {
             assert this.type == null;
@@ -187,9 +204,22 @@ public final class ClassInfo {
             return this;
         }
 
+        public Factory setStaticProperties(Map<String, Pair<List<Byte>, List<Byte>>> staticProperties) {
+            assert this.staticProperties == null;
+            this.staticProperties = staticProperties;
+            return this;
+        }
+
+        public Factory setVariants(List<String> variants) {
+            assert this.variants == null;
+            this.variants = variants;
+            return this;
+        }
+
         public ClassInfo create() {
             return new ClassInfo(type, superConstants, variables, staticVariables,
-                    operatorDefs, staticOperators, methodDefs, staticMethods, properties);
+                    operatorDefs, staticOperators, methodDefs, staticMethods,
+                    properties, staticProperties, variants);
         }
     }
 }

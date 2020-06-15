@@ -1,16 +1,12 @@
 package main.java.converter;
 
-import main.java.converter.classbody.AttributeConverter;
-import main.java.converter.classbody.MethodConverter;
+import main.java.converter.classbody.ConverterHolder;
 import main.java.converter.classbody.MethodInfo;
-import main.java.converter.classbody.OperatorDefConverter;
-import main.java.converter.classbody.PropertyConverter;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
-import main.java.parser.Lined;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
@@ -40,42 +36,80 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             info.addStackFrame();
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
             info.addVariable("cls", Builtins.TYPE.generify(type), true, node);
+            var handler = info.accessHandler();
             try {
-                info.allowPrivateAccess(type);
-                recursivelyAllowProtectedAccess(type);
+                handler.allowPrivateAccess(type);
+                recursivelyAllowProtectedAccess(handler, type);
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
                     info.addVariable(arg.getName(), arg.getType(), methodInfo);
                 }
-                info.addFunctionReturns(fnInfo.getReturns());
+                var retInfo = info.getFnReturns();
+                retInfo.addFunctionReturns(fnInfo.getReturns());
                 var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
-                info.popFnReturns();
+                retInfo.popFnReturns();
                 result.put(pair.getKey(), bytes);
                 info.removeStackFrame();
             } finally {
-                info.removePrivateAccess(type);
-                recursivelyRemovePrivateAccess(type);
+                handler.removePrivateAccess(type);
+                recursivelyRemoveProtectedAccess(handler, type);
             }
         }
         return result;
     }
 
-    private void recursivelyAllowProtectedAccess(@NotNull UserType<?> type) {
+    private void recursivelyAllowProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
-            info.allowProtectedAccess(superCls);
+            handler.allowProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
-                recursivelyAllowProtectedAccess((StdTypeObject) superCls);
+                recursivelyAllowProtectedAccess(handler, (StdTypeObject) superCls);
             }
         }
     }
 
-    private void recursivelyRemovePrivateAccess(@NotNull UserType<?> type) {
+    private void recursivelyRemoveProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
         for (var superCls : type.getSupers()) {
-            info.removeProtectedAccess(superCls);
+            handler.removeProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
-                recursivelyRemovePrivateAccess((StdTypeObject) superCls);
+                recursivelyRemoveProtectedAccess(handler, (StdTypeObject) superCls);
             }
         }
+    }
+
+    private ClassInfo createClass(UserType<?> type, List<String> variants,
+                                  List<Short> superConstants, @NotNull ConverterHolder converter) {
+        return new ClassInfo.Factory()
+                .setType(type)
+                .setSuperConstants(superConstants)
+                .setVariables(converter.varsWithInts())
+                .setStaticVariables(converter.staticVarsWithInts())
+                .setOperatorDefs(convert(type, converter.getOperators()))
+                .setStaticOperators(new HashMap<>())
+                .setMethodDefs(convert(type, converter.getMethods()))
+                .setStaticMethods(convert(type, converter.getStaticMethods()))
+                .setProperties(merge(convert(type, converter.allGetters()), convert(type, converter.getSetters())))
+                .setStaticProperties(merge(convert(type, converter.staticGetters()),
+                        convert(type, converter.staticSetters())))
+                .setVariants(variants)
+                .create();
+    }
+
+    protected final void addToInfo(UserType<?> type, String defType, List<String> variants,
+                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+        var name = node.getName().strName();
+        info.checkDefinition(name, node);
+        info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
+        var cls = createClass(type, variants, superConstants, converter);
+        int classIndex = info.addClass(cls);
+        if (Builtins.FORBIDDEN_NAMES.contains(name)) {
+            throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
+        }
+        info.setReservedVar(name, new ClassConstant(name, classIndex, type));
+    }
+
+    protected final void addToInfo(UserType<?> type, String defType,
+                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+        addToInfo(type, defType, null, superConstants, converter);
     }
 
     protected final UserType<?>[] convertSupers(TypeObject[] supers) {
@@ -100,78 +134,26 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final void parseStatements(
-            AttributeConverter declarations,
-            MethodConverter methods,
-            OperatorDefConverter operators,
-            PropertyConverter properties
-    ) {
+    protected final void parseStatements(ConverterHolder converter) {
         for (var stmt : node.getBody().getStatements()) {
-            parseStatement(stmt, declarations, methods, operators, properties);
+            parseStatement(stmt, converter);
         }
     }
 
-    protected void parseStatement(
-            IndependentNode stmt,
-            AttributeConverter declarations,
-            MethodConverter methods,
-            OperatorDefConverter operators,
-            PropertyConverter properties
-    ) {
+    protected void parseStatement(IndependentNode stmt, ConverterHolder converter) {
         if (stmt instanceof DeclarationNode) {
-            declarations.parse((DeclarationNode) stmt);
+            converter.attributes().parse((DeclarationNode) stmt);
         } else if (stmt instanceof DeclaredAssignmentNode) {
-            declarations.parse((DeclaredAssignmentNode) stmt);
+            converter.attributes().parse((DeclaredAssignmentNode) stmt);
         } else if (stmt instanceof MethodDefinitionNode) {
-            methods.parse((MethodDefinitionNode) stmt);
+            converter.methods().parse((MethodDefinitionNode) stmt);
         } else if (stmt instanceof OperatorDefinitionNode) {
-            operators.parse((OperatorDefinitionNode) stmt);
+            converter.operators().parse((OperatorDefinitionNode) stmt);
         } else if (stmt instanceof PropertyDefinitionNode) {
-            properties.parse((PropertyDefinitionNode) stmt);
+            converter.properties().parse((PropertyDefinitionNode) stmt);
         } else {
             throw new UnsupportedOperationException("Node not yet supported");
         }
-    }
-
-    protected final void checkAttributes(@NotNull Map<String, AttributeInfo> vars, Map<String, AttributeInfo> staticVars,
-                                 Map<String, MethodInfo> methods, Map<String, MethodInfo> staticMethods) {
-        checkMaps(vars, methods, staticMethods);
-        checkMaps(staticVars, methods, staticMethods);
-        checkMaps(methods, vars, staticVars);
-        checkMaps(staticMethods, vars, staticVars);
-    }
-
-    private void checkMaps(@NotNull Map<String, ? extends Lined> vars, Map<String, ? extends Lined> methods,
-                           Map<String, ? extends Lined> staticMethods) {
-        for (var pair : vars.entrySet()) {
-            if (methods.containsKey(pair.getKey())) {
-                throw CompilerException.doubleDef(
-                        pair.getKey(),
-                        pair.getValue(),
-                        methods.get(pair.getKey())
-                );
-            } else if (staticMethods.containsKey(pair.getKey())) {
-                throw CompilerException.doubleDef(
-                        pair.getKey(),
-                        pair.getValue(),
-                        staticMethods.get(pair.getKey())
-                );
-            }
-        }
-    }
-
-    @NotNull
-    protected final Map<String, AttributeInfo> allAttributes(Map<String, AttributeInfo> attrs,
-                                                  @NotNull Map<String, MethodInfo> methods,
-                                                  Map<String, AttributeInfo> properties) {
-        var finalAttrs = new HashMap<>(attrs);
-        for (var pair : methods.entrySet()) {
-            var methodInfo = pair.getValue();
-            var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());
-            finalAttrs.put(pair.getKey(), attrInfo);
-        }
-        finalAttrs.putAll(properties);
-        return finalAttrs;
     }
 
     @NotNull

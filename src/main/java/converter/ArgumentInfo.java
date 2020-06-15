@@ -52,6 +52,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
         int argNo = 0;
         for (var arg : positionArgs) {
+            if (keywordMap.containsKey(arg.getName())) {
+                return false;
+            }
             while (!args[argNo].getName().isEmpty()) {
                 argNo++;
             }
@@ -156,7 +159,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return positionArgs;
     }
 
-    private Argument get(int i) {
+    public Argument get(int i) {
         if (i > size()) {
             throw new IndexOutOfBoundsException(i);
         }

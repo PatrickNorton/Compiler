@@ -25,7 +25,7 @@ public final class ContinueConverter implements BaseConverter {
         } else {
             bytes.add(Bytecode.JUMP.value);
         }
-        info.addContinue(start + bytes.size());
+        info.loopManager().addContinue(start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         return bytes;
     }

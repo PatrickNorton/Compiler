@@ -10,6 +10,7 @@ import main.java.parser.ContinueStatementNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DecrementNode;
+import main.java.parser.DeleteStatementNode;
 import main.java.parser.DoStatementNode;
 import main.java.parser.DotimesStatementNode;
 import main.java.parser.EnumDefinitionNode;
@@ -24,8 +25,10 @@ import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
 import main.java.parser.TryStatementNode;
 import main.java.parser.TypedefStatementNode;
+import main.java.parser.UnionDefinitionNode;
 import main.java.parser.WhileStatementNode;
 import main.java.parser.WithStatementNode;
+import main.java.parser.YieldStatementNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -61,6 +64,8 @@ public interface BaseConverter {
             return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
         } else if (node instanceof DecrementNode) {
             return new IncrementDecrementConverter(info, (DecrementNode) node);
+        } else if (node instanceof DeleteStatementNode) {
+            return new DeleteConverter(info, (DeleteStatementNode) node);
         } else if (node instanceof DoStatementNode) {
             return new DoWhileConverter(info, (DoStatementNode) node);
         } else if (node instanceof DotimesStatementNode) {
@@ -87,10 +92,14 @@ public interface BaseConverter {
             return new TryConverter(info, (TryStatementNode) node);
         } else if (node instanceof TypedefStatementNode) {
             return new TypedefConverter(info, (TypedefStatementNode) node);
+        } else if (node instanceof UnionDefinitionNode) {
+            return new UnionConverter(info, (UnionDefinitionNode) node);
         } else if (node instanceof WhileStatementNode) {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else if (node instanceof WithStatementNode) {
             return new WithConverter(info, (WithStatementNode) node);
+        } else if (node instanceof YieldStatementNode) {
+            return new YieldConverter(info, (YieldStatementNode) node);
         } else {
             throw new UnsupportedOperationException("Unsupported node");
         }

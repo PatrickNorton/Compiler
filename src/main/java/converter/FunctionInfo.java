@@ -7,6 +7,7 @@ import java.util.List;
 
 public final class FunctionInfo implements IntoFnInfo {
     private final String name;
+    private final boolean isGenerator;
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
 
@@ -19,9 +20,14 @@ public final class FunctionInfo implements IntoFnInfo {
     }
 
     public FunctionInfo(String name, ArgumentInfo args, TypeObject... returns) {
+        this(name, false, args, returns);
+    }
+
+    public FunctionInfo(String name, boolean isGenerator, ArgumentInfo args, TypeObject... returns) {
         this.name = name;
+        this.isGenerator = isGenerator;
         this.arguments = args;
-        this.returns = returns;
+        this.returns = properReturns(returns);
     }
 
     public String getName() {
@@ -38,6 +44,10 @@ public final class FunctionInfo implements IntoFnInfo {
 
     public ArgumentInfo getArgs() {
         return arguments;
+    }
+
+    public boolean isGenerator() {
+        return isGenerator;
     }
 
     @NotNull
@@ -109,5 +119,13 @@ public final class FunctionInfo implements IntoFnInfo {
             result[i] = arr[i] instanceof TemplateParam ? generics.get(((TemplateParam) arr[i]).getIndex()) : arr[i];
         }
         return result;
+    }
+
+    private static TypeObject[] properReturns(@NotNull TypeObject... returns) {
+        if (returns.length == 1 && returns[0] instanceof ListTypeObject) {
+            return ((ListTypeObject) returns[0]).toArray();
+        } else {
+            return returns;
+        }
     }
 }

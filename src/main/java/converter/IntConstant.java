@@ -45,4 +45,8 @@ public final class IntConstant implements LangConstant {
     public @NotNull String name() {
         return Integer.toString(value);
     }
+
+    public int getValue() {
+        return value;
+    }
 }

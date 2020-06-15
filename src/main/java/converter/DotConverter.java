@@ -68,7 +68,7 @@ public final class DotConverter implements TestConverter {
 
     private TypeObject optionalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().equals("?");
-        if (!result.isSuperclass(Builtins.NULL_TYPE)) {
+        if (!(result instanceof OptionTypeObject)) {
             return normalDotReturnType(result, dot);
         }
         var postDot = dot.getPostDot();
@@ -86,7 +86,7 @@ public final class DotConverter implements TestConverter {
 
     @NotNull
     private TypeObject nonNullReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
-        var hasNull = result.isSuperclass(Builtins.NULL_TYPE);
+        var hasNull = result instanceof OptionTypeObject;
         var bangType = hasNull ? result.stripNull() : result;
         return normalDotReturnType(bangType, dot);
     }
@@ -126,6 +126,7 @@ public final class DotConverter implements TestConverter {
         bytes.add(Bytecode.JUMP_NULL.value);
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
+        bytes.add(Bytecode.UNWRAP_OPTION.value);
         convertPostDot(start, bytes, postDot);
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
@@ -146,6 +147,7 @@ public final class DotConverter implements TestConverter {
         bytes.add(Bytecode.THROW_QUICK.value);
         bytes.addAll(Util.shortToBytes((short) 1));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        bytes.add(Bytecode.UNWRAP_OPTION.value);
         convertPostDot(start, bytes, postDot);
     }
 
