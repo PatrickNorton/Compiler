@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
+import main.java.parser.DescriptorNode;
 import main.java.parser.GenericFunctionNode;
 import main.java.parser.GenericOperatorNode;
 import main.java.parser.IndependentNode;
@@ -49,6 +50,10 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             superConstants.add(info.constIndex(sup.name()));
         }
         converter.checkAttributes();
+        if (node.getDescriptors().contains(DescriptorNode.AUTO)) {
+            info.addDefaultInterface(type);
+            throw CompilerInternalError.of("Default interfaces not supported yet", node);
+        }
         addToInfo(type, "interface", superConstants, converter);
         return Collections.emptyList();
     }
