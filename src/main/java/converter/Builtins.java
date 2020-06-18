@@ -76,6 +76,8 @@ public final class Builtins {
 
     public static final StdTypeObject THROWS = new StdTypeObject("throws");
 
+    public static final StdTypeObject SLICE = new StdTypeObject("slice");
+
     public static final TypeObject TYPE = new TypeTypeObject();
 
     private static final FunctionInfo PRINT_INFO = new FunctionInfo("print", ArgumentInfo.of(OBJECT));
@@ -226,6 +228,23 @@ public final class Builtins {
         RANGE.seal();
     }
 
+    static {  // Set slice operators
+        SLICE.isConstClass();
+        var endInfo = new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), TypeObject.optional(INT));
+        var rangeInfo = new AttributeInfo(
+                EnumSet.of(DescriptorNode.PUBLIC),
+                new FunctionInfo(ArgumentInfo.of(INT), RANGE).toCallable()
+        );
+        var sliceMap = Map.of(
+                "start", endInfo,
+                "stop", endInfo,
+                "step", endInfo,
+                "toRange", rangeInfo
+        );
+        SLICE.setAttributes(sliceMap);
+        SLICE.seal();
+    }
+
     static {  // Set list operators
         var listMap = Map.of(
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), LIST_PARAM),
@@ -311,7 +330,8 @@ public final class Builtins {
             SET,
             CHAR,
             OPEN,
-            REVERSED
+            REVERSED,
+            SLICE
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -335,6 +355,7 @@ public final class Builtins {
             Map.entry("repr", REPR),
             Map.entry("object", OBJECT),
             Map.entry("reversed", REVERSED),
+            Map.entry("slice", SLICE),
             Map.entry("null", NULL)
     );
 
