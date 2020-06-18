@@ -172,7 +172,7 @@ public final class Builtins {
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
-        var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), STR));
+        var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
         var upperLowerInfo = new FunctionInfo(STR);
         var strAttrs = Map.of(
                 "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
