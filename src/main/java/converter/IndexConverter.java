@@ -36,13 +36,10 @@ public final class IndexConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getVar(), info, 1));
         if (node.getIndices()[0] instanceof SliceNode) {
             assert node.getIndices().length == 1;
-            var slice = (SliceNode) node.getIndices()[0];
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice.getStart(), info, 1));
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice.getEnd(), info, 1));
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice.getStep(), info, 1));
+            bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert(start + bytes.size()));
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_SLICE.ordinal()));
-            bytes.addAll(Util.shortToBytes((short) 3));
+            bytes.addAll(Util.shortToBytes((short) 1));
         } else {
             for (var index : node.getIndices()) {
                 bytes.addAll(TestConverter.bytes(start, index, info, 1));
