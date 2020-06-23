@@ -35,6 +35,7 @@ public final class IndexConverter implements TestConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getVar(), info, 1));
         if (node.getIndices()[0] instanceof SliceNode) {
+            checkSliceType();
             assert node.getIndices().length == 1;
             bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert(start + bytes.size()));
             bytes.add(Bytecode.CALL_OP.value);
@@ -51,5 +52,16 @@ public final class IndexConverter implements TestConverter {
             }
         }
         return bytes;
+    }
+
+    private void checkSliceType() {
+        var retType = TestConverter.returnType(node.getVar(), info, 1)[0];
+        var fnInfo = retType.tryOperatorInfo(node.getLineInfo(), OpSpTypeNode.GET_SLICE, info);
+        if (!fnInfo.matches(new Argument("", Builtins.SLICE))) {
+            throw CompilerException.format(
+                    "Type '%s' has an operator [:] that does not take a slice as its argument",
+                    node, retType.name()
+            );
+        }
     }
 }

@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.SliceNode;
+import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,18 +27,21 @@ public final class SliceConverter implements TestConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getStart().isEmpty()) {
+            checkTypes(node.getStart());
             bytes.addAll(TestConverter.bytes(start, node, info, 1));
         } else {
             bytes.add(Bytecode.LOAD_NULL.value);
         }
         bytes.add(Bytecode.MAKE_OPTION.value);
         if (!node.getEnd().isEmpty()) {
+            checkTypes(node.getEnd());
             bytes.addAll(TestConverter.bytes(start, node, info, 1));
         } else {
             bytes.add(Bytecode.LOAD_NULL.value);
         }
         bytes.add(Bytecode.MAKE_OPTION.value);
         if (!node.getStep().isEmpty()) {
+            checkTypes(node.getStep());
             bytes.addAll(TestConverter.bytes(start, node, info, 1));
         } else {
             bytes.add(Bytecode.LOAD_NULL.value);
@@ -45,5 +49,15 @@ public final class SliceConverter implements TestConverter {
         bytes.add(Bytecode.MAKE_OPTION.value);
 
         return bytes;
+    }
+
+    private void checkTypes(TestNode subNode) {
+        var retType = TestConverter.returnType(subNode, info, 1)[0];
+        if (!Builtins.INT.isSuperclass(retType)) {
+            throw CompilerException.format(
+                    "Type '%s' is not a superclass of int, cannot be used in a slice",
+                    node, retType
+            );
+        }
     }
 }
