@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -333,7 +334,7 @@ public final class CompilerInfo {
                 var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
                 return type.isOptional() ? TypeObject.optional(endType) : endType;
             } else {
-                throw new RuntimeException("Unknown type " + type);
+                throw CompilerException.of("Unknown type " + type, type);
             }
         } else {
             var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
@@ -342,12 +343,12 @@ public final class CompilerInfo {
     }
 
     /**
-     * Adds a default interface to the pool
+     * Adds default interfaces to the pool
      *
-     * @param obj The type to add
+     * @param objs The type to add
      */
-    public void addDefaultInterface(TypeObject obj) {
-        defaultInterfaces.add(obj);
+    public void addDefaultInterfaces(Collection<? extends UserType<?>> objs) {
+        defaultInterfaces.addAll(objs);
     }
 
     /**
@@ -392,6 +393,10 @@ public final class CompilerInfo {
      */
     public boolean hasType(String typeName) {
         return typeMap.containsKey(typeName);
+    }
+
+    public TypeObject getTypeObj(String typeName) {
+        return typeMap.get(typeName);
     }
 
     /**

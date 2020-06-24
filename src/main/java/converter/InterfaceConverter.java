@@ -41,8 +41,11 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
             parseIntoObject(converter, type);
+            if (node.getDescriptors().contains(DescriptorNode.AUTO)) {
+                throw CompilerException.of("Auto interfaces may only be defined at top level", node);
+            }
         } else {
-            type = (InterfaceType) info.getType(node.getName().strName());
+            type = (InterfaceType) info.getTypeObj(node.getName().strName());
             parseStatements(converter);
         }
         List<Short> superConstants = new ArrayList<>();
@@ -50,10 +53,6 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             superConstants.add(info.constIndex(sup.name()));
         }
         converter.checkAttributes();
-        if (node.getDescriptors().contains(DescriptorNode.AUTO)) {
-            info.addDefaultInterface(type);
-            throw CompilerInternalError.of("Default interfaces not supported yet", node);
-        }
         addToInfo(type, "interface", superConstants, converter);
         return Collections.emptyList();
     }
@@ -65,6 +64,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
     private void completeType(@NotNull InterfaceType obj) {
         var converter = new ConverterHolder(info);
         parseIntoObject(converter, obj);
+        // Note: 'auto' interfaces should already be registered with the compiler, so no action is needed
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull InterfaceType obj) {
