@@ -218,6 +218,21 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return this;
     }
 
+    public final boolean fulfillsContract(@NotNull UserType<?> contractor) {
+        var contract = contractor.contract();
+        for (var attr : contract.getKey()) {
+            if (attrType(attr, DescriptorNode.PUBLIC) == null) {
+                return false;
+            }
+        }
+        for (var op : contract.getValue()) {
+            if (operatorInfo(op, DescriptorNode.PUBLIC) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static TypeObject union(@NotNull TypeObject... values) {
         Set<TypeObject> valueSet = new HashSet<>(Arrays.asList(values));
         if (valueSet.size() == 1) {

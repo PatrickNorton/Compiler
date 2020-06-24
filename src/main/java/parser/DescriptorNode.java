@@ -40,6 +40,7 @@ public enum DescriptorNode implements AtomicNode {
     NATIVE("native"),
     GENERATOR("generator"),
     SYNCED("synced"),
+    AUTO("auto"),
     ;
 
     public static final Pattern PATTERN = Pattern.compile("^(" +
@@ -60,9 +61,10 @@ public enum DescriptorNode implements AtomicNode {
     private static final Set<DescriptorNode> NATIVE_SET = Collections.unmodifiableSet(EnumSet.of(NATIVE));
     private static final Set<DescriptorNode> GENERATOR_SET = Collections.unmodifiableSet(EnumSet.of(GENERATOR));
     private static final Set<DescriptorNode> SYNCED_SET = Collections.unmodifiableSet(EnumSet.of(SYNCED));
+    private static final Set<DescriptorNode> AUTO_SET = Collections.unmodifiableSet(EnumSet.of(AUTO));
 
     private static final List<Set<DescriptorNode>> SETS = List.of(
-            ACCESS, STATIC_SET, CONST_SET, FINAL_SET, NATIVE_SET, GENERATOR_SET, SYNCED_SET
+            ACCESS, STATIC_SET, CONST_SET, FINAL_SET, NATIVE_SET, GENERATOR_SET, SYNCED_SET, AUTO_SET
     );
 
     static final Set<DescriptorNode> DEFINITION_VALID = Collections.unmodifiableSet(
@@ -77,6 +79,8 @@ public enum DescriptorNode implements AtomicNode {
             EnumSet.of(PUBLIC, PRIVATE, PROTECTED, STATIC, MUT, FINAL, NONFINAL, GENERATOR, SYNCED, NATIVE));
     static final Set<DescriptorNode> STATIC_BLOCK_VALID = Collections.unmodifiableSet(
             EnumSet.noneOf(DescriptorNode.class));
+    static final Set<DescriptorNode> INTERFACE_VALID = Collections.unmodifiableSet(
+            EnumSet.of(PUBLIC, PRIVATE, PROTECTED, MUT, FINAL, NONFINAL, STATIC, NATIVE, AUTO));
 
     static {
         Map<String, DescriptorNode> temp = new HashMap<>();

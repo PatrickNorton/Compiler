@@ -145,27 +145,12 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @NotNull
     private List<TypeObject> fulfilledInterfaces() {
         List<TypeObject> result = new ArrayList<>();
-        for (var inter : Builtins.DEFAULT_INTERFACES) {
+        for (var inter : Linker.ALL_DEFAULT_INTERFACES) {
             if (!isSubclass(inter) && fulfillsContract(inter)) {
                 result.add(inter.generify(generifiedParams(inter)));
             }
         }
         return result;
-    }
-
-    private boolean fulfillsContract(@NotNull UserType<?> contractor) {
-        var contract = contractor.contract();
-        for (var attr : contract.getKey()) {
-            if (attrType(attr, DescriptorNode.PUBLIC) == null) {
-                return false;
-            }
-        }
-        for (var op : contract.getValue()) {
-            if (operatorInfo(op, DescriptorNode.PUBLIC) == null) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @NotNull
