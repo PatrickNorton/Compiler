@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * The class representing an interface definition.
@@ -80,6 +81,11 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
     @Override
     public void addAnnotations(NameNode... annotations) {
         this.annotations = annotations;
+    }
+
+    @Override
+    public Set<DescriptorNode> validDescriptors() {
+        return DescriptorNode.INTERFACE_VALID;
     }
 
     /**

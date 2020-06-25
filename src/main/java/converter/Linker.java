@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContextDefinitionNode;
 import main.java.parser.DefinitionNode;
+import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
@@ -18,8 +19,12 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class to link the {@link TopNode} representing a file.
@@ -43,6 +48,12 @@ public final class Linker {
     private final CompilerInfo info;
     private final Map<String, Pair<String, LineInfo>> exports;
     private final Map<String, TypeObject> globals;
+
+    public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>();
+
+    static {
+        ALL_DEFAULT_INTERFACES.addAll(Builtins.DEFAULT_INTERFACES);
+    }
 
     public Linker(CompilerInfo info) {
         this.info = info;
@@ -78,15 +89,21 @@ public final class Linker {
     public Linker link(TopNode node) {
         assert exports.isEmpty() && globals.isEmpty();
         var declaredTypes = declareTypes(node);
-        if (declaredTypes == null) {  // declaredTypes is null if not a module
+        if (declaredTypes == null) {  // Not a module
             return this;
         }
         info.addPredeclaredTypes(declaredTypes);
+        // Done in several steps so that auto interfaces can be registered first
+        Deque<InterfaceDefinitionNode> defaultInterfaces = new ArrayDeque<>();
+        Deque<DefinitionNode> definitions = new ArrayDeque<>();
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
-                var name = ((DefinitionNode) stmt).getName();
-                TypeObject type = linkDefinition((DefinitionNode) stmt);
-                globals.put(name.toString(), type);
+                if (stmt instanceof InterfaceDefinitionNode
+                        && ((InterfaceDefinitionNode) stmt).getDescriptors().contains(DescriptorNode.AUTO)) {
+                    defaultInterfaces.push((InterfaceDefinitionNode) stmt);
+                } else {
+                    definitions.push((DefinitionNode) stmt);
+                }
             } else if (stmt instanceof ImportExportNode) {
                 linkIENode((ImportExportNode) stmt);
             } else {
@@ -95,6 +112,17 @@ public final class Linker {
                         stmt
                 );
             }
+        }
+        info.addDefaultInterfaces(ALL_DEFAULT_INTERFACES);
+        for (var stmt : defaultInterfaces) {
+            var name = stmt.getName();
+            TypeObject type = linkDefinition(stmt);
+            globals.put(name.toString(), type);
+        }
+        for (var stmt : definitions) {
+            var name = stmt.getName();
+            TypeObject type = linkDefinition(stmt);
+            globals.put(name.toString(), type);
         }
         return this;
     }
@@ -170,6 +198,7 @@ public final class Linker {
         Map<String, TypeObject> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
         boolean isModule = false;
+        boolean hasAuto = false;
         for (var stmt : node) {
             if (stmt instanceof ClassDefinitionNode) {
                 var cls = (ClassDefinitionNode) stmt;
@@ -193,8 +222,13 @@ public final class Linker {
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                types.put(strName, new InterfaceType(strName));
+                var type = new InterfaceType(strName);
+                types.put(strName, type);
                 lineInfos.put(strName, cls.getLineInfo());
+                if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
+                    ALL_DEFAULT_INTERFACES.add(type);
+                    hasAuto = true;
+                }
             } else if (stmt instanceof ImportExportNode) {
                 var ieStmt = (ImportExportNode) stmt;
                 // TODO: Types from imports
@@ -202,6 +236,9 @@ public final class Linker {
                     isModule = true;
                 }
             }
+        }
+        if (!isModule && hasAuto) {
+            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", LineInfo.empty());
         }
         return isModule ? types : null;
     }

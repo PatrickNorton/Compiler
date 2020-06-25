@@ -32,7 +32,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             info.addType(type);
             parseIntoObject(converter, type);
         } else {
-            type = (StdTypeObject) info.getType(node.strName());
+            type = (StdTypeObject) info.getTypeObj(node.strName());
             parseStatements(converter);
         }
         List<Short> superConstants = new ArrayList<>();
