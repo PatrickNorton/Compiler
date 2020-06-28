@@ -1,0 +1,404 @@
+# Imports: Program, LiteralSearcher, AhoCorasik
+
+export Exec, ProgramCache
+
+class Exec {
+    private ExecReadOnly ro
+    private ProgramCache cache
+
+    public operator new () {
+
+    }
+
+    public method findLiterals(MatchLiteralType ty, str text, int start) -> tuple[int, int]? {
+        switch ty {
+            case MatchLiteralType.UNANCHORED {
+                var lits = self.ro.nfa.prefixes
+                if lits.find(text[start:]) as f? {
+                    return (f.0 + start, f.1 + start)
+                } else {
+                    return null
+                }
+            }
+            case MatchLiteralType.ANCHORED_START {
+                var lits = self.ro.nfa.prefixes
+                if not start or not self.ro.nfa.isAnchoredStart {
+                    if lits.findStart(text[start:])? as f {
+                        return (f.0 + start, f.1 + start)
+                    } else {
+                        return null
+                    }
+                }
+            }
+            case MatchLiteralType.ANCHORED_END {
+                var lits = self.ro.suffixes
+                if lits.findEnd(text[start:])? as f {
+                    return (f.0 + start, f.1 + start)
+                } else {
+                    return null
+                }
+            }
+            case MatchLiteralType.AHO_CORASIK {
+                if self.ro.ac?.find(text[start:])? as m {
+                    return (m.start + start, m.end + start)
+                } else {
+                    return null
+                }
+            }
+        }
+    }
+}
+
+const class ExecReadOnly {
+    list[str] res
+    Program nfa
+    Program dfa
+    Program dfaReverse
+    LiteralSearcher suffixes
+    AhoCorasik[int]? ac
+    MatchType matchType
+
+    public operator new(
+        list[str] res,
+        Program nfa,
+        Program dfa,
+        Program dfaReverse,
+        LiteralSearcher suffixes,
+        AhoCorasik[int]? ac,
+        MatchType matchType,
+    ) {
+        self.res = res
+        self.nfa = nfa
+        self.dfa = dfa
+        self.dfaReverse = dfaReverse
+        self.suffixes = suffixes
+        self.ac = ac
+        self.matchType = matchType
+    }
+
+    public method chooseMatchType(MatchType? hint) -> MatchType {
+        if (hint?.NFA)? as h {
+            return h
+        }
+        if not self.nfa.insts {
+            return MatchType.Nothing()
+        }
+        if self.chooseLiteralMatchType()? as literality {
+            return literality
+        }
+        if self.chooseDfaMatchType()? as dfaty {
+            return dfaty
+        }
+        return MatchType.NFA(MatchNfaType.AUTO)
+    }
+
+    private method chooseLiteralMatchType() -> MatchType? {
+        return null if self.ro.length == 1
+        if self.ac? {
+            return MatchType.Literal(MatchLiteralType.AHO_CORASIK)
+        }
+        if self.nfa.prefixes.complete() {
+            if self.nfa.isAnchoredStart {
+                return MatchType.Literal(MatchLiteralType.ANCHORED_START)
+            } else {
+                return MatchType.Literal(MatchLiteralType.UNANCHORED)
+            };
+        }
+        if ro.suffixes.complete() {
+            if self.nfa.isAnchoredEnd {
+                return MatchType.Literal(MatchLiteralType.ANCHORED_END)
+            } else {
+                # This case shouldn't happen. When the regex isn't
+                # anchored, then complete prefixes should imply complete
+                # suffixes.
+                return MatchType.Literal(MatchLiteralType.UNANCHORED)
+            };
+        }
+        return null
+    }
+
+    private method chooseDfaMatchType() -> MatchType? {
+        return null if not self.dfa.canExec
+        return MatchType.DfaMany() if self.res.length >= 2
+        if not self.nfa.isAnchoredStart and self.nfa.isAnchoredEnd {
+            return MatchType.DfaAnchoredReverse()
+        }
+        if self.ro.shouldSuffixScan() {
+            return MatchType.DfaSuffix()
+        }
+        return MatchType.Dfa()
+    }
+
+    private method shouldSuffixScan() -> bool {
+        return false if not self.suffixes
+        var lcsLen = self.suffixes.lcs.length
+        return lcsLen >= 3 and lcsLen >= self.dfa.prefixes.lcp.length
+    }
+}
+
+class ExecBuilder {
+    private RegexOptions options
+    private mut MatchType? matchType
+    private mut bool bytes
+    private mut bool onlyUtf8
+
+    public mut method automatic() -> self {
+        self.matchType = null
+        return self
+    }
+
+    public mut method nfa() -> self {
+        self.matchType = MatchType.Nfa(MatchNfaType.PikeVM)
+        return self
+    }
+
+    public mut method boundedBacktracking() -> self {
+        self.matchType = MatchType.Nfa(MatchNfaType.Backtrack)
+        return self
+    }
+
+    public mut method bytes(bool yes) -> self {
+        self.bytes = yes
+        return self
+    }
+
+    public mut method onlyUtf8() -> self {
+        self.onlyUtf8 = true
+        return self
+    }
+
+    public method parse() -> Parsed {
+        mut list[Hir] exprs = []
+        mut Literals? prefixes = Literals.empty()
+        mut Literals? suffixes = Literals.empty()
+        mut bool bytes = false
+        var isSet = self.options.pats.length >= 1
+
+        for var pat in self.options.pats {
+            mut var parser = (ParserBuilder()
+                .octal(self.options.octal)
+                .caseInsensitive(self.options.multiLine)
+                .dotMatchesNewline(self.options.dotMatchesNewline)
+                .swapGreed(self.options.swapGreed)
+                .ignoreWhitespace(self.options.ignoreWhitespace)
+                .unicode(self.options.unicode)
+                .allowInvalidUtf8(not self.onlyUtf8)
+                .nestLimit(self.options.nestLimit)
+                .build())
+            var expr = parser.parse(patt)
+            bytes = bytes || not expr.isAlwaysUtf8()
+            exprs.push(expr)
+        }
+
+        if not expr.isAnchoredStart() and expr.isAnyAnchoredStart() {
+            # Partial anchors unfortunately make it hard to use
+            # prefixes, so disable them.
+            prefixes = null
+        } elif isSet and expr.isAnchoredStart() {
+            # Regex sets with anchors do not go well with literal
+            # optimizations.
+            prefixes = null
+        }
+        if prefixes? as p {
+            if not p.unionPrefixes(expr) {
+                prefixes = null
+            }
+        }
+        if not expr.isAnchoredEnd() and expr.isAnyAnchoredEnd() {
+            # Partial anchors unfortunately make it hard to use
+            # suffixes, so disable them.
+            suffixes = null
+        } else if isSet and expr.isAnchoredEnd() {
+            # Regex sets with anchors do not go well with literal
+            # optimizations.
+            suffixes = null
+        }
+        if suffixes? as s {
+            if not s.unionSuffixes(expr) {
+                suffixes = null
+            }
+        }
+
+        return Parsed(exprs, prefixes ?? Literals.empty(), suffixes ?? Literals.empty(), bytes)
+    }
+
+    public method build() -> Exec {
+        if not self.options.pats {
+            var ro = ExecReadOnly(
+                [], Program(), Program(), Program(), LiteralSearcher(), null, MatchType.Nothing
+            )
+            return Exec(ro, Cached())
+        }
+        var parsed = self.parse()
+        mut var nfa = (Compiler()
+            .sizeLimit(self.options.sizeLimit)
+            .bytes(self.bytes or parsed.bytes)
+            .onlyUtf8(self.onlyUtf8)
+            .compile(parsed.exprs))
+        mut var dfa = (Compiler()
+            .sizeLimit(self.options.sizeLimit)
+            .dfa(true)
+            .onlyUtf8(self.onlyUtf8)
+            .compile(parsed.exprs))
+        mut var dfaReverse = (Compiler()
+            .sizeLimit(self.options.sizeLimit)
+            .dfa(true)
+            .onlyUtf8(self.onlyUtf8)
+            .reverse(true)
+            .compile(parsed.exprs))
+
+        var ac = self.buildAhoCorasik(parsed)
+        nfa.prefixes = LiteralSearcher.suffixes(parsed.suffixes)
+        dfa.prefixes = nfa.prefixes
+        dfa.dfaSizeLimit = self.options.dfaSizeLimit
+        dfaReverse.dfaSizeLimit = self.options.dfaSizeLimit
+
+        var ro1 = ExecReadOnly(
+            self.options.pats,
+            nfa, dfa, dfaReverse,
+            LiteralSearcher.suffixes(parsed.suffixes)
+            ac, MatchType.Nothing
+        )
+        var ro = ExecReadOnly(
+            self.options.pats,
+            nfa, dfa, dfaReverse,
+            LiteralSearcher.suffixes(parsed.suffixes)
+            ac, ro1.chooseMatchType(self.matchType)
+        )
+        return Exec(ro, Cached())
+    }
+
+    private method buildAhoCorasik(Parsed parsed) -> AhoCorasik[int]? {
+        return null if parsed.exprs.length != 1
+        list[bytes] lits
+        if alternationLiterals(parsed.exprs[0])? as l {
+            lits = l
+        } else {
+            return null
+        }
+        return null if lits.length <= 32
+        return (AhoCorasikBuilder()
+            .matchKind(MatchKind.LeftMostFirst())
+            .autoConfigure(lits)
+            .byteClasses(true)
+            .buildWithSize(lits)
+            ?? raise RuntimeError("AC automation too big"))
+    }
+}
+
+union MatchType {
+    MatchLiteralType literal
+    null Dfa
+    null DfaAnchoredReverse
+    null DfaSuffix
+    null DfaMany
+    NfaMatchType Nfa
+    null Nothing
+}
+
+enum MatchLiteralType {
+    # Match literals anywhere in text.
+    UNANCHORED,
+    # Match literals only at the start of text.
+    ANCHORED_START,
+    # Match literals only at the end of text.
+    ANCHORED_END,
+    # Use an Aho-Corasick automaton. This requires `ac` to be Some on
+    # ExecReadOnly.
+    AHO_CORASIK,
+}
+
+enum MatchNfaType {
+    # Choose between Backtrack and PikeVM.
+    AUTO,
+    # NFA bounded backtracking.
+    #
+    # (This is only set by tests, since it never makes sense to always want
+    # backtracking.)
+    BACKTRACK,
+    # The Pike VM.
+    #
+    # (This is only set by tests, since it never makes sense to always want
+    # the Pike VM.)
+    PIKE_VM,
+}
+
+class ProgramCache {
+    public PikeVM.Cache pikevm
+    public Backtrack.Cache backtrack
+    public Dfa.Cache dfa
+    public Dfa.Cache dfaReverse
+
+    public operator new (ExecReadOnly ro) {
+        self.pikevm = PikeVM.Cache(ro.nfa)
+        self.backtrack = Backtrack.Cache(ro.nfa)
+        self.dfa = Dfa.Cache(ro.dfa)
+        self.dfaReverse = Dfa.Cache(ro.dfaReverse)
+    }
+}
+
+func alternationLiterals(Hir expr) -> list[bytes]? {
+    return null if not expr.isAlternationLiteral
+    list[Hir] alts
+    if expr.kind().Alternation? as _alts {
+        alts = _alts
+    } else {
+        return null
+    }
+
+    mut list[bytes] lits = []
+    for var alt in alts {
+        mut bytes lit = bytes()
+        switch alt.kind {
+            case HirKind.Literal as x {
+                switch x {
+                    case Literal.Unicode as c {
+                        lit.addUtf8(c)
+                    }
+                    case Literal.Byte as b {
+                        lit.add(b)
+                    }
+                }
+            }
+            case HirKind.Concat as exprs {
+                for var e in exprs {
+                    switch e.kind {
+                        case HirKind.Literal as x {
+                            switch x {
+                                case Literal.Unicode as c {
+                                    lit.addUtf8(c)
+                                }
+                                case Literal.Byte as b {
+                                    lit.add(b)
+                                }
+                            }
+                        }
+                        default => raise NotImplemented
+                    }
+                }
+            }
+            default => raise NotImplemented
+        }
+        lits.add(lit)
+    }
+    return lits
+}
+
+class Parsed {
+    mut list[Hir] exprs
+    mut Literals prefixes
+    mut Literals suffixes
+    mut bool bytes
+
+    public operator new(
+        list[Hir] exprs,
+        Literals prefixes,
+        Literals suffixes,
+        bool bytes,
+    ) {
+        self.exprs = exprs
+        self.prefixes = prefixes
+        self.suffixes = suffixes
+        self.bytes = bytes
+    }
+}
