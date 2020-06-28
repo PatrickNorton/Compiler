@@ -98,16 +98,31 @@ union Inst {
 class InstSave {
     public InstPtr jump
     public int slot
+
+    public operator new(InstPtr jump, int slot) {
+        self.jump = jump
+        self.slot = slot
+    }
 }
 
 class InstSplit {
     public InstPtr jump1
     public InstPtr jump2
+
+    public operator new(InstPtr jump1, InstPtr jump2) {
+        self.jump1 = jump1
+        self.jump2 = jump2
+    }
 }
 
 class InstEmptyLook {
     public InstPtr jump
     public EmptyLook look
+
+    public operator new(InstPtr jump, EmptyLook look) {
+        self.jump = jump
+        self.look = look
+    }
 }
 
 enum EmptyLook {
@@ -132,11 +147,21 @@ enum EmptyLook {
 class InstChar {
     public InstPtr jump
     public char c
+
+    public operator new(InstPtr jump, char c) {
+        self.jump = jump
+        self.c = c
+    }
 }
 
 class InstRanges {
     public InstPtr jump
     public list[Pair[char, char]] ranges
+
+    public operator new(InstPtr jump, list[Pair[char, char]] ranges) {
+        self.jump = jump
+        self.ranges = ranges
+    }
 
     public method matches(char c) -> bool {
         for var r in self.ranges[:4] {
@@ -155,6 +180,12 @@ class InstBytes {
     public InstPtr jump
     public int start
     public int end
+
+    public operator new(InstPtr jump, int start, int end) {
+        self.jump = jump
+        self.start = start
+        self.end = end
+    }
 
     public method matches(int b) -> bool {
         return b in [self.start:self.end+1]
