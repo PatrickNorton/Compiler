@@ -1,6 +1,7 @@
 # Imports: LiteralSearcher, AhoCorasik
 
 from .prog import Program
+from .compile import Compiler
 
 export Exec, ProgramCache
 
