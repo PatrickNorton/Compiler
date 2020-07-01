@@ -13,13 +13,15 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
     private TestNode[] label;
     private StatementBodyNode body;
     private boolean arrow;
+    private VariableNode as;
 
     @Contract(pure = true)
-    public CaseStatementNode(LineInfo lineInfo, TestNode[] label, StatementBodyNode body, boolean arrow) {
+    public CaseStatementNode(LineInfo lineInfo, TestNode[] label, StatementBodyNode body, boolean arrow, VariableNode as) {
         this.lineInfo = lineInfo;
         this.label = label;
         this.body = body;
         this.arrow = arrow;
+        this.as = as;
     }
 
     @Override
@@ -37,6 +39,10 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
 
     public boolean isArrow() {
         return arrow;
+    }
+
+    public VariableNode getAs() {
+        return as;
     }
 
     @Override
@@ -64,6 +70,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();
         TestNode[] label = TestNode.parseList(tokens, false);
+        VariableNode as = VariableNode.parseOnToken(tokens, Keyword.AS);
         StatementBodyNode body;
         boolean arrow = tokens.tokenIs(TokenType.DOUBLE_ARROW);
         if (arrow) {
@@ -73,7 +80,7 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
         } else {
             body = StatementBodyNode.parse(tokens);
         }
-        return new CaseStatementNode(info, label, body, arrow);
+        return new CaseStatementNode(info, label, body, arrow, as);
     }
 
     @Override
