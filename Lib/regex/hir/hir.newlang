@@ -1,0 +1,595 @@
+from .unicode import simpleFold
+
+export Hir, HirKind, Literal, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group
+export Repetition, HirKind, Literal, Anchor, WordBoundary, RepetitionKind, RepetitionRange
+
+class Hir {
+    pubget HirKind kind
+    HirInfo info
+
+    private operator new(HirKind kind, HirInfo info) {
+        self.kind = kind
+        self.info = info
+    }
+
+    public static method empty() -> cls {
+        mut var info = HirInfo()
+        info.setAlwaysUtf8(true)
+        info.setAllAssertions(true)
+        info.setAnchoredStart(false)
+        info.setAnchoredEnd(false)
+        info.setLineAnchoredStart(false)
+        info.setLineAnchoredEnd(false)
+        info.setAnyAnchoredStart(false)
+        info.setAnyAnchoredEnd(false)
+        info.setMatchEmpty(true)
+        info.setLiteral(false)
+        info.setAlternationLiteral(false)
+        return Hir(HirKind.Empty(), info)
+    }
+
+    public static method literal(Literal lit) -> Hir {
+        if let Literal::Byte(b) = lit {
+            assert!(b > 0x7F)
+        }
+
+        mut var info = HirInfo()
+        info.setAlwaysUtf8(lit.isUnicode())
+        info.setAllAssertions(false)
+        info.setAnchoredStart(false)
+        info.setAnchoredEnd(false)
+        info.setLineAnchoredStart(false)
+        info.setLineAnchoredEnd(false)
+        info.setAnyAnchoredStart(false)
+        info.setAnyAnchoredEnd(false)
+        info.setMatchEmpty(false)
+        info.setLiteral(true)
+        info.setAlternationLiteral(true)
+        return Hir(HirKind.Literal(lit), info)
+    }
+
+    public static method type(Class y) -> Hir {
+        mut var info = HirInfo()
+        info.setAlwaysUtf8(type.isAlwaysUtf8())
+        info.setAllAssertions(false)
+        info.setAnchoredStart(false)
+        info.setAnchoredEnd(false)
+        info.setLineAnchoredStart(false)
+        info.setLineAnchoredEnd(false)
+        info.setAnyAnchoredStart(false)
+        info.setAnyAnchoredEnd(false)
+        info.setMatchEmpty(false)
+        info.setLiteral(false)
+        info.setAlternationLiteral(false)
+        return Hir(HirKind.Class(type), info)
+    }
+
+    public static method anchor(Anchor anchor) -> Hir {
+        mut var info = HirInfo()
+        info.setAlwaysUtf8(true)
+        info.setAllAssertions(true)
+        info.setAnchoredStart(false)
+        info.setAnchoredEnd(false)
+        info.setLineAnchoredStart(false)
+        info.setLineAnchoredEnd(false)
+        info.setAnyAnchoredStart(false)
+        info.setAnyAnchoredEnd(false)
+        info.setMatchEmpty(true)
+        info.setLiteral(false)
+        info.setAlternationLiteral(false)
+        switch anchor {
+            case Anchor.StartText {
+                info.setAnchoredStart(true)
+                info.setLineAnchoredStart(true)
+                info.setAnyAnchoredStart(true)
+            }
+            case Anchor.EndText {
+                info.setAnchoredEnd(true)
+                info.setLineAnchoredEnd(true)
+                info.setAnyAnchoredEnd(true)
+            }
+            case Anchor.StartLine {
+                info.setLineAnchoredStart(true)
+            }
+            case Anchor.EndLine {
+                info.setLineAnchoredEnd(true)
+            }
+        }
+        return Hir(HirKind.Anchor(anchor, info))
+    }
+
+    public static method word_boundary(WordBoundary wordBoundary) -> Hir {
+        mut var info = HirInfo()
+        info.setAlwaysUtf8(true)
+        info.setAllAssertions(true)
+        info.setAnchoredStart(false)
+        info.setAnchoredEnd(false)
+        info.setLineAnchoredStart(false)
+        info.setLineAnchoredEnd(false)
+        info.seAnyAnchoredStart(false)
+        info.setAnyAnchoredEnd(false)
+        info.setLiteral(false)
+        info.setAlternationLiteral(false)
+        # A negated word boundary matches the empty string, but a normal
+        # word boundary does not!
+        info.setMatchEmpty(wordBoundary.isNegated)
+        # Negated ASCII word boundaries can match invalid UTF-8.
+        if wordBoundary == WordBoundary.ASCII_NEGATE {
+            info.setAlwaysUtf8(false)
+        }
+        return Hir(HirKind.WordBoundary(wordBoundary), info)
+    }
+
+    public static method repetition(Repetition rep) -> Hir {
+        mut var info = HirInfo()
+        info.setAlwaysUtf8(rep.hir.isAlwaysUtf8())
+        info.setAllAssertions(rep.hir.isAllAssertions())
+        # If this operator can match the empty string, then it can never
+        # be anchored.
+        info.setAnchoredStart(
+            not rep.isMatchEmpty() and rep.hir.isAnchoredStart(),
+        )
+        info.setAnchoredEnd(
+            not rep.isMatchEmpty() and rep.hir.isAnchoredEnd(),
+        )
+        info.setLineAnchoredStart(
+            not rep.isMatchEmpty() and rep.hir.isAnchoredStart(),
+        )
+        info.setLineAnchoredEnd(
+            not rep.isMatchEmpty() and rep.hir.isAnchoredEnd(),
+        )
+        info.setAnyAnchoredStart(rep.hir.isAnyAnchoredStart())
+        info.setAnyAnchoredEnd(rep.hir.isAnyAnchoredEnd())
+        info.setMatchEmpty(rep.isMatchEmpty() or rep.hir.isMatchEmpty())
+        info.setLiteral(false)
+        info.setAlternationLiteral(false)
+        return Hir(HirKind.Repetition(rep), info)
+    }
+
+    public static method group(Group group) -> Hir {
+        let mut info = HirInfo()
+        info.setAlwaysUtf8(group.hir.isAlwaysUtf8())
+        info.setAllAssertions(group.hir.isAllAssertions())
+        info.setAnchoredStart(group.hir.isAnchoredStart())
+        info.setAnchoredEnd(group.hir.isAnchoredEnd())
+        info.setLineAnchoredStart(group.hir.isLineAnchoredStart())
+        info.setLineAnchoredEnd(group.hir.isLineAnchoredEnd())
+        info.setAnyAnchoredStart(group.hir.isAnyAnchoredStart())
+        info.setAnyAnchoredEnd(group.hir.isAnyAnchoredEnd())
+        info.setMatchEmpty(group.hir.isMatchEmpty())
+        info.setLiteral(false)
+        info.setAlternationLiteral(false)
+        return Hir(HirKind.Group(group), info)
+    }
+
+    public static method concat(list[Hir] exprs) -> Hir {
+        switch exprs.length {
+            case 0 {
+                return Hir.Empty()
+            }
+            case 1 {
+                return exprs[0]
+            }
+            default {
+                mut var info = HirInfo()
+                info.setAlwaysUtf8(true)
+                info.setAllAssertions(true)
+                info.setAnyAnchoredStart(false)
+                info.setAnyAnchoredEnd(false)
+                info.setMatchEmpty(true)
+                info.setLiteral(true)
+                info.setAlternationLiteral(true)
+
+                # Some attributes require analyzing all sub-expressions.
+                for var e in exprs {
+                    var x = info.isAlwaysUtf8() and e.isAlwaysUtf8()
+                    info.setAlwaysUtf8(x)
+
+                    var y = info.isAllAssertions() and e.isAllAssertions()
+                    info.setAllAssertions(x)
+
+                    var z = info.isAnyAnchoredStart() or e.isAnyAnchoredStart()
+                    info.setAnyAnchoredStart(x)
+
+                    var a = info.isAnyAnchoredEnd() or e.isAnyAnchoredEnd()
+                    info.setAnyAnchoredEnd(x)
+
+                    var b = info.isMatchEmpty() and e.isMatchEmpty()
+                    info.setMatchEmpty(x)
+
+                    var c = info.isLiteral() and e.isLiteral()
+                    info.setLiteral(x)
+
+                    var d = info.isAlternationLiteral() and e.isAlternationLiteral()
+                    info.setAlternationLiteral(x)
+                }
+                # Anchored attributes require something slightly more
+                # sophisticated. Normally, WLOG, to determine whether an
+                # expression is anchored to the start, we'd only need to check
+                # the first expression of a concatenation. However,
+                # expressions like `$\b^` are still anchored to the start,
+                # but the first expression in the concatenation *isn't*
+                # anchored to the start. So the "first" expression to look at
+                # is actually one that is either not an assertion or is
+                # specifically the StartText assertion.
+                info.setAnchoredStart(
+                    any((e.isAnchoredStart() for var e in exprs
+                            while e.isAllAssertions() or e.isAnchoredStart()))
+                )
+                # Similarly for the end anchor, but in reverse.
+                info.setAnchoredEnd(
+                    any((e.isAnchoredEnd() for var e in reversed(exprs)
+                            while e.isAllAssertions() or e.isAnchoredEnd()))
+                )
+                # Repeat the process for line anchors.
+                info.setLineAnchoredStart(
+                    any((e.isLineAnchoredStart() for var e in reversed(exprs)
+                            while e.isAllAssertions() or e.isLineAnchoredStart()))
+                )
+                info.setLineAnchoredEnd(
+                    any((e.isLineAnchoredEnd() for var e in reversed(exprs)
+                            while e.isAllAssertions() or e.isLineAnchoredEnd()))
+                )
+                return Hir(HirKind.Concat(exprs), info)
+            }
+        }
+    }
+
+    public static method alternation(list[Hir] exprs) -> Hir {
+        switch exprs.length {
+            case 0 {
+                return Hir.empty()
+            }
+            case 1 {
+                return exprs[0]
+            }
+            default {
+                mut var info = HirInfo()
+                info.setAlwaysUtf8(true)
+                info.setAllAssertions(true)
+                info.setAnyAnchoredStart(false)
+                info.setAnyAnchoredEnd(false)
+                info.setMatchEmpty(true)
+                info.setLiteral(true)
+                info.setAlternationLiteral(true)
+                info.setAnchoredStart(true)
+                info.setAnchoredEnd(true)
+                info.setLineAnchoredStart(true)
+                info.setLineAnchoredEnd(true)
+
+                # Some attributes require analyzing all sub-expressions.
+                for e in &exprs {
+                    var x = info.isAlwaysUtf8() and e.isAlwaysUtf8()
+                    info.setAlwaysUtf8(x)
+
+                    var y = info.isAllAssertions() and e.isAllAssertions()
+                    info.setAllAssertions(x)
+
+                    var z = info.isAnyAnchoredStart() or e.isAnyAnchoredStart()
+                    info.setAnyAnchoredStart(x)
+
+                    var a = info.isAnyAnchoredEnd() or e.isAnyAnchoredEnd()
+                    info.setAnyAnchoredEnd(x)
+
+                    var b = info.isMatchEmpty() and e.isMatchEmpty()
+                    info.setMatchEmpty(x)
+
+                    var c = info.isAlternationLiteral() and e.isAlternationLiteral()
+                    info.setAlternationLiteral(x)
+
+                    var d = info.isAnchoredStart() and e.isAnchoredStart()
+                    info.set_anchored_start(x)
+
+                    var e = info.isAnchoredEnd() and e.isAnchoredEnd()
+                    info.setAnchoredEnd(x)
+
+                    var f = info.isLineAnchoredStart() and e.isLineAnchoredStart()
+                    info.setLineAnchoredStart(x)
+
+                    var g = info.isLineAnchoredEnd() and e.isLineAnchoredEnd()
+                    info.setLineAnchoredEnd(x)
+                }
+                return Hir(HirKind.Alternation(exprs), info)
+            }
+        }
+    }
+
+    public static method dot(bool bytes) -> Hir {
+        if bytes {
+            mut var clsBytes = ClassBytes.empty()
+            clsBytes.push(ClassBytesRange(0, 0x9))
+            clsBytes.push(ClassBytesRange(0xB, 0xFF))
+            return Hir.type(Class.Bytes(clsBytes))
+        } else {
+            mut var clsBytes = ClassBytes.empty()
+            clsBytes.push(ClassUnicodeRange(0, 0x9))
+            clsBytes.push(ClassUnicodeRange(0xB, 0x10FFFF))
+            return Hir.type(Class.Bytes(clsBytes))
+        }
+    }
+
+    public static method any(bool bytes) -> Hir {
+        if bytes {
+            mut var clsBytes = ClassBytes.empty()
+            clsBytes.push(ClassBytesRange(0, 0xFF));
+            return Hir.type(Class.Bytes(clsBytes))
+        } else {
+            let mut clsBytes = ClassUnicode.empty()
+            clsBytes.push(ClassUnicodeRange(0, 0x10FFFF));
+            return Hir.type(Class.Unicode(clsBytes))
+        }
+    }
+}
+
+union HirKind {
+    null Empty
+    Literal Literal
+    Class Class
+    Anchor Anchor
+    WordBoundary WordBoundary
+    Repetition Repetition
+    Group Group
+    list[Hir] Concat
+    list[Hir] Alternation
+
+    public method isEmpty() -> bool {
+        return self.Empty?
+    }
+
+    public method hasSubexprs() -> bool {
+        return self.Group? or self.Repetition? or self.Concat? or self.Alternation?
+    }
+}
+
+union Literal {
+    char Unicode
+    int Byte
+
+    public method isUnicode() -> bool {
+        if self.Byte? as b {
+            return b <= 0x7F
+        } else {
+            return true
+        }
+    }
+}
+
+union Class {
+    ClassUnicode Unicode
+    ClassBytes Bytes
+
+    public mut method caseFoldSimple() {
+        switch self {
+            Class.Unicode as u {
+                u.caseFoldSimple()
+            }
+            Class.Bytes as b {
+                b.caseFoldSimple()
+            }
+        }
+    }
+
+    public mut method negate() {
+        switch self {
+            Class.Unicode as u {
+                u.negate()
+            }
+            Class.Bytes as b {
+                b.negate()
+            }
+        }
+    }
+
+    public method isAlwaysUtf8() -> bool {
+        return switch self {
+            case Class.Unicode => true
+            case Class.Bytes as b => b.isAllAscii()
+        }
+    }
+}
+
+class ClassUnicode {
+    final IntervalSet[ClassUnicodeRange] value
+
+    public operator new(Iterable[ClassUnicodeRange] value) {
+        self.value = IntervalSet(value)
+    }
+
+    public operator new() {
+        self.value = IntervalSet()
+    }
+
+    public operator iter() -> ClassUnicodeRange {
+        yield from self.value
+    }
+
+    public mut method push(ClassUnicodeRange r) {
+        self.value.push(r)
+    }
+}
+
+class ClassUnicodeRange from Interval {
+    pubget mut char start
+    pubget mut char end
+
+    public operator new(char start, char end) {
+        self.start = start
+        self.end = end
+    }
+
+    public property char lower {
+        get {
+            return self.start
+        }
+        set (char value) {
+            self.start = value
+        }
+    }
+
+    public property char upper {
+        get {
+            return self.end
+        }
+        set (char value) {
+            self.end = value
+        }
+    }
+
+    public method caseFoldSimple(mut list[ClassUnicodeRange] ranges) {
+        return if not unicode.containsSimpleCaseMapping(self.start, self.end)
+        var start = self.start casted int
+        var end = (self.end casted int) + 1
+        mut char? nextSimpleCp = null
+        for var c in [start:end] {
+            if char.fromInt(c)? as cp {
+                continue if nextSimpleCp?.operator<(next) ?? false
+
+                Iterable[char] it
+                switch unicode.simpleFold(cp) {
+                    case FoldResult.Ok as i {
+                        it = i
+                    }
+                    case FoldResult.Error as next {
+                        nextSimpleCp = next
+                        continue
+                    }
+                }
+                for var cpFolded in it {
+                    ranges.add(ClassUnicodeRange(cpFolded, cpFolded))
+                }
+            }
+        }
+    }
+}
+
+class ClassBytes {
+    IntervalSet[ClassBytesRange] value
+
+    public operator new(Iterable[ClassBytesRange] value = []) {
+        self.value = value
+    }
+
+    public operator iter -> ClassBytesRange {
+        yield from self.value
+    }
+
+    public method add(ClassBytesRange r) {
+        self.value.add(r)
+    }
+
+    public method ranges() -> IntervalSet[ClassBytesRange] {
+        return self.value
+    }
+}
+
+class ClassBytesRange from Interval {
+    int start
+    int end
+
+    public property int lower {
+        get {
+            return self.start
+        }
+        set (int value) {
+            assert value in [0:255]
+            self.start = value
+        }
+    }
+
+    public property int upper {
+        get {
+            return self.end
+        }
+        set (int value) {
+            assert value in [0:255]
+            self.end = value
+        }
+    }
+
+    public method caseFoldSimple(list[ClassBytesRange] ranges) {
+        static var a = b'a'[0]
+        static var z = b'z'[0]
+        if not ClassBytesRange(a, z).isIntersectionEmpty(self) {
+            var lower = max(self.start, a)
+            var upper = min(self.end, z)
+            ranges.push(ClassBytesRange(lower - 32, upper - 32))
+        }
+        static var A = b'A'[0]
+        static var Z = b'Z'[0]
+        if not ClassBytesRange(A, Z).isIntersectionEmpty(self) {
+            var lower = max(self.start, A)
+            var upper = min(self.end, Z)
+            ranges.push(ClassBytesRange(lower + 32, upper + 32))
+        }
+    }
+}
+
+enum Anchor {
+    START_LINE,
+    END_LINE,
+    START_TEXT,
+    END_TEXT
+}
+
+enum WordBoundary {
+    UNICODE,
+    UNICODE_NEGATE,
+    ASCII,
+    ASCII_NEGATE
+
+    public method isNegated() -> bool {
+        return self == cls.UNICODE_NEGATE or self == cls.ASCII_NEGATE
+    }
+}
+
+class Group {
+    public GroupKind kind
+    public Hir hir
+
+    public operator new(GroupKind kind, Hir hir) {
+        self.kind = kind
+        self.hir = hir
+    }
+}
+
+union GroupKind {
+    int CaptureIndex
+    Pair[str, int] NamedCapture
+    null NonCapturing
+}
+
+class Repetition {
+    RepetitionKind kind
+    bool greedy
+    Hir hir
+
+    public method isMatchEmpty() -> bool {
+        return switch self.kind {
+            case RepetitionKind.ZeroOrOne => true
+            case RepetitionKind.ZeroOrMore => true
+            case RepetitionKind.OneOrMore => false
+            case RepetitionKind.Range as r => switch r {
+                case RepetitionRange.Exactly as m => m == 0
+                case RepetitionRange.AtLeast as m => m == 0
+                case RepetitionRange.Bounded as m => m.first == 0
+            }
+        }
+    }
+}
+
+union RepetitionKind {
+    null ZeroOrOne
+    null ZeroOrMore
+    null OneOrMore
+    RepetitionRange Range
+}
+
+union RepetitionRange {
+    int Exactly
+    int AtLeast
+    Pair[int, int] Bounded
+}
+
+class HirInfo {
+    int bools # Bool-vector, represented as such to save space
+}
