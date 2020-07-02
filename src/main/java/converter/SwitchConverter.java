@@ -106,6 +106,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
         for (var stmt : node.getCases()) {
+            if (!stmt.getAs().isEmpty()) {
+                throw CompilerException.of(
+                        "'as' clauses in a switch are only allowed when the switched value is a union", stmt.getAs()
+                );
+            }
             if (stmt instanceof DefaultStatementNode) {
                 assert defaultVal == 0;
                 defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
@@ -169,30 +174,59 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     @NotNull
     private List<Byte> convertUnion(int start, StdTypeObject union) {
         Map<Integer, Integer> jumps = new HashMap<>();
+        boolean hasAs = anyHasAs();
         int defaultVal = 0;
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
+        if (hasAs) {
+            bytes.add(Bytecode.DUP_TOP.value);
+        }
         bytes.add(Bytecode.VARIANT_NO.value);
-        bytes.add(Bytecode.SWITCH_TABLE.value);  // TODO: 'as' clause in switch
+        bytes.add(Bytecode.SWITCH_TABLE.value);
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
                 assert defaultVal == 0;
+                assert stmt.getAs().isEmpty();
+                if (hasAs) {
+                    bytes.add(Bytecode.POP_TOP.value);
+                }
                 defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
                 continue;
             }
             var lblConverter = stmt.getLabel()[0];
             var lblNo = labelToVariantNo(lblConverter, union);
             jumps.put(lblNo, start + bytes.size());
+            if (!stmt.getAs().isEmpty()) {
+                var as = stmt.getAs();
+                bytes.add(Bytecode.GET_VARIANT.value);
+                bytes.addAll(Util.shortToBytes((short) lblNo));
+                info.addStackFrame();
+                info.addVariable(as.getName(), labelToType(lblConverter, union), as);
+            } else if (hasAs) {
+                bytes.add(Bytecode.POP_TOP.value);
+            }
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
+            if (!stmt.getAs().isEmpty()) {
+                info.removeStackFrame();
+            }
         }
         var switchTable = smallTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
         int tblIndex = info.addSwitchTable(switchTable);
         Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
         return bytes;
+    }
+
+    private boolean anyHasAs() {
+        for (var stmt : node.getCases()) {
+            if (!stmt.getAs().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int labelToVariantNo(TestNode label, StdTypeObject switchedType) {
@@ -208,6 +242,27 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 if (retType.equals(switchedType)) {
                     // TODO: Get label
                     return 0;
+                } else {
+                    throw CompilerException.of("Mismatched types in label", label);
+                }
+            }
+        }
+        throw CompilerException.of("Switch on a union must have properly-formed variants", label);
+    }
+
+    @NotNull
+    private TypeObject labelToType(@NotNull TestNode label, StdTypeObject switchedType) {
+        if (label instanceof DottedVariableNode) {
+            var dottedLbl = (DottedVariableNode) label;
+            var lblFirst = dottedLbl.getPreDot();
+            var lblSecond = dottedLbl.getPostDots();
+            var firstConverter = TestConverter.of(info, lblFirst, 1);
+            var firstRetType = firstConverter.returnType()[0];
+            if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
+                var firstType = (TypeTypeObject) firstRetType;
+                var retType = firstType.representedType();
+                if (retType.equals(switchedType)) {
+                    return retType;
                 } else {
                     throw CompilerException.of("Mismatched types in label", label);
                 }
