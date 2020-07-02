@@ -31,6 +31,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         var retType = converter.returnType()[0];
         if (Builtins.INT.isSuperclass(retType)) {
             return convertTbl(start, retType);
+        } else if (retType instanceof StdTypeObject && ((StdTypeObject) retType).isUnion()) {
+            return convertUnion(start, (StdTypeObject) retType);
         }
         var switched = converter.convert(start);
         List<Byte> bytes = new ArrayList<>(switched);
