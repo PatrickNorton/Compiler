@@ -45,48 +45,25 @@ class Regex {
 
     public generator method split(str text) -> str {
         mut var last = 0
-        var finder = self.findIter(text)
-        var text = finder.0.text()
-        while true {
-            if finder.next()? as m {
-                var matched = text[:m.start()]
-                last = m.end()
-                yield matched
-            } else {
-                if last > text.length {
-                    return
-                } else {
-                    var s = text[last:]
-                    last = text.length + 1; # Next call will return None
-                    yield s
-                }
-            }
+        for var m in self.findIter(text) {
+            var matched = text[last:m.start]
+            last = m.end
+            yield matched
         }
+        yield text[last:]
     }
 
     public generator method splitN(str text, int limit) -> str {
         final var splits = self.split(text)
-        mut int n = limit
-        while true {
-            return if not n
-            n--
-            if n > 0 {
-                if splits.next()? as n {
-                    yield n
-                } else {
-                    return
-                }
-            }
-
-            var text = splits.finder.0.text()
-            if splits.last > text.length {
-                # We've already returned all substrings.
-                return
-            } else {
-                # self.n == 0, so future calls will return None immediately
-                yield text[splits.last:]
-            }
+        mut int n = 0
+        for var m in self.findIter(text) {
+            n++
+            break if n >= limit
+            var matched = text[last:m.start]
+            last = m.end
+            yield matched
         }
+        yield text[last:]
     }
 
     public method replace(str text, str replacement) -> str {
