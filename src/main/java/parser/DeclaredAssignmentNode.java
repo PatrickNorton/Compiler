@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -86,6 +87,15 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
     @Override
     public Set<DescriptorNode> validDescriptors() {
         return DescriptorNode.DECLARATION_VALID;
+    }
+
+    public Optional<DescriptorNode> getMutability() {
+        for (var node : descriptors) {
+            if (DescriptorNode.MUT_NODES.contains(node)) {
+                return Optional.of(node);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

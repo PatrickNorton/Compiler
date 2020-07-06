@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,16 @@ public class TypeUnionNode implements TypeLikeNode {
             sj.add(node.strName());
         }
         return sj.toString();
+    }
+
+    @Override
+    public void setMutability(DescriptorNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<DescriptorNode> getMutability() {
+        return Optional.empty();
     }
 
     @Contract("_, _, _ -> new")

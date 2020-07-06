@@ -52,6 +52,8 @@ public enum DescriptorNode implements AtomicNode {
 
     public final String name;
 
+    public static final Set<DescriptorNode> MUT_NODES = Collections.unmodifiableSet(EnumSet.of(MUT, MREF, READONLY, FINAL));
+
     private static final Map<String, DescriptorNode> values;
 
     private static final Set<DescriptorNode> ACCESS = Collections.unmodifiableSet(EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED));
