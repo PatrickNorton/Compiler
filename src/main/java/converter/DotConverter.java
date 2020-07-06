@@ -3,8 +3,10 @@ package main.java.converter;
 import main.java.parser.DottedVar;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
+import main.java.parser.IndexNode;
 import main.java.parser.NameNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.SliceNode;
 import main.java.parser.SpecialOpNameNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +63,12 @@ public final class DotConverter implements TestConverter {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
             var accessLevel = info.accessLevel(result);
             return result.operatorInfo(operator, accessLevel).toCallable();
+        } else if (postDot instanceof IndexNode) {
+            var index = (IndexNode) postDot;
+            var variable = ((VariableNode) index.getVar()).getName();
+            var attrType = result.tryAttrType(postDot, variable, info);
+            var operator = index.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
+            return attrType.operatorReturnType(operator, info)[0];
         } else {
             throw new UnsupportedOperationException();
         }
@@ -162,6 +170,8 @@ public final class DotConverter implements TestConverter {
             var op = ((SpecialOpNameNode) postDot).getOperator();
             bytes.add(Bytecode.LOAD_OP.value);
             bytes.addAll(Util.shortToBytes((short) op.ordinal()));
+        } else if (postDot instanceof IndexNode) {
+            convertIndex(start, bytes, (IndexNode) postDot);
         } else {
             throw new UnsupportedOperationException("This kind of post-dot not yet supported");
         }
@@ -175,5 +185,32 @@ public final class DotConverter implements TestConverter {
         bytes.add(Bytecode.CALL_METHOD.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
         bytes.addAll(Util.shortToBytes((short) postDot.getParameters().length));
+    }
+
+    private void convertIndex(int start, @NotNull List<Byte> bytes, @NotNull IndexNode postDot) {
+        var name = ((VariableNode) postDot.getVar()).getName();
+        bytes.add(Bytecode.LOAD_DOT.value);
+        var nameConst = LangConstant.of(name);
+        bytes.addAll(Util.shortToBytes(info.constIndex(nameConst)));
+        var indices = postDot.getIndices();
+        if (indices[0] instanceof SliceNode) {
+            assert indices.length == 1;
+            var slice = (SliceNode) indices[0];
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice, info, retCount));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_SLICE.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 1));
+        } else {
+            for (var value : indices) {  // TODO: Merge with IndexNode
+                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, retCount));
+            }
+            if (indices.length == 1) {
+                bytes.add(Bytecode.SUBSCRIPT.value);
+            } else {
+                bytes.add(Bytecode.CALL_OP.value);
+                bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_ATTR.ordinal()));
+                bytes.addAll(Util.shortToBytes((short) indices.length));
+            }
+        }
     }
 }
