@@ -170,6 +170,7 @@ public final class Builtins {
                 OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), STR),
                 OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(STR), BOOL),
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), CHAR),
+                OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), STR),
                 OpSpTypeNode.ITER, new FunctionInfo(CHAR),
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
@@ -192,6 +193,7 @@ public final class Builtins {
                 OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), BYTES),
                 OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(BYTES), BOOL),
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), INT),
+                OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), BYTES),
                 OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, INT)),
                 OpSpTypeNode.ITER, new FunctionInfo(INT),
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
@@ -250,6 +252,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), LIST_PARAM),
                 OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM)),
                 OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(INT)),
+                OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(LIST_PARAM)),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
                 OpSpTypeNode.REVERSED, new FunctionInfo(LIST),
                 OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
