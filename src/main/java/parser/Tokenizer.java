@@ -81,6 +81,11 @@ public final class Tokenizer {
         if (nextToken != null) {
             return nextToken;
         }
+        if (next.startsWith("|#")) {  // Special-case, prevent it being parsed separately
+            throw ParserException.of(
+                    "Illegal sequence '|#': may only appear as the end of a comment", lineInfo()
+            );
+        }
         for (TokenType info : TokenType.values()) {
             Matcher match = info.matcher(next);
             if (match.find()) {

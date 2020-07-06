@@ -135,6 +135,11 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.staticAttributes = attributes;
     }
 
+    void makeUnion() {
+        assert !info.isUnion && !info.isSealed;
+        info.isUnion = true;
+    }
+
     void isConstClass() {
         assert !info.isSealed && !info.isConstClass;
         info.isConstClass = true;
@@ -167,6 +172,10 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.isFinal;
     }
 
+    public boolean isUnion() {
+        return info.isUnion;
+    }
+
     public void seal() {
         addFulfilledInterfaces();
         info.seal();
@@ -181,17 +190,20 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     protected static final class Info extends UserType.Info<FunctionInfo, AttributeInfo> {
         private boolean isConstClass;
         private final boolean isFinal;
+        private boolean isUnion;
 
         public Info(String name, List<TypeObject> supers) {
             super(name, supers, GenericInfo.empty());
             this.isFinal = true;
             this.isConstClass = false;
+            this.isUnion = false;
         }
 
         public Info(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
             super(name, supers, info);
             this.isFinal = isFinal;
             this.isConstClass = false;
+            this.isUnion = false;
         }
 
         @Override

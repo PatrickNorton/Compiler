@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class DefaultStatementNode extends CaseStatementNode {
     @Contract(pure = true)
     public DefaultStatementNode(LineInfo lineInfo, StatementBodyNode body, boolean fallthrough) {
-        super(lineInfo, new TestNode[0], body, fallthrough);
+        super(lineInfo, new TestNode[0], body, fallthrough, VariableNode.empty());
     }
 
     @Contract(pure = true)
