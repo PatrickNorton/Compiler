@@ -71,10 +71,10 @@ public interface IndependentNode extends BaseNode {
     }
 
     @NotNull
-    static IndependentNode parseVar(@NotNull TokenList tokens) {
+    static DescribableNode parseVar(@NotNull TokenList tokens) {
         assert tokens.tokenIs(Keyword.VAR);
         if (tokens.lineContains(TokenType.ASSIGN)) {
-            return AssignStatementNode.parse(tokens);
+            return (DescribableNode) AssignStatementNode.parse(tokens);
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
             throw tokens.error("var cannot be used in augmented assignment");
         } else {

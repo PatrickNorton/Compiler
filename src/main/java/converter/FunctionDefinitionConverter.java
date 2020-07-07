@@ -64,13 +64,19 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var converted = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
+            var argType = arg.getType();
             TypeObject type;
-            if (generics.containsKey(arg.getType().strName())) {
-                type = generics.get(arg.getType().strName());
+            if (generics.containsKey(argType.strName())) {
+                type = generics.get(argType.strName());
             } else {
-                type = info.getType(arg.getType());
+                type = info.getType(argType);
             }
-            converted[i] = new Argument(arg.getName().getName(), type);
+            var mutability = argType.getMutability();
+            if (mutability.isEmpty() || mutability.get().equals(DescriptorNode.MREF)) {
+                converted[i] = new Argument(arg.getName().getName(), type.makeConst());
+            } else {
+                converted[i] = new Argument(arg.getName().getName(), type.makeMut());
+            }
         }
         return converted;
     }
