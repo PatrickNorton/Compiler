@@ -28,21 +28,21 @@ public final class SliceConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getStart().isEmpty()) {
             checkTypes(node.getStart());
-            bytes.addAll(TestConverter.bytes(start, node, info, 1));
+            bytes.addAll(TestConverter.bytes(start, node.getStart(), info, 1));
         } else {
             bytes.add(Bytecode.LOAD_NULL.value);
         }
         bytes.add(Bytecode.MAKE_OPTION.value);
         if (!node.getEnd().isEmpty()) {
             checkTypes(node.getEnd());
-            bytes.addAll(TestConverter.bytes(start, node, info, 1));
+            bytes.addAll(TestConverter.bytes(start, node.getEnd(), info, 1));
         } else {
             bytes.add(Bytecode.LOAD_NULL.value);
         }
         bytes.add(Bytecode.MAKE_OPTION.value);
         if (!node.getStep().isEmpty()) {
             checkTypes(node.getStep());
-            bytes.addAll(TestConverter.bytes(start, node, info, 1));
+            bytes.addAll(TestConverter.bytes(start, node.getStep(), info, 1));
         } else {
             bytes.add(Bytecode.LOAD_NULL.value);
         }
