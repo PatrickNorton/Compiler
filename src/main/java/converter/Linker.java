@@ -106,7 +106,7 @@ public final class Linker {
                 }
             } else if (stmt instanceof ImportExportNode) {
                 linkIENode((ImportExportNode) stmt);
-            } else {
+            } else {  // TODO: Typedefs
                 throw CompilerException.of(
                         "Only definition and import/export statements are allowed in file with exports",
                         stmt
