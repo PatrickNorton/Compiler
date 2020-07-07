@@ -1,4 +1,5 @@
 from .Match import Match
+from . import trait
 
 export Regex, CaptureLocations, Captures
 
