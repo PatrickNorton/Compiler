@@ -1,0 +1,11 @@
+export Pair
+
+const class Pair[T, U] {
+    public T first
+    public U second
+
+    public operator new(T first, U second) {
+        self.first = first
+        self.second = second
+    }
+}
