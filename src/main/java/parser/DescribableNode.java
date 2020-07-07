@@ -3,6 +3,7 @@ package main.java.parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -41,7 +42,30 @@ public interface DescribableNode extends IndependentNode {
         } else {
             descriptors = DescriptorNode.emptySet();
         }
-        IndependentNode stmt = IndependentNode.parse(tokens);
+        if (!Collections.disjoint(descriptors, DescriptorNode.MUT_NODES)) {
+            return parseMutability(tokens, descriptors);
+        } else {
+            return finishParse(IndependentNode.parse(tokens), descriptors);
+        }
+    }
+
+    private static DescribableNode parseMutability(@NotNull TokenList tokens, EnumSet<DescriptorNode> descriptors) {
+        assert !Collections.disjoint(descriptors, DescriptorNode.MUT_NODES);
+        if (tokens.tokenIs(Keyword.VAR)) {
+            return IndependentNode.parseVar(tokens);
+        } else if (tokens.tokenIs(TokenType.KEYWORD)) {
+            return finishParse(IndependentNode.parse(tokens), descriptors);
+        } else if (tokens.lineContains(TokenType.ASSIGN)) {
+            return finishParse(AssignStatementNode.parse(tokens), descriptors);
+        } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
+            throw tokens.error("mut cannot be used in augmented assignment");
+        } else {
+            return DeclarationNode.parse(tokens);
+        }
+    }
+
+    @NotNull
+    private static DescribableNode finishParse(@NotNull IndependentNode stmt, EnumSet<DescriptorNode> descriptors) {
         if (stmt instanceof DescribableNode) {
             DescribableNode statement = (DescribableNode) stmt;
             if (!statement.validDescriptors().containsAll(descriptors)) {
@@ -50,7 +74,7 @@ public interface DescribableNode extends IndependentNode {
             statement.addDescriptor(descriptors);
             return statement;
         } else {
-            throw tokens.error("Descriptor not allowed in statement");
+            throw ParserException.of("Descriptor not allowed in statement", stmt);
         }
     }
 

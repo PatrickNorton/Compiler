@@ -41,6 +41,7 @@ public enum DescriptorNode implements AtomicNode {
     GENERATOR("generator"),
     SYNCED("synced"),
     AUTO("auto"),
+    CONST("const"),
     ;
 
     public static final Pattern PATTERN = Pattern.compile("^(" +
@@ -52,23 +53,26 @@ public enum DescriptorNode implements AtomicNode {
 
     public final String name;
 
+    public static final Set<DescriptorNode> MUT_NODES = Collections.unmodifiableSet(EnumSet.of(MUT, MREF, READONLY, FINAL));
+
     private static final Map<String, DescriptorNode> values;
 
     private static final Set<DescriptorNode> ACCESS = Collections.unmodifiableSet(EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED));
     private static final Set<DescriptorNode> STATIC_SET = Collections.unmodifiableSet(EnumSet.of(STATIC));
-    private static final Set<DescriptorNode> CONST_SET = Collections.unmodifiableSet(EnumSet.of(MUT, MREF, READONLY));
+    private static final Set<DescriptorNode> MOD_SET = Collections.unmodifiableSet(EnumSet.of(MUT, MREF, READONLY));
     private static final Set<DescriptorNode> FINAL_SET = Collections.unmodifiableSet(EnumSet.of(FINAL, NONFINAL));
     private static final Set<DescriptorNode> NATIVE_SET = Collections.unmodifiableSet(EnumSet.of(NATIVE));
     private static final Set<DescriptorNode> GENERATOR_SET = Collections.unmodifiableSet(EnumSet.of(GENERATOR));
     private static final Set<DescriptorNode> SYNCED_SET = Collections.unmodifiableSet(EnumSet.of(SYNCED));
+    private static final Set<DescriptorNode> CONST_SET = Collections.unmodifiableSet(EnumSet.of(CONST));
     private static final Set<DescriptorNode> AUTO_SET = Collections.unmodifiableSet(EnumSet.of(AUTO));
 
     private static final List<Set<DescriptorNode>> SETS = List.of(
-            ACCESS, STATIC_SET, CONST_SET, FINAL_SET, NATIVE_SET, GENERATOR_SET, SYNCED_SET, AUTO_SET
+            ACCESS, STATIC_SET, MOD_SET, FINAL_SET, NATIVE_SET, GENERATOR_SET, SYNCED_SET, CONST_SET, AUTO_SET
     );
 
     static final Set<DescriptorNode> DEFINITION_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, PROTECTED, MUT, FINAL, NONFINAL, STATIC, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PROTECTED, MUT, FINAL, NONFINAL, STATIC, NATIVE, CONST));
     static final Set<DescriptorNode> FUNCTION_VALID = Collections.unmodifiableSet(
             EnumSet.of(GENERATOR, SYNCED, NATIVE));
     static final Set<DescriptorNode> DECLARATION_VALID = Collections.unmodifiableSet(

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 // TODO?? Replace with simple DottedVariableNode
@@ -16,6 +17,7 @@ public class TypeNode implements TypeLikeNode {
     private TypeLikeNode[] subtypes;
     private boolean isVararg;
     private boolean optional;
+    private DescriptorNode mutablility;
 
     @Contract(pure = true)
     public TypeNode(DottedVariableNode name, boolean optional) {
@@ -34,6 +36,7 @@ public class TypeNode implements TypeLikeNode {
         this.subtypes = subtypes;
         this.isVararg = isVararg;
         this.optional = optional;
+        this.mutablility = null;
     }
 
     @Override
@@ -48,6 +51,16 @@ public class TypeNode implements TypeLikeNode {
     @Override
     public String strName() {
         return ((VariableNode) name.getPreDot()).getName();
+    }
+
+    @Override
+    public void setMutability(DescriptorNode node) {
+        mutablility = node;
+    }
+
+    @Override
+    public Optional<DescriptorNode> getMutability() {
+        return Optional.ofNullable(mutablility);
     }
 
     @Override
@@ -171,7 +184,9 @@ public class TypeNode implements TypeLikeNode {
     }
 
     static boolean nextIsType(@NotNull TokenList tokens) {
-        return tokens.tokenIs(TokenType.NAME, Keyword.VAR) || TYPE_NODE_POSSIBLE.contains(tokens.tokenSequence());
+        return tokens.tokenIs(TokenType.NAME, Keyword.VAR) || TYPE_NODE_POSSIBLE.contains(tokens.tokenSequence())
+                || (tokens.tokenIs(TokenType.DESCRIPTOR) &&
+                        DescriptorNode.MUT_NODES.contains(DescriptorNode.find(tokens.getFirst().sequence)));
     }
 
     /**

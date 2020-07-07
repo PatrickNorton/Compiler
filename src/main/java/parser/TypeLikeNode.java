@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 public interface TypeLikeNode extends AtomicNode {
@@ -11,6 +12,8 @@ public interface TypeLikeNode extends AtomicNode {
     boolean isVararg();
     boolean isOptional();
     String strName();
+    void setMutability(DescriptorNode node);
+    Optional<DescriptorNode> getMutability();
     default boolean isDecided() {
         return true;
     }
@@ -20,9 +23,24 @@ public interface TypeLikeNode extends AtomicNode {
     }
 
     static TypeLikeNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+        if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
+            var descriptor = DescriptorNode.parse(tokens);
+            if (DescriptorNode.MUT_NODES.contains(descriptor)) {
+                var node = parseNoMut(tokens, ignoreNewlines);
+                node.setMutability(descriptor);
+                return node;
+            } else {
+                throw tokens.error("Invalid descriptor for type");
+            }
+        } else {
+            return parseNoMut(tokens, ignoreNewlines);
+        }
+    }
+
+    static TypeLikeNode parseNoMut(@NotNull TokenList tokens, boolean ignoreNewlines) {
         if (tokens.tokenIs("(")) {
             tokens.nextToken(true);
-            TypeLikeNode type = parse(tokens, true);
+            TypeLikeNode type = parseNoMut(tokens, true);
             if (!tokens.tokenIs(")")) {
                 throw new ParserException("Unexpected )");
             }
