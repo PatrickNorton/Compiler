@@ -196,7 +196,7 @@ public final class DotConverter implements TestConverter {
         if (indices[0] instanceof SliceNode) {
             assert indices.length == 1;
             var slice = (SliceNode) indices[0];
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), slice, info, retCount));
+            bytes.addAll(new SliceConverter(info, slice).convert(start + bytes.size()));
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_SLICE.ordinal()));
             bytes.addAll(Util.shortToBytes((short) 1));
