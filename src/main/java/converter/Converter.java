@@ -111,7 +111,7 @@ public final class Converter {
         List<Path> result = new ArrayList<>();
         for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
             var path = file.toPath();
-            if (isModule(path) && path.endsWith(name + Util.FILE_EXTENSION)) {
+            if (isModule(path)) {
                 result.add(path);
             }
         }
