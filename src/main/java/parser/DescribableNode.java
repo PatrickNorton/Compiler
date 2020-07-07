@@ -81,8 +81,8 @@ public interface DescribableNode extends IndependentNode {
     @NotNull
     @Contract(pure = true)
     private static String errorMessage(@NotNull DescribableNode stmt, @NotNull EnumSet<DescriptorNode> descriptors) {
-        Set<DescriptorNode> disjoint = EnumSet.copyOf(stmt.getDescriptors());
-        disjoint.removeAll(descriptors);
+        Set<DescriptorNode> disjoint = EnumSet.copyOf(descriptors);
+        disjoint.removeAll(stmt.validDescriptors());
         return "Invalid descriptor(s): " + TestNode.toString(disjoint) + " not allowed in statement";
     }
 }

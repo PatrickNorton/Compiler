@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.Parser;
 import main.java.parser.TopNode;
 import org.jetbrains.annotations.NotNull;
@@ -99,23 +100,25 @@ public final class Converter {
      *     given. More dots at the beginning means higher-up files are
      *     searched.
      * </p>
+     *
      * @param parentPath The path to the parent file
      * @param name The name of the module
+     * @param lineInfo The info for the line of the import
      * @return The {@link CompilerInfo} representing the file
      */
     @NotNull
-    public static CompilerInfo findLocalModule(@NotNull Path parentPath, String name) {
+    public static CompilerInfo findLocalModule(@NotNull Path parentPath, String name, Lined lineInfo) {
         List<Path> result = new ArrayList<>();
         for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
             var path = file.toPath();
-            if (isModule(path) && path.endsWith(name + Util.FILE_EXTENSION)) {
+            if (isModule(path) && path.endsWith(name + Util.FILE_EXTENSION) || path.endsWith(name)) {
                 result.add(path);
             }
         }
         if (!result.isEmpty()) {
             return getInfo(result, name);
         }
-        throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
+        throw CompilerException.of("Cannot find module " + name, lineInfo);
     }
 
     @NotNull
@@ -142,7 +145,11 @@ public final class Converter {
         var endFile = result.get(0).toFile();
         if (endFile.isDirectory()) {
             var exportFiles = endFile.listFiles(EXPORT_FILTER);
-            assert exportFiles != null && exportFiles.length == 1;
+            assert exportFiles != null;
+            if (exportFiles.length == 0) {
+                throw CompilerException.format("No exports file for module %s", LineInfo.empty(), name);
+            }
+            assert exportFiles.length == 1;
             endFile = exportFiles[0];
         }
         var info = new CompilerInfo(Parser.parse(endFile));
