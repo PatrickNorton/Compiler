@@ -28,5 +28,5 @@ class Locations {
         }
     }
 
-    public readonly int length := self.value.length / 2
+    public #|readonly|# int length := self.value.length / 2
 }

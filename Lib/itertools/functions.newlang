@@ -1,4 +1,4 @@
-from types typeget Callable, Iterable
+from interfaces typeget Callable, Iterable
 
 export all, any, count, countEqual, countFalse, countNotEqual, first, last
 

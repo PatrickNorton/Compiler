@@ -1,5 +1,5 @@
 from functools import apply
-from types typeget Multiplicable, Number, Summable
+from interfaces typeget Multiplicable, Number, Summable
 
 export abs, ceil, comb, copySign, fact, floor, gcd, lcm, max, min, perm, prod, sum
 

@@ -1,6 +1,6 @@
 from annotations typeget pure
 from functools import apply
-from types typeget Any, File
+from interfaces typeget Any, File
 
 import sys
 

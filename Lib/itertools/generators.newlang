@@ -1,4 +1,4 @@
-from types typeget Boolable, Iterable, Callable, Iterator
+from interfaces typeget Boolable, Iterable, Callable, Iterator
 
 from .functions import any
 from types import Array

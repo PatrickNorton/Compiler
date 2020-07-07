@@ -7,7 +7,7 @@ from types import Array
 
 export ArrayList
 
-const uint DEFAULT_SIZE = 10
+int DEFAULT_SIZE = 10
 
 class ArrayList[T] from AbstractList[T] {
     private Array[T?] values

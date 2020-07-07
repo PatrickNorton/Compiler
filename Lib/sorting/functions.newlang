@@ -1,6 +1,6 @@
 from itertools import all, withNext
 import random
-from types typeget Iterable, Comparable
+from interfaces typeget Iterable, Comparable
 
 from collections import Deque
 from types import Array

@@ -1,4 +1,4 @@
-from types typeget Iterable
+from interfaces typeget Iterable
 
 export count, cycle, repeat
 

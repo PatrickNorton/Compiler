@@ -1,22 +1,16 @@
-from .annotations import DefaultInterface
 from itertools import any
 
 export Boolable, Callable, Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
 
-$DefaultInterface
-interface Boolable {
+auto interface Boolable {
     operator bool
 }
 
-$DefaultInterface
-@contravariant
-interface Callable[*P, R] {
+auto interface Callable[*P, R] {
     operator () (*P values, /) -> R
 }
 
-$DefaultInterface
-@covariant
-interface Comparable[T] {
+auto interface Comparable[T] {
     operator <=> (T other, /)
     operator < (T other, /)
     operator > (T other, /)
@@ -30,9 +24,7 @@ interface Comparable[T] {
     }
 }
 
-$DefaultInterface
-@covariant
-interface singleComparable[T] from Comparable[T] {
+auto interface singleComparable[T] from Comparable[T] {
     operator <=> (T other, /)
 
     operator < (T other, /) {
@@ -48,9 +40,7 @@ interface singleComparable[T] from Comparable[T] {
     }
 }
 
-$DefaultInterface
-@covariant
-interface triComparable from Comparable[T] {
+auto interface triComparable from Comparable[T] {
     operator < (T other, /)
     operator > (T other, /)
     operator == (T other, /)
@@ -62,14 +52,11 @@ interface triComparable from Comparable[T] {
     }
 }
 
-$DefaultInterface
-interface Hashable {
+auto interface Hashable {
     operator hash
 }
 
-$DefaultInterface
-@covariant
-interface Iterable[T] {
+auto interface Iterable[T] {
     pubget uint length
 
     operator iter -> T
@@ -79,16 +66,12 @@ interface Iterable[T] {
     }
 }
 
-$DefaultInterface
-@covariant
-interface Indexable[K, V] {
+auto interface Indexable[K, V] {
     operator [] (K key, /) -> V
     operator []= (K key, V value, /)
 }
 
-$DefaultInterface
-@covariant
-interface Sliceable[V] {
+auto interface Sliceable[V] {
     operator [:] (int start, int stop, int step, /) -> Iterable[V]
     operator [:]= (int start, int stop, int step, Iterable[V] values, /)
 }

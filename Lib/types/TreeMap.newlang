@@ -1,5 +1,5 @@
 from collections typeget AbstractDict
-from types typeget Comparable
+from interfaces typeget Comparable
 
 export TreeMap
 

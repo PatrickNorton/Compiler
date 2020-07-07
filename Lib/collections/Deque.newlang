@@ -1,4 +1,4 @@
-from types typeget Iterable, Sequence
+from interfaces typeget Iterable, Sequence
 
 from .decorations import normalizeIndices
 from math import max, min

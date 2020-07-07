@@ -1,4 +1,4 @@
-from types typeget Callable, Hashable, Iterable, Indexable, Sliceable
+from interfaces typeget Callable, Hashable, Iterable, Indexable, Sliceable
 
 export int, list, set, dict
 
