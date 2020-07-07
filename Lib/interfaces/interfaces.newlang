@@ -1,5 +1,3 @@
-from itertools import any
-
 export Boolable, Callable, Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
 
 auto interface Boolable {
@@ -62,7 +60,10 @@ auto interface Iterable[T] {
     operator iter -> T
 
     operator in (T value, /) {
-        return any(value == i for T i in self)
+        for T i in self {
+            return true if value == i
+        }
+        return false
     }
 }
 
