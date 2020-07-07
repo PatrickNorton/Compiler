@@ -1,0 +1,30 @@
+export Slot, Locations
+
+typedef Slot as int?
+
+class Locations {
+    list[Slot] values
+
+    public method pos(int i) -> Pair[int, int]? {
+        var s = i * 2
+        var e = s + 1
+        if self.values.get(s)? as s {
+            if s? as s2 {
+                if self.values.get(e)? as e {
+                    if e? as e2 {
+                        return Pair(s2, e2)
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    public operator iter -> Pair[int, int]? {
+        for var idx in [0:self.length] {
+            yield self.pos(idx)
+        }
+    }
+
+    public readonly int length := self.value.length / 2
+}
