@@ -111,7 +111,7 @@ public final class Converter {
         List<Path> result = new ArrayList<>();
         for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
             var path = file.toPath();
-            if (isModule(path)) {
+            if (isModule(path) && path.endsWith(name + Util.FILE_EXTENSION) || path.endsWith(name)) {
                 result.add(path);
             }
         }
@@ -145,7 +145,11 @@ public final class Converter {
         var endFile = result.get(0).toFile();
         if (endFile.isDirectory()) {
             var exportFiles = endFile.listFiles(EXPORT_FILTER);
-            assert exportFiles != null && exportFiles.length == 1;
+            assert exportFiles != null;
+            if (exportFiles.length == 0) {
+                throw CompilerException.format("No exports file for module %s", LineInfo.empty(), name);
+            }
+            assert exportFiles.length == 1;
             endFile = exportFiles[0];
         }
         var info = new CompilerInfo(Parser.parse(endFile));
