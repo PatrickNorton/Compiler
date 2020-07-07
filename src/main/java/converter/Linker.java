@@ -265,7 +265,7 @@ public final class Linker {
 
     private void addImport(String moduleName, String importName, @NotNull ImportExportNode node) {
         CompilerInfo f = node.getPreDots() > 0
-                ? Converter.findLocalModule(info.path().getParent(), moduleName)
+                ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
                 : Converter.findModule(moduleName);
         var file = Converter.resolveFile(moduleName);
         f.compile(file);
@@ -283,7 +283,7 @@ public final class Linker {
 
     private void addWildcardImport(String moduleName, @NotNull ImportExportNode node) {
         CompilerInfo f = node.getPreDots() > 0
-                ? Converter.findLocalModule(info.path().getParent(), moduleName)
+                ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
                 : Converter.findModule(moduleName);
         var file = Converter.resolveFile(moduleName);
         f.compile(file);
