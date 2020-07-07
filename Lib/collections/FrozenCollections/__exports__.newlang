@@ -1,2 +1,2 @@
-from FrozenDict export FrozenDict
-from FrozenSet export FrozenSet
+from .FrozenDict export FrozenDict
+from .FrozenSet export FrozenSet
