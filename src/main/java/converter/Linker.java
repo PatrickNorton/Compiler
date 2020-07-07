@@ -277,7 +277,7 @@ public final class Linker {
                 ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
                 : Converter.findModule(moduleName);
         var file = Converter.resolveFile(moduleName);
-        f.compile(file);
+        f.compile(file);  // FIXME: Circular imports cause stack overflow
         if (globals.containsKey(importName)) {
             throw CompilerException.format("Name %s already defined", node, importName);
         }
