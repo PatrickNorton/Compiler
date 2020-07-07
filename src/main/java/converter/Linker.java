@@ -13,6 +13,7 @@ import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopNode;
+import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
@@ -106,7 +107,7 @@ public final class Linker {
                 }
             } else if (stmt instanceof ImportExportNode) {
                 linkIENode((ImportExportNode) stmt);
-            } else {  // TODO: Typedefs
+            } else if (!(stmt instanceof TypedefStatementNode)) {
                 throw CompilerException.of(
                         "Only definition and import/export statements are allowed in file with exports",
                         stmt
@@ -199,6 +200,7 @@ public final class Linker {
         Map<String, LineInfo> lineInfos = new HashMap<>();
         boolean isModule = false;
         boolean hasAuto = false;
+        Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
         for (var stmt : node) {
             if (stmt instanceof ClassDefinitionNode) {
                 var cls = (ClassDefinitionNode) stmt;
@@ -235,10 +237,17 @@ public final class Linker {
                 if (ieStmt.getType() == ImportExportNode.EXPORT) {
                     isModule = true;
                 }
+            } else if (stmt instanceof TypedefStatementNode) {
+                typedefs.push((TypedefStatementNode) stmt);
             }
         }
         if (!isModule && hasAuto) {
             throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", LineInfo.empty());
+        }
+        for (var stmt : typedefs) {
+            var type = stmt.getType();
+            var name = stmt.getName();
+            types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
         }
         return isModule ? types : null;
     }
