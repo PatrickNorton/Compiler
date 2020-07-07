@@ -70,15 +70,17 @@ public final class Converter {
         }
         var path = System.getenv("NEWLANG_PATH");
         for (String filename : path.split(":")) {
-            try (var walker = Files.walk(Path.of(filename))) {
-                var result = walker.filter(Converter::isModule)
-                        .filter(f -> f.endsWith(name + Util.FILE_EXTENSION) || f.endsWith(name))
-                        .collect(Collectors.toList());
-                if (!result.isEmpty()) {
-                    return getInfo(result, name);
+            if (!filename.isEmpty()) {
+                try (var walker = Files.walk(Path.of(filename))) {
+                    var result = walker.filter(Converter::isModule)
+                            .filter(f -> f.endsWith(name + Util.FILE_EXTENSION) || f.endsWith(name))
+                            .collect(Collectors.toList());
+                    if (!result.isEmpty()) {
+                        return getInfo(result, name);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
         var builtinPath = builtinPath().toFile().list();
