@@ -118,12 +118,12 @@ public final class Linker {
         for (var stmt : defaultInterfaces) {
             var name = stmt.getName();
             TypeObject type = linkDefinition(stmt);
-            globals.put(name.toString(), type);
+            globals.put(name.strName(), type);
         }
         for (var stmt : definitions) {
             var name = stmt.getName();
             TypeObject type = linkDefinition(stmt);
-            globals.put(name.toString(), type);
+            globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
         }
         return this;
     }
@@ -208,7 +208,8 @@ public final class Linker {
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                types.put(strName, new StdTypeObject(strName));
+                var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                types.put(strName, new StdTypeObject(strName, generics));
                 lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof EnumDefinitionNode) {
                 var cls = (EnumDefinitionNode) stmt;
@@ -216,7 +217,8 @@ public final class Linker {
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                types.put(strName, new StdTypeObject(strName));
+                var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                types.put(strName, new StdTypeObject(strName, generics));
                 lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof InterfaceDefinitionNode) {
                 var cls = (InterfaceDefinitionNode) stmt;
@@ -224,7 +226,8 @@ public final class Linker {
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                var type = new InterfaceType(strName);
+                var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                var type = new InterfaceType(strName, generics);
                 types.put(strName, type);
                 lineInfos.put(strName, cls.getLineInfo());
                 if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {

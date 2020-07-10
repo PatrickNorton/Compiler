@@ -18,12 +18,12 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class InterfaceType extends UserType<InterfaceType.Info> {
-    public InterfaceType(String name) {
-        this(name, Collections.emptyList());
+    public InterfaceType(String name, GenericInfo generics) {
+        this(name, generics, Collections.emptyList());
     }
 
-    public InterfaceType(String name, List<TypeObject> supers) {
-        super(new Info(name, supers), "", true);
+    public InterfaceType(String name, GenericInfo info, List<TypeObject> supers) {
+        super(new Info(name, supers, info), "", true);
     }
 
     public InterfaceType(String name, GenericInfo info, Map<OpSpTypeNode, FunctionInfo> operators) {
@@ -186,8 +186,8 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     protected static final class Info extends UserType.Info<InterfaceFnInfo, InterfaceAttrInfo> {
         private Pair<Set<String>, Set<OpSpTypeNode>> cachedContract;
 
-        public Info(String name, List<TypeObject> supers) {
-            super(name, supers, GenericInfo.empty());
+        public Info(String name, List<TypeObject> supers, GenericInfo info) {
+            super(name, supers, info);
         }
 
         public Info(String name, Map<OpSpTypeNode, FunctionInfo> operators, GenericInfo info) {

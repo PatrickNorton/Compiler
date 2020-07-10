@@ -35,9 +35,10 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         this.genericAttrs.clear();
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));
+        var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         InterfaceType type;
         if (!info.hasType(node.getName().strName())) {
-            type = new InterfaceType(node.getName().strName(), List.of(trueSupers));
+            type = new InterfaceType(node.getName().strName(), generics, List.of(trueSupers));
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
             parseIntoObject(converter, type);
