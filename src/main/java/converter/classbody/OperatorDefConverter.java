@@ -107,6 +107,8 @@ public final class OperatorDefConverter {
         temp.put(OpSpTypeNode.GREATER_EQUAL, Builtins.BOOL);
         temp.put(OpSpTypeNode.IN, Builtins.BOOL);
 
+        temp.put(OpSpTypeNode.COMPARE, Builtins.INT);
+
         DEFAULT_RETURNS = Collections.unmodifiableMap(temp);
     }
 }

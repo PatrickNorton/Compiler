@@ -713,7 +713,7 @@ public final class CompilerInfo {
      * @param types The types to add
      */
     void addPredeclaredTypes(Map<String, TypeObject> types) {
-        assert !linked && typeMap.isEmpty();
+        assert !linked;
         typeMap.putAll(types);
     }
 

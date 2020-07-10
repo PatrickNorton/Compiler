@@ -76,7 +76,7 @@ public enum DescriptorNode implements AtomicNode {
     static final Set<DescriptorNode> FUNCTION_VALID = Collections.unmodifiableSet(
             EnumSet.of(GENERATOR, SYNCED, NATIVE));
     static final Set<DescriptorNode> DECLARATION_VALID = Collections.unmodifiableSet(
-            EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED, MUT, MREF, FINAL, STATIC, NATIVE));
+            EnumSet.of(PUBLIC, PRIVATE, PUBGET, PROTECTED, MUT, MREF, READONLY, FINAL, STATIC, NATIVE));
     static final Set<DescriptorNode> CONTEXT_VALID = Collections.unmodifiableSet(
             EnumSet.of(PUBLIC, PRIVATE, PROTECTED, MUT, GENERATOR, STATIC, FINAL, SYNCED, NATIVE));
     static final Set<DescriptorNode> METHOD_VALID = Collections.unmodifiableSet(
