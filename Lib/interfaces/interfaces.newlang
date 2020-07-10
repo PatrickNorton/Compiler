@@ -1,4 +1,4 @@
-export Boolable, Callable, Comparable, singleComparable, triComparable, Iterable, Indexable, Sliceable
+export Boolable, Callable, Comparable, singleComparable, triComparable, Hashable, Iterable, Indexable, Sliceable
 
 auto interface Boolable {
     operator bool
@@ -55,7 +55,7 @@ auto interface Hashable {
 }
 
 auto interface Iterable[T] {
-    pubget uint length
+    pubget int length
 
     operator iter -> T
 
