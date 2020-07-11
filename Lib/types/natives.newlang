@@ -2,9 +2,9 @@
 export Array
 
 final native class Array[T] {
-    pubget uint length
+    pubget int length
 
-    public operator new (uint length, *T values, T end) {}
+    public operator new (int length, *T values, T end) {}
 
     public operator [] (int index) -> T {}
     public operator []= (int index, T value) {}

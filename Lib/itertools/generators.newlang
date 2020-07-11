@@ -62,7 +62,7 @@ generator func filterNotEqual(T sentinel, Iterable[T] sequence) -> T {
 }
 
 generic T
-generator func firstN(uint count, Iterable[T] sequence) -> T {
+generator func firstN(int count, Iterable[T] sequence) -> T {
     var iterator = iter(sequence)
     try {
         dotimes count {

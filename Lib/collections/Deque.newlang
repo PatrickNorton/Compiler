@@ -10,9 +10,9 @@ const int DEFAULT_SIZE
 
 final class Deque[V] {
     private Array[V?] values
-    private uint start = 0
-    pubget uint length = 0
-    private uint end := (self.start + self.length) % self.values.length
+    private int start = 0
+    pubget int length = 0
+    private int end := (self.start + self.length) % self.values.length
 
     public operator new (*V values) {
         self.values = Array(max(DEFAULT_SIZE, highestOneBit(values.length) << 1), null)
@@ -46,13 +46,13 @@ final class Deque[V] {
 
     $normalizeIndices(self)
     public operator iter[:] -> V {
-        uint startIndex = self.internalIndex(start)
-        uint stopIndex = self.internalIndex(end)
+        int startIndex = self.internalIndex(start)
+        int stopIndex = self.internalIndex(end)
 
         if startIndex < stopIndex {
             yield from self.values[startIndex:stopIndex:step]
         } else {
-            uint secondHalfStart = ~(self.values.length - stopIndex) % step
+            int secondHalfStart = ~(self.values.length - stopIndex) % step
             yield from self.values[startIndex::step]
             yield from self.values[secondHalfStart:stopIndex:step]
         }

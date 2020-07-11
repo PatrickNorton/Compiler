@@ -8,7 +8,7 @@ const var NUMBER_PATTERN = re"(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?"
 
 
 class ParseContext {
-    private uint index
+    private int index
     private const File file
     private Class[T] class_
     private str currentLine
@@ -20,11 +20,11 @@ class ParseContext {
         self.currentLine = f.nextLine().strip()
     }
 
-    public operator [] (uint index) -> char {
+    public operator [] (int index) -> char {
         return self.currentLine[index]
     }
 
-    public method move(uint chars) {
+    public method move(int chars) {
         self.index += chars
         while string.isWhitespace(self[index]) {
             self.index++

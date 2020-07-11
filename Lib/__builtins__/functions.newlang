@@ -16,8 +16,8 @@ generator func enumerate(Iterable[T] values, /) -> int, T {
 }
 
 $pure
-func hash(*Hashable values) -> uint {
-    return apply(lambda uint i, Hashable j => j.operator hash() + 31 * i, *values, start=1)
+func hash(*Hashable values) -> int {
+    return apply(lambda int i, Hashable j => j.operator hash() + 31 * i, *values, start=1)
 }
 
 func print(*Any values, *, str sep=" ", str end="\n", File file=sys.stdout, bool flush=false) {

@@ -8,7 +8,7 @@ const bool RED = true
 
 class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
     private TreeNode[K, V]? top
-    pubget uint length
+    pubget int length
 
     public operator [] (K key) -> V {
         var node = self.findNode(key)

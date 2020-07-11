@@ -10,7 +10,7 @@ const int DEFAULT_SIZE = 16
 
 final class Stack[T] {
     private Array[T?] values
-    pubget uint length
+    pubget int length
 
     public operator new {
         self.values = Array(DEFAULT_SIZE, null)

@@ -20,25 +20,25 @@ func any(Iterable[Any] values) -> bool {
 
 
 generic T
-func count(Callable[T, Any] predicate = bool, Iterable[T] values, /) -> uint {
+func count(Callable[T, Any] predicate = bool, Iterable[T] values, /) -> int {
     return \+(1 for T i in values if predicate(i))
 }
 
 
 generic T
-func countEqual(T sentinel, Iterable[T] values, /) -> uint {
+func countEqual(T sentinel, Iterable[T] values, /) -> int {
     return \+(1 for T i in values if i == sentinel)
 }
 
 
 generic T
-func countFalse(Callable[T, Any] predicate = bool, Iterable[T] values, /) -> uint {
+func countFalse(Callable[T, Any] predicate = bool, Iterable[T] values, /) -> int {
     return \+(1 for T i in values if not predicate(i))
 }
 
 
 generic T
-func countNotEqual(T sentinel, Iterable[T] values, /) -> uint {
+func countNotEqual(T sentinel, Iterable[T] values, /) -> int {
     return \+(1 for T i in values if i != sentinel)
 }
 

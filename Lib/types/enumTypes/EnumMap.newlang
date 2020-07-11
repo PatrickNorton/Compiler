@@ -51,7 +51,7 @@ class EnumMap[K[Enum[K]], V] from AbstractDict[K, V] {
     }
 
     public operator iter -> K, V {
-        yield from (K[i], value for uint i, var value in enumerate(self.values) if value is not Empty.EMPTY)
+        yield from (K[i], value for int i, var value in enumerate(self.values) if value is not Empty.EMPTY)
     }
 
     public operator bool {

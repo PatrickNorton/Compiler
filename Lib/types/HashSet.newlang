@@ -63,8 +63,8 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
     }
 
     private method arrayIndex(T value, *, bool returnDeleted = false) {
-        uint index = hash(key) % self.values.length
-        uint? deleted = null
+        int index = hash(key) % self.values.length
+        int? deleted = null
         while true {
             var value = self.values[index]
             if value is Empty.DELETED and returnDeleted {
@@ -79,9 +79,9 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
         }
     }
 
-    public method resize(uint newSize) {
+    public method resize(int newSize) {
         return if size / self.values.length < RESIZE_THRESHOLD
-        uint newSize = self.values.length << 1
+        int newSize = self.values.length << 1
         var old = self.values
         self.values = Array(newSize, Empty.EMPTY)
         for var v in (i casted VarInfo for var i in old if i not instanceof Empty) {

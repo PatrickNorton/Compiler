@@ -5,7 +5,7 @@ export Counter
 
 final class Counter[T] from dict[T, int] {
     private final dict[T, int] values
-    public readonly uint length := values.length
+    public readonly int length := values.length
 
     public operator new (*T items) {
         self.values = {:}
@@ -64,7 +64,7 @@ final class Counter[T] from dict[T, int] {
         }
     }
 
-    public generator method mostCommon(uint count = 0) -> T {
+    public generator method mostCommon(int count = 0) -> T {
         var sorted = sorted(self.values.keys(), key=self.values.operator [])
         yield from firstN(count, sorted) if count else sorted
     }

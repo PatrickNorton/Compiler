@@ -34,7 +34,7 @@ func heapSort(Iterable[T] iterable) -> list[T] {
      every element beyond end is greater than everything before it (so
      a[end:count] is in sorted order)
      |#
-    for uint end in [count:0:-1] {  # Remember: [count:0:-1] will output count-1, ..., 0
+    for int end in [count:0:-1] {  # Remember: [count:0:-1] will output count-1, ..., 0
         a[end], values[0] = values[0], values[end]
         siftDown(values, 0, end)
     }
@@ -44,18 +44,18 @@ func heapSort(Iterable[T] iterable) -> list[T] {
 
 generic T[Comparable[T]]
 func heapify(Array[T] values) {
-    for uint start in [values.length // 2 : 0 : -1] {
+    for int start in [values.length // 2 : 0 : -1] {
         siftDown(values, start, values.length - 1)
     }
 }
 
 
 generic T[Comparable[T]]
-func siftDown(Array[T] values, uint start, uint end) {
-    uint root = start
+func siftDown(Array[T] values, int start, int end) {
+    int root = start
     while 2*root < end {
-        uint child = 2*root - 1
-        uint swap = root
+        int child = 2*root - 1
+        int swap = root
         if a[swap] < a[child] {
             swap = child
         }
@@ -112,9 +112,9 @@ func quickSort(Iterable[T] iterable) -> list[T] {
 
 
 generic T[Comparable[T]]
-func qsInner(Array[T] values, uint low, uint high) {
+func qsInner(Array[T] values, int low, int high) {
     if low < high {
-        uint p = partition(values, low, high)
+        int p = partition(values, low, high)
         qsInner(values, low, p - 1)
         qsInner(values, p + 1, high)
     }
@@ -122,10 +122,10 @@ func qsInner(Array[T] values, uint low, uint high) {
 
 
 generic T[Comparable[T]]
-func partition(Array[T] values, uint low, uint high) -> uint {
+func partition(Array[T] values, int low, int high) -> int {
     var pivot = values[high]
-    uint i = low
-    for uint j in [low:high+1] {
+    int i = low
+    for int j in [low:high+1] {
         if values[j] < pivot {
             values[i], values[j] = values[j], values[i]
             i++

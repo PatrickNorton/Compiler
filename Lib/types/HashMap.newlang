@@ -20,7 +20,7 @@ enum Empty {
 
 class HashMap[K[Hashable], V] from AbstractDict[K, V] {
     private Array[VarInfo|Empty] values
-    private uint length
+    private int length
 
     public operator new (*tuple[K, V] values) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
@@ -34,14 +34,14 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
     }
 
     public operator [] (K key) -> V {
-        uint index = self.getInfo(key)
+        int index = self.getInfo(key)
         raise KeyError if self.values[index] is Empty.EMPTY
         return (self.values[index] casted VarInfo)[2]
     }
 
     public operator []= (K key, V value) {
         self.resize(self.length + 1)
-        uint index = self.getInfo(key, returnDeleted=true)
+        int index = self.getInfo(key, returnDeleted=true)
         if self.values[index] instanceof Empty {
             self.length++
         }
@@ -72,9 +72,9 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         self.length = 0
     }
 
-    private method getInfo(K key, *, bool returnDeleted = false) -> uint {
-        uint index = hash(key) % self.values.length
-        uint? deleted = null
+    private method getInfo(K key, *, bool returnDeleted = false) -> int {
+        int index = hash(key) % self.values.length
+        int? deleted = null
         while true {
             var value = self.values[index]
             if value is Empty.DELETED and returnDeleted {
@@ -89,9 +89,9 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
         }
     }
 
-    private method resize(uint size) {
+    private method resize(int size) {
         return if size / self.values.length < RESIZE_THRESHOLD
-        uint newSize = self.values.length << 1
+        int newSize = self.values.length << 1
         var old = self.values
         self.values = Array(newSize, Empty.EMPTY)
         for var v in (i casted VarInfo for var i in old if i not instanceof Empty) {

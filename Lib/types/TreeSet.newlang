@@ -6,7 +6,7 @@ export TreeSet
 
 class TreeSet[T[Comparable[T]]] from AbstractSet[T] {
     private const TreeMap[T, null] internal
-    pubget uint length := internal.length
+    pubget int length := internal.length
 
     public operator new (*T values) {
         self.internal = {i: null for T i in values}

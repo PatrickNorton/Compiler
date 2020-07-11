@@ -19,7 +19,7 @@ union Value {
 
 class IdentityMap[K, V] from dict[K, V] {
     private Array[tuple[K, V]|Empty] values
-    pubget uint length
+    pubget int length
 
     public operator new (*tuple[K, V] values) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
@@ -33,14 +33,14 @@ class IdentityMap[K, V] from dict[K, V] {
     }
 
     public operator [] (K key) -> V {
-        uint index = self.getInfo(key)
+        int index = self.getInfo(key)
         return val[1] if self.values[index].Full? as val
         raise IndexError(f"Key {key} not in dict")
     }
 
     public mut operator []= (K key, V value) {
         self.resize(self.length + 1)
-        uint index = self.getInfo(key, returnDeleted=true)
+        int index = self.getInfo(key, returnDeleted=true)
         self.length += not self.values[index].Full?
         self.values[index] = Value.Full((key, value))
     }
@@ -80,8 +80,8 @@ class IdentityMap[K, V] from dict[K, V] {
         self.values.fill(Empty.EMPTY)
     }
 
-    private method getInfo(K key, *, bool returnDeleted = false) -> uint {
-        mut uint index = id(key) % self.values.length
+    private method getInfo(K key, *, bool returnDeleted = false) -> int {
+        mut int index = id(key) % self.values.length
         while true {
             var value = self.values[index]
             return index if value.Empty? or (returnDeleted and value.Deleted?)
@@ -92,9 +92,9 @@ class IdentityMap[K, V] from dict[K, V] {
         }
     }
 
-    private mut method resize(uint size) {
+    private mut method resize(int size) {
         return if size / self.values.length < RESIZE_THRESHOLD
-        uint newSize = self.values.length << 1
+        int newSize = self.values.length << 1
         var old = self.values
         self.values = Array(newSize, Empty.EMPTY)
         for var v in (j for var i in old if i.Full? as j) {
