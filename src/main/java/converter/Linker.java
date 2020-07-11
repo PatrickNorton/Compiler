@@ -101,9 +101,9 @@ public final class Linker {
             if (stmt instanceof DefinitionNode) {
                 if (stmt instanceof InterfaceDefinitionNode
                         && ((InterfaceDefinitionNode) stmt).getDescriptors().contains(DescriptorNode.AUTO)) {
-                    defaultInterfaces.push((InterfaceDefinitionNode) stmt);
+                    defaultInterfaces.addLast((InterfaceDefinitionNode) stmt);
                 } else {
-                    definitions.push((DefinitionNode) stmt);
+                    definitions.addLast((DefinitionNode) stmt);
                 }
             } else if (stmt instanceof ImportExportNode) {
                 linkIENode((ImportExportNode) stmt);
