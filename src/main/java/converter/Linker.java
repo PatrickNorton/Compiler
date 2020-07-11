@@ -314,7 +314,7 @@ public final class Linker {
                 throw CompilerException.of("Cannot 'export *' without a 'from' clause", node);
             }
             var moduleName = moduleName(node, 0);
-            addWildcardImport(moduleName, node);
+            addWildcardExport(moduleName, node);
             return;
         }
         for (int i = 0; i < node.getValues().length; i++) {
@@ -332,6 +332,23 @@ public final class Linker {
                 throw CompilerException.format("Name %s already exported", node, asName);
             } else {
                 exports.put(name, Pair.of(asName, node.getLineInfo()));
+            }
+        }
+    }
+
+    private void addWildcardExport(String moduleName, @NotNull ImportExportNode node) {
+        CompilerInfo f = node.getPreDots() > 0
+                ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
+                : Converter.findModule(moduleName);
+        var file = Converter.resolveFile(moduleName);
+        f.compile(file);
+        for (var name : f.importHandler().getExports()) {
+            globals.put(name, f.importHandler().exportType(name));
+            info.importHandler().addImport(moduleName + "." + name);
+            if (exports.containsKey(name)) {
+                throw CompilerException.format("Name %s already exported", node, name);
+            } else {
+                exports.put(name, Pair.of(name, node.getLineInfo()));
             }
         }
     }

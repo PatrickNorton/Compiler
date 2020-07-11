@@ -1,7 +1,10 @@
 package main.java.converter;
 
+import main.java.parser.DescriptorNode;
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Map;
@@ -41,7 +44,28 @@ public final class TemplateParam extends NameableType {
 
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
-        return other.isSuperclass(bound);
+        if (other instanceof TemplateParam) {
+            return ((TemplateParam) other).bound.isSuperclass(bound);
+        } else {
+            return other.isSuperclass(bound);
+        }
+    }
+
+    @Override
+    @Nullable
+    public TypeObject attrType(String value, DescriptorNode access) {
+        return bound.attrType(value, access);
+    }
+
+    @Override
+    @Nullable
+    public TypeObject staticAttrType(String value, DescriptorNode access) {
+        return bound.staticAttrType(value, access);
+    }
+
+    @Override
+    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+        return bound.operatorInfo(o, access);
     }
 
     @Override

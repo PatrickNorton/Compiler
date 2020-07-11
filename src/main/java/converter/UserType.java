@@ -79,17 +79,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         var types = operatorReturnTypeWithGenerics(o, access);
         if (types == null) return null;
         TypeObject[] result = new TypeObject[types.length];
-        for (int i = 0; i < types.length; i++) {
-            var type = types[i];
-            if (type instanceof TemplateParam) {
-                result[i] = generics.isEmpty()
-                        ? ((TemplateParam) type).getBound()
-                        : generics.get(((TemplateParam) type).getIndex());
-            } else {
-                result[i] = type;
-            }
-        }
-        return result;
+        return Arrays.copyOf(types, types.length);
     }
 
     @Override
