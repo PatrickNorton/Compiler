@@ -78,7 +78,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public final TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         var types = operatorReturnTypeWithGenerics(o, access);
         if (types == null) return null;
-        TypeObject[] result = new TypeObject[types.length];
         return Arrays.copyOf(types, types.length);
     }
 
