@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ComprehensionConverter implements TestConverter {
+public final class ComprehensionConverter implements TestConverter {  // TODO: Generators
     private final ComprehensionNode node;
     private final CompilerInfo info;
     private final int retCount;
@@ -38,11 +38,10 @@ public final class ComprehensionConverter implements TestConverter {
             info.addVariable(name, trueType, variable);
             var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
             info.removeStackFrame();
-            return new TypeObject[] {resultType.generify(result)};
+            return new TypeObject[] {resultType.generify(result).makeMut()};
         } else {
-            return new TypeObject[] {
-                    resultType.generify(TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1))
-            };
+            var retType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
+            return new TypeObject[] {resultType.generify(retType).makeMut()};
         }
     }
 

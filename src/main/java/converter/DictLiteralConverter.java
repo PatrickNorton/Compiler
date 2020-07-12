@@ -23,7 +23,7 @@ public final class DictLiteralConverter implements TestConverter {
     public TypeObject[] returnType() {
         var keyType = returnTypes(node.getKeys());
         var valType = returnTypes(node.getValues());
-        return new TypeObject[] {Builtins.DICT.generify(keyType, valType)};
+        return new TypeObject[] {Builtins.DICT.generify(keyType, valType).makeMut()};
     }
 
     @NotNull
