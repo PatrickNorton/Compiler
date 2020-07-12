@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +31,11 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
-            parseIntoObject(converter, type);
+            var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
+            if (!isConst) {
+                checkConstSupers(type, Arrays.asList(trueSupers));
+            }
+            parseIntoObject(converter, type, isConst);
         } else {
             type = (StdTypeObject) info.getTypeObj(node.strName());
             parseStatements(converter);
@@ -90,18 +95,36 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         }
     }
 
+    private void checkConstSupers(StdTypeObject type, @NotNull Iterable<TypeObject> supers) {
+        for (var cls : supers) {
+            if (cls instanceof StdTypeObject && ((StdTypeObject) cls).constSemantics()) {
+                throw CompilerException.format(
+                        "Class '%s' inherits from the const class '%s', but is not itself const",
+                        node, type.name(), cls.name()
+                );
+            }
+        }
+    }
+
     public static void completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj) {
         new ClassConverter(info, node).completeType(obj);
     }
 
     private void completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
-        parseIntoObject(converter, obj);
+        var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
+        if (!isConst) {
+            checkConstSupers(obj, obj.getSupers());
+        }
+        parseIntoObject(converter, obj, isConst);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
+    private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj, boolean isConst) {
         parseStatements(converter);
-        if (obj.isFinal() && classIsConstant(converter)) {
+        if (isConst) {
+            if (!classIsConstant(converter)) {
+                throw CompilerException.format("Cannot make class '%s' const", node, obj.name());
+            }
             obj.isConstClass();
         }
         obj.setOperators(converter.getOperatorInfos());

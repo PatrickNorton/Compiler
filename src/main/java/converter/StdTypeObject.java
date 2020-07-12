@@ -145,6 +145,10 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.isConstClass = true;
     }
 
+    boolean constSemantics() {
+        return info.isConstClass;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
