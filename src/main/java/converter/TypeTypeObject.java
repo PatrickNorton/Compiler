@@ -73,7 +73,7 @@ public final class TypeTypeObject extends TypeObject {
     public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         assert access == DescriptorNode.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
-            return new TypeObject[] {generic == null ? Builtins.OBJECT : generic};
+            return new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()};
         } else {
             throw new UnsupportedOperationException("Cannot get type");
         }
