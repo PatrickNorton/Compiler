@@ -60,7 +60,7 @@ public interface DescribableNode extends IndependentNode {
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
             throw tokens.error("mut cannot be used in augmented assignment");
         } else {
-            return DeclarationNode.parse(tokens);
+            return finishParse(DeclarationNode.parse(tokens), descriptors);
         }
     }
 
