@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public final class CompilerInfo {
     private final TopNode node;
-    private final ImportHandler importHandler = new ImportHandler();
+    private final ImportHandler importHandler = new ImportHandler(this);
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
@@ -53,6 +53,7 @@ public final class CompilerInfo {
 
     private boolean linked = false;
     private boolean compiled = false;
+    private boolean dependentsFound = false;
 
     public CompilerInfo(TopNode node) {
         this.node = node;
@@ -287,6 +288,15 @@ public final class CompilerInfo {
         var linker = new Linker(this).link(node);
         importHandler.setFromLinker(linker);
         linked = true;
+        return this;
+    }
+
+    public CompilerInfo loadDependents() {
+        if (dependentsFound) {
+            return this;
+        }
+        dependentsFound = true;
+        importHandler.registerDependents(node);
         return this;
     }
 

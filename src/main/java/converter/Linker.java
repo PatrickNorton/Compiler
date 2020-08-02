@@ -15,11 +15,12 @@ import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
-import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -43,6 +44,8 @@ import java.util.Set;
  * @see #link
  */
 public final class Linker {
+    private static final Map<Path, Pair<CompilerInfo, File>> ALL_FILES = new HashMap<>();
+
     //  TODO? Should this link regardless?
     //        How should that interact with circular references?
     //        What should be allowed/not allowed?
@@ -88,7 +91,7 @@ public final class Linker {
      * @return Itself
      */
     public Linker link(TopNode node) {
-        assert exports.isEmpty() && globals.isEmpty();
+        info.loadDependents();
         var declaredTypes = declareTypes(node);
         if (declaredTypes == null) {  // Not a module
             return this;
@@ -105,9 +108,7 @@ public final class Linker {
                 } else {
                     definitions.addLast((DefinitionNode) stmt);
                 }
-            } else if (stmt instanceof ImportExportNode) {
-                linkIENode((ImportExportNode) stmt);
-            } else if (!(stmt instanceof TypedefStatementNode)) {
+            } else if (!(stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode)) {
                 throw CompilerException.of(
                         "Only definition and import/export statements are allowed in file with exports",
                         stmt
@@ -166,20 +167,6 @@ public final class Linker {
             return Builtins.TYPE.generify(predeclaredType);
         } else {
             throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
-        }
-    }
-
-    private void linkIENode(@NotNull ImportExportNode stmt) {
-        switch (stmt.getType()) {
-            case IMPORT:
-            case TYPEGET:
-                addImports(stmt);
-                break;
-            case EXPORT:
-                addExports(stmt);
-                break;
-            default:
-                throw CompilerInternalError.of("Unknown type of import/export", stmt);
         }
     }
 
@@ -253,111 +240,5 @@ public final class Linker {
             types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
         }
         return isModule ? types : null;
-    }
-
-    private void addImports(@NotNull ImportExportNode node) {
-        assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
-        boolean notRenamed = node.getAs().length == 0;
-        if (node.isWildcard()) {
-            addWildcardImport(moduleName(node, 0), node);
-            return;
-        }
-        for (int i = 0; i < node.getValues().length; i++) {
-            var value = node.getValues()[i];
-            var as = notRenamed ? value : node.getAs()[i];
-            String moduleName = moduleName(node, i);
-            if (!(as.getPreDot() instanceof VariableNode) || as.getPostDots().length > 0) {
-                throw CompilerException.of("Illegal import " + as, as);
-            }
-            String importName = value.toString();
-            addImport(moduleName, importName, node);
-
-        }
-    }
-
-    private void addImport(String moduleName, String importName, @NotNull ImportExportNode node) {
-        CompilerInfo f = node.getPreDots() > 0
-                ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
-                : Converter.findModule(moduleName);
-        var file = Converter.resolveFile(moduleName);
-        f.compile(file);  // FIXME: Circular imports cause stack overflow
-        if (globals.containsKey(importName)) {
-            throw CompilerException.format("Name %s already defined", node, importName);
-        }
-        var exportType = f.importHandler().exportType(importName);
-        if (exportType == null) {
-            throw CompilerException.format("'%s' not exported in module '%s'", node, importName, moduleName);
-        }
-        globals.put(importName, exportType);
-        var name = node.getFrom().isEmpty() ? importName : node.getFrom().toString() + "." + importName;
-        info.importHandler().addImport(name);
-    }
-
-    private void addWildcardImport(String moduleName, @NotNull ImportExportNode node) {
-        CompilerInfo f = node.getPreDots() > 0
-                ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
-                : Converter.findModule(moduleName);
-        var file = Converter.resolveFile(moduleName);
-        f.compile(file);
-        for (var name : f.importHandler().getExports()) {
-            globals.put(name, f.importHandler().exportType(name));
-            info.importHandler().addImport(moduleName + "." + name);
-        }
-    }
-
-    private void addExports(@NotNull ImportExportNode node) {
-        assert node.getType() == ImportExportNode.EXPORT;
-        boolean notRenamed = node.getAs().length == 0;
-        boolean isFrom = !node.getFrom().isEmpty();
-        if (node.isWildcard()) {
-            if (node.getFrom().isEmpty()) {
-                throw CompilerException.of("Cannot 'export *' without a 'from' clause", node);
-            }
-            var moduleName = moduleName(node, 0);
-            addWildcardExport(moduleName, node);
-            return;
-        }
-        for (int i = 0; i < node.getValues().length; i++) {
-            var value = node.getValues()[i];
-            if (isFrom) {
-                addImport(moduleName(node, i), value.toString(), node);
-            }
-            var as = notRenamed ? value : node.getAs()[i];
-            if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
-                throw CompilerException.of("Illegal export " + value, value);
-            }
-            var name = ((VariableNode) value.getPreDot()).getName();
-            var asName = as.isEmpty() ? name : ((VariableNode) as.getPreDot()).getName();
-            if (exports.containsKey(asName)) {
-                throw CompilerException.format("Name %s already exported", node, asName);
-            } else {
-                exports.put(name, Pair.of(asName, node.getLineInfo()));
-            }
-        }
-    }
-
-    private void addWildcardExport(String moduleName, @NotNull ImportExportNode node) {
-        CompilerInfo f = node.getPreDots() > 0
-                ? Converter.findLocalModule(info.path().getParent(), moduleName, node)
-                : Converter.findModule(moduleName);
-        var file = Converter.resolveFile(moduleName);
-        f.compile(file);
-        for (var name : f.importHandler().getExports()) {
-            globals.put(name, f.importHandler().exportType(name));
-            info.importHandler().addImport(moduleName + "." + name);
-            if (exports.containsKey(name)) {
-                throw CompilerException.format("Name %s already exported", node, name);
-            } else {
-                exports.put(name, Pair.of(name, node.getLineInfo()));
-            }
-        }
-    }
-
-    private static String moduleName(@NotNull ImportExportNode node, int i) {
-        if (!node.getFrom().isEmpty()) {
-            return ((VariableNode) node.getFrom().getPreDot()).getName();
-        } else {
-            return ((VariableNode) node.getValues()[i].getPreDot()).getName();
-        }
     }
 }

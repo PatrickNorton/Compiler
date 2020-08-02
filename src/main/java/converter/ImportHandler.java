@@ -1,123 +1,325 @@
 package main.java.converter;
 
+import main.java.parser.ClassDefinitionNode;
+import main.java.parser.DefinitionNode;
+import main.java.parser.DescriptorNode;
+import main.java.parser.EnumDefinitionNode;
 import main.java.parser.ImportExportNode;
+import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Parser;
+import main.java.parser.TopNode;
+import main.java.parser.TypedefStatementNode;
+import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.Pair;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public final class ImportHandler {
-    private final Set<String> exports = new HashSet<>();
-    private final Map<String, TypeObject> exportTypes = new HashMap<>();
-    private final IndexedSet<String> imports = new IndexedHashSet<>();
-    private final Map<String, TypeObject> importTypes = new HashMap<>();
+    private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
+    private static List<Pair<CompilerInfo, Path>> toCompile = new ArrayList<>();
 
-    private boolean allowSettingExports = false;
+    public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>(Builtins.DEFAULT_INTERFACES);
 
-    /**
-     * Adds an export.
-     * <p>
-     *     If setting exports is not allowed, (e.g. this is not in the process
-     *     of {@link CompilerInfo#link linking}), a {@link CompilerException}
-     *     will be thrown. This is not a {@link CompilerInternalError} because
-     *     it is most likely to be thrown due to an illegally-placed {@link
-     *     ImportExportNode 'export'} statement, as opposed to a compiler bug.
-     * </p>
-     *
-     * @see CompilerInfo#link
-     * @param name The name of the export
-     * @param type The type of the export
-     * @param info The {@link LineInfo} for the export statement
-     */
-    public void addExport(String name, TypeObject type, LineInfo info) {
-        if (!allowSettingExports) {
-            throw CompilerException.of("Illegal position for export statement", info);
+    private final CompilerInfo info;
+    private final Map<String, TypeObject> exports = new HashMap<>();
+    private final Map<Path, Pair<Integer, List<String>>> imports = new HashMap<>();
+    private final IndexedSet<String> importStrings = new IndexedHashSet<>();
+    private final Map<String, ImportConstant> importConstants = new HashMap<>();
+    private final Map<String, TypeObject> declaredTypes = new HashMap<>();
+
+    public ImportHandler(CompilerInfo info) {
+        this.info = info;
+    }
+
+    public void registerDependents(@NotNull TopNode node) {
+        Map<String, TypeObject> types = new HashMap<>();
+        Map<String, LineInfo> lineInfos = new HashMap<>();
+        boolean isModule = false;
+        boolean hasAuto = false;
+        Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
+        for (var stmt : node) {
+            if (stmt instanceof ImportExportNode) {
+                var ieNode = (ImportExportNode) stmt;
+                switch (ieNode.getType()) {
+                    case TYPEGET:
+                    case IMPORT:
+                        registerImports(ieNode);
+                        break;
+                    case EXPORT:
+                        isModule = true;
+                        registerExports(ieNode);
+                        break;
+                }
+            } else if (stmt instanceof DefinitionNode) {
+                if (stmt instanceof ClassDefinitionNode) {
+                    var cls = (ClassDefinitionNode) stmt;
+                    var strName = cls.strName();
+                    if (types.containsKey(strName)) {
+                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                    }
+                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    types.put(strName, new StdTypeObject(strName, generics));
+                    lineInfos.put(strName, cls.getLineInfo());
+                } else if (stmt instanceof EnumDefinitionNode) {
+                    var cls = (EnumDefinitionNode) stmt;
+                    var strName = cls.getName().strName();
+                    if (types.containsKey(strName)) {
+                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                    }
+                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    types.put(strName, new StdTypeObject(strName, generics));
+                    lineInfos.put(strName, cls.getLineInfo());
+                } else if (stmt instanceof InterfaceDefinitionNode) {
+                    var cls = (InterfaceDefinitionNode) stmt;
+                    var strName = cls.getName().strName();
+                    if (types.containsKey(strName)) {
+                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                    }
+                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var type = new InterfaceType(strName, generics);
+                    types.put(strName, type);
+                    lineInfos.put(strName, cls.getLineInfo());
+                    if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
+                        ALL_DEFAULT_INTERFACES.add(type);
+                        hasAuto = true;
+                    }
+                } else if (stmt instanceof TypedefStatementNode) {
+                    typedefs.push((TypedefStatementNode) stmt);
+                }
+            }
         }
-        this.exports.add(name);
-        exportTypes.put(name, type);
-    }
-
-    /**
-     * Gets the type of an export.
-     *
-     * @param name The name of the export
-     * @return The export type
-     */
-    public TypeObject exportType(String name) {
-        return exportTypes.get(name);
-    }
-
-    /**
-     * Gets the set of names exported by this file.
-     *
-     * @return The set of exports
-     */
-    public Set<String> getExports() {
-        return exports;
-    }
-
-    /**
-     * Adds an import.
-     *
-     * @param name The name if the import
-     * @return The index of the import in the imports set
-     */
-    public int addImport(@NotNull String name) {
-        var names = name.split("\\.");
-        if (!imports.contains(name)) {
-            var file = Converter.resolveFile(names[0]);
-            CompilerInfo f = Converter.findModule(names[0]).compile(file);
-            imports.add(name);
-            importTypes.put(name, f.importHandler().exportTypes.get(names[1]));
+        if (!isModule && hasAuto) {
+            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", LineInfo.empty());
         }
-        return imports.indexOf(name);
+        for (var stmt : typedefs) {
+            var type = stmt.getType();
+            var name = stmt.getName();
+            types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
+        }
+        declaredTypes.putAll(types);
     }
 
-    public IndexedSet<String> getImports() {
-        return imports;
-    }
-
-    /**
-     * Gets the type of an import.
-     *
-     * @param name The name of the import
-     * @return THe type of the import
-     */
-    public TypeObject importType(String name) {
-        return importTypes.get(name);
-    }
-
-    /**
-     * Adds imports/exports from the {@link Linker} given.
-     * <p>
-     *     This assumes it will only be called once, and will overwrite all
-     *     previous imports from the linker.
-     * </p>
-     *
-     * @param linker The linker to get the information from
-     */
     public void setFromLinker(@NotNull Linker linker) {
         var exports = linker.getExports();
         var globals = linker.getGlobals();
-        try {
-            allowSettingExports = true;
-            for (var entry : exports.entrySet()) {
-                var exportName = entry.getValue().getKey();
-                var exportType = globals.get(entry.getKey());
-                if (exportType == null) {
-                    var lineInfo = entry.getValue().getValue();
-                    throw CompilerException.of("Undefined name for export: " + exportName, lineInfo);
-                }
-                this.exports.add(exportName);
-                this.exportTypes.put(exportName, exportType);
+        for (var entry : exports.entrySet()) {
+            var exportName = entry.getValue().getKey();
+            var exportType = globals.get(entry.getKey());
+            if (exportType == null) {
+                var lineInfo = entry.getValue().getValue();
+                throw CompilerException.of("Undefined name for export: " + exportName, lineInfo);
             }
-        } finally {
-            allowSettingExports = false;
+            assert exports.containsKey(exportName);
+            this.exports.put(exportName, exportType);
+        }
+    }
+
+    @NotNull
+    public Map<String, Integer> addImport(@NotNull ImportExportNode node) {
+        assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
+        if (node.isWildcard()) {
+            var path = loadFile(moduleName(node, 0), node);
+            var file = ALL_FILES.get(path);
+            var importValues = new ArrayList<>(file.importHandler().exports.keySet());
+            imports.put(path, Pair.of(imports.size(), importValues));
+            Map<String, Integer> result = new HashMap<>();
+            for (var val : importValues) {
+                var fromStr = node.getFrom().toString() + "." + val;
+                importStrings.add(fromStr);
+                result.put(val, importStrings.indexOf(fromStr));
+            }
+            return result;
+        } else if (node.getFrom().isEmpty()) {
+            checkAs(node);
+            Map<String, Integer> result = new HashMap<>();
+            for (int i = 0; i < node.getValues().length; i++) {
+                var val = node.getValues()[i];
+                var preDot = ((VariableNode) val.getPreDot()).getName();
+                assert val.getPostDots().length == 0;
+                var path = loadFile(preDot, node);
+                var valStr = val.toString();
+                var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
+                imports.put(path, Pair.of(imports.size(), List.of()));
+                importStrings.add(valStr);
+                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
+                result.put(as, importStrings.indexOf(valStr));
+            }
+            return result;
+        } else {
+            checkAs(node);
+            var from = node.getFrom();
+            List<String> values = new ArrayList<>();
+            Map<String, Integer> result = new HashMap<>();
+            for (int i = 0; i < node.getValues().length; i++) {
+                var value = node.getValues()[i];
+                values.add(value.toString());
+                var valStr = from.toString() + "." + value.toString();
+                var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
+                importStrings.add(valStr);
+                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
+                result.put(as, importStrings.indexOf(valStr));
+            }
+            var path = loadFile(from.toString(), node);
+            imports.put(path, Pair.of(imports.size(), values));
+            return result;
+        }
+    }
+
+    public void registerImports(@NotNull ImportExportNode node) {
+        assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
+        if (node.isWildcard()) {
+            var path = loadFile(moduleName(node, 0), node);
+            imports.put(path, Pair.of(imports.size(), List.of("*")));
+        } else if (node.getFrom().isEmpty()) {
+            checkAs(node);
+            for (int i = 0; i < node.getValues().length; i++) {
+                var val = node.getValues()[i];
+                var preDot = ((VariableNode) val.getPreDot()).getName();
+                assert val.getPostDots().length == 0;
+                var path = loadFile(preDot, node);
+                var valStr = val.toString();
+                var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
+                imports.put(path, Pair.of(imports.size(), List.of()));
+                importStrings.add(valStr);
+                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
+            }
+        } else {
+            checkAs(node);
+            var from = node.getFrom();
+            List<String> values = new ArrayList<>();
+            for (int i = 0; i < node.getValues().length; i++) {
+                var value = node.getValues()[i];
+                values.add(value.toString());
+                var valStr = from.toString() + "." + value.toString();
+                var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
+                importStrings.add(valStr);
+                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
+            }
+            var path = loadFile(from.toString(), node);
+            imports.put(path, Pair.of(imports.size(), values));
+        }
+    }
+
+    private void checkAs(@NotNull ImportExportNode node) {
+        if (node.getAs().length != 0 && node.getAs().length != node.getValues().length) {
+            throw CompilerException.format(
+                    "Import statement had %d 'as' clauses, expected %d (== to # of imported names)",
+                    node, node.getAs().length, node.getValues().length
+            );
+        }
+    }
+
+    public TypeObject importType(ImportExportNode node, int index) {
+        var path = loadFile(moduleName(node, index), node);
+        return ALL_FILES.get(path).importHandler().exports.get(node.getValues()[index].toString());
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public Collection<String> getExports() {
+        return exports.keySet();
+    }
+
+    private void registerWildcardImport(String moduleName, @NotNull ImportExportNode node) {
+        var path = loadFile(moduleName, node);
+        imports.put(path, Pair.of(imports.size(), List.of("*")));
+    }
+
+    private Path loadFile(String moduleName, @NotNull ImportExportNode node) {
+        var path = node.getPreDots() > 0
+                ? Converter.localModulePath(info.path().getParent(), moduleName, node)
+                : Converter.findPath(moduleName);
+        CompilerInfo f;
+        if (ALL_FILES.containsKey(path)) {
+            f = ALL_FILES.get(path);
+        } else {
+            f = new CompilerInfo(Parser.parse(path.toFile()));
+            ALL_FILES.put(path, f);
+            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName).toPath()));
+        }
+        f.loadDependents();
+        return path;
+    }
+
+    private void registerExports(@NotNull ImportExportNode node) {
+        assert node.getType() == ImportExportNode.EXPORT;
+        boolean notRenamed = node.getAs().length == 0;
+        boolean isFrom = !node.getFrom().isEmpty();
+        if (node.isWildcard()) {
+            if (node.getFrom().isEmpty()) {
+                throw CompilerException.of("Cannot 'export *' without a 'from' clause", node);
+            }
+            var moduleName = moduleName(node, 0);
+            registerWildcardExport(moduleName, node);
+            return;
+        }
+        for (int i = 0; i < node.getValues().length; i++) {
+            var value = node.getValues()[i];
+            if (isFrom) {
+                registerWildcardImport(moduleName(node, i), node);
+            }
+            var as = notRenamed ? value : node.getAs()[i];
+            if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
+                throw CompilerException.of("Illegal export " + value, value);
+            }
+            var name = ((VariableNode) value.getPreDot()).getName();
+            var asName = as.isEmpty() ? name : ((VariableNode) as.getPreDot()).getName();
+            if (exports.containsKey(asName)) {
+                throw CompilerException.format("Name %s already exported", node, asName);
+            } else {
+                exports.put(name, null);
+            }
+        }
+    }
+
+    private void registerWildcardExport(String moduleName, @NotNull ImportExportNode node) {
+        var path = node.getPreDots() > 0
+                ? Converter.localModulePath(info.path().getParent(), moduleName, node)
+                : Converter.findPath(moduleName);
+        CompilerInfo f;
+        if (ALL_FILES.containsKey(path)) {
+            f = ALL_FILES.get(path);
+        } else {
+            f = new CompilerInfo(Parser.parse(path.toFile()));
+            ALL_FILES.put(path, f);
+        }
+        f.loadDependents();
+        // FIXME: Register exports accurately
+    }
+
+    public static void compileAll() {
+        while (!toCompile.isEmpty()) {
+            var nextCompilationRound = toCompile;
+            toCompile = new ArrayList<>();
+            for (var pair : nextCompilationRound) {
+                pair.getKey().compile(pair.getValue().toFile());  // FIXME: Get file
+            }
+        }
+    }
+
+    public IndexedSet<String> getImports() {
+        return importStrings;
+    }
+
+    private static String moduleName(@NotNull ImportExportNode node, int i) {
+        if (!node.getFrom().isEmpty()) {
+            return ((VariableNode) node.getFrom().getPreDot()).getName();
+        } else {
+            return ((VariableNode) node.getValues()[i].getPreDot()).getName();
         }
     }
 }

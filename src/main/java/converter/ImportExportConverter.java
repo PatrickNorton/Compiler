@@ -26,8 +26,7 @@ public final class ImportExportConverter implements BaseConverter {
                 addImport();
                 break;
             case EXPORT:
-                addExport();
-                break;
+                throw CompilerException.of("Invalid position for export statement", node);
             default:
                 throw CompilerInternalError.of("Unknown type for ImportExportNode: " + node.getType(), node);
         }
@@ -36,36 +35,12 @@ public final class ImportExportConverter implements BaseConverter {
 
     private void addImport() {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
-        var from = node.getFrom().toString();
-        boolean renamed = node.getAs().length > 0;
-        for (int i = 0; i < node.getValues().length; i++) {
-            String importName = from + "." + node.getValues()[i];
-            int importNumber = info.importHandler().addImport(importName);
-            var localName = (renamed ? node.getAs() : node.getValues())[i].toString();
-            var constant = new ImportConstant(importNumber, localName);
+        var imports = info.importHandler().addImport(node);
+        for (var pair : imports.entrySet()) {
+            var constant = new ImportConstant(pair.getValue(), pair.getKey());
             info.addConstant(constant);
-            info.checkDefinition(localName, node.getValues()[i]);
-            info.addVariable(localName, info.importHandler().importType(importName), constant, node.getValues()[i]);
-        }
-    }
-
-    private void addExport() {
-        assert node.getType() == ImportExportNode.EXPORT;
-        boolean hasAs = node.getAs().length > 0;
-        if (!node.getFrom().isEmpty()) {
-            var from = node.getFrom().toString();
-            for (int i = 0; i < node.getValues().length; i++) {
-                info.importHandler().addImport(from + node.getValues()[i]);
-                var exportedName = hasAs ? node.getAs()[i].toString() : node.getValues()[i].toString();
-                var importType = info.importHandler().importType(from + node.getValues()[i]);
-                info.importHandler().addExport(exportedName, importType, node.getLineInfo());
-            }
-        } else {
-            for (int i = 0; i < node.getValues().length; i++) {
-                var exportedName = hasAs ? node.getAs()[i].toString() : node.getValues()[i].toString();
-                var exportType = info.getType(node.getValues()[i].toString());
-                info.importHandler().addExport(exportedName, exportType, node.getLineInfo());
-            }
+            info.checkDefinition(pair.getKey(), node);
+            info.addVariable(pair.getKey(), null, constant, node);
         }
     }
 }
