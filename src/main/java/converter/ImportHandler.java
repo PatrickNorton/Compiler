@@ -17,6 +17,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import java.util.Set;
 
 public final class ImportHandler {
     private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
-    private static List<Pair<CompilerInfo, Path>> toCompile = new ArrayList<>();
+    private static List<Pair<CompilerInfo, File>> toCompile = new ArrayList<>();
 
     public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>(Builtins.DEFAULT_INTERFACES);
 
@@ -249,7 +250,7 @@ public final class ImportHandler {
         } else {
             f = new CompilerInfo(Parser.parse(path.toFile()));
             ALL_FILES.put(path, f);
-            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName).toPath()));
+            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
         }
         f.loadDependents();
         return path;
@@ -306,7 +307,7 @@ public final class ImportHandler {
             var nextCompilationRound = toCompile;
             toCompile = new ArrayList<>();
             for (var pair : nextCompilationRound) {
-                pair.getKey().compile(pair.getValue().toFile());  // FIXME: Get file
+                pair.getKey().compile(pair.getValue());
             }
         }
     }
