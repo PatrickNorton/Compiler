@@ -24,19 +24,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 public final class ImportHandler {
     private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
     private static List<Pair<CompilerInfo, File>> toCompile = new ArrayList<>();
 
-    public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>();
+    public static final Map<InterfaceType, Optional<Pair<CompilerInfo, InterfaceDefinitionNode>>>
+            ALL_DEFAULT_INTERFACES = new HashMap<>();
 
     static {
-        ALL_DEFAULT_INTERFACES.addAll(Builtins.DEFAULT_INTERFACES);
+        for (var val : Builtins.DEFAULT_INTERFACES) {
+            ALL_DEFAULT_INTERFACES.put(val, Optional.empty());
+        }
     }
 
     private final CompilerInfo info;
@@ -99,7 +101,7 @@ public final class ImportHandler {
                     types.put(strName, type);
                     lineInfos.put(strName, cls.getLineInfo());
                     if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
-                        ALL_DEFAULT_INTERFACES.add(type);
+                        ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
                         hasAuto = true;
                     }
                 } else if (stmt instanceof TypedefStatementNode) {
@@ -310,11 +312,22 @@ public final class ImportHandler {
     }
 
     public static void compileAll() {
+        loadDefaultInterfaces();
         while (!toCompile.isEmpty()) {
             var nextCompilationRound = toCompile;
             toCompile = new ArrayList<>();
             for (var pair : nextCompilationRound) {
                 pair.getKey().compile(pair.getValue());
+            }
+        }
+    }
+
+    public static void loadDefaultInterfaces() {
+        for (var pair : ALL_DEFAULT_INTERFACES.entrySet()) {
+            if (pair.getValue().isPresent()) {
+                var infoPair = pair.getValue().get();
+                InterfaceConverter.completeType(infoPair.getKey(), infoPair.getValue(), pair.getKey());
+                pair.setValue(Optional.empty());
             }
         }
     }

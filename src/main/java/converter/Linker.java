@@ -18,8 +18,6 @@ import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,16 +80,15 @@ public final class Linker {
         if (!isModule(node)) {
             return this;
         }
-        // Done in several steps so that auto interfaces can be registered first
-        Deque<InterfaceDefinitionNode> defaultInterfaces = new ArrayDeque<>();
-        Deque<DefinitionNode> definitions = new ArrayDeque<>();
+        // Filters out auto interfaces, which are registered earlier
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
-                if (stmt instanceof InterfaceDefinitionNode
-                        && ((InterfaceDefinitionNode) stmt).getDescriptors().contains(DescriptorNode.AUTO)) {
-                    defaultInterfaces.addLast((InterfaceDefinitionNode) stmt);
-                } else {
-                    definitions.addLast((DefinitionNode) stmt);
+                if (!(stmt instanceof InterfaceDefinitionNode)
+                        || !((InterfaceDefinitionNode) stmt).getDescriptors().contains(DescriptorNode.AUTO)) {
+                    var def = (DefinitionNode) stmt;
+                    var name = def.getName();
+                    TypeObject type = linkDefinition(def);
+                    globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
                 }
             } else if (!(stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode)) {
                 throw CompilerException.of(
@@ -99,16 +96,6 @@ public final class Linker {
                         stmt
                 );
             }
-        }
-        for (var stmt : defaultInterfaces) {
-            var name = stmt.getName();
-            TypeObject type = linkDefinition(stmt);
-            globals.put(name.strName(), type);
-        }
-        for (var stmt : definitions) {
-            var name = stmt.getName();
-            TypeObject type = linkDefinition(stmt);
-            globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
         }
         return this;
     }
