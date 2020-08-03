@@ -19,8 +19,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -44,8 +42,6 @@ import java.util.Set;
  * @see #link
  */
 public final class Linker {
-    private static final Map<Path, Pair<CompilerInfo, File>> ALL_FILES = new HashMap<>();
-
     //  TODO? Should this link regardless?
     //        How should that interact with circular references?
     //        What should be allowed/not allowed?
