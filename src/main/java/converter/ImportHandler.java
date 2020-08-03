@@ -33,7 +33,11 @@ public final class ImportHandler {
     private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
     private static List<Pair<CompilerInfo, File>> toCompile = new ArrayList<>();
 
-    public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>(Builtins.DEFAULT_INTERFACES);
+    public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>();
+
+    static {
+        ALL_DEFAULT_INTERFACES.addAll(Builtins.DEFAULT_INTERFACES);
+    }
 
     private final CompilerInfo info;
     private final Map<String, TypeObject> exports = new HashMap<>();
@@ -112,6 +116,9 @@ public final class ImportHandler {
             types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
         }
         declaredTypes.putAll(types);
+        if (isModule) {
+            info.addPredeclaredTypes(types);
+        }
     }
 
     public void setFromLinker(@NotNull Linker linker) {

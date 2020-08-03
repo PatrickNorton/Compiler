@@ -136,7 +136,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @NotNull
     private List<TypeObject> fulfilledInterfaces() {
         List<TypeObject> result = new ArrayList<>();
-        for (var inter : Linker.ALL_DEFAULT_INTERFACES) {
+        for (var inter : ImportHandler.ALL_DEFAULT_INTERFACES) {
             if (!isSubclass(inter) && fulfillsContract(inter)) {
                 result.add(inter.generify(generifiedParams(inter)));
             }

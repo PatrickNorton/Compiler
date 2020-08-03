@@ -17,14 +17,11 @@ import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The class to link the {@link TopNode} representing a file.
@@ -48,12 +45,6 @@ public final class Linker {
     private final CompilerInfo info;
     private final Map<String, Pair<String, LineInfo>> exports;
     private final Map<String, TypeObject> globals;
-
-    public static final Set<InterfaceType> ALL_DEFAULT_INTERFACES = new HashSet<>();
-
-    static {
-        ALL_DEFAULT_INTERFACES.addAll(Builtins.DEFAULT_INTERFACES);
-    }
 
     public Linker(CompilerInfo info) {
         this.info = info;
@@ -88,11 +79,9 @@ public final class Linker {
      */
     public Linker link(TopNode node) {
         info.loadDependents();
-        var declaredTypes = declareTypes(node);
-        if (declaredTypes == null) {  // Not a module
+        if (!isModule(node)) {
             return this;
         }
-        info.addPredeclaredTypes(declaredTypes);
         // Done in several steps so that auto interfaces can be registered first
         Deque<InterfaceDefinitionNode> defaultInterfaces = new ArrayDeque<>();
         Deque<DefinitionNode> definitions = new ArrayDeque<>();
@@ -111,7 +100,6 @@ public final class Linker {
                 );
             }
         }
-        info.addDefaultInterfaces(ALL_DEFAULT_INTERFACES);
         for (var stmt : defaultInterfaces) {
             var name = stmt.getName();
             TypeObject type = linkDefinition(stmt);
@@ -166,75 +154,12 @@ public final class Linker {
         }
     }
 
-    /**
-     * Return a map with all pre-declared types in the file.
-     * If the file is not a module (has no {@link ImportExportNode 'export'
-     * statements}), return null.
-     * <p>
-     * Pre-declared types have no associated attributes, and are there solely
-     * to assist in linking in the second pass, where they will be filled out.
-     *
-     * @param node The {@link TopNode} to run through
-     * @return The map of types, or null if not a module
-     */
-    @Nullable
-    private Map<String, TypeObject> declareTypes(@NotNull TopNode node) {
-        Map<String, TypeObject> types = new HashMap<>();
-        Map<String, LineInfo> lineInfos = new HashMap<>();
-        boolean isModule = false;
-        boolean hasAuto = false;
-        Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
+    private boolean isModule(@NotNull TopNode node) {
         for (var stmt : node) {
-            if (stmt instanceof ClassDefinitionNode) {
-                var cls = (ClassDefinitionNode) stmt;
-                var strName = cls.strName();
-                if (types.containsKey(strName)) {
-                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                }
-                var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
-                types.put(strName, new StdTypeObject(strName, generics));
-                lineInfos.put(strName, cls.getLineInfo());
-            } else if (stmt instanceof EnumDefinitionNode) {
-                var cls = (EnumDefinitionNode) stmt;
-                var strName = cls.getName().strName();
-                if (types.containsKey(strName)) {
-                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                }
-                var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
-                types.put(strName, new StdTypeObject(strName, generics));
-                lineInfos.put(strName, cls.getLineInfo());
-            } else if (stmt instanceof InterfaceDefinitionNode) {
-                var cls = (InterfaceDefinitionNode) stmt;
-                var strName = cls.getName().strName();
-                if (types.containsKey(strName)) {
-                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                }
-                var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
-                var type = new InterfaceType(strName, generics);
-                types.put(strName, type);
-                lineInfos.put(strName, cls.getLineInfo());
-                if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
-                    ALL_DEFAULT_INTERFACES.add(type);
-                    hasAuto = true;
-                }
-            } else if (stmt instanceof ImportExportNode) {
-                var ieStmt = (ImportExportNode) stmt;
-                // TODO: Types from imports
-                if (ieStmt.getType() == ImportExportNode.EXPORT) {
-                    isModule = true;
-                }
-            } else if (stmt instanceof TypedefStatementNode) {
-                typedefs.push((TypedefStatementNode) stmt);
+            if (stmt instanceof ImportExportNode && ((ImportExportNode) stmt).getType() == ImportExportNode.EXPORT) {
+                return true;
             }
         }
-        if (!isModule && hasAuto) {
-            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", LineInfo.empty());
-        }
-        for (var stmt : typedefs) {
-            var type = stmt.getType();
-            var name = stmt.getName();
-            types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
-        }
-        return isModule ? types : null;
+        return false;
     }
 }

@@ -285,6 +285,7 @@ public final class CompilerInfo {
         if (linked) {
             return this;
         }
+        loadDependents();
         var linker = new Linker(this).link(node);
         importHandler.setFromLinker(linker);
         linked = true;
