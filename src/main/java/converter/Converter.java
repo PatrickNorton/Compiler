@@ -96,7 +96,7 @@ public final class Converter {
     }
 
     @NotNull
-    public static Path findPath(String name) {
+    public static Path findPath(String name, Lined info) {
         var path = System.getenv("NEWLANG_PATH");
         for (String filename : path.split(":")) {
             if (!filename.isEmpty()) {
@@ -120,7 +120,7 @@ public final class Converter {
                 return getPath(List.of(builtinPath().resolve(builtin)), name);
             }
         }
-        throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
+        throw CompilerException.of("Cannot find module " + name, info);
     }
 
     /**

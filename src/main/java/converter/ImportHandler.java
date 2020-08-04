@@ -252,7 +252,7 @@ public final class ImportHandler {
     private Path loadFile(String moduleName, @NotNull ImportExportNode node) {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
-                : Converter.findPath(moduleName);
+                : Converter.findPath(moduleName, node);
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
@@ -299,7 +299,7 @@ public final class ImportHandler {
     private void registerWildcardExport(String moduleName, @NotNull ImportExportNode node) {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
-                : Converter.findPath(moduleName);
+                : Converter.findPath(moduleName, node);
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
