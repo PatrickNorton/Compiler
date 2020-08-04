@@ -4,7 +4,7 @@ from .functions import any
 from types import Array
 
 export accumulate, chain, compress, dropWhile, filter, filterEqual, filterFalse,
-export filterNotEqual, firstN, map, pairs, takeWhile, traverse, withNext, zip, zipLongest
+export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -93,6 +93,7 @@ generator func takeWhile(Callable[T, bool] predicate, Iterable[T] sequence) -> T
     yield from (i for T i in sequence while predicate)
 }
 
+#|
 generic T[Iterable[U|Iterable[T]]], U
 generator func traverse(T sequence) -> U {
     for var element in sequence {
@@ -103,6 +104,7 @@ generator func traverse(T sequence) -> U {
         }
     }
 }
+|#
 
 generic T
 generator func withNext(Iterable[T] values) -> T, T {
