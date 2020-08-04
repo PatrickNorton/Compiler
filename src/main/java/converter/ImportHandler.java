@@ -45,8 +45,6 @@ public final class ImportHandler {
     private final Map<String, TypeObject> exports = new HashMap<>();
     private final Map<Path, Pair<Integer, List<String>>> imports = new HashMap<>();
     private final IndexedSet<String> importStrings = new IndexedHashSet<>();
-    private final Map<String, ImportConstant> importConstants = new HashMap<>();
-    private final Map<String, TypeObject> declaredTypes = new HashMap<>();
 
     public ImportHandler(CompilerInfo info) {
         this.info = info;
@@ -117,7 +115,6 @@ public final class ImportHandler {
             var name = stmt.getName();
             types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
         }
-        declaredTypes.putAll(types);
         if (isModule) {
             info.addPredeclaredTypes(types);
         }
@@ -165,7 +162,6 @@ public final class ImportHandler {
                 var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
                 imports.put(path, Pair.of(imports.size(), List.of()));
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
                 result.put(as, importStrings.indexOf(valStr));
             }
             return result;
@@ -180,7 +176,6 @@ public final class ImportHandler {
                 var valStr = from.toString() + "." + value.toString();
                 var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
                 result.put(as, importStrings.indexOf(valStr));
             }
             var path = loadFile(from.toString(), node);
@@ -202,10 +197,8 @@ public final class ImportHandler {
                 assert val.getPostDots().length == 0;
                 var path = loadFile(preDot, node);
                 var valStr = val.toString();
-                var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
                 imports.put(path, Pair.of(imports.size(), List.of()));
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
             }
         } else {
             checkAs(node);
@@ -215,9 +208,7 @@ public final class ImportHandler {
                 var value = node.getValues()[i];
                 values.add(value.toString());
                 var valStr = from.toString() + "." + value.toString();
-                var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
             }
             var path = loadFile(from.toString(), node);
             imports.put(path, Pair.of(imports.size(), values));
@@ -231,11 +222,6 @@ public final class ImportHandler {
                     node, node.getAs().length, node.getValues().length
             );
         }
-    }
-
-    public TypeObject importType(ImportExportNode node, int index) {
-        var path = loadFile(moduleName(node, index), node);
-        return ALL_FILES.get(path).importHandler().exports.get(node.getValues()[index].toString());
     }
 
     @Contract(pure = true)
