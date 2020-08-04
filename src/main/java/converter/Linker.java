@@ -7,6 +7,7 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
+import main.java.parser.IndependentNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
@@ -83,14 +84,13 @@ public final class Linker {
         // Filters out auto interfaces, which are registered earlier
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
-                if (!(stmt instanceof InterfaceDefinitionNode)
-                        || !((InterfaceDefinitionNode) stmt).getDescriptors().contains(DescriptorNode.AUTO)) {
-                    var def = (DefinitionNode) stmt;
+                var def = (DefinitionNode) stmt;
+                if (!isAutoInterface(def)) {
                     var name = def.getName();
                     TypeObject type = linkDefinition(def);
                     globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
                 }
-            } else if (!(stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode)) {
+            } else if (isValidTopLevelStmt(stmt)) {
                 throw CompilerException.of(
                         "Only definition and import/export statements are allowed in file with exports",
                         stmt
@@ -148,5 +148,13 @@ public final class Linker {
             }
         }
         return false;
+    }
+
+    private boolean isAutoInterface(DefinitionNode stmt) {
+        return stmt instanceof InterfaceDefinitionNode && stmt.getDescriptors().contains(DescriptorNode.AUTO);
+    }
+
+    private boolean isValidTopLevelStmt(IndependentNode stmt) {
+        return stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode;
     }
 }
