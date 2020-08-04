@@ -365,6 +365,7 @@ public final class Builtins {
             Map.entry("reversed", REVERSED),
             Map.entry("slice", SLICE),
             Map.entry("id", ID),
+            Map.entry("dec", DECIMAL),
             Map.entry("null", NULL)
     );
 
