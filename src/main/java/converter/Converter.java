@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
-import main.java.parser.Parser;
 import main.java.parser.TopNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,9 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -25,7 +22,6 @@ import java.util.stream.Collectors;
  */
 public final class Converter {
     private static final FilenameFilter EXPORT_FILTER = (f, s) -> s.equals(Util.EXPORTS_FILENAME);
-    private static final Map<String, CompilerInfo> modules = new HashMap<>();
 
     private static File destFile = null;
 
@@ -54,7 +50,7 @@ public final class Converter {
     }
 
     /**
-     * Finds a non-local module given its name from the source code.
+     * Finds the path to a non-local module given its name from the source code.
      * <p>
      *     The module name is resolved as follows: If the internal cache of
      *     pre-compiled modules contains the name, it uses it. Otherwise, it
@@ -63,38 +59,8 @@ public final class Converter {
      *     folder.
      * </p>
      * @param name The name of the module
-     * @return The {@link CompilerInfo} for the module
+     * @return The {@link Path path} to the module
      */
-    public static CompilerInfo findModule(String name) {
-        if (modules.containsKey(name)) {
-            return modules.get(name);
-        }
-        var path = System.getenv("NEWLANG_PATH");
-        for (String filename : path.split(":")) {
-            if (!filename.isEmpty()) {
-                try (var walker = Files.walk(Path.of(filename))) {
-                    var result = walker.filter(Converter::isModule)
-                            .filter(f -> f.endsWith(name + Util.FILE_EXTENSION) || f.endsWith(name))
-                            .collect(Collectors.toList());
-                    if (!result.isEmpty()) {
-                        return getInfo(result, name);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        var builtinPath = builtinPath().toFile().list();
-        assert builtinPath != null;
-        for (var builtin : builtinPath) {
-            var finalName = Path.of(builtin).getFileName().toString();
-            if (isModule(builtinPath().resolve(builtin)) && nameMatches(name, finalName)) {
-                return getInfo(List.of(builtinPath().resolve(builtin)), name);
-            }
-        }
-        throw CompilerException.of("Cannot find module " + name, LineInfo.empty());
-    }
-
     @NotNull
     public static Path findPath(String name, Lined info) {
         var path = System.getenv("NEWLANG_PATH");
@@ -124,8 +90,8 @@ public final class Converter {
     }
 
     /**
-     * Finds a local module given its name and the path to the current file's
-     * parent folder.
+     * Finds the path to a local module given its name and the path to the
+     * current file's parent folder.
      * <p>
      *     Local modules are found by searching the parent file for the name
      *     given. More dots at the beginning means higher-up files are
@@ -135,24 +101,10 @@ public final class Converter {
      * @param parentPath The path to the parent file
      * @param name The name of the module
      * @param lineInfo The info for the line of the import
-     * @return The {@link CompilerInfo} representing the file
+     * @return The {@link Path path} to the file
      */
     @NotNull
-    public static CompilerInfo findLocalModule(@NotNull Path parentPath, String name, Lined lineInfo) {
-        List<Path> result = new ArrayList<>();
-        for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
-            var path = file.toPath();
-            if (isModule(path) && path.endsWith(name + Util.FILE_EXTENSION) || path.endsWith(name)) {
-                result.add(path);
-            }
-        }
-        if (!result.isEmpty()) {
-            return getInfo(result, name);
-        }
-        throw CompilerException.of("Cannot find module " + name, lineInfo);
-    }
-
-    public static Path localModulePath(Path parentPath, String name, Lined lineInfo) {
+    public static Path localModulePath(@NotNull Path parentPath, String name, Lined lineInfo) {
         List<Path> result = new ArrayList<>();
         for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
             var path = file.toPath();
@@ -183,23 +135,6 @@ public final class Converter {
     @NotNull
     private static Path builtinPath() {
         return new File("Lib").toPath().toAbsolutePath();
-    }
-
-    @NotNull
-    private static CompilerInfo getInfo(@NotNull List<Path> result, String name) {
-        var endFile = result.get(0).toFile();
-        if (endFile.isDirectory()) {
-            var exportFiles = endFile.listFiles(EXPORT_FILTER);
-            assert exportFiles != null;
-            if (exportFiles.length == 0) {
-                throw CompilerException.format("No exports file for module %s", LineInfo.empty(), name);
-            }
-            assert exportFiles.length == 1;
-            endFile = exportFiles[0];
-        }
-        var info = new CompilerInfo(Parser.parse(endFile));
-        modules.put(name, info);
-        return info;
     }
 
     private static Path getPath(@NotNull List<Path> result, String name) {
