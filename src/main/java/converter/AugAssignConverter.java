@@ -22,10 +22,11 @@ public final class AugAssignConverter implements BaseConverter {
         var assignedConverter = TestConverter.of(info, node.getName(), 1);
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var converterReturn = assignedConverter.returnType()[0];
-        var returnType = converterReturn.operatorReturnType(node.getOperator().operator, info.accessLevel(converterReturn))[0];
+        var operator = node.getOperator().operator;
+        var returnType = converterReturn.operatorReturnType(operator, info.accessLevel(converterReturn))[0];
         if (returnType == null) {
             throw CompilerException.format("Value of type %s does not have an overloaded %s operator",
-                    node, assignedConverter.returnType()[0].name(), node.getOperator().operator.name);
+                    node, assignedConverter.returnType()[0].name(), operator.name);
         } else if (!returnType.isSuperclass(assignedConverter.returnType()[0])) {
             throw CompilerException.format(
                     "Value of type %s has a return type of %s, which is incompatible with the type of %s",
@@ -33,7 +34,7 @@ public final class AugAssignConverter implements BaseConverter {
         }
         List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
         bytes.addAll(valueConverter.convert(start));
-        bytes.add(OperatorConverter.BYTECODE_MAP.get(node.getOperator().operator).value);
+        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
         bytes.add(Bytecode.STORE.value);
         var variable = (VariableNode) node.getName();  // TODO: Add assignment for other types
         bytes.addAll(Util.shortToBytes(info.varIndex(variable.getName())));
