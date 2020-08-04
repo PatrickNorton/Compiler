@@ -9,9 +9,9 @@ export HashMap
 
 typedef VarInfo as Tuple[int64, K, V]
 
-const int DEFAULT_ARRAY_SIZE = 1 << 4
-const dec RESIZE_THRESHOLD = 0.75
-const int PERTURB_SHIFT = 5
+int DEFAULT_ARRAY_SIZE = 1 << 4
+dec RESIZE_THRESHOLD = 0.75
+int PERTURB_SHIFT = 5
 
 enum Empty {
     EMPTY,
