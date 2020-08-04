@@ -122,6 +122,10 @@ public final class Builtins {
 
     public static final LangObject OPEN = new LangInstance(CONTEXT.generify(OBJECT));  // TODO: File object
 
+    public static final FunctionInfo ID_INFO = new FunctionInfo("id", ArgumentInfo.of(Builtins.OBJECT), INT);
+
+    public static final LangObject ID = new LangInstance(ID_INFO.toCallable());
+
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
@@ -334,7 +338,8 @@ public final class Builtins {
             CHAR,
             OPEN,
             REVERSED,
-            SLICE
+            SLICE,
+            ID
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -359,6 +364,7 @@ public final class Builtins {
             Map.entry("object", OBJECT),
             Map.entry("reversed", REVERSED),
             Map.entry("slice", SLICE),
+            Map.entry("id", ID),
             Map.entry("null", NULL)
     );
 

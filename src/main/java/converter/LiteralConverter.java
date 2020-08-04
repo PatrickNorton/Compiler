@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class LiteralConverter implements TestConverter {
+public final class LiteralConverter implements TestConverter {  // TODO: Tuples
     private final LiteralNode node;
     private final CompilerInfo info;
     private final int retCount;
@@ -22,7 +22,7 @@ public final class LiteralConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var mainType = node.getBraceType().equals("[") ? Builtins.LIST : Builtins.SET;
-        return new TypeObject[]{mainType.generify(returnTypes(node.getBuilders()))};
+        return new TypeObject[]{mainType.generify(returnTypes(node.getBuilders())).makeMut()};
     }
 
     @NotNull

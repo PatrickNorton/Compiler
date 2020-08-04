@@ -66,7 +66,7 @@ public final class FunctionCallConverter implements TestConverter {
             }
             var cls = info.classOf(name);
             if (cls != null) {  // If the variable is a class, calling it will always return an instance
-                return new TypeObject[]{cls};
+                return new TypeObject[]{cls.makeMut()};
             }
             var fn = info.fnInfo(name);
             if (fn != null) {

@@ -45,8 +45,10 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         if (this.equals(other)) {
             return true;
         } else if (other instanceof UserType && ((UserType<?>) other).info == info) {
-            if (((UserType<?>) other).generics.isEmpty()) {
-                return true;
+            if (!((UserType<?>) other).isConst && isConst) {
+                return false;
+            } else if (((UserType<?>) other).generics.isEmpty()) {
+                return ((UserType<?>) other).isConst || !isConst;
             } else if (generics.isEmpty()) {
                 return false;
             } else {
@@ -78,7 +80,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public final TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
         var types = operatorReturnTypeWithGenerics(o, access);
         if (types == null) return null;
-        TypeObject[] result = new TypeObject[types.length];
         return Arrays.copyOf(types, types.length);
     }
 
@@ -135,7 +136,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @NotNull
     private List<TypeObject> fulfilledInterfaces() {
         List<TypeObject> result = new ArrayList<>();
-        for (var inter : Linker.ALL_DEFAULT_INTERFACES) {
+        for (var inter : ImportHandler.ALL_DEFAULT_INTERFACES.keySet()) {
             if (!isSubclass(inter) && fulfillsContract(inter)) {
                 result.add(inter.generify(generifiedParams(inter)));
             }
