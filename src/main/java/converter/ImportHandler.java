@@ -54,7 +54,7 @@ public final class ImportHandler {
         Map<String, TypeObject> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
         boolean isModule = false;
-        boolean hasAuto = false;
+        Optional<InterfaceDefinitionNode> hasAuto = Optional.empty();
         Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
         for (var stmt : node) {
             if (stmt instanceof ImportExportNode) {
@@ -100,15 +100,15 @@ public final class ImportHandler {
                     lineInfos.put(strName, cls.getLineInfo());
                     if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
                         ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
-                        hasAuto = true;
+                        hasAuto = Optional.of(cls);
                     }
                 } else if (stmt instanceof TypedefStatementNode) {
                     typedefs.push((TypedefStatementNode) stmt);
                 }
             }
         }
-        if (!isModule && hasAuto) {
-            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", LineInfo.empty());
+        if (!isModule && hasAuto.isPresent()) {
+            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", hasAuto.get());
         }
         for (var stmt : typedefs) {
             var type = stmt.getType();
