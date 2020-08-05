@@ -130,6 +130,8 @@ public final class Builtins {
 
     public static final StdTypeObject ARRAY = new StdTypeObject("Array", GenericInfo.of(ARRAY_PARAM));
 
+    public static final TupleType TUPLE = new TupleType();
+
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
@@ -396,6 +398,7 @@ public final class Builtins {
             Map.entry("slice", SLICE),
             Map.entry("id", ID),
             Map.entry("dec", DECIMAL),
+            Map.entry("tuple", TUPLE),
             Map.entry("null", NULL)
     );
 
