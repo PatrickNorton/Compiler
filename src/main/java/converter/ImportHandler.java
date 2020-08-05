@@ -76,7 +76,7 @@ public final class ImportHandler {
                     if (types.containsKey(strName)) {
                         throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                     }
-                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var generics = GenericInfo.empty();
                     types.put(strName, new StdTypeObject(strName, generics));
                     lineInfos.put(strName, cls.getLineInfo());
                 } else if (stmt instanceof EnumDefinitionNode) {
@@ -85,7 +85,7 @@ public final class ImportHandler {
                     if (types.containsKey(strName)) {
                         throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                     }
-                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var generics = GenericInfo.empty();
                     types.put(strName, new StdTypeObject(strName, generics));
                     lineInfos.put(strName, cls.getLineInfo());
                 } else if (stmt instanceof InterfaceDefinitionNode) {
@@ -94,7 +94,7 @@ public final class ImportHandler {
                     if (types.containsKey(strName)) {
                         throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                     }
-                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var generics = GenericInfo.empty();
                     var type = new InterfaceType(strName, generics);
                     types.put(strName, type);
                     lineInfos.put(strName, cls.getLineInfo());

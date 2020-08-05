@@ -58,6 +58,12 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return result;
     }
 
+    public void reParse(CompilerInfo info, TypeLikeNode... generics) {
+        assert params.isEmpty();
+        var genInfo = parse(info, generics);
+        params.addAll(genInfo.params);
+    }
+
     @NotNull
     @Override
     public Iterator<TemplateParam> iterator() {
@@ -107,11 +113,9 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return new GenericInfo(Collections.unmodifiableList(List.of(args)));
     }
 
-    private static final GenericInfo EMPTY = new GenericInfo(Collections.emptyList());
-
     @NotNull
     @Contract(" -> new")
     public static GenericInfo empty() {
-        return EMPTY;
+        return of();
     }
 }

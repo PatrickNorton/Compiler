@@ -112,6 +112,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
 
     private void completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
+        obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
         if (!isConst) {
             checkConstSupers(obj, obj.getSupers());

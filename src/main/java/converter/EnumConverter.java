@@ -95,6 +95,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
 
     private void completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
+        obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         parseIntoObject(converter, obj);
     }
 
