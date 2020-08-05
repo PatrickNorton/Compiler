@@ -90,7 +90,7 @@ public final class Linker {
                     TypeObject type = linkDefinition(def);
                     globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
                 }
-            } else if (isValidTopLevelStmt(stmt)) {
+            } else if (!isValidTopLevelStmt(stmt)) {
                 throw CompilerException.of(
                         "Only definition and import/export statements are allowed in file with exports",
                         stmt
