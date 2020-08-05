@@ -15,14 +15,16 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private TypeLikeNode[] retType;
     private TypedArgumentListNode args;
     private StatementBodyNode body;
+    private boolean isEqStmt;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
     private TypeLikeNode[] generics = new TypeLikeNode[0];
 
     public OperatorDefinitionNode(@NotNull SpecialOpNameNode opCode, @NotNull TypeLikeNode[] retType,
-                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
-        this(opCode.getLineInfo(), opCode, retType, args, body);
+                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body,
+                                  boolean isEqStmt) {
+        this(opCode.getLineInfo(), opCode, retType, args, body, isEqStmt);
     }
     /**
      * Construct a new instance of OperatorDefinitionNode.
@@ -33,12 +35,14 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      */
     @Contract(pure = true)
     public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode opCode, @NotNull TypeLikeNode[] retType,
-                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body) {
+                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body,
+                                  boolean isEqStmt) {
         this.lineInfo = lineInfo;
         this.opCode = opCode;
         this.retType = retType;
         this.args = args;
         this.body = body;
+        this.isEqStmt = isEqStmt;
     }
 
     @Override
@@ -61,6 +65,10 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
 
     public TypedArgumentListNode getArgs() {
         return args;
+    }
+
+    public boolean isEqStmt() {
+        return isEqStmt;
     }
 
     @Override
@@ -132,16 +140,30 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         } else {
             retval = new TypeNode[0];
         }
-        StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new OperatorDefinitionNode(opCode, retval, args, body);
+        boolean isEqStmt = tokens.tokenIs("=");
+        StatementBodyNode body = parseBody(tokens, isEqStmt);
+        return new OperatorDefinitionNode(opCode, retval, args, body, isEqStmt);
     }
 
     @NotNull
     @Contract("_, _ -> new")
     static OperatorDefinitionNode fromGeneric(@NotNull TokenList tokens, @NotNull GenericOperatorNode op) {
         assert tokens.tokenIs("{");
-        StatementBodyNode body = StatementBodyNode.parse(tokens);
-        return new OperatorDefinitionNode(op.getOpCode(), op.getRetvals(), op.getArgs(), body);
+        boolean isEqStmt = tokens.tokenIs("=");
+        StatementBodyNode body = parseBody(tokens, isEqStmt);
+        return new OperatorDefinitionNode(op.getOpCode(), op.getRetvals(), op.getArgs(), body, isEqStmt);
+    }
+
+    @NotNull
+    private static StatementBodyNode parseBody(@NotNull TokenList tokens, boolean isEqStmt) {
+        assert isEqStmt == tokens.tokenIs("=");
+        if (isEqStmt) {
+            tokens.nextToken();
+            var value = TestNode.parse(tokens, false);
+            return new StatementBodyNode(value);
+        } else {
+            return StatementBodyNode.parse(tokens);
+        }
     }
 
     @Override
