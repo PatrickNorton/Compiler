@@ -67,6 +67,10 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         return args;
     }
 
+    public boolean isEqStmt() {
+        return isEqStmt;
+    }
+
     @Override
     public StatementBodyNode getBody() {
         return body;
