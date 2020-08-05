@@ -126,6 +126,10 @@ public final class Builtins {
 
     public static final LangObject ID = new LangInstance(ID_INFO.toCallable());
 
+    private static final TemplateParam ARRAY_PARAM = new TemplateParam("T", 0, OBJECT);
+
+    public static final StdTypeObject ARRAY = new StdTypeObject("Array", GenericInfo.of(ARRAY_PARAM));
+
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
@@ -311,6 +315,32 @@ public final class Builtins {
         DICT.seal();
     }
 
+    static {
+        var arrayGetInfo = new FunctionInfo(ArgumentInfo.of(INT), ARRAY_PARAM);
+        var arraySetInfo = new FunctionInfo(ArgumentInfo.of(INT, ARRAY_PARAM));
+        var arrayIterInfo = new FunctionInfo(ARRAY_PARAM);
+        var arrayContainsInfo = new FunctionInfo(ArgumentInfo.of(ARRAY_PARAM), BOOL);
+        var arrayEqInfo = new FunctionInfo(ArgumentInfo.of(ARRAY), BOOL);
+        var arraySliceInfo = new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(ARRAY_PARAM));
+        var arrayReversedInfo = new FunctionInfo(ARRAY);
+
+        var arrayMap = Map.of(
+                OpSpTypeNode.GET_ATTR, arrayGetInfo,
+                OpSpTypeNode.SET_ATTR, arraySetInfo,
+                OpSpTypeNode.ITER, arrayIterInfo,
+                OpSpTypeNode.IN, arrayContainsInfo,
+                OpSpTypeNode.EQUALS, arrayEqInfo,
+                OpSpTypeNode.GET_SLICE, arraySliceInfo,
+                OpSpTypeNode.REVERSED, arrayReversedInfo
+        );
+        ARRAY.setOperators(arrayMap);
+        var arrayAttrs = Map.of(
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
+        );
+        ARRAY.setAttributes(arrayAttrs);
+        ARRAY.seal();
+    }
+
     static {  // null is const
         NULL_TYPE.isConstClass();
         NULL_TYPE.seal();
@@ -365,6 +395,7 @@ public final class Builtins {
             Map.entry("reversed", REVERSED),
             Map.entry("slice", SLICE),
             Map.entry("id", ID),
+            Map.entry("dec", DECIMAL),
             Map.entry("null", NULL)
     );
 

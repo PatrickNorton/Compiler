@@ -45,8 +45,6 @@ public final class ImportHandler {
     private final Map<String, TypeObject> exports = new HashMap<>();
     private final Map<Path, Pair<Integer, List<String>>> imports = new HashMap<>();
     private final IndexedSet<String> importStrings = new IndexedHashSet<>();
-    private final Map<String, ImportConstant> importConstants = new HashMap<>();
-    private final Map<String, TypeObject> declaredTypes = new HashMap<>();
 
     public ImportHandler(CompilerInfo info) {
         this.info = info;
@@ -56,7 +54,7 @@ public final class ImportHandler {
         Map<String, TypeObject> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
         boolean isModule = false;
-        boolean hasAuto = false;
+        Optional<InterfaceDefinitionNode> hasAuto = Optional.empty();
         Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
         for (var stmt : node) {
             if (stmt instanceof ImportExportNode) {
@@ -78,7 +76,7 @@ public final class ImportHandler {
                     if (types.containsKey(strName)) {
                         throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                     }
-                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var generics = GenericInfo.empty();
                     types.put(strName, new StdTypeObject(strName, generics));
                     lineInfos.put(strName, cls.getLineInfo());
                 } else if (stmt instanceof EnumDefinitionNode) {
@@ -87,7 +85,7 @@ public final class ImportHandler {
                     if (types.containsKey(strName)) {
                         throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                     }
-                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var generics = GenericInfo.empty();
                     types.put(strName, new StdTypeObject(strName, generics));
                     lineInfos.put(strName, cls.getLineInfo());
                 } else if (stmt instanceof InterfaceDefinitionNode) {
@@ -96,28 +94,27 @@ public final class ImportHandler {
                     if (types.containsKey(strName)) {
                         throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                     }
-                    var generics = GenericInfo.parse(info, cls.getName().getSubtypes());
+                    var generics = GenericInfo.empty();
                     var type = new InterfaceType(strName, generics);
                     types.put(strName, type);
                     lineInfos.put(strName, cls.getLineInfo());
                     if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
                         ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
-                        hasAuto = true;
+                        hasAuto = Optional.of(cls);
                     }
                 } else if (stmt instanceof TypedefStatementNode) {
                     typedefs.push((TypedefStatementNode) stmt);
                 }
             }
         }
-        if (!isModule && hasAuto) {
-            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", LineInfo.empty());
+        if (!isModule && hasAuto.isPresent()) {
+            throw CompilerException.of("Cannot (yet?) have 'auto' interfaces in non-module file", hasAuto.get());
         }
         for (var stmt : typedefs) {
             var type = stmt.getType();
             var name = stmt.getName();
             types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
         }
-        declaredTypes.putAll(types);
         if (isModule) {
             info.addPredeclaredTypes(types);
         }
@@ -165,7 +162,6 @@ public final class ImportHandler {
                 var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
                 imports.put(path, Pair.of(imports.size(), List.of()));
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
                 result.put(as, importStrings.indexOf(valStr));
             }
             return result;
@@ -180,7 +176,6 @@ public final class ImportHandler {
                 var valStr = from.toString() + "." + value.toString();
                 var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
                 result.put(as, importStrings.indexOf(valStr));
             }
             var path = loadFile(from.toString(), node);
@@ -202,10 +197,8 @@ public final class ImportHandler {
                 assert val.getPostDots().length == 0;
                 var path = loadFile(preDot, node);
                 var valStr = val.toString();
-                var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
                 imports.put(path, Pair.of(imports.size(), List.of()));
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
             }
         } else {
             checkAs(node);
@@ -215,9 +208,7 @@ public final class ImportHandler {
                 var value = node.getValues()[i];
                 values.add(value.toString());
                 var valStr = from.toString() + "." + value.toString();
-                var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
                 importStrings.add(valStr);
-                importConstants.put(as, new ImportConstant(importStrings.indexOf(valStr), valStr));
             }
             var path = loadFile(from.toString(), node);
             imports.put(path, Pair.of(imports.size(), values));
@@ -231,11 +222,6 @@ public final class ImportHandler {
                     node, node.getAs().length, node.getValues().length
             );
         }
-    }
-
-    public TypeObject importType(ImportExportNode node, int index) {
-        var path = loadFile(moduleName(node, index), node);
-        return ALL_FILES.get(path).importHandler().exports.get(node.getValues()[index].toString());
     }
 
     @Contract(pure = true)
@@ -252,7 +238,7 @@ public final class ImportHandler {
     private Path loadFile(String moduleName, @NotNull ImportExportNode node) {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
-                : Converter.findPath(moduleName);
+                : Converter.findPath(moduleName, node);
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
@@ -299,7 +285,7 @@ public final class ImportHandler {
     private void registerWildcardExport(String moduleName, @NotNull ImportExportNode node) {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
-                : Converter.findPath(moduleName);
+                : Converter.findPath(moduleName, node);
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
