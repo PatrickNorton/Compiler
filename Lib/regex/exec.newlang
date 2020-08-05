@@ -105,7 +105,7 @@ const class ExecReadOnly {
                 return MatchType.Literal(MatchLiteralType.ANCHORED_START)
             } else {
                 return MatchType.Literal(MatchLiteralType.UNANCHORED)
-            };
+            }
         }
         if ro.suffixes.complete() {
             if self.nfa.isAnchoredEnd {
@@ -115,7 +115,7 @@ const class ExecReadOnly {
                 # anchored, then complete prefixes should imply complete
                 # suffixes.
                 return MatchType.Literal(MatchLiteralType.UNANCHORED)
-            };
+            }
         }
         return null
     }
@@ -189,7 +189,7 @@ class ExecBuilder {
                 .nestLimit(self.options.nestLimit)
                 .build())
             var expr = parser.parse(patt)
-            bytes = bytes || not expr.isAlwaysUtf8()
+            bytes = bytes or not expr.isAlwaysUtf8()
             exprs.push(expr)
         }
 
