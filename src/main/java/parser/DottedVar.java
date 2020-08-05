@@ -59,6 +59,9 @@ public class DottedVar implements BaseNode {
         if (!namesOnly) {
             postDot = NameNode.parsePostBraces(tokens, postDot);
         }
+        if (ignoreNewlines) {
+            tokens.passNewlines();
+        }
         return new DottedVar(info, dotType, postDot);
     }
 
