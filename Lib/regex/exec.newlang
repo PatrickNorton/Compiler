@@ -211,7 +211,7 @@ class ExecBuilder {
             # Partial anchors unfortunately make it hard to use
             # suffixes, so disable them.
             suffixes = null
-        } else if isSet and expr.isAnchoredEnd() {
+        } elif isSet and expr.isAnchoredEnd() {
             # Regex sets with anchors do not go well with literal
             # optimizations.
             suffixes = null
@@ -259,14 +259,14 @@ class ExecBuilder {
         var ro1 = ExecReadOnly(
             self.options.pats,
             nfa, dfa, dfaReverse,
-            LiteralSearcher.suffixes(parsed.suffixes)
-            ac, MatchType.Nothing
+            LiteralSearcher.suffixes(parsed.suffixes),
+            ac, MatchType.Nothing,
         )
         var ro = ExecReadOnly(
             self.options.pats,
             nfa, dfa, dfaReverse,
-            LiteralSearcher.suffixes(parsed.suffixes)
-            ac, ro1.chooseMatchType(self.matchType)
+            LiteralSearcher.suffixes(parsed.suffixes),
+            ac, ro1.chooseMatchType(self.matchType),
         )
         return Exec(ro, Cached())
     }
@@ -308,7 +308,7 @@ enum MatchLiteralType {
     ANCHORED_END,
     # Use an Aho-Corasick automaton. This requires `ac` to be Some on
     # ExecReadOnly.
-    AHO_CORASIK,
+    AHO_CORASIK
 }
 
 enum MatchNfaType {
@@ -323,7 +323,7 @@ enum MatchNfaType {
     #
     # (This is only set by tests, since it never makes sense to always want
     # the Pike VM.)
-    PIKE_VM,
+    PIKE_VM
 }
 
 class ProgramCache {
