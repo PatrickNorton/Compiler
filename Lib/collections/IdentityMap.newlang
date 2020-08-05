@@ -5,9 +5,9 @@ from types import Array
 export IdentityMap
 
 
-const int DEFAULT_ARRAY_SIZE = 1 << 4
-const dec RESIZE_THRESHOLD = 0.75
-const int PERTURB_SHIFT = 8
+int DEFAULT_ARRAY_SIZE = 1 << 4
+dec RESIZE_THRESHOLD = 0.75
+int PERTURB_SHIFT = 8
 
 
 union Value {

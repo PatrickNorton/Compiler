@@ -6,7 +6,7 @@ from numtools import highestOneBit
 
 export Deque
 
-const int DEFAULT_SIZE
+int DEFAULT_SIZE = 8
 
 final class Deque[V] {
     private Array[V?] values

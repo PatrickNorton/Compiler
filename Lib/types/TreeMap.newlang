@@ -3,8 +3,8 @@ from interfaces typeget Comparable
 
 export TreeMap
 
-const bool BLACK = false
-const bool RED = true
+bool BLACK = false
+bool RED = true
 
 class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
     private TreeNode[K, V]? top

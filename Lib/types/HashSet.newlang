@@ -7,8 +7,8 @@ from .natives import Array
 export HashSet
 
 
-const int DEFAULT_ARRAY_SIZE = 1 << 4
-const dec RESIZE_THRESHOLD = 0.75
+int DEFAULT_ARRAY_SIZE = 1 << 4
+dec RESIZE_THRESHOLD = 0.75
 
 
 typedef VarInfo as tuple[int64, T]

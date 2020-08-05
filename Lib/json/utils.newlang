@@ -4,7 +4,7 @@ export JsonObject, parse
 typedef JsonObject as int | float | null | str | bool | list[JsonObject] | dict[JsonObject, JsonObject]
 
 
-const var NUMBER_PATTERN = re"(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?"
+var NUMBER_PATTERN = re"(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?"
 
 
 class ParseContext {
