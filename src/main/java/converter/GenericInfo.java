@@ -116,6 +116,6 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
     @NotNull
     @Contract(" -> new")
     public static GenericInfo empty() {
-        return of();
+        return new GenericInfo(new ArrayList<>());
     }
 }
