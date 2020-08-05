@@ -55,6 +55,8 @@ public interface DescribableNode extends IndependentNode {
             return IndependentNode.parseVar(tokens);
         } else if (tokens.tokenIs(TokenType.KEYWORD)) {
             return finishParse(IndependentNode.parse(tokens), descriptors);
+        } else if (tokens.tokenIs(TokenType.OPERATOR_SP)) {
+            return finishParse(OperatorDefinitionNode.parse(tokens), descriptors);
         } else if (tokens.lineContains(TokenType.ASSIGN)) {
             return finishParse(AssignStatementNode.parse(tokens), descriptors);
         } else if (tokens.lineContains(TokenType.AUG_ASSIGN)) {
