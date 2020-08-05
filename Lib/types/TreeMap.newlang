@@ -136,7 +136,7 @@ class TreeNode[K, V] {
     public cls? right = null
     public cls? parent
 
-    public const K key
+    public K key
     public V value
 
     public bool color
