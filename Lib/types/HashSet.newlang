@@ -85,7 +85,7 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
                     return index
                 }
                 case Value.Full as v {
-                    return deleted ?? index if v[0] == hash(key) and v[1] == key
+                    return deleted ?? index if v.hashCode == hash(key) and v.value == key
                     index = (5*index + 1 + (hash(key) >> PERTURB_SHIFT)) % self.values.length
                 }
             }
@@ -97,8 +97,10 @@ class HashSet[T[Hashable]] from AbstractSet[T] {
         int newSize = self.values.length << 1
         var old = self.values
         self.values = Array(newSize, Empty.EMPTY)
-        for var v in (i.Full!! for var i in old if i.Full?) {
-            self.values[self.getInfo(v[1], returnDeleted=true)] = v
+        for var i in old {
+            if i.Full? as v {
+                self.values[self.getInfo(v.value, returnDeleted=true)] = v
+            }
         }
     }
 }
