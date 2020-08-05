@@ -64,7 +64,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     @Override
-    public TypeObject getType() {
+    public final TypeObject getType() {
         return Builtins.TYPE.generify(this);
     }
 
