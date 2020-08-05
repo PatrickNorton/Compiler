@@ -1,5 +1,6 @@
 package main.java.parser;
 
+import main.java.converter.CompilerException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,6 +45,14 @@ public class DottedVar implements BaseNode {
                 throw tokens.defaultError();
             }
             postDot = SpecialOpNameNode.parse(tokens);
+        } else if (tokens.tokenIs(TokenType.NUMBER)) {
+            var number = NumberNode.parse(tokens);
+            var value = number.getValue();
+            try {
+                postDot = new VariableNode(number.getLineInfo(), value.toBigIntegerExact().toString());
+            } catch (ArithmeticException e) {
+                throw CompilerException.of("Numbers as a post-dot must be whole integers", number);
+            }
         } else {
             postDot = VariableNode.parse(tokens);
         }
