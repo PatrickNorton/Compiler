@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +70,7 @@ public final class Converter {
                             .filter(f -> f.endsWith(name + Util.FILE_EXTENSION) || f.endsWith(name))
                             .collect(Collectors.toList());
                     if (!result.isEmpty()) {
-                        return getPath(result, name);
+                        return getPath(result, name, info);
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -83,7 +82,7 @@ public final class Converter {
         for (var builtin : builtinPath) {
             var finalName = Path.of(builtin).getFileName().toString();
             if (isModule(builtinPath().resolve(builtin)) && nameMatches(name, finalName)) {
-                return getPath(List.of(builtinPath().resolve(builtin)), name);
+                return getPath(List.of(builtinPath().resolve(builtin)), name, info);
             }
         }
         throw CompilerException.of("Cannot find module " + name, info);
@@ -113,7 +112,7 @@ public final class Converter {
             }
         }
         if (!result.isEmpty()) {
-            return getPath(result, name);
+            return getPath(result, name, lineInfo);
         }
         throw CompilerException.of("Cannot find module " + name, lineInfo);
     }
@@ -137,13 +136,14 @@ public final class Converter {
         return new File("Lib").toPath().toAbsolutePath();
     }
 
-    private static Path getPath(@NotNull List<Path> result, String name) {
+    @NotNull
+    private static Path getPath(@NotNull List<Path> result, String name, Lined lineInfo) {
         var endFile = result.get(0).toFile();
         if (endFile.isDirectory()) {
             var exportFiles = endFile.listFiles(EXPORT_FILTER);
             assert exportFiles != null;
             if (exportFiles.length == 0) {
-                throw CompilerException.format("No exports file for module %s", LineInfo.empty(), name);
+                throw CompilerException.format("No exports file for module %s", lineInfo, name);
             }
             assert exportFiles.length == 1;
             endFile = exportFiles[0];
