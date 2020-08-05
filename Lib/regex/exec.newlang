@@ -17,7 +17,7 @@ class Exec {
         switch ty {
             case MatchLiteralType.UNANCHORED {
                 var lits = self.ro.nfa.prefixes
-                if lits.find(text[start:]) as f? {
+                if lits.find(text[start:])? as f {
                     return (f.0 + start, f.1 + start)
                 } else {
                     return null
