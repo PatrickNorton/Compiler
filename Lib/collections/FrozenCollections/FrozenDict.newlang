@@ -1,17 +1,15 @@
-from copy import copy
-
 export FrozenDict
 
 
 final class FrozenDict[K, V] from dict[K, V] {
-    private const dict[K, V] items
+    private dict[K, V] items
 
     operator new (*tuple[K, V] items, /) {
         self.items = dict(items)
     }
 
     operator new (dict[K, V] items, /) {
-        self.items = copy(items)
+        self.items = {i: j for var i, var j in items}
     }
 
     operator + (dict[K, V] items, /) -> dict[K, V] {

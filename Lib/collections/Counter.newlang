@@ -1,4 +1,3 @@
-from copy import copy
 from itertools import chain, firstN, repeat
 
 export Counter
@@ -19,7 +18,7 @@ final class Counter[T] from dict[T, int] {
     }
 
     public operator new (dict[T, int] items) {
-        self.values = copy(items)
+        self.values = {i: j for var i, var j in items}
     }
 
     public operator [] (T value) -> int {
