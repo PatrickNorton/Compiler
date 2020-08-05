@@ -31,8 +31,8 @@ class Program {
         self.byte_classes = bytes()
         self.only_utf8 = true
         self.isBytes = false
-        self.isDfa: false
-        self.isReverse: false
+        self.isDfa = false
+        self.isReverse = false
         self.isAnchoredStart = false
         self.isAnchoredEnd = false
         self.has_unicode_word_boundary = false
@@ -141,7 +141,7 @@ enum EmptyLook {
     # ASCII word boundary.
     WORD_BOUNDARY_ASCII,
     # Not ASCII word boundary.
-    NOT_WORD_BOUNDARY_ASCII,
+    NOT_WORD_BOUNDARY_ASCII
 }
 
 class InstChar {

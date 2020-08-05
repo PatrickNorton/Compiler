@@ -87,7 +87,7 @@ class Compiler {
     }
 
     private mut method compileMany(list[Hir] exprs) -> Program {
-        assert exprs.length > 1;
+        assert exprs.length > 1
 
         self.compiled.isAnchoredStart = all(e.isAnchoredStart() for var e in exprs)
         self.compiled.isAnchoredEnd = all(e.isAnchoredEnd() for var e in exprs)
@@ -98,27 +98,27 @@ class Compiler {
         } else {
             self.compiled.start = 0 # first instruction is always split
         }
-        self.fillToNext(dotstarPatch.hole);
+        self.fillToNext(dotstarPatch.hole)
 
-        mut var prevHole = Hole.None;
+        mut var prevHole = Hole.None
         for var i, var expr in enumerate(exprs[:-1]) {
-            self.fillToNext(prevHole);
-            var split = self.pushSplitHole();
-            var patch = self.cCapture(0, expr) ?? self.nextInst();
-            self.fill_to_next(patch.hole);
-            self.compiled.matches.push(self.insts.length;
-            self.push_compiled(Inst.Match(i));
-            prevHole = self.fillSplit(split, entry, null);
+            self.fillToNext(prevHole)
+            var split = self.pushSplitHole()
+            var patch = self.cCapture(0, expr) ?? self.nextInst()
+            self.fill_to_next(patch.hole)
+            self.compiled.matches.push(self.insts.length)
+            self.push_compiled(Inst.Match(i))
+            prevHole = self.fillSplit(split, entry, null)
         }
         var patch = self.cCapture(0, exprs[-1]) ?? self.nextInst()
-        self.fill(prevHole, entry);
-        self.fillToNext(hole);
-        self.compiled.matches.push(self.insts.length;
-        self.pushCompiled(Inst.Match(i));
+        self.fill(prevHole, entry)
+        self.fillToNext(hole)
+        self.compiled.matches.push(self.insts.length)
+        self.pushCompiled(Inst.Match(i))
         return self.compileFinish()
     }
 
-    private mut method compileFinish(self) -> Program {
+    private mut method compileFinish() -> Program {
         self.compiled.insts = [inst.unwrap() for var inst in self.insts]
         self.compiled.byteClasses = self.byteClasses.byteClasses()
         self.compiled.captureNameIdx = self.captureNameIdx
@@ -172,11 +172,11 @@ class Compiler {
                         return self.cEmptyLook(EmptyLook.NotWordBoundary)
                     }
                     case WordBoundary.Ascii {
-                        self.byteClasses.setWordBoundary();
+                        self.byteClasses.setWordBoundary()
                         return self.cEmptyLook(EmptyLook.WordBoundaryAscii)
                     }
                     case WordBoundary.AsciiNegate {
-                        self.byteClasses.setWordBoundary();
+                        self.byteClasses.setWordBoundary()
                         return self.cEmptyLook(EmptyLook.NotWordBoundaryAscii)
                     }
                 }
@@ -205,8 +205,8 @@ class Compiler {
             case HirKind.Concat as es {
                 return self.cConcat(reversed(es) if self.compiled.isReverse else es)
             }
-            case HirKind.Alternation as es => self.cAlternate(es),
-            case HirKind.Repetition as rep => self.cRepeat(rep),
+            case HirKind.Alternation as es => self.cAlternate(es)
+            case HirKind.Repetition as rep => self.cRepeat(rep)
         }
     }
 
@@ -240,8 +240,8 @@ class Compiler {
         if self.compiled.usingBytes() {
             if c.isAscii() {
                 var b = bytes(c)
-                var hole = self.pushHole(InstHole::Bytes(b, b))
-                self.byte_classes.set_range(b, b);
+                var hole = self.pushHole(InstHole.Bytes(b, b))
+                self.byte_classes.set_range(b, b)
                 return Patch(hole, self.insts.length - 1)
             } else {
                 return self.cClass([ClassUnicodeRange(c, c)])
@@ -299,7 +299,7 @@ class Compiler {
     }
 
     private mut method cConcat(Iterable[Hir] exprs) -> Patch? {
-        mut var exprs = exprs.into_iter();
+        mut var exprs = exprs.into_iter()
         Patch patch
         while true {
             if exprs.next()? as n {
@@ -327,7 +327,7 @@ class Compiler {
         var firstSplitEntry = self.insts.length
 
         mut list[Hole] holes = []
-        mut var prevHole = (Hole.None, false);
+        mut var prevHole = (Hole.None, false)
         for var e in exprs[:-1] {
             if prevHole.1 {
                 var next = self.insts.length
@@ -363,7 +363,7 @@ class Compiler {
             case RepetitionKind.ZeroOrOne => self.cRepeatZeroOrone(rep.hir, rep.greedy)
             case RepetitionKind.ZeroOrMore => self.cRepeatZeroOrMore(rep.hir, rep.greedy)
             case RepetitionKind.OneOrMore => self.cRepeatOneOrMore(rep.hir, rep.greedy)
-            case RepetitionKind.Range as r => switch {
+            case RepetitionKind.Range as r => switch r {
                 case RepetitionRange.Exactly as minMax => self.cRepeatRange(
                     rep.hir, rep.greedy, minMax, minMax
                 )
@@ -475,11 +475,11 @@ class Compiler {
 
     private mut method fill(Hole hole, InstPtr jump) {
         switch hole {
-            Hole.None {}
-            Hole.One as pc {
+            case Hole.None {}
+            case Hole.One as pc {
                 self.insts[pc] = self.insts[pc].fill(jump)
             }
-            Hole.Many as holes {
+            case Hole.Many as holes {
                 for var hole in holes {
                     self.fill(hole, jump)
                 }
@@ -527,7 +527,7 @@ class Compiler {
         }
     }
 
-    private mut method pushCompiled(Inst) {
+    private mut method pushCompiled(Inst inst) {
         self.insts.push(MaybeInst.Compiled(inst))
     }
 
@@ -539,7 +539,7 @@ class Compiler {
 
     private mut method pushSplitHole() -> Hole {
         var hole = self.insts.length
-        self.insts.add(MaybeInst.Split());
+        self.insts.add(MaybeInst.Split())
         return Hole.One(hole)
     }
 
@@ -559,9 +559,13 @@ union Hole {
     list[Hole] Many
 
     private method dupOne() -> cls, cls {
-        return switch self {
-            case Hole.One as pc => Hole.One(pc), Hole.One(pc)
-            default => raise NotImplemented
+        switch self {
+            case Hole.One as pc {
+                return Hole.One(pc), Hole.One(pc)
+            }
+            default => {
+                raise NotImplemented
+            }
         }
     }
 }
@@ -594,7 +598,7 @@ union MaybeInst {
 
             default => raise Unreachable(
                 f"must be called on Split instruction, instead it was called on: {self}",
-            ),
+            )
         }
         return MaybeInst.Compiled(filled)
     }
@@ -702,7 +706,7 @@ class CompileClass {
                 fromInst = cachedPc
                 continue
             }
-            self.c.byteClasses.setRange(byteRange.start, byteRange.end);
+            self.c.byteClasses.setRange(byteRange.start, byteRange.end)
             if fromInst == 1 << 64 {
                 lastHole = self.c.pushHole(InstHole.Bytes((
                         byteRange.start,
@@ -730,7 +734,7 @@ class SuffixCache {
         self.tbl = {:}
     }
 
-    public mut method get(self, SuffixCacheKey key, InstPtr pc) -> InstPtr? {
+    public mut method get(SuffixCacheKey key, InstPtr pc) -> InstPtr? {
         if key in tbl {
             return tbl[key]
         } else {
@@ -792,7 +796,7 @@ class ByteClassSet {
         mut int b2
         while b1 <= 255 {
             b2 = b1 + 1
-            while b2 <= 255 && iswb(b1) == iswb(b2) {
+            while b2 <= 255 and iswb(b1) == iswb(b2) {
                 b2++
             }
             self.setRange(b1, b2 - 1)

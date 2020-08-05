@@ -114,7 +114,7 @@ class IntervalSet[I[Interval]] {
             # For example, if our `a` range is `a-t` and our next three `b`
             # ranges are `a-c`, `g-i`, `r-t` and `x-z`, then we need to apply
             # subtraction three times before moving on to the next `a` range.
-            mut var r = self.ranges[a];
+            mut var r = self.ranges[a]
             while b < other.ranges.length and not r.isIntersectionEmpty(other.ranges[b]) {
                 var oldRange = r
                 var diff = r.difference(other.ranges[b])

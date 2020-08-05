@@ -311,11 +311,11 @@ class Hir {
     public static method any(bool bytes) -> Hir {
         if bytes {
             mut var clsBytes = ClassBytes.empty()
-            clsBytes.push(ClassBytesRange(0, 0xFF));
+            clsBytes.push(ClassBytesRange(0, 0xFF))
             return Hir.type(Class.Bytes(clsBytes))
         } else {
             let mut clsBytes = ClassUnicode.empty()
-            clsBytes.push(ClassUnicodeRange(0, 0x10FFFF));
+            clsBytes.push(ClassUnicodeRange(0, 0x10FFFF))
             return Hir.type(Class.Unicode(clsBytes))
         }
     }
