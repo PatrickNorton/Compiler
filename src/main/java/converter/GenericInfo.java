@@ -140,9 +140,11 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return new GenericInfo(Collections.unmodifiableList(List.of(args)), true);
     }
 
+    private static final GenericInfo EMPTY = new GenericInfo(List.of(), true);
+
     @NotNull
     @Contract(" -> new")
     public static GenericInfo empty() {
-        return new GenericInfo(new ArrayList<>(), true);
+        return EMPTY;
     }
 }
