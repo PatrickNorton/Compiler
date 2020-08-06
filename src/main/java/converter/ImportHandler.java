@@ -115,6 +115,11 @@ public final class ImportHandler {
             var name = stmt.getName();
             types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
         }
+        for (var export : exports.entrySet()) {
+            if (types.containsKey(export.getKey())) {
+                export.setValue(Builtins.TYPE.generify(types.get(export.getKey())));
+            }
+        }
         if (isModule) {
             info.addPredeclaredTypes(types);
         }
@@ -295,6 +300,22 @@ public final class ImportHandler {
         }
         f.loadDependents();
         // FIXME: Register exports accurately
+    }
+
+    @NotNull
+    public Map<String, TypeObject> importedTypes() {
+        Map<String, TypeObject> importedTypes = new HashMap<>();
+        for (var pair : imports.entrySet()) {
+            var path = pair.getKey();
+            var strs = pair.getValue().getValue();
+            for (var str : strs) {
+                var type = ALL_FILES.get(path).importHandler().exports.get(str);
+                if (type instanceof TypeTypeObject) {
+                    importedTypes.put(str, ((TypeTypeObject) type).representedType());
+                }
+            }
+        }
+        return importedTypes;
     }
 
     public static void compileAll() {
