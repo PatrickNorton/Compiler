@@ -110,7 +110,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             info.addType(param);
             params.add(param);
         }
-        return new GenericInfo(Collections.unmodifiableList(params), false);
+        return new GenericInfo(Collections.unmodifiableList(params), true);
     }
 
     @NotNull
@@ -131,7 +131,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             info.addType(param);
             params.add(param);
         }
-        return new GenericInfo(params, true);
+        return new GenericInfo(params, false);
     }
 
     @NotNull
