@@ -13,9 +13,11 @@ import java.util.RandomAccess;
 
 public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess {
     private final List<TemplateParam> params;
+    private boolean isRegistered;
 
-    private GenericInfo(@NotNull List<TemplateParam> params) {
+    private GenericInfo(@NotNull List<TemplateParam> params, boolean isRegistered) {
         this.params = params;
+        this.isRegistered = isRegistered;
         assert params.stream().filter(TemplateParam::isVararg).count() <= 1;
     }
 
@@ -59,8 +61,12 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
     }
 
     public void reParse(CompilerInfo info, TypeLikeNode... generics) {
-        assert params.isEmpty();
+        if (isEmpty()) return;
+        assert !isRegistered;
+        isRegistered = true;
         var genInfo = parse(info, generics);
+        assert params.size() == genInfo.params.size();
+        params.clear();
         params.addAll(genInfo.params);
     }
 
@@ -88,7 +94,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
     @Contract(pure = true)
     public static GenericInfo parse(CompilerInfo info, @NotNull TypeLikeNode... generics) {
         if (generics.length == 0) return empty();
-        List<TemplateParam> params = new ArrayList<>();
+        List<TemplateParam> params = new ArrayList<>(generics.length);
         for (int i = 0; i < generics.length; i++) {
             var generic = generics[i];
             TemplateParam param;
@@ -104,18 +110,41 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             info.addType(param);
             params.add(param);
         }
-        return new GenericInfo(Collections.unmodifiableList(params));
+        return new GenericInfo(Collections.unmodifiableList(params), false);
+    }
+
+    @NotNull
+    public static GenericInfo parseNoTypes(CompilerInfo info, @NotNull TypeLikeNode... generics) {
+        if (generics.length == 0) return empty();
+        List<TemplateParam> params = new ArrayList<>(generics.length);
+        for (int i = 0; i < generics.length; i++) {
+            var generic = generics[i];
+            TemplateParam param;
+            if (generic.isVararg()) {
+                param = new TemplateParam(generic.strName(), i, true);
+            } else if (generic instanceof TypeNode && ((TypeNode) generic).getName().isEmpty()) {
+                assert generic.getSubtypes().length == 1 && generic.getSubtypes()[0].isVararg();  // => [*T]
+                param = new TemplateParam(generic.getSubtypes()[0].strName(), i, TypeObject.list());
+            } else {
+                param = new TemplateParam(generic.strName(), i, null);
+            }
+            info.addType(param);
+            params.add(param);
+        }
+        return new GenericInfo(params, true);
     }
 
     @NotNull
     @Contract("_ -> new")
     public static GenericInfo of(TemplateParam... args) {
-        return new GenericInfo(Collections.unmodifiableList(List.of(args)));
+        return new GenericInfo(Collections.unmodifiableList(List.of(args)), true);
     }
+
+    private static final GenericInfo EMPTY = new GenericInfo(List.of(), true);
 
     @NotNull
     @Contract(" -> new")
     public static GenericInfo empty() {
-        return of();
+        return EMPTY;
     }
 }
