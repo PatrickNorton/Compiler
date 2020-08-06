@@ -81,6 +81,7 @@ public final class Linker {
         if (!isModule(node)) {
             return this;
         }
+        info.addPredeclaredTypes(info.importHandler().importedTypes());
         // Filters out auto interfaces, which are registered earlier
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {
