@@ -7,4 +7,5 @@ from .Deque export Deque
 from .FrozenCollections export *
 from .IdentityMap export IdentityMap
 from .OrderedDict export OrderedDict
+from .Pair export Pair
 from .Stack export Stack

@@ -1,6 +1,8 @@
+from collections import Pair
+
 from .exec import Exec
 from .Match import Match
-from . import trait
+from .trait import Locations
 
 export Regex, CaptureLocations, Captures
 
@@ -168,9 +170,9 @@ class Regex {
 }
 
 class CaptureLocations {
-    trait.Locations value
+    Locations value
 
-    public operator new (trait.Locations value) {
+    public operator new (Locations value) {
         self.value = value
     }
 
@@ -183,10 +185,10 @@ class CaptureLocations {
 
 class Captures {
     str text
-    trait.Locations locs
+    Locations locs
     dict[str, int] namedGroups
 
-    operator new(str text, trait.Locations locs, dict[str, int] namedGroups) {
+    operator new(str text, Locations locs, dict[str, int] namedGroups) {
         self.text = text
         self.locs = locs
         self.namedGroups = namedGroups
