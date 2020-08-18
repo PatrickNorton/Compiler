@@ -358,8 +358,9 @@ public final class ImportHandler {
         if (!exports.containsKey(name)) {
             throw CompilerException.format("No value '%s' was exported", lineInfo, name);
         }
-        if (exports.get(name) != null) {
-            return Optional.of(exports.get(name));
+        var export = exports.get(name);
+        if (export instanceof TypeTypeObject) {
+            return Optional.of(((TypeTypeObject) export).representedType());
         } else if (fromExports.containsKey(name)) {
             var path = fromExports.get(name);
             previousFiles.add(Pair.of(LineInfo.empty(), name));
