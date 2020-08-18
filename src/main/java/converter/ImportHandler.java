@@ -43,6 +43,7 @@ public final class ImportHandler {
 
     private final CompilerInfo info;
     private final Map<String, TypeObject> exports = new HashMap<>();
+    private final Map<String, Path> fromExports = new HashMap<>();
     private final Map<Path, Pair<Integer, List<String>>> imports = new HashMap<>();
     private final IndexedSet<String> importStrings = new IndexedHashSet<>();
 
@@ -238,6 +239,7 @@ public final class ImportHandler {
     private void registerWildcardImport(String moduleName, @NotNull ImportExportNode node) {
         var path = loadFile(moduleName, node);
         imports.put(path, Pair.of(imports.size(), List.of("*")));
+        // FIXME: Add to importStrings
     }
 
     private Path loadFile(String moduleName, @NotNull ImportExportNode node) {
@@ -283,6 +285,10 @@ public final class ImportHandler {
                 throw CompilerException.format("Name %s already exported", node, asName);
             } else {
                 exports.put(name, null);
+                if (isFrom) {
+                    var path = loadFile(moduleName(node, i), node);
+                    fromExports.put(name, path);
+                }
             }
         }
     }
@@ -308,14 +314,60 @@ public final class ImportHandler {
         for (var pair : imports.entrySet()) {
             var path = pair.getKey();
             var strs = pair.getValue().getValue();
-            for (var str : strs) {
-                var type = ALL_FILES.get(path).importHandler().exports.get(str);
-                if (type instanceof TypeTypeObject) {
-                    importedTypes.put(str, ((TypeTypeObject) type).representedType());
+            var importHandler = ALL_FILES.get(path).importHandler();
+            if (strs.size() == 1 && strs.get(0).equals("*")) {
+                for (var imp : importHandler.exportedTypes(LineInfo.empty()).entrySet()) {
+                    var name = imp.getKey();
+                    var value = imp.getValue();
+                    importedTypes.put(name, value);
                 }
+            } else for (var str : strs) {
+                var type = importHandler.exportedType(str, LineInfo.empty(), new ArrayList<>());
+                type.ifPresent(typeObject -> importedTypes.put(str, typeObject));
             }
         }
         return importedTypes;
+    }
+
+    @NotNull
+    private Map<String, TypeObject> exportedTypes(LineInfo lineInfo) {
+        Map<String, TypeObject> result = new HashMap<>();
+        for (var pair : exports.entrySet()) {
+            var name = pair.getKey();
+            var type = pair.getValue();
+            if (type != null) {
+                result.put(name, type);
+            } else {
+                var typeObj = exportedType(name, lineInfo, new ArrayList<>());
+                typeObj.ifPresent(typeObject -> result.put(name, typeObject));
+            }
+        }
+        return result;
+    }
+
+    private Optional<TypeObject> exportedType(
+            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+    ) {
+        assert !name.equals("*");
+        for (var pair : previousFiles) {
+            var info = pair.getKey();
+            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
+                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
+            }
+        }
+        if (!exports.containsKey(name)) {
+            throw CompilerException.format("No value '%s' was exported", lineInfo, name);
+        }
+        if (exports.get(name) != null) {
+            return Optional.of(exports.get(name));
+        } else if (fromExports.containsKey(name)) {
+            var path = fromExports.get(name);
+            previousFiles.add(Pair.of(LineInfo.empty(), name));
+            return ALL_FILES.get(path).importHandler().exportedType(name, LineInfo.empty(), previousFiles);
+        } else {
+            return Optional.empty();
+        }
+
     }
 
     public static void compileAll() {
