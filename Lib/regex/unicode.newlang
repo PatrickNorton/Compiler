@@ -1,5 +1,6 @@
 from collections import Pair
 
+from .builder import RegexBuilder
 from .exec import Exec
 from .Match import Match
 from .trait import Locations
@@ -208,11 +209,12 @@ class Captures {
         }
     }
 
-    public operator [] (int i) -> Match {
+    # Note: these were originally both operator [], but due to overloading issues, are no longer so
+    public method group(int i) -> Match {
         return self.get(i) ?? raise IndexError(f"No group at index {i}")
     }
 
-    public operator [] (str name) -> Match {
+    public method namedGroup(str name) -> Match {
         return self.name(name) ?? raise IndexError(f"No group named '{name}'")
     }
 
