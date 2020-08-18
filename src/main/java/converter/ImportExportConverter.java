@@ -40,7 +40,7 @@ public final class ImportExportConverter implements BaseConverter {
             var constant = new ImportConstant(pair.getValue(), pair.getKey());
             info.addConstant(constant);
             info.checkDefinition(pair.getKey(), node);
-            info.addVariable(pair.getKey(), null, constant, node);
+            info.addVariable(pair.getKey(), null, constant, node);  // FIXME: Variable should have a type
         }
     }
 }

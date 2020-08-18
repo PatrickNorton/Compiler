@@ -156,6 +156,6 @@ public final class Linker {
     }
 
     private boolean isValidTopLevelStmt(IndependentNode stmt) {
-        return stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode;
+        return stmt instanceof DefinitionNode || stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode;
     }
 }
