@@ -382,6 +382,7 @@ public final class Builtins {
             Map.entry("char", CHAR),
             Map.entry("bool", BOOL),
             Map.entry("range", RANGE),
+            Map.entry("dict", DICT),
             Map.entry("type", TYPE),
             Map.entry("iter", ITER),
             Map.entry("input", INPUT),
