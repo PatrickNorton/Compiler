@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class LineInfo {
     private final Path path;
@@ -41,5 +42,21 @@ public class LineInfo {
                 return "Line info not available";
             }
         };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LineInfo lineInfo = (LineInfo) o;
+        return lineNumber == lineInfo.lineNumber &&
+                startingPoint == lineInfo.startingPoint &&
+                Objects.equals(path, lineInfo.path) &&
+                Objects.equals(line, lineInfo.line);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, lineNumber, line, startingPoint);
     }
 }
