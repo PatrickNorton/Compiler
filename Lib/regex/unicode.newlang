@@ -180,7 +180,11 @@ class CaptureLocations {
         return self.value.pos(i)
     }
 
-    public int length := self.value.length
+    public property int length {
+        get {
+            return self.value.length
+        }
+    }
 }
 
 class Captures {
