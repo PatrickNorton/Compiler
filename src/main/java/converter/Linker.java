@@ -13,6 +13,7 @@ import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
+import main.java.parser.StatementBodyNode;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
@@ -81,7 +82,12 @@ public final class Linker {
         if (!isModule(node)) {
             return this;
         }
-        info.addPredeclaredTypes(info.importHandler().importedTypes());
+        var importedTypes = info.importHandler().importedTypes();
+        info.addPredeclaredTypes(importedTypes);
+        for (var pair : importedTypes.entrySet()) {
+            info.addVariable(pair.getKey(), Builtins.TYPE.generify(pair.getValue()), true, new StatementBodyNode());
+            // FIXME: Get actual LineInfo of import statement
+        }
         // Filters out auto interfaces, which are registered earlier
         for (var stmt : node) {
             if (stmt instanceof DefinitionNode) {

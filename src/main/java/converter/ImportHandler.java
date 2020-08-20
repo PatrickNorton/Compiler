@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class ImportHandler {
     private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
@@ -46,6 +48,7 @@ public final class ImportHandler {
     private final Map<String, Path> fromExports = new HashMap<>();
     private final Map<Path, Pair<Integer, List<String>>> imports = new HashMap<>();
     private final IndexedSet<String> importStrings = new IndexedHashSet<>();
+    private final Set<Path> wildcardExports = new HashSet<>();
 
     public ImportHandler(CompilerInfo info) {
         this.info = info;
@@ -305,6 +308,7 @@ public final class ImportHandler {
             ALL_FILES.put(path, f);
         }
         f.loadDependents();
+        wildcardExports.add(path);
         // FIXME: Register exports accurately
     }
 
@@ -356,6 +360,15 @@ public final class ImportHandler {
             }
         }
         if (!exports.containsKey(name)) {
+            previousFiles.add(Pair.of(LineInfo.empty(), name));
+            for (var path : wildcardExports) {
+                var handler = ALL_FILES.get(path).importHandler();
+                try {
+                    return handler.exportedType(name, LineInfo.empty(), previousFiles);
+                } catch (CompilerException ignored) {
+                    // If value was not exported, don't fail, just continue
+                }
+            }
             throw CompilerException.format("No value '%s' was exported", lineInfo, name);
         }
         var export = exports.get(name);
@@ -376,6 +389,9 @@ public final class ImportHandler {
         while (!toCompile.isEmpty()) {
             var nextCompilationRound = toCompile;
             toCompile = new ArrayList<>();
+            for (var pair : nextCompilationRound) {
+                pair.getKey().link();
+            }
             for (var pair : nextCompilationRound) {
                 pair.getKey().compile(pair.getValue());
             }
