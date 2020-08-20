@@ -7,7 +7,6 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.ImportExportNode;
-import main.java.parser.IndependentNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
@@ -16,7 +15,6 @@ import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TopLevelNode;
 import main.java.parser.TopNode;
-import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -160,9 +158,5 @@ public final class Linker {
 
     private boolean isAutoInterface(DefinitionNode stmt) {
         return stmt instanceof InterfaceDefinitionNode && stmt.getDescriptors().contains(DescriptorNode.AUTO);
-    }
-
-    private boolean isValidTopLevelStmt(IndependentNode stmt) {
-        return stmt instanceof DefinitionNode || stmt instanceof TypedefStatementNode || stmt instanceof ImportExportNode;
     }
 }
