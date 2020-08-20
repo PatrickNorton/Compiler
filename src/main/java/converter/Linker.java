@@ -14,6 +14,7 @@ import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.StatementBodyNode;
+import main.java.parser.TopLevelNode;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
@@ -90,18 +91,18 @@ public final class Linker {
         }
         // Filters out auto interfaces, which are registered earlier
         for (var stmt : node) {
-            if (stmt instanceof DefinitionNode) {
+            if (!(stmt instanceof TopLevelNode)) {
+                throw CompilerException.of(
+                        "Only definition and import/export statements are allowed in file with exports",
+                        stmt
+                );
+            } else if (stmt instanceof DefinitionNode) {
                 var def = (DefinitionNode) stmt;
                 if (!isAutoInterface(def)) {
                     var name = def.getName();
                     TypeObject type = linkDefinition(def);
                     globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
                 }
-            } else if (!isValidTopLevelStmt(stmt)) {
-                throw CompilerException.of(
-                        "Only definition and import/export statements are allowed in file with exports",
-                        stmt
-                );
             }
         }
         return this;
