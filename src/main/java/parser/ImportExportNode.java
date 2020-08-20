@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * The class for all import, export, and typeget nodes.
  * @author Patrick Norton
  */
-public class ImportExportNode implements SimpleStatementNode {
+public class ImportExportNode implements SimpleStatementNode, TopLevelNode {
     public static final Type IMPORT = Type.IMPORT;
     public static final Type EXPORT = Type.EXPORT;
     public static final Type TYPEGET = Type.TYPEGET;
