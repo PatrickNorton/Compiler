@@ -46,6 +46,10 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
         return name;
     }
 
+    public String strName() {
+        return name.getName();
+    }
+
     public TypedArgumentListNode getArgs() {
         return args;
     }
