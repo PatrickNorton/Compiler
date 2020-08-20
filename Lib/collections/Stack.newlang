@@ -1,16 +1,16 @@
-from types typeget Iterable
+from interfaces typeget Iterable
 
 from types import Array
 
 export Stack
 
 
-const int DEFAULT_SIZE = 16
+int DEFAULT_SIZE = 16
 
 
 final class Stack[T] {
     private Array[T?] values
-    pubget uint length
+    pubget int length
 
     public operator new {
         self.values = Array(DEFAULT_SIZE, null)
@@ -24,7 +24,7 @@ final class Stack[T] {
         return f"{type(self)}({list(self.values[:self.length])})"
     }
 
-    public method push(T value) {
+    public mut method push(T value) {
         if self.length == self.values.length {
             self.values = Array.copy(self.values, size=self.values.length*2)
         }
@@ -32,13 +32,13 @@ final class Stack[T] {
         self.length++
     }
 
-    public method pushAll(Iterable[T] values) {
+    public mut method pushAll(Iterable[T] values) {
         for T value in values {
             self.push(value)
         }
     }
 
-    public method pop() -> T {
+    public mut method pop() -> T {
         self.length--
         return self.values[self.length] casted T
     }

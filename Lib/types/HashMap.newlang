@@ -1,5 +1,5 @@
 from collections typeget AbstractDict
-from .interfaces typeget Hashable
+from interfaces typeget Hashable
 
 from .natives import Array
 from numtools import highestOneBit
@@ -9,22 +9,35 @@ export HashMap
 
 typedef VarInfo as Tuple[int64, K, V]
 
-const int DEFAULT_ARRAY_SIZE = 1 << 4
-const dec RESIZE_THRESHOLD = 0.75
-const int PERTURB_SHIFT = 5
+int DEFAULT_ARRAY_SIZE = 1 << 4
+dec RESIZE_THRESHOLD = 0.75
+int PERTURB_SHIFT = 5
 
-enum Empty {
-    EMPTY,
-    DELETED
+class VarInfo[K, V] {  # TODO: Change to a tuple when properly implemented
+    public int hashCode
+    public K key
+    public V value
+
+    public operator new(int hashCode, K key, V value) {
+        self.hashCode = hashCode
+        self.key = key
+        self.value = value
+    }
+}
+
+union Value[K, V] {
+    VarInfo[K, V] Full
+    null Empty
+    null Deleted
 }
 
 class HashMap[K[Hashable], V] from AbstractDict[K, V] {
-    private Array[VarInfo|Empty] values
-    private uint length
+    private mut Array[Value[K, V]] values
+    private mut int length
 
     public operator new (*tuple[K, V] values) {
         int length = max(highestOneBit(values.length) << 1, DEFAULT_ARRAY_SIZE)
-        self.internal = Array(length, Empty.EMPTY)
+        self.internal = Array(length, Value.Empty())
         self.valueList = []
         self.length = 0
         self.resize(values.length)
@@ -34,18 +47,18 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
     }
 
     public operator [] (K key) -> V {
-        uint index = self.getInfo(key)
-        raise KeyError if self.values[index] is Empty.EMPTY
-        return (self.values[index] casted VarInfo)[2]
+        int index = self.getInfo(key)
+        raise KeyError if self.values[index].Empty?
+        return self.values[index].Full!!.value
     }
 
     public operator []= (K key, V value) {
         self.resize(self.length + 1)
-        uint index = self.getInfo(key, returnDeleted=true)
-        if self.values[index] instanceof Empty {
+        int index = self.getInfo(key, returnDeleted=true)
+        if not self.values[index].Full? {
             self.length++
         }
-        self.values[index] = (hash(key), key, value)
+        self.values[index] = VarInfo(hash(key), key, value)
     }
 
     public operator del[] (K key) {
@@ -56,46 +69,54 @@ class HashMap[K[Hashable], V] from AbstractDict[K, V] {
     }
 
     public operator in (K key) {
-        return self.values[self.getInfo(key)] not instanceof Empty
+        return self.values[self.getInfo(key)].Full?
     }
 
     public operator iter -> K, V {
-        yield from (*(i casted VarInfo)[1:] for var i in self.valueList if i not instanceof Empty)
+        for var i in self.valueList {
+            if i.Full? as val {
+                yield val.key, val.value
+            }
+        }
     }
 
     public generator method keys() -> K {
         yield from (key for K key in self)
     }
 
-    public method clear() {
-        self.values.fill(Empty.EMPTY)
+    public mut method clear() {
+        self.values.fill(Value.Empty())
         self.length = 0
     }
 
-    private method getInfo(K key, *, bool returnDeleted = false) -> uint {
-        uint index = hash(key) % self.values.length
-        uint? deleted = null
+    private method getInfo(K key, *, mut bool returnDeleted = false) -> int {
+        int index = hash(key) % self.values.length
+        int? deleted = null
         while true {
             var value = self.values[index]
-            if value is Empty.DELETED and returnDeleted {
+            if value.Deleted? and returnDeleted {
                 deleted = index
                 returnDeleted = false  # Take the first value, makes lookup quicker
             }
-            return index if value is Empty.EMPTY
-            continue if value is Empty.DELETED
-            var v = value casted VarInfo
-            return deleted ?? index if v[0] == hash(key) and v[1] == key
-            index = (5*index + 1 + (hash(key) >> PERTURB_SHIFT)) % self.values.length
+            switch value {
+                case Value.Empty {return index}
+                case Value.Full as v {
+                    return deleted ?? index if v.hashCode == hash(key) and v.key == key
+                    index = (5*index + 1 + (hash(key) >> PERTURB_SHIFT)) % self.values.length
+                }
+            }
         }
     }
 
-    private method resize(uint size) {
+    private mut method resize(int size) {
         return if size / self.values.length < RESIZE_THRESHOLD
-        uint newSize = self.values.length << 1
+        int newSize = self.values.length << 1
         var old = self.values
-        self.values = Array(newSize, Empty.EMPTY)
-        for var v in (i casted VarInfo for var i in old if i not instanceof Empty) {
-            self.values[self.getInfo(v[1], returnDeleted=true)] = v
+        self.values = Array(newSize, Value.Empty())
+        for var i in old {
+            if i.Full? as v {
+                self.values[self.getInfo(v.key, returnDeleted=true)] = v
+            }
         }
     }
 }

@@ -24,8 +24,8 @@ interface AbstractList[T] from list[T] {
         return index
     }
 
-    method index(T value, /) -> uint {
-        for uint i, T v in enumerate(self) {
+    method index(T value, /) -> int {
+        for int i, T v in enumerate(self) {
             return i if value == v
         }
         raise ValueError(f"Value {value} not found")

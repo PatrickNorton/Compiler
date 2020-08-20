@@ -2,7 +2,7 @@ from types import ArrayList
 
 class StringBuilder {
     private list[char] chars
-    pubget uint length := chars.length
+    pubget int length := chars.length
 
     public operator new (*, int length) {
         self.chars = ArrayList.size(length)

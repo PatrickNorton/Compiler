@@ -1,4 +1,4 @@
-from types typeget Callable, Hashable, Iterable, Indexable, Sliceable
+from interfaces typeget Callable, Hashable, Iterable, Indexable, Sliceable
 
 export int, list, set, dict
 
@@ -31,13 +31,13 @@ interface int {
 
 @covariant
 interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
-    pubget uint length
+    pubget int length
 
     operator new (*T items, /)
     operator new (Iterable[T] items, /)
 
     operator + (list[T] other, /) -> cls
-    operator * (uint size, /) -> cls
+    operator * (int size, /) -> cls
 
     final operator r+ = operator +
     final operator r* = operator *
@@ -54,14 +54,14 @@ interface list[T] from Iterable[T], Indexable[int, T], Sliceable[T] {
     method remove(T value, /) -> int
     method pop(int index, /) -> T
     method clear()
-    method index(T value, /) -> uint
+    method index(T value, /) -> int
     method reverse()
     method insert(T value, int index)
 }
 
 @covariant
 interface set[T] from Iterable[T], Comparable[Set[T]] {
-    pubget uint length
+    pubget int length
 
     operator new (*T items, /)
     operator new (Iterable[T] items, /)
@@ -95,7 +95,7 @@ interface set[T] from Iterable[T], Comparable[Set[T]] {
 
 @covariant
 interface dict[K, V] from Hashable, Iterable[K, V], Indexable[K, V] {
-    pubget uint length
+    pubget int length
 
     operator new (*tuple[K, V] items, /)
     operator new (dict[K, V] items, /)

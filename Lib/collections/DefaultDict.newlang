@@ -10,7 +10,7 @@ class DefaultDict[K, V] from AbstractDict[K, V] {
     public operator new (dict[K, V] items, /) = NotImplemented
 
     public operator new (Callable[V] function) {
-        self.internal = {}
+        self.internal = {:}
         self.fallback = function
     }
 
@@ -21,16 +21,16 @@ class DefaultDict[K, V] from AbstractDict[K, V] {
 
     public operator [] (K key) -> V {
         if key not in self.internal {
-            self[key] = self.fallback()
+            return self.fallback()
         }
         return self.internal[key]
     }
 
-    public operator []= (K key, V value) {
+    public mut operator []= (K key, V value) {
         self.internal[key] = value
     }
 
-    public operator del[] (K key) {
+    public mut operator del[] (K key) {
         del self.internal[key]
     }
 
@@ -58,7 +58,7 @@ class DefaultDict[K, V] from AbstractDict[K, V] {
         yield from (key for K key in self.internal)
     }
 
-    method clear() {
+    public mut method clear() {
         self.internal.clear()
     }
 }

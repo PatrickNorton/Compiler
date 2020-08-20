@@ -1,4 +1,4 @@
-from types typeget Iterable
+from interfaces typeget Iterable
 
 export product, repeat
 
@@ -21,12 +21,12 @@ generator func product(Iterable[T] value1, Iterable[U] value2, Iterable[V] value
 
 generic T
 generator func repeat(T value, int? times = null) -> T {
-    if times is null {
-        while true {
+    if times? as t {
+        dotimes t {
             yield value
         }
     } else {
-        dotimes times!! {
+        while true {
             yield value
         }
     }

@@ -1,2 +1,2 @@
-from EnumMap export EnumMap
-from EnumSet export EnumSet
+from .EnumMap export EnumMap
+from .EnumSet export EnumSet

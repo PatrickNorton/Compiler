@@ -1,7 +1,7 @@
 export FrozenSet
 
 final class FrozenSet[T] from set[T] {
-    private const set[T] values
+    private set[T] values
     pubget int length := values.length
 
     operator new (*T items, /) {

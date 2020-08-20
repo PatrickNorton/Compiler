@@ -7,13 +7,13 @@ from types import Array
 
 export ArrayList
 
-const uint DEFAULT_SIZE = 10
+int DEFAULT_SIZE = 10
 
 class ArrayList[T] from AbstractList[T] {
     private Array[T?] values
-    pubget uint length
+    pubget int length
 
-    public operator new (*T values, /, *, uint size = DEFAULT_SIZE) {
+    public operator new (*T values, /, *, int size = DEFAULT_SIZE) {
         self.values = Array(max(values.length, size), *values, null)
         self.length = 0
     }

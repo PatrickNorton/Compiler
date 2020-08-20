@@ -1,7 +1,7 @@
 export E, PI, NaN, INF, TAU
 
-const dec E = 2.718281828459045
-const dec PI = 3.141592653589793
-const float TAU = 2 * PI
-const float NaN = float(0) / float(0)
-const float INF = float(1) / float(0)
+dec E = 2.718281828459045
+dec PI = 3.141592653589793
+dec TAU = 2 * PI
+float NaN = float(0) / float(0)
+float INF = float(1) / float(0)

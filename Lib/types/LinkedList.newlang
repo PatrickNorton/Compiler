@@ -6,7 +6,7 @@ export LinkedList
 class LinkedList[T] from AbstractList[T] {
     private LLNode[T]? first
     private LLNode[T]? last
-    pubget uint length
+    pubget int length
 
     public operator new (*T nodes) {
         self.length = nodes.length
@@ -137,7 +137,7 @@ class LinkedList[T] from AbstractList[T] {
         return cls(*self, *other)
     }
 
-    public operator * (uint size) -> cls {
+    public operator * (int size) -> cls {
         cls new = []
         dotimes size {
             new.extend(self)

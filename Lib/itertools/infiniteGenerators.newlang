@@ -1,4 +1,4 @@
-from types typeget Iterable
+from interfaces typeget Iterable
 
 export count, cycle, repeat
 
@@ -10,18 +10,5 @@ generic T
 generator func cycle(Iterable[T] p) -> T {
     while true {
         yield from p
-    }
-}
-
-generic T
-generator func repeat(T value, int? times = null) -> T {
-    if times is null {
-        while true {
-            yield value
-        }
-    } else {
-        dotimes times!! {
-            yield value
-        }
     }
 }

@@ -5,13 +5,13 @@ from math import min
 export OrderedDict
 
 
-const dec RESIZE_THRESHOLD = 1.5
+dec RESIZE_THRESHOLD = 1.5
 
 
 class OrderedDict[K, V] from AbstractDict[K, V] {
-    private list[Tuple[int, K, V]?] items
-    private dict[K, uint] values
-    pubget uint length := self.values.length
+    private mut list[Tuple[int, K, V]?] items
+    private mut dict[K, int] values
+    public readonly int length := self.values.length
 
     public operator new (*tuple[K, V] values) {
         self.items = list(values)
@@ -23,7 +23,7 @@ class OrderedDict[K, V] from AbstractDict[K, V] {
         return (self.items[self.values[K]]!!)[2]
     }
 
-    public operator []= (K key, V value) {
+    public mut operator []= (K key, V value) {
         if key in self {
             self.items[self.values[key]] = (hash(key), key, value)
         } else {
@@ -31,28 +31,27 @@ class OrderedDict[K, V] from AbstractDict[K, V] {
             if self.items.length >= RESIZE_THRESHOLD * self.values.length {
                 self.shrink()
             }
-            uint itemIndex = self.items.length
+            int itemIndex = self.items.length
             self.items[itemIndex] = value
             self.values[key] = itemIndex
         }
     }
 
-    private method shrink() {
-        uint reduceIndex = 0
+    private mut method shrink() {
+        mut int reduceIndex = 0
         var tmpItems = self.items
         self.items = []
-        for uint i, var keyVal in enumerate(tmpItems) {
-            if keyVal is null {
-                reduceIndex++
-            } else {
-                var kvNotNull = keyVal!!
+        for int i, var keyVal in enumerate(tmpItems) {
+            if keyVal? as kvNotNull {
                 self.items.append(kvNotNull)
                 self.values[kvNotNull[1]] = i - reduceIndex
+            } else {
+                reduceIndex++
             }
         }
     }
 
-    public operator del[] (K key) {
+    public mut operator del[] (K key) {
         self.items[self.values[key]] = null
         del self.values[key]
     }

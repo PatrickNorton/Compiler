@@ -1,14 +1,14 @@
 from collections typeget AbstractDict
-from types typeget Comparable
+from interfaces typeget Comparable
 
 export TreeMap
 
-const bool BLACK = false
-const bool RED = true
+bool BLACK = false
+bool RED = true
 
 class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
     private TreeNode[K, V]? top
-    pubget uint length
+    pubget int length
 
     public operator [] (K key) -> V {
         var node = self.findNode(key)
@@ -18,8 +18,8 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
 
     public operator []= (K key, V value) {
         var node = self.findNode(key)
-        if node is not null {
-            node!!.value = value
+        if node is not null as nodeNN {
+            nodeNN.value = value
         } elif self.top is null {
             self.top = TreeNode(key, value, null)
         } else {
@@ -49,13 +49,13 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
     public operator del[] (K key) {
         var nodeMaybe = self.findNode(key)
         raise KeyError if nodeMaybe is null
-        var node = node!!
+        var node = nodeMaybe!!
         self.length--
         var replacement = node.left ?? node.right
-        if replacement is not null {
-            replacement.parent = node.parent
+        if replacement is not null as rnn {
+            rnn.parent = node.parent
             if node.parent is null {
-                self.root = replacement
+                self.root = rnn
             } elif node is node.parent!!.left {
                 node.parent!!.left = replacement
             } else {
@@ -69,11 +69,11 @@ class TreeMap[K[Comparable[K]], V] from AbstractDict[K, V] {
                 self.fixAfterDeletion(node)
             }
 
-            if node.parent is not null {
-                if node is node.parent!!.left {
-                    node.parent!!.left = null
+            if node.parent is not null as parentNN {
+                if node is parentNN.left {
+                    parentNN.left = null
                 } else {
-                    node.parent!!.right = null
+                    parentNN.right = null
                 }
                 node.parent = null
             }
@@ -136,7 +136,7 @@ class TreeNode[K, V] {
     public cls? right = null
     public cls? parent
 
-    public const K key
+    public K key
     public V value
 
     public bool color
@@ -255,15 +255,15 @@ class TreeNode[K, V] {
         newTop.parent = top.parent
         top.left = newTop.right
         newTop.right = top
-        if top.left is not null {
-            top.left!!.parent = top
+        if top.left is not null as left {
+            left.parent = top
         }
         top.parent = newTop
-        if newTop.parent is not null {
-            if newTop.parent!!.right is top {
-               newTop.parent!!.right = newTop
+        if newTop.parent is not null as ntParent {
+            if ntParent.right is top {
+                ntParent.right = newTop
             } else {
-                newTop.parent!!.left = newTop
+                ntParent.left = newTop
             }
         }
         return newTop
@@ -277,23 +277,23 @@ class TreeNode[K, V] {
         newTop.parent = top.parent
         top.right = newTop.left
         newTop.left = top
-        if top.right is not null {
-            top.right!!.parent = top
+        if top.right is not null as right {
+            right.parent = top
         }
         top.parent = newTop
-        if newTop.parent is not null {
-            if newTop.parent!!.right is top {
-               newTop.parent!!.right = newTop
+        if newTop.parent is not null as ntParent {
+            if ntParent.right is top {
+                ntParent.right = newTop
             } else {
-                newTop.parent!!.left = newTop
+                ntParent.left = newTop
             }
         }
         return newTop
     }
 
     public static method setColor(cls? node, bool color) {
-        if node is not null {
-            node!!.color = color
+        if node is not null as nodeNN {
+            nodeNN.color = color
         }
     }
 }

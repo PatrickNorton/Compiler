@@ -18,9 +18,9 @@ const final class str {
     operator new (*char chars) {
         bool isExpanded = false
         var bytes = Array[byte](chars.length, 0)
-        list[uint] qWordIndices = []
-        uint qWordCount = 0
-        for uint i, char c in enumerate(chars) {
+        list[int] qWordIndices = []
+        int qWordCount = 0
+        for int i, char c in enumerate(chars) {
             if not isExpanded and not c.isAscii() {
                 isExpanded = true
                 var newBytes = Array[byte](bytes.length * 2, 0)
@@ -66,7 +66,7 @@ const final class str {
         if not isExpanded {
             yield from (char(c) for byte c in self.bytes)
         } else {
-            uint qWordCount = 0
+            int qWordCount = 0
             for int i in self.length {
                 int startIndex = (i + qWordCount) * 2
                 if self.qWordIndices[qWordCount] == startIndex {
