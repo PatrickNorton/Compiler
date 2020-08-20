@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * The class representing a typedef statement.
  * @author Patrick Norton
  */
-public class TypedefStatementNode implements SimpleStatementNode {
+public class TypedefStatementNode implements SimpleStatementNode, TopLevelNode {
     private LineInfo lineInfo;
     private TypeNode name;
     private TypeLikeNode type;
