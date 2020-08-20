@@ -57,6 +57,7 @@ public final class CompilerInfo {
 
     public CompilerInfo(TopNode node) {
         this.node = node;
+        variables.add(new HashMap<>());
     }
 
     /**
@@ -80,8 +81,7 @@ public final class CompilerInfo {
         this.addStackFrame();
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node) {
-            if (statement instanceof ImportExportNode
-                    && ((ImportExportNode) statement).getType() == ImportExportNode.EXPORT) {
+            if (statement instanceof ImportExportNode) {
                 continue;
             }
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, this));
