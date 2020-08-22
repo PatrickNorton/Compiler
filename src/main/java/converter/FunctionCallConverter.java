@@ -47,6 +47,9 @@ public final class FunctionCallConverter implements TestConverter {
         var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
         for (var value : params) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
+            if (value.isVararg()) {
+                bytes.add(Bytecode.UNPACK_TUPLE.value);
+            }
         }
         var swaps = swapsToOrder(argPositions);
         for (var pair : swaps) {
