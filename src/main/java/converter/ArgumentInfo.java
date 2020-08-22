@@ -1,12 +1,15 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
 import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public final class ArgumentInfo implements Iterable<Argument> {
@@ -45,7 +48,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
      */
     public boolean matches(@NotNull Argument... args) {
         Map<String, TypeObject> keywordMap = new HashMap<>();
-        for (var arg : args) {
+        var newArgs = expandTuples(args);
+        for (var arg : newArgs) {
             if (!arg.getName().isEmpty()) {
                 keywordMap.put(arg.getName(), arg.getType());
             }
@@ -55,10 +59,10 @@ public final class ArgumentInfo implements Iterable<Argument> {
             if (keywordMap.containsKey(arg.getName())) {
                 return false;
             }
-            while (!args[argNo].getName().isEmpty()) {
+            while (!newArgs[argNo].getName().isEmpty()) {
                 argNo++;
             }
-            var passedArg = args[argNo++];
+            var passedArg = newArgs[argNo++];
             if (!arg.getType().isSuperclass(passedArg.getType())) {
                 return false;
             }
@@ -70,10 +74,10 @@ public final class ArgumentInfo implements Iterable<Argument> {
                     return false;
                 }
             } else {
-                while (!args[argNo].getName().isEmpty()) {
+                while (!newArgs[argNo].getName().isEmpty()) {
                     argNo++;
                 }
-                var passedArg = args[argNo++];
+                var passedArg = newArgs[argNo++];
                 if (!arg.getType().isSuperclass(passedArg.getType())) {
                     return false;
                 }
@@ -89,6 +93,26 @@ public final class ArgumentInfo implements Iterable<Argument> {
             }
         }
         return true;
+    }
+
+    @NotNull
+    private Argument[] expandTuples(@NotNull Argument... args) {
+        List<Argument> result = new ArrayList<>(args.length);
+        for (var arg : args) {
+            if (arg.isVararg()) {
+                if (arg.getType() instanceof TupleType) {
+                    for (var generic : ((TupleType) arg.getType()).getGenerics()) {
+                        result.add(new Argument("", generic));
+                    }
+                } else {
+                    // FIXME: Propagate errors upwards instead of throwing here
+                    throw CompilerException.of("Illegal parameter expansion in argument", LineInfo.empty());
+                }
+            } else {
+                result.add(arg);
+            }
+        }
+        return result.toArray(new Argument[0]);
     }
 
     /**

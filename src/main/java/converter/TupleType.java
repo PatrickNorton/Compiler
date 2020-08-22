@@ -5,7 +5,9 @@ import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -26,6 +28,13 @@ public final class TupleType extends TypeObject {
     private TupleType(String typedefName, TypeObject... generics) {
         this.generics = List.of(generics);
         this.typedefName = typedefName;
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    @UnmodifiableView
+    public List<TypeObject> getGenerics() {
+        return Collections.unmodifiableList(generics);
     }
 
     @Override
