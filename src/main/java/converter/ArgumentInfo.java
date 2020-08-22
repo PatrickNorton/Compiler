@@ -181,10 +181,11 @@ public final class ArgumentInfo implements Iterable<Argument> {
     }
 
     @NotNull
-    private static Argument[] getArgs(CompilerInfo info, @NotNull TypedArgumentNode... args) {
+    public static Argument[] getArgs(CompilerInfo info, @NotNull TypedArgumentNode... args) {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
-            result[i] = new Argument(args[i].getName().getName(), info.getType(args[i].getType()));
+            var arg = args[i];
+            result[i] = new Argument(arg.getName().getName(), info.getType(arg.getType()), arg.getVararg());
         }
         return result;
     }

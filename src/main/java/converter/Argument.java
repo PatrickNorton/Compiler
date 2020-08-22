@@ -8,10 +8,18 @@ import java.util.Objects;
 public final class Argument {
     private final String name;
     private final TypeObject type;
+    private final boolean isVararg;
 
     public Argument(String name, TypeObject type) {
         this.name = name;
         this.type = type;
+        this.isVararg = false;
+    }
+
+    public Argument(String name, TypeObject type, boolean isVararg) {
+        this.name = name;
+        this.type = type;
+        this.isVararg = isVararg;
     }
 
     public String getName() {
@@ -20,6 +28,10 @@ public final class Argument {
 
     public TypeObject getType() {
         return type;
+    }
+
+    public boolean isVararg() {
+        return isVararg;
     }
 
     @Override

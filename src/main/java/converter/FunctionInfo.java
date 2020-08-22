@@ -77,7 +77,7 @@ public final class FunctionInfo implements IntoFnInfo {
         for (int i = 0; i < arr.length; i++) {
             var argType = arr[i].getType();
             var type = argType instanceof TemplateParam ? ((TemplateParam) argType).getBound() : argType;
-            result[i] = new Argument(arr[i].getName(), type);
+            result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg());
         }
         return result;
     }
@@ -107,7 +107,7 @@ public final class FunctionInfo implements IntoFnInfo {
         for (int i = 0; i < arr.length; i++) {
             var argType = arr[i].getType();  // TODO: Proper generification of subtypes (e.g. list[T] => list[something])
             var type = argType instanceof TemplateParam ? generics.get(((TemplateParam) argType).getIndex()) : argType;
-            result[i] = new Argument(arr[i].getName(), type);
+            result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg());
         }
         return result;
     }
