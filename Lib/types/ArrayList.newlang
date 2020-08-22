@@ -39,7 +39,7 @@ class ArrayList[T] from AbstractList[T] {
     }
 
     @normalizeIndices(self)
-    public operator [:]= (int start, int stop, int step, super values) {
+    public operator [:]= (int start, int stop, int step, Iterable[T] values) {
         self.values[start:stop:step] = values
     }
 
