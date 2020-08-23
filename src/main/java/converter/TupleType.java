@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -56,6 +57,25 @@ public final class TupleType extends TypeObject {
             return intVal > 0 && intVal < generics.size() ? generics.get(intVal) : null;
         } catch (NumberFormatException e) {
             return null;
+        }
+    }
+
+    @Override
+    @Nullable
+    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, DescriptorNode access) {
+        switch (o) {
+            case EQUALS:
+                return new FunctionInfo(
+                        ArgumentInfo.of(Builtins.TUPLE.generify(generics.toArray(new TypeObject[0]))),
+                        Builtins.BOOL
+                );
+            case BOOL:
+                return new FunctionInfo(Builtins.BOOL);
+            case STR:
+            case REPR:
+                return new FunctionInfo(Builtins.STR);
+            default:
+                return null;
         }
     }
 
