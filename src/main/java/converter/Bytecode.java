@@ -53,7 +53,7 @@ public enum Bytecode {
     IDENTICAL(0x25),
     INSTANCEOF(0x26),
     CALL_OP(0x27, Type.OPERATOR, Type.ARGC),
-    PACK_TUPLE(0x28),
+    PACK_TUPLE(0x28, Type.ARGC),
     UNPACK_TUPLE(0x29),
     EQUAL(0x2A),
     LESS_THAN(0x2B),
