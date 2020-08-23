@@ -1,11 +1,14 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public final class Argument {
+public final class Argument implements Lined {
+    private final LineInfo lineInfo;
     private final String name;
     private final TypeObject type;
     private final boolean isVararg;
@@ -14,12 +17,14 @@ public final class Argument {
         this.name = name;
         this.type = type;
         this.isVararg = false;
+        this.lineInfo = LineInfo.empty();
     }
 
-    public Argument(String name, TypeObject type, boolean isVararg) {
+    public Argument(String name, TypeObject type, boolean isVararg, LineInfo lineInfo) {
         this.name = name;
         this.type = type;
         this.isVararg = isVararg;
+        this.lineInfo = lineInfo;
     }
 
     public String getName() {
@@ -32,6 +37,11 @@ public final class Argument {
 
     public boolean isVararg() {
         return isVararg;
+    }
+
+    @Override
+    public LineInfo getLineInfo() {
+        return lineInfo;
     }
 
     @Override

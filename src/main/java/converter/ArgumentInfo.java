@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.LineInfo;
 import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.Contract;
@@ -105,8 +104,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
                         result.add(new Argument("", generic));
                     }
                 } else {
-                    // FIXME: Propagate errors upwards instead of throwing here
-                    throw CompilerException.of("Illegal parameter expansion in argument", LineInfo.empty());
+                    throw CompilerException.of("Illegal parameter expansion in argument", arg);
                 }
             } else {
                 result.add(arg);
@@ -209,7 +207,10 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
-            result[i] = new Argument(arg.getName().getName(), info.getType(arg.getType()), arg.getVararg());
+            result[i] = new Argument(
+                    arg.getName().getName(), info.getType(arg.getType()),
+                    arg.getVararg(), arg.getLineInfo()
+            );
         }
         return result;
     }
