@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.Lined;
 import main.java.parser.LiteralNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
@@ -18,30 +19,65 @@ public final class LiteralConverter implements TestConverter {  // TODO: Tuples
         this.retCount = retCount;
     }
 
+    private enum LiteralType {
+        LIST(Builtins.LIST, "list", Bytecode.LIST_CREATE),
+        SET(Builtins.SET, "set", Bytecode.SET_CREATE),
+        TUPLE(Builtins.TUPLE, "tuple", Bytecode.PACK_TUPLE),
+        ;
+
+        TypeObject type;
+        String name;
+        Bytecode bytecode;
+
+        LiteralType(TypeObject type, String name, Bytecode bytecode) {
+            this.type = type;
+            this.name = name;
+            this.bytecode = bytecode;
+        }
+
+        static LiteralType fromBrace(@NotNull String brace, Lined lineInfo) {
+            switch (brace) {
+                case "[":
+                    return LiteralType.LIST;
+                case "{":
+                    return LiteralType.SET;
+                case "(":
+                    return LiteralType.TUPLE;
+                default:
+                    throw CompilerInternalError.format("Unknown brace type %s", lineInfo, brace);
+            }
+        }
+    }
+
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        var mainType = node.getBraceType().equals("[") ? Builtins.LIST : Builtins.SET;
-        return new TypeObject[]{mainType.generify(returnTypes(node.getBuilders())).makeMut()};
+        var literalType = LiteralType.fromBrace(node.getBraceType(), node);
+        if (literalType == LiteralType.TUPLE) {
+            return new TypeObject[]{literalType.type.generify(tupleReturnTypes(node.getBuilders()))};
+        } else {
+            var mainType = literalType.type;
+            return new TypeObject[]{mainType.generify(returnTypes(node.getBuilders())).makeMut()};
+        }
     }
 
     @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
+        var literalType = LiteralType.fromBrace(node.getBraceType(), node);
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
-            CompilerWarning.warnf("Unnecessary %s creation", node, node.getBraceType().equals("[") ? "list" : "set");
+            CompilerWarning.warnf("Unnecessary %s creation", node, literalType.name);
             for (var value : node.getBuilders()) {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), value, info));
             }
         } else {
             assert retCount == 1;
             var retType = returnTypes(node.getBuilders());
-            boolean isList = node.getBraceType().equals("[");
             for (var value : node.getBuilders()) {
                 bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
             }
-            bytes.add((isList ? Bytecode.LIST_CREATE : Bytecode.SET_CREATE).value);
+            bytes.add(literalType.bytecode.value);
             bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
         }
         return bytes;
@@ -54,5 +90,14 @@ public final class LiteralConverter implements TestConverter {  // TODO: Tuples
             result[i] = TestConverter.returnType(args[i], info, 1)[0];
         }
         return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
+    }
+
+    @NotNull
+    private TypeObject[] tupleReturnTypes(@NotNull TestNode[] args) {
+        var result = new TypeObject[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = TestConverter.returnType(args[i], info, 1)[0];
+        }
+        return result;
     }
 }
