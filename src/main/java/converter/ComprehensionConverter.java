@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.ComprehensionNode;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -19,10 +20,43 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
         this.retCount = retCount;
     }
 
+    private enum BraceType {
+        LIST("list", Builtins.LIST, Bytecode.LIST_CREATE, Bytecode.LIST_ADD),
+        SET("set", Builtins.SET, Bytecode.SET_CREATE, Bytecode.SET_ADD),
+        // FIXME: Get generators working properly
+        GENERATOR("generator", Builtins.ITERABLE, null, null),
+        ;
+
+        final String name;
+        final TypeObject type;
+        final Bytecode createCode;
+        final Bytecode addCode;
+
+        BraceType(String name, TypeObject type, Bytecode createCode, Bytecode addCode) {
+            this.name = name;
+            this.type = type;
+            this.createCode = createCode;
+            this.addCode = addCode;
+        }
+
+        static BraceType fromBrace(@NotNull String brace, Lined lineInfo) {
+            switch (brace) {
+                case "[":
+                    return BraceType.LIST;
+                case "{":
+                    return BraceType.SET;
+                case "(":
+                    return BraceType.GENERATOR;
+                default:
+                    throw CompilerInternalError.format("Unknown brace type %s", lineInfo, brace);
+            }
+        }
+    }
+
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        var resultType = node.getBrace().equals("[") ? Builtins.LIST : Builtins.SET;
+        var resultType = BraceType.fromBrace(node.getBrace(), node).type;
         var variable = node.getVariables()[0];
         if (variable instanceof TypedVariableNode) {
             var typedVariable = (TypedVariableNode) variable;
@@ -49,9 +83,9 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
     @Override
     public List<Byte> convert(int start) {
         assert retCount == 1 || retCount == 0;
-        boolean isList = node.getBrace().equals("[");
+        var braceType = BraceType.fromBrace(node.getBrace(), node);
         List<Byte> bytes = new ArrayList<>();
-        bytes.add(isList ? Bytecode.LIST_CREATE.value : Bytecode.SET_CREATE.value);
+        bytes.add(braceType.createCode.value);
         bytes.addAll(Util.shortToBytes((short) 0));
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
@@ -81,7 +115,7 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
         int whileJmp = addWhileCond(start, bytes);
         bytes.add(Bytecode.SWAP_2.value);  // The iterator object will be atop the list, swap it and back again
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getBuilder()[0].getArgument(), info, 1));
-        bytes.add(isList ? Bytecode.LIST_ADD.value : Bytecode.SET_ADD.value);
+        bytes.add(braceType.addCode.value);
         bytes.add(Bytecode.SWAP_2.value);
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(topJump));
