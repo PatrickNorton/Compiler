@@ -33,22 +33,32 @@ public final class FunctionCallConverter implements TestConverter {
             return convertOptimized(start, fnInfo);
         }
         List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
-        convertArgs(bytes, start, fnInfo);
+        int argc = convertArgs(bytes, start, fnInfo);
         bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
+        bytes.addAll(Util.shortToBytes((short) argc));
         for (int i = retCount; i < returnType().length; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
     }
 
-    private void convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo) {
+    private int convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo) {
         var params = node.getParameters();
         var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
+        var argc = params.length;
         for (var value : params) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
+            var converter = TestConverter.of(info, value.getArgument(), 1);
+            bytes.addAll(converter.convert(start + bytes.size()));
             if (value.isVararg()) {
+                var retType = converter.returnType()[0];
+                if (!(retType instanceof TupleType)) {
+                    throw CompilerException.format(
+                            "Illegal parameter expansion: Value must be a tuple, instead '%s'",
+                            value, retType.name()
+                    );
+                }
                 bytes.add(Bytecode.UNPACK_TUPLE.value);
+                argc += ((TupleType) retType).getGenerics().size() - 1;
             }
         }
         var swaps = swapsToOrder(argPositions);
@@ -57,6 +67,7 @@ public final class FunctionCallConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey())));
             bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue())));
         }
+        return argc;
     }
 
     @NotNull
