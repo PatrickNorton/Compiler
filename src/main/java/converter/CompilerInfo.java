@@ -684,6 +684,10 @@ public final class CompilerInfo {
         return String.format("lambda$%d", anonymousNums.getNext());
     }
 
+    public String generatorName() {
+        return String.format("generator$%d", anonymousNums.getNext());
+    }
+
     /**
      * The current access level of the given {@link TypeObject}.
      * <p>

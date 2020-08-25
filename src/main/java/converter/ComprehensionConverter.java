@@ -85,7 +85,8 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
         if (braceType == BraceType.GENERATOR) {
             // TODO: Name function
             var bytes = innerConvert(0, braceType);
-            var fnNo = info.addFunction(new Function(new FunctionInfo(returnType()), bytes, true));
+            var fnInfo = new FunctionInfo(info.generatorName(), returnType());
+            var fnNo = info.addFunction(new Function(fnInfo, bytes, true));
             List<Byte> trueBytes = new ArrayList<>();
             trueBytes.add(Bytecode.CALL_FN.value);
             trueBytes.addAll(Util.shortToBytes((short) fnNo));
