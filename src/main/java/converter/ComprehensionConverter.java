@@ -90,7 +90,7 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
             List<Byte> trueBytes = new ArrayList<>();
             trueBytes.add(Bytecode.CALL_FN.value);
             trueBytes.addAll(Util.shortToBytes((short) fnNo));
-            trueBytes.addAll(Util.zeroToBytes());
+            trueBytes.addAll(Util.shortZeroBytes());
             return trueBytes;
         } else {
             return innerConvert(start, braceType);
