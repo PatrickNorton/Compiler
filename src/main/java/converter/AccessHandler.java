@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.DescriptorNode;
 import main.java.util.Counter;
 import main.java.util.HashCounter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -11,6 +12,7 @@ public final class AccessHandler {
     private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
     private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
     private final Deque<TypeObject> clsTypes = new ArrayDeque<>();
+    private final Deque<TypeObject> superTypes = new ArrayDeque<>();
 
     /**
      * The current access level of the given {@link TypeObject}.
@@ -95,8 +97,23 @@ public final class AccessHandler {
      * @param cls The type to be used
      * @see #removeCls()
      */
-    public void addCls(TypeObject cls) {
+    public void addCls(@NotNull TypeObject cls) {
         clsTypes.push(cls);
+    }
+
+    /**
+     * Adds a new {@link TypeObject type} to be represented by the type
+     * variable {@code super} in method headers.
+     * <p>
+     *     This should always be used in conjunction with {@link #removeCls},
+     *     to prevent leakage of types
+     * </p>
+     *
+     * @param cls The type to be used
+     * @see #removeSuper() ()
+     */
+    public void addSuper(@NotNull TypeObject cls) {
+        superTypes.push(cls);
     }
 
     /**
@@ -107,7 +124,19 @@ public final class AccessHandler {
         clsTypes.pop();
     }
 
+    /**
+     * Removes a {@link TypeObject type} from being represented by the {@code
+     * super} variable; e.g. it undoes what was done by {@link #addSuper}.
+     */
+    public void removeSuper() {
+        superTypes.pop();
+    }
+
     public TypeObject getCls() {
         return clsTypes.peekFirst();
+    }
+
+    public TypeObject getSuper() {
+        return superTypes.peekFirst();
     }
 }

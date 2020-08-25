@@ -347,7 +347,12 @@ public final class CompilerInfo {
                 }
                 return clsType;
             case "super":
-                throw CompilerException.of("'super' not yet implemented as a type", type);
+                var sup = (TypeNode) type;
+                var superType = accessHandler.getSuper();
+                if (sup.isOptional()) {
+                    return TypeObject.optional(superType);
+                }
+                return superType;
         }
         var value = typeMap.get(type.strName());
         if (value == null) {
