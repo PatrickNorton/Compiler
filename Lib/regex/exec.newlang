@@ -9,8 +9,9 @@ class Exec {
     private ExecReadOnly ro
     private ProgramCache cache
 
-    public operator new () {
-
+    public operator new (ExecReadOnly ro, ProgramCache cache) {
+        self.ro = ro
+        self.cache = cache
     }
 
     public method findLiterals(MatchLiteralType ty, str text, int start) -> tuple[int, int]? {
