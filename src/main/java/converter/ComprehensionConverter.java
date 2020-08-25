@@ -23,8 +23,7 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
     private enum BraceType {
         LIST("list", Builtins.LIST, Bytecode.LIST_CREATE, Bytecode.LIST_ADD),
         SET("set", Builtins.SET, Bytecode.SET_CREATE, Bytecode.SET_ADD),
-        // FIXME: Get generators working properly
-        GENERATOR("generator", Builtins.ITERABLE, null, null),
+        GENERATOR("generator", Builtins.ITERABLE, null, Bytecode.YIELD),
         ;
 
         final String name;
@@ -82,11 +81,29 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert retCount == 1 || retCount == 0;
         var braceType = BraceType.fromBrace(node.getBrace(), node);
+        if (braceType == BraceType.GENERATOR) {
+            // TODO: Name function
+            var bytes = innerConvert(0, braceType);
+            var fnNo = info.addFunction(new Function(new FunctionInfo(returnType()), bytes, true));
+            List<Byte> trueBytes = new ArrayList<>();
+            trueBytes.add(Bytecode.CALL_FN.value);
+            trueBytes.addAll(Util.shortToBytes((short) fnNo));
+            trueBytes.addAll(Util.zeroToBytes());
+            return trueBytes;
+        } else {
+            return innerConvert(start, braceType);
+        }
+    }
+
+    @NotNull
+    private List<Byte> innerConvert(int start, @NotNull BraceType braceType) {
+        assert retCount == 1 || retCount == 0;
         List<Byte> bytes = new ArrayList<>();
-        bytes.add(braceType.createCode.value);
-        bytes.addAll(Util.shortToBytes((short) 0));
+        if (braceType.createCode != null) {
+            bytes.add(braceType.createCode.value);
+            bytes.addAll(Util.shortToBytes((short) 0));
+        }
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getLooped().get(0), info, 1));
@@ -116,6 +133,9 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
         bytes.add(Bytecode.SWAP_2.value);  // The iterator object will be atop the list, swap it and back again
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getBuilder()[0].getArgument(), info, 1));
         bytes.add(braceType.addCode.value);
+        if (braceType.addCode == Bytecode.YIELD) {
+            bytes.addAll(Util.shortToBytes((short) 1));
+        }
         bytes.add(Bytecode.SWAP_2.value);
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(topJump));
