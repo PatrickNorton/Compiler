@@ -39,6 +39,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             var handler = info.accessHandler();
             try {
                 handler.allowPrivateAccess(type);
+                handler.addCls(type);
                 recursivelyAllowProtectedAccess(handler, type);
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
@@ -52,6 +53,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 info.removeStackFrame();
             } finally {
                 handler.removePrivateAccess(type);
+                handler.removeCls();
                 recursivelyRemoveProtectedAccess(handler, type);
             }
         }

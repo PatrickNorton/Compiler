@@ -18,10 +18,12 @@ class ArrayList[T] from AbstractList[T] {
         self.length = 0
     }
 
-    public operator new (Iterable[T] values) {
-        self.values = Array(values.length + DEFAULT_SIZE, *values, null)
-        self.length = values.length
-    }
+# Commented to prevent operator-overloading bugs
+
+#    public operator new (Iterable[T] values) {
+#        self.values = Array(values.length + DEFAULT_SIZE, *values, null)
+#        self.length = values.length
+#    }
 
     public operator [] (int index) -> T {
         self.checkIndex(index)

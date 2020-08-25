@@ -4,9 +4,13 @@ import main.java.parser.DescriptorNode;
 import main.java.util.Counter;
 import main.java.util.HashCounter;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 public final class AccessHandler {
     private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
     private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
+    private final Deque<TypeObject> clsTypes = new ArrayDeque<>();
 
     /**
      * The current access level of the given {@link TypeObject}.
@@ -78,5 +82,32 @@ public final class AccessHandler {
     public void removeProtectedAccess(TypeObject obj) {
         assert classesWithProtected.contains(obj);
         classesWithProtected.decrement(obj);
+    }
+
+    /**
+     * Adds a new {@link TypeObject type} to be represented by the type
+     * variable {@code cls} in method headers.
+     * <p>
+     *     This should always be used in conjunction with {@link #removeCls},
+     *     to prevent leakage of types
+     * </p>
+     *
+     * @param cls The type to be used
+     * @see #removeCls()
+     */
+    public void addCls(TypeObject cls) {
+        clsTypes.push(cls);
+    }
+
+    /**
+     * Removes a {@link TypeObject type} from being represented by the {@code
+     * cls} variable; e.g. it undoes what was done by {@link #addCls}.
+     */
+    public void removeCls() {
+        clsTypes.pop();
+    }
+
+    public TypeObject getCls() {
+        return clsTypes.peekFirst();
     }
 }

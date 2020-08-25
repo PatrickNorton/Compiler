@@ -117,7 +117,12 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         if (!isConst) {
             checkConstSupers(obj, obj.getSupers());
         }
-        parseIntoObject(converter, obj, isConst);
+        try {
+            info.accessHandler().addCls(obj);
+            parseIntoObject(converter, obj, isConst);
+        } finally {
+            info.accessHandler().removeCls();
+        }
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj, boolean isConst) {

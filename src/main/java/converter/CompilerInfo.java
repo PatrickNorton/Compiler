@@ -330,13 +330,24 @@ public final class CompilerInfo {
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
         assert type instanceof TypeNode;
-        if (((TypeNode) type).getName().toString().equals("null")) {
-            var nullType = (TypeNode) type;
-            assert nullType.getSubtypes().length == 0;
-            if (nullType.isOptional()) {
-                CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
-            }
-            return Builtins.NULL_TYPE;
+        var name = ((TypeNode) type).getName().toString();
+        switch (name) {
+            case "null":
+                var nullType = (TypeNode) type;
+                assert nullType.getSubtypes().length == 0;
+                if (nullType.isOptional()) {
+                    CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
+                }
+                return Builtins.NULL_TYPE;
+            case "cls":
+                var cls = (TypeNode) type;
+                var clsType = accessHandler.getCls();
+                if (cls.isOptional()) {
+                    return TypeObject.optional(clsType);
+                }
+                return clsType;
+            case "super":
+                throw CompilerException.of("'super' not yet implemented as a type", type);
         }
         var value = typeMap.get(type.strName());
         if (value == null) {
