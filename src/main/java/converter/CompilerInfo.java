@@ -17,14 +17,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * The class representing all information needing to be held during compilation.
@@ -36,7 +33,6 @@ public final class CompilerInfo {
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
-    private final Set<TypeObject> defaultInterfaces = new HashSet<>();
     private final LoopManager loopManager = new LoopManager();
     private final List<SwitchTable> tables = new ArrayList<>();
 
@@ -366,24 +362,6 @@ public final class CompilerInfo {
             var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
             return type.isOptional() ? TypeObject.optional(endType) : endType;
         }
-    }
-
-    /**
-     * Adds default interfaces to the pool
-     *
-     * @param objs The type to add
-     */
-    public void addDefaultInterfaces(Collection<? extends UserType<?>> objs) {
-        defaultInterfaces.addAll(objs);
-    }
-
-    /**
-     * Gets the default interfaces.
-     *
-     * @return The interfaces
-     */
-    public Iterable<TypeObject> getDefaultInterfaces() {
-        return defaultInterfaces;
     }
 
     /**
