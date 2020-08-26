@@ -24,8 +24,6 @@ public final class ForConverter extends LoopConverter {
     @Contract(pure = true)
     @Override
     public List<Byte> trueConvert(int start) {
-        // assert node.getVars().length == 1 : "'for' loops with multiple vars not yet implemented";
-        // assert node.getIterables().size() == 1 : "'for' loops with multiple vars not yet implemented";
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
         if (iterLen > varLen) {
@@ -52,30 +50,14 @@ public final class ForConverter extends LoopConverter {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.addAll(Util.shortToBytes((short) retCount));
-        for (int i = 0; i < node.getVars().length; i++) {
-            var typedVar = node.getVars()[i];
-            var iteratorType = getIteratorType(i, valueConverter);
-            var variable = typedVar.getVariable();
-            var iteratedName = variable.toString();
-            if (typedVar instanceof TypedVariableNode) {
-                if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
-                    throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
-                }
-                info.checkDefinition(iteratedName, typedVar);
-                info.addVariable(iteratedName, iteratorType, typedVar);
-            }
-            bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes(info.varIndex(iteratedName)));
+        for (int i = retCount - 1; i >= 0; i--) {
+            addVariableStorage(bytes, i, valueConverter, false);
         }
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
-        bytes.add(Bytecode.JUMP.value);
-        info.loopManager().addContinue(start + bytes.size());
-        bytes.addAll(Util.zeroToBytes());
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info));
+        addCleanup(start, bytes, jumpPos);
         return bytes;
     }
 
+    @NotNull
     private List<Byte> convertMultipleIter(int start) {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
@@ -85,10 +67,68 @@ public final class ForConverter extends LoopConverter {
                     node
             );
         }
-        throw CompilerException.of("Not yet implemented", node);
+        List<TestConverter> valueConverters = new ArrayList<>();
+        List<Byte> bytes = new ArrayList<>();
+        for (int i = 0; i < varLen; i++) {
+            var iterator = node.getIterables().get(i);
+            var valueConverter = TestConverter.of(info, iterator, 1);
+            valueConverters.add(valueConverter);
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
+            bytes.addAll(valueConverter.convert(start + bytes.size()));
+            bytes.add(Bytecode.CALL_TOS.value);
+            bytes.addAll(Util.shortToBytes((short) 1));
+        }
+        info.loopManager().setContinuePoint(start + bytes.size());
+        bytes.add(Bytecode.FOR_PARALLEL.value);
+        int jumpPos = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(Util.shortToBytes((short) varLen));
+        assert valueConverters.size() == varLen;
+        for (int i = varLen - 1; i >= 0; i--) {
+            var valueConverter = valueConverters.get(i);
+            addVariableStorage(bytes, i, valueConverter, true);
+        }
+        addCleanup(start, bytes, jumpPos);
+        return bytes;
     }
 
-    private TypeObject getIteratorType(int i, TestConverter valueConverter) {
+    private void addVariableStorage(List<Byte> bytes, int i, TestConverter valueConverter, boolean firstRet) {
+        var typedVar = node.getVars()[i];
+        var iteratorType = getIteratorType(i, valueConverter, firstRet);
+        var variable = typedVar.getVariable();
+        var iteratedName = variable.toString();
+        if (typedVar instanceof TypedVariableNode) {
+            if (Builtins.FORBIDDEN_NAMES.contains(iteratedName)) {
+                throw CompilerException.format("Illegal name for variable '%s'", variable, iteratedName);
+            }
+            var valueType = returnType(firstRet ? 0 : i, valueConverter);
+            if (!iteratorType.isSuperclass(valueType)) {
+                throw CompilerException.format(
+                        "Object of type %s cannot be assigned to object of type %s",
+                        node, valueType.name(), iteratorType.name());
+            }
+            info.checkDefinition(iteratedName, typedVar);
+            info.addVariable(iteratedName, iteratorType, typedVar);
+        }
+        bytes.add(Bytecode.STORE.value);
+        bytes.addAll(Util.shortToBytes(info.varIndex(iteratedName)));
+    }
+
+    private void addCleanup(int start, List<Byte> bytes, int jumpPos) {
+        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
+        bytes.add(Bytecode.JUMP.value);
+        info.loopManager().addContinue(start + bytes.size());
+        bytes.addAll(Util.zeroToBytes());
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info));
+    }
+
+    private TypeObject returnType(int i, @NotNull TestConverter valueConverter) {
+        return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[i];
+    }
+
+    private TypeObject getIteratorType(int i, TestConverter valueConverter, boolean firstRet) {
         if (node.getVars()[i] instanceof VariableNode) {
             return info.getType(node.getVars()[i].getVariable().getName());
         }
@@ -96,7 +136,7 @@ public final class ForConverter extends LoopConverter {
         if (iteratorType.isDecided()) {
             return info.getType(iteratorType);
         } else {
-            return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[i];
+            return returnType(firstRet ? 0 : i, valueConverter);
         }
     }
 }
