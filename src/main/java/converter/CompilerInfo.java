@@ -330,26 +330,24 @@ public final class CompilerInfo {
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
         assert type instanceof TypeNode;
-        var name = ((TypeNode) type).getName().toString();
+        var node = (TypeNode) type;
+        var name = node.getName().toString();
         switch (name) {
             case "null":
-                var nullType = (TypeNode) type;
-                assert nullType.getSubtypes().length == 0;
-                if (nullType.isOptional()) {
+                assert node.getSubtypes().length == 0;
+                if (node.isOptional()) {
                     CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
                 }
                 return Builtins.NULL_TYPE;
             case "cls":
-                var cls = (TypeNode) type;
                 var clsType = accessHandler.getCls();
-                if (cls.isOptional()) {
+                if (node.isOptional()) {
                     return TypeObject.optional(clsType);
                 }
                 return clsType;
             case "super":
-                var sup = (TypeNode) type;
                 var superType = accessHandler.getSuper();
-                if (sup.isOptional()) {
+                if (node.isOptional()) {
                     return TypeObject.optional(superType);
                 }
                 return superType;
