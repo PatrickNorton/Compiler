@@ -118,6 +118,7 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
         bytes.add(Bytecode.FOR_ITER.value);
         int forJump = bytes.size();
         bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(Util.shortToBytes((short) 1));
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();

@@ -54,6 +54,7 @@ public final class ForConverter extends LoopConverter {
         bytes.add(Bytecode.FOR_ITER.value);
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(Util.shortToBytes((short) 1));
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(iteratedName)));
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));

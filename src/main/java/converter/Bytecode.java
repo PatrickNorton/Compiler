@@ -88,7 +88,7 @@ public enum Bytecode {
     CLASS_DEF(0x49),
     END_CLASS(0x4A),
     // Loop stuff
-    FOR_ITER(0x50, Type.LOCATION),
+    FOR_ITER(0x50, Type.LOCATION, Type.ARGC),
     LIST_CREATE(0x51, Type.ARGC),
     SET_CREATE(0x52, Type.ARGC),
     DICT_CREATE(0x53, Type.ARGC),
