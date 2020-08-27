@@ -4,7 +4,12 @@ export Counter
 
 final class Counter[T] from dict[T, int] {
     private final dict[T, int] values
-    public readonly int length := values.length
+
+    public property int length {
+        get {
+            return self.values.length
+        }
+    }
 
     public operator new (*T items) {
         self.values = {:}
