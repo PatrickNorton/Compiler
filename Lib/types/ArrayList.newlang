@@ -58,13 +58,13 @@ class ArrayList[T] from AbstractList[T] {
         yield from self.values[self.length::-1] casted Iterable[T]
     }
 
-    public operator + (cls other) -> cls {
-        return self + other.values
-    }
+#     public operator + (cls other) -> cls {
+#         return self + other.values
+#     }
 
-    public operator + (super other) -> cls {
-        return self + Array(other.length, other)
-    }
+#     public operator + (super other) -> cls {
+#         return self + Array(other.length, other)
+#     }
 
     public operator + (Array[T] other) -> cls {
         var new = size(self.length + other.length)
@@ -80,7 +80,7 @@ class ArrayList[T] from AbstractList[T] {
         }
     }
 
-    public method append(T value, /) -> self {
+    public method append(T value, /) -> cls {  # Should be 'self'
         self.ensureSize(self.length + 1)
         self.values[self.length] = value
         self.length++
@@ -109,11 +109,6 @@ class ArrayList[T] from AbstractList[T] {
 
     public method reverse() {
         self.values[:self.length] = self.values[self.length::-1]
-    }
-
-    public method extend(Sequence[T] values, /) {
-        self.ensureSize(self.length + values.length)
-        super.extend(values)
     }
 
     public method insert(T value, int index) {
