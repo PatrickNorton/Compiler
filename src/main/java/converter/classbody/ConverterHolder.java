@@ -90,6 +90,14 @@ public final class ConverterHolder {
         return ops.getOperators();
     }
 
+    public Map<OpSpTypeNode, FunctionInfo> getStaticOperatorInfos() {
+        return ops.getStaticOperatorInfos();
+    }
+
+    public Map<OpSpTypeNode, MethodInfo> getStaticOperators() {
+        return ops.getStaticOperators();
+    }
+
     // PropertyConverter forwarding methods
     public PropertyConverter properties() {
         return props;

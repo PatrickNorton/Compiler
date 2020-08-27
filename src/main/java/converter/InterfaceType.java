@@ -169,6 +169,15 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         info.operators = result;
     }
 
+    public void setStaticOperators(@NotNull Map<OpSpTypeNode, FunctionInfo> args) {
+        assert !info.isSealed && info.staticOperators.isEmpty();
+        Map<OpSpTypeNode, InterfaceFnInfo> result = new HashMap<>();
+        for (var pair : args.entrySet()) {
+            result.put(pair.getKey(), new InterfaceFnInfo(pair.getValue(), true));
+        }
+        info.staticOperators = result;
+    }
+
     @Override
     public TypeObject makeConst() {
         return isConst ? this : new InterfaceType(this, true);

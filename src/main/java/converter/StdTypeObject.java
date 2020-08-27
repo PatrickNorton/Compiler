@@ -85,6 +85,12 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.operators = args;
     }
 
+    public void setStaticOperators(Map<OpSpTypeNode, FunctionInfo> args) {
+        assert !info.isSealed && info.staticOperators.isEmpty();
+        info.staticOperators = args;
+    }
+
+
     @Nullable
     @Override
     public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {

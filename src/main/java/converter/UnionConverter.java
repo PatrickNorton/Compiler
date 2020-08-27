@@ -125,6 +125,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         parseStatements(converter);
         converter.attributes().addUnionMethods(variantMethods(obj));
         obj.setOperators(converter.getOperatorInfos());
+        obj.setStaticOperators(converter.getStaticOperatorInfos());
         converter.checkAttributes();
         obj.setAttributes(withVariantInfos(converter.allAttrs()));
         obj.setStaticAttributes(withStaticVariants(converter.staticAttrs(), obj));

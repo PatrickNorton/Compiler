@@ -144,6 +144,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             obj.isConstClass();
         }
         obj.setOperators(converter.getOperatorInfos());
+        obj.setStaticOperators(converter.getStaticOperatorInfos());
         converter.checkAttributes();
         obj.setAttributes(converter.allAttrs());
         obj.setStaticAttributes(converter.staticAttrs());

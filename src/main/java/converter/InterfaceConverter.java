@@ -73,6 +73,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         parseStatements(converter);
         converter.checkAttributes();
         obj.setOperators(converter.getOperatorInfos(), genericOps);
+        obj.setStaticOperators(converter.getStaticOperatorInfos());
         obj.setAttributes(converter.allAttrs(), genericAttrs);
         obj.setStaticAttributes(converter.staticAttrs(), new HashSet<>());
         obj.seal();

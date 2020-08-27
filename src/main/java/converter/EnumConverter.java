@@ -107,6 +107,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         operatorInfos.remove(OpSpTypeNode.NEW);
         converter.checkAttributes();
         obj.setOperators(operatorInfos);
+        obj.setStaticOperators(converter.getStaticOperatorInfos());
         obj.setAttributes(converter.allAttrs());
         obj.setStaticAttributes(converter.staticAttrs());
         obj.seal();

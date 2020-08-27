@@ -6,6 +6,7 @@ import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
 import main.java.converter.TypeObject;
+import main.java.parser.DescriptorNode;
 import main.java.parser.GenericOperatorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
@@ -22,10 +23,14 @@ public final class OperatorDefConverter {
     private final CompilerInfo info;
     private final Map<OpSpTypeNode, FunctionInfo> operatorInfos;
     private final Map<OpSpTypeNode, MethodInfo> operators;
+    private final Map<OpSpTypeNode, FunctionInfo> staticOperatorInfos;
+    private final Map<OpSpTypeNode, MethodInfo> staticOperators;
 
     public OperatorDefConverter(CompilerInfo info) {
         this.operatorInfos = new HashMap<>();
         this.operators = new HashMap<>();
+        this.staticOperatorInfos = new HashMap<>();
+        this.staticOperators = new HashMap<>();
         this.info = info;
     }
 
@@ -40,11 +45,14 @@ public final class OperatorDefConverter {
         } else {
             fnInfo = new FunctionInfo("", args, returns);
         }
-        if (operatorInfos.containsKey(op)) {
-            throw CompilerException.doubleDef(op, node, operators.get(op));
+        boolean isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
+        var opInfos = isStatic ? staticOperatorInfos : operatorInfos;
+        var ops = isStatic ? staticOperators : operators;
+        if (opInfos.containsKey(op)) {
+            throw CompilerException.doubleDef(op, node, ops.get(op));
         }
-        operatorInfos.put(op, fnInfo);
-        operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));
+        opInfos.put(op, fnInfo);
+        ops.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));
     }
 
     public void parse(@NotNull GenericOperatorNode node) {
@@ -72,6 +80,14 @@ public final class OperatorDefConverter {
 
     public Map<OpSpTypeNode, MethodInfo> getOperators() {
         return operators;
+    }
+
+    public Map<OpSpTypeNode, FunctionInfo> getStaticOperatorInfos() {
+        return staticOperatorInfos;
+    }
+
+    public Map<OpSpTypeNode, MethodInfo> getStaticOperators() {
+        return staticOperators;
     }
 
     @NotNull
