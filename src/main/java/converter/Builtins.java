@@ -371,7 +371,8 @@ public final class Builtins {
             OPEN,
             REVERSED,
             SLICE,
-            ID
+            ID,
+            ARRAY
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -400,6 +401,7 @@ public final class Builtins {
             Map.entry("id", ID),
             Map.entry("dec", DECIMAL),
             Map.entry("tuple", TUPLE),
+            Map.entry("Array", ARRAY),
             Map.entry("null", NULL)
     );
 
