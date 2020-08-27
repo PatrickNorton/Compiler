@@ -1,6 +1,5 @@
 from itertools import all
 from numtools import highestOneBit
-from types import Array
 
 export IdentityMap
 

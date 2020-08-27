@@ -1,7 +1,6 @@
 from collections typeget AbstractDict
 from interfaces typeget Hashable
 
-from .natives import Array
 from numtools import highestOneBit
 from math import max
 

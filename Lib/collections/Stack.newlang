@@ -1,7 +1,5 @@
 from interfaces typeget Iterable
 
-from types import Array
-
 export Stack
 
 
