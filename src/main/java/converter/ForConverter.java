@@ -63,7 +63,8 @@ public final class ForConverter extends LoopConverter {
         var iterLen = node.getIterables().size();
         if (varLen != iterLen) {
             throw CompilerException.of(
-                    "For loops with more than one iterable must have an equal number of variables and iterables",
+                    "For loops with more than one iterable must have an equal number of variables and iterables\n\n" +
+                    "Note: Statements with multiple returns are only usable in for-loops when there is only one",
                     node
             );
         }
@@ -105,7 +106,7 @@ public final class ForConverter extends LoopConverter {
             var valueType = returnType(firstRet ? 0 : i, valueConverter);
             if (!iteratorType.isSuperclass(valueType)) {
                 throw CompilerException.format(
-                        "Object of type %s cannot be assigned to object of type %s",
+                        "Object of type '%s' cannot be assigned to object of type '%s'",
                         node, valueType.name(), iteratorType.name());
             }
             info.checkDefinition(iteratedName, typedVar);
@@ -115,7 +116,7 @@ public final class ForConverter extends LoopConverter {
         bytes.addAll(Util.shortToBytes(info.varIndex(iteratedName)));
     }
 
-    private void addCleanup(int start, List<Byte> bytes, int jumpPos) {
+    private void addCleanup(int start, @NotNull List<Byte> bytes, int jumpPos) {
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addContinue(start + bytes.size());
