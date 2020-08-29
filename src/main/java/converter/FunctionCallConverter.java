@@ -64,8 +64,8 @@ public final class FunctionCallConverter implements TestConverter {
         var swaps = swapsToOrder(argPositions);
         for (var pair : swaps) {
             bytes.add(Bytecode.SWAP_STACK.value);
-            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey())));
-            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue())));
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey() - 1)));
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue() - 1)));
         }
         return argc;
     }
