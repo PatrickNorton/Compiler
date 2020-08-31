@@ -1,4 +1,4 @@
-from interfaces typeget Iterable, Sequence
+from interfaces typeget Iterable, #|Sequence|#
 
 from .decorations import normalizeIndices
 from math import max, min
@@ -12,13 +12,18 @@ final class Deque[V] {
     private Array[V?] values
     private int start = 0
     pubget int length = 0
-    private int end := (self.start + self.length) % self.values.length
 
-    public operator new (*V values) {
-        self.values = Array(max(DEFAULT_SIZE, highestOneBit(values.length) << 1), null)
-        self.values[0:] = values
-        self.length = values.length
+    private property int end {
+        get {
+            return (self.start + self.length) % self.values.length
+        }
     }
+
+#     public operator new (*V values) {
+#         self.values = Array(max(DEFAULT_SIZE, highestOneBit(values.length) << 1), null)
+#         self.values[0:] = values
+#         self.length = values.length
+#     }
 
     public operator new (Iterable[V] values) {
         self(*values)
@@ -110,18 +115,18 @@ final class Deque[V] {
     }
 
     public mut method extend(Iterable[V] values) {
-        if values instanceof Sequence {  # Prevent multiple array resizes
-            self.ensureSize(self.length + values.length)
-        }
+        # if values instanceof Sequence {  # Prevent multiple array resizes
+        #     self.ensureSize(self.length + values.length)
+        # }
         for V value in values {
             self.push(value)
         }
     }
 
     public mut method extendLeft(Iterable[V] values) {
-        if values instanceof Sequence {  # Prevent multiple array resizes
-            self.ensureSize(self.length + values.length)
-        }
+        # if values instanceof Sequence {  # Prevent multiple array resizes
+        #     self.ensureSize(self.length + values.length)
+        # }
         for V value in values {
             self.pushLeft(value)
         }

@@ -4,9 +4,9 @@ export FrozenDict
 final class FrozenDict[K, V] from dict[K, V] {
     private dict[K, V] items
 
-    operator new (*tuple[K, V] items, /) {
-        self.items = dict(items)
-    }
+#     operator new (*tuple[K, V] items, /) {
+#         self.items = dict(items)
+#     }
 
     operator new (dict[K, V] items, /) {
         self.items = {i: j for var i, var j in items}
