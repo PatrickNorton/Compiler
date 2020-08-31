@@ -12,7 +12,6 @@ import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -126,14 +125,14 @@ public final class CompilerInfo {
      * @param name The name of the function
      * @return The function info, or {@code null} if not found
      */
-    @Nullable
-    public FunctionInfo fnInfo(String name) {
+    @NotNull
+    public Optional<FunctionInfo> fnInfo(String name) {
         for (var fn : functions) {
             if (fn != null && fn.getName().equals(name)) {
-                return fn.getInfo();
+                return Optional.of(fn.getInfo());
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -370,14 +369,14 @@ public final class CompilerInfo {
      * @param str The name of the class
      * @return The class, or {@code null} if not found
      */
-    @Nullable
-    public TypeObject classOf(String str) {
+    @NotNull
+    public Optional<TypeObject> classOf(String str) {
         var cls = typeMap.get(str);
         if (cls == null) {
             var builtin = Builtins.BUILTIN_MAP.get(str);
-            return builtin instanceof TypeObject ? (TypeObject) builtin : null;
+            return builtin instanceof TypeObject ? Optional.of((TypeObject) builtin) : Optional.empty();
         }
-        return cls;
+        return Optional.of(cls);
     }
 
     /**
