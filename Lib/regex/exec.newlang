@@ -3,7 +3,7 @@
 from .prog import Program
 from .compile import Compiler
 
-export Exec, ProgramCache
+export Exec, ProgramCache, ExecBuilder
 
 class Exec {
     private ExecReadOnly ro
