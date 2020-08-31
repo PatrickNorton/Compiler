@@ -63,7 +63,7 @@ public final class DictCompConverter implements TestConverter {
             info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), typedVar);
         }
         bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));
+        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable())));
         if (!node.getCondition().isEmpty()) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getCondition(), info, 1));
             bytes.add(Bytecode.JUMP_FALSE.value);

@@ -7,6 +7,7 @@ import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
+import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -597,24 +598,24 @@ public final class CompilerInfo {
     /**
      * The index of the variable in the variable stack.
      *
-     * @param name The name of the variable
+     * @param node The node representing the variable
      * @return The index in the stack
      */
-    public short varIndex(String name) {
-        return varInfo(name).orElseThrow(
-                () -> CompilerException.format("Unknown variable '%s'", LineInfo.empty(), name)
+    public short varIndex(@NotNull VariableNode node) {
+        return varInfo(node.getName()).orElseThrow(
+                () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
         ).getLocation();
     }
 
     /**
      * The index of the variable in the static variable set.
      *
-     * @param name The name of the variable
+     * @param node The node representing the variable
      * @return The index
      */
-    public short staticVarIndex(String name) {
-        return varInfo(name).orElseThrow(
-                () -> CompilerException.format("Unknown variable '%s'", LineInfo.empty(), name)
+    public short staticVarIndex(@NotNull VariableNode node) {
+        return varInfo(node.getName()).orElseThrow(
+                () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
         ).getStaticLocation();
     }
 

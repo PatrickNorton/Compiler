@@ -230,7 +230,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 info.addStackFrame();
                 info.addVariable(as.getName(), labelToType(lblConverter, union), as);
                 bytes.add(Bytecode.STORE.value);
-                bytes.addAll(Util.shortToBytes(info.varIndex(as.getName())));
+                bytes.addAll(Util.shortToBytes(info.varIndex(as)));
             } else if (hasAs) {
                 bytes.add(Bytecode.POP_TOP.value);
             }

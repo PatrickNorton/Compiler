@@ -44,7 +44,7 @@ public final class DeleteConverter implements BaseConverter {
             }
         } else if (deleted instanceof VariableNode) {  // TODO: Make variable inaccessible
             var delVar = (VariableNode) deleted;
-            var index = info.varIndex(delVar.getName());
+            var index = info.varIndex(delVar);
             bytes.add(Bytecode.LOAD_NULL.value);
             bytes.add(Bytecode.STORE.value);  // Drops value currently stored
             bytes.addAll(Util.shortToBytes(index));

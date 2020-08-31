@@ -67,7 +67,7 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.addAll(valueConverter.convert(start));
         }
         storeBytes.add(0, Bytecode.STORE.value);
-        storeBytes.addAll(1, Util.shortToBytes(info.varIndex(name)));
+        storeBytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
     }
 
     private void assignToIndex(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,

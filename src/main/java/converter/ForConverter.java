@@ -113,7 +113,7 @@ public final class ForConverter extends LoopConverter {
             info.addVariable(iteratedName, iteratorType, typedVar);
         }
         bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(iteratedName)));
+        bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
     }
 
     private void addCleanup(int start, @NotNull List<Byte> bytes, int jumpPos) {

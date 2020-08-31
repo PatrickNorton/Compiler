@@ -35,7 +35,7 @@ public final class IncrementDecrementConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes((short) constIndex));
         bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
         if (node.getVariable() instanceof VariableNode) {
-            short varIndex = info.varIndex(((VariableNode) node.getVariable()).getName());
+            short varIndex = info.varIndex((VariableNode) node.getVariable());
             bytes.add(Bytecode.STORE.value);
             bytes.addAll(Util.shortToBytes(varIndex));
         } else {

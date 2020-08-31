@@ -32,7 +32,7 @@ public final class WhileConverter extends LoopConverter {
         bytes.addAll(Util.zeroToBytes());
         if (hasAs) {
             bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes(info.varIndex(node.getAs().getName())));
+            bytes.addAll(Util.shortToBytes(info.varIndex(node.getAs())));
         }
         var body = BaseConverter.bytes(start + bytes.size(), node.getBody(), info);
         bytes.addAll(body);
