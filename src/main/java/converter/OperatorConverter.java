@@ -188,7 +188,7 @@ public final class OperatorConverter implements TestConverter {
         var arg1ret = converter1.returnType()[0];
         if (!Builtins.TYPE.isSuperclass(arg1ret)) {
             throw CompilerException.of(
-                    "'instanceof' operator requires return type that is an instance of 'type'", arg1
+                    "'instanceof' operator requires second argument to be an instance of 'type'", arg1
             );
         }
         var instanceType = arg1ret.operatorReturnType(OpSpTypeNode.CALL, info)[0]; // calling a type will always return an instance

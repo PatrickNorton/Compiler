@@ -330,7 +330,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     @Nullable
     static TypeObject of(CompilerInfo info, TestNode arg) {
         if (arg instanceof VariableNode) {
-            return info.classOf(((VariableNode) arg).getName());
+            return info.classOf(((VariableNode) arg).getName()).orElse(null);
         } else if (arg instanceof IndexNode) {
             var node = (IndexNode) arg;
             var cls = of(info, node.getVar());

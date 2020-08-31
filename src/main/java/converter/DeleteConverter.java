@@ -26,15 +26,25 @@ public final class DeleteConverter implements BaseConverter {
         if (deleted instanceof IndexNode) {
             var delIndex = (IndexNode) deleted;
             var varConverter = TestConverter.of(info, delIndex.getVar(), 1);
-            var indexConverter = TestConverter.of(info, delIndex.getIndices()[0], 1);
-            checkAccess(varConverter, indexConverter);
+            List<TestConverter> indexConverters = new ArrayList<>();
+            for (var index : delIndex.getIndices()) {
+                indexConverters.add(TestConverter.of(info, index, 1));
+            }
+            checkAccess(varConverter, indexConverters);
             bytes.addAll(varConverter.convert(start + bytes.size()));
-            bytes.addAll(indexConverter.convert(start + bytes.size()));
-            // TODO: Multiple params
-            bytes.add(Bytecode.DEL_SUBSCRIPT.value);
+            for (var converter : indexConverters) {
+                bytes.addAll(converter.convert(start + bytes.size()));
+            }
+            if (indexConverters.size() == 1) {
+                bytes.add(Bytecode.DEL_SUBSCRIPT.value);
+            } else {
+                bytes.add(Bytecode.CALL_OP.value);
+                bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.DEL_ATTR.ordinal()));
+                bytes.addAll(Util.shortToBytes((short) indexConverters.size()));
+            }
         } else if (deleted instanceof VariableNode) {  // TODO: Make variable inaccessible
             var delVar = (VariableNode) deleted;
-            var index = info.varIndex(delVar.getName());
+            var index = info.varIndex(delVar);
             bytes.add(Bytecode.LOAD_NULL.value);
             bytes.add(Bytecode.STORE.value);  // Drops value currently stored
             bytes.addAll(Util.shortToBytes(index));
@@ -46,9 +56,8 @@ public final class DeleteConverter implements BaseConverter {
         return bytes;
     }
 
-    private void checkAccess(@NotNull TestConverter converter, @NotNull TestConverter index) {
-        var retType = converter.returnType()[0];
-        var indexType = index.returnType()[0];
+    private void checkAccess(@NotNull TestConverter value, List<TestConverter> indices) {
+        var retType = value.returnType()[0];
         var opInfo = retType.operatorInfo(OpSpTypeNode.DEL_ATTR, info.accessLevel(retType));
         if (opInfo == null) {
             throw CompilerException.format(
@@ -56,11 +65,28 @@ public final class DeleteConverter implements BaseConverter {
                             "('%s' has no usable operator del[])",
                     node, retType.name(), retType.name()
             );
-        } else if (opInfo.matches(new Argument("", indexType))) {
-            throw CompilerException.format(
-                    "operator del[] on type '%s' does not accept '%s' as an index type",
-                    node, retType.name(), indexType.name()
-            );
+        } else {
+            List<Argument> tempArgs = new ArrayList<>();
+            for (var index : indices) {
+                tempArgs.add(new Argument("", index.returnType()[0]));
+            }
+            var args = tempArgs.toArray(new Argument[0]);
+            if (!opInfo.matches(args)) {
+                if (args.length == 1) {
+                    throw CompilerException.format(
+                            "operator del[] on type '%s' does not accept '%s' as an index type",
+                            node, retType.name(), args[0].getType().name()
+                    );
+                } else {
+                    var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
+                    var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
+                    var expectedStr = String.join(", ", nameArr);
+                    throw CompilerException.format(
+                            "operator del[] on type '%s' expected types [%s], got [%s]",
+                            node, argsString, expectedStr
+                    );
+                }
+            }
         }
     }
 }

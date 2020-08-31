@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class LiteralConverter implements TestConverter {  // TODO: Tuples
+public final class LiteralConverter implements TestConverter {
     private final LiteralNode node;
     private final CompilerInfo info;
     private final int retCount;

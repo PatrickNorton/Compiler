@@ -129,7 +129,7 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
             info.addVariable(typedVar.getVariable().getName(), trueType, variable);
         }
         bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));
+        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable())));
         if (!node.getCondition().isEmpty()) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getCondition(), info, 1));
             bytes.add(Bytecode.JUMP_FALSE.value);

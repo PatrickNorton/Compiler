@@ -28,9 +28,8 @@ public final class IfConverter implements BaseConverter {
         boolean hasElse = !node.getElseStmt().isEmpty();
         if (hasAs) {
             bytes = addAs(start, node.getConditional(), node.getAs());
-            var asName = node.getAs().getName();
             // 'as' always needs a jump to ensure the correct popping occurs
-            addBodyWithAs(bytes, start, node.getBody(), true, asName);
+            addBodyWithAs(bytes, start, node.getBody(), true, node.getAs());
             info.removeStackFrame();
         } else {
             bytes = new ArrayList<>(TestConverter.bytes(start, node.getConditional(), info, 1));
@@ -65,7 +64,7 @@ public final class IfConverter implements BaseConverter {
     }
 
     private void addBodyWithAs(@NotNull List<Byte> bytes, int start, StatementBodyNode body,
-                               boolean trailingJump, String asName) {
+                               boolean trailingJump, VariableNode asName) {
         bytes.add(Bytecode.JUMP_FALSE.value);
         int jumpInsert = bytes.size();
         bytes.addAll(Util.zeroToBytes());
@@ -89,7 +88,7 @@ public final class IfConverter implements BaseConverter {
             addBody(bytes, start, body, trailingJump);
         } else {
             bytes.addAll(addAs(start + bytes.size(), cond, elif.getAs()));
-            addBodyWithAs(bytes, start, body, trailingJump, elif.getAs().getName());
+            addBodyWithAs(bytes, start, body, trailingJump, elif.getAs());
             info.removeStackFrame();
         }
         // Set jump target

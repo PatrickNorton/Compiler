@@ -35,9 +35,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             return convertUnion(start, (StdTypeObject) retType);
         }
         var switched = converter.convert(start);
+        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
         List<Byte> bytes = new ArrayList<>(switched);
         for (var caseStatement : node.getCases()) {
-            addCase(caseStatement, start, bytes);
+            addCase(caseStatement, start, bytes, retTypes);
         }
         return bytes;
     }
@@ -62,7 +63,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return finalTypes;
     }
 
-    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes) {
+    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes, TypeObject[] retTypes) {
         // TODO: Ensure 'default' statement is at the end
         var label = stmt.getLabel();
         List<Integer> jumpLocations = new ArrayList<>(label.length);
@@ -82,14 +83,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         } else {
             bytes.add(Bytecode.POP_TOP.value);
         }
-        if (stmt.isArrow()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), (TestNode) stmt.getBody().get(0), info, retCount));
-        } else {
-            if (retCount > 0) {
-                throw new UnsupportedOperationException("Statements requiring 'break as' not supported yet");
-            }
-            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
-        }
+        convertBody(start, bytes, stmt, retTypes);
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addBreak(1, start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
@@ -103,6 +97,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private List<Byte> convertTbl(int start, TypeObject retType) {
         Map<BigInteger, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
+        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
         bytes.add(Bytecode.SWITCH_TABLE.value);
         int tblPos = bytes.size();
@@ -135,7 +130,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             } else {
                 throw new UnsupportedOperationException();
             }
-            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+            convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
@@ -164,6 +159,33 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
+    private void convertBody(int start, @NotNull List<Byte> bytes,
+                              @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
+        if (stmt.isArrow()) {
+            convertArrow(start, bytes, stmt, retTypes);
+        } else {
+            if (retCount > 0) {
+                throw CompilerInternalError.of("Statements requiring 'break as' not supported yet", stmt);
+            }
+            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+        }
+    }
+
+    private void convertArrow(int start, @NotNull List<Byte> bytes,
+                              @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
+        assert stmt.isArrow();
+        var converter = TestConverter.of(info, (TestNode) stmt.getBody().get(0), retCount);
+            bytes.addAll(converter.convert(start + bytes.size()));
+            var converterRet = converter.returnType();
+            for (int i = 0; i < retTypes.length; i++) {
+                if (retTypes[i] instanceof OptionTypeObject && !(converterRet[i] instanceof OptionTypeObject)) {
+                    addSwap(bytes, retTypes.length - i - 1);
+                    bytes.add(Bytecode.MAKE_OPTION.value);
+                    addSwap(bytes, retTypes.length - i - 1);
+                }
+            }
+    }
+
     private int convertDefault(int start, @NotNull List<Byte> bytes, @NotNull DefaultStatementNode stmt) {
         var defaultVal = start + bytes.size();
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
@@ -178,6 +200,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         Map<Integer, Integer> jumps = new HashMap<>();
         boolean hasAs = anyHasAs();
         int defaultVal = 0;
+        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
         if (hasAs) {
             bytes.add(Bytecode.DUP_TOP.value);
@@ -207,11 +230,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 info.addStackFrame();
                 info.addVariable(as.getName(), labelToType(lblConverter, union), as);
                 bytes.add(Bytecode.STORE.value);
-                bytes.addAll(Util.shortToBytes(info.varIndex(as.getName())));
+                bytes.addAll(Util.shortToBytes(info.varIndex(as)));
             } else if (hasAs) {
                 bytes.add(Bytecode.POP_TOP.value);
             }
-            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+            convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
@@ -286,5 +309,18 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             table.add(jumps.getOrDefault(i, defaultVal));
         }
         return new CompactSwitchTable(table, defaultVal);
+    }
+
+    private void addSwap(List<Byte> bytes, int distFromTop) {
+        switch (distFromTop) {
+            case 0:
+                return;
+            case 1:
+                bytes.add(Bytecode.SWAP_2.value);
+            default:
+                bytes.add(Bytecode.SWAP_STACK.value);
+                bytes.addAll(Util.shortZeroBytes());
+                bytes.addAll(Util.shortToBytes((short) distFromTop));
+        }
     }
 }

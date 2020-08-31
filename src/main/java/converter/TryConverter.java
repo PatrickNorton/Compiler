@@ -36,7 +36,7 @@ public final class TryConverter implements BaseConverter {
             var asVar = node.getAsVar();
             info.addVariable(asVar.getName(), TypeObject.union(info.typesOf(node.getExcepted())), asVar);
             bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes(info.varIndex(node.getAsVar().getName())));
+            bytes.addAll(Util.shortToBytes(info.varIndex(node.getAsVar())));
         } else {
             bytes.add(Bytecode.POP_TOP.value);
         }

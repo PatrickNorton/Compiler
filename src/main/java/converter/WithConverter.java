@@ -42,7 +42,7 @@ public final class WithConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.ENTER.ordinal()));
         bytes.addAll(Util.shortZeroBytes());
         bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable().getName())));
+        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable())));
         bytes.add(Bytecode.ENTER_TRY.value);
         var tryJump = bytes.size();
         bytes.addAll(Util.zeroToBytes());

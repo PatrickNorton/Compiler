@@ -7,12 +7,12 @@ import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
+import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The class representing all information needing to be held during compilation.
@@ -126,14 +126,14 @@ public final class CompilerInfo {
      * @param name The name of the function
      * @return The function info, or {@code null} if not found
      */
-    @Nullable
-    public FunctionInfo fnInfo(String name) {
+    @NotNull
+    public Optional<FunctionInfo> fnInfo(String name) {
         for (var fn : functions) {
             if (fn != null && fn.getName().equals(name)) {
-                return fn.getInfo();
+                return Optional.of(fn.getInfo());
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -187,8 +187,8 @@ public final class CompilerInfo {
      */
     public short constIndex(String name) {
         var variableInfo = varInfo(name);
-        return constIndex(variableInfo != null
-                ? variableInfo.constValue()
+        return constIndex(variableInfo.isPresent()
+                ? variableInfo.orElseThrow().constValue()
                 : Builtins.constantOf(name));
     }
 
@@ -370,14 +370,14 @@ public final class CompilerInfo {
      * @param str The name of the class
      * @return The class, or {@code null} if not found
      */
-    @Nullable
-    public TypeObject classOf(String str) {
+    @NotNull
+    public Optional<TypeObject> classOf(String str) {
         var cls = typeMap.get(str);
         if (cls == null) {
             var builtin = Builtins.BUILTIN_MAP.get(str);
-            return builtin instanceof TypeObject ? (TypeObject) builtin : null;
+            return builtin instanceof TypeObject ? Optional.of((TypeObject) builtin) : Optional.empty();
         }
-        return cls;
+        return Optional.of(cls);
     }
 
     /**
@@ -411,11 +411,11 @@ public final class CompilerInfo {
      */
     public TypeObject getType(String variable) {
         var info = varInfo(variable);
-        return info == null ? Builtins.constantOf(variable).getType() : info.getType();
+        return info.isEmpty() ? Builtins.constantOf(variable).getType() : info.orElseThrow().getType();
     }
 
     public boolean varIsUndefined(String name) {
-        return varInfo(name) == null && !Builtins.BUILTIN_MAP.containsKey(name);
+        return varInfo(name).isEmpty() && !Builtins.BUILTIN_MAP.containsKey(name);
     }
 
     public boolean varDefinedInCurrentFrame(String name) {
@@ -524,7 +524,7 @@ public final class CompilerInfo {
      * @see #reserveConstVar
      */
     public void setReservedVar(String name, LangConstant value) {
-        var varInfo = Objects.requireNonNull(varInfo(name));
+        var varInfo = varInfo(name).orElseThrow();
         var constant = varInfo.constValue();
         var constIndex = constIndex(constant);
         setReserved(constIndex, value);
@@ -561,7 +561,7 @@ public final class CompilerInfo {
      */
     public boolean variableIsConstant(String name) {
         var info = varInfo(name);
-        return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.hasConstValue();
+        return info.map(VariableInfo::hasConstValue).orElseGet(() -> Builtins.BUILTIN_MAP.containsKey(name));
     }
 
     /**
@@ -572,18 +572,18 @@ public final class CompilerInfo {
      */
     public boolean variableIsStatic(String name) {
         var info = varInfo(name);
-        return info != null && info.isStatic();
+        return info.map(VariableInfo::isStatic).orElse(false);
     }
 
-    @Nullable
-    private VariableInfo varInfo(String name) {  // TODO: Universally accessible globals
+    @NotNull
+    private Optional<VariableInfo> varInfo(String name) {  // TODO: Universally accessible globals
         for (int i = variables.size() - 1; i >= 0; i--) {
             var map = variables.get(i);
             if (map.containsKey(name)) {
-                return map.get(name);
+                return Optional.of(map.get(name));
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private void replaceVarInfo(String name, VariableInfo varInfo) {
@@ -598,21 +598,25 @@ public final class CompilerInfo {
     /**
      * The index of the variable in the variable stack.
      *
-     * @param name The name of the variable
+     * @param node The node representing the variable
      * @return The index in the stack
      */
-    public short varIndex(String name) {
-        return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
+    public short varIndex(@NotNull VariableNode node) {
+        return varInfo(node.getName()).orElseThrow(
+                () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
+        ).getLocation();
     }
 
     /**
      * The index of the variable in the static variable set.
      *
-     * @param name The name of the variable
+     * @param node The node representing the variable
      * @return The index
      */
-    public short staticVarIndex(String name) {
-        return Objects.requireNonNull(varInfo(name), "Unknown variable").getStaticLocation();
+    public short staticVarIndex(@NotNull VariableNode node) {
+        return varInfo(node.getName()).orElseThrow(
+                () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
+        ).getStaticLocation();
     }
 
     /**
@@ -626,7 +630,7 @@ public final class CompilerInfo {
      */
     @NotNull
     public LineInfo declarationInfo(String name) {
-        return Objects.requireNonNull(varInfo(name)).getDeclarationInfo();
+        return varInfo(name).orElseThrow().getDeclarationInfo();
     }
 
     /**

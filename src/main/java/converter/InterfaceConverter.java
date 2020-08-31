@@ -65,7 +65,12 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
     private void completeType(@NotNull InterfaceType obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
-        parseIntoObject(converter, obj);
+        try {
+            info.accessHandler().addCls(obj);
+            parseIntoObject(converter, obj);
+        } finally {
+            info.accessHandler().removeCls();
+        }
         // Note: 'auto' interfaces should already be registered with the compiler, so no action is needed
     }
 

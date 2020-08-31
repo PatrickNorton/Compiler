@@ -64,8 +64,8 @@ public final class FunctionCallConverter implements TestConverter {
         var swaps = swapsToOrder(argPositions);
         for (var pair : swaps) {
             bytes.add(Bytecode.SWAP_STACK.value);
-            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey())));
-            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue())));
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey() - 1)));
+            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue() - 1)));
         }
         return argc;
     }
@@ -79,12 +79,12 @@ public final class FunctionCallConverter implements TestConverter {
                 throw CompilerException.format("Undefined variable '%s'", node, name);
             }
             var cls = info.classOf(name);
-            if (cls != null) {  // If the variable is a class, calling it will always return an instance
-                return new TypeObject[]{cls.makeMut()};
+            if (cls.isPresent()) {  // If the variable is a class, calling it will always return an instance
+                return new TypeObject[]{cls.orElseThrow().makeMut()};
             }
             var fn = info.fnInfo(name);
-            if (fn != null) {
-                return fn.getReturns();
+            if (fn.isPresent()) {
+                return fn.orElseThrow().getReturns();
             }
             return info.getType(name).operatorReturnType(OpSpTypeNode.CALL, info);
         } else {
@@ -133,7 +133,7 @@ public final class FunctionCallConverter implements TestConverter {
         }
         var variableName = (VariableNode) name;
         var strName = variableName.getName();
-        return info.fnInfo(strName) != null || (Builtins.BUILTIN_MAP.containsKey(strName)
+        return info.fnInfo(strName).isPresent() || (Builtins.BUILTIN_MAP.containsKey(strName)
                 && (BUILTINS_TO_OPERATORS.containsKey(strName) || strName.equals("type")));
     }
 

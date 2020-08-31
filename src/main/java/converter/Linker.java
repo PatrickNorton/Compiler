@@ -124,22 +124,22 @@ public final class Linker {
             throw CompilerInternalError.of("Method must be defined in a class", stmt);
         } else if (stmt instanceof ClassDefinitionNode) {
             var clsNode = (ClassDefinitionNode) stmt;
-            var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName());
+            var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName()).orElseThrow();
             ClassConverter.completeType(info, clsNode, predeclaredType);
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof EnumDefinitionNode) {
             var enumNode = (EnumDefinitionNode) stmt;
-            var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName());
+            var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName()).orElseThrow();
             EnumConverter.completeType(info, enumNode, predeclaredType);
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof InterfaceDefinitionNode) {
             var interfaceNode = (InterfaceDefinitionNode) stmt;
-            var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName());
+            var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName()).orElseThrow();
             InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof UnionDefinitionNode) {
             var unionNode = (UnionDefinitionNode) stmt;
-            var predeclaredType = (StdTypeObject) info.classOf(unionNode.getName().strName());
+            var predeclaredType = (StdTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
             UnionConverter.completeType(info, unionNode, predeclaredType);
             return Builtins.TYPE.generify(predeclaredType);
         } else {
