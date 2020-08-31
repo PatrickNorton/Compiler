@@ -1,0 +1,250 @@
+export LiteralSearcher
+
+class LiteralSearcher {
+    private bool complete
+    public FreqyPacked lcp
+    public FreqyPacked lcs
+    private Matcher matcher
+
+    public property int length {
+        get {
+            return switch self.matcher {
+                case Matcher.Empty => 0
+                case Matcher.Bytes as sset => sset.dense.length
+                case Matcher.FreqyPacked => 1
+                case Matcher.BoyerMoore => 1
+                case Matcher.AC as pair => pair.first.patternCount
+                case Matcher.Packed as pair => pair.first.length
+            }
+        }
+    }
+
+    public operator new (Literals lits, Matcher matcher) {
+        var complete = lits.allComplete()
+        self.complete = complete
+        self.lcp = FreqyPacked(list(lits.longestCommonPrefix()))
+        self.lcs = FreqyPacked(list(lits.longestCommonSuffix()))
+        self.matcher = matcher
+    }
+
+    public static method empty() -> cls {
+        return LiteralSearcher(Literals.empty(), Matcher.Empty())
+    }
+
+    public static method prefixes(Literals lits) -> cls {
+        var matcher = Matcher.prefixes(lits)
+        return LiteralSearcher(lits, matcher)
+    }
+
+    public static method suffixes(Literals lits) -> cls {
+        var matcher = Matcher.prefixes(lits)
+        return LiteralSearcher(lits, matcher)
+    }
+
+    public operator bool {
+        return not self.length
+    }
+
+    public operator iter -> bytes {
+        switch self.matcher {
+            case Matcher.Empty {}
+            case Matcher.Bytes as sset {
+                var dense = sset.dense
+                for int i in [0:dense.length] {
+                    yield dense[i:i+1]
+                }
+            }
+            case Matcher.FreqyPacked as s {
+                yield s.pat
+            }
+            case Matche.BoyerMoore as s {
+                yield s.pattern
+            }
+            case Matcher.AC as pair {
+                for var literal in pair.second {
+                    yield literal.bytes
+                }
+            }
+            case Matcher.Packed as pair {
+                for var literal in pair.second {
+                    yield literal.bytes
+                }
+            }
+        }
+    }
+
+    public method isComplete() -> bool {
+        return self.complete and self
+    }
+
+    public method find(bytes haystack) -> Pair[int, int]? {
+        switch self.matcher {
+            case Matcher.Empty {return Pair.of(0, 0)}
+            case Matcher.Bytes as sset {
+                if sset.find(haystack)? as i {
+                    return Pair.of(i, i + 1)
+                } else {
+                    return null
+                }
+            }
+            case Matcher.FreqyPacked as s {
+                if s.find(haystack)? as i {
+                    return Pair.of(i, i + s.length)
+                } else {
+                    return null
+                }
+            }
+            case Matcher.BoyerMoore as s {
+                if s.find(haystack)? as i {
+                    return Pair.of(i, i + s.length)
+                } else {
+                    return null
+                }
+            }
+            case Matcher.AC as pair {
+                if pair.first.find(haystack)? as m {
+                    return Pair.of(m.start, m.end)
+                } else {
+                    return null
+                }
+            }
+            case Matcher.Packed as pair {
+                if pair.first.find(haystack)? as m {
+                    return Pair.of(m.start, m.end)
+                } else {
+                    return null
+                }
+            }
+        }
+    }
+
+    public method findStart(bytes haystack) -> Pair[int, int]? {
+        for var lit in self {
+            continue if lit.length > haystack.length
+            return Pair.of(0, lit.length) if lit == haystack[0:lit.length]
+        }
+        return null
+    }
+
+    public method findEnd(bytes haystack) -> Pair[int, int]? {
+        for var lit in self {
+            continue if lit.length > haystack.length
+            if lit == haystack[-lit.length:] {
+                return Pair.of(haystack.length - lit.length, haystack.length)
+            }
+        }
+        return null
+    }
+}
+
+union Matcher {
+    null Empty
+    SingleByteSet Bytes
+    FreqyPacked FreqyPacked
+    BoyerMooreSearch BoyerMoore
+    Pair[AhoCorasick, list[Literal]] AC
+    Pair[Searcher, list[Literal]] Packed
+
+    public static method prefixes(Literals lits) -> cls {
+        var sset = SingleByteSet.prefixes(lits)
+        return Matcher.new(lits, sset)
+    }
+
+    public static method suffixes(Literals lits) -> cls {
+        var sset = SingleByteSet.suffixes(lits)
+        return Matcher.new(lits, sset)
+    }
+
+    public static method new(Literals lits, SingleByteSet sset) -> cls {
+        return Matcher.Empty if not lits.literals
+        return Matcher.Bytes(sset) if sset.complete
+
+        if lits.literals.length == 1 {
+            var lit = list(lits.literals[0])
+            if BoyerMooreSearch.shouldUse(lit) {
+                return Matcher.BoyerMoore(BoyerMooreSearch(lit))
+            } else {
+                return Matcher.FreqyPacked(FreqyPacked(lit))
+            }
+        }
+
+        var pats = lits.literals
+        var isAhoCorasickFast = sset.dense.length <= 1 and sset.allAscii
+        if lits.literals.length <= 100 and not isAhoCorasickFast {
+            mut var builder = Config().matchKind(MatchKind.LeftmostFirst).builder()
+            if builder.extend(pats).build()? as s {
+                return Matcher.Packed(Pair.of(s, pats))
+            }
+        }
+
+        var ac = (AhoCorasickBuilder()
+            .matchKind(MatchKind.LeftmostFirst)
+            .dfa(true)
+            .buildWithSize(pats)
+            .unwrap())
+        return Matcher.AC(Pair.of(ac, pats))
+    }
+}
+
+class SingleByteSet {
+    private final list[bool] sparse
+    private final bytes dense
+    private mut bool complete
+    private mut bool allAscii
+
+    public operator new {
+        self.sparse = [false] * 256
+        self.dense = bytes()
+        self.complete = true
+        self.allAscii = true
+    }
+
+    public static method prefixes(Literals lits) -> cls {
+        mut var sset = SingleByteSet()
+        for var lit in lits.literals {
+            sset.complete = sset.complete and lit.length == 1
+            if lit.get(0)? as b {
+                if not sset.sparse[b] {
+                    if b > 0x7F {
+                        sset.allAscii = false
+                    }
+                    sset.dense.add(b)
+                    sset.sparse[b] = true
+                }
+            }
+        }
+        return sset
+    }
+
+    public static method suffixes(Literals lits) -> cls {
+        mut var sset = SingleByteSet()
+        for lit in lits.literals {
+            sset.complete = sset.complete and lit.length == 1
+            if lit.get(-1)? as b {
+                if not sset.sparse[b] {
+                    if b > 0x7F {
+                        sset.allAscii = false
+                    }
+                    sset.dense.add(b)
+                    sset.sparse[b] = true
+                }
+            }
+        }
+        return sset
+    }
+
+    method find(bytes text) -> int? {
+        switch self.dense.length {
+            case 0 => null
+            case 1 => text.indexOf(self.dense[0])
+            default => self._find(text)
+        }
+    }
+
+    private method _find(bytes text) -> int? {
+        for int i, var b in enumerate(haystack) {
+            return i if self.sparse[b]
+        }
+        return null
+    }
+}

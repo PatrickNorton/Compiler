@@ -1,7 +1,8 @@
-# Imports: LiteralSearcher, AhoCorasik
+# Imports: LiteralSearcher, AhoCorasick
 
 from .prog import Program
 from .compile import Compiler
+from .literal import LiteralSearcher
 
 export Exec, ProgramCache, ExecBuilder
 
@@ -42,7 +43,7 @@ class Exec {
                     return null
                 }
             }
-            case MatchLiteralType.AHO_CORASIK {
+            case MatchLiteralType.AHO_CORASICK {
                 if self.ro.ac?.find(text[start:])? as m {
                     return (m.start + start, m.end + start)
                 } else {
@@ -59,7 +60,7 @@ const class ExecReadOnly {
     Program dfa
     Program dfaReverse
     LiteralSearcher suffixes
-    AhoCorasik[int]? ac
+    AhoCorasick[int]? ac
     MatchType matchType
 
     public operator new(
@@ -68,7 +69,7 @@ const class ExecReadOnly {
         Program dfa,
         Program dfaReverse,
         LiteralSearcher suffixes,
-        AhoCorasik[int]? ac,
+        AhoCorasick[int]? ac,
         MatchType matchType,
     ) {
         self.res = res
@@ -99,7 +100,7 @@ const class ExecReadOnly {
     private method chooseLiteralMatchType() -> MatchType? {
         return null if self.ro.length == 1
         if self.ac? {
-            return MatchType.Literal(MatchLiteralType.AHO_CORASIK)
+            return MatchType.Literal(MatchLiteralType.AHO_CORASICK)
         }
         if self.nfa.prefixes.complete() {
             if self.nfa.isAnchoredStart {
@@ -251,7 +252,7 @@ class ExecBuilder {
             .reverse(true)
             .compile(parsed.exprs))
 
-        var ac = self.buildAhoCorasik(parsed)
+        var ac = self.buildAhoCorasick(parsed)
         nfa.prefixes = LiteralSearcher.suffixes(parsed.suffixes)
         dfa.prefixes = nfa.prefixes
         dfa.dfaSizeLimit = self.options.dfaSizeLimit
@@ -272,7 +273,7 @@ class ExecBuilder {
         return Exec(ro, Cached())
     }
 
-    private method buildAhoCorasik(Parsed parsed) -> AhoCorasik[int]? {
+    private method buildAhoCorasick(Parsed parsed) -> AhoCorasick[int]? {
         return null if parsed.exprs.length != 1
         list[bytes] lits
         if alternationLiterals(parsed.exprs[0])? as l {
@@ -281,7 +282,7 @@ class ExecBuilder {
             return null
         }
         return null if lits.length <= 32
-        return (AhoCorasikBuilder()
+        return (AhoCorasickBuilder()
             .matchKind(MatchKind.LeftMostFirst())
             .autoConfigure(lits)
             .byteClasses(true)
@@ -309,7 +310,7 @@ enum MatchLiteralType {
     ANCHORED_END,
     # Use an Aho-Corasick automaton. This requires `ac` to be Some on
     # ExecReadOnly.
-    AHO_CORASIK
+    AHO_CORASICK
 }
 
 enum MatchNfaType {
