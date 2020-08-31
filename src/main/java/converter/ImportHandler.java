@@ -10,6 +10,7 @@ import main.java.parser.LineInfo;
 import main.java.parser.Parser;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
+import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
@@ -106,6 +107,15 @@ public final class ImportHandler {
                         ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
                         hasAuto = Optional.of(cls);
                     }
+                } else if (stmt instanceof UnionDefinitionNode) {
+                    var cls = (UnionDefinitionNode) stmt;
+                    var strName = cls.getName().strName();
+                    if (types.containsKey(strName)) {
+                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                    }
+                    var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
+                    types.put(strName, new StdTypeObject(strName, generics));
+                    lineInfos.put(strName, cls.getLineInfo());
                 } else if (stmt instanceof TypedefStatementNode) {
                     typedefs.push((TypedefStatementNode) stmt);
                 }
