@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The class representing all information needing to be held during compilation.
@@ -187,8 +187,8 @@ public final class CompilerInfo {
      */
     public short constIndex(String name) {
         var variableInfo = varInfo(name);
-        return constIndex(variableInfo != null
-                ? variableInfo.constValue()
+        return constIndex(variableInfo.isPresent()
+                ? variableInfo.orElseThrow().constValue()
                 : Builtins.constantOf(name));
     }
 
@@ -411,11 +411,11 @@ public final class CompilerInfo {
      */
     public TypeObject getType(String variable) {
         var info = varInfo(variable);
-        return info == null ? Builtins.constantOf(variable).getType() : info.getType();
+        return info.isEmpty() ? Builtins.constantOf(variable).getType() : info.orElseThrow().getType();
     }
 
     public boolean varIsUndefined(String name) {
-        return varInfo(name) == null && !Builtins.BUILTIN_MAP.containsKey(name);
+        return varInfo(name).isEmpty() && !Builtins.BUILTIN_MAP.containsKey(name);
     }
 
     public boolean varDefinedInCurrentFrame(String name) {
@@ -524,7 +524,7 @@ public final class CompilerInfo {
      * @see #reserveConstVar
      */
     public void setReservedVar(String name, LangConstant value) {
-        var varInfo = Objects.requireNonNull(varInfo(name));
+        var varInfo = varInfo(name).orElseThrow();
         var constant = varInfo.constValue();
         var constIndex = constIndex(constant);
         setReserved(constIndex, value);
@@ -561,7 +561,7 @@ public final class CompilerInfo {
      */
     public boolean variableIsConstant(String name) {
         var info = varInfo(name);
-        return info == null ? Builtins.BUILTIN_MAP.containsKey(name) : info.hasConstValue();
+        return info.map(VariableInfo::hasConstValue).orElseGet(() -> Builtins.BUILTIN_MAP.containsKey(name));
     }
 
     /**
@@ -572,18 +572,18 @@ public final class CompilerInfo {
      */
     public boolean variableIsStatic(String name) {
         var info = varInfo(name);
-        return info != null && info.isStatic();
+        return info.map(VariableInfo::isStatic).orElse(false);
     }
 
-    @Nullable
-    private VariableInfo varInfo(String name) {  // TODO: Universally accessible globals
+    @NotNull
+    private Optional<VariableInfo> varInfo(String name) {  // TODO: Universally accessible globals
         for (int i = variables.size() - 1; i >= 0; i--) {
             var map = variables.get(i);
             if (map.containsKey(name)) {
-                return map.get(name);
+                return Optional.of(map.get(name));
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private void replaceVarInfo(String name, VariableInfo varInfo) {
@@ -602,7 +602,9 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public short varIndex(String name) {
-        return Objects.requireNonNull(varInfo(name), "Unknown variable").getLocation();
+        return varInfo(name).orElseThrow(
+                () -> CompilerException.format("Unknown variable '%s'", LineInfo.empty(), name)
+        ).getLocation();
     }
 
     /**
@@ -612,7 +614,9 @@ public final class CompilerInfo {
      * @return The index
      */
     public short staticVarIndex(String name) {
-        return Objects.requireNonNull(varInfo(name), "Unknown variable").getStaticLocation();
+        return varInfo(name).orElseThrow(
+                () -> CompilerException.format("Unknown variable '%s'", LineInfo.empty(), name)
+        ).getStaticLocation();
     }
 
     /**
@@ -626,7 +630,7 @@ public final class CompilerInfo {
      */
     @NotNull
     public LineInfo declarationInfo(String name) {
-        return Objects.requireNonNull(varInfo(name)).getDeclarationInfo();
+        return varInfo(name).orElseThrow().getDeclarationInfo();
     }
 
     /**
