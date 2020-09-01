@@ -58,6 +58,13 @@ public final class FunctionInfoType extends TypeObject {
         return "";
     }
 
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public String baseName() {
+        return "";
+    }
+
     @Override
     public TypeObject typedefAs(String name) {
         throw new UnsupportedOperationException("How on earth did you typedef this?");

@@ -46,6 +46,13 @@ public final class ObjectType extends TypeObject {
         return typedefName.isEmpty() ? "object" : typedefName;
     }
 
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public String baseName() {
+        return "object";
+    }
+
     @Contract("_ -> new")
     @Override
     @NotNull

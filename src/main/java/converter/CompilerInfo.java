@@ -380,6 +380,20 @@ public final class CompilerInfo {
         return Optional.of(cls);
     }
 
+    public Optional<Integer> classIndex(String str) {
+        var index = typeMap.get(str);
+        if (index == null) {
+            return Optional.empty();
+        } else {
+            for (int i = 0; i < classes.size(); i++) {
+                if (classes.get(i).getType().equals(index)) {
+                    return Optional.of(i);
+                }
+            }
+            throw new IllegalStateException("If a type is in typeMap, it should be in classes");
+        }
+    }
+
     /**
      * Adds a type to the map.
      *
