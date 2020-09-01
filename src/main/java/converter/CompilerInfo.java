@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -391,6 +392,27 @@ public final class CompilerInfo {
                 }
             }
             throw new IllegalStateException("If a type is in typeMap, it should be in classes");
+        }
+    }
+
+    @NotNull
+    public LangConstant typeConstant(@NotNull TypeObject type) {
+        var name = type.baseName();
+        if (name.isEmpty()) {
+            throw CompilerInternalError.of(
+                    "Error in literal conversion: Lists of non-nameable types not complete yet", node
+            );
+        }
+        if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
+            return Builtins.constantOf(name);
+        } else {
+            for (int i = 0; i < constants.size(); i++) {
+                var constant = constants.get(i);
+                if (constant.getType() instanceof TypeTypeObject && constant.name().equals(name)) {
+                    return constant;
+                }
+            }
+            throw new NoSuchElementException("Type not found");
         }
     }
 

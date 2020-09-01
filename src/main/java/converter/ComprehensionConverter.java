@@ -58,26 +58,7 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
     @Override
     public TypeObject[] returnType() {
         var resultType = BraceType.fromBrace(node.getBrace(), node).type;
-        var variable = node.getVariables()[0];
-        if (variable instanceof TypedVariableNode) {
-            var typedVariable = (TypedVariableNode) variable;
-            info.addStackFrame();
-            var name = typedVariable.getVariable().getName();
-            if (Builtins.FORBIDDEN_NAMES.contains(name)) {
-                throw CompilerException.format(
-                        "Illegal name for variable '%s'", typedVariable.getVariable(), name
-                );
-            }
-            info.checkDefinition(name, variable);
-            var trueType = varType(typedVariable);
-            info.addVariable(name, trueType, variable);
-            var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
-            info.removeStackFrame();
-            return new TypeObject[] {resultType.generify(result).makeMut()};
-        } else {
-            var retType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
-            return new TypeObject[] {resultType.generify(retType).makeMut()};
-        }
+        return new TypeObject[] {resultType.generify(genericType())};
     }
 
     @NotNull
@@ -106,6 +87,8 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
         assert retCount == 1 || retCount == 0;
         List<Byte> bytes = new ArrayList<>();
         if (braceType.createCode != null) {
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(genericType()))));
             bytes.add(braceType.createCode.value);
             bytes.addAll(Util.shortToBytes((short) 0));
         }
@@ -183,5 +166,28 @@ public final class ComprehensionConverter implements TestConverter {  // TODO: G
                 ? info.getType(tvType)
                 : TestConverter.returnType(node.getLooped().get(0), info, 1)[0]
                     .operatorReturnType(OpSpTypeNode.ITER, info)[0];
+    }
+
+    private TypeObject genericType() {
+        var variable = node.getVariables()[0];
+        if (variable instanceof TypedVariableNode) {
+            var typedVariable = (TypedVariableNode) variable;
+            info.addStackFrame();
+            var name = typedVariable.getVariable().getName();
+            if (Builtins.FORBIDDEN_NAMES.contains(name)) {
+                throw CompilerException.format(
+                        "Illegal name for variable '%s'", typedVariable.getVariable(), name
+                );
+            }
+            info.checkDefinition(name, variable);
+            var trueType = varType(typedVariable);
+            info.addVariable(name, trueType, variable);
+            var result = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
+            info.removeStackFrame();
+            return result[0];
+        } else {
+            var retType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1);
+            return retType[0];
+        }
     }
 }

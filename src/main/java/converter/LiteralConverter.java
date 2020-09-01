@@ -79,7 +79,8 @@ public final class LiteralConverter implements TestConverter {
             }
             if (literalType != LiteralType.TUPLE) {
                 var genericType = returnTypes(node.getBuilders());
-                loadType(bytes, genericType);
+                bytes.add(Bytecode.LOAD_CONST.value);
+                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(genericType))));
             }
             bytes.add(literalType.bytecode.value);
             bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
@@ -103,23 +104,5 @@ public final class LiteralConverter implements TestConverter {
             result[i] = TestConverter.returnType(args[i], info, 1)[0];
         }
         return result;
-    }
-
-    private void loadType(List<Byte> bytes, @NotNull TypeObject type) {
-        var name = type.baseName();
-        if (name.isEmpty()) {
-            throw CompilerInternalError.of(
-                    "Error in literal conversion: Lists of non-nameable types not complete yet", node
-            );
-        }
-        if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf(name))));
-        } else {
-            assert type instanceof UserType<?> : "All non-UserType types should be a builtin";
-            bytes.add(Bytecode.LOAD_CONST.value);
-            int index = info.classIndex(name).orElseThrow();
-            bytes.addAll(Util.shortToBytes(info.constIndex(new ClassConstant(name, index, (UserType<?>) type))));
-        }
     }
 }
