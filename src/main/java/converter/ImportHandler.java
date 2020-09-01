@@ -31,6 +31,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * The class for handling imports, exports, and the list of files involved in a
+ * program.
+ *
+ * @author Patrick Norton
+ * @see ImportExportConverter
+ * @see CompilerInfo
+ */
 public final class ImportHandler {
     private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
     private static List<Pair<CompilerInfo, File>> toCompile = new ArrayList<>();
