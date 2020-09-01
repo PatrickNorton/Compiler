@@ -41,6 +41,11 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public abstract GenericInfo getGenericInfo();
     public abstract Pair<Set<String>, Set<OpSpTypeNode>> contract();
 
+    @Override
+    public final String baseName() {
+        return info.name;
+    }
+
     public final boolean isSubclass(@NotNull TypeObject other) {
         if (this.equals(other)) {
             return true;

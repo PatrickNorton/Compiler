@@ -268,8 +268,10 @@ public final class Builtins {
                 OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
         );
         LIST.setOperators(listMap);
+        var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
         var listAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
+                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
+                "get", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), getInfo.toCallable())
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();

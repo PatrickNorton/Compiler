@@ -73,6 +73,11 @@ public final class TemplateParam extends NameableType {
         return typedefName.isEmpty() ? name : typedefName;
     }
 
+    @Override
+    public String baseName() {
+        return name;
+    }
+
     @NotNull
     @Contract(value = "_ -> new", pure = true)
     @Override

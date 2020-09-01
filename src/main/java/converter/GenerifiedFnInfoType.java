@@ -39,6 +39,13 @@ public final class GenerifiedFnInfoType extends TypeObject {
         return "";
     }
 
+    @NotNull
+    @Contract(pure = true)
+    @Override
+    public String baseName() {
+        return "";
+    }
+
     @Override
     public TypeObject typedefAs(String name) {
         throw new UnsupportedOperationException("How on earth did you typedef this?");

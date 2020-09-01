@@ -39,6 +39,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      */
     protected abstract boolean isSubclass(@NotNull TypeObject other);
     public abstract String name();
+    public abstract String baseName();
     public abstract TypeObject typedefAs(String name);
 
     /**

@@ -37,6 +37,13 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
         return typedefName.isEmpty() ? optionVal.name() + "?" : typedefName;
     }
 
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public String baseName() {
+        return "";
+    }
+
     @Contract("_ -> new")
     @Override
     @NotNull

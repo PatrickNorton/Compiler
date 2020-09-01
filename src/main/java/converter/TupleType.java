@@ -114,6 +114,13 @@ public final class TupleType extends TypeObject {
         }
     }
 
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public String baseName() {
+        return "tuple";
+    }
+
     @Contract("_ -> new")
     @Override
     @NotNull

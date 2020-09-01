@@ -47,6 +47,13 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         return sj.toString();
     }
 
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public String baseName() {
+        return "";
+    }
+
     @Contract(value = "_ -> new", pure = true)
     @Override
     @NotNull
