@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
+public abstract class TypeObject implements LangObject, Comparable<TypeObject>, Template<TypeObject> {
     /**
      * Checks if this is a subclass of the other type.
      * <p>
@@ -90,6 +90,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return operatorReturnType(o, info.accessLevel(this));
     }
 
+    @Override
     public TypeObject generify(TypeObject... args) {
         throw new UnsupportedOperationException("Cannot generify object");
     }
