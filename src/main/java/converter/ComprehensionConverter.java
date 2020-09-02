@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ComprehensionConverter implements TestConverter {  // TODO: Generators
+public final class ComprehensionConverter implements TestConverter {
     private final ComprehensionNode node;
     private final CompilerInfo info;
     private final int retCount;
