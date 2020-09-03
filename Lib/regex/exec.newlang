@@ -1,5 +1,6 @@
 from .AhoCorasick import AhoCorasick
 from .prog import Program
+from .builder import RegexOptions
 from .compile import Compiler
 from .literal import LiteralSearcher
 
@@ -143,31 +144,31 @@ const class ExecReadOnly {
 class ExecBuilder {
     private RegexOptions options
     private mut MatchType? matchType
-    private mut bool bytes
-    private mut bool onlyUtf8
+    private mut bool isBytes
+    private mut bool utf8Only
 
-    public mut method automatic() -> self {
+    public mut method automatic() -> cls {
         self.matchType = null
         return self
     }
 
-    public mut method nfa() -> self {
+    public mut method nfa() -> cls {
         self.matchType = MatchType.Nfa(MatchNfaType.PikeVM)
         return self
     }
 
-    public mut method boundedBacktracking() -> self {
+    public mut method boundedBacktracking() -> cls {
         self.matchType = MatchType.Nfa(MatchNfaType.Backtrack)
         return self
     }
 
-    public mut method bytes(bool yes) -> self {
-        self.bytes = yes
+    public mut method bytes(bool yes) -> cls {
+        self.isBytes = yes
         return self
     }
 
-    public mut method onlyUtf8() -> self {
-        self.onlyUtf8 = true
+    public mut method onlyUtf8() -> cls {
+        self.utf8Only = true
         return self
     }
 
@@ -175,7 +176,7 @@ class ExecBuilder {
         mut list[Hir] exprs = []
         mut Literals? prefixes = Literals.empty()
         mut Literals? suffixes = Literals.empty()
-        mut bool bytes = false
+        mut bool isBytes = false
         var isSet = self.options.pats.length >= 1
 
         for var pat in self.options.pats {
@@ -186,11 +187,11 @@ class ExecBuilder {
                 .swapGreed(self.options.swapGreed)
                 .ignoreWhitespace(self.options.ignoreWhitespace)
                 .unicode(self.options.unicode)
-                .allowInvalidUtf8(not self.onlyUtf8)
+                .allowInvalidUtf8(not self.utf8Only)
                 .nestLimit(self.options.nestLimit)
                 .build())
             var expr = parser.parse(patt)
-            bytes = bytes or not expr.isAlwaysUtf8()
+            isBytes = isBytes or not expr.isAlwaysUtf8()
             exprs.push(expr)
         }
 
@@ -223,7 +224,7 @@ class ExecBuilder {
             }
         }
 
-        return Parsed(exprs, prefixes ?? Literals.empty(), suffixes ?? Literals.empty(), bytes)
+        return Parsed(exprs, prefixes ?? Literals.empty(), suffixes ?? Literals.empty(), isBytes)
     }
 
     public method build() -> Exec {
@@ -237,17 +238,17 @@ class ExecBuilder {
         mut var nfa = (Compiler()
             .sizeLimit(self.options.sizeLimit)
             .bytes(self.bytes or parsed.bytes)
-            .onlyUtf8(self.onlyUtf8)
+            .onlyUtf8(self.utf8Only)
             .compile(parsed.exprs))
         mut var dfa = (Compiler()
             .sizeLimit(self.options.sizeLimit)
             .dfa(true)
-            .onlyUtf8(self.onlyUtf8)
+            .onlyUtf8(self.utf8Only)
             .compile(parsed.exprs))
         mut var dfaReverse = (Compiler()
             .sizeLimit(self.options.sizeLimit)
             .dfa(true)
-            .onlyUtf8(self.onlyUtf8)
+            .onlyUtf8(self.utf8Only)
             .reverse(true)
             .compile(parsed.exprs))
 
@@ -272,7 +273,7 @@ class ExecBuilder {
         return Exec(ro, Cached())
     }
 
-    private method buildAhoCorasick(Parsed parsed) -> AhoCorasick[int]? {
+    private method buildAhoCorasick(Parsed parsed) -> AhoCorasick? {
         return null if parsed.exprs.length != 1
         list[bytes] lits
         if alternationLiterals(parsed.exprs[0])? as l {
