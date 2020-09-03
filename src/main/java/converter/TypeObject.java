@@ -4,6 +4,7 @@ import main.java.parser.BaseNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.IndexNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
+public abstract class TypeObject implements LangObject, Comparable<TypeObject>, Template<TypeObject> {
     /**
      * Checks if this is a subclass of the other type.
      * <p>
@@ -90,8 +91,17 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return operatorReturnType(o, info.accessLevel(this));
     }
 
-    public TypeObject generify(TypeObject... args) {
-        throw new UnsupportedOperationException("Cannot generify object");
+    @Override
+    public final TypeObject generify(TypeObject... args) {
+        return generify(LineInfo.empty(), args);
+    }
+
+    public final TypeObject generify(@NotNull Lined lineInfo, TypeObject... args) {
+        return generify(lineInfo.getLineInfo(), args);
+    }
+
+    public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
+        throw CompilerException.of("Cannot generify object", lineInfo);
     }
 
     @Nullable

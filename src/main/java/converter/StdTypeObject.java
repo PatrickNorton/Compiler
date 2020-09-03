@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
@@ -65,14 +66,14 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @NotNull
-    @Contract("_ -> new")
+    @Contract("_, _ -> new")
     @Override
-    public TypeObject generify(@NotNull TypeObject... args) {
+    public TypeObject generify(LineInfo lineInfo, @NotNull TypeObject... args) {
         var trueArgs = info.info.generify(args);
-        if (trueArgs.size() != info.info.getParams().size()) {
-            throw new UnsupportedOperationException("Cannot generify object in this manner");
+        if (trueArgs.isEmpty() || trueArgs.orElseThrow().size() != info.info.getParams().size()) {
+            throw CompilerException.of("Cannot generify object in this manner", lineInfo);
         } else {
-            return new StdTypeObject(this, trueArgs);
+            return new StdTypeObject(this, trueArgs.orElseThrow());
         }
     }
 

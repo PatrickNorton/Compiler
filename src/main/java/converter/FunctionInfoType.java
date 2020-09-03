@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -45,9 +46,9 @@ public final class FunctionInfoType extends TypeObject {
     }
 
     @NotNull
-    @Contract("_ -> new")
+    @Contract("_, _ -> new")
     @Override
-    public TypeObject generify(TypeObject... args) {
+    public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         return new GenerifiedFnInfoType(info, List.of(args));
     }
 

@@ -3,9 +3,10 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 
-public final class FunctionInfo implements IntoFnInfo {
+public final class FunctionInfo implements IntoFnInfo, Template<FunctionInfo> {
     private final String name;
     private final boolean isGenerator;
     private final ArgumentInfo arguments;
@@ -94,6 +95,12 @@ public final class FunctionInfo implements IntoFnInfo {
             result[i] = arr[i] instanceof TemplateParam ? ((TemplateParam) arr[i]).getBound() : arr[i];
         }
         return result;
+    }
+
+    @Override
+    @NotNull
+    public FunctionInfo generify(TypeObject... generics) {
+        return generify(Arrays.asList(generics));
     }
 
     @NotNull

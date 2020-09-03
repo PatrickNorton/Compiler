@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
@@ -39,13 +40,13 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    @Contract("_ -> new")
+    @Contract("_, _ -> new")
     @NotNull
-    public TypeObject generify(TypeObject... args) {
+    public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         if (generics.isEmpty()) {
             return new TupleType(args);
         } else {
-            throw new UnsupportedOperationException("Cannot generify object");
+            throw CompilerException.of("Cannot generify object", lineInfo);
         }
     }
 

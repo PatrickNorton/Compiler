@@ -31,6 +31,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * The class for handling imports, exports, and the list of files involved in a
+ * program.
+ *
+ * @author Patrick Norton
+ * @see ImportExportConverter
+ * @see CompilerInfo
+ */
 public final class ImportHandler {
     private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
     private static List<Pair<CompilerInfo, File>> toCompile = new ArrayList<>();
@@ -55,6 +63,21 @@ public final class ImportHandler {
         this.info = info;
     }
 
+    /**
+     * Register all the files upon which this depends and load all type
+     * definitions.
+     * <p>
+     *     This is essential in the pre-linking process. Its job is many-fold:
+     *     Firstly, it adds all the files on which this depends on to {@link
+     *     ImportHandler#ALL_FILES} and calls this method on all of them, if
+     *     not already done. Secondly, it loads all type-like definitions
+     *     (types, interfaces, unions, etc.) without any constituent methods
+     *     attached. Thirdly, it adds those definitions which represent default
+     *     interfaces to {@link ImportHandler#ALL_DEFAULT_INTERFACES}.
+     * </p>
+     *
+     * @param node The node representing the file
+     */
     public void registerDependents(@NotNull TopNode node) {
         Map<String, TypeObject> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
@@ -154,6 +177,12 @@ public final class ImportHandler {
         }
     }
 
+    /**
+     * Adds a non-top level import to the pool.
+     *
+     * @param node The node to parse into an import
+     * @return A map of strings to the import digits from this node
+     */
     @NotNull
     public Map<String, Integer> addImport(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
@@ -203,7 +232,7 @@ public final class ImportHandler {
         }
     }
 
-    public void registerImports(@NotNull ImportExportNode node) {
+    private void registerImports(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         if (node.isWildcard()) {
             var path = loadFile(moduleName(node, 0), node);
@@ -322,6 +351,12 @@ public final class ImportHandler {
         // FIXME: Register exports accurately
     }
 
+    /**
+     * Get a map of strings to types for all compile-time types imported into
+     * the represented file.
+     *
+     * @return The map of strings
+     */
     @NotNull
     public Map<String, TypeObject> importedTypes() {
         Map<String, TypeObject> importedTypes = new HashMap<>();

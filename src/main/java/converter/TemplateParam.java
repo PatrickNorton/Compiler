@@ -15,6 +15,7 @@ public final class TemplateParam extends NameableType {
     private final TypeObject bound;
     private final boolean isVararg;
     private final String typedefName;
+    private Template<?> parent;
 
     public TemplateParam(String name, int index, boolean isVararg) {
         this(name, index, TypeObject.list(), true);
@@ -76,6 +77,15 @@ public final class TemplateParam extends NameableType {
     @Override
     public String baseName() {
         return name;
+    }
+
+    public Template<?> getParent() {
+        return parent;
+    }
+
+    public void setParent(Template<?> parent) {
+        assert this.parent == null : "Should not set parent of TemplateParam more than once";
+        this.parent = parent;
     }
 
     @NotNull

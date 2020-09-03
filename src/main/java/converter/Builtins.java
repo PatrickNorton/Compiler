@@ -275,6 +275,8 @@ public final class Builtins {
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
+
+        LIST_PARAM.setParent(LIST);
     }
 
     static {  // Set set operators
@@ -295,6 +297,8 @@ public final class Builtins {
         );
         SET.setAttributes(setAttrs);
         SET.seal();
+
+        SET_PARAM.setParent(SET);
     }
 
     static {
@@ -317,6 +321,9 @@ public final class Builtins {
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
+
+        DICT_KEY.setParent(DICT);
+        DICT_VAL.setParent(DICT);
     }
 
     static {
@@ -343,6 +350,8 @@ public final class Builtins {
         );
         ARRAY.setAttributes(arrayAttrs);
         ARRAY.seal();
+
+        ARRAY_PARAM.setParent(ARRAY);
     }
 
     static {  // null is const
@@ -354,6 +363,19 @@ public final class Builtins {
         DECIMAL.seal();
         BOOL.seal();
         THROWS.seal();
+    }
+
+    static {  // Set interface parents
+        CONTEXT_PARAM.setParent(CONTEXT);
+
+        ITERABLE_PARAM.setParent(ITERABLE);
+
+        CALLABLE_ARGS.setParent(CALLABLE);
+        CALLABLE_RETURN.setParent(CALLABLE);
+    }
+
+    static {
+        REVERSED_PARAM.setParent(REVERSED_INFO);
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(
