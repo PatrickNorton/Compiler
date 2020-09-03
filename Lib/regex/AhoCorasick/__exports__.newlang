@@ -1,5 +1,5 @@
 from .ahocorasick export AhoCorasick, AhoCorasickBuilder, MatchKind
-from .state_id export StateId
+# from .state_id export StateId
 export Match
 
 const class Match {

@@ -3,6 +3,8 @@ from numtools import IntRef
 from .dfa import Dfa, Builder as Dfa, DfaBuilder
 from .nfa import Nfa, Builder as Nfa, NfaBuilder
 
+export AhoCorasick, AhoCorasickBuilder, MatchKind
+
 public class AhoCorasick {
     private Imp imp
     private MatchKind matchKind
