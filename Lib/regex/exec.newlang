@@ -1,5 +1,4 @@
-# Imports: LiteralSearcher, AhoCorasick
-
+from .AhoCorasick import AhoCorasick
 from .prog import Program
 from .compile import Compiler
 from .literal import LiteralSearcher
@@ -60,7 +59,7 @@ const class ExecReadOnly {
     Program dfa
     Program dfaReverse
     LiteralSearcher suffixes
-    AhoCorasick[int]? ac
+    AhoCorasick? ac
     MatchType matchType
 
     public operator new(

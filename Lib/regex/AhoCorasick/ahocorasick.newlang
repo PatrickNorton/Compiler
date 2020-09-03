@@ -1,7 +1,7 @@
 from numtools import IntRef
 
-from dfa import Dfa, Builder as Dfa, DfaBuilder
-from nfa import Nfa, Builder as Nfa, NfaBuilder
+from .dfa import Dfa, Builder as Dfa, DfaBuilder
+from .nfa import Nfa, Builder as Nfa, NfaBuilder
 
 public class AhoCorasick {
     private Imp imp
@@ -89,29 +89,29 @@ union Imp {
 
     public method matchKind() -> MatchKind {
         return switch self {
-            Imp.NFA as nfa => nfa.matchKind()
-            Imp.DFA as dfa => dfa.matchKind()
+            case Imp.NFA as nfa => nfa.matchKind()
+            case Imp.DFA as dfa => dfa.matchKind()
         }
     }
 
     public method startState() -> int {
         return switch self {
-            Imp.NFA as nfa => nfa.startState()
-            Imp.DFA as dfa => dfa.startState()
+            case Imp.NFA as nfa => nfa.startState()
+            case Imp.DFA as dfa => dfa.startState()
         }
     }
 
     public method maxPatternLen() -> int {
         return switch self {
-            Imp.NFA as nfa => nfa.maxPatternLen()
-            Imp.DFA as dfa => dfa.maxPatternLen()
+            case Imp.NFA as nfa => nfa.maxPatternLen()
+            case Imp.DFA as dfa => dfa.maxPatternLen()
         }
     }
 
     public method patternCount() -> MatchKind {
         return switch self {
-            Imp.NFA as nfa => nfa.patternCount()
-            Imp.DFA as dfa => dfa.patternCount()
+            case Imp.NFA as nfa => nfa.patternCount()
+            case Imp.DFA as dfa => dfa.patternCount()
         }
     }
 
@@ -178,51 +178,51 @@ class AhoCorasickBuilder {
         }
     }
 
-    public mut method autoConfigure(Iterable[bytes] patterns) -> mut cls {
+    public mut method autoConfigure(Iterable[bytes] patterns) -> cls {  # FIXME: Should be 'mut cls'
         if patterns.length <= 100 {
             self.dfa(true).byteClasses(false)
-        } else if patterns.length <= 5000 {
+        } elif patterns.length <= 5000 {
             self.dfa(true)
         }
         return self
     }
 
-    public mut method matchKind(MatchKind kind) -> mut cls {
+    public mut method matchKind(MatchKind kind) -> cls {  # FIXME: Should be 'mut cls'
         self.nfaBuilder.matchKind(kind)
         return self
     }
 
-    public mut method anchored(bool yes) -> mut cls {
+    public mut method anchored(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.nfaBuilder.anchored(yes)
         return self
     }
 
-    public mut method asciiCaseInsensitive(bool yes) -> mut cls {
+    public mut method asciiCaseInsensitive(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.nfaBuilder.asciiCaseInsensitive(kind)
         return self
     }
 
-    public mut method denseDepth(int depth) -> mut cls {
+    public mut method denseDepth(int depth) -> cls {  # FIXME: Should be 'mut cls'
         self.nfaBuilder.denseDepth(depth)
         return self
     }
 
-    public mut method dfa(bool yes) -> mut cls {
+    public mut method dfa(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.dfa = yes
         return self
     }
 
-    public mut method prefilter(bool yes) -> mut cls {
+    public mut method prefilter(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.nfaBuilder.prefilter(yes)
         return self
     }
 
-    public mut method byteClasses(bool yes) -> mut cls {
+    public mut method byteClasses(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.dfaBuilder.byteClasses(yes)
         return self
     }
 
-    public mut method premultiply(bool yes) -> mut cls {
+    public mut method premultiply(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.dfaBuilder.preMultiply(yes)
         return self
     }
