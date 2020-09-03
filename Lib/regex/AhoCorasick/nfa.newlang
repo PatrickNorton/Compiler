@@ -1,0 +1,222 @@
+export NFA
+
+class NFA from Automaton {
+    MatchKind matchKind
+    int startId
+    int maxPatternLen
+    int patternCount
+    PrefilterObj? prefilter
+    bool anchored
+    ByteClasses byteClasses
+    list[State] states
+
+    public method byteClasses() -> ByteClasses {
+        return self.byteClasses
+    }
+
+    public method prefilterObj() -> PrefilterObj? {
+        return self.prefilterObj
+    }
+
+    public method maxPatternLen() -> int {
+        return self.maxPatternLen
+    }
+
+    public method patternCount() -> int {
+        return self.patternCount
+    }
+
+    public method stateLen() -> int {
+        return self.states.length
+    }
+
+    public method matches(int idVal) -> list[Pair[PatternId, PatternLength]] {
+        return self.states[idVal].matches
+    }
+
+    public method iterAllTransitions(ByteClasses byteClasses, int idVal, Callable[[int, int]] f) {
+        self.states[idVal].trans.iterAll(byteClasses, f)
+    }
+
+    public method failureTransition(int idVal) -> int {
+        return self.states[idVal].fail
+    }
+
+    public method nextState(int current, int inputVal) -> int {
+        return self.states[current].nextState(inputVal)
+    }
+
+    private method state(int idVal) -> State {
+        return self.states[idVal]
+    }
+
+    private mut method stateMut(int idVal) -> State {  # FIXME: Should be 'mut State'
+        return self.states[idVal]
+    }
+
+    private method start() -> State {
+        return self.state(self.startId)
+    }
+
+    private method startMut() -> State {
+        return self.stateMut(self.startId)
+    }
+
+    private generator method iterTransitionsMut(int idVal) -> Pair[int, int] {
+        mut int cur = 0
+        while true {
+            switch self.states[idVal].trans {
+                case Transitions.Sparse as sparse {
+                    return if cur >= sparse.length
+                    yield sparse[cur]
+                    cur++
+                }
+                case Transitions.Dense as dense {
+                    while cur < dense.length {
+                        assert cur < 256
+
+                        var idVal = dense[cur]
+                        if idVal != failId() {
+                            return Pair.of(cur, idVal)
+                        }
+                        self.cur++
+                    }
+                    return
+                }
+            }
+        }
+    }
+
+    private mut method copyMatches(int src, int dst) {
+        var pair = self.states[src], self.states[dst]
+        dst.matches.extend(src.matches)
+    }
+
+    private mut method copyEmptyMatches(int dst) {
+        self.copyMatches(self.startId, dst)
+    }
+
+    private mut method addDenseState(int depth) -> int {
+        var trans = Transitions.Dense(Dense())
+        var idVal = intToStateId(self.states.length)
+        self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, [])
+        return idVal
+    }
+
+    private mut method addSparseState(int depth) -> int {
+        var trans = Transitions.Sparse([])
+        var idVal = intToStateId(self.states.length)
+        self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, [])
+    }
+
+    public method matchKind() -> MatchKind {
+        return self.matchKind
+    }
+
+    public method anchored() -> bool {
+        return self.anchored
+    }
+
+    public method prefilter() -> Prefilter? {
+        return self.prefilter
+    }
+
+    public method startState() -> int {
+        return self.startId
+    }
+
+    public method isValid(int idVal) -> bool {
+        return idVal < self.states.length
+    }
+
+    public method isMatchState(int idVal) -> bool {
+        return self.states[idVal].isMatch()
+    }
+
+    public method getMatch(int idVal, int matchIndex, int end) -> Match? {
+        return null if idVal > self.states.length
+        var state = self.states[idVal]
+        if state.matches.get(matchIndex)? as m {
+            return Match(m.first, m.second, end)
+        } else {
+            return null
+        }
+    }
+
+    public method matchCount(int idVal) -> int {
+        return self.states[idVal].matches.length
+    }
+
+    public method nextState(mut int current, int inputVal) -> int {
+        while true {
+            var state = self.states[current]
+            var next = state.nextState(inputVal)
+            return next if next != failId()
+            current = state.fail
+        }
+    }
+}
+
+class State {
+    Transitions trans
+    int fail
+    final list[Pair[PatternID, PatternLength]] matches
+    int depth
+
+    private mut method addMatch(PatternID i, PatternLength len) {
+        self.matches.push(Pair.of(i, len))
+    }
+
+    private method isMatch() -> bool {
+        return bool(self.matches)
+    }
+
+    private method getLongestMatchlen() -> int? {
+        return self.matches.get(0)?.second
+    }
+
+    private method nextState(int inputVal) -> int {
+        return self.trans.nextState(inputVal)
+    }
+
+    private mut method setNextState(int inputVal, int next) {
+        self.trans.setNextState(inputVal, next)
+    }
+}
+
+class Dense {
+    list[int] value
+
+    public operator new(list[int] value = [failId()] * 256) {
+        self.value = value
+    }
+
+    public property int length {
+        get {
+            return self.value.length
+        }
+    }
+
+    public operator [] (int i) -> int {
+        return self.value[i]
+    }
+}
+
+union Transitions {
+    list[Pair[int, int]] Sparse
+    Dense Dense
+
+    method nextState(int inputVal) -> int {
+        switch self {
+            case Transitions.Sparse as sparse {
+                for var pair in sparse {
+                    return pair.second if pair.first
+                }
+                return failId()
+            }
+            case Transitions.Dense as dense {
+                return dense[inputVal]
+            }
+        }
+    }
+}

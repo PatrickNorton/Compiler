@@ -1,0 +1,495 @@
+from collections import Pair
+
+union DFA {
+    Standard Standard
+    ByteClass ByteClass
+    Premultiplied Premultiplied
+    PremultipliedByteClass PremultipliedByteClass
+
+    private method rep() -> Rep {
+        return switch self {
+            case DFA.Standard as s => s.rep()
+            case DFA.ByteClass as b => b.rep()
+            case DFA.Premultiplied as p => p.rep()
+            case DFA.PremultipliedByteClass as p => p.rep()
+        }
+    }
+
+    public method matchKind() -> MatchKind {
+        return self.rep().matchKind
+    }
+
+    public method heapBytes() -> int {
+        return self.rep().heapBytes
+    }
+
+    public method maxPatternLen() -> int {
+        return self.rep().maxPatternLen
+    }
+
+    public method patternCount() -> int {
+        return self.rep().patternCount
+    }
+
+    public method startState() -> int {
+        return self.rep().startId
+    }
+
+    public method overlappingFindAt(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+        mut IntRef stateId,
+        mut IntRef matchIndex,
+    ) -> Match? {
+        return switch self {
+            case DFA.Standard as dfa => dfa.overlappingFindAt(
+                prestate, haystack, at, stateId, matchIndex
+            )
+            case DFA.ByteClass as dfa => dfa.overlappingFindAt(
+                prestate, haystack, at, stateId, matchIndex
+            )
+            case DFA.Premultiplied as dfa => dfa.overlappingFindAt(
+                prestate, haystack, at, stateId, matchIndex
+            )
+            case DFA.PremultipliedByteClass as dfa => dfa.overlappingFindAt(
+                prestate, haystack, at, stateId, matchIndex
+            )
+        }
+    }
+
+    public method earliestFindAt(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+        mut IntRef stateId,
+    ) -> Match? {
+        return switch self {
+            case DFA.Standard as dfa => dfa.earliestFindAt(prestate, haystack, at, stateId)
+            case DFA.ByteClass as dfa => dfa.earliestFindAt(prestate, haystack, at, stateId)
+            case DFA.Premultiplied as dfa => dfa.earliestFindAt(prestate, haystack, at, stateId)
+            case DFA.PremultipliedByteClass as dfa => dfa.earliestFindAt(
+                prestate, haystack, at, stateId
+            )
+        }
+    }
+
+    public method findAtNoState(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+    ) -> Match? {
+        return switch self {
+            case DFA.Standard as dfa => dfa.findAtNoState(prestate, haystack, at)
+            case DFA.ByteClass as dfa => dfa.findAtNoState(prestate, haystack, at)
+            case DFA.Premultiplied as dfa => dfa.findAtNoState(prestate, haystack, at)
+            case DFA.PremultipliedByteClass as dfa => dfa.findAtNoState(prestate, haystack, at)
+        }
+    }
+}
+
+class Standard from Automation {
+    Rep value
+
+    public method rep() -> Rep {
+        return self.value
+    }
+
+    public method matchKind() -> MatchKind {
+        return self.value.matchKind
+    }
+
+    public method anchored() -> bool {
+        return self.value.anchored
+    }
+
+    public method prefilter() -> Prefilter? {
+        return self.value.prefilter
+    }
+
+    public method startState() -> int {
+        return self.value.startId
+    }
+
+    public method isValid(int idVal) -> bool {
+        return idVal < self.value.stateCount
+    }
+
+    public method isMatchState(int idVal) -> bool {
+        return self.value.isMatchState(idVal)
+    }
+
+    public method isMatchOrDeadState(int idVal) -> bool {
+        return self.value.isMatchOrDeadState(idVal)
+    }
+
+    public method getMatch(int idVal, int matchIndex, int end) -> Match? {
+        return self.value.getMatch(idVal, matchIndex, end)
+    }
+
+    public method matchCount(int idVal) -> int {
+        return self.value.matchCount(idVal)
+    }
+
+    public method nextState(int current, int inputVal) -> int {
+        var o = current * 256 + inputVal
+        return self.value.trans[o]
+    }
+}
+
+class ByteClass from Automation {
+    Rep value
+
+    public method rep() -> Rep {
+        return self.value
+    }
+
+    public method matchKind() -> MatchKind {
+        return self.value.matchKind
+    }
+
+    public method anchored() -> bool {
+        return self.value.anchored
+    }
+
+    public method prefilter() -> Prefilter? {
+        return self.value.prefilter
+    }
+
+    public method startState() -> int {
+        return self.value.startId
+    }
+
+    public method isValid(int idVal) -> bool {
+        return idVal < self.value.stateCount
+    }
+
+    public method isMatchState(int idVal) -> bool {
+        return self.value.isMatchState(idVal)
+    }
+
+    public method isMatchOrDeadState(int idVal) -> bool {
+        return self.value.isMatchOrDeadState(idVal)
+    }
+
+    public method getMatch(int idVal, int matchIndex, int end) -> Match? {
+        return self.value.getMatch(idVal, matchIndex, end)
+    }
+
+    public method matchCount(int idVal) -> int {
+        return self.value.matchCount(idVal)
+    }
+
+    public method nextState(int current, int inputVal) -> int {
+        var alphabetLen = self.value.byteClasses.alphabetLen()
+        var input2 = self.value.byteClasses[inputVal]
+        var o = current * 256 + input2
+        return self.value.trans[o]
+    }
+}
+
+class Premultiplied from Automation {
+    Rep value
+
+    public method rep() -> Rep {
+        return self.value
+    }
+
+    public method matchKind() -> MatchKind {
+        return self.value.matchKind
+    }
+
+    public method anchored() -> bool {
+        return self.value.anchored
+    }
+
+    public method prefilter() -> Prefilter? {
+        return self.value.prefilter
+    }
+
+    public method startState() -> int {
+        return self.value.startId
+    }
+
+    public method isValid(int idVal) -> bool {
+        return idVal / 256 < self.value.stateCount
+    }
+
+    public method isMatchState(int idVal) -> bool {
+        return self.value.isMatchState(idVal)
+    }
+
+    public method isMatchOrDeadState(int idVal) -> bool {
+        return self.value.isMatchOrDeadState(idVal)
+    }
+
+    public method getMatch(int idVal, int matchIndex, int end) -> Match? {
+        return null if idVal > self.value.maxMatch
+        if self.value.matches.get(idVal / 256)?.get(matchIndex)? as m {
+            return Match(m.first, m.second)
+        } else {
+            return null
+        }
+    }
+
+    public method matchCount(int idVal) -> int {
+        var o = idVal / 256
+        return self.value.matches[o].length
+    }
+
+    public method nextState(int current, int inputVal) -> int {
+        var o = current + inputVal
+        return self.value.trans[o]
+    }
+}
+
+class PremultipliedByteClass from Automation {
+    Rep value
+
+    public method rep() -> Rep {
+        return self.value
+    }
+
+    public method matchKind() -> MatchKind {
+        return self.value.matchKind
+    }
+
+    public method anchored() -> bool {
+        return self.value.anchored
+    }
+
+    public method prefilter() -> Prefilter? {
+        return self.value.prefilter
+    }
+
+    public method startState() -> int {
+        return self.value.startId
+    }
+
+    public method isValid(int idVal) -> bool {
+        return idVal / self.value.alphabetLen() < self.value.stateCount
+    }
+
+    public method isMatchState(int idVal) -> bool {
+        return self.value.isMatchState(idVal)
+    }
+
+    public method isMatchOrDeadState(int idVal) -> bool {
+        return self.value.isMatchOrDeadState(idVal)
+    }
+
+    public method getMatch(int idVal, int matchIndex, int end) -> Match? {
+        return null if idVal > self.value.maxMatch
+        if self.value.matches.get(idVal / self.value.alphabetLen())?.get(matchIndex)? as m {
+            return Match(m.first, m.second)
+        } else {
+            return null
+        }
+    }
+
+    public method matchCount(int idVal) -> int {
+        var o = idVal / self.value.alphabetLen()
+        return self.value.matches[o].length
+    }
+
+    public method nextState(int current, int inputVal) -> int {
+        var o = current + self.value.byteClasses.get(inputVal)
+        return self.value.trans[o]
+    }
+}
+
+class Rep {
+    MatchKind matchKind
+    bool anchored
+    bool premultiplied
+    int startId
+    int maxPatternLen
+    int patternCount
+    int stateCount
+    int maxMatch
+    int heapBytes
+    PrefilterObj? prefilter
+    ByteClasses byteClasses
+    final list[int] trans
+    final list[list[Pair[PatternId, PatternLength]]] matches
+
+    method alphabetLen() -> int {
+        return self.byteClasses.alphabetLen()
+    }
+
+    method isMatchState(int idVal) -> bool {
+        return idVal <= self.maxMatch and idVal > deadId()
+    }
+
+    method isMatchOrDeadState(int idVal) -> bool {
+        return idVal <= self.maxMatch
+    }
+
+    method getMatch(int idVal, int matchIndex, int end) -> Match? {
+        return null if idVal > self.maxMatch
+        if self.matches.get(idVal)?.get(matchIndex)? as m {
+            return Match(m.first, m.second)
+        } else {
+            return null
+        }
+    }
+
+    method matchCount(int idVal) -> int {
+        return self.matches[idVal].length
+    }
+
+    method nextState(int fromVal, int byte) -> int {
+        return self.trans[fromVal * self.alphabetLen() + self.byteClasses.get(byte)]
+    }
+
+    mut method setNextState(int fromVal, int byte, int to) {
+        self.trans[fromVal * self.alphabetLen() + self.byteClasses.get(byte)] = to
+    }
+
+    mut method swapStates(int id1, int id2) {
+        assert not self.preMultiplied
+        var o1 = id1 * self.alphabetLen()
+        var o2 = id2 * self.alphabetLen()
+        for var b in [0:self.alphabetLen()] {
+            self.trans.swap(o1 + b, o2 + b)
+        }
+        self.matches.swap(id1, id2)
+    }
+
+    mut method shuffleMatchStates() {
+        assert not self.preMultiplied
+        return if self.stateCount <= 1
+
+        mut var firstNonMatch = self.startId
+        while firstNonMatch < self.stateCount and self.matches[firstNonMatch] {
+            firstNonMatch++
+        }
+
+        final var swaps = [failId()] * self.stateCount
+        mut var cur = self.stateCount - 1
+        while cur > firstNonMatch {
+            if self.matches[cur] {
+                self.swapStates(cur, firstNonMatch)
+                swaps[cur] = firstNonMatch
+                swaps[firstNonMatch] = cur
+
+                firstNonMatch++
+                while firstNonMatch < self.stateCount and self.matches[firstNonMatch] {
+                    firstNonMatch++
+                }
+            }
+            cur--
+        }
+        for var idVal in [0:self.stateCount] {
+            var alphabetLen = self.alphabetLen()
+            var offset = idVal * alphabetLen
+            for int i, var next in enumerate(self.trans[offset:offset + alphabetLen]) {
+                if swaps[next] != failId() {
+                    self.trans[i + offset] = next
+                }
+            }
+        }
+        if swaps[self.startId] != failId() {
+            self.startId = swaps[self.startId]
+        }
+        self.maxMatch = firstNonMatch - 1
+    }
+
+    method premultiply() {
+        return if self.premultiplied or self.stateCount <= 1
+
+        var alphaLen = self.alphabetLen()
+        premultiplyOverflowError(self.stateCount - 1, alphaLen)
+
+        for var idVal in [2:self.stateCount] {
+            var offset = idVal * alphaLen
+            for int i, var next in enumerate(self.trans[offset:offset + alphaLen]) {
+                if next != deadId() {
+                    self.trans[offset + i] = next * alphaLen
+                }
+            }
+        }
+
+        self.premultiplied = true
+        self.startId *= alphaLen
+        self.maxMatch *= alphaLen
+    }
+}
+
+class Builder {
+    mut bool premultiply
+    mut bool byteClasses
+
+    public operator new() {
+        self.premultiply = true
+        self.byteClasses = true
+    }
+
+    public method build(NFA nfa) -> DFA {
+        var byteClasses = nfa.byteClasses() if self.byteClasses else ByteClasses.singletons()
+        var alphabetLen = byteClasses.alphabetLen()
+        var trans = [failId()] * (alphabetLen * nfa.stateLen())
+        var matches = [[] * nfa.stateLen()]
+        mut var rep = Rep(
+            nfa.matchKind(),
+            nfa.anchored(),
+            false,
+            nfa.startState(),
+            nfa.maxPatternLen(),
+            nfa.patternCount(),
+            nfa.stateLen(),
+            failId(),
+            0,
+            nfa.prefilterObj(),
+            byteClasses,
+            trans,
+            matches,
+        )
+        for var idVal in [0:nfa.stateLen()] {
+            rep.matches[idVal].extend(nfa.matches(idVal))
+
+            var fail = nfa.failureTransition(idVal)
+            nfa.iterAllTransitions(byteClasses, idVal, lambda (int b, mut int next) {
+                    if next == failId() {
+                        next = nfaNextStateMemoized(nfa, repr, idVal, fail, b)
+                    }
+                    repr.setNextState(idVal, b, next)
+                }
+            )
+        }
+        rep.shuffleMatchStates()
+        if self.premultiply {
+            repr.premultiply()
+            if byteClasses.isSingleton() {
+                return DFA.Premultiplied(Premultiplied(rep))
+            } else {
+                return DFA.PremultipliedByteClass(PremultipliedByteClass(rep))
+            }
+        } else {
+            if byteClasses.isSingleton() {
+                return DFA.Standard(Standard(rep))
+            } else {
+                return DFA.ByteClass(ByteClass(rep))
+            }
+        }
+    }
+
+    public mut method byteClasses(bool yes) -> cls {
+        self.byteClasses = yes
+        return self
+    }
+
+    public mut method premultiply(bool yes) -> cls {
+        self.premultiply = yes
+        return self
+    }
+}
+
+func nfaNextStateMemoized(NFA nfa, Rep dfa, int populating, mut int current, int inputVal) -> int {
+    while true {
+        return dfa.nextState(current, inputVal) if current < populating
+        var next = nfa.nextState(current, inputVal)
+        return next if next != failId()
+        current = nfa.failureTransition(current)
+    }
+}
