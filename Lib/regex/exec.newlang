@@ -297,7 +297,7 @@ union MatchType {
     null DfaAnchoredReverse
     null DfaSuffix
     null DfaMany
-    NfaMatchType Nfa
+    MatchNfaType Nfa
     null Nothing
 }
 
