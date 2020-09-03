@@ -68,7 +68,7 @@ const class ExecReadOnly {
         Program dfa,
         Program dfaReverse,
         LiteralSearcher suffixes,
-        AhoCorasick[int]? ac,
+        AhoCorasick? ac,
         MatchType matchType,
     ) {
         self.res = res
