@@ -354,13 +354,15 @@ public final class CompilerInfo {
             var builtin = Builtins.BUILTIN_MAP.get(type.strName());
             if (builtin instanceof TypeObject) {
                 var typeObj = (TypeObject) builtin;
-                var endType = type.getSubtypes().length == 0 ? typeObj : typeObj.generify(typesOf(type.getSubtypes()));
+                var endType = type.getSubtypes().length == 0
+                        ? typeObj
+                        : typeObj.generify(type, typesOf(type.getSubtypes()));
                 return type.isOptional() ? TypeObject.optional(endType) : endType;
             } else {
                 throw CompilerException.of("Unknown type " + type, type);
             }
         } else {
-            var endType = type.getSubtypes().length == 0 ? value : value.generify(typesOf(type.getSubtypes()));
+            var endType = type.getSubtypes().length == 0 ? value : value.generify(type, typesOf(type.getSubtypes()));
             return type.isOptional() ? TypeObject.optional(endType) : endType;
         }
     }

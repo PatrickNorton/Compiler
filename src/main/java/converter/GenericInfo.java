@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.RandomAccess;
 
 public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess {
@@ -38,14 +39,17 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
     }
 
     @NotNull
-    public List<TypeObject> generify(@NotNull TypeObject... args) {
+    public Optional<List<TypeObject>> generify(@NotNull TypeObject... args) {
+        if (args.length > params.size()) {
+            return Optional.empty();
+        }
         List<TypeObject> result = new ArrayList<>();
         int i;
         for (i = 0; i < args.length && !params.get(i).isVararg(); i++) {
             assert params.get(i).getBound() instanceof ListTypeObject == args[i] instanceof ListTypeObject;
             result.add(args[i]);
         }
-        if (i == args.length) return result;
+        if (i == args.length) return Optional.of(result);
         List<TypeObject> resultTypes = new ArrayList<>(args.length - i - 1);
         int j;
         for (j = args.length - 1; j >= i && !params.get(Math.abs(args.length - params.size()) + j).isVararg(); j--) {
@@ -57,7 +61,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         }
         result.add(TypeObject.list(varargTypes.toArray(new TypeObject[0])));
         result.addAll(resultTypes);
-        return result;
+        return Optional.of(result);
     }
 
     public void reParse(CompilerInfo info, TypeLikeNode... generics) {

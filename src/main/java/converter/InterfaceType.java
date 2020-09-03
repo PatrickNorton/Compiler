@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
@@ -68,15 +69,15 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         return info.info;
     }
 
+    @Contract("_, _ -> new")
     @NotNull
-    @Contract("_ -> new")
     @Override
-    public TypeObject generify(@NotNull TypeObject... args) {
+    public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         var trueArgs = info.info.generify(args);
-        if (trueArgs.size() != info.info.getParams().size()) {
-            throw new UnsupportedOperationException("Cannot generify object in this manner");
+        if (trueArgs.isEmpty() || trueArgs.orElseThrow().size() != info.info.getParams().size()) {
+            throw CompilerException.of("Cannot generify object in this manner", lineInfo);
         } else {
-            return new InterfaceType(this, trueArgs);
+            return new InterfaceType(this, trueArgs.orElseThrow());
         }
     }
 

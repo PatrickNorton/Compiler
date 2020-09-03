@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -66,11 +67,13 @@ public final class TypeTypeObject extends TypeObject {
         return Objects.hash(TypeTypeObject.class, "type");
     }
 
-    @Contract("_ -> new")
+    @Contract("_, _ -> new")
     @Override
     @NotNull
-    public TypeObject generify(@NotNull TypeObject... args) {
-        assert args.length == 1;
+    public TypeObject generify(LineInfo lineInfo, @NotNull TypeObject... args) {
+        if (args.length != 1) {
+            throw CompilerException.of("Cannot generify object in this manner", lineInfo);
+        }
         return new TypeTypeObject(args[0], this.typedefName);
     }
 
