@@ -4,6 +4,8 @@ from .builder import RegexOptions
 from .compile import Compiler
 from .literal import LiteralSearcher
 
+from .pikevm import Cache as PikeVMCache
+
 export Exec, ProgramCache, ExecBuilder
 
 class Exec {
@@ -329,13 +331,13 @@ enum MatchNfaType {
 }
 
 class ProgramCache {
-    public PikeVM.Cache pikevm
+    public PikeVMCache pikevm
     public Backtrack.Cache backtrack
     public Dfa.Cache dfa
     public Dfa.Cache dfaReverse
 
     public operator new (ExecReadOnly ro) {
-        self.pikevm = PikeVM.Cache(ro.nfa)
+        self.pikevm = PikeVMCache(ro.nfa)
         self.backtrack = Backtrack.Cache(ro.nfa)
         self.dfa = Dfa.Cache(ro.dfa)
         self.dfaReverse = Dfa.Cache(ro.dfaReverse)
