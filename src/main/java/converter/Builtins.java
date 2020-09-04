@@ -269,9 +269,21 @@ public final class Builtins {
         );
         LIST.setOperators(listMap);
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
+        var insertInfo = new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM));
+        var reverseInfo = new FunctionInfo();
+        var countInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), INT);
+        var clearInfo = new FunctionInfo();
+        var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
+        var pub = DescriptorNode.PUBLIC;
+        var mut = DescriptorNode.MUT;
         var listAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
-                "get", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), getInfo.toCallable())
+                "length", new AttributeInfo(EnumSet.of(pub), INT),
+                "get", new AttributeInfo(EnumSet.of(pub), getInfo.toCallable()),
+                "insert", new AttributeInfo(EnumSet.of(pub, mut), insertInfo.toCallable()),
+                "reverse", new AttributeInfo(EnumSet.of(pub, mut), reverseInfo.toCallable()),
+                "count", new AttributeInfo(EnumSet.of(pub), countInfo.toCallable()),
+                "clear", new AttributeInfo(EnumSet.of(pub, mut), clearInfo.toCallable()),
+                "add", new AttributeInfo(EnumSet.of(pub, mut), addInfo.toCallable())
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
