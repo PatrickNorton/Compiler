@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.BaseNode;
-import main.java.parser.DescriptorNode;
 import main.java.parser.IndexNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
@@ -70,11 +69,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return Builtins.TYPE.generify(this);
     }
 
-    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
         return null;
     }
 
-    public final TypeObject[] operatorReturnType(OperatorTypeNode o, DescriptorNode access) {
+    public final TypeObject[] operatorReturnType(OperatorTypeNode o, AccessLevel access) {
         return operatorReturnType(OpSpTypeNode.translate(o), access);
     }
 
@@ -82,7 +81,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return operatorReturnType(OpSpTypeNode.translate(o), info.accessLevel(this));
     }
 
-    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var info = operatorInfo(o, access);
         return info == null ? null : info.getReturns();
     }
@@ -105,12 +104,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     @Nullable
-    public TypeObject attrType(String value, DescriptorNode access) {
+    public TypeObject attrType(String value, AccessLevel access) {
         return null;
     }
 
     @Nullable
-    public TypeObject staticAttrType(String value, DescriptorNode access) {
+    public TypeObject staticAttrType(String value, AccessLevel access) {
         return null;
     }
 
@@ -123,10 +122,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     @NotNull
-    public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, DescriptorNode access) {
+    public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, AccessLevel access) {
         var info = operatorInfo(o, access);
         if (info == null) {
-            if (access != DescriptorNode.PRIVATE && operatorInfo(o, DescriptorNode.PRIVATE) != null) {
+            if (access != AccessLevel.PRIVATE && operatorInfo(o, AccessLevel.PRIVATE) != null) {
                 throw CompilerException.format(
                         "Cannot get '%s' from type '%s': operator has a too-strict access level",
                         lineInfo, o, name()
@@ -145,10 +144,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     @NotNull
-    public final TypeObject tryAttrType(LineInfo lineInfo, String value, DescriptorNode access) {
+    public final TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = attrType(value, access);
         if (info == null) {
-            if (access != DescriptorNode.PRIVATE && attrType(value, DescriptorNode.PRIVATE) != null) {
+            if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE) != null) {
                 throw CompilerException.format(
                         "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
                         lineInfo, value, name()
@@ -169,10 +168,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     @NotNull
-    public final TypeObject tryStaticAttrType(LineInfo lineInfo, String value, DescriptorNode access) {
+    public final TypeObject tryStaticAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = staticAttrType(value, access);
         if (info == null) {
-            if (access != DescriptorNode.PRIVATE && staticAttrType(value, DescriptorNode.PRIVATE) != null) {
+            if (access != AccessLevel.PRIVATE && staticAttrType(value, AccessLevel.PRIVATE) != null) {
                 throw CompilerException.format(
                         "Cannot get static attribute '%s' from type '%s':" +
                                 " too-strict of an access level required",
@@ -208,15 +207,15 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
     }
 
-    public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
+    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
         return attrType(value, access);
     }
 
-    public TypeObject staticAttrTypeWithGenerics(String value, DescriptorNode access) {
+    public TypeObject staticAttrTypeWithGenerics(String value, AccessLevel access) {
         return staticAttrType(value, access);
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         return operatorInfo(o, access);
     }
 
@@ -232,12 +231,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     public final boolean fulfillsContract(@NotNull UserType<?> contractor) {
         var contract = contractor.contract();
         for (var attr : contract.getKey()) {
-            if (attrType(attr, DescriptorNode.PUBLIC) == null) {
+            if (attrType(attr, AccessLevel.PUBLIC) == null) {
                 return false;
             }
         }
         for (var op : contract.getValue()) {
-            if (operatorInfo(op, DescriptorNode.PUBLIC) == null) {
+            if (operatorInfo(op, AccessLevel.PUBLIC) == null) {
                 return false;
             }
         }

@@ -4,6 +4,7 @@ import main.java.converter.AttributeInfo;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
+import main.java.converter.MutableType;
 import main.java.converter.TypeObject;
 import main.java.parser.EnumKeywordNode;
 import main.java.parser.Lined;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class ConverterHolder {
     private final AttributeConverter attrs;
@@ -129,7 +131,8 @@ public final class ConverterHolder {
         for (var pair : attrs.getStaticColons().entrySet()) {
             var mInfo = pair.getValue();
             var newMethodInfo = new MethodInfo(
-                    mInfo.getDescriptors(),
+                    mInfo.getAccessLevel(),
+                    mInfo.isMut(),
                     mInfo.getInfo(),
                     new StatementBodyNode(),
                     mInfo.getLineInfo()
@@ -183,17 +186,21 @@ public final class ConverterHolder {
             Map<String, AttributeInfo> properties
     ) {
         var finalAttrs = new HashMap<>(attrs);
-        for (var pair : colons.entrySet()) {
-            var methodInfo = pair.getValue();
-            var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());
-            finalAttrs.put(pair.getKey(), attrInfo);
-        }
-        for (var pair : methods.entrySet()) {
-            var methodInfo = pair.getValue();
-            var attrInfo = new AttributeInfo(methodInfo.getDescriptors(), methodInfo.getInfo().toCallable());
-            finalAttrs.put(pair.getKey(), attrInfo);
-        }
+        addInfos(finalAttrs, colons.entrySet());
+        addInfos(finalAttrs, methods.entrySet());
         finalAttrs.putAll(properties);
         return finalAttrs;
+    }
+
+    private static void addInfos(
+            Map<String, AttributeInfo> finalAttrs,
+            @NotNull Set<Map.Entry<String, MethodInfo>> entrySet
+    ) {
+        for (var pair : entrySet) {
+            var methodInfo = pair.getValue();
+            var mutType = methodInfo.isMut() ? MutableType.MUT_METHOD : MutableType.STANDARD;
+            var attrInfo = new AttributeInfo(methodInfo.getAccessLevel(), mutType, methodInfo.getInfo().toCallable());
+            finalAttrs.put(pair.getKey(), attrInfo);
+        }
     }
 }

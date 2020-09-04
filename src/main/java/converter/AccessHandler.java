@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.util.Counter;
 import main.java.util.HashCounter;
 import org.jetbrains.annotations.NotNull;
@@ -25,9 +24,9 @@ public final class AccessHandler {
      * @param obj The object to get the access level for
      * @return The security access level of the type
      */
-    public DescriptorNode accessLevel(TypeObject obj) {
-        return classesWithAccess.contains(obj) ? DescriptorNode.PRIVATE
-                : classesWithProtected.contains(obj) ? DescriptorNode.PROTECTED : DescriptorNode.PUBLIC;
+    public AccessLevel accessLevel(TypeObject obj) {
+        return classesWithAccess.contains(obj) ? AccessLevel.PRIVATE
+                : classesWithProtected.contains(obj) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
     }
 
     /**

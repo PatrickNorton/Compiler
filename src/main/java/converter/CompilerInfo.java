@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
@@ -733,7 +732,7 @@ public final class CompilerInfo {
      * @param obj The object to get the access level for
      * @return The security access level of the type
      */
-    public DescriptorNode accessLevel(TypeObject obj) {
+    public AccessLevel accessLevel(TypeObject obj) {
         return accessHandler.accessLevel(obj);
     }
 

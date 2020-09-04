@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Zipper;
@@ -52,7 +51,7 @@ public final class TupleType extends TypeObject {
 
     @Override
     @Nullable
-    public TypeObject attrType(String value, DescriptorNode access) {
+    public TypeObject attrType(String value, AccessLevel access) {
         try {
             var intVal = Integer.parseInt(value);
             return intVal > 0 && intVal < generics.size() ? generics.get(intVal) : null;
@@ -63,7 +62,7 @@ public final class TupleType extends TypeObject {
 
     @Override
     @Nullable
-    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
                 return new FunctionInfo(

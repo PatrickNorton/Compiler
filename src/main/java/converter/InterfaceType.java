@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
@@ -83,12 +82,12 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
     @Nullable
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
         return trueInfo == null ? null : trueInfo.boundify();
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         // TODO: Check access bounds
         return info.operators.get(o).intoFnInfo();
     }
@@ -99,12 +98,12 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Nullable
-    public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
+    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
-        if (attr == null || (isConst && attr.intoAttrInfo().getDescriptors().contains(DescriptorNode.MUT))) {
+        if (attr == null || (isConst && attr.intoAttrInfo().getMutType() == MutableType.MUT_METHOD)) {
             return null;
         }
-        return DescriptorNode.canAccess(attr.intoAttrInfo().getDescriptors(), access)
+        return AccessLevel.canAccess(attr.intoAttrInfo().getAccessLevel(), access)
                 ? attr.intoAttrInfo().getType() : null;
     }
 

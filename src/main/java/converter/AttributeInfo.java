@@ -1,35 +1,43 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 
-import java.util.Collections;
-import java.util.Set;
-
 public final class AttributeInfo implements Lined, IntoAttrInfo {
-    private final Set<DescriptorNode> descriptors;
+    private final AccessLevel accessLevel;
+    private final MutableType mutType;
     private final TypeObject type;
     private final LineInfo lineInfo;
 
     public AttributeInfo(TypeObject type, LineInfo lineInfo) {
-        this(Collections.emptySet(), type, lineInfo);
+        this(AccessLevel.FILE, type, lineInfo);
     }
 
-    public AttributeInfo(Set<DescriptorNode> descriptors, TypeObject info) {
-        this.descriptors = descriptors;
-        this.type = info;
-        this.lineInfo = LineInfo.empty();
+    public AttributeInfo(AccessLevel accessLevel, TypeObject type) {
+        this(accessLevel, MutableType.STANDARD, type);
     }
 
-    public AttributeInfo(Set<DescriptorNode> descriptors, TypeObject info, LineInfo lineInfo) {
-        this.descriptors = descriptors;
-        this.type = info;
+    public AttributeInfo(AccessLevel accessLevel, MutableType mutType, TypeObject type) {
+        this(accessLevel, mutType, type, LineInfo.empty());
+    }
+
+    public AttributeInfo(AccessLevel accessLevel, TypeObject type, LineInfo lineInfo) {
+        this(accessLevel, MutableType.STANDARD, type, lineInfo);
+    }
+
+    public AttributeInfo(AccessLevel accessLevel, MutableType mutType, TypeObject type, LineInfo lineInfo) {
+        this.accessLevel = accessLevel;
+        this.mutType = mutType;
+        this.type = type;
         this.lineInfo = lineInfo;
     }
 
-    public Set<DescriptorNode> getDescriptors() {
-        return descriptors;
+    public AccessLevel getAccessLevel() {
+        return accessLevel;
+    }
+
+    public MutableType getMutType() {
+        return mutType;
     }
 
     public TypeObject getType() {

@@ -1,5 +1,6 @@
 package main.java.converter.classbody;
 
+import main.java.converter.AccessLevel;
 import main.java.converter.ArgumentInfo;
 import main.java.converter.Builtins;
 import main.java.converter.CompilerException;
@@ -52,7 +53,9 @@ public final class OperatorDefConverter {
             throw CompilerException.doubleDef(op, node, ops.get(op));
         }
         opInfos.put(op, fnInfo);
-        ops.put(op, new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo()));
+        var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
+        var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
+        ops.put(op, new MethodInfo(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
     }
 
     public void parse(@NotNull GenericOperatorNode node) {
@@ -69,8 +72,10 @@ public final class OperatorDefConverter {
         if (operatorInfos.containsKey(op)) {
             throw CompilerException.doubleDef(op, node, operators.get(op));
         }
+        var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
+        var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
         operatorInfos.put(op, fnInfo);
-        operators.put(op, new MethodInfo(node.getDescriptors(), fnInfo,
+        operators.put(op, new MethodInfo(accessLevel, isMut, fnInfo,
                 StatementBodyNode.empty(), node.getLineInfo()));
     }
 

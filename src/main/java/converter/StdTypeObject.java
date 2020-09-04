@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
@@ -94,12 +93,12 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
     @Nullable
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
         return trueInfo == null ? null : trueInfo.boundify();
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         // TODO: Check access bounds
         return info.operators.get(o);
     }
@@ -114,22 +113,22 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @Nullable
-    public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
+    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
-        if (attr == null || (isConst && attr.getDescriptors().contains(DescriptorNode.MUT))) {
+        if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
             return null;
         }
-        return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
+        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? attr.getType() : null;
     }
 
     @Nullable
     @Override
-    public TypeObject staticAttrTypeWithGenerics(String value, DescriptorNode access) {
+    public TypeObject staticAttrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.staticAttributes.get(value);
-        if (attr == null || (isConst && attr.getDescriptors().contains(DescriptorNode.MUT))) {
+        if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
             return null;
         }
-        return DescriptorNode.canAccess(attr.getDescriptors(), access) ? attr.getType() : null;
+        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? attr.getType() : null;
     }
 
     public void setAttributes(Map<String, AttributeInfo> attributes) {
