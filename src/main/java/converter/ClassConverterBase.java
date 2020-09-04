@@ -5,7 +5,6 @@ import main.java.converter.classbody.MethodInfo;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
-import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
@@ -32,7 +31,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         Map<U, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
-            var isConstMethod = !methodInfo.getDescriptors().contains(DescriptorNode.MUT);
+            var isConstMethod = !methodInfo.isMut();
             info.addStackFrame();
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
             info.addVariable("cls", Builtins.TYPE.generify(type), true, node);

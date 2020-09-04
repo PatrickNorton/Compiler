@@ -1,28 +1,36 @@
 package main.java.converter.classbody;
 
+import main.java.converter.AccessLevel;
 import main.java.converter.FunctionInfo;
-import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 import main.java.parser.StatementBodyNode;
 
-import java.util.Set;
-
 public final class MethodInfo implements Lined {
-    private final Set<DescriptorNode> descriptors;
+    private final AccessLevel accessLevel;
+    private final boolean isMut;
     private final FunctionInfo info;
     private final StatementBodyNode body;
     private final LineInfo lineInfo;
 
-    public MethodInfo(Set<DescriptorNode> descriptors, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
-        this.descriptors = descriptors;
+    public MethodInfo(AccessLevel access, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
+        this(access, false, info, body, lineInfo);
+    }
+
+    public MethodInfo(AccessLevel access, boolean isMut, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
+        this.accessLevel = access;
+        this.isMut = isMut;
         this.info = info;
         this.body = body;
         this.lineInfo = lineInfo;
     }
 
-    public Set<DescriptorNode> getDescriptors() {
-        return descriptors;
+    public AccessLevel getAccessLevel() {
+        return accessLevel;
+    }
+
+    public boolean isMut() {
+        return isMut;
     }
 
     public FunctionInfo getInfo() {

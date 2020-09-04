@@ -51,22 +51,22 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
 
     private static boolean classIsConstant(@NotNull ConverterHolder holder) {
         for (var info : holder.getVars().values()) {
-            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+            if (info.getMutType() != MutableType.STANDARD) {
                 return false;
             }
         }
         for (var info : holder.getMethods().values()) {
-            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+            if (info.isMut()) {
                 return false;
             }
         }
         for (var info : holder.getOperators().values()) {
-            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+            if (info.isMut()) {
                 return false;
             }
         }
         for (var info : holder.getProperties().values()) {
-            if (info.getDescriptors().contains(DescriptorNode.MUT)) {
+            if (info.getMutType() != MutableType.STANDARD) {
                 return false;
             }
         }

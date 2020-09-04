@@ -101,10 +101,10 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     @Nullable
     public TypeObject attrTypeWithGenerics(String value, DescriptorNode access) {
         var attr = info.attributes.get(value);
-        if (attr == null || (isConst && attr.intoAttrInfo().getDescriptors().contains(DescriptorNode.MUT))) {
+        if (attr == null || (isConst && attr.intoAttrInfo().getMutType() == MutableType.MUT_METHOD)) {
             return null;
         }
-        return DescriptorNode.canAccess(attr.intoAttrInfo().getDescriptors(), access)
+        return AccessLevel.canAccess(attr.intoAttrInfo().getAccessLevel(), access)
                 ? attr.intoAttrInfo().getType() : null;
     }
 

@@ -17,7 +17,6 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +138,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
             var fnInfo = new OptionTypeObject(pair.getValue().getValue().getType());
-            result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
+            result.put(pair.getKey(), new AttributeInfo(AccessLevel.PUBLIC, fnInfo));
         }
         return result;
     }
@@ -152,7 +151,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
             var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType).toCallable();
-            result.put(pair.getKey(), new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), fnInfo));
+            result.put(pair.getKey(), new AttributeInfo(AccessLevel.PUBLIC, fnInfo));
         }
         return result;
     }
@@ -180,8 +179,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
             var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, variantVal);
             var body = new StatementBodyNode(LineInfo.empty(), stmt);
-            var descriptors = EnumSet.of(DescriptorNode.PUBLIC);
-            result.put(pair.getKey(), new MethodInfo(descriptors, fnInfo, body, node.getLineInfo()));
+            result.put(pair.getKey(), new MethodInfo(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
         }
         return result;
     }

@@ -1,5 +1,6 @@
 package main.java.converter.classbody;
 
+import main.java.converter.AccessLevel;
 import main.java.converter.ArgumentInfo;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
@@ -30,9 +31,11 @@ public final class MethodConverter {
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var fnInfo = new FunctionInfo(name, args, returns);
+        var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
+        var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
-        var mInfo = new MethodInfo(node.getDescriptors(), fnInfo, node.getBody(), node.getLineInfo());
+        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo());
         if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
             methodMap.put(name, mInfo);
         } else {
@@ -45,9 +48,12 @@ public final class MethodConverter {
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetvals());
         var fnInfo = new FunctionInfo(name, args, returns);
+        var descriptors = node.getDescriptors();
+        var accessLevel = AccessLevel.fromDescriptors(descriptors);
+        var isMut = descriptors.contains(DescriptorNode.MUT);
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
-        var mInfo = new MethodInfo(node.getDescriptors(), fnInfo, StatementBodyNode.empty(), node.getLineInfo());
+        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo, StatementBodyNode.empty(), node.getLineInfo());
         if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
             methodMap.put(name, mInfo);
         } else {

@@ -1,11 +1,9 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -188,10 +186,10 @@ public final class Builtins {
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
         var upperLowerInfo = new FunctionInfo(STR);
         var strAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
-                "join", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), joinInfo.toCallable()),
-                "upper", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), upperLowerInfo.toCallable()),
-                "lower", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), upperLowerInfo.toCallable())
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
+                "upper", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable()),
+                "lower", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable())
         );
         STR.setAttributes(strAttrs);
         STR.seal();
@@ -211,8 +209,8 @@ public final class Builtins {
         BYTES.setOperators(bytesMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
         var bytesAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT),
-                "join", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), joinInfo.toCallable())
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable())
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();
@@ -242,9 +240,9 @@ public final class Builtins {
 
     static {  // Set slice operators
         SLICE.isConstClass();
-        var endInfo = new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), TypeObject.optional(INT));
+        var endInfo = new AttributeInfo(AccessLevel.PUBLIC, TypeObject.optional(INT));
         var rangeInfo = new AttributeInfo(
-                EnumSet.of(DescriptorNode.PUBLIC),
+                AccessLevel.PUBLIC,
                 new FunctionInfo(ArgumentInfo.of(INT), RANGE).toCallable()
         );
         var sliceMap = Map.of(
@@ -274,16 +272,14 @@ public final class Builtins {
         var countInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), INT);
         var clearInfo = new FunctionInfo();
         var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
-        var pub = DescriptorNode.PUBLIC;
-        var mut = DescriptorNode.MUT;
         var listAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(pub), INT),
-                "get", new AttributeInfo(EnumSet.of(pub), getInfo.toCallable()),
-                "insert", new AttributeInfo(EnumSet.of(pub, mut), insertInfo.toCallable()),
-                "reverse", new AttributeInfo(EnumSet.of(pub, mut), reverseInfo.toCallable()),
-                "count", new AttributeInfo(EnumSet.of(pub), countInfo.toCallable()),
-                "clear", new AttributeInfo(EnumSet.of(pub, mut), clearInfo.toCallable()),
-                "add", new AttributeInfo(EnumSet.of(pub, mut), addInfo.toCallable())
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "get", new AttributeInfo(AccessLevel.PUBLIC, getInfo.toCallable()),
+                "insert", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, insertInfo.toCallable()),
+                "reverse", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, reverseInfo.toCallable()),
+                "count", new AttributeInfo(AccessLevel.PUBLIC, countInfo.toCallable()),
+                "clear", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, clearInfo.toCallable()),
+                "add", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, addInfo.toCallable())
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
@@ -305,7 +301,7 @@ public final class Builtins {
         );
         SET.setOperators(setMap);
         var setAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT)
         );
         SET.setAttributes(setAttrs);
         SET.seal();
@@ -329,7 +325,7 @@ public final class Builtins {
         );
         DICT.setOperators(dictMap);
         var dictAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
@@ -358,7 +354,7 @@ public final class Builtins {
         );
         ARRAY.setOperators(arrayMap);
         var arrayAttrs = Map.of(
-                "length", new AttributeInfo(EnumSet.of(DescriptorNode.PUBLIC), INT)
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT)
         );
         ARRAY.setAttributes(arrayAttrs);
         ARRAY.seal();
