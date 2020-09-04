@@ -77,7 +77,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         for (var sup : supers) {
             var contract = sup.contract();
             for (var attr : contract.getKey()) {
-                if (type.attrType(attr, DescriptorNode.PUBLIC) == null) {
+                if (type.attrType(attr, AccessLevel.PUBLIC) == null) {
                     throw CompilerException.format(
                             "Missing impl for method '%s' (defined by interface %s)",
                             node, attr, sup.name()
@@ -85,7 +85,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
                 }
             }
             for (var op : contract.getValue()) {
-                if (type.operatorInfo(op, DescriptorNode.PUBLIC) == null) {
+                if (type.operatorInfo(op, AccessLevel.PUBLIC) == null) {
                     throw CompilerException.format(
                             "Missing impl for %s (defined by interface %s)",
                             node, op, sup.name()

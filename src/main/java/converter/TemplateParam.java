@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -54,18 +53,18 @@ public final class TemplateParam extends NameableType {
 
     @Override
     @Nullable
-    public TypeObject attrType(String value, DescriptorNode access) {
+    public TypeObject attrType(String value, AccessLevel access) {
         return bound.attrType(value, access);
     }
 
     @Override
     @Nullable
-    public TypeObject staticAttrType(String value, DescriptorNode access) {
+    public TypeObject staticAttrType(String value, AccessLevel access) {
         return bound.staticAttrType(value, access);
     }
 
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
         return bound.operatorInfo(o, access);
     }
 

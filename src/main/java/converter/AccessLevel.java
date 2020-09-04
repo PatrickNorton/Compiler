@@ -40,11 +40,6 @@ public enum AccessLevel {
         return AccessLevel.FILE;
     }
 
-    // FIXME: Here for compatibility reasons, remove as soon as possible
-    public static boolean canAccess(AccessLevel valueLevel, DescriptorNode accessLevel) {
-        return canAccess(valueLevel, DESCRIPTOR_MAP.get(accessLevel));
-    }
-
     @Contract(pure = true)
     public static boolean canAccess(@NotNull AccessLevel valueLevel, AccessLevel accessLevel) {
         switch (valueLevel) {

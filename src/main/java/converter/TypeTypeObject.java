@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
@@ -80,8 +79,8 @@ public final class TypeTypeObject extends TypeObject {
     @Contract(value = "_, _ -> new", pure = true)
     @Override
     @NotNull
-    public TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
-        assert access == DescriptorNode.PUBLIC : "Should never have private access to 'type'";
+    public TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
+        assert access == AccessLevel.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
             return new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()};
         } else {
@@ -91,7 +90,7 @@ public final class TypeTypeObject extends TypeObject {
 
     @Override
     @Nullable
-    public FunctionInfo operatorInfo(OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (generic != null) {
             if (o == OpSpTypeNode.CALL) {
                 var opInfo = generic.operatorInfo(OpSpTypeNode.NEW, access);
@@ -110,7 +109,7 @@ public final class TypeTypeObject extends TypeObject {
 
     @Override
     @Nullable
-    public TypeObject attrType(String value, DescriptorNode access) {
+    public TypeObject attrType(String value, AccessLevel access) {
         return generic == null ? null : generic.staticAttrType(value, access);
     }
 }

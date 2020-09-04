@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +29,7 @@ public final class ObjectType extends TypeObject {
 
     @Override
     @Nullable
-    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, DescriptorNode access) {
+    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
                 return new FunctionInfo(ArgumentInfo.of(Builtins.OBJECT), Builtins.BOOL);

@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -76,13 +75,13 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Nullable
-    public final TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, DescriptorNode access) {
+    public final TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
         return info.operatorReturnTypeWithGenerics(o, access);
     }
 
     @Nullable
     @Override
-    public final TypeObject[] operatorReturnType(OpSpTypeNode o, DescriptorNode access) {
+    public final TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var types = operatorReturnTypeWithGenerics(o, access);
         if (types == null) return null;
         return Arrays.copyOf(types, types.length);
@@ -90,7 +89,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
     @Override
     @Nullable
-    public final TypeObject attrType(String value, DescriptorNode access) {
+    public final TypeObject attrType(String value, AccessLevel access) {
         var type = attrTypeWithGenerics(value, access);
         if (type == null) return null;
         if (type instanceof TemplateParam) {
@@ -104,7 +103,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
     @Override
     @Nullable
-    public final TypeObject staticAttrType(String value, DescriptorNode access) {
+    public final TypeObject staticAttrType(String value, AccessLevel access) {
         var type = staticAttrTypeWithGenerics(value, access);
         if (type == null) return null;
         if (type instanceof TemplateParam) {
@@ -158,8 +157,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         var result = new TypeObject[genericCount];
         var contract = contractor.contract();
         for (var attr : contract.getKey()) {
-            var attrT = attrTypeWithGenerics(attr, DescriptorNode.PUBLIC);
-            var contractorAttr = contractor.attrTypeWithGenerics(attr, DescriptorNode.PUBLIC);
+            var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC);
+            var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC);
             assert contractorAttr != null;
             for (var pair : contractorAttr.generifyAs(attrT).entrySet()) {
                 var index = pair.getKey();
@@ -172,8 +171,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
         }
         for (var op : contract.getValue()) {
-            var attrT = trueOperatorInfo(op, DescriptorNode.PUBLIC);
-            var contractorAttr = contractor.trueOperatorInfo(op, DescriptorNode.PUBLIC);
+            var attrT = trueOperatorInfo(op, AccessLevel.PUBLIC);
+            var contractorAttr = contractor.trueOperatorInfo(op, AccessLevel.PUBLIC);
             assert contractorAttr != null;
             for (var pair : contractorAttr.toCallable().generifyAs(attrT.toCallable()).entrySet()) {
                 var index = pair.getKey();
@@ -209,7 +208,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
 
         @Nullable
-        public final TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, DescriptorNode access) {
+        public final TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
             if (operators.containsKey(o)) {  // TODO: Bounds-check
                 return operators.get(o).intoFnInfo().getReturns();
             }
