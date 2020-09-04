@@ -2,7 +2,7 @@ from itertools import all
 
 from .inputs import Input
 
-export Fsm
+export Fsm, Cache
 
 class Fsm {
     Program prog
@@ -215,4 +215,45 @@ class Fsm {
             }
         }
     }
+}
+
+class Cache {
+    final Threads clist
+    final Threads nlist
+    final list[FollowEpsilon] stack
+
+    public operator new(Program prog) {
+        self.clist = Threads()
+        self.nlist = Threads()
+        self.stack = []
+    }
+}
+
+class Threads {
+    private mut SparseSet codes
+    private mut list[Slot] caps
+    private mut int slotsPerThread
+
+    public operator new() {
+        self.codes = SparseSet()
+        self.caps = []
+        self.slotsPerThread = 0
+    }
+
+    public mut method resize(int numInsts, int ncaps) {
+        return if numInsts == self.codes.capacity()
+        self.slotsPerThread = ncaps * 2
+        self.codes = SparseSet(numInsts)
+        self.caps = [null] * (self.slotsPerThread * numInsts)
+    }
+
+    public method caps(int pc) -> list[int?] {
+        var i = pc * self.slotsPerThread
+        return self.caps[i:i+self.slotsPerThread]
+    }
+}
+
+union FollowEpsilon {
+    InstPtr IP
+    Pair[int, Slot] Capture
 }
