@@ -1,0 +1,135 @@
+export InputAt, Input, CharInput
+
+class InputAt {
+    pubget mut int pos
+    Char c
+    int? byte_
+    pubget mut int length
+
+    public operator bool {
+        return bool(self.length)
+    }
+
+    public method isStart() -> bool {
+        return self.pos == 0
+    }
+
+    public method isEnd() -> bool {
+        return not self.c and not self.byte_?
+    }
+
+    public method chr() -> Char {
+        return self.c
+    }
+
+    public method byte() -> int? {
+        return self.byte_
+    }
+
+    public method nextPos() -> int {
+        return self.pos + self.length
+    }
+}
+
+interface Input {
+    public method at(int i) -> InputAt
+
+    public method nextChar(InputAt at) -> Char
+
+    public method previousChar(InputAt at) -> Char
+
+    public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool
+
+    public method prefixAt(LiteralSearcher prefixes, InputAt at) -> InputAt?
+
+    public int length
+
+    public operator bool {
+        return bool(self.length)
+    }
+
+    public method asBytes() -> bytes
+}
+
+class CharInput {
+    public bytes value
+
+    public operator new(bytes value) {
+        self.value = value
+    }
+
+    public operator [] (int i) -> int {
+        return self.value[i]
+    }
+
+    public operator [:] (Slice s) -> bytes {
+        return self.value.operator[:](s)
+    }
+
+    public method at(int i) -> InputAt {
+        if i >= self.length {
+            return InputAt(self.length, Char(null), null, 0)
+        } else {
+            var c = str(self[i:])[0]
+            return InputAt(self.length, Char(c), null, bytes(c).length)
+        }
+    }
+
+    public method nextChar(InputAt at) -> Char {
+        return at.chr()
+    }
+
+    public method previousChar(InputAt at) -> Char {
+        return Char(str(self[:at.pos])[-1])
+    }
+
+    public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool {
+        switch empty.look {
+            case EmptyLook.StartLine {
+                var c = self.previousChar(at)
+                return not at.pos or c == "\n"[0]
+            }
+            case EmptyLook.EndLine {
+                var c = self.nextChar(at)
+                return at.pos == self.length or c == "\n"[0]
+            }
+            case EmptyLook.StartText {
+                return at.pos == 0
+            }
+            case EmptyLook.EndText {
+                return at.pos == self.length
+            }
+            case EmptyLook.WordBoundary {
+                var c1, var c2 = self.previousChar(at), self.nextChar(at)
+                return c1.isWordChar() ^ c2.isWordChar()
+            }
+            case EmptyLook.NotWordBoundary {
+                var c1, var c2 = self.previousChar(at), self.nextChar(at)
+                return not c1.isWordChar() ^ c2.isWordChar()
+            }
+            case EmptyLook.WordBoundaryAscii {
+                var c1, var c2 = self.previousChar(at), self.nextChar(at)
+                return c1.isWordByte() ^ c2.isWordByte()
+            }
+            case EmptyLook.NotWordBoundaryAscii {
+                var c1, var c2 = self.previousChar(at), self.nextChar(at)
+                return not c1.isWordByte() ^ c2.isWordByte()
+            }
+        }
+    }
+
+    public method prefixAt(LiteralSearcher prefixes, InputAt at) -> InputAt? {
+        var s = prefixes.find(self[at.pos:]).first
+        return self.at(at.pos + s)
+    }
+
+    public property int length {
+        get {
+            return self.value.length
+        }
+    }
+
+    public method asBytes() -> bytes {
+        return self.value
+    }
+}
