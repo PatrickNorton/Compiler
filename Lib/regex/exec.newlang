@@ -4,6 +4,7 @@ from .builder import RegexOptions
 from .compile import Compiler
 from .literal import LiteralSearcher
 
+from .backtrack import Cache as BacktrackCache
 from .pikevm import Cache as PikeVMCache
 
 export Exec, ProgramCache, ExecBuilder
@@ -332,7 +333,7 @@ enum MatchNfaType {
 
 class ProgramCache {
     public PikeVMCache pikevm
-    public Backtrack.Cache backtrack
+    public BacktrackCache backtrack
     public Dfa.Cache dfa
     public Dfa.Cache dfaReverse
 
