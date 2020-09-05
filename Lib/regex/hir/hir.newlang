@@ -29,8 +29,8 @@ class Hir {
     }
 
     public static method literal(Literal lit) -> Hir {
-        if let Literal::Byte(b) = lit {
-            assert!(b > 0x7F)
+        if lit.Byte? as b {
+            assert (b > 0x7F)
         }
 
         mut var info = HirInfo()
@@ -147,7 +147,7 @@ class Hir {
     }
 
     public static method group(Group group) -> Hir {
-        let mut info = HirInfo()
+        mut var info = HirInfo()
         info.setAlwaysUtf8(group.hir.isAlwaysUtf8())
         info.setAllAssertions(group.hir.isAllAssertions())
         info.setAnchoredStart(group.hir.isAnchoredStart())
@@ -258,7 +258,7 @@ class Hir {
                 info.setLineAnchoredEnd(true)
 
                 # Some attributes require analyzing all sub-expressions.
-                for e in &exprs {
+                for e in exprs {
                     var x = info.isAlwaysUtf8() and e.isAlwaysUtf8()
                     info.setAlwaysUtf8(x)
 
@@ -314,7 +314,7 @@ class Hir {
             clsBytes.push(ClassBytesRange(0, 0xFF))
             return Hir.type(Class.Bytes(clsBytes))
         } else {
-            let mut clsBytes = ClassUnicode.empty()
+            mut var clsBytes = ClassUnicode.empty()
             clsBytes.push(ClassUnicodeRange(0, 0x10FFFF))
             return Hir.type(Class.Unicode(clsBytes))
         }
@@ -360,10 +360,10 @@ union Class {
 
     public mut method caseFoldSimple() {
         switch self {
-            Class.Unicode as u {
+            case Class.Unicode as u {
                 u.caseFoldSimple()
             }
-            Class.Bytes as b {
+            case Class.Bytes as b {
                 b.caseFoldSimple()
             }
         }
@@ -371,10 +371,10 @@ union Class {
 
     public mut method negate() {
         switch self {
-            Class.Unicode as u {
+            case Class.Unicode as u {
                 u.negate()
             }
-            Class.Bytes as b {
+            case Class.Bytes as b {
                 b.negate()
             }
         }
