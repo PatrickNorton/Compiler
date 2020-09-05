@@ -1,0 +1,191 @@
+from string import isWhitespace
+
+union JsonObject {
+    int Int
+    dec Float
+    null Null
+    str Str
+    bool Bool
+    list[JsonObject] List
+    dict[str, JsonObject] Dict
+}
+
+func parse(Path file) -> JsonObject? {
+    with open(file) as File f {
+        mut var info = ParseContext(f)
+        return parseAny(info)
+    }
+}
+
+class Parser {
+    private mut int index
+    private final File f
+    private mut str currentLine
+    private mut bool isEOF
+
+    public operator new(File f) {
+        self.index = 0
+        self.f = f
+        self.currentLine = f.nextLine().strip()
+        self.isEOF = false
+    }
+
+    public operator [] (int index) -> char {
+        return self.currentLine[self.index + index]
+    }
+
+    public operator [:] (Slice slice) -> str {
+        return self.currentLine[self.index:].operator[:](slice)
+    }
+
+    public method isEnd() -> bool {
+        return self.isEOF
+    }
+
+    public mut method move(int chars) {
+        dotimes chars {
+            self.index++
+            while isWhitespace(self[index]) {
+                self.index++
+                if self.index == self.currentLine.length {
+                    if self.file.nextLine()? as next {
+                        self.currentLine = next.strip()
+                    } else {
+                        self.isEOF = true
+                        return
+                    }
+                    self.index = 0
+                }
+            }
+        }
+    }
+}
+
+func parseAny(mut Parser parser) -> JsonObject {
+    return switch str(parser[0]) {
+        case "{" => parseDict(parser)
+        case "[" => parseInt(parser)
+        case '"' => parseStr(parser)
+        case 't', 'f' => parseBool(parser)
+        case 'n' => parseNull(parser)
+        default => parseNumber(parser)
+    }
+}
+
+func parseBool(mut Parser parser) -> JsonObject {
+    if info[:4] == "false" {
+        parser.move(4)
+        return JsonObject.Bool(true)
+    } elif info[:5] == "false" {
+        parser.move(5)
+        return JsonObject.Bool(false)
+    } else {
+        raise JsonError("Invalid JSON literal")
+    }
+}
+
+func parseNull(mut Parser parser) -> JsonObject {
+    if info[:4] == "null" {
+        return JsonObject.Null()
+    } else {
+        return null
+    }
+}
+
+func parseStr(mut Parser parser) -> JsonObject {
+    assert str(parser[0]) == '"'
+    parser.move(1)
+    final var sb = StringBuilder()
+    while true {
+        char c = parser[0]
+        switch str(c) {
+            case '"' {
+                parser.move(1)
+                return JsonObject.Str(str(sb))
+            }
+            case "\\" {
+                parser.move(1)
+                sb.append(parseBackslash(parser))
+            }
+            default {
+                sb.append(c)
+            }
+        }
+    }
+}
+
+func parseBackslash(mut Parser parser) -> str {
+    switch str(parser[0]) {
+        case '"' {
+            parser.move(1)
+            return '"'
+        }
+        case "\\" {
+            parser.move(1)
+            return "\\"
+        }
+        case "/" {
+            parser.move(1)
+            return "/"
+        }
+        case "b" {
+            parser.move(1)
+            return "\b"
+        }
+        case "f" {
+            parser.move(1)
+            return "\f"
+        }
+        case "n" {
+            parser.move(1)
+            return "\n"
+        }
+        case "r" {
+            parser.move(1)
+            return "\r"
+        }
+        case "t" {
+            parser.move(1)
+            return "\t"
+        }
+        case "u" {
+            parser.move(1)
+            char c
+            try {
+                c = char(int(parser[:4]))
+            } except ValueError {
+                raise JsonError("Invalid value after \\u in quote")
+            }
+            return str(c)
+        }
+        default {
+            raise JsonError("Invalid backslash escape")
+        }
+    }
+}
+
+func parseList(mut Parser parser) -> JsonObject {
+    assert str(parser[0]) == "["
+    if str(parser[1]) == "]" {
+        parser.parse(2)
+        return JsonObject.List([])
+    }
+    final list[JsonObject] vars = []
+    do {
+        parser.next(1)
+        vars.add(parseAny(parser))
+    } while str(parser[0]) == ","
+    if parser[0] != "]" {
+        raise JsonError("Invalid list literal")
+    }
+    parser.next(1)
+    return JsonObject.List(vars)
+}
+
+func parseDict(mut Parser parser) -> JsonObject {
+    assert str(parser[0]) == "{"
+    if str(parser[1]) == "}" {
+        parser.parse(2)
+        return JsonObject.Dict({:})
+    }
+}
