@@ -5,6 +5,7 @@ from .compile import Compiler
 from .literal import LiteralSearcher
 
 from .backtrack import Cache as BacktrackCache
+from .dfa import Cache as DfaCache
 from .pikevm import Cache as PikeVMCache
 
 export Exec, ProgramCache, ExecBuilder
@@ -334,14 +335,14 @@ enum MatchNfaType {
 class ProgramCache {
     public PikeVMCache pikevm
     public BacktrackCache backtrack
-    public Dfa.Cache dfa
-    public Dfa.Cache dfaReverse
+    public DfaCache dfa
+    public DfaCache dfaReverse
 
     public operator new (ExecReadOnly ro) {
         self.pikevm = PikeVMCache(ro.nfa)
-        self.backtrack = Backtrack.Cache(ro.nfa)
-        self.dfa = Dfa.Cache(ro.dfa)
-        self.dfaReverse = Dfa.Cache(ro.dfaReverse)
+        self.backtrack = BacktrackCache(ro.nfa)
+        self.dfa = DfaCache(ro.dfa)
+        self.dfaReverse = DfaCache(ro.dfaReverse)
     }
 }
 
