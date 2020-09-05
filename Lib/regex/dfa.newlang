@@ -41,7 +41,7 @@ union Result[T] {
     null Quit
 
     generic U
-    public method map(f: Callable[[T], U]) -> Result[U] {
+    public method map(Callable[[T], U] f) -> Result[U] {
         return switch self {
             case Result.Match as t => Result.Match(f(t))
             default => self
