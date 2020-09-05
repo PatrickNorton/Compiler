@@ -434,6 +434,7 @@ public final class Builtins {
             Map.entry("dec", DECIMAL),
             Map.entry("tuple", TUPLE),
             Map.entry("Array", ARRAY),
+            Map.entry("bytes", BYTES),
             Map.entry("null", NULL)
     );
 
