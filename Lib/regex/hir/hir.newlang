@@ -1,7 +1,7 @@
-from .unicode import simpleFold
+from ..unicode import simpleFold
 
 export Hir, HirKind, Literal, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group
-export Repetition, HirKind, Literal, Anchor, WordBoundary, RepetitionKind, RepetitionRange
+export Repetition, Anchor, WordBoundary, RepetitionKind, RepetitionRange
 
 class Hir {
     pubget HirKind kind
