@@ -2,6 +2,7 @@ from .AhoCorasick import AhoCorasick
 from .prog import Program
 from .builder import RegexOptions
 from .compile import Compiler
+from .hir import Hir
 from .literal import LiteralSearcher
 
 from .backtrack import Cache as BacktrackCache
