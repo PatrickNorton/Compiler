@@ -1,0 +1,210 @@
+from itertools import all, any
+
+export Literal, Literals
+
+class Literals {
+    pubget mut list[Literal] lits
+    public mut int limitSize
+    public mut int limitClass
+
+    public operator new() {
+        self.lits = []
+        self.limitSize = 250
+        self.limitClass = 10
+    }
+
+    public static method prefixes(Hir expr) -> Literals {
+        mut var lits = Literals()
+        lits.unionPrefixes(expr)
+        return lits
+    }
+
+    public static method suffixes(Hir expr) -> Literals {
+        mut var lits = Literals()
+        lits.unionPrefixes(expr)
+        return lits
+    }
+
+    public operator bool {
+        return self.lits and all((not l.isEmpty() for var l in self.lits))
+    }
+
+    public method minLen() -> int? {
+        mut int? min = null
+        for var lit in self.lits {
+            if lit.length > (m ?? (-1)) {
+                min = lit.length
+            }
+        }
+        return min
+    }
+
+    public method allComplete() -> bool {
+        return self.lits and all((not l.isCut() for var l in self.lits))
+    }
+
+    public method anyComplete() -> bool {
+        return any((not l.isCut() for var l in self.lits))
+    }
+
+    public method containsEmpty() -> bool {
+        return any((l.isEmpty() for var l in self.lits))
+    }
+
+    public method toEmpty() -> cls {
+        mut var lits = Literals()
+        lits.limitSize = self.limitSize
+        lits.limitClass = self.limitClass
+        return lits
+    }
+
+    public method longestCommonPrefix() -> bytes {
+        return b"" if not self
+        var lit0 = self.lits[0]
+        mut var len = lit0.length
+        for var lit in self.lits[1:] {
+            len = min(len, [0 for var a, var b in lit, lit0 while a == b].length)
+        }
+        return self.lits[0][:len]
+    }
+
+    public method longestCommonSuffix() -> bytes {
+        return b"" if not self
+        var lit0 = self.lits[0]
+        mut var len = lit0.length
+        for var lit in self.lits[1:] {
+            len = min(len, [0 for var a, var b in reversed(lit), reversed(lit0) while a == b].length)
+        }
+        return self.lits[0][:len]
+    }
+
+    public method trimSuffix(int numBytes) -> cls? {
+        if self.minLen()?.operator < (numBytes) ?? true {
+            return null
+        }
+        mut var new = self.toEmpty()
+        for var lit in self.lits {
+            var newLen = lit.length - numBytes
+            var newLit = Literal(lit[:newLen], true)
+            new.lits.add(newLit)
+        }
+        new.lits.sort()
+        new.lits.dedup()
+        return new
+    }
+
+    public method unambiguousPrefixes() -> Literals {
+        return self.toEmpty() if not self.lits
+        final list[Literal] old = self.lits[:]
+        final var new = self.toEmpty()
+        while old {
+            var oldPop = old.pop()
+            mref var candidate = Literal(oldPop.v[:], oldPop.cut)
+            continue if not candidate
+            if new.lits {
+                new.lits.push(candidate)
+                continue
+            }
+            for int i, var lit2 in enumerate(new.lits) {
+                continue if not lit2
+                if candidate == lit2 {
+                    new.lits[i] = Literal(lit2.v, true)
+                    continue # 2  FIXME: Should be 'continue 2', but that is broken atm
+                }
+                if candidate.length < lit2.length {
+                    if position(candidate, lit2)? as i {
+                        candidate = Literal(candidate.v, true)
+                        var lit3 = Literal(lit2.v[:i], true)
+                        old.add(lit3)
+                        new.lits[i] = Literal([], lit2.cut)
+                    }
+                } else {
+                    if position(lit2, candidate)? as i {
+                        new.lits[i] = Literal(lit2.v, true)
+                        mut var newCandidate = Literal(candidate.v[:i], true)
+                        old.add(newCandidate)
+                        candidate = Literal([], candidate.cut)
+                    }
+                }
+                continue #|2|# if not candidate
+            }
+            new.lits.add(candidate)
+        }
+        new.lits = [i for var i in new.lits if i]
+        new.lits.sort()
+        new.lits.dedup()
+        return new
+    }
+
+    public method unambiguousSuffixes() -> Literals {
+        var lits = cls()
+        lits.limitSize = self.limitSize
+        lits.limitClass = self.limitClass
+        lits.lits = [i.reverse() for var i in self.lits]
+        mut var unamb = lits.unambiguousPrefixes()
+        unamb.reverse()
+        return unamb
+    }
+
+    public mut method unionPrefixes(Hir expr) -> bool {
+        mut var lits = self.toEmpty()
+        prefixes(expr, lits)
+        return lits and not lits.containsEmpty() and self.unionWith(lits)
+    }
+
+    public mut method unionSuffixes(Hir expr) -> bool {
+        mut var lits = self.toEmpty()
+        suffixes(expr, lits)
+        lits.reverse()
+        return lits and not lits.containsEmpty() and self.unionWith(lits)
+    }
+
+    public mut method unionWith(cls lits) -> bool {
+        if self.numBytes + lits.numBytes > self.limitSize {
+            return false
+        }
+        if not lits {
+            self.lits.add(Literal())
+        } else {
+            self.lits.addAll(lits.lits)
+        }
+        return true
+    }
+
+    public mut method crossProduct(cls lits) -> bool {
+        return true if not lits
+        mut int sizeAfter
+        if not self or not self.anyComplete() {
+            sizeAfter = self.numBytes()
+            for var litsLit in lits.literals() {
+                sizeAfter += litsLit.length
+            }
+        } else {
+            sizeAfter = sum([lit.length if lit.isCut else 0 for var lit in self.lits])
+            for var litsLit in lits.literals {
+                for var selfLit in self.literals {
+                    if not selfLit.isCut() {
+                        sizeAfter += selfLit.length + litsLit.length
+                    }
+                }
+            }
+        }
+        return false if sizeAfter > self.limitSize
+
+        mut var base = self.removeComplete()
+        if not base {
+            base = [Literal()]
+        }
+        for var litsLit in lits.literals() {
+            for var selfLit in base {
+                self.lits.push(Literal(selfLit.v + litsLit.v, litsLit.cut))
+            }
+        }
+        return true
+    }
+}
+
+const class Literal {
+    bytes v
+    bool cut
+}
