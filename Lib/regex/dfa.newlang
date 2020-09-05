@@ -1,0 +1,95 @@
+export canExec, Cache
+
+func canExec(Program insts) -> bool {
+    return insts.dfaSizeLimit == 0 and not any((i.Ranges? or i.Char? for var i in insts))
+}
+
+class Cache {
+    CacheInner inner
+    SparseSet qcur
+    SparseSet qnext
+}
+
+class CacheInner {
+    StateMap compiled
+    Transitions trans
+    list[StatePtr] startStates
+    list[InstPtr] stack
+    int flushCount
+    int size
+    bytes instsScratchSpace
+}
+
+class Transitions {
+    list[StatePtr] table
+    int numByteClasses
+}
+
+class Fsm {
+    Program prog
+    StatePtr start
+    int at
+    bool quitAfterMatch
+    StatePtr lastMatchSi
+    int lastCacheFlush
+    CacheInner cache
+}
+
+union Result[T] {
+    T Match
+    int NoMatch
+    null Quit
+
+    generic U
+    public method map(f: Callable[[T], U]) -> Result[U] {
+        return switch self {
+            case Result.Match as t => Result.Match(f(t))
+            default => self
+        }
+    }
+
+    public method setNonMatch(int at) -> Result[T] {
+        return Result.NoMatch(at) if self.NoMatch? else self
+    }
+}
+
+class State {
+    bytes data
+
+    method flags() -> StateFlags {
+        return StateFlags(self.data[0])
+    }
+
+    method instPtrs() -> InstPtrs {
+        return InstPtrs(self.data[1:])
+    }
+}
+
+typedef int as InstPtr
+
+public method pushInstPtr(bytes data, InstPtr prev, InstPtr ip) -> int {
+    var delta = ip - prev
+    writeVarInt(data, delta)
+    return ip
+}
+
+class InstPtrs {
+    bytes data
+
+    public operator new(bytes data) {
+        self.data = data
+    }
+
+    public operator iter -> int {
+        mut int base = 0
+        mut int index = 0
+        while nread < base.length {
+            yield base
+            var delta, var nread = readVarInt(self.data[index:])
+            base += delta
+            assert base >= 0
+            assert nread > 0
+            index += nread
+        }
+    }
+}
