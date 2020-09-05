@@ -1,4 +1,4 @@
-export NFA
+export NFA, Builder
 
 class NFA from Automaton {
     MatchKind matchKind
