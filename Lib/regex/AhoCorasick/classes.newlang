@@ -1,0 +1,58 @@
+export ByteClasses
+
+class ByteClasses {
+    final bytes value
+
+    public operator new() {
+        self.value = b"\0" * 256
+    }
+
+    public static method singletons() -> cls {
+        mut var classes = ByteClasses()
+        for var i in [0:256] {
+            classes[i] = i
+        }
+        return classes
+    }
+
+    public operator [] (int index) -> int {
+        return self.value[index]
+    }
+
+    public operator []= (int index, int value) {
+        self.value[index] = value
+    }
+
+    public method alphabetLen() -> int {
+        return self.values[255] + 1
+    }
+
+    public method isSingleton() -> bool {
+        return self.alphabetLen() == 256
+    }
+
+    public generator method representatives() -> int {
+        mut int byte = 0
+        int? lastClass = null
+        while byte < 256 {
+            var type = self[byte]
+            byte++
+            if self.lastClass != byte {
+                self.lastClass = byte
+                return byte
+            }
+        }
+    }
+
+    public method elements(int equiv) -> bytes, int {
+        mut var array = bytes()
+        mut var len = 0
+        for var b in [0:256] {
+            if self[b] == equiv {
+                array.add(b)
+                len++
+            }
+        }
+        return array, len
+    }
+}
