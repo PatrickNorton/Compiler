@@ -3,6 +3,7 @@ from numtools import IntRef
 from .match import Match
 from .dfa import DFA, Builder as DFA, DfaBuilder
 from .nfa import NFA, Builder as NFA, NfaBuilder
+from .prefilter import PrefilterState
 
 export AhoCorasick, AhoCorasickBuilder, MatchKind
 

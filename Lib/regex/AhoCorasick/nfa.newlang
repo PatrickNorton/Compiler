@@ -220,3 +220,5 @@ union Transitions {
         }
     }
 }
+
+class Builder {}
