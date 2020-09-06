@@ -1,4 +1,9 @@
 from collections import Pair
+from numtools import IntRef
+
+from .ahocorasick import MatchKind
+from .match import Match
+from .prefilter import Prefilter, PrefilterObj, PrefilterState
 
 export DFA, Builder
 

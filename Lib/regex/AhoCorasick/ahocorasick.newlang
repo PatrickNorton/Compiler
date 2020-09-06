@@ -184,9 +184,9 @@ class AhoCorasickBuilder {
 
     public mut method autoConfigure(Iterable[bytes] patterns) -> cls {  # FIXME: Should be 'mut cls'
         if patterns.length <= 100 {
-            self.dfa(true).byteClasses(false)
+            self.setDfa(true).byteClasses(false)
         } elif patterns.length <= 5000 {
-            self.dfa(true)
+            self.setDfa(true)
         }
         return self
     }
@@ -211,7 +211,7 @@ class AhoCorasickBuilder {
         return self
     }
 
-    public mut method dfa(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method setDfa(bool yes) -> cls {  # FIXME: Should be 'mut cls'
         self.dfa = yes
         return self
     }
