@@ -191,7 +191,7 @@ public final class ImportHandler {
             var path = loadFile(moduleName(node, 0), node);
             var file = ALL_FILES.get(path);
             var importValues = new ArrayList<>(file.importHandler().exports.keySet());
-            imports.put(path, new ImportInfo(imports.size(), importValues));
+            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), importValues));
             Map<String, Integer> result = new HashMap<>();
             for (var val : importValues) {
                 var fromStr = node.getFrom().toString() + "." + val;
@@ -209,7 +209,7 @@ public final class ImportHandler {
                 var path = loadFile(preDot, node);
                 var valStr = val.toString();
                 var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
-                imports.put(path, new ImportInfo(imports.size(), List.of()));
+                imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of()));
                 importStrings.add(valStr);
                 result.put(as, importStrings.indexOf(valStr));
             }
@@ -228,7 +228,7 @@ public final class ImportHandler {
                 result.put(as, importStrings.indexOf(valStr));
             }
             var path = loadFile(from.toString(), node);
-            imports.put(path, new ImportInfo(imports.size(), values));
+            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values));
             return result;
         }
     }
@@ -237,7 +237,7 @@ public final class ImportHandler {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         if (node.isWildcard()) {
             var path = loadFile(moduleName(node, 0), node);
-            imports.put(path, new ImportInfo(imports.size(), List.of("*")));
+            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of("*")));
         } else if (node.getFrom().isEmpty()) {
             checkAs(node);
             for (int i = 0; i < node.getValues().length; i++) {
@@ -246,7 +246,7 @@ public final class ImportHandler {
                 assert val.getPostDots().length == 0;
                 var path = loadFile(preDot, node);
                 var valStr = val.toString();
-                imports.put(path, new ImportInfo(imports.size(), List.of()));
+                imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of()));
                 importStrings.add(valStr);
             }
         } else {
@@ -269,7 +269,7 @@ public final class ImportHandler {
                 asNames = null;
             }
             var path = loadFile(from.toString(), node);
-            imports.put(path, new ImportInfo(imports.size(), values, asNames));
+            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values, asNames));
         }
     }
 
@@ -290,7 +290,7 @@ public final class ImportHandler {
 
     private void registerWildcardImport(String moduleName, @NotNull ImportExportNode node) {
         var path = loadFile(moduleName, node);
-        imports.put(path, new ImportInfo(imports.size(), List.of("*")));
+        imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of("*")));
         // FIXME: Add to importStrings
     }
 
@@ -384,7 +384,7 @@ public final class ImportHandler {
             var asNames = importInfo.getAsNames().orElseGet(importInfo::getNames);
             var importHandler = ALL_FILES.get(path).importHandler();
             if (strings.size() == 1 && strings.get(0).equals("*")) {
-                for (var imp : importHandler.exportedTypes(LineInfo.empty()).entrySet()) {
+                for (var imp : importHandler.exportedTypes(importInfo.getLineInfo()).entrySet()) {
                     var name = imp.getKey();
                     var value = imp.getValue();
                     importedTypes.put(name, value);
@@ -392,7 +392,7 @@ public final class ImportHandler {
             } else for (var names : new Zipper<>(strings, asNames)) {
                 var str = names.getKey();
                 var as = names.getValue();
-                var type = importHandler.exportedType(str, LineInfo.empty(), new ArrayList<>());
+                var type = importHandler.exportedType(str, importInfo.getLineInfo(), new ArrayList<>());
                 type.ifPresent(typeObject -> importedTypes.put(as, typeObject));
             }
         }
@@ -426,11 +426,11 @@ public final class ImportHandler {
             }
         }
         if (!exports.containsKey(name)) {
-            previousFiles.add(Pair.of(LineInfo.empty(), name));
+            previousFiles.add(Pair.of(lineInfo, name));
             for (var path : wildcardExports) {
                 var handler = ALL_FILES.get(path).importHandler();
                 try {
-                    return handler.exportedType(name, LineInfo.empty(), previousFiles);
+                    return handler.exportedType(name, lineInfo, previousFiles);
                 } catch (CompilerException ignored) {
                     // If value was not exported, don't fail, just continue
                 }
@@ -442,8 +442,8 @@ public final class ImportHandler {
             return Optional.of(((TypeTypeObject) export).representedType());
         } else if (fromExports.containsKey(name)) {
             var path = fromExports.get(name);
-            previousFiles.add(Pair.of(LineInfo.empty(), name));
-            return ALL_FILES.get(path).importHandler().exportedType(name, LineInfo.empty(), previousFiles);
+            previousFiles.add(Pair.of(lineInfo, name));
+            return ALL_FILES.get(path).importHandler().exportedType(name, lineInfo, previousFiles);
         } else {
             return Optional.empty();
         }
