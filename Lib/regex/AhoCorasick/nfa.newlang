@@ -1,3 +1,10 @@
+from collections import Pair
+
+from .ahocorasick import MatchKind
+from .classes import ByteClasses
+from .match import Match
+from .prefilter import PrefilterObj, Prefilter, Builder as PrefilterObj, Prefilter, PrefilterBuilder
+
 export NFA, Builder, State, PatternId, PatternLength
 
 typedef PatternId as int
@@ -7,28 +14,12 @@ typedef PatternLength as int
 class NFA from Automaton {
     MatchKind matchKind
     int startId
-    int maxPatternLen
-    int patternCount
-    PrefilterObj? prefilter
-    bool anchored
-    ByteClasses byteClasses
+    pubget int maxPatternLen
+    pubget int patternCount
+    pubget PrefilterObj? prefilter
+    pubget bool anchored
+    pubget ByteClasses byteClasses
     list[State] states
-
-    public method byteClasses() -> ByteClasses {
-        return self.byteClasses
-    }
-
-    public method prefilterObj() -> PrefilterObj? {
-        return self.prefilterObj
-    }
-
-    public method maxPatternLen() -> int {
-        return self.maxPatternLen
-    }
-
-    public method patternCount() -> int {
-        return self.patternCount
-    }
 
     public method stateLen() -> int {
         return self.states.length
@@ -113,18 +104,6 @@ class NFA from Automaton {
         self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, [])
     }
 
-    public method matchKind() -> MatchKind {
-        return self.matchKind
-    }
-
-    public method anchored() -> bool {
-        return self.anchored
-    }
-
-    public method prefilter() -> Prefilter? {
-        return self.prefilter
-    }
-
     public method startState() -> int {
         return self.startId
     }
@@ -150,24 +129,15 @@ class NFA from Automaton {
     public method matchCount(int idVal) -> int {
         return self.states[idVal].matches.length
     }
-
-    public method nextState(mut int current, int inputVal) -> int {
-        while true {
-            var state = self.states[current]
-            var next = state.nextState(inputVal)
-            return next if next != failId()
-            current = state.fail
-        }
-    }
 }
 
 class State {
     Transitions trans
     int fail
-    final list[Pair[PatternID, PatternLength]] matches
+    final list[Pair[PatternId, PatternLength]] matches
     int depth
 
-    private mut method addMatch(PatternID i, PatternLength len) {
+    private mut method addMatch(PatternId i, PatternLength len) {
         self.matches.push(Pair.of(i, len))
     }
 

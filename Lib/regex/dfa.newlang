@@ -65,7 +65,7 @@ class State {
     }
 }
 
-typedef int as InstPtr
+typedef InstPtr as int
 
 public method pushInstPtr(bytes data, InstPtr prev, InstPtr ip) -> int {
     var delta = ip - prev

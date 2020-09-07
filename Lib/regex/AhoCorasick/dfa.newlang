@@ -4,7 +4,7 @@ from numtools import IntRef
 from .ahocorasick import MatchKind
 from .classes import ByteClasses
 from .match import Match
-from .nfa import PatternId
+from .nfa import PatternId, PatternLength, NFA
 from .prefilter import Prefilter, PrefilterObj, PrefilterState
 
 export DFA, Builder
@@ -426,16 +426,16 @@ class Rep {
 }
 
 class Builder {
-    mut bool premultiply
-    mut bool byteClasses
+    mut bool premultiply_
+    mut bool byteClasses_
 
     public operator new() {
-        self.premultiply = true
-        self.byteClasses = true
+        self.premultiply_ = true
+        self.byteClasses_ = true
     }
 
     public method build(NFA nfa) -> DFA {
-        var byteClasses = nfa.byteClasses() if self.byteClasses else ByteClasses.singletons()
+        var byteClasses = nfa.byteClasses() if self.byteClasses_ else ByteClasses.singletons()
         var alphabetLen = byteClasses.alphabetLen()
         var trans = [failId()] * (alphabetLen * nfa.stateLen())
         var matches = [[] * nfa.stateLen()]
@@ -467,7 +467,7 @@ class Builder {
             )
         }
         rep.shuffleMatchStates()
-        if self.premultiply {
+        if self.premultiply_ {
             repr.premultiply()
             if byteClasses.isSingleton() {
                 return DFA.Premultiplied(Premultiplied(rep))
@@ -484,12 +484,12 @@ class Builder {
     }
 
     public mut method byteClasses(bool yes) -> cls {
-        self.byteClasses = yes
+        self.byteClasses_ = yes
         return self
     }
 
     public mut method premultiply(bool yes) -> cls {
-        self.premultiply = yes
+        self.premultiply_ = yes
         return self
     }
 }
