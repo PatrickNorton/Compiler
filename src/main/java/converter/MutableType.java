@@ -1,6 +1,8 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -26,6 +28,20 @@ public enum MutableType {
         DESCRIPTOR_MAP.put(DescriptorNode.MUT, MutableType.MUT);
         DESCRIPTOR_MAP.put(DescriptorNode.FINAL, MutableType.FINAL);
         DESCRIPTOR_MAP.put(DescriptorNode.MREF, MutableType.MREF);
+    }
+
+    @Contract(pure = true)
+    public static MutableType fromDescriptor(@NotNull DescriptorNode descriptor) {
+        switch (descriptor) {
+            case MUT:
+                return MUT;
+            case FINAL:
+                return FINAL;
+            case MREF:
+                return MREF;
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
     public static MutableType fromDescriptors(Set<DescriptorNode> descriptors) {
