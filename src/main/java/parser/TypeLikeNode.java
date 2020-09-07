@@ -66,7 +66,7 @@ public interface TypeLikeNode extends AtomicNode {
     @NotNull
     static TypeLikeNode[] parseList(@NotNull TokenList tokens, boolean ignoreNewlines) {
         List<TypeLikeNode> types = new ArrayList<>();
-        while (tokens.tokenIs(TokenType.NAME, Keyword.VAR)) {
+        while (tokens.tokenIs(TokenType.NAME, Keyword.VAR) || tokens.tokenIs(TokenType.DESCRIPTOR)) {
             types.add(parse(tokens, ignoreNewlines));
             if (!tokens.tokenIs(TokenType.COMMA)) {
                 break;
