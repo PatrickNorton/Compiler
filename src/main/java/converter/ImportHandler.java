@@ -269,7 +269,11 @@ public final class ImportHandler {
                 asNames = null;
             }
             var path = loadFile(from.toString(), node);
-            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values, asNames));
+            if (!imports.containsKey(path)) {
+                imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values, asNames));
+            } else {
+                imports.put(path, imports.get(path).merge(values, asNames));
+            }
         }
     }
 
