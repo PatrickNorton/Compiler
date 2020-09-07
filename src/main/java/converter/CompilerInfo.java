@@ -347,6 +347,8 @@ public final class CompilerInfo {
                     return TypeObject.optional(superType);
                 }
                 return superType;
+            case "":
+                return new ListTypeObject(typesOf(node.getSubtypes()));
         }
         var value = typeMap.get(type.strName());
         if (value == null) {
