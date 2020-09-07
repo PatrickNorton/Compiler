@@ -1,0 +1,134 @@
+export Config, MatchKind, Builder, ForceAlgorithm
+
+var PATTERN_LIMIT = 128
+
+enum MatchKind {
+    LEFTMOST_FIRST,
+    LEFTMOST_LONGEST
+}
+
+class Config {
+    mut MatchKind kind
+    mut ForceAlgorithm? force
+    mut bool? forceTeddyFat_
+    mut bool? forceAvx_
+
+    public operator new() {
+        self.kind = MatchKind.LEFTMOST_FIRST
+        self.force = null
+        self.forceTeddyFat = null
+        self.forceAvx = null
+    }
+
+    public method builder() -> Builder {
+        return Builder.fromConfig(self)
+    }
+
+    public mut method matchKind(MatchKind kind) -> cls {
+        self.kind = kind
+        return self
+    }
+
+    public mut method forceTeddy(bool yes) -> cls {
+        self.force = ForceAlgorithm.TEDDY if yes else null
+        return self
+    }
+
+    public mut method forceTeddyFat(bool yes) -> cls {
+        self.forceTeddyFat_ = yes
+        return self
+    }
+
+    public mut method forceAvx(bool yes) -> cls {
+        self.forceAvx_ = yes
+        return self
+    }
+
+    public mut method forceRabinKarp(bool yes) -> cls {
+        self.force = ForceAlgorithm.RABIN_KARP if yes else null
+        return self
+    }
+
+    public method clone() -> cls {
+        return cls(self.kind, self.force, self.forceTeddyFat_, self.forceAvx_)
+    }
+}
+
+enum ForceAlgorithm {
+    TEDDY,
+    RABIN_KARP
+}
+
+class Builder {
+    Config config
+    bool inert
+    Patterns patterns
+
+    public operator new(Config config = Config()) {
+        self.config = config
+        self.inert = false
+        self.patterns = patterns
+    }
+
+    public method build() -> Searcher? {
+        return null if self.inert or not self.patterns
+
+        mut var patterns = self.patterns.clone()
+        patterns.setMatchKind(self.config.kind)
+        var rabinKarp = RabinKarp(patterns)
+        SearchKind searchKind
+        int minimumLen
+        if self.config.force? as f {
+            switch f {
+                case ForceAlgorithm.TEDDY {
+                    Teddy teddy
+                    if self.buildTeddy(patterns)? as t {
+                        teddy = t
+                    } else {
+                        return null
+                    }
+                    minimumLen = teddy.minimumLen()
+                    searchKind = SearchKind.Teddy(teddy)
+                }
+                case ForceAlgorithm.RABIN_KARP {
+                    minimumLen = 0
+                    searchKind = SearchKind.RabinKarp()
+                }
+            }
+        } else {
+            Teddy teddy
+            if self.buildTeddy(patterns)? as t {
+                teddy = t
+            } else {
+                return null
+            }
+            minimumLen = teddy.minimumLen()
+            searchKind = SearchKind.Teddy(teddy)
+        }
+        return Searcher(self.config.clone(), patterns, rabinKarp, searchKind, minimumLen)
+    }
+
+    public mut method add(bytes pattern) -> cls {
+        return self if self.inert
+        if self.patterns.length >= PATTERN_LIMIT {
+            self.inert = true
+            self.patterns.reset()
+            return self
+        }
+
+        if not pattern {
+            self.inert = true
+            self.patterns.reset()
+            return self
+        }
+        self.patterns.add(pattern)
+        return self
+    }
+
+    public mut method extend(Iterable[bytes] patterns) -> cls {
+        for var p in patterns {
+            self.add(p)
+        }
+        return self
+    }
+}
