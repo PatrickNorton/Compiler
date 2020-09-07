@@ -1,4 +1,6 @@
-# Imports: LiteralSearcher
+from collections import Pair
+
+from .literal import LiteralSearcher
 
 export Program, Inst, InstSave, InstSplit, InstEmptyLook
 export InstChar, InstRanges, InstBytes, EmptyLook, InstPtr

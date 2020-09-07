@@ -416,24 +416,24 @@ func memchr3(int b1, int b2, int b3, bytes b) -> int? {
 }
 
 class StartBytesBuilder {
-    bool asciiCaseInsensitive
+    bool asciiCaseInsensitive_
     list[bool] byteSet
     int count
     int rankSum
 
     public operator new() {
-        self.asciiCaseInsensitive = false
+        self.asciiCaseInsensitive_ = false
         self.byteset = [false] * 256
         self.count = 0
         self.rankSum = 0
     }
 
     mut method asciiCaseInsensitive(bool yes) -> cls {
-        self.asciiCaseInsensitive = yes
+        self.asciiCaseInsensitive_ = yes
         return self
     }
 
-    mut method build() -> PrefilterObject? {
+    mut method build() -> PrefilterObj? {
         return null if self.count > 3
         mut var byteVals = bytes()
         for var b in [0:256] {
@@ -454,7 +454,7 @@ class StartBytesBuilder {
         return if self.count > 3
         if b {
             self.addOneByte(b[0])
-            if self.asciiCaseInsensitive {
+            if self.asciiCaseInsensitive_ {
                 self.addOneByte(oppositeAsciiCase(b[0]))
             }
         }
