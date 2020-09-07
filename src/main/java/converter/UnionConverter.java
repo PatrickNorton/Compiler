@@ -117,7 +117,12 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     private void completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
-        parseIntoObject(converter, obj);
+        try {
+            info.accessHandler().addCls(obj);
+            parseIntoObject(converter, obj);
+        } finally {
+            info.accessHandler().removeCls();
+        }
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
