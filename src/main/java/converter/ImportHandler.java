@@ -140,9 +140,9 @@ public final class ImportHandler {
                     var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
                     types.put(strName, new StdTypeObject(strName, generics));
                     lineInfos.put(strName, cls.getLineInfo());
-                } else if (stmt instanceof TypedefStatementNode) {
-                    typedefs.push((TypedefStatementNode) stmt);
                 }
+            } else if (stmt instanceof TypedefStatementNode) {
+                typedefs.push((TypedefStatementNode) stmt);
             }
         }
         if (!isModule && hasAuto.isPresent()) {
