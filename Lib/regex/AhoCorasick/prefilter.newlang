@@ -1,6 +1,6 @@
 from .ahocorasick import MatchKind
 from .match import Match
-from .packed import Builder as PackedBuilder
+from .packed import Builder, Searcher as PackedBuilder, PackedSearcher
 
 export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder
 

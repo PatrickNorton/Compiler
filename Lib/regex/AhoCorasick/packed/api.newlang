@@ -1,4 +1,4 @@
-export Config, MatchKind, Builder, ForceAlgorithm
+export Config, MatchKind, Builder, ForceAlgorithm, Searcher
 
 var PATTERN_LIMIT = 128
 
@@ -130,5 +130,52 @@ class Builder {
             self.add(p)
         }
         return self
+    }
+}
+
+union SearchKind {
+    Teddy Teddy
+    null RabinKarp
+}
+
+class Searcher {
+    Config config
+    Patterns patterns
+    RabinKarp rabinKarp
+    SearchKind searchKind
+    int minimumLen
+
+    public method find(bytes haystack) -> Match? {
+        return self.findAt(haystack, 0)
+    }
+
+    public method findAt(bytes haystack, int at) -> Match? {
+        switch self.searchKind {
+            case SearchKind.Teddy as teddy {
+                if haystack[at:].length < teddy.minimumLength {
+                    return self.slowAt(haystack, at)
+                }
+                return teddy.findAt(self.patterns, haystack, at)
+            }
+            case SearchKind.RabinKarp {
+                return self.rabinKarp.findAt(self.patterns, haystack, at)
+            }
+        }
+    }
+
+    public generator method findIter(bytes haystack) -> Match {
+        var at = 0
+        while at < haystack.length {
+            if self.searcher.findAt(haystack, at)? as c {
+                at = c.end
+                yield c
+            } else {
+                return
+            }
+        }
+    }
+
+    private method slowAt(bytes haystack, int at) -> Match? {
+        return self.rabinKarp.findAt(self.patterns, haystack, at)
     }
 }
