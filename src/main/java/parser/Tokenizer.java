@@ -2,7 +2,6 @@ package main.java.parser;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,6 +13,7 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.NavigableSet;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,21 +64,18 @@ public final class Tokenizer {
     Token tokenizeNext() {
         Token nextToken;
         do {
-            nextToken = getNext();
-            if (nextToken == null) {
-                throw invalid();
-            }
+            nextToken = getNext().orElseThrow(this::invalid);
         } while (nextToken.is(TokenType.WHITESPACE));
         return nextToken;
     }
 
-    @Nullable
-    private Token getNext() {
+    @NotNull
+    private Optional<Token> getNext() {
         if (next.isEmpty()) {
-            return emptyLine();
+            return Optional.of(emptyLine());
         }
-        Token nextToken = adjustForMultiline();
-        if (nextToken != null) {
+        Optional<Token> nextToken = adjustForMultiline();
+        if (nextToken.isPresent()) {
             return nextToken;
         }
         if (next.startsWith("|#")) {  // Special-case, prevent it being parsed separately
@@ -91,10 +88,10 @@ public final class Tokenizer {
             if (match.find()) {
                 LineInfo lineInfo = lineInfo();
                 next = next.substring(match.end());
-                return new Token(info, match.group(), lineInfo);
+                return Optional.of(new Token(info, match.group(), lineInfo));
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     @NotNull
@@ -129,16 +126,16 @@ public final class Tokenizer {
     /**
      * Adjust {@link #next} for multiline tokens.
      */
-    @Nullable
-    private Token adjustForMultiline() {
+    @NotNull
+    private Optional<Token> adjustForMultiline() {
         if (OPEN_COMMENT.matcher(next).find()) {
-            return concatLines(CLOSE_COMMENT, TokenType.WHITESPACE);
+            return Optional.of(concatLines(CLOSE_COMMENT, TokenType.WHITESPACE));
         } else if (OPEN_STRING.matcher(next).find()) {
-            return concatLines(CLOSE_STRING, TokenType.STRING);
+            return Optional.of(concatLines(CLOSE_STRING, TokenType.STRING));
         } else if (OPEN_SINGLE_STRING.matcher(next).find()) {
-            return concatLines(CLOSE_SINGLE_STRING, TokenType.STRING);
+            return Optional.of(concatLines(CLOSE_SINGLE_STRING, TokenType.STRING));
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
