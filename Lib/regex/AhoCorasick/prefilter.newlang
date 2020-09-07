@@ -1,3 +1,5 @@
+from .match import Match
+
 export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder
 
 union Candidate {

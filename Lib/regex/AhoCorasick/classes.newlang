@@ -1,4 +1,4 @@
-export ByteClasses
+export ByteClasses, ByteClassBuilder
 
 class ByteClasses {
     final bytes value
@@ -54,5 +54,36 @@ class ByteClasses {
             }
         }
         return array, len
+    }
+}
+
+class ByteClassBuilder {
+    list[bool] value
+
+    public operator new() {
+        self.value = [false] * 256
+    }
+
+    public method setRange(int start, int end) {
+        assert start in [0:256] and end in [start:256]
+        if start > 0 {
+            self.value[start - 1] = true
+        }
+        self.value[end] = true
+    }
+
+    public method build() -> ByteClasses {
+        final var classes = ByteClasses()
+        mut var c = 0
+        mut var i = 0
+        while true {
+            classes[i] = c
+            break if i >= 255
+            if self.value[i] {
+                c++
+            }
+            i++
+        }
+        return classes
     }
 }

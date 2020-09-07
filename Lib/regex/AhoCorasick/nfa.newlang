@@ -1,7 +1,7 @@
 from collections import Pair
 
 from .ahocorasick import MatchKind
-from .classes import ByteClasses
+from .classes import ByteClasses, ByteClassBuilder
 from .match import Match
 from .prefilter import PrefilterObj, Prefilter, Builder as PrefilterObj, Prefilter, PrefilterBuilder
 
