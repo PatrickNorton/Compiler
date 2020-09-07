@@ -1,3 +1,8 @@
+from collections import Pair
+
+from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher
+from .hir import Literal, Literals
+
 export LiteralSearcher
 
 class LiteralSearcher {
@@ -246,5 +251,122 @@ class SingleByteSet {
             return i if self.sparse[b]
         }
         return null
+    }
+}
+
+class FreqyPacked {
+    bytes pat
+    int charLen
+    int rare1
+    int rare1i
+    int rare2
+    int rare2i
+
+    public property int length {
+        get {
+            return self.pat.length
+        }
+    }
+
+    public method find(bytes haystack) -> int? {
+        return null if haystack.length < self.pat.length or not self.pat
+        mut int i = self.rare1i
+        while i < self.haystack.length {
+            if haystack[i:].indexOf(self.rare1)? as n {
+                i += n
+            } else {
+                return null
+            }
+            var start = i - self.rare1i
+            var end = start + pat.length
+            return null if end > haystack.length
+            var aligned = haystack[start:end]
+            if aligned[self.rare2i] == self.rare2 and aligned == self.pat {
+                return start
+            }
+            i++
+        }
+        return null
+    }
+
+    public method isSuffix(bytes text) -> bool {
+        return false if text.length > self.length
+        return text[-self.length:] == self.pat
+    }
+}
+
+class BoyerMooreSearch {
+    bytes pattern
+    list[int] skipTable
+    int guard
+    int guardReverseIdx
+    int md2Shift
+
+    public operator new(bytes pattern) {
+        assert pattern
+        self.pattern = pattern
+        self.guard, self.guardReverseIdx = cls.selectGuard(pattern)
+        self.skipTable = cls.compileSkipTable(pattern)
+        self.md2Shift = cls.compileMd2Shift(pattern)
+    }
+
+    public method find(bytes haystack) -> int? {
+        return null if self.pattern.length > haystack.length
+        mut var windowEnd = self.pattern.length - 1
+        var numUnroll = 10
+        var shortCircuit = (numUnroll + 2) * self.pattern.length
+        if haystack.length < shortCircuit {
+            var backstop = haystack.length - ((NumUnroll + 1) * self.pattern.length)
+            while true {
+                if self.skipLoop(haystack, windowEnd, backstop)? as i {
+                    windowEnd = i
+                } else {
+                    return null
+                }
+                break if windowEnd >= backstop
+
+                if self.checkMatch(haystack, windowEnd) {
+                    return windowEnd - (self.pattern.length - 1)
+                } else {
+                    var skip = self.skipTable[haystack[windowEnd]]
+                    windowEnd += self.md2Shift if not skip else skip
+                }
+            }
+        }
+        while windowEnd < haystack.length {
+            mut var skip = self.skipTable[haystack[windowEnd]]
+            if not skip {
+                if self.checkMatch(haystack, windowEnd) {
+                    return windowEnd - (self.pattern.length - 1)
+                } else {
+                    skip = self.md2Shift
+                }
+            }
+            windowEnd += skip
+        }
+        return null
+    }
+
+    method shouldUse(bytes pattern) -> bool {
+        int minLen = 9
+        int minCutoff = 150
+        int maxCutoff = 255
+        int lenCutoffProportion = 4
+
+        var scaledRank = pattern.length * lenCutoffProportion
+        var cutoff = max(minCutoff, maxCutoff - min(maxCutoff, scaledRank))
+        return pattern.length > minLen and all((freqRank(c) >= cutoff for var c in pattern))
+    }
+
+    method checkMatch(bytes haystack, int windowEnd) -> bool {
+        return false if haystack[windowEnd - self.guardReverseIdx] != self.guard
+
+        var windowStart = windowEnd - (self.pattern.length - 1)
+        for int i in [0:self.pattern.length] {
+            if self.pattern[i] != haystack[windowStart + i] {
+                return false
+            }
+        }
+        return true
     }
 }
