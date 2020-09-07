@@ -1,4 +1,6 @@
+from .ahocorasick import MatchKind
 from .match import Match
+from .packed import Builder as PackedBuilder
 
 export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder
 
@@ -119,7 +121,7 @@ class Builder {
             if self.rareBytes.build? as prerare {
                 return prerare
             } else {
-                if self.asciicaseInsesnnitive {
+                if self.asciiCaseInsesnnitive {
                     return null
                 } else {
                     if self.packed.asRef()?.build()? as s {
