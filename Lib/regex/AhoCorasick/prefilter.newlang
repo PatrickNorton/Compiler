@@ -84,14 +84,14 @@ class PrefilterState {
 
 class Builder {
     int count
-    bool asciiCaseInsensitive
+    bool asciiCaseInsensitive_
     StartBytesBuilder startBytes
     RareBytesBuilder rareBytes
     PackedBuilder? packed
 
     public operator new(MatchKind kind) -> Builder {
         self.count = 0
-        self.asciiCaseInsensitive = false
+        self.asciiCaseInsensitive_ = false
         self.startBytes = StartBytesBuilder()
         self.rareBytes = RareBytesBuilder()
         if kind.asPacked()? as k {
@@ -102,7 +102,7 @@ class Builder {
     }
 
     public mut method asciiCaseInsensitive(bool yes) -> cls {
-        self.asciiCaseInsensitive = yes
+        self.asciiCaseInsensitive_ = yes
         self.startBytes = self.startBytes.asciiCaseInsensitive(yes)
         self.rareBytes = self.rareBytes.asciiCaseInsensitive(yes)
         return self
@@ -121,7 +121,7 @@ class Builder {
             if self.rareBytes.build? as prerare {
                 return prerare
             } else {
-                if self.asciiCaseInsesnnitive {
+                if self.asciiCaseInsensitive_ {
                     return null
                 } else {
                     if self.packed.asRef()?.build()? as s {
@@ -169,7 +169,7 @@ class Packed from Prefilter {
 }
 
 class RareBytesBuilder {
-    bool asciiCaseInsensitive
+    bool asciiCaseInsensitive_
     ByteSet rareSet
     RareByteOffsets byteOffsets
     bool available
@@ -177,7 +177,7 @@ class RareBytesBuilder {
     int rankSum
 
     public operator new() {
-        self.asciiCaseInsensitive = false
+        self.asciiCaseInsensitive_ = false
         self.rareSet = ByteSet()
         self.byteOffsets = RareByteOffsets()
         self.available = true
@@ -186,7 +186,7 @@ class RareBytesBuilder {
     }
 
     public method asciiCaseInsensitive(bool yes) -> cls {
-        self.asciiCaseInsensitive = yes
+        self.asciiCaseInsensitive_ = yes
         return self
     }
 
@@ -255,14 +255,14 @@ class RareBytesBuilder {
     public mut method setOffset(int pos, int byte) {
         var offset = RareByteOffset(byte)
         self.byteOffsets.add(byte, offset)
-        if self.asciiCaseInsensitive {
+        if self.asciiCaseInsensitive_ {
             self.byteOffsets.add(oppositeAsciiCase(byte), offset)
         }
     }
 
     public mut method addRareByte(int byte) {
         self.addOneRareByte(byte)
-        if self.asciiCaseInsensitive {
+        if self.asciiCaseInsensitive_ {
             self.addOneRareByte(oppositeAsciiCase(byte))
         }
     }
