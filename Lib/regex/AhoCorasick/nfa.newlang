@@ -1,4 +1,8 @@
-export NFA, Builder
+export NFA, Builder, State, PatternId, PatternLength
+
+typedef PatternId as int
+
+typedef PatternLength as int
 
 class NFA from Automaton {
     MatchKind matchKind
@@ -221,4 +225,410 @@ union Transitions {
     }
 }
 
-class Builder {}
+class Builder {
+    mut int denseDepth_
+    mut MatchKind matchKind_
+    mut bool prefilter_
+    mut bool anchored_
+    mut bool asciiCaseInsensitive_
+
+    public operator new() {
+        self.denseDepth_ = 2
+        self.matchKind_ = MatchKind()
+        self.prefilter_ = true
+        self.anchored_ = false
+        self.asciiCaseInsensitive_ = false
+    }
+
+    public method build(Iterable[bytes] patterns) -> NFA {
+        return Compiler(self).compile(patterns)
+    }
+
+    public mut method matchKind(MatchKind kind) -> cls {
+        self.matchKind_ = kind
+        return self
+    }
+
+    public mut method denseDepth(int depth) -> cls {
+        self.denseDepth_ = depth
+        return self
+    }
+
+    public mut method prefilter(bool yes) -> cls {
+        self.prefilter_ = yes
+        return self
+    }
+
+    public mut method anchored(bool yes) -> cls {
+        self.anchored_ = yes
+        return self
+    }
+
+    public mut method asciiCaseInsensitive(bool yes) -> cls {
+        self.asciiCaseInsensitive_ = cls
+        return self
+    }
+}
+
+class Compiler {
+    private Builder builder
+    private PrefilterBuilder prefilter
+    private final NFA nfa
+    private ByteClassBuilder byteClasses
+
+    operator new(Builder builder) {
+        self.builder = builder
+        self.prefilter = (PrefilterBuilder(builder.matchKind_)
+            .asciiCaseInsensitive(builder.asciiCaseInsensitive_))
+        self.nfa = NFA(
+            builder.matchKind_,
+            intToStateId(2),
+            0, 0, 0, null,
+            builder.anchored_,
+            ByteClasses.singletons(),
+            []
+        )
+        self.byteClasses = ByteClassBuilder()
+    }
+
+    mut method compile(Iterable[bytes] patterns) -> NFA {
+        self.addState(0)  # The fail state, which is never entered
+        self.addState(0)  # The dead state, which is only used for leftmost
+        self.addState(0)  # The start state
+        self.buildTrie(patterns)
+        self.addStartStateLoop()
+        self.addDeadStateLoop()
+        if not self.builder.anchored_ {
+            if self.matchKind().isLeftmost() {
+                self.fillFailureTransitionsLeftmost()
+            } else {
+                self.fillFailureTransitionsStandard()
+            }
+        }
+        self.closeStartStateLoop()
+        self.nfa.byteClasses = self.byteClasses.build()
+        if not self.builder.anchored {
+            self.nfa.prefilter = self.prefilter.build()
+        }
+        self.calculateSize()
+        return self.nfa
+    }
+
+    # This sets up the initial prefix trie that makes up the Aho-Corasick
+    # automaton. Effectively, it creates the basic structure of the
+    # automaton, where every pattern given has a path from the start state to
+    # the end of the pattern.
+    private mut method buildTrie(Iterable[bytes] patterns) {
+        for int pati, var pat in enumerate(patterns) {
+            self.nfa.maxPatternLen = max(self.nfa.maxPatternLen, pat.length)
+            self.nfa.patternCount++
+
+            mut var prev = self.nfa.startId
+            mut var sawMatch = false
+            for int depth, var b in enumerate(pat) {
+                # When leftmost-first match semantics are requested, we
+                # specifically stop adding patterns when a previously added
+                # pattern is a prefix of it. We avoid adding it because
+                # leftmost-first semantics imply that the pattern can never
+                # match. This is not just an optimization to save space! It
+                # is necessary for correctness. In fact, this is the only
+                # difference in the automaton between the implementations for
+                # leftmost-first and leftmost-longest.
+                sawMatch = sawMatch or self.nfa.state(prev).isMatch()
+                if self.builder.matchKind.isLeftmostFirst() and sawMatch {
+                    # Skip to the next pattern immediately. This avoids
+                    # incorrectly adding a match after this loop terminates.
+                    continue # 2 FIXME: Numeric continues
+                }
+
+                # Add this byte to our equivalence classes. We don't use these
+                # for NFA construction. These are instead used only if we're
+                # building a DFA. They would technically be useful for the
+                # NFA, but it would require a second pass over the patterns.
+                self.byteClasses.setRange(b, b)
+                if self.builder.asciiCaseInsensitive {
+                    var b = oppositeAsciiCase(b)
+                    self.byte_classes.setRange(b, b)
+                }
+
+                # If the transition from prev using the current byte already
+                # exists, then just move through it. Otherwise, add a new
+                # state. We track the depth here so that we can determine
+                # how to represent transitions. States near the start state
+                # use a dense representation that uses more memory but is
+                # faster. Other states use a sparse representation that uses
+                # less memory but is slower.
+                var next = self.nfa.state(prev).nextState(b)
+                if next != failId() {
+                    prev = next
+                } else {
+                    var next = self.addState(depth + 1)
+                    self.nfa.stateMut(prev).setNextState(b, next)
+                    if self.builder.asciiCaseInsensitive {
+                        var b = oppositeAsciiCase(b)
+                        self.nfa.stateSut(prev).setNextState(b, next)
+                    }
+                    prev = next
+                }
+            }
+
+            # Once the pattern has been added, log the match in the final
+            # state that it reached.
+            self.nfa.stateMut(prev).addMatch(pati, pat.length)
+            # ... and hand it to the prefilter builder, if applicable.
+            if self.builder.prefilter {
+                self.prefilter.add(pat)
+            }
+        }
+    }
+
+    private mut method fillFailureTransitionsStandard() {
+        # Initialize the queue for breadth first search with all transitions
+        # out of the start state. We handle the start state specially because
+        # we only want to follow non-self transitions. If we followed self
+        # transitions, then this would never terminate.
+        final var queue = Queue()
+        mut var seen = self.queuedSet()
+        for var b in [0:256] {
+            var next = self.nfa.start().nextState(b)
+            if next != self.nfa.startId {
+                if next not in seen {
+                    queue.add(next)
+                    seen.insert(next)
+                }
+            }
+        }
+        while queue.popFront()? as idVal {
+            mut var it = self.nfa.iterTransitionMut(idVal)
+            while it.next()? as pair {
+                var b = pair.first
+                var next = pair.second
+                if next not in seen {
+                    queue.pushBack(next)
+                    seen.insert(next)
+                }
+
+                mut var fail = it.nfa().state(idVal).fail
+                while it.nfa().state(fail).nextState(b) == failId() {
+                    fail = it.nfa().state(fail).fail
+                }
+                fail = it.nfa().state(fail).nextState(b)
+                it.nfa().stateMut(next).fail = fail
+                it.nfa().copyMatches(fail, next)
+            }
+            # If the start state is a match state, then this automaton can
+            # match the empty string. This implies all states are match states
+            # since every position matches the empty string, so copy the
+            # matches from the start state to every state. Strictly speaking,
+            # this is only necessary for overlapping matches since each
+            # non-empty non-start match state needs to report empty matches
+            # in addition to its own. For the non-overlapping case, such
+            # states only report the first match, which is never empty since
+            # it isn't a start state.
+            it.nfa().copyEmptyMatches(idVal)
+        }
+    }
+
+    private mut method fillFailureTransitionsLeftmost() {
+        # Represents an item in our queue of states to process.
+        #
+        # Fundamentally, this queue serves the same purpose as the queue
+        # for filling failure transitions using the standard formulation.
+        # In the leftmost case, though, we need to track a bit more
+        # information. See comments below.
+
+        # Initialize the queue for breadth first search with all transitions
+        # out of the start state. We handle the start state specially because
+        # we only want to follow non-self transitions. If we followed self
+        # transitions, then this would never terminate.
+        final Deque[QueuedState] queue = VecDeque()
+        mut var seen = self.queuedSet()
+        var start = QueuedState.start(self.nfa)
+        for var b in [0:256] {
+            var nextId = self.nfa.start().next_state(b)
+            if nextId != startId {
+                var next = start.nextQueuedState(self.nfa, nextId)
+                if nextId != start.idVal {
+                    queue.add(next)
+                    seen.insert(next.idVal)
+                }
+                # If a state immediately following the start state is a match
+                # state, then we never want to follow its failure transition
+                # since the failure transition necessarily leads back to the
+                # start state, which we never want to do for leftmost matching
+                # after a match has been found.
+                #
+                # N.B. This is a special case of the more general handling
+                # found below.
+                if self.nfa.state(nextId).isMatch() {
+                    self.nfa.stateMut(nextId).fail = deadId()
+                }
+            }
+        }
+        while queue.pop_front()? as item {
+            mut var anyTrans = false
+            mut var it = self.nfa.iterTransitionsMut(item.idVal)
+            while it.next()? as pair {
+                var b = pair.first
+                var nextId = pair.second
+                anyTrans = true
+
+                # Queue up the next state.
+                var next = item.nextQueuedState(it.nfa(), nextId)
+                if next.idVal not in seen {
+                    queue.add(next)
+                    seen.insert(next.idVal)
+                }
+
+                # Find the failure state for next. Same as standard.
+                mut var fail = it.nfa().state(item.idVal).fail
+                while it.nfa().state(fail).nextState(b) == failId() {
+                    fail = it.nfa().state(fail).fail
+                }
+                fail = it.nfa().state(fail).nextState(b)
+
+                # This is the key difference from the standard formulation.
+                # Namely, if we've seen a match, then we only want a failure
+                # transition if the failure transition preserves the match
+                # we've seen. In general, this is not true of all failure
+                # transitions since they can point back to any suffix of what
+                # we've seen so far. Instead, we only want to point back to
+                # suffixes that contain any match we've seen.
+                #
+                # We achieve this by comparing the depth of the failure
+                # transition with the number of states between this state
+                # and the beginning of the earliest match detected. If the
+                # depth of the failure state is smaller than this difference,
+                # then it cannot contain the match. If it's bigger or equal
+                # to the difference, then it necessarily includes the match
+                # we've seen since all failure transitions correspond to a
+                # suffix.
+                #
+                # If we've determined that we don't want the failure
+                # transition, then we set this state's failure transition to
+                # the dead state. In other words, when a search hits this
+                # state, it will not continue and correctly stop. (N.B. A
+                # dead state is different than a fail state. A dead state
+                # MUST be preceded by a match and acts as a sentinel to search
+                # routines to terminate.)
+                #
+                # Understanding this is tricky, and it took me several days
+                # to think through this and get it right. If you want to grok
+                # it, then I'd recommend: 1) switch the implementation to
+                # always use the standard algorithm for filling in failure
+                # transitions, 2) run the test suite and 3) examine the test
+                # failures. Write out the automatons for them and try to work
+                # backwards by figuring out which failure transitions should
+                # be removed. You should arrive at the same rule used below.
+                if next.matchAtDepth? as matchDepth {
+                    var failDepth = it.nfa().state(fail).depth
+                    var nextDepth = it.nfa().state(next.idVal).depth
+                    if nextDepth - matchDepth + 1 > failDepth {
+                        it.nfa().stateMut(next.idVal).fail = deadId()
+                        continue
+                    }
+                    assert start.idVal != it.nfa().state(next.idVal).fail
+                }
+                it.nfa().stateMut(next.idVal).fail = fail
+                it.nfa().copyMatches(fail, next.idVal)
+            }
+            # If there are no transitions for this state and if it's a match
+            # state, then we must set its failure transition to the dead
+            # state since we never want it to restart the search.
+            if not anyTrans and it.nfa().state(item.idVal).isMatch() {
+                it.nfa().stateMut(item.idVal).fail = deadId()
+            }
+            # We don't need to copy empty matches from the start state here
+            # because that's only necessary for overlapping matches and
+            # leftmost match kinds don't support overlapping matches.
+        }
+    }
+
+    method queuedSet() -> QueuedSet {
+        if self.builder.asciiCaseInsensitive {
+            return QueuedSet.active()
+        } else {
+            return QueuedSet.inert()
+        }
+    }
+
+    method addStartStateLoop() {
+        var startId = self.nfa.startId
+        var start = self.nfa.startMut()
+        for var b in [0:256] {
+            if start.nextState(b) == failId() {
+                start.setNextState(b, startId)
+            }
+        }
+    }
+
+    method addState(int depth) {
+        if depth < self.builder.denseDepth {
+            self.nfa.addDenseState(depth)
+        } else {
+            self.nfa.addSparseState(depth)
+        }
+    }
+
+    method matchKind() -> MatchKind {
+        return self.builder.matchKind
+    }
+}
+
+class QueuedState {
+    int idNum
+    int? matchAtDepth
+
+    static method start(NFA nfa) -> QueuedState {
+        var matchAtDepth = 0 if nfa.start().isMatch() else null
+        return cls(nfa.startId, matchAtDepth)
+    }
+
+    method next_queued_state(NFA nfa, int idVal) -> QueuedState {
+        let matchAtDepth = self.nextMatchAtDepth(nfa, idVal)
+        return cls(idVal, matchAtDepth)
+    }
+
+    method nextMatchAtDepth(NFA nfa, int next) -> int? {
+        # This is a little tricky. If the previous state has already
+        # seen a match or if `next` isn't a match state, then nothing
+        # needs to change since a later state cannot find an earlier
+        # match.
+        if self.matchAtDepth? as x {
+            return x
+        } elif not nfa.state(next).isMatch() {
+            return null
+        }
+        return (nfa.state(next).depth - nfa.state(next).getLongestMatchLen()!! + 1)
+    }
+}
+
+class QueuedSet {
+    final set[int]? value
+
+    public operator new(set[int]? value) {
+        self.value = value
+    }
+
+    static method inert() -> cls {
+        return cls(null)
+    }
+
+    static method active() -> cls {
+        return cls({})
+    }
+
+    method insert(int stateId) {
+        if self.value? {
+            self.value!!.insert(stateId)
+        }
+    }
+
+    operator in(int stateId) -> bool {
+        if self.value? as v {
+            return stateId in v
+        } else {
+            return false
+        }
+    }
+}
