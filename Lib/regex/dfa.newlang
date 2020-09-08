@@ -8,8 +8,8 @@ func canExec(Program insts) -> bool {
 
 class Cache {
     CacheInner inner
-    SparseSet qcur
-    SparseSet qnext
+    set[int] qcur
+    set[int] qnext
 }
 
 class CacheInner {
