@@ -1,0 +1,147 @@
+export Utf8Sequence, Utf8Range, Utf8Sequences
+
+union Utf8Sequence {
+    Utf8Range One
+    tuple[Utf8Range, Utf8Range] Two
+    tuple[Utf8Range, Utf8Range, Utf8Range] Three
+    tuple[Utf8Range, Utf8Range, Utf8Range, Utf8Range] Four
+
+    static method fromEncodedRange(bytes start, bytes end) -> cls {
+        assert start.length == end.length
+        return switch start.length {
+            case 2 => Utf8Sequence.Two(
+                (
+                    Utf8Range(start[0], end[0]),
+                    Utf8Range(start[1], end[1]),
+                )
+            )
+            case 3 => Utf8Sequence.Three(
+                (
+                    Utf8Range(start[0], end[0]),
+                    Utf8Range(start[1], end[1]),
+                    Utf8Range(start[2], end[2]),
+                )
+            )
+            case 4 => Utf8Sequence.Four(
+                (
+                    Utf8Range(start[0], end[0]),
+                    Utf8Range(start[1], end[1]),
+                    Utf8Range(start[2], end[2]),
+                    Utf8Range(start[3], end[3])
+                )
+            )
+            default => raise ValueError(f"invalid encoded length: {n}")
+        }
+    }
+
+    public operator iter -> Utf8Range {
+        switch self {
+            case Utf8Sequence.One as r {
+                yield r
+            }
+            case Utf8Sequence.Two as r {
+                yield r.0
+                yield r.1
+            }
+            case Utf8Sequence.Three as r {
+                yield r.0
+                yield r.1
+                yield r.2
+            }
+            case Utf8Sequence.Four as r {
+                yield r.0
+                yield r.1
+                yield r.2
+                yield r.3
+            }
+        }
+    }
+
+    public method asSlice() -> list[Utf8Range] {
+        return switch self {
+            case Utf8Sequence.One as r => [r]
+            case Utf8Sequence.Two as r => [r.0, r.1]
+            case Utf8Sequence.Three as r => [r.0, r.1, r.2]
+            case Utf8Sequence.Four as r => [r.0, r.1, r.2, r.3]
+        }
+    }
+
+    public method matches(bytes val) -> bool {
+        return false if val.length < self.length
+
+        return all((r.matches(b) for var b, var r in val, self))
+    }
+}
+
+const class Utf8Range {
+    int start
+    int end
+
+    public operator new(int start, int end) {
+        assert start in [0:256] and end in [0:256]
+        self.start = start
+        self.end = end
+    }
+
+    public method matches(int b) -> bool {
+        return b in [self.start:self.end]
+    }
+}
+
+class Utf8Sequences {
+    final list[ScalarRange] rangeStack
+
+    public operator new(char start, char end) {
+        self.rangeStack = [ScalarRange(start, end)]
+    }
+
+    public operator iter {
+        raise NotImplemented()
+    }
+
+    public mut method reset(char start, char end) {
+        self.rangeStack.clear()
+        self.push(start, end)
+    }
+
+    public mut method push(char start, char end) {
+        self.push(ScalarRange(start, end))
+    }
+}
+
+class ScalarRange {
+    int start
+    int end
+
+    public operator new(int start, int end) {
+        self.start = start
+        self.end = end
+    }
+
+    method split() -> tuple[cls, cls]? {
+        if self.start < 0xE000 and self.end > 0xD7FF {
+           return (
+               ScalarRange(self.start, 0xD7FF),
+               ScalarRange(0xE000, self.end),
+           )
+        } else {
+            return null
+        }
+    }
+
+    method isValid() -> bool {
+        return self.start <= self.end
+    }
+
+    method asAscii() -> Utf8Range? {
+        if self.isAscii() {
+            return Utf8Range(self.start, self.end)
+        } else {
+            return null
+        }
+    }
+
+    method isAscii() -> bool {
+        return self.isValid() and self.end <= 0x7f
+    }
+}
