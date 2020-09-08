@@ -1,7 +1,9 @@
-# Imports: MaybeInst, Utf8Sequences, Hir
+from collections import Pair
 
 from .hir import Hir, Class, Literal, Anchor, ClassUnicodeRange, WordBoundary, GroupKind, RepetitionKind
-from .prog import InstPtr, Program, EmptyLook
+from .hir import Repetition, ClassBytesRange
+from .prog import InstPtr, Program, EmptyLook, Inst
+from .utf8 import Utf8Sequences, Utf8Sequence, Utf8Range
 
 export Compiler
 
@@ -15,7 +17,7 @@ class Compiler {
     mut Program compiled
     dict[str, int] captureNameIdx
     int numExprs
-    mut int sizeLimit
+    mut int sizeLimit_
     SuffixCache suffixCache
     Utf8Sequences? utf8Seqs
     ByteClassSet byteClasses
@@ -25,33 +27,33 @@ class Compiler {
         self.compiled = Program()
         self.captureNameIdx = {:}
         self.numExprs = 0
-        self.sizeLimit = 10 * (1 << 20)
+        self.sizeLimit_ = 10 * (1 << 20)
         self.suffixCache = SuffixCache(1000)
         self.utf8Seqs = Utf8Sequences('\x00', '\x00')
         self.byteClasses = ByteClassSet()
     }
 
-    public mut method sizeLimit(int sizeLimit) -> self {
-        self.sizeLimit = sizeLimit
+    public mut method sizeLimit(int sizeLimit) -> mut cls {
+        self.sizeLimit_ = sizeLimit
         return self
     }
 
-    public mut method bytes(bool yes) -> self {
+    public mut method bytes(bool yes) -> mut cls {
         self.compiled.bytes = bytes
         return self
     }
 
-    public mut method onlyUtf8(bool yes) -> self {
+    public mut method onlyUtf8(bool yes) -> mut cls {
         self.compiled.onlyUtf8 = yes
         return self
     }
 
-    public mut method dfa(bool yes) -> self {
+    public mut method dfa(bool yes) -> mut cls {
         self.compiled.isDfa = yes
         return self
     }
 
-    public mut method reverse(bool yes) -> self {
+    public mut method reverse(bool yes) -> mut cls {
         self.compiled.reverse = yes
         return self
     }
@@ -549,7 +551,7 @@ class Compiler {
     }
 
     private method check_size() {
-        raise RegexError(Error.CompiledTooBig(self.sizeLimit)) if self.insts.length > self.sizeLimit
+        raise RegexError(Error.CompiledTooBig(self.sizeLimit_)) if self.insts.length > self.sizeLimit_
     }
 }
 

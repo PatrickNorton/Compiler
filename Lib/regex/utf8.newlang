@@ -95,7 +95,7 @@ class Utf8Sequences {
         self.rangeStack = [ScalarRange(start, end)]
     }
 
-    public operator iter {
+    public operator iter -> Utf8Sequence {
         raise NotImplemented()
     }
 

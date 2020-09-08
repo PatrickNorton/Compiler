@@ -1,5 +1,11 @@
 from collections import Pair
 
+from .dfa import InstPtr
+from .exec import ProgramCache
+from .inputs import Input, InputAt
+from .prog import Program
+from .trait import Slot
+
 export Bounded, Cache
 
 var BIT_SIZE = 32

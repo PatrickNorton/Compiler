@@ -1,4 +1,4 @@
-export canExec, Cache
+export canExec, Cache, InstPtr
 
 func canExec(Program insts) -> bool {
     return insts.dfaSizeLimit == 0 and not any((i.Ranges? or i.Char? for var i in insts))
