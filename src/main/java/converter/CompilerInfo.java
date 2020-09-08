@@ -336,17 +336,9 @@ public final class CompilerInfo {
                 }
                 return Builtins.NULL_TYPE;
             case "cls":
-                var clsType = accessHandler.getCls();
-                if (node.isOptional()) {
-                    return TypeObject.optional(clsType);
-                }
-                return clsType;
+                return wrap(accessHandler.getCls(), node);
             case "super":
-                var superType = accessHandler.getSuper();
-                if (node.isOptional()) {
-                    return TypeObject.optional(superType);
-                }
-                return superType;
+                return wrap(accessHandler.getSuper(), node);
             case "":
                 return new ListTypeObject(typesOf(node.getSubtypes()));
         }
@@ -358,13 +350,30 @@ public final class CompilerInfo {
                 var endType = type.getSubtypes().length == 0
                         ? typeObj
                         : typeObj.generify(type, typesOf(type.getSubtypes()));
-                return type.isOptional() ? TypeObject.optional(endType) : endType;
+                return wrap(endType, node);
             } else {
                 throw CompilerException.of("Unknown type " + type, type);
             }
         } else {
             var endType = type.getSubtypes().length == 0 ? value : value.generify(type, typesOf(type.getSubtypes()));
-            return type.isOptional() ? TypeObject.optional(endType) : endType;
+            return wrap(endType, node);
+        }
+    }
+
+    private static TypeObject wrap(TypeObject obj, @NotNull TypeLikeNode node) {
+        var mutNode = node.getMutability().map(MutableType::fromDescriptor).orElse(MutableType.STANDARD);
+        if (mutNode == MutableType.MUT || mutNode == MutableType.FINAL) {
+            if (node.isOptional()) {
+                return TypeObject.optional(obj.makeMut());
+            } else {
+                return obj.makeMut();
+            }
+        } else {
+            if (node.isOptional()) {
+                return TypeObject.optional(obj.makeConst());
+            } else {
+                return obj.makeConst();
+            }
         }
     }
 
