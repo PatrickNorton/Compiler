@@ -6,7 +6,9 @@ from .inputs import Input, InputAt
 from .prog import Program
 from .trait import Slot
 
-export Bounded, Cache
+export Bounded, Cache, Bits
+
+typedef Bits as int
 
 var BIT_SIZE = 32
 var MAX_SIZE_BYTES = 256 * (1 << 10) # 256 KB
