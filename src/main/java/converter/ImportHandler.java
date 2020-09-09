@@ -1,16 +1,13 @@
 package main.java.converter;
 
-import main.java.parser.ClassDefinitionNode;
-import main.java.parser.DefinitionNode;
+import main.java.parser.BaseClassNode;
 import main.java.parser.DescriptorNode;
-import main.java.parser.EnumDefinitionNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Parser;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
-import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
@@ -98,49 +95,29 @@ public final class ImportHandler {
                         registerExports(ieNode);
                         break;
                 }
-            } else if (stmt instanceof DefinitionNode) {
-                if (stmt instanceof ClassDefinitionNode) {
-                    var cls = (ClassDefinitionNode) stmt;
-                    var strName = cls.strName();
-                    if (types.containsKey(strName)) {
-                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                    }
-                    var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
-                    types.put(strName, new StdTypeObject(strName, generics));
-                    lineInfos.put(strName, cls.getLineInfo());
-                } else if (stmt instanceof EnumDefinitionNode) {
-                    var cls = (EnumDefinitionNode) stmt;
-                    var strName = cls.getName().strName();
-                    if (types.containsKey(strName)) {
-                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                    }
-                    var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
-                    types.put(strName, new StdTypeObject(strName, generics));
-                    lineInfos.put(strName, cls.getLineInfo());
-                } else if (stmt instanceof InterfaceDefinitionNode) {
-                    var cls = (InterfaceDefinitionNode) stmt;
-                    var strName = cls.getName().strName();
-                    if (types.containsKey(strName)) {
-                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                    }
-                    var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
-                    var type = new InterfaceType(strName, generics);
-                    types.put(strName, type);
-                    lineInfos.put(strName, cls.getLineInfo());
-                    if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
-                        ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
-                        hasAuto = Optional.of(cls);
-                    }
-                } else if (stmt instanceof UnionDefinitionNode) {
-                    var cls = (UnionDefinitionNode) stmt;
-                    var strName = cls.getName().strName();
-                    if (types.containsKey(strName)) {
-                        throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                    }
-                    var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
-                    types.put(strName, new StdTypeObject(strName, generics));
-                    lineInfos.put(strName, cls.getLineInfo());
+            } else if (stmt instanceof InterfaceDefinitionNode) {
+                var cls = (InterfaceDefinitionNode) stmt;
+                var strName = cls.getName().strName();
+                if (types.containsKey(strName)) {
+                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
+                var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
+                var type = new InterfaceType(strName, generics);
+                types.put(strName, type);
+                lineInfos.put(strName, cls.getLineInfo());
+                if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
+                    ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
+                    hasAuto = Optional.of(cls);
+                }
+            } else if (stmt instanceof BaseClassNode) {
+                var cls = (BaseClassNode) stmt;
+                var strName = cls.getName().strName();
+                if (types.containsKey(strName)) {
+                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+                }
+                var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
+                types.put(strName, new StdTypeObject(strName, generics));
+                lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof TypedefStatementNode) {
                 typedefs.push((TypedefStatementNode) stmt);
             }
