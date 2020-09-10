@@ -33,8 +33,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var rawType = assigned.getType();
         var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
         var descriptors = node.getDescriptors();
-        var mutability = node.getMutability();
-        var assignedType = mutability.isPresent() && mutability.get().equals(DescriptorNode.MUT)
+        var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
+        var assignedType = !mutability.isConstType()
                 ? nonConstAssignedType.makeMut() : nonConstAssignedType.makeConst();
         var assignedName = assigned.getVariable().getName();
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
@@ -52,7 +52,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         } else {
             needsMakeOption = false;
         }
-        boolean isConst = mutability.isEmpty() || mutability.get().equals(DescriptorNode.MREF);
+        boolean isConst = mutability.isConstRef();
         if (isConst && converter instanceof ConstantConverter) {
             var constant = ((ConstantConverter) converter).constant();
             info.checkDefinition(assignedName, node);
