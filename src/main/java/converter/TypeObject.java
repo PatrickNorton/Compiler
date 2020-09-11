@@ -1,6 +1,5 @@
 package main.java.converter;
 
-import main.java.parser.BaseNode;
 import main.java.parser.IndexNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
@@ -100,9 +99,9 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         throw CompilerException.of("Cannot generify object", lineInfo);
     }
 
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
-        return null;
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
+        return Optional.empty();
     }
 
     @Nullable
@@ -143,13 +142,13 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     @NotNull
     public final TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = attrType(value, access);
-        if (info == null) {
-            if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE) != null) {
+        if (info.isEmpty()) {
+            if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE).isPresent()) {
                 throw CompilerException.format(
                         "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
                         lineInfo, value, name()
                 );
-            } else if (makeMut().attrType(value, access) != null) {
+            } else if (makeMut().attrType(value, access).isPresent()) {
                 throw CompilerException.format(
                         "Attribute '%s' requires a mut variable for type '%s'",
                         lineInfo, value, name()
@@ -160,7 +159,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
                 );
             }
         } else {
-            return info;
+            return info.orElseThrow();
         }
     }
 
@@ -204,11 +203,16 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     @NotNull
-    public final TypeObject tryAttrType(@NotNull BaseNode node, String value, @NotNull CompilerInfo info) {
+    public final TypeObject tryAttrType(@NotNull Lined node, String value, @NotNull CompilerInfo info) {
         return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
     }
 
-    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
+    @NotNull
+    public final TypeObject tryAttrType(@NotNull Lined node, String value, @NotNull AccessLevel level) {
+        return tryAttrType(node.getLineInfo(), value, level);
+    }
+
+    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         return attrType(value, access);
     }
 
@@ -232,7 +236,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     public final boolean fulfillsContract(@NotNull UserType<?> contractor) {
         var contract = contractor.contract();
         for (var attr : contract.getKey()) {
-            if (attrType(attr, AccessLevel.PUBLIC) == null) {
+            if (attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
                 return false;
             }
         }

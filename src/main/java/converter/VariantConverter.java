@@ -21,7 +21,7 @@ public final class VariantConverter implements TestConverter {
     public TypeObject[] returnType() {
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
         var retType = unionConverter.returnType()[0];
-        var optionRet = new OptionTypeObject(retType.attrType(node.getVariantName(), AccessLevel.PUBLIC));
+        var optionRet = new OptionTypeObject(retType.tryAttrType(node, node.getVariantName(), AccessLevel.PUBLIC));
         return new TypeObject[] {optionRet};
     }
 

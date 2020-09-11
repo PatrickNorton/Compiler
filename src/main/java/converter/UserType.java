@@ -89,14 +89,14 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
-    @Nullable
-    public final TypeObject attrType(String value, AccessLevel access) {
+    @NotNull
+    public final Optional<TypeObject> attrType(String value, AccessLevel access) {
         var type = attrTypeWithGenerics(value, access);
-        if (type == null) return null;
-        if (type instanceof TemplateParam) {
-            return generics.isEmpty()
-                    ? ((TemplateParam) type).getBound()
-                    : generics.get(((TemplateParam) type).getIndex());
+        if (type.isEmpty()) return Optional.empty();
+        var typ = type.orElseThrow();
+        if (typ instanceof TemplateParam) {
+            var t = (TemplateParam) typ;
+            return Optional.of(generics.isEmpty() ? t.getBound() : generics.get(t.getIndex()));
         } else {
             return type;
         }
@@ -158,9 +158,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         var result = new TypeObject[genericCount];
         var contract = contractor.contract();
         for (var attr : contract.getKey()) {
-            var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC);
-            var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC);
-            assert contractorAttr != null;
+            var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
+            var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
             for (var pair : contractorAttr.generifyAs(attrT).entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();

@@ -4,7 +4,6 @@ import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -105,8 +104,8 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
-        return generic == null ? null : generic.staticAttrType(value, access);
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
+        return generic == null ? Optional.empty() : Optional.ofNullable(generic.staticAttrType(value, access));
     }
 }

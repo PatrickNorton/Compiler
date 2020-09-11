@@ -113,13 +113,13 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.supers;
     }
 
-    @Nullable
-    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
         if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
-            return null;
+            return Optional.empty();
         }
-        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? attr.getType() : null;
+        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? Optional.of(attr.getType()) : Optional.empty();
     }
 
     @Nullable

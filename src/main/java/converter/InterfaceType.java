@@ -5,7 +5,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -98,14 +97,14 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         return info.staticOperatorReturnType(o);
     }
 
-    @Nullable
-    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
         if (attr == null || (isConst && attr.intoAttrInfo().getMutType() == MutableType.MUT_METHOD)) {
             return null;
         }
         return AccessLevel.canAccess(attr.intoAttrInfo().getAccessLevel(), access)
-                ? attr.intoAttrInfo().getType() : null;
+                ? Optional.of(attr.intoAttrInfo().getType()) : Optional.empty();
     }
 
     @Override

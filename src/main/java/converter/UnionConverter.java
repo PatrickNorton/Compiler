@@ -93,7 +93,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         for (var sup : supers) {
             var contract = sup.contract();
             for (var attr : contract.getKey()) {
-                if (type.attrType(attr, AccessLevel.PUBLIC) == null) {
+                if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
                     throw CompilerException.format(
                             "Missing impl for method '%s' (defined by interface %s)",
                             node, attr, sup.name()

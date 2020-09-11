@@ -5,7 +5,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collections;
@@ -51,13 +50,13 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
         try {
             var intVal = Integer.parseInt(value);
-            return intVal > 0 && intVal < generics.size() ? generics.get(intVal) : null;
+            return intVal > 0 && intVal < generics.size() ? Optional.of(generics.get(intVal)) : Optional.empty();
         } catch (NumberFormatException e) {
-            return null;
+            return Optional.empty();
         }
     }
 

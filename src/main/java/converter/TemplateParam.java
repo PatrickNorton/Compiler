@@ -53,8 +53,8 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return bound.attrType(value, access);
     }
 
