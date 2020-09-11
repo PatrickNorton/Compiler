@@ -96,7 +96,11 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
-        return trueInfo.map(FunctionInfo::boundify);
+        if (generics.size() == 0) {
+            return trueInfo.map(FunctionInfo::boundify);
+        } else {
+            return trueInfo.map(x -> x.generify(generics.toArray(new TypeObject[0])));
+        }
     }
 
     public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
