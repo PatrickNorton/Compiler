@@ -76,9 +76,9 @@ public final class AssignmentConverter implements BaseConverter {
         for (int i = names.length - 1; i >= 0; i--) {  // FIXME: Assigns in reverse order (side effects may switch)
             var name = names[i];
             if (name instanceof VariableNode) {
-                assignIndexToVariable(bytes, (VariableNode) name, retTypes[i]);
+                assignTopToVariable(bytes, (VariableNode) name, retTypes[i]);
             } else if (name instanceof IndexNode) {
-                assignVariableToIndex(bytes, start, (IndexNode) name, retTypes[i]);
+                assignTopToIndex(bytes, start, (IndexNode) name, retTypes[i]);
             } else if (name instanceof DottedVariableNode) {
                 assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
             } else {
@@ -88,7 +88,7 @@ public final class AssignmentConverter implements BaseConverter {
         return bytes;
     }
 
-    private void assignIndexToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
+    private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
         var name = variable.getName();
         checkDef(name, variable);
         var varType = info.getType(name);
@@ -115,10 +115,10 @@ public final class AssignmentConverter implements BaseConverter {
                 throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
                         node, valueType.name(), varType.name());
             } else {
-                bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start)));
+                bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start + bytes.size())));
             }
         } else {
-            bytes.addAll(valueConverter.convert(start));
+            bytes.addAll(valueConverter.convert(start + bytes.size()));
         }
         storeBytes.add(0, Bytecode.STORE.value);
         storeBytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
@@ -133,7 +133,9 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    private void assignVariableToIndex(@NotNull List<Byte> bytes, int start, @NotNull IndexNode variable, TypeObject valueType) {
+    private void assignTopToIndex(
+            @NotNull List<Byte> bytes, int start, @NotNull IndexNode variable, TypeObject valueType
+    ) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
         var indexConverters = convertIndices(indices);
