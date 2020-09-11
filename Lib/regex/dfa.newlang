@@ -64,29 +64,9 @@ class State {
         return StateFlags(self.data[0])
     }
 
-    method instPtrs() -> InstPtrs {
-        return InstPtrs(self.data[1:])
-    }
-}
-
-typedef InstPtr as int
-
-public method pushInstPtr(bytes data, InstPtr prev, InstPtr ip) -> int {
-    var delta = ip - prev
-    writeVarInt(data, delta)
-    return ip
-}
-
-class InstPtrs {
-    bytes data
-
-    public operator new(bytes data) {
-        self.data = data
-    }
-
-    public operator iter -> int {
+    generator method instPtrs() -> int {
         mut int base = 0
-        mut int index = 0
+        mut int index = 1
         while nread < base.length {
             yield base
             var delta, var nread = readVarInt(self.data[index:])
@@ -96,6 +76,14 @@ class InstPtrs {
             index += nread
         }
     }
+}
+
+typedef InstPtr as int
+
+public method pushInstPtr(bytes data, InstPtr prev, InstPtr ip) -> int {
+    var delta = ip - prev
+    writeVarInt(data, delta)
+    return ip
 }
 
 class StateMap {
