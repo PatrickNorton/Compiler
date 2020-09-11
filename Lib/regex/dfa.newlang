@@ -2,6 +2,8 @@ export canExec, Cache, InstPtr
 
 from .prog import Program
 
+typedef StatePtr as int
+
 func canExec(Program insts) -> bool {
     return insts.dfaSizeLimit == 0 and not any((i.Ranges? or i.Char? for var i in insts))
 }
@@ -93,5 +95,45 @@ class InstPtrs {
             assert nread > 0
             index += nread
         }
+    }
+}
+
+class StateMap {
+    private final dict[State, StatePtr] map
+    private final list[State] states
+    private int numByteClasses
+
+    operator new (int numByteClasses) {
+        self.map = {:}
+        self.states = []
+        self.numByteClasses = numByteClasses
+    }
+
+    public property int length {
+        get {
+            return self.states.length
+        }
+    }
+
+    public operator bool {
+        return bool(self.states)
+    }
+
+    public method getPtr(State state) -> StatePtr? {
+        return self.map.get(state)
+    }
+
+    public method getState(StatePtr si) -> State? {
+        return self.states.get(si / self.numByteClasses)
+    }
+
+    public mut method insert(State state, StatePtr si) {
+        self.map[state] = si
+        self.states.add(state)
+    }
+
+    public mut method clear() {
+        self.map.clear()
+        self.states.clear()
     }
 }
