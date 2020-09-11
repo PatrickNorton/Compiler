@@ -5,7 +5,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -109,7 +108,8 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @Override
-    public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+    @NotNull
+    public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
         return info.staticOperatorReturnType(o);
     }
 
@@ -126,14 +126,14 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return AccessLevel.canAccess(attr.getAccessLevel(), access) ? Optional.of(attr.getType()) : Optional.empty();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public TypeObject staticAttrTypeWithGenerics(String value, AccessLevel access) {
+    public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.staticAttributes.get(value);
         if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
-            return null;
+            return Optional.empty();
         }
-        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? attr.getType() : null;
+        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? Optional.of(attr.getType()) : Optional.empty();
     }
 
     public void setAttributes(Map<String, AttributeInfo> attributes) {

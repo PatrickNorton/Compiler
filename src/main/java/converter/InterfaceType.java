@@ -93,7 +93,8 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Override
-    public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+    @NotNull
+    public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
         return info.staticOperatorReturnType(o);
     }
 

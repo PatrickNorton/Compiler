@@ -106,6 +106,6 @@ public final class TypeTypeObject extends TypeObject {
     @Override
     @NotNull
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
-        return generic == null ? Optional.empty() : Optional.ofNullable(generic.staticAttrType(value, access));
+        return generic == null ? Optional.empty() : generic.staticAttrType(value, access);
     }
 }
