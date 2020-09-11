@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class TypeObject implements LangObject, Comparable<TypeObject>, Template<TypeObject> {
@@ -69,24 +70,20 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return Builtins.TYPE.generify(this);
     }
 
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
-        return null;
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
+        return Optional.empty();
     }
 
-    public final TypeObject[] operatorReturnType(OperatorTypeNode o, AccessLevel access) {
-        return operatorReturnType(OpSpTypeNode.translate(o), access);
-    }
-
-    public final TypeObject[] operatorReturnType(OperatorTypeNode o, @NotNull CompilerInfo info) {
+    public final Optional<TypeObject[]> operatorReturnType(OperatorTypeNode o, @NotNull CompilerInfo info) {
         return operatorReturnType(OpSpTypeNode.translate(o), info.accessLevel(this));
     }
 
-    public TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
+    public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var info = operatorInfo(o, access);
-        return info == null ? null : info.getReturns();
+        return info.map(FunctionInfo::getReturns);
     }
 
-    public final TypeObject[] operatorReturnType(OpSpTypeNode o, @NotNull CompilerInfo info) {
+    public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, @NotNull CompilerInfo info) {
         return operatorReturnType(o, info.accessLevel(this));
     }
 
@@ -124,13 +121,13 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     @NotNull
     public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, AccessLevel access) {
         var info = operatorInfo(o, access);
-        if (info == null) {
-            if (access != AccessLevel.PRIVATE && operatorInfo(o, AccessLevel.PRIVATE) != null) {
+        if (info.isEmpty()) {
+            if (access != AccessLevel.PRIVATE && operatorInfo(o, AccessLevel.PRIVATE).isPresent()) {
                 throw CompilerException.format(
                         "Cannot get '%s' from type '%s': operator has a too-strict access level",
                         lineInfo, o, name()
                 );
-            } else if (makeMut().operatorInfo(o, access) != null) {
+            } else if (makeMut().operatorInfo(o, access).isPresent()) {
                 throw CompilerException.format(
                         "'%s' requires a mut variable for type '%s'",
                         lineInfo, o, name()
@@ -139,7 +136,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
                 throw CompilerException.format("'%s' does not exist in type '%s'", lineInfo, o, name());
             }
         } else {
-            return info;
+            return info.orElseThrow();
         }
     }
 
@@ -197,6 +194,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return tryOperatorInfo(lineInfo, o, info).getReturns();
     }
 
+    public final TypeObject[] tryOperatorReturnType(@NotNull Lined lined, OpSpTypeNode o, CompilerInfo info) {
+        return tryOperatorReturnType(lined.getLineInfo(), o, info);
+    }
+
     @NotNull
     public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, @NotNull CompilerInfo info) {
         return tryOperatorInfo(lineInfo, o, info.accessLevel(this));
@@ -215,7 +216,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return staticAttrType(value, access);
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         return operatorInfo(o, access);
     }
 
@@ -236,7 +237,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
             }
         }
         for (var op : contract.getValue()) {
-            if (operatorInfo(op, AccessLevel.PUBLIC) == null) {
+            if (operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {
                 return false;
             }
         }

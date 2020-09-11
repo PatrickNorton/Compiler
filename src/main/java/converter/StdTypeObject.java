@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -91,16 +92,16 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
 
-    @Nullable
+    @NotNull
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
-        return trueInfo == null ? null : trueInfo.boundify();
+        return trueInfo.map(FunctionInfo::boundify);
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         // TODO: Check access bounds
-        return info.operators.get(o);
+        return Optional.ofNullable(info.operators.get(o));
     }
 
     @Override

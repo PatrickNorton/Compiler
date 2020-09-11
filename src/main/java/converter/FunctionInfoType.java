@@ -4,11 +4,11 @@ import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class FunctionInfoType extends TypeObject {
     private final FunctionInfo info;
@@ -22,25 +22,25 @@ public final class FunctionInfoType extends TypeObject {
         return this.equals(other);
     }
 
-    @Nullable
+    @NotNull
     @Contract(pure = true)
     @Override
-    public TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
+    public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
-            return info.boundify().getReturns();
+            return Optional.of(info.boundify().getReturns());
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
-    @Nullable
+    @NotNull
     @Contract(pure = true)
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
-            return info.boundify();
+            return Optional.of(info.boundify());
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 

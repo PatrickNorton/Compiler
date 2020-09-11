@@ -10,6 +10,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 public final class TupleType extends TypeObject {
@@ -61,21 +62,21 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    @Nullable
-    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
+    @NotNull
+    public Optional<FunctionInfo> operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
-                return new FunctionInfo(
+                return Optional.of(new FunctionInfo(
                         ArgumentInfo.of(Builtins.TUPLE.generify(generics.toArray(new TypeObject[0]))),
                         Builtins.BOOL
-                );
+                ));
             case BOOL:
-                return new FunctionInfo(Builtins.BOOL);
+                return Optional.of(new FunctionInfo(Builtins.BOOL));
             case STR:
             case REPR:
-                return new FunctionInfo(Builtins.STR);
+                return Optional.of(new FunctionInfo(Builtins.STR));
             default:
-                return null;
+                return Optional.empty();
         }
     }
 

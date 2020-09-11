@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableType {
@@ -79,12 +80,12 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return info.operatorReturnTypeWithGenerics(o, access);
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public final TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
+    public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var types = operatorReturnTypeWithGenerics(o, access);
-        if (types == null) return null;
-        return Arrays.copyOf(types, types.length);
+        if (types == null) return Optional.empty();
+        return Optional.of(Arrays.copyOf(types, types.length));
     }
 
     @Override
@@ -171,9 +172,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
         }
         for (var op : contract.getValue()) {
-            var attrT = trueOperatorInfo(op, AccessLevel.PUBLIC);
-            var contractorAttr = contractor.trueOperatorInfo(op, AccessLevel.PUBLIC);
-            assert contractorAttr != null;
+            var attrT = trueOperatorInfo(op, AccessLevel.PUBLIC).orElseThrow();
+            var contractorAttr = contractor.trueOperatorInfo(op, AccessLevel.PUBLIC).orElseThrow();
             for (var pair : contractorAttr.toCallable().generifyAs(attrT.toCallable()).entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();
@@ -214,8 +214,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
             for (var sup : supers) {
                 var opRet = sup.operatorReturnType(o, access);
-                if (opRet != null) {
-                    return opRet;
+                if (opRet.isPresent()) {
+                    return opRet.orElseThrow();
                 }
             }
             return null;

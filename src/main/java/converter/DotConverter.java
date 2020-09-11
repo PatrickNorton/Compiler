@@ -58,17 +58,16 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
             var attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
-            return attrType.tryOperatorReturnType(postDot.getLineInfo(), OpSpTypeNode.CALL, info)[0];
+            return attrType.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info)[0];
         } else if (postDot instanceof SpecialOpNameNode) {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
-            var accessLevel = info.accessLevel(result);
-            return result.operatorInfo(operator, accessLevel).toCallable();
+            return result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable();
         } else if (postDot instanceof IndexNode) {
             var index = (IndexNode) postDot;
             var variable = ((VariableNode) index.getVar()).getName();
             var attrType = result.tryAttrType(postDot, variable, info);
             var operator = index.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
-            return attrType.operatorReturnType(operator, info)[0];
+            return attrType.tryOperatorReturnType(node, operator, info)[0];
         } else {
             throw new UnsupportedOperationException();
         }
@@ -86,7 +85,7 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
             var attrType = result.stripNull().tryAttrType(postDot, ((VariableNode) caller).getName(), info);
-            return TypeObject.optional(attrType.operatorReturnType(OpSpTypeNode.CALL, info)[0]);
+            return TypeObject.optional(attrType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info)[0]);
         } else {
             throw new UnsupportedOperationException();
         }

@@ -162,10 +162,12 @@ public final class ComprehensionConverter implements TestConverter {
 
     private TypeObject varType(@NotNull TypedVariableNode typedVar) {
         var tvType = typedVar.getType();
-        return tvType.isDecided()
-                ? info.getType(tvType)
-                : TestConverter.returnType(node.getLooped().get(0), info, 1)[0]
-                    .operatorReturnType(OpSpTypeNode.ITER, info)[0];
+        if (tvType.isDecided()) {
+            return info.getType(tvType);
+        } else {
+            var retType = TestConverter.returnType(node.getLooped().get(0), info, 1)[0];
+            return retType.tryOperatorReturnType(node.getLineInfo(), OpSpTypeNode.ITER, info)[0];
+        }
     }
 
     private TypeObject genericType() {

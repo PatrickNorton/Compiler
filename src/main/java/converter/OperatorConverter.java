@@ -79,7 +79,7 @@ public final class OperatorConverter implements TestConverter {
         }
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator(), info);
-        return retType == null ? new TypeObject[] {Builtins.THROWS} : retType;
+        return retType.orElseGet(() -> new TypeObject[]{Builtins.THROWS});
     }
 
     @NotNull
@@ -115,13 +115,13 @@ public final class OperatorConverter implements TestConverter {
             }
             var retType = retTypes[0];
             if (opType != null
-                    && opType.operatorReturnType(node.getOperator(), info) == null) {
+                    && opType.operatorReturnType(node.getOperator(), info).isEmpty()) {
                 throw CompilerException.format(
                         "'%s' returns type '%s', which has no overloaded '%s'",
                         previousArg, previousArg, opType.name(), node.getOperator()
                 );
             }
-            opType = opType == null ? retType : opType.operatorReturnType(node.getOperator(), info)[0];
+            opType = opType == null ? retType : opType.operatorReturnType(node.getOperator(), info).orElseThrow()[0];
             previousArg = arg;
             bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
         }
@@ -191,7 +191,8 @@ public final class OperatorConverter implements TestConverter {
                     "'instanceof' operator requires second argument to be an instance of 'type'", arg1
             );
         }
-        var instanceType = arg1ret.operatorReturnType(OpSpTypeNode.CALL, info)[0]; // calling a type will always return an instance
+        // calling a type will always return an instance
+        var instanceType = arg1ret.tryOperatorReturnType(node.getLineInfo(), OpSpTypeNode.CALL, info)[0];
         var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
         bytes.addAll(converter1.convert(start + bytes.size()));
         bytes.add(Bytecode.INSTANCEOF.value);
@@ -389,10 +390,10 @@ public final class OperatorConverter implements TestConverter {
     private TypeObject[] notEqualsReturn() {
         var firstOpConverter = TestConverter.of(info, node.getOperands()[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(node.getOperator(), info);
-        if (retType == null) {
+        if (retType.isEmpty()) {
             throw CompilerInternalError.of("Operator != not implemented", node);
         }
-        return retType;
+        return retType.orElseThrow();
     }
 
     public static Pair<List<Byte>, TypeObject> convertWithAs(int start, OperatorNode node, CompilerInfo info, int retCount) {

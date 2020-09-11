@@ -196,13 +196,13 @@ public final class AssignmentConverter implements BaseConverter {
         }
         indexTypes.add(new Argument("", setType));
         var opInfo = varType.operatorInfo(OpSpTypeNode.SET_ATTR, info.accessLevel(varType));
-        if (opInfo == null) {
+        if (opInfo.isEmpty()) {
             throw CompilerException.format(
                     "Cannot assign variable to index (object of type '%s' has no operator []=)",
                     node, varType.name()
             );
         }
-        if (!opInfo.matches(indexTypes.toArray(new Argument[0]))) {
+        if (!opInfo.orElseThrow().matches(indexTypes.toArray(new Argument[0]))) {
             throw CompilerException.format(
                     "Cannot assign variable to index: '%s'.operator []= does not match the given types", node
             );

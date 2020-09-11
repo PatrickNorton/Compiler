@@ -58,14 +58,15 @@ public final class DeleteConverter implements BaseConverter {
 
     private void checkAccess(@NotNull TestConverter value, List<TestConverter> indices) {
         var retType = value.returnType()[0];
-        var opInfo = retType.operatorInfo(OpSpTypeNode.DEL_ATTR, info.accessLevel(retType));
-        if (opInfo == null) {
+        var maybeOpInfo = retType.operatorInfo(OpSpTypeNode.DEL_ATTR, info.accessLevel(retType));
+        if (maybeOpInfo.isEmpty()) {
             throw CompilerException.format(
                     "Delete cannot be called on an index with a variable of type '%s'" +
                             "('%s' has no usable operator del[])",
                     node, retType.name(), retType.name()
             );
         } else {
+            var opInfo = maybeOpInfo.orElseThrow();
             List<Argument> tempArgs = new ArrayList<>();
             for (var index : indices) {
                 tempArgs.add(new Argument("", index.returnType()[0]));

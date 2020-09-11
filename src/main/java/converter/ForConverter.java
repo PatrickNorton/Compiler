@@ -126,7 +126,7 @@ public final class ForConverter extends LoopConverter {
     }
 
     private TypeObject returnType(int i, @NotNull TestConverter valueConverter) {
-        return valueConverter.returnType()[0].operatorReturnType(OpSpTypeNode.ITER, info)[i];
+        return valueConverter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info)[i];
     }
 
     private TypeObject getIteratorType(int i, TestConverter valueConverter, boolean firstRet) {
