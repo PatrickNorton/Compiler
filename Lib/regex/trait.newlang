@@ -28,5 +28,9 @@ class Locations {
         }
     }
 
-    public #|readonly|# int length := self.value.length / 2
+    public property int length {
+        get {
+            return self.value.length // 2
+        }
+    }
 }

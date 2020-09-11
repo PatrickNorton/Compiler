@@ -1,8 +1,11 @@
+from .literal import LiteralSearcher
+from .prog import InstEmptyLook
+
 export InputAt, Input, CharInput
 
 class InputAt {
     pubget mut int pos
-    Char c
+    char? c
     int? byte_
     pubget mut int length
 
@@ -15,10 +18,10 @@ class InputAt {
     }
 
     public method isEnd() -> bool {
-        return not self.c and not self.byte_?
+        return not self.c? and not self.byte_?
     }
 
-    public method chr() -> Char {
+    public method chr() -> char? {
         return self.c
     }
 
@@ -34,9 +37,9 @@ class InputAt {
 interface Input {
     public method at(int i) -> InputAt
 
-    public method nextChar(InputAt at) -> Char
+    public method nextChar(InputAt at) -> char?
 
-    public method previousChar(InputAt at) -> Char
+    public method previousChar(InputAt at) -> char?
 
     public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool
 
@@ -62,7 +65,7 @@ class CharInput {
         return self.value[i]
     }
 
-    public operator [:] (Slice s) -> bytes {
+    public operator [:] (slice s) -> bytes {
         return self.value.operator[:](s)
     }
 
@@ -75,11 +78,11 @@ class CharInput {
         }
     }
 
-    public method nextChar(InputAt at) -> Char {
+    public method nextChar(InputAt at) -> char? {
         return at.chr()
     }
 
-    public method previousChar(InputAt at) -> Char {
+    public method previousChar(InputAt at) -> char? {
         return Char(str(self[:at.pos])[-1])
     }
 

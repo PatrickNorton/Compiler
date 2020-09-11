@@ -1,6 +1,10 @@
+from collections import Pair
 from itertools import all
 
-from .inputs import Input
+from .exec import ProgramCache
+from .inputs import Input, InputAt
+from .prog import InstPtr, Program
+from .trait import Slot
 
 export Fsm, Cache
 
@@ -100,7 +104,7 @@ class Fsm {
                     nlist,
                     matches,
                     slots,
-                    clist.caps(ip),
+                    clist.getCaps(ip),
                     ip,
                     at,
                     atNext,
@@ -247,7 +251,7 @@ class Threads {
         self.caps = [null] * (self.slotsPerThread * numInsts)
     }
 
-    public method caps(int pc) -> list[int?] {
+    public method getCaps(int pc) -> list[int?] {
         var i = pc * self.slotsPerThread
         return self.caps[i:i+self.slotsPerThread]
     }
