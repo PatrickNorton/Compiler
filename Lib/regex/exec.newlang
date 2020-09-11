@@ -57,6 +57,10 @@ class Exec {
             }
         }
     }
+
+    public method regexStrings() -> list[str] {
+        return self.ro.res
+    }
 }
 
 const class ExecReadOnly {

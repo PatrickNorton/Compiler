@@ -11,7 +11,7 @@ class Regex {
     Exec value
 
     public operator new(str re) {
-        self.value = RegexBuilder(re).build()
+        self.value = RegexBuilder(re).build().value
     }
 
     public method isMatch(str text) -> bool {
@@ -154,7 +154,8 @@ class Regex {
     # Auxiliary methods
 
     public operator str {
-        self.value.regexStrings()[0]
+        # FIXME: Parse this properly
+        return (self.value.regexStrings())[0]
     }
 
     public generator method captureNames() -> str? {
