@@ -44,13 +44,14 @@ union Result[T] {
     int NoMatch
     null Quit
 
-    generic U
-    public method map(Callable[[T], U] f) -> Result[U] {
-        return switch self {
-            case Result.Match as t => Result.Match(f(t))
-            default => self
-        }
-    }
+# FIXME: Function generics don't parse properly
+#     generic U
+#     public method map(Callable[[T], U] f) -> Result[U] {
+#         return switch self {
+#             case Result.Match as t => Result.Match(f(t))
+#             default => self
+#         }
+#     }
 
     public method setNonMatch(int at) -> Result[T] {
         return Result.NoMatch(at) if self.NoMatch? else self
@@ -80,7 +81,7 @@ class State {
 
 typedef InstPtr as int
 
-public method pushInstPtr(bytes data, InstPtr prev, InstPtr ip) -> int {
+func pushInstPtr(bytes data, InstPtr prev, InstPtr ip) -> int {
     var delta = ip - prev
     writeVarInt(data, delta)
     return ip
@@ -123,5 +124,36 @@ class StateMap {
     public mut method clear() {
         self.map.clear()
         self.states.clear()
+    }
+}
+
+class StateFlags {
+    private mut int value
+
+    public property bool isMatch {
+        get {
+            return bool(self.value & 1)
+        }
+        set (bool yes) {
+            self.value |= int(yes)
+        }
+    }
+
+    public property bool isWord {
+        get {
+            return bool(self.value & (1 << 1))
+        }
+        set (bool yes) {
+            self.value |= int(yes) << 1
+        }
+    }
+
+    public property bool hasEmpty {
+        get {
+            return bool(self.value & (1 << 2))
+        }
+        set (bool yes) {
+            self.value |= int(yes) << 2
+        }
     }
 }
