@@ -34,8 +34,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
         var descriptors = node.getDescriptors();
         var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
-        var assignedType = !mutability.isConstType()
-                ? nonConstAssignedType.makeMut() : nonConstAssignedType.makeConst();
+        var assignedType = mutability.isConstType()
+                ? nonConstAssignedType.makeConst() : nonConstAssignedType.makeMut();
         var assignedName = assigned.getVariable().getName();
         if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
             throw CompilerException.of("Illegal name " + assignedName, node);
