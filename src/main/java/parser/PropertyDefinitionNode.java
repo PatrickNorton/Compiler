@@ -130,6 +130,9 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
         tokens.passNewlines();
         if (tokens.tokenIs("set")) {
             tokens.nextToken();
+            if (!tokens.tokenIs("(")) {
+                throw tokens.error("'set' in a property definition must be followed by an argument list");
+            }
             setArgs = TypedArgumentListNode.parse(tokens);
             set = StatementBodyNode.parse(tokens);
         } else {
