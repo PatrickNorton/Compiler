@@ -3,6 +3,8 @@ package main.java.converter;
 import main.java.parser.AssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
+import main.java.parser.OpSpTypeNode;
+import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,9 +23,27 @@ public final class AssignmentConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert !node.isColon() : "No colon assignment yet";
+        if (node.isColon()) {
+            throw CompilerException.of("Colon assignment is not supported outside of class definitions", node);
+        }
+        if (node.getNames().length > 1 && node.getValues().size() == 1) {
+            return assignSingleVariable(start);
+        } else {
+            return assignMultipleVariable(start);
+        }
+    }
+
+    @NotNull
+    private List<Byte> assignMultipleVariable(int start) {
         var names = node.getNames();
         var values = node.getValues();
+        if (names.length != values.size()) {
+            throw CompilerException.format(
+                    "Multiple returns are not supported in = statements " +
+                            "with more than one operand (expected %d, got %d)",
+                    node, names.length, values.size()
+            );
+        }
         assert names.length == values.size() : "Multiple returns not supported yet";
         List<Byte> assignBytes = new ArrayList<>();
         List<Byte> storeBytes = new ArrayList<>(names.length * Bytecode.STORE.size());
@@ -45,35 +65,112 @@ public final class AssignmentConverter implements BaseConverter {
         return assignBytes;
     }
 
-    private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
-                                  @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
-        var valueType = valueConverter.returnType()[0];
+    @NotNull
+    private List<Byte> assignSingleVariable(int start) {
+        assert node.getValues().size() == 1;
+        var names = node.getNames();
+        var value = node.getValues().get(0);
+        var valueConverter = TestConverter.of(info, value, node.getNames().length);
+        var retTypes = valueConverter.returnType();
+        List<Byte> bytes = new ArrayList<>(valueConverter.convert(start));
+        for (int i = names.length - 1; i >= 0; i--) {  // FIXME: Assigns in reverse order (side effects may switch)
+            var name = names[i];
+            if (name instanceof VariableNode) {
+                assignTopToVariable(bytes, (VariableNode) name, retTypes[i]);
+            } else if (name instanceof IndexNode) {
+                assignTopToIndex(bytes, start, (IndexNode) name, retTypes[i]);
+            } else if (name instanceof DottedVariableNode) {
+                assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
+            } else {
+                throw new UnsupportedOperationException("Assignment to this type not yet supported");
+            }
+        }
+        return bytes;
+    }
+
+    private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
         var name = variable.getName();
-        if (info.varIsUndefined(name)) {
-            throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
-        }
-        if (info.variableIsConstant(name)) {
-            throw CompilerException.format("Cannot assign to const variable %s", variable, name);
-        }
+        checkDef(name, variable);
         var varType = info.getType(name);
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
                 throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
                         node, valueType.name(), varType.name());
             } else {
-                bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start)));
+                bytes.add(Bytecode.MAKE_OPTION.value);
+            }
+        }
+        bytes.add(0, Bytecode.STORE.value);
+        bytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
+    }
+
+    private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
+                                  @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
+        var valueType = valueConverter.returnType()[0];
+        var name = variable.getName();
+        checkDef(name, variable);
+        var varType = info.getType(name);
+        if (!varType.isSuperclass(valueType)) {
+            if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
+                throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
+                        node, valueType.name(), varType.name());
+            } else {
+                bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start + bytes.size())));
             }
         } else {
-            bytes.addAll(valueConverter.convert(start));
+            bytes.addAll(valueConverter.convert(start + bytes.size()));
         }
         storeBytes.add(0, Bytecode.STORE.value);
         storeBytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
     }
 
+    private void checkDef(String name, VariableNode variable) {
+        if (info.varIsUndefined(name)) {
+            throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
+        }
+        if (info.variableIsConstant(name)) {
+            throw CompilerException.format("Cannot assign to const variable %s", variable, name);
+        }
+    }
+
+    private void assignTopToIndex(
+            @NotNull List<Byte> bytes, int start, @NotNull IndexNode variable, TypeObject valueType
+    ) {
+        var indices = variable.getIndices();
+        var varConverter = TestConverter.of(info, variable.getVar(), 1);
+        var indexConverters = convertIndices(indices);
+        checkTypes(varConverter.returnType()[0], indexConverters, valueType);
+        bytes.addAll(varConverter.convert(start + bytes.size()));
+        for (var indexParam : indexConverters) {
+            bytes.addAll(indexParam.convert(start + bytes.size()));
+        }
+        bringToTop(bytes, indices.length + 1);
+        bytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
+        bytes.addAll(1, Util.shortToBytes((short) indices.length));
+    }
+
+    private static void bringToTop(List<Byte> bytes, int distFromTop) {
+        switch (distFromTop) {
+            case 0:
+                return;
+            case 1:
+                bytes.add(Bytecode.SWAP_2.value);
+                return;
+            case 2:
+                bytes.add(Bytecode.SWAP_3.value);
+                return;
+            default:
+                bytes.add(Bytecode.SWAP_N.value);
+                bytes.addAll(Util.shortToBytes((short) (distFromTop + 1)));
+        }
+    }
+
     private void assignToIndex(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
                                @NotNull IndexNode variable, @NotNull TestConverter valueConverter) {
         var indices = variable.getIndices();
-        // FIXME: Check types
+        var varConverter = TestConverter.of(info, variable.getVar(), 1);
+        var indexConverters = convertIndices(indices);
+        checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
         bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
         for (var indexParam : indices) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
@@ -83,13 +180,72 @@ public final class AssignmentConverter implements BaseConverter {
         storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
     }
 
+    @NotNull
+    private List<TestConverter> convertIndices(@NotNull TestNode[] indices) {
+        List<TestConverter> indexConverters = new ArrayList<>(indices.length);
+        for (var index : indices) {
+            indexConverters.add(TestConverter.of(info, index, 1));
+        }
+        return indexConverters;
+    }
+
+    private void checkTypes(TypeObject varType, @NotNull List<TestConverter> values, TypeObject setType) {
+        List<Argument> indexTypes = new ArrayList<>(values.size());
+        for (var index : values) {
+            indexTypes.add(new Argument("", index.returnType()[0]));
+        }
+        indexTypes.add(new Argument("", setType));
+        var opInfo = varType.operatorInfo(OpSpTypeNode.SET_ATTR, info.accessLevel(varType));
+        if (opInfo.isEmpty()) {
+            throw CompilerException.format(
+                    "Cannot assign variable to index (object of type '%s' has no operator []=)",
+                    node, varType.name()
+            );
+        }
+        if (!opInfo.orElseThrow().matches(indexTypes.toArray(new Argument[0]))) {
+            throw CompilerException.format(
+                    "Cannot assign variable to index: '%s'.operator []= does not match the given types", node
+            );
+        }
+    }
+
     private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
                              @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
         assert variable.getPostDots().length == 1;
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), variable.getPreDot(), info, 1));
+        var valueType = valueConverter.returnType()[0];
+        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
+        checkAssign(preDotConverter, variable, valueType);
+        bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.addAll(valueConverter.convert(start + bytes.size()));
         storeBytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
         storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+    }
+
+    private void assignTopToDot(
+            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        assert variable.getPostDots().length == 1 : "Deeper-than-1-dot assignment not implemented";
+        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
+        checkAssign(preDotConverter, variable, valueType);
+        bytes.addAll(preDotConverter.convert(start + bytes.size()));
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(0, Bytecode.STORE_ATTR.value);
+        var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
+        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+    }
+
+    private void checkAssign(
+            @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        var dotType = TestConverter.returnType(variable, info, 1)[0];
+        var preDotType = preDotConverter.returnType()[0];
+        if (!dotType.isSuperclass(valueType)) {
+            var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
+            throw CompilerException.format(
+                    "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
+                    node, preDotType.name(), nameAssigned.getName(), dotType, valueType
+            );
+        }  // TODO: Check if assignment is legal (mutability, etc.)
     }
 }

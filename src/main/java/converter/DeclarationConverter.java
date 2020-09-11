@@ -25,7 +25,11 @@ public final class DeclarationConverter implements BaseConverter {
         }
         var name = node.getName().getName();
         info.checkDefinition(name, node);
-        info.addVariable(name, info.getType(node.getType()), node);
+        var type = info.getType(node.getType());
+        var mutability = MutableType.fromDescriptors(node.getDescriptors());
+        var trueType = mutability.isConstType() ? type.makeConst() : type.makeMut();
+        var isConst = mutability.isConstRef();
+        info.addVariable(name, trueType, isConst, node);
         return Collections.emptyList();
     }
 }

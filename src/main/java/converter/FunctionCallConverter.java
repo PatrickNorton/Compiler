@@ -86,10 +86,10 @@ public final class FunctionCallConverter implements TestConverter {
             if (fn.isPresent()) {
                 return fn.orElseThrow().getReturns();
             }
-            return info.getType(name).operatorReturnType(OpSpTypeNode.CALL, info);
+            return info.getType(name).tryOperatorReturnType(node, OpSpTypeNode.CALL, info);
         } else {
             var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
-            return retType.operatorReturnType(OpSpTypeNode.CALL, info);
+            return retType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info);
         }
 
     }
@@ -99,22 +99,25 @@ public final class FunctionCallConverter implements TestConverter {
         var args = getArgs(node.getParameters());
         var accessLevel = info.accessLevel(callerType);
         var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL, accessLevel);
-        if (operatorInfo == null) {
+        if (operatorInfo.isEmpty()) {
             throw CompilerException.format(
                     "Object of type '%s' has no overloaded 'operator ()'",
                     node, callerType.name()
             );
-        } else if (!operatorInfo.matches(args)) {
-            var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
-            var nameArr = TypeObject.name(Argument.typesOf(operatorInfo.getArgs().getNormalArgs()));
-            var expectedStr = String.join(", ", nameArr);
-            throw CompilerException.format(
-                    "Cannot call object of type '%s': arguments given (%s)" +
-                            " do not match the arguments of the function (%s)",
-                    node, callerType.name(), argsString, expectedStr
-            );
+        } else {
+            var opInfo = operatorInfo.orElseThrow();
+            if (!opInfo.matches(args)) {
+                var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
+                var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
+                var expectedStr = String.join(", ", nameArr);
+                throw CompilerException.format(
+                        "Cannot call object of type '%s': arguments given (%s)" +
+                                " do not match the arguments of the function (%s)",
+                        node, callerType.name(), argsString, expectedStr
+                );
+            }
+            return opInfo;
         }
-        return operatorInfo;
     }
 
     @NotNull

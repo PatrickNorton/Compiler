@@ -4,9 +4,9 @@ import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public final class TypeTypeObject extends TypeObject {
     private final String typedefName;
@@ -79,37 +79,33 @@ public final class TypeTypeObject extends TypeObject {
     @Contract(value = "_, _ -> new", pure = true)
     @Override
     @NotNull
-    public TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
+    public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         assert access == AccessLevel.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
-            return new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()};
+            return Optional.of(new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()});
         } else {
-            throw new UnsupportedOperationException("Cannot get type");
+            return Optional.empty();
         }
     }
 
     @Override
-    @Nullable
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
+    @NotNull
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (generic != null) {
             if (o == OpSpTypeNode.CALL) {
                 var opInfo = generic.operatorInfo(OpSpTypeNode.NEW, access);
-                if (opInfo == null) {
-                    return null;
-                } else {
-                    return new FunctionInfo(generic.operatorInfo(OpSpTypeNode.NEW, access).getArgs(), generic);
-                }
+                return opInfo.map(functionInfo -> new FunctionInfo(functionInfo.getArgs(), generic));
             } else {
-                return null;
+                return Optional.empty();
             }
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
     @Override
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
-        return generic == null ? null : generic.staticAttrType(value, access);
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
+        return generic == null ? Optional.empty() : Optional.ofNullable(generic.staticAttrType(value, access));
     }
 }

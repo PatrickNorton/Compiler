@@ -5,11 +5,11 @@ import main.java.parser.OpSpTypeNode;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 public final class TupleType extends TypeObject {
@@ -50,32 +50,32 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
         try {
             var intVal = Integer.parseInt(value);
-            return intVal > 0 && intVal < generics.size() ? generics.get(intVal) : null;
+            return intVal > 0 && intVal < generics.size() ? Optional.of(generics.get(intVal)) : Optional.empty();
         } catch (NumberFormatException e) {
-            return null;
+            return Optional.empty();
         }
     }
 
     @Override
-    @Nullable
-    public FunctionInfo operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
+    @NotNull
+    public Optional<FunctionInfo> operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
-                return new FunctionInfo(
+                return Optional.of(new FunctionInfo(
                         ArgumentInfo.of(Builtins.TUPLE.generify(generics.toArray(new TypeObject[0]))),
                         Builtins.BOOL
-                );
+                ));
             case BOOL:
-                return new FunctionInfo(Builtins.BOOL);
+                return Optional.of(new FunctionInfo(Builtins.BOOL));
             case STR:
             case REPR:
-                return new FunctionInfo(Builtins.STR);
+                return Optional.of(new FunctionInfo(Builtins.STR));
             default:
-                return null;
+                return Optional.empty();
         }
     }
 

@@ -3,9 +3,9 @@ package main.java.converter;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class GenerifiedFnInfoType extends TypeObject {
     private final FunctionInfo info;
@@ -21,13 +21,13 @@ public final class GenerifiedFnInfoType extends TypeObject {
         return false;  // TODO: Implement
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
-            return info.generify(generics);
+            return Optional.of(info.generify(generics));
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 

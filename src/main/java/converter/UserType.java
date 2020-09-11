@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableType {
@@ -79,23 +80,23 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return info.operatorReturnTypeWithGenerics(o, access);
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public final TypeObject[] operatorReturnType(OpSpTypeNode o, AccessLevel access) {
+    public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var types = operatorReturnTypeWithGenerics(o, access);
-        if (types == null) return null;
-        return Arrays.copyOf(types, types.length);
+        if (types == null) return Optional.empty();
+        return Optional.of(Arrays.copyOf(types, types.length));
     }
 
     @Override
-    @Nullable
-    public final TypeObject attrType(String value, AccessLevel access) {
+    @NotNull
+    public final Optional<TypeObject> attrType(String value, AccessLevel access) {
         var type = attrTypeWithGenerics(value, access);
-        if (type == null) return null;
-        if (type instanceof TemplateParam) {
-            return generics.isEmpty()
-                    ? ((TemplateParam) type).getBound()
-                    : generics.get(((TemplateParam) type).getIndex());
+        if (type.isEmpty()) return Optional.empty();
+        var typ = type.orElseThrow();
+        if (typ instanceof TemplateParam) {
+            var t = (TemplateParam) typ;
+            return Optional.of(generics.isEmpty() ? t.getBound() : generics.get(t.getIndex()));
         } else {
             return type;
         }
@@ -157,9 +158,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         var result = new TypeObject[genericCount];
         var contract = contractor.contract();
         for (var attr : contract.getKey()) {
-            var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC);
-            var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC);
-            assert contractorAttr != null;
+            var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
+            var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
             for (var pair : contractorAttr.generifyAs(attrT).entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();
@@ -171,9 +171,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
         }
         for (var op : contract.getValue()) {
-            var attrT = trueOperatorInfo(op, AccessLevel.PUBLIC);
-            var contractorAttr = contractor.trueOperatorInfo(op, AccessLevel.PUBLIC);
-            assert contractorAttr != null;
+            var attrT = trueOperatorInfo(op, AccessLevel.PUBLIC).orElseThrow();
+            var contractorAttr = contractor.trueOperatorInfo(op, AccessLevel.PUBLIC).orElseThrow();
             for (var pair : contractorAttr.toCallable().generifyAs(attrT.toCallable()).entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();
@@ -214,8 +213,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
             for (var sup : supers) {
                 var opRet = sup.operatorReturnType(o, access);
-                if (opRet != null) {
-                    return opRet;
+                if (opRet.isPresent()) {
+                    return opRet.orElseThrow();
                 }
             }
             return null;

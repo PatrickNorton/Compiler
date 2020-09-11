@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Map;
+import java.util.Optional;
 
 public final class TemplateParam extends NameableType {
     private final String name;
@@ -52,8 +53,8 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    @Nullable
-    public TypeObject attrType(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return bound.attrType(value, access);
     }
 
@@ -64,7 +65,7 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         return bound.operatorInfo(o, access);
     }
 

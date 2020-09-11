@@ -178,7 +178,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             bytes.addAll(converter.convert(start + bytes.size()));
             var converterRet = converter.returnType();
             for (int i = 0; i < retTypes.length; i++) {
-                if (retTypes[i] instanceof OptionTypeObject && !(converterRet[i] instanceof OptionTypeObject)) {
+                if (OptionTypeObject.needsMakeOption(retTypes[i], converterRet[i])) {
                     addSwap(bytes, retTypes.length - i - 1);
                     bytes.add(Bytecode.MAKE_OPTION.value);
                     addSwap(bytes, retTypes.length - i - 1);

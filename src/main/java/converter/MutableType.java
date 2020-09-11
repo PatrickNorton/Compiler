@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.DescriptorNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -30,6 +31,16 @@ public enum MutableType {
         DESCRIPTOR_MAP.put(DescriptorNode.MREF, MutableType.MREF);
     }
 
+    public boolean isConstType() {
+        assert this != MUT_METHOD;
+        return this == MREF || this == STANDARD;
+    }
+
+    public boolean isConstRef() {
+        assert this != MUT_METHOD;
+        return this == STANDARD || this == FINAL;
+    }
+
     @Contract(pure = true)
     public static MutableType fromDescriptor(@NotNull DescriptorNode descriptor) {
         switch (descriptor) {
@@ -42,6 +53,11 @@ public enum MutableType {
             default:
                 throw new UnsupportedOperationException();
         }
+    }
+
+    @Contract(pure = true)
+    public static MutableType fromNullable(@Nullable DescriptorNode descriptor) {
+        return descriptor == null ? STANDARD : fromDescriptor(descriptor);
     }
 
     public static MutableType fromDescriptors(Set<DescriptorNode> descriptors) {

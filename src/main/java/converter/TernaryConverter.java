@@ -34,8 +34,8 @@ public final class TernaryConverter implements TestConverter {
         bytes.addAll(Util.zeroToBytes());
         var ifTrueConverter = TestConverter.of(info, node.getIfTrue(), retCount);
         bytes.addAll(ifTrueConverter.convert(start + bytes.size()));
-        if (retCount == 1 && returnType()[0] instanceof OptionTypeObject
-                && !(ifTrueConverter.returnType()[0] instanceof OptionTypeObject)) {
+        var retType = returnType()[0];
+        if (retCount == 1 && OptionTypeObject.needsMakeOption(retType, ifTrueConverter.returnType()[0])) {
             bytes.add(Bytecode.MAKE_OPTION.value);
         }
         bytes.add(Bytecode.JUMP.value);
@@ -44,8 +44,7 @@ public final class TernaryConverter implements TestConverter {
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump1);
         var ifFalseConverter = TestConverter.of(info, node.getIfFalse(), retCount);
         bytes.addAll(ifFalseConverter.convert(start + bytes.size()));
-        if (retCount == 1 && returnType()[0] instanceof OptionTypeObject
-                && !(ifFalseConverter.returnType()[0] instanceof OptionTypeObject)) {
+        if (retCount == 1 && OptionTypeObject.needsMakeOption(retType, ifFalseConverter.returnType()[0])) {
             bytes.add(Bytecode.MAKE_OPTION.value);
         }
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);

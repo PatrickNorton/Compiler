@@ -5,7 +5,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -15,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public final class InterfaceType extends UserType<InterfaceType.Info> {
@@ -80,16 +80,16 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public FunctionInfo operatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
-        return trueInfo == null ? null : trueInfo.boundify();
+        return trueInfo.map(FunctionInfo::boundify);
     }
 
-    public FunctionInfo trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         // TODO: Check access bounds
-        return info.operators.get(o).intoFnInfo();
+        return Optional.ofNullable(info.operators.get(o)).map(InterfaceFnInfo::intoFnInfo);
     }
 
     @Override
@@ -97,14 +97,14 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         return info.staticOperatorReturnType(o);
     }
 
-    @Nullable
-    public TypeObject attrTypeWithGenerics(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
         if (attr == null || (isConst && attr.intoAttrInfo().getMutType() == MutableType.MUT_METHOD)) {
             return null;
         }
         return AccessLevel.canAccess(attr.intoAttrInfo().getAccessLevel(), access)
-                ? attr.intoAttrInfo().getType() : null;
+                ? Optional.of(attr.intoAttrInfo().getType()) : Optional.empty();
     }
 
     @Override
