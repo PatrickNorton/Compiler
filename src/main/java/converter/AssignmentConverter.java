@@ -79,6 +79,8 @@ public final class AssignmentConverter implements BaseConverter {
                 assignIndexToVariable(bytes, (VariableNode) name, retTypes[i]);
             } else if (name instanceof IndexNode) {
                 assignVariableToIndex(bytes, start, (IndexNode) name, retTypes[i]);
+            } else if (name instanceof DottedVariableNode) {
+                assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
             } else {
                 throw new UnsupportedOperationException("Assignment to this type not yet supported");
             }
@@ -208,10 +210,40 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
                              @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
         assert variable.getPostDots().length == 1;
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), variable.getPreDot(), info, 1));
+        var valueType = valueConverter.returnType()[0];
+        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
+        checkAssign(preDotConverter, variable, valueType);
+        bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.addAll(valueConverter.convert(start + bytes.size()));
         storeBytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
         storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+    }
+
+    private void assignTopToDot(
+            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        assert variable.getPostDots().length == 1 : "Deeper-than-1-dot assignment not implemented";
+        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
+        checkAssign(preDotConverter, variable, valueType);
+        bytes.addAll(preDotConverter.convert(start + bytes.size()));
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(0, Bytecode.STORE_ATTR.value);
+        var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
+        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+    }
+
+    private void checkAssign(
+            @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        var dotType = TestConverter.returnType(variable, info, 1)[0];
+        var preDotType = preDotConverter.returnType()[0];
+        if (!dotType.isSuperclass(valueType)) {
+            var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
+            throw CompilerException.format(
+                    "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
+                    node, preDotType.name(), nameAssigned.getName(), dotType, valueType
+            );
+        }  // TODO: Check if assignment is legal (mutability, etc.)
     }
 }
