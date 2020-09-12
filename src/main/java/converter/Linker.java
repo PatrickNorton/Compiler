@@ -119,9 +119,9 @@ public final class Linker {
         } else if (stmt instanceof ContextDefinitionNode) {
             throw new UnsupportedOperationException();  // FIXME: Type for context definitions
         } else if (stmt instanceof OperatorDefinitionNode) {
-            throw CompilerInternalError.of("Operator must defined in a class", stmt);
+            throw CompilerException.of("Operator must defined in a class", stmt);
         } else if (stmt instanceof MethodDefinitionNode) {
-            throw CompilerInternalError.of("Method must be defined in a class", stmt);
+            throw CompilerException.of("Method must be defined in a class", stmt);
         } else if (stmt instanceof ClassDefinitionNode) {
             var clsNode = (ClassDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName()).orElseThrow();

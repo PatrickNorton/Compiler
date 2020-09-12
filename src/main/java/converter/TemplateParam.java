@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Map;
@@ -59,8 +58,8 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    @Nullable
-    public TypeObject staticAttrType(String value, AccessLevel access) {
+    @NotNull
+    public Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         return bound.staticAttrType(value, access);
     }
 

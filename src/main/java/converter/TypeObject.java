@@ -104,13 +104,13 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return Optional.empty();
     }
 
-    @Nullable
-    public TypeObject staticAttrType(String value, AccessLevel access) {
-        return null;
+    @NotNull
+    public Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
+        return Optional.empty();
     }
 
-    public TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
-        return null;
+    public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
+        return Optional.empty();
     }
 
     public Map<Integer, TypeObject> generifyAs(TypeObject other) {
@@ -166,14 +166,14 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     @NotNull
     public final TypeObject tryStaticAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = staticAttrType(value, access);
-        if (info == null) {
-            if (access != AccessLevel.PRIVATE && staticAttrType(value, AccessLevel.PRIVATE) != null) {
+        if (info.isEmpty()) {
+            if (access != AccessLevel.PRIVATE && staticAttrType(value, AccessLevel.PRIVATE).isPresent()) {
                 throw CompilerException.format(
                         "Cannot get static attribute '%s' from type '%s':" +
                                 " too-strict of an access level required",
                         lineInfo, value, name()
                 );
-            } else if (makeMut().staticAttrType(value, access) != null) {
+            } else if (makeMut().staticAttrType(value, access).isPresent()) {
                 throw CompilerException.format(
                         "Static attribute '%s' requires a mut variable for type '%s'",
                         lineInfo, value, name()
@@ -184,7 +184,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
                 );
             }
         } else {
-            return info;
+            return info.orElseThrow();
         }
     }
 
@@ -216,7 +216,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return attrType(value, access);
     }
 
-    public TypeObject staticAttrTypeWithGenerics(String value, AccessLevel access) {
+    public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
         return staticAttrType(value, access);
     }
 

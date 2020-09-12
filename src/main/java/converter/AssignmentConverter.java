@@ -244,7 +244,7 @@ public final class AssignmentConverter implements BaseConverter {
             var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
             throw CompilerException.format(
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
-                    node, preDotType.name(), nameAssigned.getName(), dotType, valueType
+                    node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()
             );
         }  // TODO: Check if assignment is legal (mutability, etc.)
     }

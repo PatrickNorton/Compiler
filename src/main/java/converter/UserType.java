@@ -92,25 +92,21 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @NotNull
     public final Optional<TypeObject> attrType(String value, AccessLevel access) {
         var type = attrTypeWithGenerics(value, access);
-        if (type.isEmpty()) return Optional.empty();
-        var typ = type.orElseThrow();
-        if (typ instanceof TemplateParam) {
-            var t = (TemplateParam) typ;
-            return Optional.of(generics.isEmpty() ? t.getBound() : generics.get(t.getIndex()));
-        } else {
-            return type;
-        }
+        return type.map(this::generifyAttrType);
     }
 
     @Override
-    @Nullable
-    public final TypeObject staticAttrType(String value, AccessLevel access) {
+    @NotNull
+    public final Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         var type = staticAttrTypeWithGenerics(value, access);
-        if (type == null) return null;
+        return type.map(this::generifyAttrType);
+    }
+
+    @NotNull
+    private TypeObject generifyAttrType(TypeObject type) {
         if (type instanceof TemplateParam) {
-            return generics.isEmpty()
-                    ? ((TemplateParam) type).getBound()
-                    : generics.get(((TemplateParam) type).getIndex());
+            var t = (TemplateParam) type;
+            return generics.isEmpty() ? t.getBound() : generics.get(t.getIndex());
         } else {
             return type;
         }
@@ -220,18 +216,18 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             return null;
         }
 
-        @Nullable
-        public final TypeObject[] staticOperatorReturnType(OpSpTypeNode o) {
+        @NotNull
+        public final Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
             if (staticOperators.containsKey(o)) {
-                return staticOperators.get(o).intoFnInfo().getReturns();
+                return Optional.of(staticOperators.get(o).intoFnInfo().getReturns());
             }
             for (var sup : supers) {
                 var opRet = sup.staticOperatorReturnType(o);
-                if (opRet != null) {
+                if (opRet.isPresent()) {
                     return opRet;
                 }
             }
-            return null;
+            return Optional.empty();
         }
 
         public final void seal() {
