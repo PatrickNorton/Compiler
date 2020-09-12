@@ -246,6 +246,21 @@ public final class AssignmentConverter implements BaseConverter {
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
                     node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()
             );
-        }  // TODO: Check if assignment is legal (mutability, etc.)
+        } else {
+            var postDots = variable.getPostDots();
+            var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
+            if (!preDotType.canSetAttr(postDot.getName())) {
+                if (preDotType.makeMut().canSetAttr(postDot.getName())) {
+                    throw CompilerException.of(
+                            "Cannot assign to value that is not 'mut' or 'final'", node
+                    );
+                } else {
+                    throw CompilerException.format(
+                            "Cannot assign: '%s'.%s does not support assignment",
+                            node, preDotType.name(), postDot.getName()
+                    );
+                }
+            }
+        }
     }
 }
