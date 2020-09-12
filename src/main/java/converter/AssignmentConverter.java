@@ -238,6 +238,7 @@ public final class AssignmentConverter implements BaseConverter {
     private void checkAssign(
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
+        assert variable.getPostDots().length == 1;
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
