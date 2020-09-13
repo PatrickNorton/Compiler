@@ -72,6 +72,10 @@ class Exec from RegularExpression {
     public method regexStrings() -> list[str] {
         return self.ro.res
     }
+
+    public method captureNames() -> list[str?] {
+        return self.ro.nfa.captures
+    }
 }
 
 const class ExecReadOnly {

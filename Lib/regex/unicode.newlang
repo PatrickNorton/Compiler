@@ -89,7 +89,7 @@ class Regex {
         #   2) We don't need to look up all of the capture groups and do
         #      replacements inside the replacement string. We just push it
         #      at each match and be done with it.
-        if rep.noExpansion()? as rep {
+        if replacement.noExpansion()? as rep {
             mut var new = StringBuilder(text.length)
             mut var lastMatch = 0
             for var i, var m in enumerate(self.findIter(text)) {
