@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.converter.classbody.ConverterHolder;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -60,8 +61,9 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
                 return false;
             }
         }
-        for (var info : holder.getOperators().values()) {
-            if (info.isMut()) {
+        for (var pair : holder.getOperators().entrySet()) {
+            var info = pair.getValue();
+            if (info.isMut() && pair.getKey() != OpSpTypeNode.NEW) {
                 return false;
             }
         }
