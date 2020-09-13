@@ -250,7 +250,7 @@ public final class AssignmentConverter implements BaseConverter {
         } else {
             var postDots = variable.getPostDots();
             var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
-            if (!preDotType.canSetAttr(postDot.getName())) {
+            if (!preDotType.canSetAttr(postDot.getName()) && !isConstructorException(preDotType, variable)) {
                 if (preDotType.makeMut().canSetAttr(postDot.getName())) {
                     throw CompilerException.of(
                             "Cannot assign to value that is not 'mut' or 'final'", node
@@ -263,5 +263,22 @@ public final class AssignmentConverter implements BaseConverter {
                 }
             }
         }
+    }
+
+    private boolean isConstructorException(TypeObject preDotType, DottedVariableNode variableNode) {
+        if (preDotIsSelf(variableNode)) {
+            return info.accessHandler().isInConstructor(preDotType);
+        } else {
+            return false;
+        }
+    }
+
+    private boolean preDotIsSelf(@NotNull DottedVariableNode variableNode) {
+        if (variableNode.getPostDots().length != 1) {
+            return false;
+        }
+        var preDot = variableNode.getPreDot();
+        // 'self' is a reserved name, so this is enough to check
+        return preDot instanceof VariableNode && ((VariableNode) preDot).getName().equals("self");
     }
 }

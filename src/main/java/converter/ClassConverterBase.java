@@ -7,6 +7,7 @@ import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.MethodDefinitionNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.util.Pair;
@@ -46,6 +47,9 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 }
                 var retInfo = info.getFnReturns();
                 retInfo.addFunctionReturns(fnInfo.getReturns());
+                if (pair.getKey() == OpSpTypeNode.NEW) {
+                    info.accessHandler().enterConstructor(type);
+                }
                 var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
                 retInfo.popFnReturns();
                 result.put(pair.getKey(), bytes);
@@ -54,6 +58,9 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 handler.removePrivateAccess(type);
                 handler.removeCls();
                 recursivelyRemoveProtectedAccess(handler, type);
+                if (pair.getKey() == OpSpTypeNode.NEW) {
+                    info.accessHandler().exitConstructor();
+                }
             }
         }
         return result;
