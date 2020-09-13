@@ -30,7 +30,8 @@ public final class MethodConverter {
         var name = methodName(node);
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
-        var fnInfo = new FunctionInfo(name, args, returns);
+        var isGen = node.getDescriptors().contains(DescriptorNode.GENERATOR);
+        var fnInfo = new FunctionInfo(name, isGen, args, returns);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
         checkVars(name, node, methodMap);
@@ -47,7 +48,8 @@ public final class MethodConverter {
         var name = node.getName().getName();
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetvals());
-        var fnInfo = new FunctionInfo(name, args, returns);
+        var isGen = node.getDescriptors().contains(DescriptorNode.GENERATOR);
+        var fnInfo = new FunctionInfo(name, isGen, args, returns);
         var descriptors = node.getDescriptors();
         var accessLevel = AccessLevel.fromDescriptors(descriptors);
         var isMut = descriptors.contains(DescriptorNode.MUT);

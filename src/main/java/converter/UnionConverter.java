@@ -180,7 +180,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         for (var pair : variants.entrySet()) {
             var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType);
             var selfVar = new VariableNode(LineInfo.empty(), selfType.name());
-            var variantNo = 0;  // TODO: Get variant number
+            var variantNo = pair.getValue().getKey();
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
             var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, variantVal);
             var body = new StatementBodyNode(LineInfo.empty(), stmt);

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.AssignableNode;
 import main.java.parser.AssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
@@ -73,19 +74,50 @@ public final class AssignmentConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, value, node.getNames().length);
         var retTypes = valueConverter.returnType();
         List<Byte> bytes = new ArrayList<>(valueConverter.convert(start));
-        for (int i = names.length - 1; i >= 0; i--) {  // FIXME: Assigns in reverse order (side effects may switch)
-            var name = names[i];
-            if (name instanceof VariableNode) {
-                assignTopToVariable(bytes, (VariableNode) name, retTypes[i]);
-            } else if (name instanceof IndexNode) {
-                assignTopToIndex(bytes, start, (IndexNode) name, retTypes[i]);
-            } else if (name instanceof DottedVariableNode) {
-                assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
-            } else {
-                throw new UnsupportedOperationException("Assignment to this type not yet supported");
+        var nonVariableCount = quickNonVarCount(names);
+        assert nonVariableCount >= 0;
+        // For this section, we need to take care of possible side-effects and
+        // the order in which they occur.
+        // Assignment to indices (via operator []=) and fields (via properties)
+        // may contain side-effects, and the language specifies that such
+        // assignments should occur in the order in which they were specified
+        // in the code.
+        // Complicating our lives, however, is the fact that with multiple
+        // returns, the stack is in reverse order from what we want. Since in
+        // the majority of cases there will be no side-effects, we want to
+        // optimize away the stack reversal whenever possible.
+        if (nonVariableCount == 0) {
+            // All variables, guaranteed side-effect free, so optimize reverse
+            // order
+            for (int i = names.length - 1; i >= 0; i--) {
+                var name = (VariableNode) names[i];
+                assignTopToVariable(bytes, name, retTypes[i]);
+            }
+        } else if (nonVariableCount == 1) {
+            // Only 1 possible side-effect, cannot be switched with another
+            for (int i = names.length - 1; i >= 0; i--) {
+                assignTop(bytes, start, retTypes[i], names[i]);
+            }
+        } else {
+            // Have to swap everything (sigh)
+            for (int i = 0; i < names.length; i++) {
+                bringToTop(bytes, names.length - i - 1);
+                assignTop(bytes, start, retTypes[i], names[i]);
             }
         }
         return bytes;
+    }
+
+    private void assignTop(List<Byte> bytes, int start, TypeObject retType, AssignableNode name) {
+        if (name instanceof VariableNode) {
+            assignTopToVariable(bytes, (VariableNode) name, retType);
+        } else if (name instanceof IndexNode) {
+            assignTopToIndex(bytes, start, (IndexNode) name, retType);
+        } else if (name instanceof DottedVariableNode) {
+            assignTopToDot(bytes, start, (DottedVariableNode) name, retType);
+        } else {
+            throw new UnsupportedOperationException("Assignment to this type not yet supported");
+        }
     }
 
     private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
@@ -94,7 +126,7 @@ public final class AssignmentConverter implements BaseConverter {
         var varType = info.getType(name);
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
-                throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
+                throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
                 bytes.add(Bytecode.MAKE_OPTION.value);
@@ -112,7 +144,7 @@ public final class AssignmentConverter implements BaseConverter {
         var varType = info.getType(name);
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
-                throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
+                throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
                 bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start + bytes.size())));
@@ -238,6 +270,7 @@ public final class AssignmentConverter implements BaseConverter {
     private void checkAssign(
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
+        assert variable.getPostDots().length == 1;
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
@@ -246,6 +279,51 @@ public final class AssignmentConverter implements BaseConverter {
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
                     node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()
             );
-        }  // TODO: Check if assignment is legal (mutability, etc.)
+        } else {
+            var postDots = variable.getPostDots();
+            var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
+            if (!preDotType.canSetAttr(postDot.getName()) && !isConstructorException(preDotType, variable)) {
+                if (preDotType.makeMut().canSetAttr(postDot.getName())) {
+                    throw CompilerException.of(
+                            "Cannot assign to value that is not 'mut' or 'final'", node
+                    );
+                } else {
+                    throw CompilerException.format(
+                            "Cannot assign: '%s'.%s does not support assignment",
+                            node, preDotType.name(), postDot.getName()
+                    );
+                }
+            }
+        }
+    }
+
+    private boolean isConstructorException(TypeObject preDotType, DottedVariableNode variableNode) {
+        if (preDotIsSelf(variableNode)) {
+            return info.accessHandler().isInConstructor(preDotType);
+        } else {
+            return false;
+        }
+    }
+
+    private boolean preDotIsSelf(@NotNull DottedVariableNode variableNode) {
+        if (variableNode.getPostDots().length != 1) {
+            return false;
+        }
+        var preDot = variableNode.getPreDot();
+        // 'self' is a reserved name, so this is enough to check
+        return preDot instanceof VariableNode && ((VariableNode) preDot).getName().equals("self");
+    }
+
+    private static int quickNonVarCount(@NotNull AssignableNode[] names) {
+        int count = 0;
+        for (var name : names) {
+            if (!(name instanceof VariableNode)) {
+                count++;
+                if (count > 1) {  // For its use (side-effect checks), there is no need to keep counting
+                    return count;
+                }
+            }
+        }
+        return count;
     }
 }

@@ -12,6 +12,7 @@ public final class AccessHandler {
     private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
     private final Deque<TypeObject> clsTypes = new ArrayDeque<>();
     private final Deque<TypeObject> superTypes = new ArrayDeque<>();
+    private final Deque<TypeObject> constructors = new ArrayDeque<>();
 
     /**
      * The current access level of the given {@link TypeObject}.
@@ -24,9 +25,9 @@ public final class AccessHandler {
      * @param obj The object to get the access level for
      * @return The security access level of the type
      */
-    public AccessLevel accessLevel(TypeObject obj) {
-        return classesWithAccess.contains(obj) ? AccessLevel.PRIVATE
-                : classesWithProtected.contains(obj) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
+    public AccessLevel accessLevel(@NotNull TypeObject obj) {
+        return classesWithAccess.contains(obj.makeConst()) ? AccessLevel.PRIVATE
+                : classesWithProtected.contains(obj.makeConst()) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
     }
 
     /**
@@ -109,7 +110,7 @@ public final class AccessHandler {
      * </p>
      *
      * @param cls The type to be used
-     * @see #removeSuper() ()
+     * @see #removeSuper()
      */
     public void addSuper(@NotNull TypeObject cls) {
         superTypes.push(cls);
@@ -137,5 +138,39 @@ public final class AccessHandler {
 
     public TypeObject getSuper() {
         return superTypes.peekFirst();
+    }
+
+    /**
+     * Adds a new {@link TypeObject type} to be treated as if it were in that
+     * type's constructor.
+     * <p>
+     *     Being in the constructor means that "{@code self.foo = bar()}"-style
+     *     statements will always work, regardless of mutability of {@code
+     *     self.foo} under normal circumstances.
+     * </p>
+     * <p>
+     *     This should always be used in conjunction with {@link
+     *     #exitConstructor()}, to prevent leakage of types.
+     * </p>
+     *
+     * @param type The type to be used
+     * @see #exitConstructor()
+     */
+    public void enterConstructor(TypeObject type) {
+        constructors.push(type);
+    }
+
+    /**
+     * Removes a {@link TypeObject type} from being treated as if it were in
+     * the constructor; e.g. it undoes what was done by {@link
+     * #enterConstructor}.
+     * @see #enterConstructor(TypeObject)
+     */
+    public void exitConstructor() {
+        constructors.pop();
+    }
+
+    public boolean isInConstructor(@NotNull TypeObject type) {
+        return constructors.contains(type.makeConst());
     }
 }

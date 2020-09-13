@@ -39,13 +39,8 @@ public final class OperatorDefConverter {
         var op = node.getOpCode().getOperator();
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetType());
-        FunctionInfo fnInfo;
-        if (DEFAULT_RETURNS.containsKey(op)) {
-            var lineInfo = node.getRetType().length > 0 ? node.getRetType()[0].getLineInfo() : LineInfo.empty();
-            fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
-        } else {
-            fnInfo = new FunctionInfo("", args, returns);
-        }
+        var lineInfo = node.getRetType().length > 0 ? node.getRetType()[0].getLineInfo() : node.getLineInfo();
+        FunctionInfo fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
         boolean isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         var opInfos = isStatic ? staticOperatorInfos : operatorInfos;
         var ops = isStatic ? staticOperators : operators;
@@ -54,7 +49,7 @@ public final class OperatorDefConverter {
         }
         opInfos.put(op, fnInfo);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
-        var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
+        var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         ops.put(op, new MethodInfo(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
     }
 
@@ -62,18 +57,13 @@ public final class OperatorDefConverter {
         var op = node.getOpCode().getOperator();
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetvals());
-        FunctionInfo fnInfo;
-        if (DEFAULT_RETURNS.containsKey(op)) {
-            var lineInfo = node.getRetvals().length > 0 ? node.getRetvals()[0].getLineInfo() : LineInfo.empty();
-            fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
-        } else {
-            fnInfo = new FunctionInfo("", args, returns);
-        }
+        var lineInfo = node.getRetvals().length > 0 ? node.getRetvals()[0].getLineInfo() : node.getLineInfo();
+        FunctionInfo fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
         if (operatorInfos.containsKey(op)) {
             throw CompilerException.doubleDef(op, node, operators.get(op));
         }
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
-        var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
+        var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         operatorInfos.put(op, fnInfo);
         operators.put(op, new MethodInfo(accessLevel, isMut, fnInfo,
                 StatementBodyNode.empty(), node.getLineInfo()));
@@ -97,7 +87,17 @@ public final class OperatorDefConverter {
 
     @NotNull
     private TypeObject[] validateReturns(LineInfo info, OpSpTypeNode op, @NotNull TypeObject... returns) {
-        if (returns.length > 0) {
+        if (MANDATORY_RETURNS.containsKey(op) && returns.length < MANDATORY_RETURNS.get(op)) {
+            var retCount = MANDATORY_RETURNS.get(op);
+            if (retCount == 1) {
+                throw CompilerException.format("%s must specify a return value", info, op);
+            } else {
+                throw CompilerException.format(
+                        "%s must return at least %d values, only %d were declared",
+                        info, op, retCount, returns.length
+                );
+            }
+        } else if (returns.length > 0) {
             if (DEFAULT_RETURNS.containsKey(op) && !DEFAULT_RETURNS.get(op).isSuperclass(returns[0])) {
                 throw CompilerException.format(
                         "%s must return '%s', which clashes with the given type '%s'",
@@ -111,6 +111,7 @@ public final class OperatorDefConverter {
     }
 
     private static final Map<OpSpTypeNode, TypeObject> DEFAULT_RETURNS;
+    private static final Map<OpSpTypeNode, Integer> MANDATORY_RETURNS;
 
     static {
         var temp = new EnumMap<OpSpTypeNode, TypeObject>(OpSpTypeNode.class);
@@ -131,5 +132,15 @@ public final class OperatorDefConverter {
         temp.put(OpSpTypeNode.COMPARE, Builtins.INT);
 
         DEFAULT_RETURNS = Collections.unmodifiableMap(temp);
+    }
+
+    static {
+        var temp = new EnumMap<OpSpTypeNode, Integer>(OpSpTypeNode.class);
+        temp.put(OpSpTypeNode.ITER, 1);
+        temp.put(OpSpTypeNode.ITER_SLICE, 1);
+        temp.put(OpSpTypeNode.GET_ATTR, 1);
+        temp.put(OpSpTypeNode.GET_SLICE, 1);
+
+        MANDATORY_RETURNS = Collections.unmodifiableMap(temp);
     }
 }

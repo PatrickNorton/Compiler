@@ -64,6 +64,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return this;
     }
 
+    public boolean canSetAttr(String name) {
+        return false;
+    }
+
     @Override
     public final TypeObject getType() {
         return Builtins.TYPE.generify(this);

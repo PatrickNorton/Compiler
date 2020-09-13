@@ -183,6 +183,19 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
+    @Override
+    public final boolean canSetAttr(String name) {
+        if (isConst) {
+            return false;
+        }
+        var attr = info.attributes.get(name);
+        if (attr == null) {
+            return false;
+        } else {
+            return !attr.intoAttrInfo().getMutType().isConstRef();
+        }
+    }
+
     protected static abstract class Info<O extends IntoFnInfo, A extends IntoAttrInfo> {
         protected final String name;
         protected List<TypeObject> supers;

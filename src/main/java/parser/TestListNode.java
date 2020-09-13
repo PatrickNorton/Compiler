@@ -5,10 +5,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.StringJoiner;
 
-public class TestListNode implements BaseNode {
+public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> {
     private TestNode[] tests;
     private String[] varargs;
 
@@ -39,6 +41,12 @@ public class TestListNode implements BaseNode {
 
     public TestNode get(int index) {
         return tests[index];
+    }
+
+    @NotNull
+    @Override
+    public Iterator<Pair<TestNode, String>> iterator() {
+        return new TestListIterator(tests, varargs);
     }
 
     /**
@@ -113,5 +121,35 @@ public class TestListNode implements BaseNode {
             sj.add(varargs[i] + tests[i]);
         }
         return sj.toString();
+    }
+
+    private static final class TestListIterator implements Iterator<Pair<TestNode, String>> {
+        private int index;
+        private final TestNode[] tests;
+        private final String[] varargs;
+
+        @Contract(pure = true)
+        public TestListIterator(@NotNull TestNode[] tests, @NotNull String[] varargs) {
+            assert tests.length == varargs.length;
+            this.index = 0;
+            this.tests = tests;
+            this.varargs = varargs;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < tests.length && index < varargs.length;
+        }
+
+        @Override
+        @NotNull
+        public Pair<TestNode, String> next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var pair = Pair.of(tests[index], varargs[index]);
+            index++;
+            return pair;
+        }
     }
 }
