@@ -1,11 +1,13 @@
 package main.java.converter;
 
+import main.java.parser.AssignableNode;
 import main.java.parser.AssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -73,16 +75,27 @@ public final class AssignmentConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, value, node.getNames().length);
         var retTypes = valueConverter.returnType();
         List<Byte> bytes = new ArrayList<>(valueConverter.convert(start));
-        for (int i = names.length - 1; i >= 0; i--) {  // FIXME: Assigns in reverse order (side effects may switch)
-            var name = names[i];
-            if (name instanceof VariableNode) {
-                assignTopToVariable(bytes, (VariableNode) name, retTypes[i]);
-            } else if (name instanceof IndexNode) {
-                assignTopToIndex(bytes, start, (IndexNode) name, retTypes[i]);
-            } else if (name instanceof DottedVariableNode) {
-                assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
-            } else {
-                throw new UnsupportedOperationException("Assignment to this type not yet supported");
+        if (allAreVariable(names)) {
+            for (int i = names.length - 1; i >= 0; i--) {
+                var name = (VariableNode) names[i];
+                assignTopToVariable(bytes, name, retTypes[i]);
+            }
+        } else {
+            CompilerWarning.warn(
+                    "Multiple-return assignment involving properties or operator []= " +
+                            "may reverse side-effects from expected", node
+            );
+            for (int i = names.length - 1; i >= 0; i--) {  // FIXME: Assigns in reverse order (side effects may switch)
+                var name = names[i];
+                if (name instanceof VariableNode) {
+                    assignTopToVariable(bytes, (VariableNode) name, retTypes[i]);
+                } else if (name instanceof IndexNode) {
+                    assignTopToIndex(bytes, start, (IndexNode) name, retTypes[i]);
+                } else if (name instanceof DottedVariableNode) {
+                    assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
+                } else {
+                    throw new UnsupportedOperationException("Assignment to this type not yet supported");
+                }
             }
         }
         return bytes;
@@ -280,5 +293,15 @@ public final class AssignmentConverter implements BaseConverter {
         var preDot = variableNode.getPreDot();
         // 'self' is a reserved name, so this is enough to check
         return preDot instanceof VariableNode && ((VariableNode) preDot).getName().equals("self");
+    }
+
+    @Contract(pure = true)
+    private static boolean allAreVariable(@NotNull AssignableNode[] names) {
+        for (var name : names) {
+            if (!(name instanceof VariableNode)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
