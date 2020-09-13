@@ -1,9 +1,12 @@
+from collections import Pair
+
 from .AhoCorasick import AhoCorasick
 from .prog import Program
 from .builder import RegexOptions
 from .compile import Compiler
 from .hir import Hir, Literals
 from .literal import LiteralSearcher
+from .trait import Locations
 
 from .backtrack import Cache as BacktrackCache
 from .dfa import Cache as DfaCache
@@ -11,7 +14,7 @@ from .pikevm import Cache as PikeVMCache
 
 export Exec, ProgramCache, ExecBuilder
 
-class Exec {
+class Exec from RegularExpression {
     private ExecReadOnly ro
     private ProgramCache cache
 
@@ -56,6 +59,14 @@ class Exec {
                 }
             }
         }
+    }
+
+    public method searcherStr() -> ExecNoSyncStr {
+        return ExecNoSyncStr(self.searcher())
+    }
+
+    public method searcher() -> ExecNoSync {
+        return ExecNoSync(self.ro, self.cache ?? ProgramCacheInner(self.ro))
     }
 
     public method regexStrings() -> list[str] {
@@ -414,5 +425,255 @@ class Parsed {
         self.prefixes = prefixes
         self.suffixes = suffixes
         self.bytes = bytes
+    }
+}
+
+class ExecNoSync from RegularExpression {
+    private ExecReadOnly ro
+    private ProgramCache cache
+
+    public method slotsLen() -> int {
+        return self.ro.nfa.captures.length * 2
+    }
+
+    public method nextAfterEmpty(bytes _text, int i) -> int {
+        return i + 1
+    }
+
+    public method shortestMatchAt(bytes text, int start) -> int? {
+        return null if not self.isAnchorEndMatch(text)
+
+        return switch self.ro.matchType {
+            case MatchType.Literal as ty => self.findLiterals(ty, text, start).1
+
+            case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
+                case Result.Match as end => end
+                case Result.NoMatch => null
+                case Result.Quit => self.shortestNfa(text, start)
+            }
+
+            case MatchType.DfaAnchoredReverse => switch Fsm.reverse(
+                self.ro.dfaReverse,
+                self.cache.value(),
+                true,
+                text[start:],
+                text.length,
+            ) {
+                case Result.Match => text.length
+                case Result.NoMatch => null
+                case Result.Quit => self.shortestNfa(text, start)
+            }
+
+            case MatchType.DfaSuffix => switch self.shortestDfaReverseSuffix(text, start) {
+                case Result.Match as e => e
+                case Result.NoMatch => null
+                case Result.Quit => self.shortestNfa(text, start)
+            }
+
+            case MatchType.Nfa as ty => self.shortestNfaType(ty, text, start)
+            case MatchType.Nothing => null
+        }
+    }
+
+    public method isMatchAt(bytes text, int start) -> bool {
+        return false if not self.isAnchorEndMatch(text)
+
+        # We need to do this dance because shortest_match relies on the NFA
+        # filling in captures[1], but a RegexSet has no captures. In other
+        # words, a RegexSet can't (currently) use shortest_match. ---AG
+        return switch self.ro.matchType {
+            case MatchType.Literal as ty => self.find_literals(ty, text, start)?
+
+            case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
+                case Result.Match => true
+                case Result.NoMatch => false
+                case Result.Quit => self.matchNfa(text, start)
+            }
+
+            case MatchType.DfaAnchoredReverse => switch Fsm.reverse(
+                self.ro.dfaReverse,
+                self.cache.value(),
+                true,
+                text[start:],
+                text.length,
+            ) {
+                case Result.Match => true
+                case Result.NoMatch => false
+                case Result.Quit => self.matchNfa(text, start)
+            }
+
+            case MatchType.DfaSuffix => switch self.shortestDfaReverseSuffix(text, start) {
+                case Result.Match => true
+                case Result.NoMatch => false
+                case Result.Quit => self.matchNfa(text, start)
+            }
+
+            case MatchType.Nfa as ty => self.matchNfaType(ty, text, start)
+            case MatchType.Nothing => false
+        }
+    }
+
+    public method findAt(bytes text, int start) -> Pair[int, int]? {
+        return null if not self.isAnchorEndMatch(text)
+
+        return switch self.ro.matchType {
+            case MatchType.Literal as ty => self.findLiterals(ty, text, start)
+
+            case MatchType.Dfa => switch self.findDfaForward(text, start) {
+                case Result.Match as pair => pair
+                case Result.NoMatch => null
+                case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
+            }
+
+            case MatchType.DfaAnchoredReverse => switch self.find_dfa_anchored_reverse(text, start) {
+                case Result.Match as pair => pair
+                case Result.NoMatch => null
+                case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
+            }
+
+            case MatchType.DfaSuffix => switch self.findDfaReverseSuffix(text, start) {
+                case Result.Match as pair => pair
+                case Result.NoMatch => null
+                case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
+            }
+            case MatchType.Nfa as ty => self.findNfa(ty, text, start)
+            case MatchType.Nothing => null
+
+            case MatchType.DfaMany => raise ValueError("BUG: RegexSet cannot be used with find")
+        }
+    }
+
+    public method capturesReadAt(
+        mut Locations locs,
+        bytes text,
+        int start,
+    ) -> Pair[int, int]? {
+        var slots = locs.asSlots()
+        for int i in enumerate(slots) {
+             slots[i] = null
+        }
+        # If the caller unnecessarily uses this, then we try to save them
+        # from themselves.
+        switch slots.length {
+            case 0 {
+                return self.findAt(text, start)
+            }
+            case 2 {
+                if self.findAt(text, start)? as pair {
+                    slots[0] = pair.first
+                    slots[1] = pair.second
+                    return pair
+                } else {
+                    return null
+                }
+            }
+            default {}  # fallthrough
+        }
+        return null if not self.isAnchorEndMatch(text)
+
+        switch self.ro.matchType {
+            case MatchType.Literal as ty {
+                if self.findLiterals(ty, text, start)? as pair {
+                    return self.capturesNfaType(
+                        MatchNfaType.Auto,
+                        slots,
+                        text,
+                        pair.first,
+                        pair.second,
+                    )
+                } else {
+                    return null
+                }
+            }
+
+            case MatchType.Dfa {
+                if self.ro.nfa.isAnchoredStart {
+                    return self.captures_nfa(slots, text, start)
+                } else {
+                    return switch self.findDfaForward(text, start) {
+                        case Result.Match as pair => self.capturesNfaType(
+                            MatchNfaType.Auto,
+                            slots,
+                            text,
+                            pair.first,
+                            pair.second,
+                        )
+                        case Result.NoMatch => null
+                        case Result.Quit => self.captures_nfa(slots, text, start)
+                    }
+                }
+            }
+
+            case MatchType.DfaAnchoredReverse {
+                return switch self.findDfaAnchoredReverse(text, start) {
+                    case Result.Match as pair => self.captures_nfa_type(
+                        MatchNfaType.Auto,
+                        slots,
+                        text,
+                        pair.first,
+                        pair.second,
+                    )
+                    case Result.NoMatch => null
+                    case Result.Quit => self.capturesNfa(slots, text, start)
+                }
+            }
+
+
+            case MatchType.DfaSuffix {
+                return switch self.findDfaReverseSuffix(text, start) {
+                    case Result.Match as pair => self.captures_nfa_type(
+                        MatchNfaType.Auto,
+                        slots,
+                        text,
+                        pair.first,
+                        pair.second,
+                    )
+                    case Result.NoMatch => null
+                    case Result.Quit => self.capturesNfa(slots, text, start)
+                }
+            }
+            case MatchType.Nfa as ty {
+                return self.capturesNfaType(ty, slots, text, start, text.length)
+            }
+            case MatchType.Nothing {
+                return null
+            }
+
+            case MatchType.DfaMany {
+                raise ValueError("BUG: RegexSet cannot be used with captures")
+            }
+        }
+    }
+}
+
+class ExecNoSyncStr from RegularExpression {
+    private ExecNoSync value
+
+    public method slotsLen() -> int {
+        self.value.slotsLen()
+    }
+
+    public method nextAfterEmpty(str text, int i) -> int {
+        return nextUtf8(bytes(text), i)
+    }
+
+    public method shortestMatchAt(str text, int start) -> int? {
+        return self.value.shortestMatchAt(bytes(text), start)
+    }
+
+    public method isMatchAt(str text, int start) -> bool {
+        return self.value.isMatchAt(bytes(text), start)
+    }
+
+    public method findAt(str text, int start) -> Pair[int, int]? {
+        return self.value.findAt(bytes(text), start)
+    }
+
+    public method capturesReadAt(
+        mut Locations locs,
+        bytes text,
+        int start,
+    ) -> Pair[int, int]? {
+        return self.value.capturesReadAt(locs, bytes(text), start)
     }
 }
