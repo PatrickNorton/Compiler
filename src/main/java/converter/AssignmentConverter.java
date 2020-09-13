@@ -7,7 +7,6 @@ import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -75,30 +74,50 @@ public final class AssignmentConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, value, node.getNames().length);
         var retTypes = valueConverter.returnType();
         List<Byte> bytes = new ArrayList<>(valueConverter.convert(start));
-        if (allAreVariable(names)) {
+        var nonVariableCount = quickNonVarCount(names);
+        assert nonVariableCount >= 0;
+        // For this section, we need to take care of possible side-effects and
+        // the order in which they occur.
+        // Assignment to indices (via operator []=) and fields (via properties)
+        // may contain side-effects, and the language specifies that such
+        // assignments should occur in the order in which they were specified
+        // in the code.
+        // Complicating our lives, however, is the fact that with multiple
+        // returns, the stack is in reverse order from what we want. Since in
+        // the majority of cases there will be no side-effects, we want to
+        // optimize away the stack reversal whenever possible.
+        if (nonVariableCount == 0) {
+            // All variables, guaranteed side-effect free, so optimize reverse
+            // order
             for (int i = names.length - 1; i >= 0; i--) {
                 var name = (VariableNode) names[i];
                 assignTopToVariable(bytes, name, retTypes[i]);
             }
+        } else if (nonVariableCount == 1) {
+            // Only 1 possible side-effect, cannot be switched with another
+            for (int i = names.length - 1; i >= 0; i--) {
+                assignTop(bytes, start, retTypes[i], names[i]);
+            }
         } else {
-            CompilerWarning.warn(
-                    "Multiple-return assignment involving properties or operator []= " +
-                            "may reverse side-effects from expected", node
-            );
-            for (int i = names.length - 1; i >= 0; i--) {  // FIXME: Assigns in reverse order (side effects may switch)
-                var name = names[i];
-                if (name instanceof VariableNode) {
-                    assignTopToVariable(bytes, (VariableNode) name, retTypes[i]);
-                } else if (name instanceof IndexNode) {
-                    assignTopToIndex(bytes, start, (IndexNode) name, retTypes[i]);
-                } else if (name instanceof DottedVariableNode) {
-                    assignTopToDot(bytes, start, (DottedVariableNode) name, retTypes[i]);
-                } else {
-                    throw new UnsupportedOperationException("Assignment to this type not yet supported");
-                }
+            // Have to swap everything (sigh)
+            for (int i = 0; i < names.length; i++) {
+                bringToTop(bytes, names.length - i - 1);
+                assignTop(bytes, start, retTypes[i], names[i]);
             }
         }
         return bytes;
+    }
+
+    private void assignTop(List<Byte> bytes, int start, TypeObject retType, AssignableNode name) {
+        if (name instanceof VariableNode) {
+            assignTopToVariable(bytes, (VariableNode) name, retType);
+        } else if (name instanceof IndexNode) {
+            assignTopToIndex(bytes, start, (IndexNode) name, retType);
+        } else if (name instanceof DottedVariableNode) {
+            assignTopToDot(bytes, start, (DottedVariableNode) name, retType);
+        } else {
+            throw new UnsupportedOperationException("Assignment to this type not yet supported");
+        }
     }
 
     private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
@@ -107,7 +126,7 @@ public final class AssignmentConverter implements BaseConverter {
         var varType = info.getType(name);
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
-                throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
+                throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
                 bytes.add(Bytecode.MAKE_OPTION.value);
@@ -125,7 +144,7 @@ public final class AssignmentConverter implements BaseConverter {
         var varType = info.getType(name);
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
-                throw CompilerException.format("Cannot assign value of type %s to variable of type %s",
+                throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
                 bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start + bytes.size())));
@@ -295,13 +314,16 @@ public final class AssignmentConverter implements BaseConverter {
         return preDot instanceof VariableNode && ((VariableNode) preDot).getName().equals("self");
     }
 
-    @Contract(pure = true)
-    private static boolean allAreVariable(@NotNull AssignableNode[] names) {
+    private static int quickNonVarCount(@NotNull AssignableNode[] names) {
+        int count = 0;
         for (var name : names) {
             if (!(name instanceof VariableNode)) {
-                return false;
+                count++;
+                if (count > 1) {  // For its use (side-effect checks), there is no need to keep counting
+                    return count;
+                }
             }
         }
-        return true;
+        return count;
     }
 }
