@@ -74,11 +74,7 @@ public final class ForConverter extends LoopConverter {
             var iterator = node.getIterables().get(i);
             var valueConverter = TestConverter.of(info, iterator, 1);
             valueConverters.add(valueConverter);
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
-            bytes.addAll(valueConverter.convert(start + bytes.size()));
-            bytes.add(Bytecode.CALL_TOS.value);
-            bytes.addAll(Util.shortToBytes((short) 1));
+            addIter(info, start, bytes, valueConverter);
         }
         info.loopManager().setContinuePoint(start + bytes.size());
         bytes.add(Bytecode.FOR_PARALLEL.value);
@@ -139,5 +135,15 @@ public final class ForConverter extends LoopConverter {
         } else {
             return returnType(firstRet ? 0 : i, valueConverter);
         }
+    }
+
+    static void addIter(
+            @NotNull CompilerInfo info, int start, @NotNull List<Byte> bytes, @NotNull TestConverter converter
+    ) {
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
+        bytes.addAll(converter.convert(start + bytes.size()));
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) 1));
     }
 }
