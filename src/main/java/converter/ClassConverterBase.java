@@ -46,7 +46,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                     info.addVariable(arg.getName(), arg.getType(), methodInfo);
                 }
                 var retInfo = info.getFnReturns();
-                retInfo.addFunctionReturns(fnInfo.getReturns());
+                retInfo.addFunctionReturns(fnInfo.isGenerator(), fnInfo.getReturns());
                 if (pair.getKey() == OpSpTypeNode.NEW) {
                     info.accessHandler().enterConstructor(type);
                 }
