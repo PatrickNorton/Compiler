@@ -416,7 +416,7 @@ public final class ImportHandler {
                     // If value was not exported, don't fail, just continue
                 }
             }
-            throw CompilerException.format("No value '%s' was exported", lineInfo, name);
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
         }
         var export = exports.get(name);
         if (export instanceof TypeTypeObject) {
