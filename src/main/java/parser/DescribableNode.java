@@ -49,10 +49,11 @@ public interface DescribableNode extends IndependentNode {
         }
     }
 
+    @NotNull
     private static DescribableNode parseMutability(@NotNull TokenList tokens, EnumSet<DescriptorNode> descriptors) {
         assert !Collections.disjoint(descriptors, DescriptorNode.MUT_NODES);
         if (tokens.tokenIs(Keyword.VAR)) {
-            return IndependentNode.parseVar(tokens);
+            return finishParse(IndependentNode.parseVar(tokens), descriptors);
         } else if (tokens.tokenIs(TokenType.KEYWORD)) {
             return finishParse(IndependentNode.parse(tokens), descriptors);
         } else if (tokens.lineContains(TokenType.ASSIGN)) {
