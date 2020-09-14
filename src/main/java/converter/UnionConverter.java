@@ -46,6 +46,9 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             type = (StdTypeObject) info.getType(node.strName());
             parseStatements(converter);
         }
+        if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
+            throw CompilerException.of("Union may not be nonfinal", node);
+        }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
