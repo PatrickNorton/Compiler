@@ -130,6 +130,16 @@ public final class Builtins {
 
     public static final TupleType TUPLE = new TupleType();
 
+    public static final TemplateParam ENUMERATE_PARAM = new TemplateParam("T", 0, OBJECT);
+
+    public static final FunctionInfo ENUMERATE_INFO = new FunctionInfo(
+            "enumerate", true,
+            ArgumentInfo.of(Builtins.ITERABLE.generify(ENUMERATE_PARAM)),
+            Builtins.ITERABLE.generify(ENUMERATE_PARAM, INT)
+    );
+
+    public static final LangObject ENUMERATE = new LangInstance(ENUMERATE_INFO.toCallable());
+
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
@@ -435,6 +445,7 @@ public final class Builtins {
             Map.entry("tuple", TUPLE),
             Map.entry("Array", ARRAY),
             Map.entry("bytes", BYTES),
+            Map.entry("enumerate", ENUMERATE),
             Map.entry("null", NULL)
     );
 

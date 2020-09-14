@@ -748,6 +748,15 @@ public final class CompilerInfo {
     }
 
     /**
+     * The path to the file being compiled.
+     *
+     * @return The path
+     */
+    public Path sourceFile() {
+        return node.getPath();
+    }
+
+    /**
      * The object in charge of access levels for the file.
      *
      * @return The handler
