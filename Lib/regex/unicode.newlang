@@ -89,7 +89,8 @@ class Regex {
         #   2) We don't need to look up all of the capture groups and do
         #      replacements inside the replacement string. We just push it
         #      at each match and be done with it.
-        if replacement.noExpansion()? as rep {
+        mut var repl = ReplacerStr(replacement)
+        if repl.noExpansion()? as rep {
             mut var new = StringBuilder(text.length)
             mut var lastMatch = 0
             for var i, var m in enumerate(self.findIter(text)) {
@@ -114,7 +115,7 @@ class Regex {
 
             var m = cap[0]
             new.pushStr(text[last_match:m.start])
-            rep.replaceAppend(cap, new)
+            new = StringBuilder(repl.replaceAppend(cap, str(new)))
             lastMatch = m.end
         }
         return text if not new and not lastMatch
@@ -237,5 +238,33 @@ class Captures {
 
     public method expand(str replacement) -> str {
         return expandStr(self, replacement)
+    }
+}
+
+interface Replacer {
+    public mut method replaceAppend(Captures caps, str dst) -> str
+
+    public mut method noExpansion() -> str? {
+        return null
+    }
+}
+
+class ReplacerStr {
+    private str val
+
+    public operator new(str val) {
+        self.val = val
+    }
+
+    public mut method replaceAppend(Captures caps, str dst) -> str {
+        return caps.expand(self.val, dst)
+    }
+
+    public mut method noExpansion() -> str? {
+        if bytes(self).indexOf(b"$")? {
+            return null
+        } else {
+            return self
+        }
     }
 }
