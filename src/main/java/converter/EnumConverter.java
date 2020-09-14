@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
 import main.java.converter.classbody.MethodInfo;
+import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
@@ -32,6 +33,9 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         } else {
             type = (StdTypeObject) info.getType(node.getName().strName());
             parseStatements(converter);
+        }
+        if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
+            throw CompilerException.of("Enum class may not be nonfinal", node);
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {

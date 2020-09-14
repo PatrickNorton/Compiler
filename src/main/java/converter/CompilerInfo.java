@@ -775,6 +775,13 @@ public final class CompilerInfo {
     void addPredeclaredTypes(Map<String, TypeObject> types) {
         assert !linked;
         typeMap.putAll(types);
+        var varFrame = variables.get(variables.size() - 1);
+        for (var pair : types.entrySet()) {
+            var varInfo = new VariableInfo(  // FIXME: Better VariableInfo
+                    Builtins.TYPE.generify(pair.getValue()), true, (short) varFrame.size(), LineInfo.empty()
+            );
+            varFrame.put(pair.getKey(), varInfo);
+        }
     }
 
     {  // Prevent "non-updating" compiler warning

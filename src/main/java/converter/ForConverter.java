@@ -40,11 +40,7 @@ public final class ForConverter extends LoopConverter {
         var retCount = node.getVars().length;
         var valueConverter = TestConverter.of(info, node.getIterables().get(0), retCount);
         List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
-        bytes.addAll(valueConverter.convert(start));
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
+        addIter(info, start, bytes, valueConverter);
         info.loopManager().setContinuePoint(start + bytes.size());
         bytes.add(Bytecode.FOR_ITER.value);
         int jumpPos = bytes.size();
