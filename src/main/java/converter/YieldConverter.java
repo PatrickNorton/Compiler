@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.YieldStatementNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +32,18 @@ public final class YieldConverter implements BaseConverter {
         if (node.getYielded().size() > 1) {
             throw new UnsupportedOperationException("Cannot yield more than one value yet");
         }
+        if (node.isFrom()) {
+            convertFrom(start, bytes);
+        } else {
+            convertNormal(start, bytes);
+        }
+        if (jumpPos != -1) {
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        }
+        return bytes;
+    }
+
+    private void convertNormal(int start, List<Byte> bytes) {
         var retInfo = info.getFnReturns();
         if (!retInfo.isGenerator()) {
             throw CompilerException.of("'yield' is only valid in a generator", node);
@@ -41,10 +54,26 @@ public final class YieldConverter implements BaseConverter {
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.YIELD.value);
         bytes.addAll(Util.shortToBytes((short) retInfo.currentFnReturns().length));
-        if (jumpPos != -1) {
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+    }
+
+    private void convertFrom(int start, List<Byte> bytes) {
+        var retInfo = info.getFnReturns();
+        if (!retInfo.isGenerator()) {
+            throw CompilerException.of("'yield' is only valid in a generator", node);
         }
-        return bytes;
+        var converter = TestConverter.of(info, node.getYielded().get(0), retInfo.currentFnReturns().length);
+        var retTypes = converter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info);
+        checkReturnType(retInfo.currentFnReturns(), retTypes);
+        ForConverter.addIter(info, start, bytes, converter);
+        bytes.add(Bytecode.FOR_ITER.value);
+        int jumpPos = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(Util.shortToBytes((short) 1));
+        bytes.add(Bytecode.YIELD.value);
+        bytes.addAll(Util.shortToBytes((short) 1));
+        bytes.add(Bytecode.JUMP.value);
+        bytes.addAll(Util.intToBytes(jumpPos - 1));
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
     private void checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {
