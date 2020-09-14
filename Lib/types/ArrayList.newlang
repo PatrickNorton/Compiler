@@ -1,5 +1,4 @@
 from collections typeget AbstractList
-from .natives typeget Array
 
 from collections import normalizeIndices
 from math import max, min

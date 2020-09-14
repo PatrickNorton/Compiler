@@ -1,4 +1,5 @@
 from collections import Pair
+from string import StringBuilder
 
 from .builder import RegexBuilder
 from .exec import Exec
