@@ -4,9 +4,9 @@ auto interface Boolable {
     operator bool
 }
 
-auto interface Callable[*P, R] {
-    operator () (*P values, /) -> R
-}
+# auto interface Callable[*P, R] {
+#     operator () (*P values, /) -> R
+# }
 
 auto interface Comparable[T] {
     operator <=> (T other, /)
@@ -54,18 +54,18 @@ auto interface Hashable {
     operator hash
 }
 
-auto interface Iterable[T] {
-    pubget int length
-
-    operator iter -> T
-
-    operator in (T value, /) {
-        for T i in self {
-            return true if value == i
-        }
-        return false
-    }
-}
+# auto interface Iterable[T] {
+#     pubget int length
+#
+#     operator iter -> T
+#
+#     operator in (T value, /) {
+#         for T i in self {
+#             return true if value == i
+#         }
+#         return false
+#     }
+# }
 
 auto interface Indexable[K, V] {
     operator [] (K key, /) -> V

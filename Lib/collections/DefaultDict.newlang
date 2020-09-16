@@ -3,7 +3,7 @@ export DefaultDict
 
 class DefaultDict[K, V] from AbstractDict[K, V] {
     private final dict[K, V] internal
-    private final Callable[V] fallback
+    private final Callable[[V]] fallback
 
     # Typical dict constructors disallowed, as they're nonsensical for this
 #    public operator new (*tuple[K, V] items, /) = NotImplemented
@@ -14,7 +14,7 @@ class DefaultDict[K, V] from AbstractDict[K, V] {
 #         self.fallback = function
 #     }
 
-    public operator new (dict[K, V] items, Callable[V] function) {
+    public operator new (dict[K, V] items, Callable[[V]] function) {
         self.internal = dict(items)
         self.fallback = function
     }

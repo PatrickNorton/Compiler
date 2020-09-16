@@ -1,4 +1,4 @@
-from interfaces typeget Iterable
+# from interfaces typeget Iterable
 
 export Stack
 
