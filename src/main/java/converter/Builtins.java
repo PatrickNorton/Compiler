@@ -130,7 +130,7 @@ public final class Builtins {
     public static final FunctionInfo ENUMERATE_INFO = new FunctionInfo(
             "enumerate", true,
             ArgumentInfo.of(Builtins.ITERABLE.generify(ENUMERATE_PARAM)),
-            Builtins.ITERABLE.generify(ENUMERATE_PARAM, INT)
+            Builtins.ITERABLE.generify(INT, ENUMERATE_PARAM)
     );
 
     public static final LangObject ENUMERATE = new LangInstance(ENUMERATE_INFO.toCallable());
