@@ -80,7 +80,7 @@ class Regex {
         return self.replacen(text, 0, rep)
     }
 
-    public method replacen(str text, int count, str replacement) -> str {
+    public method replacen(str text, int limit, str replacement) -> str {
         # If we know that the replacement doesn't have any capture expansions,
         # then we can fast path. The fast path can make a tremendous
         # difference:
@@ -94,16 +94,15 @@ class Regex {
         if repl.noExpansion()? as rep {
             mut var new = StringBuilder(text.length)
             mut var lastMatch = 0
-            for var i, var m in enumerate(self.findIter(text)) {
-                isFirst = false
+            for int i, var m in enumerate(self.findIter(text)) {
                 break if limit > 0 and i >= limit
 
-                new.push(text[last_match:m.start])
+                new.push(text[lastMatch:m.start])
                 new.push(rep)
                 lastMatch = m.end
             }
             return text if not new and not lastMatch
-            new.push(text[last_match:])
+            new.push(text[lastMatch:])
             return str(new)
         }
 
@@ -114,14 +113,14 @@ class Regex {
         for var i, var cap in enumerate(self.capturesIter(text)) {
             break if limit > 0 and i >= limit
 
-            var m = cap[0]
-            new.pushStr(text[last_match:m.start])
+            var m = cap.group(0)
+            new.pushStr(text[lastMatch:m.start])
             new = StringBuilder(repl.replaceAppend(cap, str(new)))
             lastMatch = m.end
         }
         return text if not new and not lastMatch
-        new.pushStr(text[last_match:])
-        return new
+        new.pushStr(text[lastMatch:])
+        return str(new)
     }
 
     # Advanced/lower-level search methods
@@ -168,7 +167,7 @@ class Regex {
         return self.value.captureNames().length
     }
 
-    public method captureLocations() -> CaptureLocations {
+    public method captureLocations() -> mut CaptureLocations {
         return CaptureLocations(self.value.searcherStr().locations())
     }
 }
