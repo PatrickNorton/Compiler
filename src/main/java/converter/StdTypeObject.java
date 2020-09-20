@@ -196,6 +196,13 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.seal();
     }
 
+    @Contract("_, _ -> new")
+    @Override
+    @NotNull
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        return new StdTypeObject(this, generifyWithInner(parent, values));
+    }
+
     @Override
     @NotNull
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {

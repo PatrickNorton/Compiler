@@ -38,7 +38,7 @@ public final class FunctionInfoType extends TypeObject {
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
-            return Optional.of(info.boundify());
+            return Optional.of(info);
         } else {
             return Optional.empty();
         }
@@ -71,19 +71,38 @@ public final class FunctionInfoType extends TypeObject {
     }
 
     @Override
-    public Map<Integer, TypeObject> generifyAs(TypeObject other) {
+    public boolean sameBaseType(TypeObject other) {
+        if (other instanceof FunctionInfoType) {
+            return ((FunctionInfoType) other).info == info;
+        } else if (other instanceof GenerifiedFnInfoType) {
+            return ((GenerifiedFnInfoType) other).baseType().info == info;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         assert other instanceof FunctionInfoType;
         var otherT = (FunctionInfoType) other;
         var otherInfo = otherT.info;
         Map<Integer, TypeObject> result = new HashMap<>();
         var argC = Math.min(otherInfo.getArgs().size(), info.getArgs().size());
         for (int i = 0; i < argC; i++) {
-            result.putAll(info.getArgs().get(i).getType().generifyAs(otherInfo.getArgs().get(i).getType()));
+            var gen = info.getArgs().get(i).getType().generifyAs(parent, otherInfo.getArgs().get(i).getType());
+            if (gen.isEmpty()) {
+                return Optional.empty();
+            }
+            result.putAll(gen.orElseThrow());
         }
         var retCount = Math.min(otherInfo.getReturns().length, info.getReturns().length);
         for (int i = 0; i < retCount; i++) {
-            result.putAll(info.getReturns()[i].generifyAs(otherInfo.getReturns()[i]));
+            var gen = info.getReturns()[i].generifyAs(parent, otherInfo.getReturns()[i]);
+            if (gen.isEmpty()) {
+                return Optional.empty();
+            }
+            result.putAll(gen.orElseThrow());
         }
-        return result;
+        return Optional.of(result);
     }
 }

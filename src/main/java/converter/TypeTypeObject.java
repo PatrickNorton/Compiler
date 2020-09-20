@@ -49,6 +49,11 @@ public final class TypeTypeObject extends TypeObject {
         return "type";
     }
 
+    @Override
+    public boolean sameBaseType(TypeObject other) {
+        return other instanceof TypeTypeObject;
+    }
+
     @Contract("_ -> new")
     @Override
     @NotNull

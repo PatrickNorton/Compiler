@@ -16,7 +16,6 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +39,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     protected abstract boolean isSubclass(@NotNull TypeObject other);
     public abstract String name();
     public abstract String baseName();
+    public abstract boolean sameBaseType(TypeObject other);
     public abstract TypeObject typedefAs(String name);
 
     /**
@@ -117,8 +117,20 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return Optional.empty();
     }
 
-    public Map<Integer, TypeObject> generifyAs(TypeObject other) {
-        return new HashMap<>();
+    public final Optional<Map<Integer, TypeObject>> generifyAs(TypeObject other) {
+        return generifyAs(this, other);
+    }
+
+    public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
+        return Optional.empty();
+    }
+
+    public List<TypeObject> getGenerics() {
+        return Collections.emptyList();
+    }
+
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        return this;
     }
 
     @NotNull
@@ -207,6 +219,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     @NotNull
+    public final FunctionInfo tryOperatorInfo(@NotNull Lined lined, OpSpTypeNode o, @NotNull CompilerInfo info) {
+        return tryOperatorInfo(lined.getLineInfo(), o, info.accessLevel(this));
+    }
+
+    @NotNull
     public final TypeObject tryAttrType(@NotNull Lined node, String value, @NotNull CompilerInfo info) {
         return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
     }
@@ -226,6 +243,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
 
     public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         return operatorInfo(o, access);
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public final Iterable<TypeObject> recursiveSupers() {
+        return () -> new RecursiveSuperIterator((UserType<?>) this);
     }
 
     @Override

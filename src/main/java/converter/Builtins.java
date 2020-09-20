@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -48,15 +49,9 @@ public final class Builtins {
             "Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP
     );
 
-    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, OBJECT);
+    private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
-    private static final Map<OpSpTypeNode, FunctionInfo> ITERABLE_MAP = Map.of(
-            OpSpTypeNode.ITER, new FunctionInfo(ITERABLE_PARAM)
-    );
-
-    public static final InterfaceType ITERABLE = new InterfaceType(
-            "Iterable", GenericInfo.of(ITERABLE_PARAM), ITERABLE_MAP
-    );
+    public static final InterfaceType ITERABLE = new InterfaceType("Iterable", GenericInfo.of(ITERABLE_PARAM));
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
@@ -372,6 +367,13 @@ public final class Builtins {
         ARRAY_PARAM.setParent(ARRAY);
     }
 
+    static {
+        var iterInfo = new FunctionInfo(ITERABLE.generify(LineInfo.empty(), ITERABLE_PARAM));
+
+        ITERABLE.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
+        ITERABLE.seal();
+    }
+
     static {  // null is const
         NULL_TYPE.isConstClass();
         NULL_TYPE.seal();
@@ -392,8 +394,9 @@ public final class Builtins {
         CALLABLE_RETURN.setParent(CALLABLE);
     }
 
-    static {
-        REVERSED_PARAM.setParent(REVERSED_INFO);
+    static {  // Set method parents
+        REVERSED_PARAM.setParent(REVERSED_INFO.toCallable());
+        ENUMERATE_PARAM.setParent(ENUMERATE_INFO.toCallable());
     }
 
     public static final List<LangObject> TRUE_BUILTINS = List.of(
@@ -414,7 +417,8 @@ public final class Builtins {
             REVERSED,
             SLICE,
             ID,
-            ARRAY
+            ARRAY,
+            ENUMERATE
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(

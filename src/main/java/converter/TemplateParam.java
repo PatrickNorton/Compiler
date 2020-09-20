@@ -3,8 +3,8 @@ package main.java.converter;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -14,7 +14,7 @@ public final class TemplateParam extends NameableType {
     private final TypeObject bound;
     private final boolean isVararg;
     private final String typedefName;
-    private Template<?> parent;
+    private TypeObject parent;
 
     public TemplateParam(String name, int index, boolean isVararg) {
         this(name, index, TypeObject.list(), true);
@@ -39,6 +39,7 @@ public final class TemplateParam extends NameableType {
         this.index = other.index;
         this.bound = other.bound;
         this.isVararg = other.isVararg;
+        this.parent = other.parent;
         this.typedefName = typedefName;
     }
 
@@ -78,11 +79,16 @@ public final class TemplateParam extends NameableType {
         return name;
     }
 
-    public Template<?> getParent() {
+    @Override
+    public boolean sameBaseType(TypeObject other) {
+        return equals(other);
+    }
+
+    public TypeObject getParent() {
         return parent;
     }
 
-    public void setParent(Template<?> parent) {
+    public void setParent(@NotNull TypeObject parent) {
         assert this.parent == null : "Should not set parent of TemplateParam more than once";
         this.parent = parent;
     }
@@ -108,8 +114,20 @@ public final class TemplateParam extends NameableType {
 
     @Override
     @NotNull
-    @Unmodifiable
-    public Map<Integer, TypeObject> generifyAs(TypeObject other) {
-        return Map.of(index, other);
+    public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
+        if (this.parent.sameBaseType(parent)) {
+            return Optional.of(Map.of(index, other));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        if (this.parent.sameBaseType(parent)) {
+            return values.get(index);
+        } else {
+            return this;
+        }
     }
 }

@@ -1,10 +1,14 @@
 package main.java.converter;
 
+import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 public final class ListTypeObject extends TypeObject implements Iterable<TypeObject> {
@@ -24,6 +28,10 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
 
     public TypeObject get(int i) {
         return values.get(i);
+    }
+
+    public TypeObject[] getValues() {
+        return values.toArray(new TypeObject[0]);
     }
 
     @Override
@@ -54,6 +62,11 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         return "";
     }
 
+    @Override
+    public boolean sameBaseType(TypeObject other) {
+        throw new UnsupportedOperationException();
+    }
+
     @Contract(value = "_ -> new", pure = true)
     @Override
     @NotNull
@@ -65,6 +78,38 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
     @Override
     public Iterator<TypeObject> iterator() {
         return values.iterator();
+    }
+
+    @Override
+    public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
+        if (!(other instanceof ListTypeObject)) {
+            throw new UnsupportedOperationException();
+        }
+        Map<Integer, TypeObject> result = new HashMap<>();
+        for (var pair : new Zipper<>(this, (ListTypeObject) other)) {
+            var map = pair.getKey().generifyAs(parent, pair.getValue());
+            if (map.isEmpty() || !Template.addGenericsToMap(map.orElseThrow(), result)) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(result);
+    }
+
+    @Contract("_, _ -> new")
+    @Override
+    @NotNull
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        if (this.values.size() == 1
+                && this.values.get(0) instanceof TemplateParam
+                && ((TemplateParam) this.values.get(0)).isVararg()) {
+            return this.values.get(0).generifyWith(parent, values);
+        } else {
+            TypeObject[] result = new TypeObject[this.values.size()];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = this.values.get(i).generifyWith(parent, values);
+            }
+            return new ListTypeObject(result);
+        }
     }
 
     public TypeObject[] toArray() {
