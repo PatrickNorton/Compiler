@@ -2,9 +2,11 @@ package main.java.converter.classbody;
 
 import main.java.converter.AccessLevel;
 import main.java.converter.ArgumentInfo;
+import main.java.converter.Builtins;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
+import main.java.converter.TypeObject;
 import main.java.parser.DescriptorNode;
 import main.java.parser.GenericFunctionNode;
 import main.java.parser.Lined;
@@ -31,7 +33,8 @@ public final class MethodConverter {
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGen = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var fnInfo = new FunctionInfo(name, isGen, args, returns);
+        var trueRet = isGen ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
+        var fnInfo = new FunctionInfo(name, isGen, args, trueRet);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
         checkVars(name, node, methodMap);

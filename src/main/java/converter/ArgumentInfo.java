@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class ArgumentInfo implements Iterable<Argument> {
     private final Argument[] positionArgs;
@@ -192,6 +193,61 @@ public final class ArgumentInfo implements Iterable<Argument> {
         } else {
             return keywordArgs[i - normalArgs.length - positionArgs.length];
         }
+    }
+
+    public Optional<Map<Integer, TypeObject>> generifyArgs(@NotNull FunctionInfo parent, Argument... args) {
+        var par = parent.toCallable();
+        Map<Integer, TypeObject> result = new HashMap<>();
+        Map<String, TypeObject> keywordMap = new HashMap<>();
+        var newArgs = expandTuples(args);
+        for (var arg : newArgs) {
+            if (!arg.getName().isEmpty()) {
+                keywordMap.put(arg.getName(), arg.getType());
+            }
+        }
+        int argNo = 0;
+        for (var arg : positionArgs) {
+            if (keywordMap.containsKey(arg.getName())) {
+                return Optional.empty();
+            }
+            while (!newArgs[argNo].getName().isEmpty()) {
+                argNo++;
+            }
+            var passedArg = newArgs[argNo++];
+            var argGenerics = passedArg.getType().generifyAs(par, arg.getType());
+            if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                return Optional.empty();
+            }
+        }
+        for (var arg : normalArgs) {
+            var name = arg.getName();
+            if (keywordMap.containsKey(name)) {
+                var argGenerics = keywordMap.get(name).generifyAs(par, arg.getType());
+                if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                    return Optional.empty();
+                }
+            } else {
+                while (!newArgs[argNo].getName().isEmpty()) {
+                    argNo++;
+                }
+                var passedArg = newArgs[argNo++];
+                var argGenerics = passedArg.getType().generifyAs(par, arg.getType());
+                if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                    return Optional.empty();
+                }
+            }
+        }
+        for (var arg : keywordArgs) {
+            if (keywordMap.containsKey(arg.getName())) {
+                var argGenerics = keywordMap.get(arg.getName()).generifyAs(par, arg.getType());
+                if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                    return Optional.empty();
+                }
+            } else {
+                return Optional.empty();  // TODO: Default values
+            }
+        }
+        return Optional.of(result);
     }
 
     @NotNull

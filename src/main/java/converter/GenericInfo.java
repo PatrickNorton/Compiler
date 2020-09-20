@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -38,30 +39,102 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return params.size();
     }
 
+    public void setParent(TypeObject parent) {
+        for (var param : params) {
+            param.setParent(parent);
+        }
+    }
+
     @NotNull
     public Optional<List<TypeObject>> generify(@NotNull TypeObject... args) {
-        if (args.length > params.size()) {
+        if (!hasVararg()) {
+            return generifyNoVarargs(args);
+        } else {
+            return generifyVararg(args);
+        }
+    }
+
+    private Optional<List<TypeObject>> generifyNoVarargs(@NotNull TypeObject... args) {
+        if (args.length != params.size()) {
             return Optional.empty();
         }
-        List<TypeObject> result = new ArrayList<>();
-        int i;
-        for (i = 0; i < args.length && !params.get(i).isVararg(); i++) {
-            assert params.get(i).getBound() instanceof ListTypeObject == args[i] instanceof ListTypeObject;
+        List<TypeObject> result = new ArrayList<>(args.length);
+        for (int i = 0; i < args.length; i++) {
+            if (isValid(args[i], params.get(i))) {
+                return Optional.empty();
+            }
             result.add(args[i]);
         }
-        if (i == args.length) return Optional.of(result);
-        List<TypeObject> resultTypes = new ArrayList<>(args.length - i - 1);
-        int j;
-        for (j = args.length - 1; j >= i && !params.get(Math.abs(args.length - params.size()) + j).isVararg(); j--) {
-            resultTypes.add(0, args[j]);
-        }
-        List<TypeObject> varargTypes = new ArrayList<>(j - i + 1);
-        for (; j >= i; j--) {
-            varargTypes.add(0, args[j]);
-        }
-        result.add(TypeObject.list(varargTypes.toArray(new TypeObject[0])));
-        result.addAll(resultTypes);
         return Optional.of(result);
+    }
+
+    private Optional<List<TypeObject>> generifyVararg(@NotNull TypeObject... args) {
+        if (args.length < params.size() - 1) {
+            return Optional.empty();
+        }
+        List<TypeObject> result = new ArrayList<>(params.size());
+        int i;
+        for (i = 0; i < args.length && !params.get(i).isVararg(); i++) {
+            if (isValid(args[i], params.get(i))) {
+                return Optional.empty();
+            }
+            result.add(args[i]);
+        }
+        var remainingArgs = args.length - i;
+        var remainingParams = params.size() - i;
+        if (remainingArgs < remainingParams) {
+            // Number of types resulted in empty vararg, proceed accordingly
+            result.add(TypeObject.list());
+            for (; i < args.length; i++) {
+                if (isValid(args[i], params.get(i + 1))) {
+                    return Optional.empty();
+                }
+                result.add(args[i]);
+            }
+        } else if (remainingArgs == remainingParams) {
+            // Exactly one parameter goes into the vararg (refactored b/c easy)
+            result.add(TypeObject.list(args[i++]));
+            for (; i < args.length; i++) {
+                if (isValid(args[i], params.get(i))) {
+                    return Optional.empty();
+                }
+                result.add(args[i]);
+            }
+        } else {  // remainingArgs > remainingParams
+            int diff = remainingArgs - remainingParams + 1;
+            List<TypeObject> listArgs = new ArrayList<>(diff);
+            listArgs.addAll(Arrays.asList(args).subList(i, diff + i));
+            result.add(TypeObject.list(listArgs.toArray(new TypeObject[0])));
+            i++;
+            for (; i < params.size(); i++) {
+                if (isValid(args[i + diff], params.get(i))) {
+                    return Optional.empty();
+                }
+                result.add(args[i + diff]);
+            }
+        }
+        return Optional.of(result);
+    }
+
+    private boolean isValid(TypeObject arg, @NotNull TemplateParam param) {
+        boolean isList = param.getBound() instanceof ListTypeObject;
+        if (isList != arg instanceof ListTypeObject) {
+            return true;
+        } else if (!isList) {
+            return !param.getBound().isSuperclass(arg);
+        } else {
+            return false;
+        }
+
+    }
+
+    private boolean hasVararg() {
+        for (var param : params) {
+            if (param.isVararg()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void reParse(CompilerInfo info, TypeLikeNode... generics) {
@@ -129,7 +202,10 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             } else if (generic instanceof TypeNode && ((TypeNode) generic).getName().isEmpty()) {
                 assert generic.getSubtypes().length == 1 && generic.getSubtypes()[0].isVararg();  // => [*T]
                 param = new TemplateParam(generic.getSubtypes()[0].strName(), i, TypeObject.list());
+            } else if (generic.getSubtypes().length == 0) {
+                param = new TemplateParam(generic.strName(), i, Builtins.OBJECT);
             } else {
+                // FIXME: Default interfaces are done before types are registered, therefore this will cause a NPE
                 param = new TemplateParam(generic.strName(), i, null);
             }
             info.addType(param);

@@ -49,4 +49,15 @@ public final class GenerifiedFnInfoType extends TypeObject {
     public TypeObject typedefAs(String name) {
         throw new UnsupportedOperationException("How on earth did you typedef this?");
     }
+
+    @Override
+    public boolean sameBaseType(TypeObject other) {
+        return baseType().sameBaseType(other);
+    }
+
+    @Contract(" -> new")
+    @NotNull
+    public FunctionInfoType baseType() {
+        return new FunctionInfoType(info);
+    }
 }

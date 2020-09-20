@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,12 +125,90 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
     @Override
     @NotNull
-    public final Map<Integer, TypeObject> generifyAs(TypeObject other) {
-        assert other instanceof UserType;
-        var otherT = (UserType<?>) other;
-        Map<Integer, TypeObject> result = new HashMap<>();
-        for (int i = 0; i < generics.size(); i++) {
-            result.putAll(generics.get(i).generifyAs(otherT.generics.get(i)));
+    public final Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
+        if (sameBaseType(other)) {
+            return makeMatch(parent, generics, other.getGenerics());
+        } else if (other instanceof ObjectType) {
+            return Optional.of(new HashMap<>());
+        } else if (other instanceof TemplateParam) {
+            var param = (TemplateParam) other;
+            if (param.getParent().sameBaseType(parent)) {
+                return Optional.of(Map.of(param.getIndex(), this));
+            } else {
+                return Optional.empty();
+            }
+        }
+        for (var sup : this.recursiveSupers()) {
+            if (sup.sameBaseType(other)) {
+                var supGenerics = sup.getGenerics();
+                var objGenerics = other.getGenerics();
+                return makeMatch(parent, supGenerics, objGenerics);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Map<Integer, TypeObject>> makeMatch(
+            TypeObject parent, @NotNull List<TypeObject> supGenerics, List<TypeObject> objGenerics
+    ) {
+        if (supGenerics.isEmpty() && objGenerics.isEmpty()) {
+            return Optional.of(Collections.emptyMap());
+        } else if (supGenerics.isEmpty()) {
+            return Optional.empty();
+        } else if (objGenerics.isEmpty()) {
+            return Optional.of(Collections.emptyMap());
+        }
+        assert supGenerics.size() == objGenerics.size();
+        Map<Integer, TypeObject> result = new HashMap<>(supGenerics.size());
+        for (var pair : new Zipper<>(supGenerics, objGenerics)) {
+            var supG = pair.getKey();
+            var objG = pair.getValue();
+            if (supG instanceof TemplateParam) {
+                var param = (TemplateParam) supG;
+                if (param.getParent().sameBaseType(parent)) {
+                    result.put(param.getIndex(), objG);
+                } else {
+                    return Optional.empty();
+                }
+            } else if (supG instanceof ListTypeObject && objG instanceof ListTypeObject) {
+                var generics = supG.generifyAs(parent, objG);
+                if (generics.isEmpty() || !Template.addGenericsToMap(generics.orElseThrow(), result)) {
+                    return Optional.empty();
+                }
+            } else if (!supG.equals(objG)) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(result);
+    }
+
+    @Override
+    public final boolean sameBaseType(TypeObject other) {
+        if (!(other instanceof UserType<?>)) {
+            return false;
+        }
+        return this.info == ((UserType<?>) other).info;
+    }
+
+    @Override
+    public List<TypeObject> getGenerics() {
+        return generics;
+    }
+
+    @NotNull
+    protected final List<TypeObject> generifyWithInner(TypeObject parent, List<TypeObject> values) {
+        List<TypeObject> result = new ArrayList<>(generics.size());
+        for (var generic : generics) {
+            if (generic instanceof TemplateParam) {
+                var template = (TemplateParam) generic;
+                if (template.getParent().sameBaseType(parent)) {
+                    result.add(values.get(template.getIndex()));
+                } else {
+                    result.add(template);
+                }
+            } else {
+                result.add(generic.generifyWith(parent, values));
+            }
         }
         return result;
     }
@@ -156,7 +235,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         for (var attr : contract.getKey()) {
             var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
             var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
-            for (var pair : contractorAttr.generifyAs(attrT).entrySet()) {
+            for (var pair : contractorAttr.generifyAs(attrT).orElseThrow().entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();
                 if (result[index] == null) {
@@ -169,7 +248,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         for (var op : contract.getValue()) {
             var attrT = trueOperatorInfo(op, AccessLevel.PUBLIC).orElseThrow();
             var contractorAttr = contractor.trueOperatorInfo(op, AccessLevel.PUBLIC).orElseThrow();
-            for (var pair : contractorAttr.toCallable().generifyAs(attrT.toCallable()).entrySet()) {
+            var attr = contractorAttr.toCallable().generifyAs(contractor, attrT.toCallable());
+            for (var pair : attr.orElseThrow().entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();
                 if (result[index] == null) {

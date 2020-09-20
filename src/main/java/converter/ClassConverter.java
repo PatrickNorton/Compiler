@@ -24,11 +24,11 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(supers);
-        var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         var descriptors = node.getDescriptors();
         var isFinal = !descriptors.contains(DescriptorNode.NONFINAL);
         StdTypeObject type;
         if (!info.hasType(node.strName())) {
+            var generics = GenericInfo.parse(info, node.getName().getSubtypes());
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
@@ -37,6 +37,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
                 checkConstSupers(type, Arrays.asList(trueSupers));
             }
             parseIntoObject(converter, type, isConst);
+            generics.setParent(type);
         } else {
             type = (StdTypeObject) info.getTypeObj(node.strName());
             parseStatements(converter);
@@ -115,6 +116,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     private void completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
+        obj.getGenericInfo().setParent(obj);
         var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
         if (!isConst) {
             checkConstSupers(obj, obj.getSupers());

@@ -34,6 +34,7 @@ public final class TupleType extends TypeObject {
     @Contract(pure = true)
     @NotNull
     @UnmodifiableView
+    @Override
     public List<TypeObject> getGenerics() {
         return Collections.unmodifiableList(generics);
     }
@@ -119,6 +120,11 @@ public final class TupleType extends TypeObject {
     @NotNull
     public String baseName() {
         return "tuple";
+    }
+
+    @Override
+    public boolean sameBaseType(TypeObject other) {
+        return other instanceof TupleType;
     }
 
     @Contract("_ -> new")

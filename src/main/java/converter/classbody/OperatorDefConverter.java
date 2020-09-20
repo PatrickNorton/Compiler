@@ -17,8 +17,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public final class OperatorDefConverter {
     private final CompilerInfo info;
@@ -40,7 +42,9 @@ public final class OperatorDefConverter {
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetType());
         var lineInfo = node.getRetType().length > 0 ? node.getRetType()[0].getLineInfo() : node.getLineInfo();
-        FunctionInfo fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
+        boolean isGenerator = ALWAYS_GENERATOR.contains(op);
+        var retValues = validateReturns(lineInfo, isGenerator, op, returns);
+        FunctionInfo fnInfo = new FunctionInfo("", isGenerator, args, retValues);
         boolean isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         var opInfos = isStatic ? staticOperatorInfos : operatorInfos;
         var ops = isStatic ? staticOperators : operators;
@@ -58,7 +62,9 @@ public final class OperatorDefConverter {
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetvals());
         var lineInfo = node.getRetvals().length > 0 ? node.getRetvals()[0].getLineInfo() : node.getLineInfo();
-        FunctionInfo fnInfo = new FunctionInfo("", args, validateReturns(lineInfo, op, returns));
+        var isGenerator = ALWAYS_GENERATOR.contains(op);
+        var retValues = validateReturns(lineInfo, isGenerator, op, returns);
+        FunctionInfo fnInfo = new FunctionInfo("", isGenerator, args, retValues);
         if (operatorInfos.containsKey(op)) {
             throw CompilerException.doubleDef(op, node, operators.get(op));
         }
@@ -86,7 +92,7 @@ public final class OperatorDefConverter {
     }
 
     @NotNull
-    private TypeObject[] validateReturns(LineInfo info, OpSpTypeNode op, @NotNull TypeObject... returns) {
+    private TypeObject[] validateReturns(LineInfo info, boolean isGenerator, OpSpTypeNode op, @NotNull TypeObject... returns) {
         if (MANDATORY_RETURNS.containsKey(op) && returns.length < MANDATORY_RETURNS.get(op)) {
             var retCount = MANDATORY_RETURNS.get(op);
             if (retCount == 1) {
@@ -104,7 +110,7 @@ public final class OperatorDefConverter {
                         info, op, returns[0].name(), DEFAULT_RETURNS.get(op).name()
                 );
             }
-            return returns;
+            return isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(info, returns)} : returns;
         } else {
             return DEFAULT_RETURNS.containsKey(op) ? new TypeObject[] {DEFAULT_RETURNS.get(op)} : new TypeObject[0];
         }
@@ -112,6 +118,7 @@ public final class OperatorDefConverter {
 
     private static final Map<OpSpTypeNode, TypeObject> DEFAULT_RETURNS;
     private static final Map<OpSpTypeNode, Integer> MANDATORY_RETURNS;
+    private static final Set<OpSpTypeNode> ALWAYS_GENERATOR;
 
     static {
         var temp = new EnumMap<OpSpTypeNode, TypeObject>(OpSpTypeNode.class);
@@ -142,5 +149,9 @@ public final class OperatorDefConverter {
         temp.put(OpSpTypeNode.GET_SLICE, 1);
 
         MANDATORY_RETURNS = Collections.unmodifiableMap(temp);
+    }
+
+    static {
+        ALWAYS_GENERATOR = EnumSet.of(OpSpTypeNode.ITER, OpSpTypeNode.ITER_SLICE);
     }
 }

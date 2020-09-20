@@ -52,6 +52,11 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     }
 
     @Override
+    public boolean sameBaseType(TypeObject other) {
+        return other instanceof OptionTypeObject;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

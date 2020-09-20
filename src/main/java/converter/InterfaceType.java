@@ -80,11 +80,22 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         }
     }
 
+    @Contract("_, _ -> new")
+    @Override
+    @NotNull
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        return new InterfaceType(this, generifyWithInner(parent, values));
+    }
+
     @NotNull
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
-        return trueInfo.map(FunctionInfo::boundify);
+        if (generics.isEmpty()) {
+            return trueInfo.map(FunctionInfo::boundify);
+        } else {
+            return trueInfo.map(x -> x.generify(this, generics));
+        }
     }
 
     public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
@@ -102,7 +113,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
         if (attr == null || (isConst && attr.intoAttrInfo().getMutType() == MutableType.MUT_METHOD)) {
-            return null;
+            return Optional.empty();
         }
         return AccessLevel.canAccess(attr.intoAttrInfo().getAccessLevel(), access)
                 ? Optional.of(attr.intoAttrInfo().getType()) : Optional.empty();

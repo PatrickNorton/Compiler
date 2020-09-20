@@ -103,6 +103,7 @@ public final class ImportHandler {
                 }
                 var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
                 var type = new InterfaceType(strName, generics);
+                generics.setParent(type);
                 types.put(strName, type);
                 lineInfos.put(strName, cls.getLineInfo());
                 if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
@@ -116,7 +117,9 @@ public final class ImportHandler {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
                 var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
-                types.put(strName, new StdTypeObject(strName, generics));
+                var type = new StdTypeObject(strName, generics);
+                generics.setParent(type);
+                types.put(strName, type);
                 lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof TypedefStatementNode) {
                 typedefs.push((TypedefStatementNode) stmt);

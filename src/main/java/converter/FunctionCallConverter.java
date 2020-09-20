@@ -36,7 +36,8 @@ public final class FunctionCallConverter implements TestConverter {
         int argc = convertArgs(bytes, start, fnInfo);
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) argc));
-        for (int i = retCount; i < returnType().length; i++) {
+        var retType = returnType();
+        for (int i = retCount; i < retType.length; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
@@ -86,12 +87,49 @@ public final class FunctionCallConverter implements TestConverter {
             if (fn.isPresent()) {
                 return fn.orElseThrow().getReturns();
             }
-            return info.getType(name).tryOperatorReturnType(node, OpSpTypeNode.CALL, info);
-        } else {
-            var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
-            return retType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info);
         }
+        var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
+        var retInfo = retType.tryOperatorInfo(node, OpSpTypeNode.CALL, info);
+        var generics = retInfo.generifyArgs(getArgs(node.getParameters()));
+        if (generics.isEmpty()) {
+            return retInfo.getReturns();
+        } else {
+            var cls = retInfo.toCallable();
+            var returns = retInfo.getReturns();
+            var gen = turnMapToList(generics.orElseThrow());
+            if (returns.length < retCount) {
+                throw CompilerInternalError.format(
+                        "Length %d less than length %d", node, returns.length, retCount
+                );
+            }
+            TypeObject[] result = new TypeObject[retCount];
+            for (int i = 0; i < retCount; i++) {
+                result[i] = returns[i].generifyWith(cls, gen);
+            }
+            return result;
+        }
+    }
 
+    @NotNull
+    private static List<TypeObject> turnMapToList(@NotNull Map<Integer, TypeObject> values) {
+        List<TypeObject> result = new ArrayList<>();
+        for (var pair : values.entrySet()) {
+            int index = pair.getKey();
+            var value = pair.getValue();
+            if (index == result.size()) {
+                result.add(value);
+            } else if (index < result.size()) {
+                assert result.get(index) == null;
+                result.set(index, value);
+            } else {
+                while (result.size() < index) {
+                    result.add(null);
+                }
+                result.add(value);
+            }
+        }
+        assert !result.contains(null);
+        return result;
     }
 
     @NotNull
@@ -106,7 +144,8 @@ public final class FunctionCallConverter implements TestConverter {
             );
         } else {
             var opInfo = operatorInfo.orElseThrow();
-            if (!opInfo.matches(args)) {
+            var opGenerics = opInfo.generifyArgs(args);
+            if (opGenerics.isEmpty()) {
                 var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
                 var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
                 var expectedStr = String.join(", ", nameArr);
