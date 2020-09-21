@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.CaseStatementNode;
 import main.java.parser.DefaultStatementNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.Contract;
@@ -105,13 +106,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         bytes.addAll(Util.shortZeroBytes());
         for (var stmt : node.getCases()) {
             if (!stmt.getAs().isEmpty()) {
-                throw CompilerException.of(
-                        "'as' clauses in a switch are only allowed when the switched value is a union", stmt.getAs()
-                );
+                throw asException(stmt.getAs());
             }
             if (stmt instanceof DefaultStatementNode) {
-                assert defaultVal == 0;
-                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt);
                 continue;
             }
             var label = stmt.getLabel()[0];
@@ -148,15 +146,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         bytes.addAll(Util.shortZeroBytes());
         for (var stmt : node.getCases()) {
             if (!stmt.getAs().isEmpty()) {
-                throw CompilerException.of(
-                        "'as' clauses in a switch are only allowed when the switched value is a union", stmt.getAs()
-                );
+                throw asException(stmt.getAs());
             }
             if (stmt instanceof DefaultStatementNode) {
-                if (defaultVal != 0) {
-                    throw CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
-                }
-                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt);
                 continue;
             }
             var label = stmt.getLabel()[0];
@@ -228,15 +221,22 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                               @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
         assert stmt.isArrow();
         var converter = TestConverter.of(info, (TestNode) stmt.getBody().get(0), retCount);
-            bytes.addAll(converter.convert(start + bytes.size()));
-            var converterRet = converter.returnType();
-            for (int i = 0; i < retTypes.length; i++) {
-                if (OptionTypeObject.needsMakeOption(retTypes[i], converterRet[i])) {
-                    addSwap(bytes, retTypes.length - i - 1);
-                    bytes.add(Bytecode.MAKE_OPTION.value);
-                    addSwap(bytes, retTypes.length - i - 1);
-                }
+        bytes.addAll(converter.convert(start + bytes.size()));
+        var converterRet = converter.returnType();
+        for (int i = 0; i < retTypes.length; i++) {
+            if (OptionTypeObject.needsMakeOption(retTypes[i], converterRet[i])) {
+                addSwap(bytes, retTypes.length - i - 1);
+                bytes.add(Bytecode.MAKE_OPTION.value);
+                addSwap(bytes, retTypes.length - i - 1);
             }
+        }
+    }
+
+    private int getDefaultVal(int start, int defaultVal, List<Byte> bytes, CaseStatementNode stmt) {
+        if (defaultVal != 0) {
+            throw defaultException(stmt);
+        }
+        return convertDefault(start, bytes, (DefaultStatementNode) stmt);
     }
 
     private int convertDefault(int start, @NotNull List<Byte> bytes, @NotNull DefaultStatementNode stmt) {
@@ -382,6 +382,16 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return CompilerException.format(
                 "'switch' on a %1$s requires a %1$s literal in each case statement",
                 label, literalType
+        );
+    }
+
+    private static CompilerException defaultException(Lined stmt) {
+        throw CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
+    }
+
+    private static CompilerException asException(Lined as) {
+        throw CompilerException.of(
+                "'as' clauses in a switch are only allowed when the switched value is a union", as
         );
     }
 }
