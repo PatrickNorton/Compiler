@@ -76,8 +76,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return false;
     }
 
-    @Nullable
-    public final TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
+    @NotNull
+    public final Optional<TypeObject[]> operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
         return info.operatorReturnTypeWithGenerics(o, access);
     }
 
@@ -85,8 +85,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var types = operatorReturnTypeWithGenerics(o, access);
-        if (types == null) return Optional.empty();
-        return Optional.of(Arrays.copyOf(types, types.length));
+        return types.map(t -> Arrays.copyOf(t, t.length));
     }
 
     @Override
@@ -295,18 +294,18 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             this.isSealed = false;
         }
 
-        @Nullable
-        public final TypeObject[] operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
+        @NotNull
+        public final Optional<TypeObject[]> operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
             if (operators.containsKey(o)) {  // TODO: Bounds-check
-                return operators.get(o).intoFnInfo().getReturns();
+                return Optional.of(operators.get(o).intoFnInfo().getReturns());
             }
             for (var sup : supers) {
                 var opRet = sup.operatorReturnType(o, access);
                 if (opRet.isPresent()) {
-                    return opRet.orElseThrow();
+                    return opRet;
                 }
             }
-            return null;
+            return Optional.empty();
         }
 
         @NotNull
