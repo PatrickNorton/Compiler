@@ -85,18 +85,7 @@ public final class FunctionInfo implements IntoFnInfo {
     private Argument[] boundifyArray(@NotNull Argument[] arr) {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            var argType = arr[i].getType();
-            TypeObject type;
-            if (argType instanceof TemplateParam) {
-                var template = (TemplateParam) argType;
-                if (template.getParent().sameBaseType(this.toCallable())) {
-                    type = template.getBound();
-                } else {
-                    type = template;
-                }
-            } else {
-                type = argType;
-            }
+            var type = boundifyType(arr[i].getType());
             result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
         }
         return result;
@@ -104,12 +93,25 @@ public final class FunctionInfo implements IntoFnInfo {
 
     @NotNull
     @Contract(pure = true)
-    private static TypeObject[] boundifyArray(@NotNull TypeObject[] arr) {
+    private TypeObject[] boundifyArray(@NotNull TypeObject[] arr) {
         var result = new TypeObject[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            result[i] = arr[i] instanceof TemplateParam ? ((TemplateParam) arr[i]).getBound() : arr[i];
+            result[i] = boundifyType(arr[i]);
         }
         return result;
+    }
+
+    private TypeObject boundifyType(TypeObject val) {
+        if (val instanceof TemplateParam) {
+            var template = (TemplateParam) val;
+            if (template.getParent().sameBaseType(this.toCallable())) {
+                return template.getBound();
+            } else {
+                return template;
+            }
+        } else {
+            return val;
+        }
     }
 
     @NotNull
@@ -126,17 +128,7 @@ public final class FunctionInfo implements IntoFnInfo {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
             var argType = arr[i].getType();
-            TypeObject type;
-            if (argType instanceof TemplateParam) {
-                var template = (TemplateParam) argType;
-                if (template.getParent().sameBaseType(parent)) {
-                    type = generics.get(template.getIndex());
-                } else {
-                    type = template;
-                }
-            } else {
-                type = argType.generifyWith(parent, generics);
-            }
+            TypeObject type = generifyType(argType, parent, generics);
             result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
         }
         return result;
@@ -146,20 +138,23 @@ public final class FunctionInfo implements IntoFnInfo {
     private static TypeObject[] generifyArray(TypeObject parent, @NotNull TypeObject[] arr, List<TypeObject> generics) {
         var result = new TypeObject[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            TypeObject type;
-            if (arr[i] instanceof TemplateParam) {
-                var template = (TemplateParam) arr[i];
-                if (template.getParent().sameBaseType(parent)) {
-                    type = generics.get(template.getIndex());
-                } else {
-                    type = template;
-                }
-            } else {
-                type = arr[i].generifyWith(parent, generics);
-            }
+            TypeObject type = generifyType(arr[i], parent, generics);
             result[i] = type;
         }
         return result;
+    }
+
+    private static TypeObject generifyType(TypeObject val, TypeObject parent, List<TypeObject> generics) {
+        if (val instanceof TemplateParam) {
+            var template = (TemplateParam) val;
+            if (template.getParent().sameBaseType(parent)) {
+                return generics.get(template.getIndex());
+            } else {
+                return template;
+            }
+        } else {
+            return val.generifyWith(parent, generics);
+        }
     }
 
     public Optional<Map<Integer, TypeObject>> generifyArgs(Argument... args) {
