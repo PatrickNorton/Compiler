@@ -25,7 +25,7 @@ public final class GenerifiedFnInfoType extends TypeObject {
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
-            return Optional.of(info.generify(generics));
+            return Optional.of(info.generify(this, generics));
         } else {
             return Optional.empty();
         }

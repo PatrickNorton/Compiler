@@ -24,7 +24,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class TypeObject implements LangObject, Comparable<TypeObject>, Template<TypeObject> {
+public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
+
     /**
      * Checks if this is a subclass of the other type.
      * <p>
@@ -90,7 +91,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return operatorReturnType(o, info.accessLevel(this));
     }
 
-    @Override
     public final TypeObject generify(TypeObject... args) {
         return generify(LineInfo.empty(), args);
     }
@@ -389,6 +389,24 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         } else {
             return null;
         }
+    }
+
+    static boolean addGenericsToMap(@NotNull Map<Integer, TypeObject> toAdd, Map<Integer, TypeObject> result) {
+        for (var pair : toAdd.entrySet()) {
+            int index = pair.getKey();
+            var obj = pair.getValue();
+            var resultType = result.get(index);
+            if (resultType == null) {
+                result.put(index, obj);
+            } else {
+                if (obj.isSuperclass(resultType)) {
+                    result.put(index, obj);
+                } else if (!resultType.isSuperclass(obj)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @NotNull

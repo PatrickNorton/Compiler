@@ -4,7 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,7 +170,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 }
             } else if (supG instanceof ListTypeObject && objG instanceof ListTypeObject) {
                 var generics = supG.generifyAs(parent, objG);
-                if (generics.isEmpty() || !Template.addGenericsToMap(generics.orElseThrow(), result)) {
+                if (generics.isEmpty() || !TypeObject.addGenericsToMap(generics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             } else if (!supG.equals(objG)) {

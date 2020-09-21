@@ -215,7 +215,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
             }
             var passedArg = newArgs[argNo++];
             var argGenerics = passedArg.getType().generifyAs(par, arg.getType());
-            if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+            if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                 return Optional.empty();
             }
         }
@@ -223,7 +223,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
             var name = arg.getName();
             if (keywordMap.containsKey(name)) {
                 var argGenerics = keywordMap.get(name).generifyAs(par, arg.getType());
-                if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             } else {
@@ -232,7 +232,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 }
                 var passedArg = newArgs[argNo++];
                 var argGenerics = passedArg.getType().generifyAs(par, arg.getType());
-                if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             }
@@ -240,7 +240,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         for (var arg : keywordArgs) {
             if (keywordMap.containsKey(arg.getName())) {
                 var argGenerics = keywordMap.get(arg.getName()).generifyAs(par, arg.getType());
-                if (argGenerics.isEmpty() || !Template.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             } else {
