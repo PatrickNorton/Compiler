@@ -64,10 +64,13 @@ public final class ReturnConverter implements BaseConverter {
         for (int i = 0; i < fnReturns.length; i++) {
             var retType = TestConverter.returnType(node.getReturned().get(i), info, 1)[0];
             if (!fnReturns[i].isSuperclass(retType)) {
-                throw CompilerException.format(
-                        "Value returned in position %d, of type '%s', " +
-                                "is not a subclass of the required return '%s'",
-                        node.getReturned().get(i), i, retType.name(), fnReturns[i].name());
+                if (!OptionTypeObject.needsMakeOption(fnReturns[i], retType)
+                        || !fnReturns[i].isSuperclass(new OptionTypeObject(retType))) {
+                    throw CompilerException.format(
+                            "Value returned in position %d, of type '%s', " +
+                                    "is not a subclass of the required return '%s'",
+                            node.getReturned().get(i), i, retType.name(), fnReturns[i].name());
+                }
             }
         }
     }

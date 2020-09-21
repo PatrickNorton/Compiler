@@ -26,8 +26,8 @@ public final class AccessHandler {
      * @return The security access level of the type
      */
     public AccessLevel accessLevel(@NotNull TypeObject obj) {
-        return classesWithAccess.contains(obj.makeConst()) ? AccessLevel.PRIVATE
-                : classesWithProtected.contains(obj.makeConst()) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
+        return containsBase(classesWithAccess, obj) ? AccessLevel.PRIVATE
+                : containsBase(classesWithProtected, obj) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
     }
 
     /**
@@ -171,6 +171,15 @@ public final class AccessHandler {
     }
 
     public boolean isInConstructor(@NotNull TypeObject type) {
-        return constructors.contains(type.makeConst());
+        return containsBase(constructors, type);
+    }
+
+    private boolean containsBase(@NotNull Iterable<TypeObject> obj, TypeObject val) {
+        for (var type : obj) {
+            if (type.sameBaseType(val)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
