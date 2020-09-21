@@ -289,13 +289,11 @@ public final class CompilerInfo {
         return this;
     }
 
-    public CompilerInfo loadDependents() {
-        if (dependentsFound) {
-            return this;
+    public void loadDependents() {
+        if (!dependentsFound) {
+            dependentsFound = true;
+            importHandler.registerDependents(node);
         }
-        dependentsFound = true;
-        importHandler.registerDependents(node);
-        return this;
     }
 
     /**
@@ -391,20 +389,6 @@ public final class CompilerInfo {
             return builtin instanceof TypeObject ? Optional.of((TypeObject) builtin) : Optional.empty();
         }
         return Optional.of(cls);
-    }
-
-    public Optional<Integer> classIndex(String str) {
-        var index = typeMap.get(str);
-        if (index == null) {
-            return Optional.empty();
-        } else {
-            for (int i = 0; i < classes.size(); i++) {
-                if (classes.get(i).getType().equals(index)) {
-                    return Optional.of(i);
-                }
-            }
-            throw new IllegalStateException("If a type is in typeMap, it should be in classes");
-        }
     }
 
     @NotNull
