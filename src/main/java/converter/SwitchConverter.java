@@ -181,13 +181,14 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
+    private static final BigInteger BIG_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
+
     @Contract("_, _ -> new")
     @NotNull
     private SwitchTable getTbl(@NotNull Map<BigInteger, Integer> jumps, int defaultVal) {
         var threshold = 2 * (long) jumps.size();
         var max = Collections.max(jumps.keySet());
-        if (max.compareTo(BigInteger.valueOf(threshold)) > 0
-                || max.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) >= 0) {
+        if (max.compareTo(BigInteger.valueOf(threshold)) > 0 || max.compareTo(BIG_MAX) > 0) {
             return new BigSwitchTable(jumps, defaultVal);
         } else {
             var tblSize = max.intValueExact() + 1;
