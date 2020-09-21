@@ -28,6 +28,10 @@ public final class StringConstant implements LangConstant {
         return Objects.hash(value);
     }
 
+    public String getValue() {
+        return value;
+    }
+
     @NotNull
     @Override
     public List<Byte> toBytes() {

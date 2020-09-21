@@ -14,6 +14,7 @@ public interface SwitchTable {
      *     <ol start="0">
      *         <li>{@link CompactSwitchTable#toBytes() CompactSwitchTable}</li>
      *         <li>{@link BigSwitchTable#toBytes() BigSwitchTable}</li>
+     *         <li>{@link StringSwitchTable#toBytes() StringSwitchTable}</li>
      *     </ol>
      * </p>
      *
