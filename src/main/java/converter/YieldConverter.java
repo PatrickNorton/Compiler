@@ -50,7 +50,7 @@ public final class YieldConverter implements BaseConverter {
         }
         var converter = TestConverter.of(info, node.getYielded().get(0), retInfo.currentFnReturns().length);
         var retType = converter.returnType();
-        checkReturnType(currentReturns(retInfo), retType);
+        checkReturnType(retInfo.currentFnReturns(), retType);
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.YIELD.value);
         bytes.addAll(Util.shortToBytes((short) retInfo.currentFnReturns().length));
@@ -63,7 +63,7 @@ public final class YieldConverter implements BaseConverter {
         }
         var converter = TestConverter.of(info, node.getYielded().get(0), retInfo.currentFnReturns().length);
         var retTypes = converter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info);
-        checkReturnType(currentReturns(retInfo), retTypes);
+        checkReturnType(retInfo.currentFnReturns(), retTypes);
         ForConverter.addIter(info, start, bytes, converter);
         bytes.add(Bytecode.FOR_ITER.value);
         int jumpPos = bytes.size();
@@ -74,16 +74,6 @@ public final class YieldConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(jumpPos - 1));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-    }
-
-    private TypeObject[] currentReturns(@NotNull FunctionReturnInfo retInfo) {
-        var currentReturns = retInfo.currentFnReturns();
-        assert currentReturns.length == 1;
-        var currentReturn = currentReturns[0];
-        assert currentReturn.sameBaseType(Builtins.ITERABLE);
-        var generics = currentReturn.getGenerics().get(0);
-        assert generics instanceof ListTypeObject;
-        return ((ListTypeObject) generics).getValues();
     }
 
     private void checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {

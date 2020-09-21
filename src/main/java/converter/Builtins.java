@@ -184,7 +184,7 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(STR), BOOL),
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), CHAR),
                 OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), STR),
-                OpSpTypeNode.ITER, new FunctionInfo(CHAR),
+                OpSpTypeNode.ITER, new FunctionInfo(Builtins.ITERABLE.generify(CHAR)),
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
@@ -208,7 +208,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), INT),
                 OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), BYTES),
                 OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, INT)),
-                OpSpTypeNode.ITER, new FunctionInfo(INT),
+                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(INT)),
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
         BYTES.setOperators(bytesMap);
@@ -235,7 +235,7 @@ public final class Builtins {
     static {  // Set range operators
         RANGE.isConstClass();
         var rangeMap = Map.of(
-                OpSpTypeNode.ITER, new FunctionInfo(INT),
+                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(INT)),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL),
                 OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(RANGE), BOOL)
         );
@@ -268,7 +268,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(LIST_PARAM)),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
                 OpSpTypeNode.REVERSED, new FunctionInfo(LIST),
-                OpSpTypeNode.ITER, new FunctionInfo(LIST_PARAM)
+                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(LIST_PARAM))
         );
         LIST.setOperators(listMap);
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
@@ -302,7 +302,7 @@ public final class Builtins {
                 OpSpTypeNode.GREATER_EQUAL, setCompInfo,
                 OpSpTypeNode.LESS_THAN, setCompInfo,
                 OpSpTypeNode.LESS_EQUAL, setCompInfo,
-                OpSpTypeNode.ITER, new FunctionInfo(SET_PARAM)
+                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(SET_PARAM))
         );
         SET.setOperators(setMap);
         var setAttrs = Map.of(
@@ -318,7 +318,7 @@ public final class Builtins {
         var dictContainsInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), BOOL);
         var dictGetInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), DICT_VAL);
         var dictDelInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY));
-        var dictIterInfo = new FunctionInfo(DICT_KEY, DICT_VAL);
+        var dictIterInfo = new FunctionInfo(DICT_KEY, Builtins.ITERABLE.generify(DICT_VAL));
         var dictEqInfo = new FunctionInfo(ArgumentInfo.of(DICT), BOOL);
 
         var dictMap = Map.of(
@@ -342,7 +342,7 @@ public final class Builtins {
     static {
         var arrayGetInfo = new FunctionInfo(ArgumentInfo.of(INT), ARRAY_PARAM);
         var arraySetInfo = new FunctionInfo(ArgumentInfo.of(INT, ARRAY_PARAM));
-        var arrayIterInfo = new FunctionInfo(ARRAY_PARAM);
+        var arrayIterInfo = new FunctionInfo(ITERABLE.generify(ARRAY_PARAM));
         var arrayContainsInfo = new FunctionInfo(ArgumentInfo.of(ARRAY_PARAM), BOOL);
         var arrayEqInfo = new FunctionInfo(ArgumentInfo.of(ARRAY), BOOL);
         var arraySliceInfo = new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(ARRAY_PARAM));
@@ -459,5 +459,12 @@ public final class Builtins {
         var builtin = BUILTIN_MAP.get(name);
         var index = TRUE_BUILTINS.indexOf(builtin);
         return index == -1 ? (LangConstant) builtin : new BuiltinConstant(index);
+    }
+
+    public static TypeObject[] deIterable(@NotNull TypeObject val) {
+        assert val.sameBaseType(Builtins.ITERABLE);
+        var generics = val.getGenerics().get(0);
+        assert generics instanceof ListTypeObject;
+        return ((ListTypeObject) generics).getValues();
     }
 }
