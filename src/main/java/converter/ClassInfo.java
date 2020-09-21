@@ -66,6 +66,44 @@ public final class ClassInfo {
         return type.name();
     }
 
+    /**
+     * Converts the class into the byte representation to put into a file.
+     * <p>
+     *     The file layout is as follows:
+     * <code><pre>
+     * Name of class
+     * Superclasses:
+     *     Index of each class
+     * [byte] If there are generics
+     * Generics (if prev. byte != 0):
+     *     String name
+     * Variables:
+     *     String name of variable
+     *     [short] Type of variable
+     * Static variables:
+     *     String name of variable
+     *     [short] Type of variable
+     * Operators:
+     *     Operator index
+     *     Bytecode of operator
+     * Static operators:
+     *     Operator index
+     *     Bytecode of operator
+     * Methods:
+     *     Name of method
+     *     Bytecode of method
+     * Static methods:
+     *     Name of static method
+     *     Bytecode of method
+     * Properties:
+     *     Name of property
+     *     Bytecode of getter
+     *     Bytecode of setter
+     * </pre></code>
+     * </p>
+     *
+     * @return The byte representation of the class
+     */
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(StringConstant.strBytes(type.name()));

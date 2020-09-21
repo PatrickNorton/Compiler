@@ -14,6 +14,23 @@ public final class CompactSwitchTable implements SwitchTable {
         this.defaultVal = defaultVal;
     }
 
+    /**
+     * Converts the table into a byte representation.
+     * <p>
+     *     The representation is as follows:
+     * <code><pre>
+     * [byte] 0
+     * The number of values
+     * The max value
+     * For each i < max:
+     *     i
+     *     The index to jump to
+     * The default index to jump to
+     * </pre></code>
+     * </p>
+     * @see SwitchTable#toBytes()
+     * @return The list of bytes represented
+     */
     @Override
     @NotNull
     public List<Byte> toBytes() {

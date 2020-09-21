@@ -16,6 +16,23 @@ public final class BigSwitchTable implements SwitchTable {
         this.defaultVal = default_stmt;
     }
 
+    /**
+     * Converts the table into a byte representation.
+     * <p>
+     *     The representation is as follows:
+     * <code><pre>
+     * [byte] 0
+     * The number of values
+     * For each:
+     *     [{@link BigintConstant#convertBigint Bigint}]The number
+     *     The index to jump to
+     * The default place to jump to
+     * </pre></code>
+     * </p>
+     *
+     * @see SwitchTable#toBytes()
+     * @return The list of bytes represented
+     */
     @Override
     @NotNull
     public List<Byte> toBytes() {
