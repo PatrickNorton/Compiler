@@ -12,7 +12,6 @@ import main.java.parser.LineInfo;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
-import main.java.parser.StatementBodyNode;
 import main.java.parser.TopLevelNode;
 import main.java.parser.TopNode;
 import main.java.parser.UnionDefinitionNode;
@@ -84,8 +83,9 @@ public final class Linker {
         var importedTypes = info.importHandler().importedTypes();
         info.addPredeclaredTypes(importedTypes);
         for (var pair : importedTypes.entrySet()) {
-            info.addVariable(pair.getKey(), Builtins.TYPE.generify(pair.getValue()), true, new StatementBodyNode());
-            // FIXME: Get actual LineInfo of import statement
+            var name = pair.getKey();
+            var valPair = pair.getValue();
+            info.addVariable(name, Builtins.TYPE.generify(valPair.getKey()), true, valPair.getValue());
         }
         // Filters out auto interfaces, which are registered earlier
         for (var stmt : node) {

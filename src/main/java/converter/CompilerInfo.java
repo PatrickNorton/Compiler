@@ -10,6 +10,7 @@ import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -765,13 +766,17 @@ public final class CompilerInfo {
      *
      * @param types The types to add
      */
-    void addPredeclaredTypes(Map<String, TypeObject> types) {
+    void addPredeclaredTypes(@NotNull Map<String, Pair<TypeObject, Lined>> types) {
         assert !linked;
-        typeMap.putAll(types);
         var varFrame = variables.get(variables.size() - 1);
         for (var pair : types.entrySet()) {
-            var varInfo = new VariableInfo(  // FIXME: Better VariableInfo
-                    Builtins.TYPE.generify(pair.getValue()), true, (short) varFrame.size(), LineInfo.empty()
+            var name = pair.getKey();
+            var valPair = pair.getValue();
+            var obj = valPair.getKey();
+            var lined = valPair.getValue();
+            typeMap.put(name, obj);
+            var varInfo = new VariableInfo(
+                    Builtins.TYPE.generify(obj), true, (short) varFrame.size(), lined.getLineInfo()
             );
             varFrame.put(pair.getKey(), varInfo);
         }
