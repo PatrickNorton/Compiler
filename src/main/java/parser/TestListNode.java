@@ -39,6 +39,10 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         return tests.length;
     }
 
+    public boolean isEmpty() {
+        return tests.length == 0;
+    }
+
     public TestNode get(int index) {
         return tests[index];
     }
