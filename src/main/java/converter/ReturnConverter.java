@@ -32,12 +32,12 @@ public final class ReturnConverter implements BaseConverter {
         var retInfo = info.getFnReturns();
         if (retInfo.notInFunction()) {
             throw CompilerException.of("Cannot return from here", node);
-        } else if (retInfo.isGenerator() && node.getReturned().size() > 0) {
+        } else if (retInfo.isGenerator() && !node.getReturned().isEmpty()) {
             throw CompilerException.of("Return with arguments invalid in generator", node);
         }
         var fnReturns = retInfo.currentFnReturns();
         if (fnReturns.length == 0) {  // Zero-returning functions are easy to deal with
-            if (node.getReturned().size() > 0) {
+            if (!node.getReturned().isEmpty()) {
                 throw CompilerException.of(
                         "Non-empty 'return' statement invalid in function with no return types", node
                 );
@@ -62,7 +62,7 @@ public final class ReturnConverter implements BaseConverter {
         var currentReturns = fnReturns.currentFnReturns();
         if (currentReturns.length == 1) {
             bytes.addAll(TestConverter.bytesMaybeOption(start, node.getReturned().get(0), info, 1, currentReturns[0]));
-        } else if (node.getReturned().size() != 0) {
+        } else if (!node.getReturned().isEmpty()) {
             bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, currentReturns.length));
         }
         bytes.add(Bytecode.RETURN.value);
@@ -103,7 +103,7 @@ public final class ReturnConverter implements BaseConverter {
     }
 
     private void checkReturnTypes() {
-        assert node.getReturned().size() != 0;
+        assert !node.getReturned().isEmpty();
         var retInfo = info.getFnReturns();
         assert !retInfo.notInFunction();
         var fnReturns = retInfo.currentFnReturns();
