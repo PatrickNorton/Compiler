@@ -11,11 +11,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class OperatorConverter implements TestConverter {
     public static final Map<OperatorTypeNode, Bytecode> BYTECODE_MAP;
+    private static final Set<OperatorTypeNode> MANDATORY_ARG_COUNT;
 
     static {  // TODO: Make these members of OperatorTypeNode
         var temp = new EnumMap<OperatorTypeNode, Bytecode>(OperatorTypeNode.class);
@@ -45,6 +48,18 @@ public final class OperatorConverter implements TestConverter {
         temp.put(OperatorTypeNode.LESS_EQUAL, Bytecode.LESS_EQUAL);
         temp.put(OperatorTypeNode.GREATER_EQUAL, Bytecode.GREATER_EQUAL);
         BYTECODE_MAP = Collections.unmodifiableMap(temp);
+    }
+
+    static {
+        MANDATORY_ARG_COUNT = EnumSet.of(
+                OperatorTypeNode.BOOL_NOT,
+                OperatorTypeNode.IS,
+                OperatorTypeNode.IS_NOT,
+                OperatorTypeNode.IN,
+                OperatorTypeNode.NOT_IN,
+                OperatorTypeNode.CASTED,
+                OperatorTypeNode.U_SUBTRACT
+        );
     }
 
     private final CompilerInfo info;
@@ -86,7 +101,8 @@ public final class OperatorConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        switch (node.getOperator()) {
+        var op = node.getOperator();
+        switch (op) {
             case NULL_COERCE:
                 return convertNullCoerce(start);
             case BOOL_AND:
@@ -114,20 +130,24 @@ public final class OperatorConverter implements TestConverter {
                 throw CompilerException.of("Cannot use return type of function with 0 returns", arg);
             }
             var retType = retTypes[0];
-            if (opType != null
-                    && opType.operatorReturnType(node.getOperator(), info).isEmpty()) {
+            if (opType != null && opType.operatorReturnType(op, info).isEmpty()) {
                 throw CompilerException.format(
                         "'%s' returns type '%s', which has no overloaded '%s'",
-                        previousArg, previousArg, opType.name(), node.getOperator()
+                        previousArg, previousArg, opType.name(), op
                 );
             }
-            opType = opType == null ? retType : opType.operatorReturnType(node.getOperator(), info).orElseThrow()[0];
+            opType = opType == null ? retType : opType.operatorReturnType(op, info).orElseThrow()[0];
             previousArg = arg;
             bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
         }
-        var bytecode = BYTECODE_MAP.get(node.getOperator());
-        if (opCount == (node.getOperator().isUnary() ? 1 : 2)) {
+        var bytecode = BYTECODE_MAP.get(op);
+        if (opCount == (op.isUnary() ? 1 : 2)) {
             bytes.add(bytecode.value);
+        } else if (MANDATORY_ARG_COUNT.contains(op)) {
+            throw CompilerException.format(
+                    "Cannot call operator '%s' with %d operands (expected exactly %d)",
+                    node, op, opCount, op.isUnary() ? 1 : 2
+            );
         } else {
             throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
         }
@@ -212,11 +232,7 @@ public final class OperatorConverter implements TestConverter {
             CompilerWarning.warn("Using ?? operator on value that is always null", lineInfo);
             return TestConverter.bytes(start, node.getOperands()[1].getArgument(), info, 1);
         }
-        List<Byte> bytes = new ArrayList<>(firstConverter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.SWAP_2.value);
-        bytes.add(Bytecode.UNWRAP_OPTION.value);
-        bytes.add(Bytecode.SWAP_2.value);
+        List<Byte> bytes = unwrapSecond(start, firstConverter);
         bytes.add(Bytecode.JUMP_NN.value);
         addPostJump(start, bytes);
         if (retCount == 0) {
@@ -310,11 +326,7 @@ public final class OperatorConverter implements TestConverter {
             throw CompilerException.format("Cannot use ? on a non-optional type '%s", node.getOperands()[0], retType);
         }
         var resultType = ((OptionTypeObject) retType).getOptionVal();
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.SWAP_2.value);
-        bytes.add(Bytecode.UNWRAP_OPTION.value);
-        bytes.add(Bytecode.SWAP_2.value);
+        List<Byte> bytes = unwrapSecond(start, converter);
         bytes.add(Bytecode.IS_SOME.value);
         return Pair.of(bytes, resultType);
     }
@@ -325,7 +337,7 @@ public final class OperatorConverter implements TestConverter {
         assert opCount == 2 && node.getOperator() == OperatorTypeNode.NOT_EQUALS;
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getOperands()[1].getArgument(), info, 1));
-        if (opCount == (node.getOperator().isUnary() ? 1 : 2)) {
+        if (opCount == (node.isUnary() ? 1 : 2)) {
             bytes.add(Bytecode.EQUAL.value);
         } else {
             throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
@@ -398,5 +410,15 @@ public final class OperatorConverter implements TestConverter {
 
     public static Pair<List<Byte>, TypeObject> convertWithAs(int start, OperatorNode node, CompilerInfo info, int retCount) {
         return new OperatorConverter(info, node, retCount).convertWithAs(start);
+    }
+
+    @NotNull
+    private static List<Byte> unwrapSecond(int start, @NotNull TestConverter converter) {
+        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.SWAP_2.value);
+        bytes.add(Bytecode.UNWRAP_OPTION.value);
+        bytes.add(Bytecode.SWAP_2.value);
+        return bytes;
     }
 }
