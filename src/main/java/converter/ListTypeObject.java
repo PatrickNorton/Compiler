@@ -67,6 +67,11 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public int baseHash() {
+        throw new UnsupportedOperationException();
+    }
+
     @Contract(value = "_ -> new", pure = true)
     @Override
     @NotNull

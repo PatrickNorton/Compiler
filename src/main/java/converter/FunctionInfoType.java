@@ -82,6 +82,11 @@ public final class FunctionInfoType extends TypeObject {
     }
 
     @Override
+    public int baseHash() {
+        return info.hashCode();
+    }
+
+    @Override
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         assert other instanceof FunctionInfoType;
         var otherT = (FunctionInfoType) other;

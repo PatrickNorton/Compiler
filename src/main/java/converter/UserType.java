@@ -189,6 +189,11 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
+    public int baseHash() {
+        return info.hashCode();
+    }
+
+    @Override
     public List<TypeObject> getGenerics() {
         return generics;
     }

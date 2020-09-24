@@ -57,6 +57,11 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     }
 
     @Override
+    public int baseHash() {
+        return "option".hashCode();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

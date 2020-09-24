@@ -6,13 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class AccessHandler {
-    private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
-    private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
+    private final Counter<BaseType> classesWithAccess = new HashCounter<>();
+    private final Counter<BaseType> classesWithProtected = new HashCounter<>();
     private final Deque<TypeObject> clsTypes = new ArrayDeque<>();
     private final Deque<TypeObject> superTypes = new ArrayDeque<>();
     private final Deque<TypeObject> constructors = new ArrayDeque<>();
+    private final Set<BaseType> definedInFile = new HashSet<>();
 
     /**
      * The current access level of the given {@link TypeObject}.
@@ -26,8 +29,12 @@ public final class AccessHandler {
      * @return The security access level of the type
      */
     public AccessLevel accessLevel(@NotNull TypeObject obj) {
-        return containsBase(classesWithAccess, obj) ? AccessLevel.PRIVATE
-                : containsBase(classesWithProtected, obj) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
+        var base = new BaseType(obj);
+        if (definedInFile.contains(base)) {  // FIXME: Protected & file access
+            return classesWithAccess.contains(base) ? AccessLevel.PRIVATE : AccessLevel.FILE;
+        }
+        return classesWithAccess.contains(base) ? AccessLevel.PRIVATE
+                : classesWithProtected.contains(base) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
     }
 
     /**
@@ -37,7 +44,7 @@ public final class AccessHandler {
      * @see #removePrivateAccess
      */
     public void allowPrivateAccess(TypeObject obj) {
-        classesWithAccess.increment(obj);
+        classesWithAccess.increment(new BaseType(obj));
     }
 
     /**
@@ -54,8 +61,9 @@ public final class AccessHandler {
      * @see #allowPrivateAccess
      */
     public void removePrivateAccess(TypeObject obj) {
-        assert classesWithAccess.contains(obj);
-        classesWithAccess.decrement(obj);
+        var base = new BaseType(obj);
+        assert classesWithAccess.contains(base);
+        classesWithAccess.decrement(base);
     }
 
     /**
@@ -65,7 +73,7 @@ public final class AccessHandler {
      * @see #removeProtectedAccess
      */
     public void allowProtectedAccess(TypeObject obj) {
-        classesWithProtected.increment(obj);
+        classesWithProtected.increment(new BaseType(obj));
     }
 
     /**
@@ -82,8 +90,9 @@ public final class AccessHandler {
      * @see #allowProtectedAccess
      */
     public void removeProtectedAccess(TypeObject obj) {
-        assert classesWithProtected.contains(obj);
-        classesWithProtected.decrement(obj);
+        var base = new BaseType(obj);
+        assert classesWithProtected.contains(base);
+        classesWithProtected.decrement(base);
     }
 
     /**
@@ -174,6 +183,13 @@ public final class AccessHandler {
         return containsBase(constructors, type);
     }
 
+    public void setDefinedInFile(@NotNull Set<TypeObject> values) {
+        assert definedInFile.isEmpty();
+        for (var value : values) {
+            definedInFile.add(new BaseType(value));
+        }
+    }
+
     private boolean containsBase(@NotNull Iterable<TypeObject> obj, TypeObject val) {
         for (var type : obj) {
             if (type.sameBaseType(val)) {
@@ -181,5 +197,34 @@ public final class AccessHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * Shim existing in order to ensure that types of the same base are treated
+     * as equal in hashed collections.
+     */
+    private static final class BaseType {
+        private final TypeObject value;
+
+        public BaseType(TypeObject value) {
+            this.value = value;
+        }
+
+        public TypeObject getValue() {
+            return value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            BaseType baseType = (BaseType) o;
+            return value.sameBaseType(baseType.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return value.baseHash();
+        }
     }
 }

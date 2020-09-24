@@ -41,6 +41,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     public abstract String name();
     public abstract String baseName();
     public abstract boolean sameBaseType(TypeObject other);
+    public abstract int baseHash();
     public abstract TypeObject typedefAs(String name);
 
     /**

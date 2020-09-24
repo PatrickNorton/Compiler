@@ -54,6 +54,11 @@ public final class TypeTypeObject extends TypeObject {
         return other instanceof TypeTypeObject;
     }
 
+    @Override
+    public int baseHash() {
+        return baseName().hashCode();
+    }
+
     @Contract("_ -> new")
     @Override
     @NotNull
