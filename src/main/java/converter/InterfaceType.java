@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public final class InterfaceType extends UserType<InterfaceType.Info> {
     public InterfaceType(String name, GenericInfo generics) {
@@ -31,11 +32,11 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     private InterfaceType(@NotNull InterfaceType other, String typedefName) {
-        super(other.info, typedefName, other.isConst);
+        super(other.info, typedefName, other.generics, other.isConst);
     }
 
     private InterfaceType(@NotNull InterfaceType other, boolean isConst) {
-        super(other.info, other.typedefName, isConst);
+        super(other.info, other.typedefName, other.generics, isConst);
     }
 
     private InterfaceType(@NotNull InterfaceType other, List<TypeObject> generics) {
@@ -44,7 +45,19 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
     @Override
     public String name() {
-        return typedefName.isEmpty() ? info.name : typedefName;
+        if (typedefName.isEmpty()) {
+            if (generics.isEmpty()) {
+                return info.name;
+            } else {
+                var joiner = new StringJoiner(", ", "[", "]");
+                for (var generic : generics) {
+                    joiner.add(generic.name());
+                }
+                return info.name + joiner;
+            }
+        } else {
+            return typedefName;
+        }
     }
 
     @Override
