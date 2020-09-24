@@ -1,0 +1,101 @@
+from string import StringBuilder, DIGITS, ASCII_LOWERCASE, ASCII_UPPERCASE
+
+from .unicode import Captures
+
+export expandStr
+
+func expandStr(Captures caps, str replacement) -> str {
+    final var dst = StringBuilder()
+    mut int index = 0
+    static int dollar = b"$"[0]
+    while index < replacement.length {
+        mut var repl = replacement[index:]
+        if bytes(repl).indexOf(dollar)? as i {
+            dst.push(repl[:i])
+            index += i
+            repl = repl[i:]
+        } else {
+            break
+        }
+        if bytes(repl).get(i)? as b {
+            if b == dollar {
+                dst.push("$")
+                index += 2
+                continue
+            }
+        }
+        assert repl
+        CaptureRef capRef
+        if findCapRef(repl)? as c {
+            capRef = c
+        } else {
+            dst.push("$")
+            index++
+            continue
+        }
+        repl = repl[capRef.end:]
+        switch capRef.cap {
+            case Number as i {
+                dst.push(caps.get(i)?.operator str() ?? "")
+            }
+            case Name as name {
+                dst.push(caps.name(name)?.operator str() ?? "")
+            }
+        }
+    }
+}
+
+class CaptureRef {
+    Ref cap
+    int end
+
+    public operator new(Ref cap, int end) {
+        self.cap = cap
+        self.end = end
+    }
+}
+
+union Ref {
+    str Named
+    int Number
+}
+
+func findCapRef(str replacement) -> CaptureRef? {
+    mut var i = 0
+    let rep = bytes(replacement)
+    if rep.length <= 1 or rep[0] != b'$'[0] {
+        return null
+    }
+    mut bool brace = false
+    i++
+    if rep[i] == b'{'[0] {
+        brace = true
+        i++
+    }
+    mut var capEnd = i
+    while isValidCapLetter(rep.get(capEnd)) {
+        capEnd++
+    }
+    return null if cap_end == i
+
+    # We just verified that the range 0..cap_end is valid ASCII, so it must
+    # therefore be valid UTF-8. If we really cared, we could avoid this UTF-8
+    # check with either unsafe or by parsing the number straight from &[u8].
+    var cap = rep[i:cap_end].asUtf8()!!
+    if brace {
+        if not rep.get(cap_end)?.operator == (b"}"[0]) ?? false {
+            return null
+        }
+        capEnd++
+    }
+    if cap.asInt()? as i {
+        return CaptureRef(Ref.Number(i), capEnd)
+    } else {
+        return CaptureRef(Ref.Named(cap), capEnd)
+    }
+}
+
+func isValidCapLetter(int b) -> bool {
+    var c = char(b)
+    return c in DIGITS or c in ASCII_LOWERCASE or c in ASCII_UPPERCASE or c == '_'[0]
+}
