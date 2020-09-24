@@ -71,6 +71,11 @@ public final class ObjectType extends TypeObject {
     }
 
     @Override
+    public int baseHash() {
+        return baseName().hashCode();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof ObjectType;
     }

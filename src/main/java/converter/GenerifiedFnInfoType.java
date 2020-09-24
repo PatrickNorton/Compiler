@@ -55,6 +55,11 @@ public final class GenerifiedFnInfoType extends TypeObject {
         return baseType().sameBaseType(other);
     }
 
+    @Override
+    public int baseHash() {
+        return baseType().baseHash();
+    }
+
     @Contract(" -> new")
     @NotNull
     public FunctionInfoType baseType() {

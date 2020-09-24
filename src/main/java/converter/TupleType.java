@@ -127,6 +127,11 @@ public final class TupleType extends TypeObject {
         return other instanceof TupleType;
     }
 
+    @Override
+    public int baseHash() {
+        return baseName().hashCode();
+    }
+
     @Contract("_ -> new")
     @Override
     @NotNull

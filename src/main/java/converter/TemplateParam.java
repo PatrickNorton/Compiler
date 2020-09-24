@@ -84,6 +84,11 @@ public final class TemplateParam extends NameableType {
         return equals(other);
     }
 
+    @Override
+    public int baseHash() {
+        return hashCode();
+    }
+
     public TypeObject getParent() {
         return parent;
     }
