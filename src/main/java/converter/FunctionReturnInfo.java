@@ -26,7 +26,7 @@ public final class FunctionReturnInfo {
      *     (probably), but instead the parameters of the iterable (as they would
      *     appear after the arrow in a generator definition).
      * </p>
-     * 
+     *
      * @param isGen If the function is a generator
      * @param values The return values of the function
      */
@@ -41,7 +41,7 @@ public final class FunctionReturnInfo {
      *
      * @return The returns of the current function
      * @see #addFunctionReturns(TypeObject[])
-     * @see #addFunctionReturns(boolean, TypeObject[]) 
+     * @see #addFunctionReturns(boolean, TypeObject[])
      */
     public TypeObject[] currentFnReturns() {
         assert returns.peekFirst() != null;
