@@ -52,7 +52,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
-            superConstants.add(info.constIndex(sup.name()));
+            superConstants.add(info.constIndex(sup.baseName()));
         }
         converter.checkAttributes();
         addToInfo(type, "interface", superConstants, converter);
