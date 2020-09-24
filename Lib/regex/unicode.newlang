@@ -3,6 +3,7 @@ from string import StringBuilder
 
 from .builder import RegexBuilder
 from .exec import Exec
+from .expand import expandStr
 from .Match import Match
 from .trait import Locations
 
@@ -204,7 +205,7 @@ class Captures {
     public operator iter -> Match? {
         for var loc in self.locs {
             if loc? as l {
-                yield Match(self.text, l.start, l.end)
+                yield Match(self.text, l.first, l.second)
             } else {
                 yield null
             }
@@ -212,17 +213,18 @@ class Captures {
     }
 
     # Note: these were originally both operator [], but due to overloading issues, are no longer so
+    # Note 2: IndexError is still not implemented, but should be soon
     public method group(int i) -> Match {
-        return self.get(i) ?? raise IndexError(f"No group at index {i}")
+        return self.get(i)!! # ?? raise IndexError(f"No group at index {i}")
     }
 
     public method namedGroup(str name) -> Match {
-        return self.name(name) ?? raise IndexError(f"No group named '{name}'")
+        return self.name(name)!! # ?? raise IndexError(f"No group named '{name}'")
     }
 
     public method get(int i) -> Match? {
         if self.locs.pos(i)? as p {
-            return Match(self.text, p.start, p.end)
+            return Match(self.text, p.first, p.second)
         } else {
             return null
         }
@@ -264,7 +266,7 @@ class ReplacerStr {
         if bytes(self).indexOf(b"$")? {
             return null
         } else {
-            return self
+            return self.val
         }
     }
 }
