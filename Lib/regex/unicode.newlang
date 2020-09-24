@@ -19,18 +19,18 @@ class Regex {
         return self.isMatchAt(text, 0)
     }
 
-    public method find(str text) -> Match {
+    public method isMatchAt(str text, int start) -> bool {
+        return self.shortestMatchAt(text, start)?
+    }
+
+    public method find(str text) -> Match? {
         return self.findAt(text, 0)
     }
 
     public generator method findIter(str text) -> Match {
         var value = self.value.searcherStr().findIter(text)
-        while true {
-            if value.next()? as n {
-                yield Match(value.text(), n.start, n.end)
-            } else {
-                return
-            }
+        for var n in value {
+            yield Match(text, *n)
         }
     }
 
@@ -45,7 +45,7 @@ class Regex {
 
     public generator method capturesIter(str text) -> Captures {
         for var locs in self.value.searcherStr().capturesIter(text) {
-            yield Captures(text, locs, self.value.searcherStr().regex().captureNameIdx())
+            yield Captures(text, locs, self.value.searcherStr().captureNameIdx())
         }
     }
 
@@ -60,8 +60,8 @@ class Regex {
     }
 
     public generator method splitN(str text, int limit) -> str {
-        final var splits = self.split(text)
         mut int n = 0
+        mut var last = 0
         for var m in self.findIter(text) {
             n++
             break if n >= limit
@@ -73,11 +73,11 @@ class Regex {
     }
 
     public method replace(str text, str replacement) -> str {
-        return self.replacen(text, 1, rep)
+        return self.replacen(text, 1, replacement)
     }
 
     public method replaceAll(str text, str replacement) -> str {
-        return self.replacen(text, 0, rep)
+        return self.replacen(text, 0, replacement)
     }
 
     public method replacen(str text, int limit, str replacement) -> str {
@@ -134,7 +134,7 @@ class Regex {
 
     public method findAt(str text, int start) -> Match? {
         if self.value.searcherStr().findAt(text, start)? as x {
-            return Match(x.first, x.second)
+            return Match(text, x.first, x.second)
         } else {
             return null
         }
@@ -146,7 +146,7 @@ class Regex {
 
     public method capturesReadAt(mut CaptureLocations locs, str text, int start) -> Match? {
         if self.value.searcherStr().capturesReadAt(text, start)? as x {
-            return Match(x.first, x.second)
+            return Match(text, x.first, x.second)
         } else {
             return null
         }
@@ -179,7 +179,7 @@ class CaptureLocations {
         self.value = value
     }
 
-    public operator [] (int i) -> Pair[int, int] {
+    public operator [] (int i) -> Pair[int, int]? {
         return self.value.pos(i)
     }
 

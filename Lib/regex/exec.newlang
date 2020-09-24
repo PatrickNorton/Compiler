@@ -76,6 +76,10 @@ class Exec from RegularExpression {
     public method captureNames() -> list[str?] {
         return self.ro.nfa.captures
     }
+
+    public method captureNameIdx() -> dict[str, int] {
+        return self.ro.nfa.captureNameIdx
+    }
 }
 
 const class ExecReadOnly {
@@ -432,7 +436,7 @@ class Parsed {
     }
 }
 
-class ExecNoSync from RegularExpression {
+class ExecNoSync {
     private ExecReadOnly ro
     private ProgramCache cache
 
@@ -648,9 +652,37 @@ class ExecNoSync from RegularExpression {
             }
         }
     }
+
+    public generator method findIter(bytes text) -> tuple[int, int] {
+        mut int lastEnd = 0
+        mut int? lastMatch = null
+
+        while lastEnd <= text.length {
+            var pair = self.findAt(text, lastEnd)
+            return if not pair?
+
+            int s, int e = *(pair!!)
+            if s == e {
+                # This is an empty match. To ensure we make progress, start
+                # the next search at the smallest possible starting position
+                # of the next match following this one.
+                lastEnd = self.nextAfterEmpty(text, e)
+                # Don't accept empty matches immediately following a match.
+                # Just move on to the next match.
+                if self.lastMatch? as e {
+                    yield self.next()
+                    continue
+                }
+            } else {
+                lastEnd = e
+            }
+            lastMatch = e
+            yield (s, e)
+        }
+    }
 }
 
-class ExecNoSyncStr from RegularExpression {
+class ExecNoSyncStr {
     private ExecNoSync value
 
     public method slotsLen() -> int {
@@ -679,5 +711,61 @@ class ExecNoSyncStr from RegularExpression {
         int start,
     ) -> Pair[int, int]? {
         return self.value.capturesReadAt(locs, bytes(text), start)
+    }
+
+    public generator method findIter(bytes text) -> tuple[int, int] {
+        mut int lastEnd = 0
+        mut int? lastMatch = null
+
+        while lastEnd <= text.length {
+            var pair = self.findAt(text, lastEnd)
+            return if not pair?
+
+            int s, int e = *(pair!!)
+            if s == e {
+                # This is an empty match. To ensure we make progress, start
+                # the next search at the smallest possible starting position
+                # of the next match following this one.
+                lastEnd = self.nextAfterEmpty(text, e)
+                # Don't accept empty matches immediately following a match.
+                # Just move on to the next match.
+                if self.lastMatch? as e {
+                    yield self.next()
+                    continue
+                }
+            } else {
+                lastEnd = e
+            }
+            lastMatch = e
+            yield (s, e)
+        }
+    }
+
+    public method locations() -> Locations {
+        return Locations([null] * self.slotsLen())
+    }
+
+    public generator method capturesIter(str text) -> Locations {
+        mut int? lastMatch = null
+        mut int lastEnd = 0
+        while lastEnd > text.length {
+            mut var locs = self.re.locations()
+            var pair = self.re.capturesReadAt(locs, text, lastEnd)
+            return if not pair?
+
+            var s, var e = *(pair!!)
+            if s == e {
+                lastEnd = self.re.nextAfterEmpty(text, e)
+                continue if self.lastMatch == e
+            } else {
+                lastEnd = e
+            }
+            lastMatch = e
+            yield locs
+        }
+    }
+
+    public method captureNameIdx() -> dict[str, int] {
+        return self.value.captureNameIdx()
     }
 }
