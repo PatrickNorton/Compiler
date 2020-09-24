@@ -115,6 +115,7 @@ public final class FileWriter {
     }
 
     private void printDisassembly() {
+        System.out.println(info.sourceFile());
         System.out.println("Constants:");
         var constants = info.getConstants();
         for (var constant : constants) {
