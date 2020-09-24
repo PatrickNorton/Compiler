@@ -145,7 +145,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
-            var fnInfo = new OptionTypeObject(pair.getValue().getValue().getType());
+            var fnInfo = TypeObject.optional(pair.getValue().getValue().getType());
             result.put(pair.getKey(), new AttributeInfo(AccessLevel.PUBLIC, fnInfo));
         }
         return result;

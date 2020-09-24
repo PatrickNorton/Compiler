@@ -339,7 +339,7 @@ public final class CompilerInfo {
             case "super":
                 return wrap(accessHandler.getSuper(), node);
             case "":
-                return new ListTypeObject(typesOf(node.getSubtypes()));
+                return TypeObject.list(typesOf(node.getSubtypes()));
         }
         var value = typeMap.get(type.strName());
         if (value == null) {

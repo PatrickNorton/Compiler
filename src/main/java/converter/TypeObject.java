@@ -276,11 +276,15 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     static TypeObject union(@NotNull TypeObject... values) {
+        assert values.length != 0;
         Set<TypeObject> valueSet = new HashSet<>(Arrays.asList(values));
         if (valueSet.size() == 1) {
             return valueSet.iterator().next();
         } else {
             valueSet.remove(Builtins.THROWS);
+            if (valueSet.isEmpty()) {
+                return Builtins.THROWS;
+            }
             TypeObject currentSuper = null;
             boolean isOptional = false;
             for (var value : valueSet) {
@@ -294,7 +298,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                     currentSuper = currentSuper == null ? value : getSuper(currentSuper, value);
                 }
             }
-            return isOptional ? new OptionTypeObject(currentSuper) : currentSuper;
+            if (currentSuper == null) {  // Can only happen if all types are null
+                return Builtins.NULL_TYPE;
+            }
+            return isOptional ? optional(currentSuper) : currentSuper;
         }
     }
 
@@ -366,7 +373,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     @NotNull
     @Contract(pure = true)
     static TypeObject optional(@NotNull TypeObject value) {
-        return value instanceof OptionTypeObject ? value : new OptionTypeObject(value);
+        return new OptionTypeObject(value);
     }
 
     @Nullable

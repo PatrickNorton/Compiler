@@ -142,7 +142,7 @@ public final class ReturnConverter implements BaseConverter {
     private static boolean badType(@NotNull TypeObject fnRet, TypeObject retType) {
         return !fnRet.isSuperclass(retType)
                 && (!OptionTypeObject.needsMakeOption(fnRet, retType)
-                || !fnRet.isSuperclass(new OptionTypeObject(retType)));
+                || !fnRet.isSuperclass(TypeObject.optional(retType)));
     }
 
     @NotNull
