@@ -11,6 +11,7 @@ import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
 import main.java.util.Pair;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,6 +76,7 @@ public final class CompilerInfo {
             return this;
         }
         link();
+        addLocals();
         this.addStackFrame();
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node) {
@@ -288,6 +290,38 @@ public final class CompilerInfo {
         importHandler.setFromLinker(linker);
         linked = true;
         return this;
+    }
+
+    private void addLocals() {
+        for (var pair : importHandler.importInfos().entrySet()) {
+            var path = pair.getKey();
+            var info = pair.getValue();
+            var varMap = variables.get(0);
+            if (info.getAsNames().isPresent()) {
+                for (var pair2 : new Zipper<>(info.getNames(), info.getAsNames().get())) {
+                    var name = pair2.getKey();
+                    var asName = pair2.getValue();
+                    if (!varMap.containsKey(asName)) {
+                        var type = importHandler.importedType(info, path, name);
+                        varMap.put(asName, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                    }
+                }
+            } else if (!info.getNames().get(0).equals("*")) {
+                for (var name : info.getNames()) {
+                    if (!varMap.containsKey(name)) {
+                        var type = importHandler.importedType(info, path, name);
+                        varMap.put(name, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                    }
+                }
+            } else {
+                var handler = ImportHandler.ALL_FILES.get(path).importHandler;
+                for (var export : handler.exportTypes()) {
+                    var name = export.getKey();
+                    var type = export.getValue();
+                    varMap.put(name, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                }
+            }
+        }
     }
 
     public void loadDependents() {

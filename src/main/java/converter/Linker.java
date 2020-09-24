@@ -88,6 +88,7 @@ public final class Linker {
             info.addVariable(name, Builtins.TYPE.generify(valPair.getKey()), true, valPair.getValue());
         }
         // Filters out auto interfaces, which are registered earlier
+        var importHandler = info.importHandler();
         for (var stmt : node) {
             if (!(stmt instanceof TopLevelNode)) {
                 throw CompilerException.of(
@@ -99,6 +100,9 @@ public final class Linker {
                 if (!isAutoInterface(def)) {
                     var name = def.getName();
                     TypeObject type = linkDefinition(def);
+                    if (importHandler.getExports().contains(name.toString())) {
+                        importHandler.setExportType(name.toString(), type);
+                    }
                     globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
                 }
             }
