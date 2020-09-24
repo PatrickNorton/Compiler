@@ -80,6 +80,7 @@ public final class ImportHandler {
     public void registerDependents(@NotNull TopNode node) {
         Map<String, Pair<TypeObject, Lined>> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
+        Set<TypeObject> definedInFile = new HashSet<>();
         boolean isModule = false;
         Optional<InterfaceDefinitionNode> hasAuto = Optional.empty();
         Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
@@ -107,6 +108,7 @@ public final class ImportHandler {
                 generics.setParent(type);
                 types.put(strName, Pair.of(type, cls));
                 lineInfos.put(strName, cls.getLineInfo());
+                definedInFile.add(type);
                 if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
                     ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
                     hasAuto = Optional.of(cls);
@@ -122,6 +124,7 @@ public final class ImportHandler {
                 generics.setParent(type);
                 types.put(strName, Pair.of(type, cls));
                 lineInfos.put(strName, cls.getLineInfo());
+                definedInFile.add(type);
             } else if (stmt instanceof TypedefStatementNode) {
                 typedefs.push((TypedefStatementNode) stmt);
             }
@@ -143,6 +146,7 @@ public final class ImportHandler {
         if (isModule) {
             info.addPredeclaredTypes(types);
         }
+        info.accessHandler().setDefinedInFile(definedInFile);
     }
 
     public void setFromLinker(@NotNull Linker linker) {

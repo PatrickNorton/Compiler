@@ -6,13 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
-public final class AccessHandler {
+public final class AccessHandler {  // FIXME: Containment for types gets weird
     private final Counter<TypeObject> classesWithAccess = new HashCounter<>();
     private final Counter<TypeObject> classesWithProtected = new HashCounter<>();
     private final Deque<TypeObject> clsTypes = new ArrayDeque<>();
     private final Deque<TypeObject> superTypes = new ArrayDeque<>();
     private final Deque<TypeObject> constructors = new ArrayDeque<>();
+    private final Set<TypeObject> definedInFile = new HashSet<>();
 
     /**
      * The current access level of the given {@link TypeObject}.
@@ -26,6 +29,9 @@ public final class AccessHandler {
      * @return The security access level of the type
      */
     public AccessLevel accessLevel(@NotNull TypeObject obj) {
+        if (containsBase(definedInFile, obj)) {  // FIXME: Protected & file access
+            return containsBase(classesWithAccess, obj) ? AccessLevel.PRIVATE : AccessLevel.FILE;
+        }
         return containsBase(classesWithAccess, obj) ? AccessLevel.PRIVATE
                 : containsBase(classesWithProtected, obj) ? AccessLevel.PROTECTED : AccessLevel.PUBLIC;
     }
@@ -172,6 +178,11 @@ public final class AccessHandler {
 
     public boolean isInConstructor(@NotNull TypeObject type) {
         return containsBase(constructors, type);
+    }
+
+    public void setDefinedInFile(Set<TypeObject> values) {
+        assert definedInFile.isEmpty();
+        definedInFile.addAll(values);
     }
 
     private boolean containsBase(@NotNull Iterable<TypeObject> obj, TypeObject val) {
