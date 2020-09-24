@@ -49,7 +49,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     public final boolean isSubclass(@NotNull TypeObject other) {
         if (this.equals(other)) {
             return true;
-        } else if (other instanceof UserType && ((UserType<?>) other).info == info) {
+        } else if (other instanceof UserType && this.sameBaseType(other)) {
             if (!((UserType<?>) other).isConst && isConst) {
                 return false;
             } else if (((UserType<?>) other).generics.isEmpty()) {
@@ -264,6 +264,22 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
         assert Arrays.stream(result).noneMatch(Objects::isNull);
         return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserType<?> userType = (UserType<?>) o;
+        return isConst == userType.isConst &&
+                Objects.equals(info, userType.info) &&
+                Objects.equals(typedefName, userType.typedefName) &&
+                Objects.equals(generics, userType.generics);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(info, typedefName, generics, isConst);
     }
 
     @Override

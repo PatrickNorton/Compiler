@@ -66,14 +66,25 @@ public final class YieldConverter implements BaseConverter {
             var fnReturn = fnReturns[i];
             var converter = TestConverter.of(info, yielded, 1);
             var retType = converter.returnType()[0];
+            boolean needsMakeOption;
             if (!fnReturn.isSuperclass(retType)) {
-                throw CompilerException.format(
-                        "Type mismatch: in position %d, function expected" +
-                                " a superclass of type '%s' to be yielded, got type '%s'",
-                        node, i, fnReturn.name(), retType.name()
-                );
+                if (OptionTypeObject.needsMakeOption(fnReturn, retType)
+                        && OptionTypeObject.superWithOption(fnReturn, retType)) {
+                    needsMakeOption = true;
+                } else {
+                    throw CompilerException.format(
+                            "Type mismatch: in position %d, function expected" +
+                                    " a superclass of type '%s' to be yielded, got type '%s'",
+                            node, i, fnReturn.name(), retType.name()
+                    );
+                }
+            } else {
+                needsMakeOption = false;
             }
             bytes.addAll(converter.convert(start + bytes.size()));
+            if (needsMakeOption) {
+                bytes.add(Bytecode.MAKE_OPTION.value);
+            }
         }
         bytes.add(Bytecode.YIELD.value);
         bytes.addAll(Util.shortToBytes((short) fnReturns.length));
@@ -89,8 +100,15 @@ public final class YieldConverter implements BaseConverter {
         assert retCount > 1 && node.getYielded().size() == 1;
         var converter = TestConverter.of(info, node.getYielded().get(0), retCount);
         var retType = converter.returnType();
-        checkReturnType(fnReturns, retType);
+        var needsOptions = checkReturnType(fnReturns, retType);
         bytes.addAll(converter.convert(start + bytes.size()));
+        for (int i = 0; i < needsOptions.length; i++) {
+            if (needsOptions[i]) {
+                addSwap(bytes, needsOptions.length - i - 1);
+                bytes.add(Bytecode.MAKE_OPTION.value);
+                addSwap(bytes, needsOptions.length - i - 1);
+            }
+        }
         bytes.add(Bytecode.YIELD.value);
         bytes.addAll(Util.shortToBytes((short) retCount));
     }
@@ -116,22 +134,34 @@ public final class YieldConverter implements BaseConverter {
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
-    private void checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {
+    @NotNull
+    private boolean[] checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {
         if (expected.length > gotten.length) {
             throw CompilerException.format(
                     "Mismatched types: function yields %d items, yield statement gave %d",
                     node, expected.length, gotten.length
             );
         }
-        for (int i = 0; i < gotten.length; i++) {
+        boolean[] result = new boolean[expected.length];
+        for (int i = 0; i < expected.length; i++) {
+            var fnReturn = expected[i];
+            var retType = gotten[i];
             if (!expected[i].isSuperclass(gotten[i])) {
-                throw CompilerException.format(
-                        "Type mismatch: in position %d, function expected" +
-                                " a superclass of type '%s' to be yielded, got type '%s'",
-                        node, i, expected[i].name(), gotten[i].name()
-                );
+                if (OptionTypeObject.needsMakeOption(fnReturn, retType)
+                        && OptionTypeObject.superWithOption(fnReturn, retType)) {
+                    result[i] = true;
+                } else {
+                    throw CompilerException.format(
+                            "Type mismatch: in position %d, function expected" +
+                                    " a superclass of type '%s' to be yielded, got type '%s'",
+                            node, i, expected[i].name(), gotten[i].name()
+                    );
+                }
+            } else {
+                result[i] = false;
             }
         }
+        return result;
     }
 
     @NotNull
@@ -144,6 +174,19 @@ public final class YieldConverter implements BaseConverter {
             if (!pair.getValue().isEmpty()) {
                 throw CompilerTodoError.of("Cannot use varargs with yield yet", pair.getKey());
             }
+        }
+    }
+
+    private static void addSwap(List<Byte> bytes, int distFromTop) {
+        switch (distFromTop) {
+            case 0:
+                return;
+            case 1:
+                bytes.add(Bytecode.SWAP_2.value);
+            default:
+                bytes.add(Bytecode.SWAP_STACK.value);
+                bytes.addAll(Util.shortZeroBytes());
+                bytes.addAll(Util.shortToBytes((short) distFromTop));
         }
     }
 }
