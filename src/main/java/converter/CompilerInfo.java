@@ -394,7 +394,7 @@ public final class CompilerInfo {
     }
 
     private static TypeObject wrap(TypeObject obj, @NotNull TypeLikeNode node) {
-        var mutNode = node.getMutability().map(MutableType::fromDescriptor).orElse(MutableType.STANDARD);
+        var mutNode = MutableType.fromNullable(node.getMutability().orElse(null));
         if (!mutNode.isConstType()) {
             if (node.isOptional()) {
                 return TypeObject.optional(obj.makeMut());
