@@ -390,7 +390,7 @@ public final class ImportHandler {
                     var value = imp.getValue();
                     importedTypes.put(name, Pair.of(value, importInfo));
                 }
-            } else for (var names : new Zipper<>(strings, asNames)) {
+            } else for (var names : Zipper.of(strings, asNames)) {
                 var str = names.getKey();
                 var as = names.getValue();
                 var type = importHandler.exportedType(str, importInfo.getLineInfo(), new ArrayList<>());

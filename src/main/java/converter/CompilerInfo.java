@@ -298,7 +298,7 @@ public final class CompilerInfo {
             var info = pair.getValue();
             var varMap = variables.get(0);
             if (info.getAsNames().isPresent()) {
-                for (var pair2 : new Zipper<>(info.getNames(), info.getAsNames().get())) {
+                for (var pair2 : Zipper.of(info.getNames(), info.getAsNames().get())) {
                     var name = pair2.getKey();
                     var asName = pair2.getValue();
                     if (!varMap.containsKey(asName)) {
