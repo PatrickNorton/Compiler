@@ -135,6 +135,8 @@ public final class Builtins {
 
     public static final LangObject ENUMERATE = new LangInstance(ENUMERATE_INFO.toCallable());
 
+    public static final InterfaceType THROWABLE = new InterfaceType("Throwable", GenericInfo.empty());
+
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
@@ -440,6 +442,7 @@ public final class Builtins {
             Map.entry("open", OPEN),
             Map.entry("Callable", CALLABLE),
             Map.entry("Iterable", ITERABLE),
+            Map.entry("Throwable", THROWABLE),
             Map.entry("repr", REPR),
             Map.entry("object", OBJECT),
             Map.entry("reversed", REVERSED),
