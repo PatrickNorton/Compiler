@@ -110,6 +110,6 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
 
     public static boolean superWithOption(TypeObject maybeOption, TypeObject other) {
         assert needsMakeOption(maybeOption, other);
-        return other.sameBaseType(Builtins.NULL_TYPE) || maybeOption.isSuperclass(other);
+        return other.sameBaseType(Builtins.NULL_TYPE) || maybeOption.isSuperclass(TypeObject.optional(other));
     }
 }
