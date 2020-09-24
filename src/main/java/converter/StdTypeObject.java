@@ -227,20 +227,5 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
             this.isConstClass = false;
             this.isUnion = false;
         }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            if (!super.equals(o)) return false;
-            Info info = (Info) o;
-            return isConstClass == info.isConstClass &&
-                    isFinal == info.isFinal;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(super.hashCode(), isConstClass, isFinal);
-        }
     }
 }

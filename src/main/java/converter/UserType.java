@@ -342,25 +342,5 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 staticAttributes = Collections.emptyMap();
             }
         }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Info<?, ?> info1 = (Info<?, ?>) o;
-            return isSealed == info1.isSealed &&
-                    Objects.equals(name, info1.name) &&
-                    Objects.equals(supers, info1.supers) &&
-                    Objects.equals(operators, info1.operators) &&
-                    Objects.equals(staticOperators, info1.staticOperators) &&
-                    Objects.equals(info, info1.info) &&
-                    Objects.equals(attributes, info1.attributes) &&
-                    Objects.equals(staticAttributes, info1.staticAttributes);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, supers, operators, staticOperators, info, attributes, staticAttributes, isSealed);
-        }
     }
 }
