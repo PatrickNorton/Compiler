@@ -28,7 +28,7 @@ public final class StringConverter implements ConstantConverter {
             return Collections.emptyList();
         }
         if (node.getPrefixes().contains(StringPrefix.REGEX)) {
-            throw new UnsupportedOperationException("Regex strings not yet supported");
+            throw CompilerTodoError.of("Regex strings not yet supported", node);
         }
         int constIndex = info.addConstant(constant());
         List<Byte> bytes = new ArrayList<>();

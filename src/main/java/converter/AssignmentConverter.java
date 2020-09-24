@@ -59,7 +59,7 @@ public final class AssignmentConverter implements BaseConverter {
             } else if (name instanceof DottedVariableNode) {
                 assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, valueConverter);
             } else {
-                throw new UnsupportedOperationException("Assignment to this type not yet supported");
+                throw CompilerException.of("Assignment must be to a variable, index, or dotted variable", node);
             }
         }
         assignBytes.addAll(storeBytes);
@@ -116,7 +116,7 @@ public final class AssignmentConverter implements BaseConverter {
         } else if (name instanceof DottedVariableNode) {
             assignTopToDot(bytes, start, (DottedVariableNode) name, retType);
         } else {
-            throw new UnsupportedOperationException("Assignment to this type not yet supported");
+            throw CompilerException.of("Assignment must be to a variable, index, or dotted variable", node);
         }
     }
 

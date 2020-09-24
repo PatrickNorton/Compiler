@@ -4,12 +4,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public final class CompactSwitchTable implements SwitchTable {
-    private final List<Integer> values;
+public final class StringSwitchTable implements SwitchTable {
+    private final Map<String, Integer> values;
     private final int defaultVal;
 
-    public CompactSwitchTable(List<Integer> values, int defaultVal) {
+    public StringSwitchTable(Map<String, Integer> values, int defaultVal) {
         this.values = values;
         this.defaultVal = defaultVal;
     }
@@ -19,15 +20,15 @@ public final class CompactSwitchTable implements SwitchTable {
      * <p>
      *     The representation is as follows:
      * <code><pre>
-     * [byte] 0
+     * [byte] 2
      * The number of values
-     * The max value
-     * For each i < max:
-     *     i
+     * For each:
+     *     The string value
      *     The index to jump to
-     * The default index to jump to
+     * The default place to jump to
      * </pre></code>
      * </p>
+     *
      * @see SwitchTable#toBytes()
      * @return The list of bytes represented
      */
@@ -35,10 +36,11 @@ public final class CompactSwitchTable implements SwitchTable {
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
-        bytes.add((byte) 0);
+        bytes.add((byte) 2);
         bytes.addAll(Util.intToBytes(values.size()));
-        for (var val : values) {
-            bytes.addAll(Util.intToBytes(val));
+        for (var pair : values.entrySet()) {
+            bytes.addAll(StringConstant.strBytes(pair.getKey()));
+            bytes.addAll(Util.intToBytes(pair.getValue()));
         }
         bytes.addAll(Util.intToBytes(defaultVal));
         return bytes;
@@ -48,8 +50,8 @@ public final class CompactSwitchTable implements SwitchTable {
     @NotNull
     public String strDisassembly() {
         var value = new StringBuilder();
-        for (int i = 0; i < values.size(); i++) {
-            value.append(String.format("%d: %d%n", i, values.get(i)));
+        for (var pair : values.entrySet()) {
+            value.append(String.format("\"%s\": %d%n", pair.getKey(), pair.getValue()));
         }
         value.append(String.format("default: %d%n", defaultVal));
         return value.toString();

@@ -26,7 +26,7 @@ public final class OptionConstant implements LangConstant {
     @Override
     @NotNull
     public TypeObject getType() {
-        return new OptionTypeObject(optionVal);
+        return TypeObject.optional(optionVal);
     }
 
     @Override

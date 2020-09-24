@@ -3,12 +3,11 @@ package main.java.converter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public final class FunctionInfo implements IntoFnInfo, Template<FunctionInfo> {
+public final class FunctionInfo implements IntoFnInfo {
     private final String name;
     private final boolean isGenerator;
     private final ArgumentInfo arguments;
@@ -86,18 +85,7 @@ public final class FunctionInfo implements IntoFnInfo, Template<FunctionInfo> {
     private Argument[] boundifyArray(@NotNull Argument[] arr) {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            var argType = arr[i].getType();
-            TypeObject type;
-            if (argType instanceof TemplateParam) {
-                var template = (TemplateParam) argType;
-                if (template.getParent().sameBaseType(this.toCallable())) {
-                    type = template.getBound();
-                } else {
-                    type = template;
-                }
-            } else {
-                type = argType;
-            }
+            var type = boundifyType(arr[i].getType());
             result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
         }
         return result;
@@ -105,20 +93,28 @@ public final class FunctionInfo implements IntoFnInfo, Template<FunctionInfo> {
 
     @NotNull
     @Contract(pure = true)
-    private static TypeObject[] boundifyArray(@NotNull TypeObject[] arr) {
+    private TypeObject[] boundifyArray(@NotNull TypeObject[] arr) {
         var result = new TypeObject[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            result[i] = arr[i] instanceof TemplateParam ? ((TemplateParam) arr[i]).getBound() : arr[i];
+            result[i] = boundifyType(arr[i]);
         }
         return result;
     }
 
-    @Override
-    @NotNull
-    public FunctionInfo generify(TypeObject... generics) {
-        return generify(Arrays.asList(generics));
+    private TypeObject boundifyType(TypeObject val) {
+        if (val instanceof TemplateParam) {
+            var template = (TemplateParam) val;
+            if (template.getParent().sameBaseType(this.toCallable())) {
+                return template.getBound();
+            } else {
+                return template;
+            }
+        } else {
+            return val;
+        }
     }
 
+    @NotNull
     public FunctionInfo generify(TypeObject parent, List<TypeObject> args) {
         var posArgs = generifyArray(parent, arguments.getPositionArgs(), args);
         var normArgs = generifyArray(parent, arguments.getNormalArgs(), args);
@@ -128,51 +124,12 @@ public final class FunctionInfo implements IntoFnInfo, Template<FunctionInfo> {
     }
 
     @NotNull
-    public FunctionInfo generify(List<TypeObject> args) {
-        var posArgs = generifyArray(arguments.getPositionArgs(), args);
-        var normArgs = generifyArray(arguments.getNormalArgs(), args);
-        var kwArgs = generifyArray(arguments.getKeywordArgs(), args);
-        var argInfo = new ArgumentInfo(posArgs, normArgs, kwArgs);
-        return new FunctionInfo(name, argInfo, generifyArray(returns, args));
-    }
-
-    @NotNull
-    private static Argument[] generifyArray(@NotNull Argument[] arr, List<TypeObject> generics) {
-        var result = new Argument[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-            var argType = arr[i].getType();  // TODO: Proper generification of subtypes (e.g. list[T] => list[something])
-            var type = argType instanceof TemplateParam ? generics.get(((TemplateParam) argType).getIndex()) : argType;
-            result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
-        }
-        return result;
-    }
-
-    @NotNull
     private static Argument[] generifyArray(TypeObject parent, @NotNull Argument[] arr, List<TypeObject> generics) {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
             var argType = arr[i].getType();
-            TypeObject type;
-            if (argType instanceof TemplateParam) {
-                var template = (TemplateParam) argType;
-                if (template.getParent().sameBaseType(parent)) {
-                    type = generics.get(template.getIndex());
-                } else {
-                    type = template;
-                }
-            } else {
-                type = argType.generifyWith(parent, generics);
-            }
+            TypeObject type = generifyType(argType, parent, generics);
             result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
-        }
-        return result;
-    }
-
-    @NotNull
-    private static TypeObject[] generifyArray(@NotNull TypeObject[] arr, List<TypeObject> generics) {
-        var result = new TypeObject[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-            result[i] = arr[i] instanceof TemplateParam ? generics.get(((TemplateParam) arr[i]).getIndex()) : arr[i];
         }
         return result;
     }
@@ -181,20 +138,23 @@ public final class FunctionInfo implements IntoFnInfo, Template<FunctionInfo> {
     private static TypeObject[] generifyArray(TypeObject parent, @NotNull TypeObject[] arr, List<TypeObject> generics) {
         var result = new TypeObject[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            TypeObject type;
-            if (arr[i] instanceof TemplateParam) {
-                var template = (TemplateParam) arr[i];
-                if (template.getParent().sameBaseType(parent)) {
-                    type = generics.get(template.getIndex());
-                } else {
-                    type = template;
-                }
-            } else {
-                type = arr[i].generifyWith(parent, generics);
-            }
+            TypeObject type = generifyType(arr[i], parent, generics);
             result[i] = type;
         }
         return result;
+    }
+
+    private static TypeObject generifyType(TypeObject val, TypeObject parent, List<TypeObject> generics) {
+        if (val instanceof TemplateParam) {
+            var template = (TemplateParam) val;
+            if (template.getParent().sameBaseType(parent)) {
+                return generics.get(template.getIndex());
+            } else {
+                return template;
+            }
+        } else {
+            return val.generifyWith(parent, generics);
+        }
     }
 
     public Optional<Map<Integer, TypeObject>> generifyArgs(Argument... args) {

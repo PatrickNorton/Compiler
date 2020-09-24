@@ -18,6 +18,18 @@ public final class FunctionReturnInfo {
         generators.push(false);
     }
 
+    /**
+     * Adds the given function returns to the file.
+     * <p>
+     *     <b>IMPORTANT</b>: If {@code isGen} is {@code true}, {@code values}
+     *     should <i>not</i> be a subclass of {@link Builtins#ITERABLE Iterable}
+     *     (probably), but instead the parameters of the iterable (as they would
+     *     appear after the arrow in a generator definition).
+     * </p>
+     *
+     * @param isGen If the function is a generator
+     * @param values The return values of the function
+     */
     public void addFunctionReturns(boolean isGen, TypeObject[] values) {
         returns.push(values);
         generators.push(isGen);
@@ -29,6 +41,7 @@ public final class FunctionReturnInfo {
      *
      * @return The returns of the current function
      * @see #addFunctionReturns(TypeObject[])
+     * @see #addFunctionReturns(boolean, TypeObject[])
      */
     public TypeObject[] currentFnReturns() {
         assert returns.peekFirst() != null;

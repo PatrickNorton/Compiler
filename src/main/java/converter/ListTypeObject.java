@@ -88,7 +88,7 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         Map<Integer, TypeObject> result = new HashMap<>();
         for (var pair : new Zipper<>(this, (ListTypeObject) other)) {
             var map = pair.getKey().generifyAs(parent, pair.getValue());
-            if (map.isEmpty() || !Template.addGenericsToMap(map.orElseThrow(), result)) {
+            if (map.isEmpty() || !TypeObject.addGenericsToMap(map.orElseThrow(), result)) {
                 return Optional.empty();
             }
         }

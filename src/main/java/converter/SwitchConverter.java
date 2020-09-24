@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.CaseStatementNode;
 import main.java.parser.DefaultStatementNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.Contract;
@@ -30,7 +31,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
         if (Builtins.INT.isSuperclass(retType)) {
-            return convertTbl(start, retType);
+            return convertTbl(start);
+        } else if (Builtins.STR.isSuperclass(retType)) {
+            return convertStr(start);
         } else if (retType instanceof StdTypeObject && ((StdTypeObject) retType).isUnion()) {
             return convertUnion(start, (StdTypeObject) retType);
         }
@@ -78,7 +81,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 bytes.addAll(Util.zeroToBytes());
                 bytes.add(Bytecode.POP_TOP.value);
             } else {
-                throw new UnsupportedOperationException("Multiple clauses in switch not supported yet");
+                throw CompilerTodoError.of("Multiple clauses in switch not supported yet", stmt);
             }
         } else {
             bytes.add(Bytecode.POP_TOP.value);
@@ -94,41 +97,33 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @NotNull
-    private List<Byte> convertTbl(int start, TypeObject retType) {
+    private List<Byte> convertTbl(int start) {
         Map<BigInteger, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
         var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
-        bytes.add(Bytecode.SWITCH_TABLE.value);
+        List<Byte> bytes = tblHeader(start);
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
         for (var stmt : node.getCases()) {
             if (!stmt.getAs().isEmpty()) {
-                throw CompilerException.of(
-                        "'as' clauses in a switch are only allowed when the switched value is a union", stmt.getAs()
-                );
+                throw asException(stmt.getAs());
             }
             if (stmt instanceof DefaultStatementNode) {
-                assert defaultVal == 0;
-                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt);
                 continue;
             }
+            var label = stmt.getLabel()[0];
             var lblConverter = TestConverter.of(info, stmt.getLabel()[0], 1);
-            if (!lblConverter.returnType()[0].isSuperclass(retType)) {
-                CompilerWarning.warnf(
-                        "Switch statement has argument of type '%s', " +
-                                "but case statement has type '%s', which will never be taken",
-                        stmt, retType.name(), lblConverter.returnType()[0].name()
-                );
+            if (!(lblConverter instanceof ConstantConverter)) {  // TODO: Variable switch arguments
+                throw literalException("int", label);
             }
-            assert lblConverter instanceof ConstantConverter;  // TODO: Variable switch arguments
             var constant = ((ConstantConverter) lblConverter).constant();
             if (constant instanceof IntConstant) {
                 jumps.put(BigInteger.valueOf(((IntConstant) constant).getValue()), start + bytes.size());
             } else if (constant instanceof BigintConstant) {
                 jumps.put(((BigintConstant) constant).getValue(), start + bytes.size());
             } else {
-                throw new UnsupportedOperationException();
+                throw literalException("int", label);
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
@@ -141,13 +136,59 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
+    @NotNull
+    private List<Byte> convertStr(int start) {
+        Map<String, Integer> jumps = new HashMap<>();
+        int defaultVal = 0;
+        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var bytes = tblHeader(start);
+        int tblPos = bytes.size();
+        bytes.addAll(Util.shortZeroBytes());
+        for (var stmt : node.getCases()) {
+            if (!stmt.getAs().isEmpty()) {
+                throw asException(stmt.getAs());
+            }
+            if (stmt instanceof DefaultStatementNode) {
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt);
+                continue;
+            }
+            var label = stmt.getLabel()[0];
+            var lblConverter = TestConverter.of(info, label, 1);
+            if (!(lblConverter instanceof ConstantConverter)) {
+                throw literalException("string", label);
+            }
+            var constant = ((ConstantConverter) lblConverter).constant();
+            if (constant instanceof StringConstant) {
+                jumps.put(((StringConstant) constant).getValue(), start + bytes.size());
+            } else {
+                throw literalException("string", label);
+            }
+            convertBody(start, bytes, stmt, retTypes);
+            bytes.add(Bytecode.JUMP.value);
+            info.loopManager().addBreak(1, start + bytes.size());
+            bytes.addAll(Util.zeroToBytes());
+        }
+        var switchTable = strTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
+        int tblIndex = info.addSwitchTable(switchTable);
+        Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
+        return bytes;
+    }
+
+    @NotNull
+    private List<Byte> tblHeader(int start) {
+        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
+        bytes.add(Bytecode.SWITCH_TABLE.value);
+        return bytes;
+    }
+
+    private static final BigInteger BIG_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
+
     @Contract("_, _ -> new")
     @NotNull
     private SwitchTable getTbl(@NotNull Map<BigInteger, Integer> jumps, int defaultVal) {
         var threshold = 2 * (long) jumps.size();
         var max = Collections.max(jumps.keySet());
-        if (max.compareTo(BigInteger.valueOf(threshold)) > 0
-                || max.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) >= 0) {
+        if (max.compareTo(BigInteger.valueOf(threshold)) > 0 || max.compareTo(BIG_MAX) > 0) {
             return new BigSwitchTable(jumps, defaultVal);
         } else {
             var tblSize = max.intValueExact() + 1;
@@ -157,6 +198,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             return new CompactSwitchTable(table, defaultVal);
         }
+    }
+
+    @Contract(value = "_, _ -> new", pure = true)
+    @NotNull
+    private SwitchTable strTbl(Map<String, Integer> jumps, int defaultVal) {
+        return new StringSwitchTable(jumps, defaultVal);
     }
 
     private void convertBody(int start, @NotNull List<Byte> bytes,
@@ -175,15 +222,22 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                               @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
         assert stmt.isArrow();
         var converter = TestConverter.of(info, (TestNode) stmt.getBody().get(0), retCount);
-            bytes.addAll(converter.convert(start + bytes.size()));
-            var converterRet = converter.returnType();
-            for (int i = 0; i < retTypes.length; i++) {
-                if (OptionTypeObject.needsMakeOption(retTypes[i], converterRet[i])) {
-                    addSwap(bytes, retTypes.length - i - 1);
-                    bytes.add(Bytecode.MAKE_OPTION.value);
-                    addSwap(bytes, retTypes.length - i - 1);
-                }
+        bytes.addAll(converter.convert(start + bytes.size()));
+        var converterRet = converter.returnType();
+        for (int i = 0; i < retTypes.length; i++) {
+            if (OptionTypeObject.needsMakeOption(retTypes[i], converterRet[i])) {
+                addSwap(bytes, retTypes.length - i - 1);
+                bytes.add(Bytecode.MAKE_OPTION.value);
+                addSwap(bytes, retTypes.length - i - 1);
             }
+        }
+    }
+
+    private int getDefaultVal(int start, int defaultVal, List<Byte> bytes, CaseStatementNode stmt) {
+        if (defaultVal != 0) {
+            throw defaultException(stmt);
+        }
+        return convertDefault(start, bytes, (DefaultStatementNode) stmt);
     }
 
     private int convertDefault(int start, @NotNull List<Byte> bytes, @NotNull DefaultStatementNode stmt) {
@@ -322,5 +376,23 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 bytes.addAll(Util.shortZeroBytes());
                 bytes.addAll(Util.shortToBytes((short) distFromTop));
         }
+    }
+
+    @NotNull
+    private static CompilerException literalException(String literalType, TestNode label) {
+        return CompilerException.format(
+                "'switch' on a %1$s requires a %1$s literal in each case statement",
+                label, literalType
+        );
+    }
+
+    private static CompilerException defaultException(Lined stmt) {
+        throw CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
+    }
+
+    private static CompilerException asException(Lined as) {
+        throw CompilerException.of(
+                "'as' clauses in a switch are only allowed when the switched value is a union", as
+        );
     }
 }

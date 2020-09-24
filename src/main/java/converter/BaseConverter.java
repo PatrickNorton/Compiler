@@ -101,7 +101,7 @@ public interface BaseConverter {
         } else if (node instanceof YieldStatementNode) {
             return new YieldConverter(info, (YieldStatementNode) node);
         } else {
-            throw new UnsupportedOperationException("Unsupported node");
+            throw CompilerTodoError.of("Unsupported node", node);
         }
     }
 }

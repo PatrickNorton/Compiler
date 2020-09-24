@@ -64,11 +64,24 @@ public final class FunctionCallConverter implements TestConverter {
         }
         var swaps = swapsToOrder(argPositions);
         for (var pair : swaps) {
-            bytes.add(Bytecode.SWAP_STACK.value);
-            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getKey() - 1)));
-            bytes.addAll(Util.shortToBytes((short) (params.length - pair.getValue() - 1)));
+            var dist1 = (short) (params.length - pair.getKey() - 1);
+            var dist2 = (short) (params.length - pair.getValue() - 1);
+            addSwap(bytes, dist1, dist2);
         }
         return argc;
+    }
+
+    private void addSwap(List<Byte> bytes, short dist1, short dist2) {
+        assert dist1 != dist2;
+        var d1 = (short) Math.min(dist1, dist2);
+        var d2 = (short) Math.max(dist1, dist2);
+        if (d1 == 0 && d2 == 1) {
+            bytes.add(Bytecode.SWAP_2.value);
+        } else {
+            bytes.add(Bytecode.SWAP_STACK.value);
+            bytes.addAll(Util.shortToBytes(d1));
+            bytes.addAll(Util.shortToBytes(d2));
+        }
     }
 
     @NotNull

@@ -24,7 +24,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class TypeObject implements LangObject, Comparable<TypeObject>, Template<TypeObject> {
+public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
+
     /**
      * Checks if this is a subclass of the other type.
      * <p>
@@ -90,7 +91,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         return operatorReturnType(o, info.accessLevel(this));
     }
 
-    @Override
     public final TypeObject generify(TypeObject... args) {
         return generify(LineInfo.empty(), args);
     }
@@ -276,11 +276,15 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     }
 
     static TypeObject union(@NotNull TypeObject... values) {
+        assert values.length != 0;
         Set<TypeObject> valueSet = new HashSet<>(Arrays.asList(values));
         if (valueSet.size() == 1) {
             return valueSet.iterator().next();
         } else {
             valueSet.remove(Builtins.THROWS);
+            if (valueSet.isEmpty()) {
+                return Builtins.THROWS;
+            }
             TypeObject currentSuper = null;
             boolean isOptional = false;
             for (var value : valueSet) {
@@ -294,7 +298,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
                     currentSuper = currentSuper == null ? value : getSuper(currentSuper, value);
                 }
             }
-            return isOptional ? new OptionTypeObject(currentSuper) : currentSuper;
+            if (currentSuper == null) {  // Can only happen if all types are null
+                return Builtins.NULL_TYPE;
+            }
+            return isOptional ? optional(currentSuper) : currentSuper;
         }
     }
 
@@ -366,7 +373,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
     @NotNull
     @Contract(pure = true)
     static TypeObject optional(@NotNull TypeObject value) {
-        return value instanceof OptionTypeObject ? value : new OptionTypeObject(value);
+        return new OptionTypeObject(value);
     }
 
     @Nullable
@@ -389,6 +396,24 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject>, 
         } else {
             return null;
         }
+    }
+
+    static boolean addGenericsToMap(@NotNull Map<Integer, TypeObject> toAdd, Map<Integer, TypeObject> result) {
+        for (var pair : toAdd.entrySet()) {
+            int index = pair.getKey();
+            var obj = pair.getValue();
+            var resultType = result.get(index);
+            if (resultType == null) {
+                result.put(index, obj);
+            } else {
+                if (obj.isSuperclass(resultType)) {
+                    result.put(index, obj);
+                } else if (!resultType.isSuperclass(obj)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @NotNull

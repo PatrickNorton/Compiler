@@ -98,7 +98,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         if (generics.size() == 0) {
             return trueInfo.map(FunctionInfo::boundify);
         } else {
-            return trueInfo.map(x -> x.generify(generics.toArray(new TypeObject[0])));
+            return trueInfo.map(x -> x.generify(this, generics));
         }
     }
 

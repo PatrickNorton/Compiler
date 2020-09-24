@@ -3,9 +3,11 @@ package main.java.converter;
 import main.java.parser.ElifStatementNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.OperatorNode;
+import main.java.parser.OperatorTypeNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -32,9 +34,10 @@ public final class IfConverter implements BaseConverter {
             addBodyWithAs(bytes, start, node.getBody(), true, node.getAs());
             info.removeStackFrame();
         } else {
-            bytes = new ArrayList<>(TestConverter.bytes(start, node.getConditional(), info, 1));
+            var pair = convertOptimizedNot(start, node.getConditional());
+            bytes = new ArrayList<>(pair.getKey());
             boolean trailingJump = node.getElifs().length > 0 || hasElse;
-            addBody(bytes, start, node.getBody(), trailingJump);
+            addBody(bytes, start, node.getBody(), trailingJump, pair.getValue());
         }
         int elifsRemaining = node.getElifs().length - 1;
         boolean popAs = hasAs;
@@ -54,11 +57,13 @@ public final class IfConverter implements BaseConverter {
         return bytes;
     }
 
-    private void addBody(@NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean trailingJump) {
+    private void addBody(
+            @NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean trailingJump, boolean jumpType
+    ) {
         var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP_FALSE.size(), body, info);
         // Jump index
         var jumpTarget = start + bytes.size() + Bytecode.JUMP_FALSE.size() + bodyBytes.size() + trailingJumpBytes(trailingJump);
-        bytes.add(Bytecode.JUMP_FALSE.value);
+        bytes.add(jumpType ? Bytecode.JUMP_TRUE.value : Bytecode.JUMP_FALSE.value);
         bytes.addAll(Util.intToBytes(jumpTarget));
         bytes.addAll(bodyBytes);
     }
@@ -84,8 +89,9 @@ public final class IfConverter implements BaseConverter {
         var jumpTarget = bytes.size();
         bytes.addAll(Util.zeroToBytes());  // Set jump target as temp value
         if (elif.getAs().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + Bytecode.JUMP.size() + bytes.size(), cond, info, 1));
-            addBody(bytes, start, body, trailingJump);
+            var pair = convertOptimizedNot(start + Bytecode.JUMP.size() + bytes.size(), cond);
+            bytes.addAll(pair.getKey());
+            addBody(bytes, start, body, trailingJump, pair.getValue());
         } else {
             bytes.addAll(addAs(start + bytes.size(), cond, elif.getAs()));
             addBodyWithAs(bytes, start, body, trailingJump, elif.getAs());
@@ -121,6 +127,23 @@ public final class IfConverter implements BaseConverter {
         info.checkDefinition(as.getName(), as);
         info.addVariable(as.getName(), asType, as);
         return bytes;
+    }
+
+    @NotNull
+    private Pair<List<Byte>, Boolean> convertOptimizedNot(int start, TestNode cond) {
+        if (cond instanceof OperatorNode) {
+            var op = (OperatorNode) cond;
+            if (op.getOperator() == OperatorTypeNode.BOOL_NOT) {
+                if (op.getOperands().length != 1) {
+                    throw CompilerInternalError.of("Got more than one operand in 'not' statement", cond);
+                } else {
+                    var bytes = TestConverter.bytes(start, op.getOperands()[0].getArgument(), info, 1);
+                    return Pair.of(bytes, true);
+                }
+            }
+        }
+        var bytes = TestConverter.bytes(start, cond, info, 1);
+        return Pair.of(bytes, false);
     }
 
     private int trailingJumpBytes(boolean trailingJump) {

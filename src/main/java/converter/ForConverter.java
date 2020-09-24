@@ -120,10 +120,7 @@ public final class ForConverter extends LoopConverter {
     private TypeObject returnType(int i, @NotNull TestConverter valueConverter) {
         var opTypes = valueConverter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info);
         var opType = opTypes[0];
-        assert opType.sameBaseType(Builtins.ITERABLE);
-        var generics = opType.getGenerics().get(0);
-        assert generics instanceof ListTypeObject;
-        return ((ListTypeObject) generics).getValues()[i];
+        return Builtins.deIterable(opType)[i];
     }
 
     private TypeObject getIteratorType(int i, TestConverter valueConverter, boolean firstRet) {

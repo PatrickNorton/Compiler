@@ -69,7 +69,7 @@ public final class DotConverter implements TestConverter {
             var operator = index.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
             return attrType.tryOperatorReturnType(node, operator, info)[0];
         } else {
-            throw new UnsupportedOperationException();
+            throw CompilerInternalError.of("Unimplemented post-dot type", dot);
         }
     }
 
@@ -87,7 +87,7 @@ public final class DotConverter implements TestConverter {
             var attrType = result.stripNull().tryAttrType(postDot, ((VariableNode) caller).getName(), info);
             return TypeObject.optional(attrType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info)[0]);
         } else {
-            throw new UnsupportedOperationException();
+            throw CompilerInternalError.of("Unimplemented post-dot type", dot);
         }
     }
 
@@ -172,7 +172,7 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof IndexNode) {
             convertIndex(start, bytes, (IndexNode) postDot);
         } else {
-            throw new UnsupportedOperationException("This kind of post-dot not yet supported");
+            throw CompilerInternalError.of("This kind of post-dot not yet supported", postDot);
         }
     }
 

@@ -5,6 +5,7 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.Parser;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
@@ -77,7 +78,7 @@ public final class ImportHandler {
      * @param node The node representing the file
      */
     public void registerDependents(@NotNull TopNode node) {
-        Map<String, TypeObject> types = new HashMap<>();
+        Map<String, Pair<TypeObject, Lined>> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
         boolean isModule = false;
         Optional<InterfaceDefinitionNode> hasAuto = Optional.empty();
@@ -104,7 +105,7 @@ public final class ImportHandler {
                 var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
                 var type = new InterfaceType(strName, generics);
                 generics.setParent(type);
-                types.put(strName, type);
+                types.put(strName, Pair.of(type, cls));
                 lineInfos.put(strName, cls.getLineInfo());
                 if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
                     ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
@@ -119,7 +120,7 @@ public final class ImportHandler {
                 var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
                 var type = new StdTypeObject(strName, generics);
                 generics.setParent(type);
-                types.put(strName, type);
+                types.put(strName, Pair.of(type, cls));
                 lineInfos.put(strName, cls.getLineInfo());
             } else if (stmt instanceof TypedefStatementNode) {
                 typedefs.push((TypedefStatementNode) stmt);
@@ -131,11 +132,12 @@ public final class ImportHandler {
         for (var stmt : typedefs) {
             var type = stmt.getType();
             var name = stmt.getName();
-            types.put(name.strName(), info.getType(type).typedefAs(name.strName()));
+            var cls = info.getType(type).typedefAs(name.strName());
+            types.put(name.strName(), Pair.of(cls, stmt));
         }
         for (var export : exports.entrySet()) {
             if (types.containsKey(export.getKey())) {
-                export.setValue(Builtins.TYPE.generify(types.get(export.getKey())));
+                export.setValue(Builtins.TYPE.generify(types.get(export.getKey()).getKey()));
             }
         }
         if (isModule) {
@@ -359,8 +361,8 @@ public final class ImportHandler {
      * @return The map of strings
      */
     @NotNull
-    public Map<String, TypeObject> importedTypes() {
-        Map<String, TypeObject> importedTypes = new HashMap<>();
+    public Map<String, Pair<TypeObject, Lined>> importedTypes() {
+        Map<String, Pair<TypeObject, Lined>> importedTypes = new HashMap<>();
         for (var pair : imports.entrySet()) {
             var path = pair.getKey();
             var importInfo = pair.getValue();
@@ -371,13 +373,13 @@ public final class ImportHandler {
                 for (var imp : importHandler.exportedTypes(importInfo.getLineInfo()).entrySet()) {
                     var name = imp.getKey();
                     var value = imp.getValue();
-                    importedTypes.put(name, value);
+                    importedTypes.put(name, Pair.of(value, importInfo));
                 }
             } else for (var names : new Zipper<>(strings, asNames)) {
                 var str = names.getKey();
                 var as = names.getValue();
                 var type = importHandler.exportedType(str, importInfo.getLineInfo(), new ArrayList<>());
-                type.ifPresent(typeObject -> importedTypes.put(as, typeObject));
+                type.ifPresent(typeObject -> importedTypes.put(as, Pair.of(typeObject, importInfo)));
             }
         }
         return importedTypes;

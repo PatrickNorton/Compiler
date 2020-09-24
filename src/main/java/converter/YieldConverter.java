@@ -30,10 +30,14 @@ public final class YieldConverter implements BaseConverter {
             jumpPos = -1;
         }
         if (node.getYielded().size() > 1) {
-            throw new UnsupportedOperationException("Cannot yield more than one value yet");
+            throw CompilerTodoError.of("Cannot yield more than one value yet", node);
         }
-        if (node.isFrom()) {
+        if (node.getYielded().isEmpty()) {
+            throw CompilerException.of("Empty yield statements are illegal", node);
+        } if (node.isFrom()) {
             convertFrom(start, bytes);
+        } else if (info.getFnReturns().currentFnReturns().length > 1 && node.getYielded().size() > 1) {
+            convertSingle(start, bytes);
         } else {
             convertNormal(start, bytes);
         }
@@ -46,24 +50,60 @@ public final class YieldConverter implements BaseConverter {
     private void convertNormal(int start, List<Byte> bytes) {
         var retInfo = info.getFnReturns();
         if (!retInfo.isGenerator()) {
-            throw CompilerException.of("'yield' is only valid in a generator", node);
+            throw noGeneratorError();
         }
-        var converter = TestConverter.of(info, node.getYielded().get(0), retInfo.currentFnReturns().length);
+        var fnReturns = retInfo.currentFnReturns();
+        checkVarargs();
+        if (fnReturns.length != node.getYielded().size()) {
+            var tooMany = node.getYielded().size() > fnReturns.length;
+            throw CompilerException.format(
+                    "%s values in yield statement: expected %d, got %d",
+                    node, tooMany ? "Too many" : "Not enough", fnReturns.length, node.getYielded().size()
+            );
+        }
+        for (int i = 0; i < fnReturns.length; i++) {
+            var yielded = node.getYielded().get(i);
+            var fnReturn = fnReturns[i];
+            var converter = TestConverter.of(info, yielded, 1);
+            var retType = converter.returnType()[0];
+            if (!fnReturn.isSuperclass(retType)) {
+                throw CompilerException.format(
+                        "Type mismatch: in position %d, function expected" +
+                                " a superclass of type '%s' to be yielded, got type '%s'",
+                        node, i, fnReturn.name(), retType.name()
+                );
+            }
+            bytes.addAll(converter.convert(start + bytes.size()));
+        }
+        bytes.add(Bytecode.YIELD.value);
+        bytes.addAll(Util.shortToBytes((short) fnReturns.length));
+    }
+
+    private void convertSingle(int start, List<Byte> bytes) {
+        var retInfo = info.getFnReturns();
+        if (!retInfo.isGenerator()) {
+            throw noGeneratorError();
+        }
+        var fnReturns = retInfo.currentFnReturns();
+        var retCount = fnReturns.length;
+        assert retCount > 1 && node.getYielded().size() == 1;
+        var converter = TestConverter.of(info, node.getYielded().get(0), retCount);
         var retType = converter.returnType();
-        checkReturnType(currentReturns(retInfo), retType);
+        checkReturnType(fnReturns, retType);
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.YIELD.value);
-        bytes.addAll(Util.shortToBytes((short) retInfo.currentFnReturns().length));
+        bytes.addAll(Util.shortToBytes((short) retCount));
     }
 
     private void convertFrom(int start, List<Byte> bytes) {
         var retInfo = info.getFnReturns();
         if (!retInfo.isGenerator()) {
-            throw CompilerException.of("'yield' is only valid in a generator", node);
+            throw noGeneratorError();
         }
         var converter = TestConverter.of(info, node.getYielded().get(0), retInfo.currentFnReturns().length);
-        var retTypes = converter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info);
-        checkReturnType(currentReturns(retInfo), retTypes);
+        var rawRet = converter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info)[0];
+        var retTypes = Builtins.deIterable(rawRet);
+        checkReturnType(retInfo.currentFnReturns(), retTypes);
         ForConverter.addIter(info, start, bytes, converter);
         bytes.add(Bytecode.FOR_ITER.value);
         int jumpPos = bytes.size();
@@ -74,16 +114,6 @@ public final class YieldConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(jumpPos - 1));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-    }
-
-    private TypeObject[] currentReturns(@NotNull FunctionReturnInfo retInfo) {
-        var currentReturns = retInfo.currentFnReturns();
-        assert currentReturns.length == 1;
-        var currentReturn = currentReturns[0];
-        assert currentReturn.sameBaseType(Builtins.ITERABLE);
-        var generics = currentReturn.getGenerics().get(0);
-        assert generics instanceof ListTypeObject;
-        return ((ListTypeObject) generics).getValues();
     }
 
     private void checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {
@@ -100,6 +130,19 @@ public final class YieldConverter implements BaseConverter {
                                 " a superclass of type '%s' to be yielded, got type '%s'",
                         node, i, expected[i].name(), gotten[i].name()
                 );
+            }
+        }
+    }
+
+    @NotNull
+    private CompilerException noGeneratorError() {
+        return CompilerException.of("'yield' is only valid in a generator", node);
+    }
+
+    private void checkVarargs() {
+        for (var pair : node.getYielded()) {
+            if (!pair.getValue().isEmpty()) {
+                throw CompilerTodoError.of("Cannot use varargs with yield yet", pair.getKey());
             }
         }
     }

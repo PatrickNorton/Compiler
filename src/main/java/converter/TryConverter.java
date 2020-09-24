@@ -59,7 +59,7 @@ public final class TryConverter implements BaseConverter {
                 Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
             }
             // Work out some kinks first
-            throw new UnsupportedOperationException("Finally not implemented yet");
+            throw CompilerTodoError.of("Finally not implemented yet", node.getFinallyStmt());
         }
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump1);
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);

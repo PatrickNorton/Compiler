@@ -46,7 +46,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                     info.addVariable(arg.getName(), arg.getType(), methodInfo);
                 }
                 var retInfo = info.getFnReturns();
-                retInfo.addFunctionReturns(fnInfo.isGenerator(), fnInfo.getReturns());
+                retInfo.addFunctionReturns(fnInfo.isGenerator(), fnReturns(fnInfo));
                 if (pair.getKey() == OpSpTypeNode.NEW) {
                     info.accessHandler().enterConstructor(type);
                 }
@@ -64,6 +64,16 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             }
         }
         return result;
+    }
+
+    private TypeObject[] fnReturns(@NotNull FunctionInfo fnInfo) {
+        if (!fnInfo.isGenerator()) {
+            return fnInfo.getReturns();
+        }
+        var returns = fnInfo.getReturns();
+        assert returns.length == 1;
+        var currentReturn = returns[0];
+        return Builtins.deIterable(currentReturn);
     }
 
     private void recursivelyAllowProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
@@ -160,7 +170,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         } else if (stmt instanceof PropertyDefinitionNode) {
             converter.properties().parse((PropertyDefinitionNode) stmt);
         } else {
-            throw new UnsupportedOperationException("Node not yet supported");
+            throw CompilerInternalError.format("Unknown class statement %s", stmt, stmt.getClass());
         }
     }
 

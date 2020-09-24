@@ -10,6 +10,7 @@ import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -289,13 +290,11 @@ public final class CompilerInfo {
         return this;
     }
 
-    public CompilerInfo loadDependents() {
-        if (dependentsFound) {
-            return this;
+    public void loadDependents() {
+        if (!dependentsFound) {
+            dependentsFound = true;
+            importHandler.registerDependents(node);
         }
-        dependentsFound = true;
-        importHandler.registerDependents(node);
-        return this;
     }
 
     /**
@@ -340,7 +339,7 @@ public final class CompilerInfo {
             case "super":
                 return wrap(accessHandler.getSuper(), node);
             case "":
-                return new ListTypeObject(typesOf(node.getSubtypes()));
+                return TypeObject.list(typesOf(node.getSubtypes()));
         }
         var value = typeMap.get(type.strName());
         if (value == null) {
@@ -362,7 +361,7 @@ public final class CompilerInfo {
 
     private static TypeObject wrap(TypeObject obj, @NotNull TypeLikeNode node) {
         var mutNode = node.getMutability().map(MutableType::fromDescriptor).orElse(MutableType.STANDARD);
-        if (mutNode == MutableType.MUT || mutNode == MutableType.FINAL) {
+        if (!mutNode.isConstType()) {
             if (node.isOptional()) {
                 return TypeObject.optional(obj.makeMut());
             } else {
@@ -391,20 +390,6 @@ public final class CompilerInfo {
             return builtin instanceof TypeObject ? Optional.of((TypeObject) builtin) : Optional.empty();
         }
         return Optional.of(cls);
-    }
-
-    public Optional<Integer> classIndex(String str) {
-        var index = typeMap.get(str);
-        if (index == null) {
-            return Optional.empty();
-        } else {
-            for (int i = 0; i < classes.size(); i++) {
-                if (classes.get(i).getType().equals(index)) {
-                    return Optional.of(i);
-                }
-            }
-            throw new IllegalStateException("If a type is in typeMap, it should be in classes");
-        }
     }
 
     @NotNull
@@ -781,13 +766,17 @@ public final class CompilerInfo {
      *
      * @param types The types to add
      */
-    void addPredeclaredTypes(Map<String, TypeObject> types) {
+    void addPredeclaredTypes(@NotNull Map<String, Pair<TypeObject, Lined>> types) {
         assert !linked;
-        typeMap.putAll(types);
         var varFrame = variables.get(variables.size() - 1);
         for (var pair : types.entrySet()) {
-            var varInfo = new VariableInfo(  // FIXME: Better VariableInfo
-                    Builtins.TYPE.generify(pair.getValue()), true, (short) varFrame.size(), LineInfo.empty()
+            var name = pair.getKey();
+            var valPair = pair.getValue();
+            var obj = valPair.getKey();
+            var lined = valPair.getValue();
+            typeMap.put(name, obj);
+            var varInfo = new VariableInfo(
+                    Builtins.TYPE.generify(obj), true, (short) varFrame.size(), lined.getLineInfo()
             );
             varFrame.put(pair.getKey(), varInfo);
         }
