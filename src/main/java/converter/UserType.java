@@ -158,7 +158,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
         assert supGenerics.size() == objGenerics.size();
         Map<Integer, TypeObject> result = new HashMap<>(supGenerics.size());
-        for (var pair : new Zipper<>(supGenerics, objGenerics)) {
+        for (var pair : Zipper.of(supGenerics, objGenerics)) {
             var supG = pair.getKey();
             var objG = pair.getValue();
             if (supG instanceof TemplateParam) {

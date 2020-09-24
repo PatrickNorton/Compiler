@@ -39,7 +39,7 @@ import java.util.Set;
  * @see CompilerInfo
  */
 public final class ImportHandler {
-    private static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
+    public static final Map<Path, CompilerInfo> ALL_FILES = new HashMap<>();
     private static List<Pair<CompilerInfo, File>> toCompile = new ArrayList<>();
 
     public static final Map<InterfaceType, Optional<Pair<CompilerInfo, InterfaceDefinitionNode>>>
@@ -278,6 +278,16 @@ public final class ImportHandler {
         return exports.keySet();
     }
 
+    @Contract(pure = true)
+    @NotNull
+    public Collection<Map.Entry<String, TypeObject>> exportTypes() {
+        return exports.entrySet();
+    }
+
+    public void setExportType(String name, TypeObject type) {
+        exports.put(name, type);
+    }
+
     private void registerWildcardImport(String moduleName, @NotNull ImportExportNode node) {
         var path = loadFile(moduleName, node);
         imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of("*")));
@@ -352,6 +362,7 @@ public final class ImportHandler {
         } else {
             f = new CompilerInfo(Parser.parse(path.toFile()));
             ALL_FILES.put(path, f);
+            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
         }
         f.loadDependents();
         wildcardExports.add(path);
@@ -379,7 +390,7 @@ public final class ImportHandler {
                     var value = imp.getValue();
                     importedTypes.put(name, Pair.of(value, importInfo));
                 }
-            } else for (var names : new Zipper<>(strings, asNames)) {
+            } else for (var names : Zipper.of(strings, asNames)) {
                 var str = names.getKey();
                 var as = names.getValue();
                 var type = importHandler.exportedType(str, importInfo.getLineInfo(), new ArrayList<>());
@@ -387,6 +398,12 @@ public final class ImportHandler {
             }
         }
         return importedTypes;
+    }
+
+    @NotNull
+    public TypeObject importedType(@NotNull Lined lineInfo, Path file, String name) {
+        var handler = ALL_FILES.get(file);
+        return handler.importHandler().typeOfExport(name, lineInfo.getLineInfo(), new ArrayList<>());
     }
 
     @NotNull
@@ -437,7 +454,41 @@ public final class ImportHandler {
         } else {
             return Optional.empty();
         }
+    }
 
+    @NotNull
+    public TypeObject typeOfExport(
+            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+    ) {
+        assert !name.equals("*");
+        for (var pair : previousFiles) {
+            var info = pair.getKey();
+            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
+                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
+            }
+        }
+        if (!exports.containsKey(name)) {
+            previousFiles.add(Pair.of(lineInfo, name));
+            for (var path : wildcardExports) {
+                var handler = ALL_FILES.get(path).importHandler();
+                try {
+                    return handler.typeOfExport(name, lineInfo, previousFiles);
+                } catch (CompilerException ignored) {
+                    // If value was not exported, don't fail, just continue
+                }
+            }
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
+        var export = exports.get(name);
+        if (export != null) {
+            return export;
+        } else if (fromExports.containsKey(name)) {
+            var path = fromExports.get(name);
+            previousFiles.add(Pair.of(lineInfo, name));
+            return ALL_FILES.get(path).importHandler().typeOfExport(name, lineInfo, previousFiles);
+        } else {
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
     }
 
     public static void compileAll() {
@@ -466,6 +517,10 @@ public final class ImportHandler {
 
     public IndexedSet<String> getImports() {
         return importStrings;
+    }
+
+    public Map<Path, ImportInfo> importInfos() {
+        return imports;
     }
 
     private static String moduleName(@NotNull ImportExportNode node, int i) {

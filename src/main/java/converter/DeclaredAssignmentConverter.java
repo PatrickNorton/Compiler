@@ -45,7 +45,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         List<Byte> bytes = new ArrayList<>();
         int fillPos = addStatic(bytes, isStatic);
-        for (var pair : new Zipper<>(List.of(types), values)) {
+        for (var pair : Zipper.of(List.of(types), values)) {
             var assigned = pair.getKey();
             var valuePair = pair.getValue();
             var value = valuePair.getKey();

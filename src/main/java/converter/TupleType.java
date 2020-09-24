@@ -87,7 +87,7 @@ public final class TupleType extends TypeObject {
             if (generics.size() != tuple.generics.size()) {
                 return false;
             }
-            for (var pair : new Zipper<>(generics, tuple.generics)) {
+            for (var pair : Zipper.of(generics, tuple.generics)) {
                 if (!pair.getKey().isSuperclass(pair.getValue())) {
                     return false;
                 }

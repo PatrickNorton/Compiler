@@ -215,9 +215,11 @@ public final class Builtins {
         );
         BYTES.setOperators(bytesMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
+        var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable())
+                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
+                "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexInfo.toCallable())
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();
@@ -279,6 +281,7 @@ public final class Builtins {
         var countInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), INT);
         var clearInfo = new FunctionInfo();
         var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
+        var indexOfInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM),TypeObject.optional(INT));
         var listAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "get", new AttributeInfo(AccessLevel.PUBLIC, getInfo.toCallable()),
@@ -286,6 +289,7 @@ public final class Builtins {
                 "reverse", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, reverseInfo.toCallable()),
                 "count", new AttributeInfo(AccessLevel.PUBLIC, countInfo.toCallable()),
                 "clear", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, clearInfo.toCallable()),
+                "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexOfInfo.toCallable()),
                 "add", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, addInfo.toCallable())
         );
         LIST.setAttributes(listAttrs);
@@ -323,6 +327,8 @@ public final class Builtins {
         var dictIterInfo = new FunctionInfo(DICT_KEY, Builtins.ITERABLE.generify(DICT_VAL));
         var dictEqInfo = new FunctionInfo(ArgumentInfo.of(DICT), BOOL);
 
+        var dictGetMInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), TypeObject.optional(DICT_VAL));
+
         var dictMap = Map.of(
                 OpSpTypeNode.IN, dictContainsInfo,
                 OpSpTypeNode.GET_ATTR, dictGetInfo,
@@ -332,7 +338,8 @@ public final class Builtins {
         );
         DICT.setOperators(dictMap);
         var dictAttrs = Map.of(
-                "length", new AttributeInfo(AccessLevel.PUBLIC, INT)
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "get", new AttributeInfo(AccessLevel.PUBLIC, dictGetMInfo.toCallable())
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
@@ -420,7 +427,9 @@ public final class Builtins {
             SLICE,
             ID,
             ARRAY,
-            ENUMERATE
+            ENUMERATE,
+            BYTES,
+            DICT
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
