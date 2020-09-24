@@ -81,7 +81,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 bytes.addAll(Util.zeroToBytes());
                 bytes.add(Bytecode.POP_TOP.value);
             } else {
-                throw new UnsupportedOperationException("Multiple clauses in switch not supported yet");
+                throw CompilerTodoError.of("Multiple clauses in switch not supported yet", stmt);
             }
         } else {
             bytes.add(Bytecode.POP_TOP.value);

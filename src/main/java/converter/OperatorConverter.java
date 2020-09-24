@@ -149,7 +149,7 @@ public final class OperatorConverter implements TestConverter {
                     node, op, opCount, op.isUnary() ? 1 : 2
             );
         } else {
-            throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
+            throw CompilerTodoError.of("Operators with > 2 operands not yet supported", node);
         }
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP.value);
@@ -340,7 +340,7 @@ public final class OperatorConverter implements TestConverter {
         if (opCount == (node.isUnary() ? 1 : 2)) {
             bytes.add(Bytecode.EQUAL.value);
         } else {
-            throw new UnsupportedOperationException("Operators with > 2 operands not yet supported");
+            throw CompilerTodoError.of("Operators with > 2 operands not yet supported", node);
         }
         bytes.add(Bytecode.BOOL_NOT.value);
         if (retCount == 0) {
@@ -375,7 +375,7 @@ public final class OperatorConverter implements TestConverter {
             }
             return bytes;
         } else {
-            throw new UnsupportedOperationException("'is' with more than 2 operands not yet supported");
+            throw CompilerTodoError.of("'is' with more than 2 operands not yet supported", node);
         }
     }
 

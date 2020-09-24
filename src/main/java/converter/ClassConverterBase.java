@@ -170,7 +170,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         } else if (stmt instanceof PropertyDefinitionNode) {
             converter.properties().parse((PropertyDefinitionNode) stmt);
         } else {
-            throw new UnsupportedOperationException("Node not yet supported");
+            throw CompilerInternalError.format("Unknown class statement %s", stmt, stmt.getClass());
         }
     }
 

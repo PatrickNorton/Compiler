@@ -117,7 +117,8 @@ public final class Linker {
             var typeNode = ((PropertyDefinitionNode) stmt).getType();
             return info.getType(typeNode);
         } else if (stmt instanceof ContextDefinitionNode) {
-            throw new UnsupportedOperationException();  // FIXME: Type for context definitions
+            // FIXME: Type for context definitions
+            throw CompilerTodoError.of("Context definitions not supported yet", stmt);
         } else if (stmt instanceof OperatorDefinitionNode) {
             throw CompilerException.of("Operator must defined in a class", stmt);
         } else if (stmt instanceof MethodDefinitionNode) {
@@ -143,7 +144,7 @@ public final class Linker {
             UnionConverter.completeType(info, unionNode, predeclaredType);
             return Builtins.TYPE.generify(predeclaredType);
         } else {
-            throw new UnsupportedOperationException(String.format("Unknown definition %s", name.getClass()));
+            throw CompilerInternalError.format("Unknown definition %s", stmt, name.getClass());
         }
     }
 

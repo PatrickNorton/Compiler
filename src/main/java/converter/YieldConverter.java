@@ -30,7 +30,7 @@ public final class YieldConverter implements BaseConverter {
             jumpPos = -1;
         }
         if (node.getYielded().size() > 1) {
-            throw new UnsupportedOperationException("Cannot yield more than one value yet");
+            throw CompilerTodoError.of("Cannot yield more than one value yet", node);
         }
         if (node.isFrom()) {
             convertFrom(start, bytes);

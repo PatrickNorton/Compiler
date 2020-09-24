@@ -90,7 +90,7 @@ public interface TestConverter extends BaseConverter {
         } else if (node instanceof VariantCreationNode) {
             return new VariantConverter(info, (VariantCreationNode) node, retCount);
         } else {
-            throw new UnsupportedOperationException("Unknown type: " + node.getClass());
+            throw CompilerInternalError.format("Unknown type for TestConverter: %s", node, node.getClass());
         }
     }
 }

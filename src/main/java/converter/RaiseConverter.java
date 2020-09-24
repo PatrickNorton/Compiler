@@ -31,7 +31,7 @@ public final class RaiseConverter implements TestConverter {
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getFrom().isEmpty()) {
-            throw new UnsupportedOperationException("'from' clauses in raise statements not supported yet");
+            throw CompilerTodoError.of("'from' clauses in raise statements not supported yet", node);
         }
         int condLoc;
         if (!node.getCond().isEmpty()) {
