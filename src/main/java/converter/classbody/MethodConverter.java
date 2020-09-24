@@ -37,6 +37,9 @@ public final class MethodConverter {
         var fnInfo = new FunctionInfo(name, isGen, args, trueRet);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
+        if (isGen && returns.length == 0) {
+            throw generatorError(node);
+        }
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo());
@@ -56,6 +59,9 @@ public final class MethodConverter {
         var descriptors = node.getDescriptors();
         var accessLevel = AccessLevel.fromDescriptors(descriptors);
         var isMut = descriptors.contains(DescriptorNode.MUT);
+        if (isGen && returns.length == 0) {
+            throw generatorError(node);
+        }
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo, StatementBodyNode.empty(), node.getLineInfo());
@@ -76,6 +82,11 @@ public final class MethodConverter {
 
     private String methodName(@NotNull MethodDefinitionNode node) {
         return node.getName().getName(); // TODO: Distinguish between args
+    }
+
+    @NotNull
+    private static CompilerException generatorError(Lined node) {
+        return CompilerException.of("Generator functions must have at least one return", node);
     }
 
     private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {

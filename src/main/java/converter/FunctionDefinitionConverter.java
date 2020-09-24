@@ -36,6 +36,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         info.checkDefinition(node.getName().getName(), node);
         info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
+        checkGen();
         addGenerics(generics);
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
@@ -107,6 +108,12 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         for (var pair : generics.entrySet()) {
             info.addType(pair.getValue());
             info.addVariable(pair.getKey(), pair.getValue(), node);
+        }
+    }
+
+    private void checkGen() {
+        if (node.getDescriptors().contains(DescriptorNode.GENERATOR) && node.getRetval().length == 0) {
+            throw CompilerException.of("Generator functions must have at least one return", node);
         }
     }
 }
