@@ -1,5 +1,3 @@
-from collections import Pair
-
 from .AhoCorasick import AhoCorasick
 from .prog import Program
 from .builder import RegexOptions
@@ -521,7 +519,7 @@ class ExecNoSync {
         }
     }
 
-    public method findAt(bytes text, int start) -> Pair[int, int]? {
+    public method findAt(bytes text, int start) -> tuple[int, int]? {
         return null if not self.isAnchorEndMatch(text)
 
         return switch self.ro.matchType {
@@ -555,7 +553,7 @@ class ExecNoSync {
         mut Locations locs,
         bytes text,
         int start,
-    ) -> Pair[int, int]? {
+    ) -> tuple[int, int]? {
         var slots = locs.asSlots()
         for int i in enumerate(slots) {
              slots[i] = null
@@ -701,7 +699,7 @@ class ExecNoSyncStr {
         return self.value.isMatchAt(bytes(text), start)
     }
 
-    public method findAt(str text, int start) -> Pair[int, int]? {
+    public method findAt(str text, int start) -> tuple[int, int]? {
         return self.value.findAt(bytes(text), start)
     }
 
@@ -709,7 +707,7 @@ class ExecNoSyncStr {
         mut Locations locs,
         bytes text,
         int start,
-    ) -> Pair[int, int]? {
+    ) -> tuple[int, int]? {
         return self.value.capturesReadAt(locs, bytes(text), start)
     }
 

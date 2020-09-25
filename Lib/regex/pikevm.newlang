@@ -1,4 +1,3 @@
-from collections import Pair
 from itertools import all
 
 from .exec import ProgramCache
@@ -203,7 +202,7 @@ class Fsm {
                 }
                 case Inst.Save as inst {
                     if inst.slot < threadCaps.length {
-                        self.stack.add(FollowEpsilon.Capture(Pair(inst.slot, threadCaps[inst.slot])))
+                        self.stack.add(FollowEpsilon.Capture((inst.slot, threadCaps[inst.slot])))
                         threadCaps[inst.slot] = at.pos()
                     }
                     ip = inst.jump
@@ -259,5 +258,5 @@ class Threads {
 
 union FollowEpsilon {
     InstPtr IP
-    Pair[int, Slot] Capture
+    tuple[int, Slot] Capture
 }

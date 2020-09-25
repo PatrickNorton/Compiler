@@ -1,5 +1,3 @@
-from collections import Pair
-
 from .dfa import InstPtr
 from .exec import ProgramCache
 from .inputs import Input, InputAt
@@ -118,13 +116,13 @@ class Bounded {
                 }
                 case Inst.Save as inst {
                     if self.slots.get(inst.slot)? as oldSlot {
-                        self.m.jobs.add(Job.SaveRestore(Pair(inst.slot, oldPos)))
+                        self.m.jobs.add(Job.SaveRestore((inst.slot, oldPos)))
                         self.slots[inst.slot] = at.pos
                     }
                     ip = inst.jump
                 }
                 case Inst.Split as inst {
-                    self.m.jobs.push(Job.Inst(Pair(inst.goto2, at)))
+                    self.m.jobs.push(Job.Inst((inst.goto2, at)))
                     ip = inst.goto1
                 }
                 case Inst.EmptyLook as inst {
@@ -188,6 +186,6 @@ class Cache {
 }
 
 union Job {
-    Pair[InstPtr, InputAt] Inst
-    Pair[int, int?] SaveRestore
+    tuple[InstPtr, InputAt] Inst
+    tuple[int, int?] SaveRestore
 }

@@ -554,7 +554,7 @@ class Group {
 
 union GroupKind {
     int CaptureIndex
-    Pair[str, int] NamedCapture
+    tuple[str, int] NamedCapture
     null NonCapturing
 }
 
@@ -587,7 +587,7 @@ union RepetitionKind {
 union RepetitionRange {
     int Exactly
     int AtLeast
-    Pair[int, int] Bounded
+    tuple[int, int] Bounded
 }
 
 class HirInfo {

@@ -258,12 +258,12 @@ interface Interval[I[Bound]] {
         }
     }
 
-    public method difference(cls other) -> Pair[cls?, cls?] {
+    public method difference(cls other) -> tuple[cls?, cls?] {
         if self.isSubset(other) {
-            return Pair(null, null)
+            return (null, null)
         }
         if self.isIntersectionEmpty(other) {
-            return Pair(cls(self.upper, self.lower), null)
+            return (cls(self.upper, self.lower), null)
         }
         var addLower = other.lower > self.lower
         var addUpper = other.upper < self.upper
@@ -273,21 +273,21 @@ interface Interval[I[Bound]] {
         mut var ret = (null, null)
         if addLower {
             var upper = other.lower.decrement()
-            ret = Pair(cls(self.lower(), upper), ret.second)
+            ret = (cls(self.lower(), upper), ret.second)
         }
         if addUpper {
             var lower = other.upper.increment()
             var r = cls(lower, self.upper)
             if not ret.first? {
-                ret = Pair(r, ret.second)
+                ret = (r, ret.second)
             } else {
-                ret = Pair(ret.first, r)
+                ret = (ret.first, r)
             }
         }
         return ret
     }
 
-    public method symmetricDifference(cls other) -> Pair[cls?, cls?] {
+    public method symmetricDifference(cls other) -> tuple[cls?, cls?] {
         cls u
         if (self & other)? as v {
             u = v

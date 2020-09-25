@@ -1,4 +1,3 @@
-from collections import Pair
 from numtools import IntRef
 
 from .ahocorasick import MatchKind
@@ -320,7 +319,7 @@ class Rep {
     PrefilterObj? prefilter
     ByteClasses byteClasses
     final list[int] trans
-    final list[list[Pair[PatternId, PatternLength]]] matches
+    final list[list[tuple[PatternId, PatternLength]]] matches
 
     method alphabetLen() -> int {
         return self.byteClasses.alphabetLen()

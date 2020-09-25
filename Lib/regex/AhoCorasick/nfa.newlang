@@ -1,5 +1,3 @@
-from collections import Pair
-
 from .ahocorasick import MatchKind
 from .classes import ByteClasses, ByteClassBuilder
 from .match import Match
@@ -25,7 +23,7 @@ class NFA from Automaton {
         return self.states.length
     }
 
-    public method matches(int idVal) -> list[Pair[PatternId, PatternLength]] {
+    public method matches(int idVal) -> list[tuple[PatternId, PatternLength]] {
         return self.states[idVal].matches
     }
 
@@ -57,7 +55,7 @@ class NFA from Automaton {
         return self.stateMut(self.startId)
     }
 
-    private generator method iterTransitionsMut(int idVal) -> Pair[int, int] {
+    private generator method iterTransitionsMut(int idVal) -> tuple[int, int] {
         mut int cur = 0
         while true {
             switch self.states[idVal].trans {
@@ -72,7 +70,7 @@ class NFA from Automaton {
 
                         var idVal = dense[cur]
                         if idVal != failId() {
-                            return Pair.of(cur, idVal)
+                            return (cur, idVal)
                         }
                         self.cur++
                     }
@@ -134,11 +132,11 @@ class NFA from Automaton {
 class State {
     Transitions trans
     int fail
-    final list[Pair[PatternId, PatternLength]] matches
+    final list[tuple[PatternId, PatternLength]] matches
     int depth
 
     private mut method addMatch(PatternId i, PatternLength len) {
-        self.matches.push(Pair.of(i, len))
+        self.matches.push((i, len))
     }
 
     private method isMatch() -> bool {
@@ -177,7 +175,7 @@ class Dense {
 }
 
 union Transitions {
-    list[Pair[int, int]] Sparse
+    list[tuple[int, int]] Sparse
     Dense Dense
 
     method nextState(int inputVal) -> int {

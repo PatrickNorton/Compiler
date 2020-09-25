@@ -1,5 +1,3 @@
-from collections import Pair
-
 from .hir import Hir, Class, Literal, Anchor, ClassUnicodeRange, WordBoundary, GroupKind, RepetitionKind
 from .hir import Repetition, ClassBytesRange
 from .prog import InstPtr, Program, EmptyLook, Inst
@@ -639,8 +637,8 @@ union InstHole {
     int Save
     EmptyLook EmptyLook
     char Char
-    list[Pair[char, char]] Ranges
-    Pair[int, int] Bytes
+    list[tuple[char, char]] Ranges
+    tuple[int, int] Bytes
 
     private method fill(InstPtr jump) -> Inst {
         return switch self {
@@ -648,7 +646,7 @@ union InstHole {
             case InstHole.EmptyLook as look => Inst.EmptyLook(InstEmptyLook(jump, look))
             case InstHole.Char as c => Inst.Char(InstChar(jump, c))
             case InstHole.Ranges as ranges => Inst.Ranges(InstRanges(jump, ranges))
-            case InstHole.Bytes as p => Inst.Bytes(InstBytes(jump, p.start, p.end))
+            case InstHole.Bytes as p => Inst.Bytes(InstBytes(jump, *p))
         }
     }
 }

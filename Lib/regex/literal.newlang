@@ -1,4 +1,3 @@
-from collections import Pair
 
 from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher
 from .hir import Literal, Literals
@@ -82,40 +81,40 @@ class LiteralSearcher {
         return self.complete and self
     }
 
-    public method find(bytes haystack) -> Pair[int, int]? {
+    public method find(bytes haystack) -> tuple[int, int]? {
         switch self.matcher {
-            case Matcher.Empty {return Pair.of(0, 0)}
+            case Matcher.Empty {return (0, 0)}
             case Matcher.Bytes as sset {
                 if sset.find(haystack)? as i {
-                    return Pair.of(i, i + 1)
+                    return (i, i + 1)
                 } else {
                     return null
                 }
             }
             case Matcher.FreqyPacked as s {
                 if s.find(haystack)? as i {
-                    return Pair.of(i, i + s.length)
+                    return (i, i + s.length)
                 } else {
                     return null
                 }
             }
             case Matcher.BoyerMoore as s {
                 if s.find(haystack)? as i {
-                    return Pair.of(i, i + s.length)
+                    return (i, i + s.length)
                 } else {
                     return null
                 }
             }
             case Matcher.AC as pair {
                 if pair.first.find(haystack)? as m {
-                    return Pair.of(m.start, m.end)
+                    return (m.start, m.end)
                 } else {
                     return null
                 }
             }
             case Matcher.Packed as pair {
                 if pair.first.find(haystack)? as m {
-                    return Pair.of(m.start, m.end)
+                    return (m.start, m.end)
                 } else {
                     return null
                 }
@@ -123,19 +122,19 @@ class LiteralSearcher {
         }
     }
 
-    public method findStart(bytes haystack) -> Pair[int, int]? {
+    public method findStart(bytes haystack) -> tuple[int, int]? {
         for var lit in self {
             continue if lit.length > haystack.length
-            return Pair.of(0, lit.length) if lit == haystack[0:lit.length]
+            return tuple.of(0, lit.length) if lit == haystack[0:lit.length]
         }
         return null
     }
 
-    public method findEnd(bytes haystack) -> Pair[int, int]? {
+    public method findEnd(bytes haystack) -> tuple[int, int]? {
         for var lit in self {
             continue if lit.length > haystack.length
             if lit == haystack[-lit.length:] {
-                return Pair.of(haystack.length - lit.length, haystack.length)
+                return (haystack.length - lit.length, haystack.length)
             }
         }
         return null
@@ -147,8 +146,8 @@ union Matcher {
     SingleByteSet Bytes
     FreqyPacked FreqyPacked
     BoyerMooreSearch BoyerMoore
-    Pair[AhoCorasick, list[Literal]] AC
-    Pair[Searcher, list[Literal]] Packed
+    tuple[AhoCorasick, list[Literal]] AC
+    tuple[Searcher, list[Literal]] Packed
 
     public static method prefixes(Literals lits) -> cls {
         var sset = SingleByteSet.prefixes(lits)
@@ -178,7 +177,7 @@ union Matcher {
         if lits.literals.length <= 100 and not isAhoCorasickFast {
             mut var builder = Config().matchKind(MatchKind.LeftmostFirst).builder()
             if builder.extend(pats).build()? as s {
-                return Matcher.Packed(Pair.of(s, pats))
+                return Matcher.Packed((s, pats))
             }
         }
 
@@ -187,7 +186,7 @@ union Matcher {
             .dfa(true)
             .buildWithSize(pats)
             .unwrap())
-        return Matcher.AC(Pair.of(ac, pats))
+        return Matcher.AC((ac, pats))
     }
 }
 

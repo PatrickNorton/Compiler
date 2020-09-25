@@ -1,5 +1,3 @@
-from collections import Pair
-
 from .literal import LiteralSearcher
 
 export Program, Inst, InstSave, InstSplit, InstEmptyLook
@@ -158,9 +156,9 @@ class InstChar {
 
 class InstRanges {
     public InstPtr jump
-    public list[Pair[char, char]] ranges
+    public list[tuple[char, char]] ranges
 
-    public operator new(InstPtr jump, list[Pair[char, char]] ranges) {
+    public operator new(InstPtr jump, list[tuple[char, char]] ranges) {
         self.jump = jump
         self.ranges = ranges
     }
