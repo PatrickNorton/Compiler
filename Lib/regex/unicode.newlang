@@ -134,7 +134,7 @@ class Regex {
 
     public method findAt(str text, int start) -> Match? {
         if self.value.searcherStr().findAt(text, start)? as x {
-            return Match(text, x.first, x.second)
+            return Match(text, *x)
         } else {
             return null
         }
@@ -146,7 +146,7 @@ class Regex {
 
     public method capturesReadAt(mut CaptureLocations locs, str text, int start) -> Match? {
         if self.value.searcherStr().capturesReadAt(text, start)? as x {
-            return Match(text, x.first, x.second)
+            return Match(text, *x)
         } else {
             return null
         }
@@ -204,7 +204,7 @@ class Captures {
     public operator iter -> Match? {
         for var loc in self.locs {
             if loc? as l {
-                yield Match(self.text, l.first, l.second)
+                yield Match(self.text, *l)
             } else {
                 yield null
             }
@@ -223,7 +223,7 @@ class Captures {
 
     public method get(int i) -> Match? {
         if self.locs.pos(i)? as p {
-            return Match(self.text, p.first, p.second)
+            return Match(self.text, *p)
         } else {
             return null
         }
