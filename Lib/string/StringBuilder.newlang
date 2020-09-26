@@ -17,8 +17,8 @@ class StringBuilder {
         self.chars = [*str(i) for var i in objects]
     }
 
-    public operator + (object obj) -> mut cls {
-        self.chars += str(obj)
+    public operator + (object obj) -> cls {
+        self.chars += str(obj).chars
         return self
     }
 
@@ -39,6 +39,6 @@ class StringBuilder {
     }
 
     public operator str {
-        return str(*self.chars)
+        return str.fromChars(self.chars)
     }
 }
