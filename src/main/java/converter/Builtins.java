@@ -190,10 +190,16 @@ public final class Builtins {
                 OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
+        var fromCharsInfo = new FunctionInfo(ArgumentInfo.of(LIST.generify(CHAR)), STR);
+        var staticStrMap = Map.of(
+                "fromChars", new AttributeInfo(AccessLevel.PUBLIC, fromCharsInfo.toCallable())
+        );
+        STR.setStaticAttributes(staticStrMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
         var upperLowerInfo = new FunctionInfo(STR);
         var strAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR)),
                 "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
                 "upper", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable()),
                 "lower", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable())
