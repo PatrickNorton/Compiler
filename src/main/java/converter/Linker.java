@@ -114,9 +114,7 @@ public final class Linker {
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
             var fnNode = (FunctionDefinitionNode) stmt;
-            var argInfo = ArgumentInfo.of(fnNode.getArgs(), info);
-            var fnInfo = new FunctionInfo(argInfo, info.typesOf(fnNode.getRetval()));
-            return new FunctionInfoType(fnInfo);
+            return FunctionDefinitionConverter.parseHeader(info, fnNode);
         } else if (stmt instanceof PropertyDefinitionNode) {
             var typeNode = ((PropertyDefinitionNode) stmt).getType();
             return info.getType(typeNode);
