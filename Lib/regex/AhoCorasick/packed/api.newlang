@@ -1,3 +1,9 @@
+from .patterns import Patterns
+from .teddy import Teddy
+from .rabinkarp import RabinKarp
+
+from ..match import Match
+
 export Config, MatchKind, Builder, ForceAlgorithm, Searcher
 
 var PATTERN_LIMIT = 128

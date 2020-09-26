@@ -1,4 +1,5 @@
-from ..unicode import simpleFold
+from .interval import IntervalSet
+from .unicode import simpleFold
 
 export Hir, HirKind, Literal, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group
 export Repetition, Anchor, WordBoundary, RepetitionKind, RepetitionRange, Class, GroupKind
@@ -395,9 +396,11 @@ class ClassUnicode {
         self.value = IntervalSet(value)
     }
 
+#|
     public operator new() {
         self.value = IntervalSet()
     }
+|#
 
     public operator iter() -> ClassUnicodeRange {
         yield from self.value
@@ -445,14 +448,11 @@ class ClassUnicodeRange from Interval {
                 continue if nextSimpleCp?.operator<(next) ?? false
 
                 Iterable[char] it
-                switch unicode.simpleFold(cp) {
-                    case FoldResult.Ok as i {
-                        it = i
-                    }
-                    case FoldResult.Error as next {
-                        nextSimpleCp = next
-                        continue
-                    }
+                if unicode.simpleFold(cp)? as i {
+                    it = i
+                } else {
+                    nextSimpleCp = next
+                    continue
                 }
                 for var cpFolded in it {
                     ranges.add(ClassUnicodeRange(cpFolded, cpFolded))

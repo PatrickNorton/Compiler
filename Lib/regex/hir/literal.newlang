@@ -1,5 +1,7 @@
 from itertools import all, any
 
+from .hir import Hir
+
 export Literal, Literals
 
 class Literals {

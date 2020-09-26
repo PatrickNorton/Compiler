@@ -1,0 +1,40 @@
+from .api import MatchKind
+
+export Patterns, PatternID
+
+typedef PatternID as int
+
+class Patterns {
+    MatchKind kind
+    list[bytes] byId
+    list[PatternID] order
+    int minimumLen
+    PatternID maxPatternId
+    int totalPatternBytes
+
+    public operator new {
+        self.kind = MatchKind()
+        self.byId = []
+        self.order = []
+        self.minimumLen = -1
+        self.maxPatternId = 0
+        self.totalPatternBytes = 0
+    }
+
+    public mut method add(bytes b) {
+        assert b
+        assert self.byId.length < 2 << 16
+
+        var idVal = self.byId.length
+        self.maxPatternId = idVal
+        self.order.add(idVal)
+        self.byId.add(b)
+        self.minimumLen = min(self.minimumLen, b.length)
+        self.totalPatternBytes += b.length
+    }
+}
+
+# Here b/c math library isn't working yet
+func min(int a, int b) -> int {
+    return a if a < b else b
+}

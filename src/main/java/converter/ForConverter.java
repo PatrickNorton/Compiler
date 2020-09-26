@@ -119,8 +119,11 @@ public final class ForConverter extends LoopConverter {
 
     private TypeObject returnType(int i, @NotNull TestConverter valueConverter) {
         var opTypes = valueConverter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info);
-        var opType = opTypes[0];
-        return Builtins.deIterable(opType)[i];
+        var opType = Builtins.deIterable(opTypes[0]);
+        if (opType.length <= i) {
+            throw CompilerException.format("Expected at least %d returns from iterable, got %d", node, opType.length, i + 1);
+        }
+        return opType[i];
     }
 
     private TypeObject getIteratorType(int i, TestConverter valueConverter, boolean firstRet) {

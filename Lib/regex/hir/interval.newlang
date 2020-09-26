@@ -33,7 +33,7 @@ class IntervalSet[I[Interval]] {
         self.canonicalize()
     }
 
-    public mut method interset(IntervalSet[I] other) {
+    public mut method intersect(IntervalSet[I] other) {
         return if not self.ranges
         if not other.ranges {
             self.ranges.clear()
@@ -46,7 +46,7 @@ class IntervalSet[I[Interval]] {
         mut var a = ita.next()!!
         mut var b = itb.next()!!
         while true {
-            if self.ranges[a].intersect(&other.ranges[b])? as ab {
+            if self.ranges[a].intersect(other.ranges[b])? as ab {
                 self.ranges.push(ab)
             }
             Iterable[int] it
@@ -132,7 +132,8 @@ class IntervalSet[I[Interval]] {
                         # We lost the entire range, so move on to the next
                         # without adding this one.
                         a++
-                        continue 2
+                        # FIXME: Deep continue
+                        # continue 2
                     }
                 }
                 # It's possible that the `b` range has more to contribute
@@ -237,7 +238,7 @@ class IntervalSet[I[Interval]] {
 interface Interval[I[Bound]] {
     mut I upper
     mut I lower
-    public method caseFoldSimple(list[cls])
+    public method caseFoldSimple(list[cls] value)
     public operator new(I lower, I upper)
 
     public operator & (cls other) -> cls? {
