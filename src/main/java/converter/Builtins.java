@@ -272,6 +272,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(LIST_PARAM)),
                 OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
                 OpSpTypeNode.REVERSED, new FunctionInfo(LIST),
+                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(LIST), LIST),
                 OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(LIST_PARAM))
         );
         LIST.setOperators(listMap);
