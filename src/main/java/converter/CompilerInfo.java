@@ -40,6 +40,7 @@ public final class CompilerInfo {
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
+    private final List<Map<String, TypeObject>> localTypes = new ArrayList<>();
     private final IntAllocator varNumbers = new IntAllocator();
     private final IntAllocator staticVarNumbers = new IntAllocator();
 
@@ -369,6 +370,10 @@ public final class CompilerInfo {
                 }
                 return Builtins.NULL_TYPE;
             case "cls":
+                var cls = accessHandler.getCls();
+                if (cls == null) {
+                    throw CompilerException.of("No cls", node);
+                }
                 return wrap(accessHandler.getCls(), node);
             case "super":
                 return wrap(accessHandler.getSuper(), node);
@@ -468,6 +473,14 @@ public final class CompilerInfo {
 
     public TypeObject getTypeObj(String typeName) {
         return typeMap.get(typeName);
+    }
+
+    public void addLocalTypes(Map<String, TypeObject> vals) {
+        localTypes.add(vals);
+    }
+
+    public void removeLocalTypes() {
+        localTypes.remove(localTypes.size() - 1);
     }
 
     /**

@@ -40,7 +40,14 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             generics.setParent(type);
         } else {
             type = (StdTypeObject) info.getTypeObj(node.strName());
-            parseStatements(converter);
+            try {
+                info.accessHandler().addCls(type);
+                info.accessHandler().addSuper(superType(type));
+                parseStatements(converter);
+            } finally {
+                info.accessHandler().removeCls();
+                info.accessHandler().removeSuper();
+            }
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
@@ -121,14 +128,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         if (!isConst) {
             checkConstSupers(obj, obj.getSupers());
         }
-        try {
-            info.accessHandler().addCls(obj);
-            info.accessHandler().addSuper(superType(obj));
-            parseIntoObject(converter, obj, isConst);
-        } finally {
-            info.accessHandler().removeCls();
-            info.accessHandler().removeSuper();
-        }
+        parseIntoObject(converter, obj, isConst);
     }
 
     private TypeObject superType(@NotNull StdTypeObject obj) {
@@ -140,6 +140,17 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj, boolean isConst) {
+        try {
+            info.accessHandler().addCls(obj);
+            info.accessHandler().addSuper(superType(obj));
+            parseInner(converter, obj, isConst);
+        } finally {
+            info.accessHandler().removeCls();
+            info.accessHandler().removeSuper();
+        }
+    }
+
+    private void parseInner(ConverterHolder converter, @NotNull StdTypeObject obj, boolean isConst) {
         parseStatements(converter);
         if (isConst) {
             if (!classIsConstant(converter)) {

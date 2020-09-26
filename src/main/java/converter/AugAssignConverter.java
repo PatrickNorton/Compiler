@@ -39,6 +39,9 @@ public final class AugAssignConverter implements BaseConverter {
         bytes.addAll(valueConverter.convert(start));
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
         bytes.add(Bytecode.STORE.value);
+        if (!(node.getName() instanceof VariableNode)) {
+            throw CompilerTodoError.of("Assignment to non-variables not implemented yet", node.getName());
+        }
         var variable = (VariableNode) node.getName();  // TODO: Add assignment for other types
         bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
         return bytes;

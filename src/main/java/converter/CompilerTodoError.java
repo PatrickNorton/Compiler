@@ -27,7 +27,7 @@ public class CompilerTodoError extends RuntimeException {
     public static CompilerTodoError of(String message, @NotNull LineInfo lineInfo) {
         return new CompilerTodoError(
                 String.format(
-                        "%s%nError: Operation not yet implemented%nFile %s Line%d%n%s",
+                        "%s%nError: Operation not yet implemented%nFile %s Line %d%n%s",
                         message, lineInfo.getPath(),
                         lineInfo.getLineNumber(), lineInfo.infoString()
                 )

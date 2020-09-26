@@ -101,9 +101,9 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
                 result.add(args[i]);
             }
         } else {  // remainingArgs > remainingParams
-            int diff = remainingArgs - remainingParams + 1;
+            int diff = remainingArgs - remainingParams;
             List<TypeObject> listArgs = new ArrayList<>(diff);
-            listArgs.addAll(Arrays.asList(args).subList(i, diff + i));
+            listArgs.addAll(Arrays.asList(args).subList(i, diff + i + 1));
             result.add(TypeObject.list(listArgs.toArray(new TypeObject[0])));
             i++;
             for (; i < params.size(); i++) {
@@ -121,7 +121,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         if (isList != arg instanceof ListTypeObject) {
             return true;
         } else if (!isList) {
-            return !param.getBound().isSuperclass(arg);
+            return param.getBound() != null && !param.getBound().isSuperclass(arg);
         } else {
             return false;
         }

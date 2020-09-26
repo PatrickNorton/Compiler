@@ -4,6 +4,7 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypedArgumentNode;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -49,6 +50,37 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         info.removeStackFrame();
         retInfo.popFnReturns();
         return Collections.emptyList();
+    }
+
+    @Contract(" -> new")
+    @NotNull
+    public TypeObject parseHeader() {
+        if (node.getGenerics().length == 0) {
+            var argInfo = ArgumentInfo.of(node.getArgs(), info);
+            var returns = info.typesOf(node.getRetval());
+            var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
+            var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
+            var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, argInfo, trueRet);
+            var func = new Function(fnInfo, new ArrayList<>(), isGenerator);
+            info.addFunction(func);
+            return new FunctionInfoType(fnInfo);
+        } else {
+            var generics = GenericInfo.parse(info, node.getGenerics());
+            Map<String, TypeObject> genericNames = new HashMap<>(generics.size());
+            for (var generic : generics) {
+                genericNames.put(generic.baseName(), generic);
+            }
+            info.addLocalTypes(genericNames);
+            var argInfo = ArgumentInfo.of(node.getArgs(), info);
+            var returns = info.typesOf(node.getRetval());
+            var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
+            var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
+            var fnInfo = new FunctionInfo(node.getName().getName(), argInfo, trueRet);
+            var func = new Function(fnInfo, new ArrayList<>(), isGenerator);
+            info.addFunction(func);
+            info.removeLocalTypes();
+            return new FunctionInfoType(fnInfo);
+        }
     }
 
     @NotNull
@@ -115,5 +147,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         if (node.getDescriptors().contains(DescriptorNode.GENERATOR) && node.getRetval().length == 0) {
             throw CompilerException.of("Generator functions must have at least one return", node);
         }
+    }
+
+    public static TypeObject parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
+        return new FunctionDefinitionConverter(info, node).parseHeader();
     }
 }

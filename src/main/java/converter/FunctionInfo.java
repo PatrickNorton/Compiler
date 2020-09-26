@@ -12,6 +12,7 @@ public final class FunctionInfo implements IntoFnInfo {
     private final boolean isGenerator;
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
+    private final GenericInfo generics;
 
     public FunctionInfo(TypeObject... returns) {
         this("", ArgumentInfo.of(), returns);
@@ -30,8 +31,15 @@ public final class FunctionInfo implements IntoFnInfo {
     }
 
     public FunctionInfo(String name, boolean isGenerator, ArgumentInfo args, TypeObject... returns) {
+        this(name, isGenerator, GenericInfo.empty(), args, returns);
+    }
+
+    public FunctionInfo(
+            String name, boolean isGenerator, GenericInfo generics, ArgumentInfo args, TypeObject... returns
+    ) {
         this.name = name;
         this.isGenerator = isGenerator;
+        this.generics = generics;
         this.arguments = args;
         this.returns = properReturns(returns);
     }
@@ -58,6 +66,10 @@ public final class FunctionInfo implements IntoFnInfo {
 
     public boolean isGenerator() {
         return isGenerator;
+    }
+
+    public GenericInfo getGenerics() {
+        return generics;
     }
 
     @NotNull
