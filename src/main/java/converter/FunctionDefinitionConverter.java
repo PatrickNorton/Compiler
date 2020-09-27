@@ -42,7 +42,13 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
         for (var arg : node.getArgs()) {
-            info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
+            var type = info.getType(arg.getType());
+            var name = arg.getName().getName();
+            if (arg.getVararg()) {
+                info.addVariable(name, Builtins.ITERABLE.generify(arg, type), arg);
+            } else {
+                info.addVariable(name, type, arg);
+            }
         }
         for (var statement : node.getBody()) {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));

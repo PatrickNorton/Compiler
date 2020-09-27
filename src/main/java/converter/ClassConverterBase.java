@@ -43,7 +43,11 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 recursivelyAllowProtectedAccess(handler, type);
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
-                    info.addVariable(arg.getName(), arg.getType(), methodInfo);
+                    if (arg.isVararg()) {
+                        info.addVariable(arg.getName(), Builtins.ITERABLE.generify(arg, arg.getType()), methodInfo);
+                    } else {
+                        info.addVariable(arg.getName(), arg.getType(), methodInfo);
+                    }
                 }
                 var retInfo = info.getFnReturns();
                 retInfo.addFunctionReturns(fnInfo.isGenerator(), fnReturns(fnInfo));

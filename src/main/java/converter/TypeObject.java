@@ -79,6 +79,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return Optional.empty();
     }
 
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, @NotNull CompilerInfo info) {
+        return operatorInfo(o, info.accessLevel(this));
+    }
+
     public final Optional<TypeObject[]> operatorReturnType(OperatorTypeNode o, @NotNull CompilerInfo info) {
         return operatorReturnType(OpSpTypeNode.translate(o), info.accessLevel(this));
     }
