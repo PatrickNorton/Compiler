@@ -119,21 +119,26 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
     @NotNull
     public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
-        var attr = info.attributes.get(value);
-        if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
-            return Optional.empty();
-        }
-        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? Optional.of(attr.getType()) : Optional.empty();
+        return typeFromAttr(info.attributes.get(value), access);
     }
 
     @NotNull
     @Override
     public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
-        var attr = info.staticAttributes.get(value);
+        return typeFromAttr(info.staticAttributes.get(value), access);
+    }
+
+    private Optional<TypeObject> typeFromAttr(AttributeInfo attr, AccessLevel access) {
         if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
             return Optional.empty();
         }
-        return AccessLevel.canAccess(attr.getAccessLevel(), access) ? Optional.of(attr.getType()) : Optional.empty();
+        if (attr.getAccessLevel() == AccessLevel.PUBGET) {
+            return Optional.of(AccessLevel.canAccess(AccessLevel.PRIVATE, access)
+                    ? attr.getType() : attr.getType().makeConst());
+        } else {
+            return AccessLevel.canAccess(attr.getAccessLevel(), access)
+                    ? Optional.of(attr.getType()) : Optional.empty();
+        }
     }
 
     public void setAttributes(Map<String, AttributeInfo> attributes) {

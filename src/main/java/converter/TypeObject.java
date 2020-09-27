@@ -66,8 +66,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return this;
     }
 
-    public boolean canSetAttr(String name) {
+    public boolean canSetAttr(String name, AccessLevel access) {
         return false;
+    }
+
+    public final boolean canSetAttr(String name, @NotNull CompilerInfo info) {
+        return canSetAttr(name, info.accessLevel(this));
     }
 
     @Override

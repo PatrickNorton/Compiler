@@ -283,7 +283,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
-    public final boolean canSetAttr(String name) {
+    public final boolean canSetAttr(String name, AccessLevel access) {
         if (isConst) {
             return false;
         }
@@ -291,7 +291,15 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         if (attr == null) {
             return false;
         } else {
-            return !attr.intoAttrInfo().getMutType().isConstRef();
+            var attrInfo = attr.intoAttrInfo();
+            var accessLevel = attrInfo.getAccessLevel();
+            if (!AccessLevel.canAccess(accessLevel, access)) {
+                return false;
+            } else if (accessLevel == AccessLevel.PUBGET && !AccessLevel.canAccess(AccessLevel.PRIVATE, access)) {
+                return false;
+            } else {
+                return !attr.intoAttrInfo().getMutType().isConstRef();
+            }
         }
     }
 
