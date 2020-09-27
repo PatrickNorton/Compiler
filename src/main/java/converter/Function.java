@@ -5,18 +5,10 @@ import java.util.List;
 public final class Function {
     private final FunctionInfo info;
     private final List<Byte> bytes;
-    private final boolean isGenerator;
 
     public Function(FunctionInfo info, List<Byte> bytes) {
         this.info = info;
         this.bytes = bytes;
-        this.isGenerator = false;
-    }
-
-    public Function(FunctionInfo info, List<Byte> bytes, boolean isGenerator) {
-        this.info = info;
-        this.bytes = bytes;
-        this.isGenerator = isGenerator;
     }
 
     public String getName() {
@@ -40,6 +32,6 @@ public final class Function {
     }
 
     public boolean isGenerator() {
-        return isGenerator;
+        return info.isGenerator();
     }
 }

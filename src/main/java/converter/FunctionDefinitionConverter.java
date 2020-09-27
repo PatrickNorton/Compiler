@@ -32,7 +32,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, convertArgs(generics), trueRet);
-        int index = info.addFunction(new Function(fnInfo, bytes, isGenerator));
+        int index = info.addFunction(new Function(fnInfo, bytes));
         var constVal = new FunctionConstant(node.getName().getName(), index);
         info.checkDefinition(node.getName().getName(), node);
         info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);
@@ -67,7 +67,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
             var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
             var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, argInfo, trueRet);
-            var func = new Function(fnInfo, new ArrayList<>(), isGenerator);
+            var func = new Function(fnInfo, new ArrayList<>());
             info.addFunction(func);
             return new FunctionInfoType(fnInfo);
         } else {
@@ -82,7 +82,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
             var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
             var fnInfo = new FunctionInfo(node.getName().getName(), argInfo, trueRet);
-            var func = new Function(fnInfo, new ArrayList<>(), isGenerator);
+            var func = new Function(fnInfo, new ArrayList<>());
             info.addFunction(func);
             info.removeLocalTypes();
             return new FunctionInfoType(fnInfo);
