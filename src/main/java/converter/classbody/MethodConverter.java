@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class MethodConverter {
-    private final Map<String, MethodInfo> methodMap;
-    private final Map<String, MethodInfo> staticMethods;
+    private final Map<String, Method> methodMap;
+    private final Map<String, Method> staticMethods;
     private final CompilerInfo info;
 
     public MethodConverter(CompilerInfo info) {
@@ -42,7 +42,7 @@ public final class MethodConverter {
         }
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
-        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo());
+        var mInfo = new Method(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo());
         if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
             methodMap.put(name, mInfo);
         } else {
@@ -64,7 +64,7 @@ public final class MethodConverter {
         }
         checkVars(name, node, methodMap);
         checkVars(name, node, staticMethods);
-        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo, StatementBodyNode.empty(), node.getLineInfo());
+        var mInfo = new Method(accessLevel, isMut, fnInfo, StatementBodyNode.empty(), node.getLineInfo());
         if (!node.getDescriptors().contains(DescriptorNode.STATIC)) {
             methodMap.put(name, mInfo);
         } else {
@@ -72,11 +72,11 @@ public final class MethodConverter {
         }
     }
 
-    public Map<String, MethodInfo> getMethods() {
+    public Map<String, Method> getMethods() {
         return methodMap;
     }
 
-    public Map<String, MethodInfo> getStaticMethods() {
+    public Map<String, Method> getStaticMethods() {
         return staticMethods;
     }
 

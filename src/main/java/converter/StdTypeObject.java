@@ -80,12 +80,12 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.info;
     }
 
-    public void setOperators(Map<OpSpTypeNode, FunctionInfo> args) {
+    public void setOperators(Map<OpSpTypeNode, MethodInfo> args) {
         assert !info.isSealed && info.operators.isEmpty();
         info.operators = args;
     }
 
-    public void setStaticOperators(Map<OpSpTypeNode, FunctionInfo> args) {
+    public void setStaticOperators(Map<OpSpTypeNode, MethodInfo> args) {
         assert !info.isSealed && info.staticOperators.isEmpty();
         info.staticOperators = args;
     }
@@ -104,7 +104,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
     public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         // TODO: Check access bounds
-        return Optional.ofNullable(info.operators.get(o));
+        return Optional.ofNullable(info.operators.get(o)).map(MethodInfo::getInfo);
     }
 
     @Override
@@ -214,7 +214,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return Pair.of(Collections.emptySet(), Collections.emptySet());
     }
 
-    protected static final class Info extends UserType.Info<FunctionInfo, AttributeInfo> {
+    protected static final class Info extends UserType.Info<MethodInfo, AttributeInfo> {
         private boolean isConstClass;
         private final boolean isFinal;
         private boolean isUnion;

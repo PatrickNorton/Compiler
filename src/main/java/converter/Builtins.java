@@ -28,9 +28,9 @@ public final class Builtins {
 
     private static final TemplateParam CONTEXT_PARAM = new TemplateParam("T", 0, OBJECT);
 
-    private static final Map<OpSpTypeNode, FunctionInfo> CONTEXT_MAP = Map.of(
-            OpSpTypeNode.ENTER, new FunctionInfo(CONTEXT_PARAM),
-            OpSpTypeNode.EXIT, new FunctionInfo(TypeObject.list())
+    private static final Map<OpSpTypeNode, MethodInfo> CONTEXT_MAP = Map.of(
+            OpSpTypeNode.ENTER, MethodInfo.of(CONTEXT_PARAM),
+            OpSpTypeNode.EXIT, MethodInfo.of(TypeObject.list())
     );
 
     public static final InterfaceType CONTEXT = new InterfaceType(
@@ -41,8 +41,8 @@ public final class Builtins {
 
     private static final TemplateParam CALLABLE_RETURN = new TemplateParam("R", 1, TypeObject.list());
 
-    private static final Map<OpSpTypeNode, FunctionInfo> CALLABLE_MAP = Map.of(
-            OpSpTypeNode.CALL, new FunctionInfo(ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
+    private static final Map<OpSpTypeNode, MethodInfo> CALLABLE_MAP = Map.of(
+            OpSpTypeNode.CALL, MethodInfo.of(ArgumentInfo.of(CALLABLE_ARGS), CALLABLE_RETURN)
     );
 
     public static final InterfaceType CALLABLE = new InterfaceType(
@@ -147,8 +147,9 @@ public final class Builtins {
 
     static {  // Set int operators
         INT.isConstClass();
-        var intOperatorInfo = new FunctionInfo(ArgumentInfo.of(INT), INT);
-        var intCompInfo = new FunctionInfo(ArgumentInfo.of(INT), BOOL);
+        var intOperatorInfo = MethodInfo.of(ArgumentInfo.of(INT), INT);
+        var intCompInfo = MethodInfo.of(ArgumentInfo.of(INT), BOOL);
+        var intUopInfo = MethodInfo.of(INT);
 
         var intMap = Map.ofEntries(
                 Map.entry(OpSpTypeNode.ADD, intOperatorInfo),
@@ -162,7 +163,7 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.BITWISE_AND, intOperatorInfo),
                 Map.entry(OpSpTypeNode.BITWISE_OR, intOperatorInfo),
                 Map.entry(OpSpTypeNode.BITWISE_XOR, intOperatorInfo),
-                Map.entry(OpSpTypeNode.BITWISE_NOT, new FunctionInfo(INT)),
+                Map.entry(OpSpTypeNode.BITWISE_NOT, intUopInfo),
 
                 Map.entry(OpSpTypeNode.EQUALS, intCompInfo),
                 Map.entry(OpSpTypeNode.LESS_THAN, intCompInfo),
@@ -170,8 +171,8 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.GREATER_THAN, intCompInfo),
                 Map.entry(OpSpTypeNode.GREATER_EQUAL, intCompInfo),
 
-                Map.entry(OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))),
-                Map.entry(OpSpTypeNode.UNARY_MINUS, new FunctionInfo(INT))
+                Map.entry(OpSpTypeNode.NEW, MethodInfo.of(OBJECT)),
+                Map.entry(OpSpTypeNode.UNARY_MINUS, intUopInfo)
         );
 
         INT.setOperators(intMap);
@@ -181,13 +182,13 @@ public final class Builtins {
     static {  // Set str operators
         STR.isConstClass();
         var strMap = Map.of(
-                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(STR), STR),
-                OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), STR),
-                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(STR), BOOL),
-                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), CHAR),
-                OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), STR),
-                OpSpTypeNode.ITER, new FunctionInfo(Builtins.ITERABLE.generify(CHAR)),
-                OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
+                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(STR), STR),
+                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), STR),
+                OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(STR), BOOL),
+                OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), CHAR),
+                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), STR),
+                OpSpTypeNode.ITER, MethodInfo.of(Builtins.ITERABLE.generify(CHAR)),
+                OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
         var fromCharsInfo = new FunctionInfo(ArgumentInfo.of(LIST.generify(CHAR)), STR);
@@ -217,14 +218,14 @@ public final class Builtins {
 
     static {  // Set bytes operators
         var bytesMap = Map.of(
-                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(BYTES), BYTES),
-                OpSpTypeNode.MULTIPLY, new FunctionInfo(ArgumentInfo.of(INT), BYTES),
-                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(BYTES), BOOL),
-                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), INT),
-                OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), BYTES),
-                OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, INT)),
-                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(INT)),
-                OpSpTypeNode.NEW, new FunctionInfo(ArgumentInfo.of(OBJECT))
+                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(BYTES), BYTES),
+                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), BYTES),
+                OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(BYTES), BOOL),
+                OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), INT),
+                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), BYTES),
+                OpSpTypeNode.SET_ATTR, MethodInfo.of(ArgumentInfo.of(INT, INT)),
+                OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(INT)),
+                OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))
         );
         BYTES.setOperators(bytesMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
@@ -244,8 +245,8 @@ public final class Builtins {
         CHAR.isConstClass();
         // TODO: More char operators
         var charMap = Map.of(
-                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(CHAR), CHAR),
-                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(CHAR), BOOL)
+                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(CHAR), CHAR),
+                OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(CHAR), BOOL)
         );
         CHAR.setOperators(charMap);
         CHAR.seal();
@@ -254,9 +255,9 @@ public final class Builtins {
     static {  // Set range operators
         RANGE.isConstClass();
         var rangeMap = Map.of(
-                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(INT)),
-                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(INT), BOOL),
-                OpSpTypeNode.EQUALS, new FunctionInfo(ArgumentInfo.of(RANGE), BOOL)
+                OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(INT)),
+                OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(INT), BOOL),
+                OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(RANGE), BOOL)
         );
         RANGE.setOperators(rangeMap);
         RANGE.seal();
@@ -281,14 +282,14 @@ public final class Builtins {
 
     static {  // Set list operators
         var listMap = Map.of(
-                OpSpTypeNode.GET_ATTR, new FunctionInfo(ArgumentInfo.of(INT), LIST_PARAM),
-                OpSpTypeNode.SET_ATTR, new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM)),
-                OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(INT)),
-                OpSpTypeNode.GET_SLICE, new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(LIST_PARAM)),
-                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(LIST_PARAM), BOOL),
-                OpSpTypeNode.REVERSED, new FunctionInfo(LIST),
-                OpSpTypeNode.ADD, new FunctionInfo(ArgumentInfo.of(LIST), LIST),
-                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(LIST_PARAM))
+                OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), LIST_PARAM),
+                OpSpTypeNode.SET_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT, LIST_PARAM)),
+                OpSpTypeNode.DEL_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT)),
+                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), LIST.generify(LIST_PARAM)),
+                OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(LIST_PARAM), BOOL),
+                OpSpTypeNode.REVERSED, MethodInfo.of(LIST),
+                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(LIST), LIST),
+                OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(LIST_PARAM))
         );
         LIST.setOperators(listMap);
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
@@ -315,16 +316,16 @@ public final class Builtins {
     }
 
     static {  // Set set operators
-        var setCompInfo = new FunctionInfo(ArgumentInfo.of(SET), BOOL);
+        var setCompInfo = MethodInfo.of(ArgumentInfo.of(SET), BOOL);
         var setMap = Map.of(
-                OpSpTypeNode.IN, new FunctionInfo(ArgumentInfo.of(SET_PARAM)),
-                OpSpTypeNode.DEL_ATTR, new FunctionInfo(ArgumentInfo.of(SET_PARAM)),
+                OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(SET_PARAM)),
+                OpSpTypeNode.DEL_ATTR, MethodInfo.of(ArgumentInfo.of(SET_PARAM)),
                 OpSpTypeNode.EQUALS, setCompInfo,
                 OpSpTypeNode.GREATER_THAN, setCompInfo,
                 OpSpTypeNode.GREATER_EQUAL, setCompInfo,
                 OpSpTypeNode.LESS_THAN, setCompInfo,
                 OpSpTypeNode.LESS_EQUAL, setCompInfo,
-                OpSpTypeNode.ITER, new FunctionInfo(ITERABLE.generify(SET_PARAM))
+                OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(SET_PARAM))
         );
         SET.setOperators(setMap);
         var setAttrs = Map.of(
@@ -337,11 +338,11 @@ public final class Builtins {
     }
 
     static {
-        var dictContainsInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), BOOL);
-        var dictGetInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), DICT_VAL);
-        var dictDelInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY));
-        var dictIterInfo = new FunctionInfo(DICT_KEY, Builtins.ITERABLE.generify(DICT_VAL));
-        var dictEqInfo = new FunctionInfo(ArgumentInfo.of(DICT), BOOL);
+        var dictContainsInfo = MethodInfo.of(ArgumentInfo.of(DICT_KEY), BOOL);
+        var dictGetInfo = MethodInfo.of(ArgumentInfo.of(DICT_KEY), DICT_VAL);
+        var dictDelInfo = MethodInfo.of(ArgumentInfo.of(DICT_KEY));
+        var dictIterInfo = MethodInfo.of(DICT_KEY, Builtins.ITERABLE.generify(DICT_VAL));
+        var dictEqInfo = MethodInfo.of(ArgumentInfo.of(DICT), BOOL);
 
         var dictGetMInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), TypeObject.optional(DICT_VAL));
 
@@ -365,13 +366,13 @@ public final class Builtins {
     }
 
     static {
-        var arrayGetInfo = new FunctionInfo(ArgumentInfo.of(INT), ARRAY_PARAM);
-        var arraySetInfo = new FunctionInfo(ArgumentInfo.of(INT, ARRAY_PARAM));
-        var arrayIterInfo = new FunctionInfo(ITERABLE.generify(ARRAY_PARAM));
-        var arrayContainsInfo = new FunctionInfo(ArgumentInfo.of(ARRAY_PARAM), BOOL);
-        var arrayEqInfo = new FunctionInfo(ArgumentInfo.of(ARRAY), BOOL);
-        var arraySliceInfo = new FunctionInfo(ArgumentInfo.of(SLICE), LIST.generify(ARRAY_PARAM));
-        var arrayReversedInfo = new FunctionInfo(ARRAY);
+        var arrayGetInfo = MethodInfo.of(ArgumentInfo.of(INT), ARRAY_PARAM);
+        var arraySetInfo = MethodInfo.of(ArgumentInfo.of(INT, ARRAY_PARAM));
+        var arrayIterInfo = MethodInfo.of(ITERABLE.generify(ARRAY_PARAM));
+        var arrayContainsInfo = MethodInfo.of(ArgumentInfo.of(ARRAY_PARAM), BOOL);
+        var arrayEqInfo = MethodInfo.of(ArgumentInfo.of(ARRAY), BOOL);
+        var arraySliceInfo = MethodInfo.of(ArgumentInfo.of(SLICE), LIST.generify(ARRAY_PARAM));
+        var arrayReversedInfo = MethodInfo.of(ARRAY);
 
         var arrayMap = Map.of(
                 OpSpTypeNode.GET_ATTR, arrayGetInfo,
@@ -393,7 +394,7 @@ public final class Builtins {
     }
 
     static {
-        var iterInfo = new FunctionInfo(ITERABLE.generify(LineInfo.empty(), ITERABLE_PARAM));
+        var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERABLE_PARAM));
 
         ITERABLE.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
         ITERABLE.seal();

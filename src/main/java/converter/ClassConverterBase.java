@@ -1,7 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
-import main.java.converter.classbody.MethodInfo;
+import main.java.converter.classbody.Method;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
@@ -28,7 +28,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     @NotNull
-    protected final <U> Map<U, List<Byte>> convert(UserType<?> type, @NotNull Map<U, MethodInfo> functions) {
+    protected final <U> Map<U, List<Byte>> convert(UserType<?> type, @NotNull Map<U, Method> functions) {
         Map<U, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();

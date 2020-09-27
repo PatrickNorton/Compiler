@@ -303,7 +303,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
-    protected static abstract class Info<O extends IntoFnInfo, A extends IntoAttrInfo> {
+    protected static abstract class Info<O extends IntoMethodInfo, A extends IntoAttrInfo> {
         protected final String name;
         protected List<TypeObject> supers;
         protected Map<OpSpTypeNode, O> operators;
@@ -325,7 +325,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         @NotNull
         public final Optional<TypeObject[]> operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
             if (operators.containsKey(o)) {  // TODO: Bounds-check
-                return Optional.of(operators.get(o).intoFnInfo().getReturns());
+                return Optional.of(operators.get(o).intoMethodInfo().getReturns());
             }
             for (var sup : supers) {
                 var opRet = sup.operatorReturnType(o, access);
@@ -339,7 +339,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         @NotNull
         public final Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
             if (staticOperators.containsKey(o)) {
-                return Optional.of(staticOperators.get(o).intoFnInfo().getReturns());
+                return Optional.of(staticOperators.get(o).intoMethodInfo().getReturns());
             }
             for (var sup : supers) {
                 var opRet = sup.staticOperatorReturnType(o);

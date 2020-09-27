@@ -6,6 +6,7 @@ import main.java.converter.Builtins;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
+import main.java.converter.MethodInfo;
 import main.java.converter.TypeObject;
 import main.java.parser.DescriptorNode;
 import main.java.parser.GenericOperatorNode;
@@ -24,10 +25,10 @@ import java.util.Set;
 
 public final class OperatorDefConverter {
     private final CompilerInfo info;
-    private final Map<OpSpTypeNode, FunctionInfo> operatorInfos;
-    private final Map<OpSpTypeNode, MethodInfo> operators;
-    private final Map<OpSpTypeNode, FunctionInfo> staticOperatorInfos;
-    private final Map<OpSpTypeNode, MethodInfo> staticOperators;
+    private final Map<OpSpTypeNode, MethodInfo> operatorInfos;
+    private final Map<OpSpTypeNode, Method> operators;
+    private final Map<OpSpTypeNode, MethodInfo> staticOperatorInfos;
+    private final Map<OpSpTypeNode, Method> staticOperators;
 
     public OperatorDefConverter(CompilerInfo info) {
         this.operatorInfos = new HashMap<>();
@@ -51,10 +52,11 @@ public final class OperatorDefConverter {
         if (opInfos.containsKey(op)) {
             throw CompilerException.doubleDef(op, node, ops.get(op));
         }
-        opInfos.put(op, fnInfo);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
-        ops.put(op, new MethodInfo(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
+        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
+        opInfos.put(op, mInfo);
+        ops.put(op, new Method(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
     }
 
     public void parse(@NotNull GenericOperatorNode node) {
@@ -70,24 +72,25 @@ public final class OperatorDefConverter {
         }
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
-        operatorInfos.put(op, fnInfo);
-        operators.put(op, new MethodInfo(accessLevel, isMut, fnInfo,
+        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
+        operatorInfos.put(op, mInfo);
+        operators.put(op, new Method(accessLevel, isMut, fnInfo,
                 StatementBodyNode.empty(), node.getLineInfo()));
     }
 
-    public Map<OpSpTypeNode, FunctionInfo> getOperatorInfos() {
+    public Map<OpSpTypeNode, MethodInfo> getOperatorInfos() {
         return operatorInfos;
     }
 
-    public Map<OpSpTypeNode, MethodInfo> getOperators() {
+    public Map<OpSpTypeNode, Method> getOperators() {
         return operators;
     }
 
-    public Map<OpSpTypeNode, FunctionInfo> getStaticOperatorInfos() {
+    public Map<OpSpTypeNode, MethodInfo> getStaticOperatorInfos() {
         return staticOperatorInfos;
     }
 
-    public Map<OpSpTypeNode, MethodInfo> getStaticOperators() {
+    public Map<OpSpTypeNode, Method> getStaticOperators() {
         return staticOperators;
     }
 

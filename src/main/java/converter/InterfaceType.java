@@ -26,7 +26,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         super(new Info(name, supers, info), "", true);
     }
 
-    public InterfaceType(String name, GenericInfo info, Map<OpSpTypeNode, FunctionInfo> operators) {
+    public InterfaceType(String name, GenericInfo info, Map<OpSpTypeNode, MethodInfo> operators) {
         super(new Info(name, operators, info), "", true);
         this.seal();
     }
@@ -112,7 +112,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
     public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
         // TODO: Check access bounds
-        return Optional.ofNullable(info.operators.get(o)).map(InterfaceFnInfo::intoFnInfo);
+        return Optional.ofNullable(info.operators.get(o)).map(InterfaceFnInfo::fnInfo);
     }
 
     @Override
@@ -191,7 +191,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         info.staticAttributes = result;
     }
 
-    public void setOperators(@NotNull Map<OpSpTypeNode, FunctionInfo> args, Set<OpSpTypeNode> generics) {
+    public void setOperators(@NotNull Map<OpSpTypeNode, MethodInfo> args, Set<OpSpTypeNode> generics) {
         assert !info.isSealed && info.operators.isEmpty();
         Map<OpSpTypeNode, InterfaceFnInfo> result = new HashMap<>();
         for (var pair : args.entrySet()) {
@@ -200,7 +200,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         info.operators = result;
     }
 
-    public void setStaticOperators(@NotNull Map<OpSpTypeNode, FunctionInfo> args) {
+    public void setStaticOperators(@NotNull Map<OpSpTypeNode, MethodInfo> args) {
         assert !info.isSealed && info.staticOperators.isEmpty();
         Map<OpSpTypeNode, InterfaceFnInfo> result = new HashMap<>();
         for (var pair : args.entrySet()) {
@@ -230,14 +230,14 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
             super(name, supers, info);
         }
 
-        public Info(String name, Map<OpSpTypeNode, FunctionInfo> operators, GenericInfo info) {
+        public Info(String name, Map<OpSpTypeNode, MethodInfo> operators, GenericInfo info) {
             super(name, Collections.emptyList(), info);
             this.operators = convertMap(operators);
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
         }
 
         @NotNull
-        private <T> Map<T, InterfaceFnInfo> convertMap(@NotNull Map<T, FunctionInfo> arg) {
+        private <T> Map<T, InterfaceFnInfo> convertMap(@NotNull Map<T, MethodInfo> arg) {
             Map<T, InterfaceFnInfo> result = new HashMap<>();
             for (var pair : arg.entrySet()) {
                 result.put(pair.getKey(), new InterfaceFnInfo(pair.getValue(), false));
@@ -246,11 +246,11 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         }
     }
 
-    private static final class InterfaceFnInfo implements IntoFnInfo {
-        private final FunctionInfo info;
+    private static final class InterfaceFnInfo implements IntoMethodInfo {
+        private final MethodInfo info;
         private final boolean hasImpl;
 
-        public InterfaceFnInfo(FunctionInfo info, boolean hasImpl) {
+        public InterfaceFnInfo(MethodInfo info, boolean hasImpl) {
             this.info = info;
             this.hasImpl = hasImpl;
         }
@@ -260,8 +260,12 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         }
 
         @Override
-        public FunctionInfo intoFnInfo() {
+        public MethodInfo intoMethodInfo() {
             return info;
+        }
+
+        public FunctionInfo fnInfo() {
+            return info.getInfo();
         }
     }
 

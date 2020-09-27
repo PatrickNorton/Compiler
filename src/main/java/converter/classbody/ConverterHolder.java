@@ -3,7 +3,7 @@ package main.java.converter.classbody;
 import main.java.converter.AttributeInfo;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
-import main.java.converter.FunctionInfo;
+import main.java.converter.MethodInfo;
 import main.java.converter.MutableType;
 import main.java.converter.TypeObject;
 import main.java.parser.EnumKeywordNode;
@@ -53,11 +53,11 @@ public final class ConverterHolder {
         return attrs.staticVarsWithInts();
     }
 
-    public Map<String, MethodInfo> getColons() {
+    public Map<String, Method> getColons() {
         return attrs.getColons();
     }
 
-    public Map<String, MethodInfo> getStaticColons() {
+    public Map<String, Method> getStaticColons() {
         return attrs.getStaticColons();
     }
 
@@ -70,11 +70,11 @@ public final class ConverterHolder {
         return methods;
     }
 
-    public Map<String, MethodInfo> getMethods() {
+    public Map<String, Method> getMethods() {
         return methods.getMethods();
     }
 
-    public Map<String, MethodInfo> getStaticMethods() {
+    public Map<String, Method> getStaticMethods() {
         return methods.getStaticMethods();
     }
 
@@ -84,19 +84,19 @@ public final class ConverterHolder {
         return ops;
     }
 
-    public Map<OpSpTypeNode, FunctionInfo> getOperatorInfos() {
+    public Map<OpSpTypeNode, MethodInfo> getOperatorInfos() {
         return ops.getOperatorInfos();
     }
 
-    public Map<OpSpTypeNode, MethodInfo> getOperators() {
+    public Map<OpSpTypeNode, Method> getOperators() {
         return ops.getOperators();
     }
 
-    public Map<OpSpTypeNode, FunctionInfo> getStaticOperatorInfos() {
+    public Map<OpSpTypeNode, MethodInfo> getStaticOperatorInfos() {
         return ops.getStaticOperatorInfos();
     }
 
-    public Map<OpSpTypeNode, MethodInfo> getStaticOperators() {
+    public Map<OpSpTypeNode, Method> getStaticOperators() {
         return ops.getStaticOperators();
     }
 
@@ -110,27 +110,27 @@ public final class ConverterHolder {
         }
 
     @NotNull
-    public Map<String, MethodInfo> allGetters() {
-        Map<String, MethodInfo> result = new HashMap<>(props.getGetters());
+    public Map<String, Method> allGetters() {
+        Map<String, Method> result = new HashMap<>(props.getGetters());
         result.putAll(attrs.getColons());
         return result;
     }
 
     @NotNull
-    public Map<String, MethodInfo> getSetters() {
+    public Map<String, Method> getSetters() {
         return props.getSetters();
     }
 
-    public Map<String, MethodInfo> staticGetters() {
+    public Map<String, Method> staticGetters() {
         return attrs.getStaticColons();
     }
 
     @NotNull
-    public Map<String, MethodInfo> staticSetters() {
-        Map<String, MethodInfo> result = new HashMap<>(attrs.getStaticColons().size());
+    public Map<String, Method> staticSetters() {
+        Map<String, Method> result = new HashMap<>(attrs.getStaticColons().size());
         for (var pair : attrs.getStaticColons().entrySet()) {
             var mInfo = pair.getValue();
-            var newMethodInfo = new MethodInfo(
+            var newMethodInfo = new Method(
                     mInfo.getAccessLevel(),
                     mInfo.isMut(),
                     mInfo.getInfo(),
@@ -181,8 +181,8 @@ public final class ConverterHolder {
     @NotNull
     private Map<String, AttributeInfo> mergeAttrs(
             Map<String, AttributeInfo> attrs,
-            @NotNull Map<String, MethodInfo> colons,
-            @NotNull Map<String, MethodInfo> methods,
+            @NotNull Map<String, Method> colons,
+            @NotNull Map<String, Method> methods,
             Map<String, AttributeInfo> properties
     ) {
         var finalAttrs = new HashMap<>(attrs);
@@ -194,7 +194,7 @@ public final class ConverterHolder {
 
     private static void addInfos(
             Map<String, AttributeInfo> finalAttrs,
-            @NotNull Set<Map.Entry<String, MethodInfo>> entrySet
+            @NotNull Set<Map.Entry<String, Method>> entrySet
     ) {
         for (var pair : entrySet) {
             var methodInfo = pair.getValue();
