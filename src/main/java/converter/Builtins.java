@@ -228,10 +228,12 @@ public final class Builtins {
         );
         BYTES.setOperators(bytesMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
+        var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
+                "encode", new AttributeInfo(AccessLevel.PUBLIC, encodeInfo.toCallable()),
                 "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexInfo.toCallable())
         );
         BYTES.setAttributes(bytesAttrs);
