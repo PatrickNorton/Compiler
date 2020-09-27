@@ -196,11 +196,18 @@ public final class Builtins {
         );
         STR.setStaticAttributes(staticStrMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
+        var startsInfo = new FunctionInfo(ArgumentInfo.of(STR), BOOL);
+        var splitInfo = new FunctionInfo(ArgumentInfo.of(STR), LIST.generify(STR));
+        var splitLinesInfo = new FunctionInfo(ArgumentInfo.of(), LIST.generify(STR));
         var upperLowerInfo = new FunctionInfo(STR);
         var strAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR)),
                 "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
+                "startsWith", new AttributeInfo(AccessLevel.PUBLIC, startsInfo.toCallable()),
+                "endsWith", new AttributeInfo(AccessLevel.PUBLIC, startsInfo.toCallable()),
+                "split", new AttributeInfo(AccessLevel.PUBLIC, splitInfo.toCallable()),
+                "splitLines", new AttributeInfo(AccessLevel.PUBLIC, splitLinesInfo.toCallable()),
                 "upper", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable()),
                 "lower", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable())
         );
