@@ -111,8 +111,17 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
-        // TODO: Check access bounds
-        return Optional.ofNullable(info.operators.get(o)).map(InterfaceFnInfo::fnInfo);
+        var operators = info.operators.get(o);
+        if (operators == null) {
+            return Optional.empty();
+        } else {
+            var attrLevel = operators.intoMethodInfo().getAccessLevel();
+            if (AccessLevel.canAccess(attrLevel, access)) {
+                return Optional.of(operators.fnInfo());
+            } else {
+                return Optional.empty();
+            }
+        }
     }
 
     @Override
