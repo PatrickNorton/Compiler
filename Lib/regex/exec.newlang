@@ -2,6 +2,7 @@ from .AhoCorasick import AhoCorasick
 from .prog import Program
 from .builder import RegexOptions
 from .compile import Compiler
+from .dfa import canExec
 from .hir import Hir, Literals
 from .literal import LiteralSearcher
 from .trait import Locations
@@ -65,7 +66,7 @@ class Exec {
     }
 
     public method searcher() -> ExecNoSync {
-        return ExecNoSync(self.ro, self.cache ?? ProgramCacheInner(self.ro))
+        return ExecNoSync(self.ro, self.cache)
     }
 
     public method regexStrings() -> list[str] {
@@ -109,8 +110,8 @@ const class ExecReadOnly {
     }
 
     public method chooseMatchType(MatchType? hint) -> MatchType {
-        if (hint?.NFA)? as h {
-            return h
+        if hint? as h {
+            return h if h.Nfa?
         }
         if not self.nfa.insts {
             return MatchType.Nothing()
@@ -121,11 +122,11 @@ const class ExecReadOnly {
         if self.chooseDfaMatchType()? as dfaty {
             return dfaty
         }
-        return MatchType.NFA(MatchNfaType.AUTO)
+        return MatchType.Nfa(MatchNfaType.AUTO)
     }
 
     private method chooseLiteralMatchType() -> MatchType? {
-        return null if self.ro.length == 1
+        return null if self.res.length == 1
         if self.ac? {
             return MatchType.Literal(MatchLiteralType.AHO_CORASICK)
         }
@@ -136,7 +137,7 @@ const class ExecReadOnly {
                 return MatchType.Literal(MatchLiteralType.UNANCHORED)
             }
         }
-        if ro.suffixes.complete() {
+        if self.suffixes.complete() {
             if self.nfa.isAnchoredEnd {
                 return MatchType.Literal(MatchLiteralType.ANCHORED_END)
             } else {
@@ -150,7 +151,7 @@ const class ExecReadOnly {
     }
 
     private method chooseDfaMatchType() -> MatchType? {
-        return null if not self.dfa.canExec
+        return null if not canExec(self.dfa)
         return MatchType.DfaMany() if self.res.length >= 2
         if not self.nfa.isAnchoredStart and self.nfa.isAnchoredEnd {
             return MatchType.DfaAnchoredReverse()
@@ -331,7 +332,7 @@ class ExecBuilder {
 }
 
 union MatchType {
-    MatchLiteralType literal
+    MatchLiteralType Literal
     null Dfa
     null DfaAnchoredReverse
     null DfaSuffix
@@ -450,6 +451,11 @@ class Parsed {
 class ExecNoSync {
     private ExecReadOnly ro
     private ProgramCache cache
+
+    public operator new(ExecReadOnly ro, ProgramCache cache) {
+        self.ro = ro
+        self.cache = cache
+    }
 
     public method slotsLen() -> int {
         return self.ro.nfa.captures.length * 2
@@ -695,6 +701,10 @@ class ExecNoSync {
 
 class ExecNoSyncStr {
     private ExecNoSync value
+
+    public operator new(ExecNoSync value) {
+        self.value = value
+    }
 
     public method slotsLen() -> int {
         self.value.slotsLen()
