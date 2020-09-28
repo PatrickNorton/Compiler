@@ -56,7 +56,9 @@ public final class DictLiteralConverter implements TestConverter {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), pair.getValue(), info));
             }
         } else {
-            assert retCount == 1;
+            if (retCount != 1) {
+                throw CompilerException.format("Dict literal only returns 1 value, not %d", node, retCount);
+            }
             var keyType = returnTypes(node.getKeys());
             var valType = returnTypes(node.getValues());
             for (var pair : node.pairs()) {
