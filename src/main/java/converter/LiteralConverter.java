@@ -62,17 +62,17 @@ public final class LiteralConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
+        var literalCls = literalType.type.makeMut();
         if (literalType == LiteralType.TUPLE) {
-            return new TypeObject[]{literalType.type.generify(tupleReturnTypes(node.getBuilders()))};
+            return new TypeObject[]{literalCls.generify(tupleReturnTypes(node.getBuilders()))};
         } else if (node.getBuilders().length == 0) {
             if (expected == null) {
                 throw CompilerException.format("Cannot deduce type of %s literal", node, literalType.name);
             }
             var generics = expected[0].getGenerics();
-            return new TypeObject[] {literalType.type.generify(node, generics.toArray(new TypeObject[0]))};
+            return new TypeObject[] {literalCls.generify(node, generics.toArray(new TypeObject[0]))};
         } else {
-            var mainType = literalType.type;
-            return new TypeObject[]{mainType.generify(returnTypes(node.getBuilders())).makeMut()};
+            return new TypeObject[]{literalCls.generify(returnTypes(node.getBuilders())).makeMut()};
         }
     }
 

@@ -406,8 +406,13 @@ public final class Builtins {
     }
 
     static {  // seal everything else
+        DECIMAL.isConstClass();
         DECIMAL.seal();
+
+        BOOL.isConstClass();
         BOOL.seal();
+
+        THROWS.isConstClass();
         THROWS.seal();
     }
 

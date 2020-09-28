@@ -37,7 +37,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     private StdTypeObject(@NotNull StdTypeObject other, boolean isConst) {
-        super(other.info, other.typedefName, isConst);
+        super(other.info, other.typedefName, other.generics, isConst);
     }
 
     private StdTypeObject(@NotNull StdTypeObject other, List<TypeObject> generics) {
