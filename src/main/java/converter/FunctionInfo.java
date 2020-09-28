@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public final class FunctionInfo implements IntoFnInfo {
+public final class FunctionInfo {
     private final String name;
     private final boolean isGenerator;
     private final ArgumentInfo arguments;
@@ -76,11 +76,6 @@ public final class FunctionInfo implements IntoFnInfo {
     @Contract(value = " -> new", pure = true)
     public TypeObject toCallable() {
         return new FunctionInfoType(this);
-    }
-
-    @Override
-    public FunctionInfo intoFnInfo() {
-        return this;
     }
 
     @NotNull
