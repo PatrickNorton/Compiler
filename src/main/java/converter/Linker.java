@@ -112,7 +112,7 @@ public final class Linker {
 
     private TypeObject linkDefinition(@NotNull DefinitionNode stmt) {
         var name = stmt.getName();
-        if (stmt instanceof FunctionDefinitionNode) {  // TODO: Register functions properly
+        if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;
             return FunctionDefinitionConverter.parseHeader(info, fnNode);
         } else if (stmt instanceof PropertyDefinitionNode) {
