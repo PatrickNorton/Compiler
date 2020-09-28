@@ -12,11 +12,20 @@ public final class LiteralConverter implements TestConverter {
     private final LiteralNode node;
     private final CompilerInfo info;
     private final int retCount;
+    private final TypeObject[] expected;
+
+    public LiteralConverter(CompilerInfo info, LiteralNode node, int retCount, TypeObject[] expected) {
+        this.node = node;
+        this.info = info;
+        this.retCount = retCount;
+        this.expected = expected;
+    }
 
     public LiteralConverter(CompilerInfo info, LiteralNode node, int retCount) {
         this.node = node;
         this.info = info;
         this.retCount = retCount;
+        this.expected = null;
     }
 
     private enum LiteralType {
@@ -55,6 +64,12 @@ public final class LiteralConverter implements TestConverter {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
         if (literalType == LiteralType.TUPLE) {
             return new TypeObject[]{literalType.type.generify(tupleReturnTypes(node.getBuilders()))};
+        } else if (node.getBuilders().length == 0) {
+            if (expected == null) {
+                throw CompilerException.format("Cannot deduce type of %s literal", node, literalType.name);
+            }
+            var generics = expected[0].getGenerics();
+            return new TypeObject[] {literalType.type.generify(node, generics.toArray(new TypeObject[0]))};
         } else {
             var mainType = literalType.type;
             return new TypeObject[]{mainType.generify(returnTypes(node.getBuilders())).makeMut()};
@@ -71,6 +86,8 @@ public final class LiteralConverter implements TestConverter {
             for (var value : node.getBuilders()) {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), value, info));
             }
+        } else if (node.getBuilders().length == 0) {
+            convertEmpty(bytes, literalType);
         } else {
             assert retCount == 1;
             var retType = returnTypes(node.getBuilders());
@@ -86,6 +103,24 @@ public final class LiteralConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
         }
         return bytes;
+    }
+
+    private void convertEmpty(List<Byte> bytes, LiteralType literalType) {
+        if (literalType == LiteralType.TUPLE) {
+            bytes.add(Bytecode.PACK_TUPLE.value);
+            bytes.addAll(Util.shortZeroBytes());
+            return;
+        }
+        if (expected == null) {
+            throw CompilerException.format("Cannot deduce type of %s literal", node, literalType.name);
+        }
+        var generics = expected[0].getGenerics();
+        literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
+        var genericType = returnTypes(node.getBuilders());
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(genericType))));
+        bytes.add(literalType.bytecode.value);
+        bytes.addAll(Util.shortZeroBytes());
     }
 
     @NotNull

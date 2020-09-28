@@ -52,6 +52,14 @@ public interface TestConverter extends BaseConverter {
     }
 
     @NotNull
+    static TestConverter of(CompilerInfo info, TestNode node, int retCount, TypeObject... expectedReturns) {
+        if (node instanceof LiteralNode) {
+            return new LiteralConverter(info, (LiteralNode) node, retCount, expectedReturns);
+        }
+        return of(info, node, retCount);
+    }
+
+    @NotNull
     static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
         if (node instanceof ComprehensionNode) {
             return new ComprehensionConverter(info, (ComprehensionNode) node, retCount);
