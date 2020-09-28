@@ -130,10 +130,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return Optional.empty();
     }
 
-    public final Optional<Map<Integer, TypeObject>> generifyAs(TypeObject other) {
-        return generifyAs(this, other);
-    }
-
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         return Optional.empty();
     }

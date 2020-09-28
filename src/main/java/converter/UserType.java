@@ -238,7 +238,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         for (var attr : contract.getKey()) {
             var attrT = attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
             var contractorAttr = contractor.attrTypeWithGenerics(attr, AccessLevel.PUBLIC).orElseThrow();
-            for (var pair : contractorAttr.generifyAs(attrT).orElseThrow().entrySet()) {
+            for (var pair : contractorAttr.generifyAs(contractor, attrT).orElseThrow().entrySet()) {
                 var index = pair.getKey();
                 var val = pair.getValue();
                 if (result[index] == null) {
