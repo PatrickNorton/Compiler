@@ -40,7 +40,7 @@ class RegexBuilder {
     }
 
     public method build() -> Regex {
-        return ExecBuilder.options(self.options).onlyUtf8(false).build()
+        return ExecBuilder().setOptions(self.options).onlyUtf8(false).build()
     }
 
     public mut method caseInsensitive(bool yes) -> RegexBuilder {

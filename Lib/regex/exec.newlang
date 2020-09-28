@@ -173,6 +173,11 @@ class ExecBuilder {
     private mut bool isBytes
     private mut bool utf8Only
 
+    public mut method setOptions(RegexOptions options) -> mut cls {
+        self.options = options
+        return self
+    }
+
     public mut method automatic() -> cls {
         self.matchType = null
         return self
