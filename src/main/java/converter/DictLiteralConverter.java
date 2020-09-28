@@ -11,25 +11,44 @@ public final class DictLiteralConverter implements TestConverter {
     private final DictLiteralNode node;
     private final CompilerInfo info;
     private final int retCount;
+    private final TypeObject[] expected;
 
     public DictLiteralConverter(CompilerInfo info, DictLiteralNode node, int retCount) {
         this.node = node;
         this.info = info;
         this.retCount = retCount;
+        this.expected = null;
+    }
+
+    public DictLiteralConverter(CompilerInfo info, DictLiteralNode node, int retCount, TypeObject[] expected) {
+        this.node = node;
+        this.info = info;
+        this.retCount = retCount;
+        this.expected = expected;
     }
 
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        var keyType = returnTypes(node.getKeys());
-        var valType = returnTypes(node.getValues());
-        return new TypeObject[] {Builtins.DICT.generify(keyType, valType).makeMut()};
+        if (node.getKeys().length == 0) {
+            assert node.getValues().length == 0;
+            if (expected == null) {
+                throw CompilerException.of("Cannot deduce type of dict literal", node);
+            }
+            var generics = expected[0].getGenerics();
+            return new TypeObject[] {Builtins.DICT.generify(node, generics.toArray(new TypeObject[0])).makeMut()};
+        } else {
+            var keyType = returnTypes(node.getKeys());
+            var valType = returnTypes(node.getValues());
+            return new TypeObject[] {Builtins.DICT.generify(keyType, valType).makeMut()};
+        }
     }
 
     @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
+        assert node.getKeys().length == node.getValues().length;
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
             CompilerWarning.warn("Unnecessary dict creation", node);
             for (var pair : node.pairs()) {
