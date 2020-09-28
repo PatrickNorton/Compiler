@@ -249,9 +249,9 @@ public final class AssignmentConverter implements BaseConverter {
         var assignedType = assignType(preDotConverter, pair.getValue(), value);
         var valueConverter = TestConverter.of(info, value, 1, assignedType);
         var valueType = valueConverter.returnType()[0];
-        checkAssign(preDotConverter, variable, valueType);
+        var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
-        bytes.addAll(valueConverter.convert(start + bytes.size()));
+        bytes.addAll(OptionTypeObject.maybeWrapBytes(valueConverter.convert(start + bytes.size()), needsMakeOption));
         storeBytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
         storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
@@ -262,9 +262,12 @@ public final class AssignmentConverter implements BaseConverter {
     ) {
         assert variable.getPostDots().length == 1 : "Deeper-than-1-dot assignment not implemented";
         var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
-        checkAssign(preDotConverter, variable, valueType);
+        var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.add(Bytecode.SWAP_2.value);
+        if (needsMakeOption) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
         bytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
         bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
@@ -276,13 +279,17 @@ public final class AssignmentConverter implements BaseConverter {
         return preDotRet.tryAttrType(node, postDot, info);
     }
 
-    private void checkAssign(
+    private boolean checkAssign(
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
         assert variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode;
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
+            if (OptionTypeObject.needsMakeOption(dotType, valueType)
+                    && OptionTypeObject.superWithOption(dotType, valueType)) {
+                return true;
+            }
             var postDots = variable.getPostDots();
             var nameAssigned = (VariableNode) postDots[postDots.length - 1].getPostDot();
             throw CompilerException.format(
@@ -305,6 +312,7 @@ public final class AssignmentConverter implements BaseConverter {
                 }
             }
         }
+        return false;
     }
 
     private boolean isConstructorException(TypeObject preDotType, DottedVariableNode variableNode) {
