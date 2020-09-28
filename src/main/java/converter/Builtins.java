@@ -446,7 +446,8 @@ public final class Builtins {
             ARRAY,
             ENUMERATE,
             BYTES,
-            DICT
+            DICT,
+            OBJECT
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
