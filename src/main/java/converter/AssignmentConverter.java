@@ -4,6 +4,7 @@ import main.java.parser.AssignableNode;
 import main.java.parser.AssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
@@ -57,7 +58,7 @@ public final class AssignmentConverter implements BaseConverter {
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
             } else if (name instanceof DottedVariableNode) {
-                assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, valueConverter);
+                assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
             } else {
                 throw CompilerException.of("Assignment must be to a variable, index, or dotted variable", node);
             }
@@ -242,10 +243,12 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
-                             @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
-        assert variable.getPostDots().length == 1;
+                             @NotNull DottedVariableNode variable, @NotNull TestNode value) {
+        var pair = DotConverter.exceptLast(info, variable, 1);
+        var preDotConverter = pair.getKey();
+        var assignedType = assignType(preDotConverter, pair.getValue(), value);
+        var valueConverter = TestConverter.of(info, value, 1, assignedType);
         var valueType = valueConverter.returnType()[0];
-        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
         checkAssign(preDotConverter, variable, valueType);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.addAll(valueConverter.convert(start + bytes.size()));
@@ -267,14 +270,21 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
     }
 
+    @NotNull
+    private TypeObject assignType(@NotNull TestConverter preDotConverter, String postDot, Lined node) {
+        var preDotRet = preDotConverter.returnType()[0];
+        return preDotRet.tryAttrType(node, postDot, info);
+    }
+
     private void checkAssign(
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        assert variable.getPostDots().length == 1;
+        assert variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode;
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
-            var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
+            var postDots = variable.getPostDots();
+            var nameAssigned = (VariableNode) postDots[postDots.length - 1].getPostDot();
             throw CompilerException.format(
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
                     node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()

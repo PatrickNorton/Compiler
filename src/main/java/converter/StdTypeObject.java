@@ -129,15 +129,25 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     private Optional<TypeObject> typeFromAttr(AttributeInfo attr, AccessLevel access) {
-        if (attr == null || (isConst && attr.getMutType() == MutableType.MUT_METHOD)) {
+        if (attr == null) {
             return Optional.empty();
         }
-        if (attr.getAccessLevel() == AccessLevel.PUBGET) {
+        if (attr.getMutType() == MutableType.MUT_METHOD) {
+            return isConst ? Optional.empty() : Optional.of(attr.getType());
+        } else if (isConst) {
+            return AccessLevel.canAccess(attr.getAccessLevel(), access)
+                    ? Optional.of(attr.getType().makeConst()) : Optional.empty();
+        } else if (attr.getAccessLevel() == AccessLevel.PUBGET) {
             return Optional.of(AccessLevel.canAccess(AccessLevel.PRIVATE, access)
                     ? attr.getType() : attr.getType().makeConst());
+        } else if (AccessLevel.canAccess(attr.getAccessLevel(), access)) {
+            if (attr.getMutType().isConstType()) {
+                return Optional.of(attr.getType().makeConst());
+            } else {
+                return Optional.of(attr.getType().makeMut());
+            }
         } else {
-            return AccessLevel.canAccess(attr.getAccessLevel(), access)
-                    ? Optional.of(attr.getType()) : Optional.empty();
+            return Optional.empty();
         }
     }
 

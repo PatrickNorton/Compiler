@@ -9,9 +9,11 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
 import main.java.parser.SpecialOpNameNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class DotConverter implements TestConverter {
@@ -23,6 +25,30 @@ public final class DotConverter implements TestConverter {
         this.node = node;
         this.info = info;
         this.retCount = retCount;
+    }
+
+    @NotNull
+    public static Pair<TestConverter, String> exceptLast(
+            CompilerInfo info, @NotNull DottedVariableNode node, int retCount
+    ) {
+        var postDots = node.getPostDots();
+        if (!(postDots[postDots.length - 1].getPostDot() instanceof VariableNode)) {
+            throw CompilerTodoError.of(
+                    "DotConverter.exceptLast does not work where the last dot is an index or function call",
+                    postDots[postDots.length - 1]
+            );
+        }
+        if (postDots.length == 1) {
+            var converter = TestConverter.of(info, node.getPreDot(), retCount);
+            var postDot = (VariableNode) postDots[0].getPostDot();
+            return Pair.of(converter, postDot.getName());
+        } else {
+            var newPostDots = Arrays.copyOf(postDots, postDots.length - 1);
+            var newNode = new DottedVariableNode(node.getPreDot(), newPostDots);
+            var converter = TestConverter.of(info, newNode, retCount);
+            var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
+            return Pair.of(converter, postDot.getName());
+        }
     }
 
     @NotNull
