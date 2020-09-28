@@ -55,7 +55,7 @@ public final class TupleType extends TypeObject {
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         try {
             var intVal = Integer.parseInt(value);
-            return intVal > 0 && intVal < generics.size() ? Optional.of(generics.get(intVal)) : Optional.empty();
+            return intVal >= 0 && intVal < generics.size() ? Optional.of(generics.get(intVal)) : Optional.empty();
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
@@ -93,6 +93,8 @@ public final class TupleType extends TypeObject {
                 }
             }
             return true;
+        } else if (other.willSuperRecurse()) {
+            return false;
         } else {
             return other.isSuperclass(this);
         }

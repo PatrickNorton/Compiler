@@ -25,6 +25,11 @@ public final class ObjectType extends TypeObject {
         return true;
     }
 
+    @Override
+    public boolean willSuperRecurse() {
+        return false;
+    }
+
     protected boolean isSubclass(@NotNull TypeObject other) {
         return other.equals(this);
     }

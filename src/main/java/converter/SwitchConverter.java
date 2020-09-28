@@ -214,7 +214,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (retCount > 0) {
                 throw CompilerInternalError.of("Statements requiring 'break as' not supported yet", stmt);
             }
+            info.addStackFrame();
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+            info.removeStackFrame();
         }
     }
 
