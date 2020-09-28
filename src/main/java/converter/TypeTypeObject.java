@@ -39,7 +39,9 @@ public final class TypeTypeObject extends TypeObject {
 
     @Override
     public String name() {
-        return typedefName.isEmpty() ? "type" : typedefName;
+        return typedefName.isEmpty()
+                ? generic == null ? "type" : String.format("type[%s]", generic.name())
+                : typedefName;
     }
 
     @Contract(pure = true)
