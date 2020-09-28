@@ -101,7 +101,7 @@ public final class TypeTypeObject extends TypeObject {
         if (o == OpSpTypeNode.CALL) {
             return Optional.of(new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()});
         } else {
-            return Optional.empty();
+            return generic == null ? Optional.empty() : generic.staticOperatorReturnType(o);
         }
     }
 
