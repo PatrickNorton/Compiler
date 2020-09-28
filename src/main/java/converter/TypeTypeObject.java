@@ -125,4 +125,13 @@ public final class TypeTypeObject extends TypeObject {
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return generic == null ? Optional.empty() : generic.staticAttrType(value, access);
     }
+
+    @Override
+    public @NotNull TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
+        if (generic == null) {
+            throw CompilerException.of("Cannot get attribute '%s' from type 'type'", lineInfo);
+        } else {
+            return generic.tryStaticAttrType(lineInfo, value, access);
+        }
+    }
 }

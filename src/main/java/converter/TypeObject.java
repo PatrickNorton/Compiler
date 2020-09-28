@@ -169,8 +169,9 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         }
     }
 
+    // Not final b/c TypeTypeObject has a better version
     @NotNull
-    public final TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
+    public TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = attrType(value, access);
         return info.orElseThrow(() -> attrException(lineInfo, value, access));
     }
@@ -197,25 +198,26 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     @NotNull
     public final TypeObject tryStaticAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = staticAttrType(value, access);
-        if (info.isEmpty()) {
-            if (access != AccessLevel.PRIVATE && staticAttrType(value, AccessLevel.PRIVATE).isPresent()) {
-                throw CompilerException.format(
-                        "Cannot get static attribute '%s' from type '%s':" +
-                                " too-strict of an access level required",
-                        lineInfo, value, name()
-                );
-            } else if (makeMut().staticAttrType(value, access).isPresent()) {
-                throw CompilerException.format(
-                        "Static attribute '%s' requires a mut variable for type '%s'",
-                        lineInfo, value, name()
-                );
-            } else {
-                throw CompilerException.format(
-                        "Static attribute '%s' does not exist in type '%s'", lineInfo, value, name()
-                );
-            }
+        return info.orElseThrow(() -> staticAttrException(lineInfo, value, access));
+    }
+
+    @NotNull
+    private CompilerException staticAttrException(LineInfo lineInfo, String value, AccessLevel access) {
+        if (access != AccessLevel.PRIVATE && staticAttrType(value, AccessLevel.PRIVATE).isPresent()) {
+            return CompilerException.format(
+                    "Cannot get static attribute '%s' from type '%s':" +
+                            " too-strict of an access level required",
+                    lineInfo, value, name()
+            );
+        } else if (makeMut().staticAttrType(value, access).isPresent()) {
+            return CompilerException.format(
+                    "Static attribute '%s' requires a mut variable for type '%s'",
+                    lineInfo, value, name()
+            );
         } else {
-            return info.orElseThrow();
+            return CompilerException.format(
+                    "Static attribute '%s' does not exist in type '%s'", lineInfo, value, name()
+            );
         }
     }
 
