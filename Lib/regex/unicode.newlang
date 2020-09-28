@@ -12,7 +12,7 @@ class Regex {
     Exec value
 
     public operator new(str re) {
-        self.value = RegexBuilder(re).build().value
+        self.value = RegexBuilder(re).build()
     }
 
     public method isMatch(str text) -> bool {

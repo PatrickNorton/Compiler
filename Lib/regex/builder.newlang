@@ -1,4 +1,4 @@
-from .exec import ExecBuilder
+from .exec import ExecBuilder, Exec
 from .unicode import Regex
 
 export RegexOptions, RegexBuilder
@@ -39,7 +39,7 @@ class RegexBuilder {
         self.options.pats.append(pattern)
     }
 
-    public method build() -> Regex {
+    public method build() -> Exec {
         return ExecBuilder().setOptions(self.options).onlyUtf8(false).build()
     }
 
@@ -102,8 +102,8 @@ class RegexSetBuilder {
         self.options.pats.addAll(items)
     }
 
-    public method build() -> Regex {
-        return ExecBuilder.options(self.options).onlyUtf8(false).build()
+    public method build() -> Exec {
+        return ExecBuilder().setOptions(self.options).onlyUtf8(false).build()
     }
 
     public mut method caseInsensitive(bool yes) -> RegexSetBuilder {

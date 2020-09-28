@@ -12,7 +12,7 @@ from .pikevm import Cache as PikeVMCache
 
 export Exec, ProgramCache, ExecBuilder
 
-class Exec from RegularExpression {
+class Exec {
     private ExecReadOnly ro
     private ProgramCache cache
 
@@ -50,11 +50,12 @@ class Exec from RegularExpression {
                 }
             }
             case MatchLiteralType.AHO_CORASICK {
-                if self.ro.ac?.find(text[start:])? as m {
-                    return (m.start + start, m.end + start)
-                } else {
-                    return null
+                if self.ro.ac? as ac {
+                    if ac.find(text[start:])? as m {
+                        return (m.start + start, m.end + start)
+                    }
                 }
+                return null
             }
         }
     }
@@ -172,6 +173,13 @@ class ExecBuilder {
     private mut MatchType? matchType
     private mut bool isBytes
     private mut bool utf8Only
+
+    public operator new() {
+        self.options = RegexOptions()
+        self.matchType = null
+        self.isBytes = false
+        self.utf8Only = false
+    }
 
     public mut method setOptions(RegexOptions options) -> mut cls {
         self.options = options
