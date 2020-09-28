@@ -58,6 +58,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return other.isSubclass(this);
     }
 
+    public boolean willSuperRecurse() {
+        return true;
+    }
+
     public TypeObject makeConst() {
         return this;
     }

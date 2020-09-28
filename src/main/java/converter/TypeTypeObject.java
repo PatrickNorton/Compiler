@@ -33,6 +33,11 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
+    public boolean willSuperRecurse() {
+        return false;
+    }
+
+    @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
         return other instanceof TypeTypeObject || other instanceof ObjectType;
     }
