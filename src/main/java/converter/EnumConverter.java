@@ -1,7 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
-import main.java.converter.classbody.MethodInfo;
+import main.java.converter.classbody.Method;
 import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionCallNode;
@@ -46,7 +46,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     }
 
     @NotNull
-    private List<Byte> getInitBytes(int start, MethodInfo newOperatorInfo) {
+    private List<Byte> getInitBytes(int start, Method newOperatorInfo) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.DO_STATIC.value);
         int doStaticPos = bytes.size();

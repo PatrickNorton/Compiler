@@ -6,18 +6,18 @@ import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 import main.java.parser.StatementBodyNode;
 
-public final class MethodInfo implements Lined {
+public final class Method implements Lined {
     private final AccessLevel accessLevel;
     private final boolean isMut;
     private final FunctionInfo info;
     private final StatementBodyNode body;
     private final LineInfo lineInfo;
 
-    public MethodInfo(AccessLevel access, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
+    public Method(AccessLevel access, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
         this(access, false, info, body, lineInfo);
     }
 
-    public MethodInfo(AccessLevel access, boolean isMut, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
+    public Method(AccessLevel access, boolean isMut, FunctionInfo info, StatementBodyNode body, LineInfo lineInfo) {
         this.accessLevel = access;
         this.isMut = isMut;
         this.info = info;

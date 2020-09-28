@@ -1,7 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
-import main.java.converter.classbody.MethodInfo;
+import main.java.converter.classbody.Method;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescribableNode;
@@ -178,8 +178,8 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     private static final String VARIANT_NAME = "val";
 
     @NotNull
-    private Map<String, MethodInfo> variantMethods(StdTypeObject selfType) {
-        Map<String, MethodInfo> result = new HashMap<>(variants.size());
+    private Map<String, Method> variantMethods(StdTypeObject selfType) {
+        Map<String, Method> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
             var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType);
             var selfVar = new VariableNode(LineInfo.empty(), selfType.name());
@@ -187,7 +187,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
             var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, variantVal);
             var body = new StatementBodyNode(LineInfo.empty(), stmt);
-            result.put(pair.getKey(), new MethodInfo(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
+            result.put(pair.getKey(), new Method(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
         }
         return result;
     }

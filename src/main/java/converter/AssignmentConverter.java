@@ -282,8 +282,8 @@ public final class AssignmentConverter implements BaseConverter {
         } else {
             var postDots = variable.getPostDots();
             var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
-            if (!preDotType.canSetAttr(postDot.getName()) && !isConstructorException(preDotType, variable)) {
-                if (preDotType.makeMut().canSetAttr(postDot.getName())) {
+            if (!preDotType.canSetAttr(postDot.getName(), info) && !isConstructorException(preDotType, variable)) {
+                if (preDotType.makeMut().canSetAttr(postDot.getName(), info)) {
                     throw CompilerException.of(
                             "Cannot assign to value that is not 'mut' or 'final'", node
                     );

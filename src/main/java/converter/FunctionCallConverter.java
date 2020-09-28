@@ -176,8 +176,10 @@ public final class FunctionCallConverter implements TestConverter {
     private Argument[] getArgs(@NotNull ArgumentNode... args) {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
-            var type = TestConverter.returnType(args[i].getArgument(), info, 1)[0];
-            result[i] = new Argument(args[i].getVariable().getName(), type, args[i].isVararg(), args[i].getLineInfo());
+            var arg = args[i];
+            var type = TestConverter.returnType(arg.getArgument(), info, 1)[0];
+            var lineInfo = arg.getArgument().getLineInfo();
+            result[i] = new Argument(arg.getVariable().getName(), type, arg.isVararg(), lineInfo);
         }
         return result;
     }

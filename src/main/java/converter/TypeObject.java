@@ -66,8 +66,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return this;
     }
 
-    public boolean canSetAttr(String name) {
+    public boolean canSetAttr(String name, AccessLevel access) {
         return false;
+    }
+
+    public final boolean canSetAttr(String name, @NotNull CompilerInfo info) {
+        return canSetAttr(name, info.accessLevel(this));
     }
 
     @Override
@@ -77,6 +81,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         return Optional.empty();
+    }
+
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, @NotNull CompilerInfo info) {
+        return operatorInfo(o, info.accessLevel(this));
     }
 
     public final Optional<TypeObject[]> operatorReturnType(OperatorTypeNode o, @NotNull CompilerInfo info) {
