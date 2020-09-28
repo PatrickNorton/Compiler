@@ -149,46 +149,48 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     @NotNull
     public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, AccessLevel access) {
         var info = operatorInfo(o, access);
-        if (info.isEmpty()) {
-            if (access != AccessLevel.PRIVATE && operatorInfo(o, AccessLevel.PRIVATE).isPresent()) {
-                throw CompilerException.format(
-                        "Cannot get '%s' from type '%s': operator has a too-strict access level",
-                        lineInfo, o, name()
-                );
-            } else if (makeMut().operatorInfo(o, access).isPresent()) {
-                throw CompilerException.format(
-                        "'%s' requires a mut variable for type '%s'",
-                        lineInfo, o, name()
-                );
-            } else {
-                throw CompilerException.format("'%s' does not exist in type '%s'", lineInfo, o, name());
-            }
+        return info.orElseThrow(() -> opInfoException(lineInfo, o, access));
+    }
+
+    @NotNull
+    private CompilerException opInfoException(LineInfo lineInfo, OpSpTypeNode o, AccessLevel access) {
+        if (access != AccessLevel.PRIVATE && operatorInfo(o, AccessLevel.PRIVATE).isPresent()) {
+            return CompilerException.format(
+                    "Cannot get '%s' from type '%s': operator has a too-strict access level",
+                    lineInfo, o, name()
+            );
+        } else if (makeMut().operatorInfo(o, access).isPresent()) {
+            return CompilerException.format(
+                    "'%s' requires a mut variable for type '%s'",
+                    lineInfo, o, name()
+            );
         } else {
-            return info.orElseThrow();
+            return CompilerException.format("'%s' does not exist in type '%s'", lineInfo, o, name());
         }
     }
 
     @NotNull
     public final TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = attrType(value, access);
-        if (info.isEmpty()) {
-            if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE).isPresent()) {
-                throw CompilerException.format(
-                        "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
-                        lineInfo, value, name()
-                );
-            } else if (makeMut().attrType(value, access).isPresent()) {
-                throw CompilerException.format(
-                        "Attribute '%s' requires a mut variable for type '%s'",
-                        lineInfo, value, name()
-                );
-            } else {
-                throw CompilerException.format(
-                        "Attribute '%s' does not exist in type '%s'", lineInfo, value, name()
-                );
-            }
+        return info.orElseThrow(() -> attrException(lineInfo, value, access));
+    }
+
+    @NotNull
+    private CompilerException attrException(LineInfo lineInfo, String value, AccessLevel access) {
+        if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE).isPresent()) {
+            return CompilerException.format(
+                    "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
+                    lineInfo, value, name()
+            );
+        } else if (makeMut().attrType(value, access).isPresent()) {
+            return CompilerException.format(
+                    "Attribute '%s' requires a mut variable for type '%s'",
+                    lineInfo, value, name()
+            );
         } else {
-            return info.orElseThrow();
+            return CompilerException.format(
+                    "Attribute '%s' does not exist in type '%s'", lineInfo, value, name()
+            );
         }
     }
 
