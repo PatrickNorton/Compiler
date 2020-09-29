@@ -214,10 +214,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return info.map(FunctionInfo::getReturns);
     }
 
-    public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, @NotNull CompilerInfo info) {
-        return operatorReturnType(o, info.accessLevel(this));
-    }
-
     /**
      * Generifies the type with the given arguments.
      * <p>
@@ -509,11 +505,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     /**
      * Attempts to get the {@link
-     * #operatorReturnType(OpSpTypeNode, CompilerInfo) operator return type} of
+     * #operatorReturnType(OpSpTypeNode, AccessLevel) operator return type} of
      * a type, or throws an error with a descriptive message on failure.
      * <p>
      *     This method will throw a {@link CompilerException} iff this.{@link
-     *     #operatorReturnType(OpSpTypeNode, CompilerInfo)
+     *     #operatorReturnType(OpSpTypeNode, AccessLevel)
      *     operatorReturnType(o, info)} would return {@link Optional#empty()}.
      * </p>
      *
@@ -533,11 +529,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     /**
      * Attempts to get the {@link
-     * #operatorReturnType(OpSpTypeNode, CompilerInfo) operator return type} of
+     * #operatorReturnType(OpSpTypeNode, AccessLevel) operator return type} of
      * a type, or throws an error with a descriptive message on failure.
      * <p>
      *     This method will throw a {@link CompilerException} iff this.{@link
-     *     #operatorReturnType(OpSpTypeNode, CompilerInfo)
+     *     #operatorReturnType(OpSpTypeNode, AccessLevel)
      *     operatorReturnType(o, info)} would return {@link Optional#empty()}.
      * </p>
      *
