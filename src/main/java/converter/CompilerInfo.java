@@ -499,7 +499,7 @@ public final class CompilerInfo {
     }
 
     public boolean varDefinedInCurrentFrame(String name) {
-        return variables.get(variables.size() - 1).get(name) != null;
+        return variables.get(variables.size() - 1).containsKey(name);
     }
 
     public void checkDefinition(String name, Lined info) {
