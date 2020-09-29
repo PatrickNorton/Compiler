@@ -16,12 +16,14 @@ import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +35,14 @@ import java.util.Set;
 /**
  * The class for handling imports, exports, and the list of files involved in a
  * program.
+ * <p>
+ *     Because of the complexity of the linking process, in which this plays an
+ *     essential role, the code in here can be somewhat opaque (read:
+ *     horrifically broken in ways I may not have found yet). In particular,
+ *     there are several methods which only expect to be called once per object.
+ *     Read their documentation before calling to make sure you're not breaking
+ *     any precious invariants.
+ * </p>
  *
  * @author Patrick Norton
  * @see ImportExportConverter
@@ -65,6 +75,11 @@ public final class ImportHandler {
     /**
      * Register all the files upon which this depends and load all type
      * definitions.
+     * <p>
+     *     This method assumes it is only called once per object and will
+     *     almost surely give weird results if broken. Caution is advised when
+     *     adding callees.
+     * </p>
      * <p>
      *     This is essential in the pre-linking process. Its job is many-fold:
      *     Firstly, it adds all the files on which this depends on to {@link
@@ -149,6 +164,19 @@ public final class ImportHandler {
         info.accessHandler().setDefinedInFile(definedInFile);
     }
 
+    /**
+     * Takes the already-linked {@link Linker linker} for this file and uses it
+     * to set export information.
+     * <p>
+     *     This is called as part of the process in {@link
+     *     CompilerInfo#compile(File)} and probably should not be used anywhere
+     *     else. It assumes it is only called once per object, but <i>probably
+     *     </i> won't break if you do otherwise. If you do put in another call
+     *     site, double-check this won't do anything weird.
+     * </p>
+     *
+     * @param linker The linker from which to set exports
+     */
     public void setFromLinker(@NotNull Linker linker) {
         var exports = linker.getExports();
         var globals = linker.getGlobals();
@@ -166,6 +194,11 @@ public final class ImportHandler {
 
     /**
      * Adds a non-top level import to the pool.
+     * <p>
+     *     As with almost everything in this class, it is probably horrifically
+     *     broken in several ways. If you use it and everything starts breaking,
+     *     check here first.
+     * </p>
      *
      * @param node The node to parse into an import
      * @return A map of strings to the import digits from this node
@@ -272,16 +305,36 @@ public final class ImportHandler {
         }
     }
 
+    /**
+     * Gets a collection of all the exported names in the file.
+     * <p>
+     *     This mainly exists for iteration purposes. It is unmodifiable, so
+     *     don't even try.
+     * </p>
+     *
+     * @return A view of all the exports in the file
+     */
     @Contract(pure = true)
     @NotNull
+    @UnmodifiableView
     public Collection<String> getExports() {
-        return exports.keySet();
+        return Collections.unmodifiableSet(exports.keySet());
     }
 
+     /**
+     * Gets a collection of all the exported names in the file and their types.
+     * <p>
+     *     This mainly exists for iteration purposes. It is unmodifiable, so
+     *     don't even try.
+     * </p>
+     *
+     * @return A view of all the exports in the file
+     */
     @Contract(pure = true)
     @NotNull
+    @UnmodifiableView
     public Collection<Map.Entry<String, TypeObject>> exportTypes() {
-        return exports.entrySet();
+        return Collections.unmodifiableSet(exports.entrySet());
     }
 
     public void setExportType(String name, TypeObject type) {
