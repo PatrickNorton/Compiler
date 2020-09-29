@@ -353,6 +353,25 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return Optional.empty();
     }
 
+    /**
+     * Gets the generics associated with this type.
+     * <p>
+     *     For types without varargs, this should be in a one-to-one
+     *     correspondence with {@link #generify(TypeObject...)}, e.g.
+     * <pre><code>
+     *     TypeObject[] generics = ...
+     *     var generified = something.generify(generics)
+     *     return generified.getGenerics().equals(List.of(generics))
+     * </code></pre>
+     *     should always return {@code true} if {@code something} has no
+     *     varargs (and if no errors occur).
+     * </p>
+     *
+     * @return The list of generics for the type
+     * @see #generify(TypeObject...)
+     * @see #generify(LineInfo, TypeObject...)
+     * @see #generify(Lined, TypeObject...)
+     */
     public List<TypeObject> getGenerics() {
         return Collections.emptyList();
     }
