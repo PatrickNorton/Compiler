@@ -19,7 +19,7 @@ public final class CompactSwitchTable implements SwitchTable {
      * <p>
      *     The representation is as follows:
      * <code><pre>
-     * [byte] 0
+     * [byte] 0 (see {@link TableBytes#COMPACT})
      * The number of values
      * The max value
      * For each i < max:
@@ -35,7 +35,7 @@ public final class CompactSwitchTable implements SwitchTable {
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
-        bytes.add((byte) 0);
+        bytes.add(TableBytes.COMPACT.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values) {
             bytes.addAll(Util.intToBytes(val));
