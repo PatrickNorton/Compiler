@@ -97,7 +97,7 @@ public final class LiteralConverter implements TestConverter {
             if (literalType != LiteralType.TUPLE) {
                 var genericType = returnTypes(node.getBuilders());
                 bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(genericType))));
+                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
             }
             bytes.add(literalType.bytecode.value);
             bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
@@ -118,7 +118,7 @@ public final class LiteralConverter implements TestConverter {
         literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
         var genericType = returnTypes(node.getBuilders());
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(genericType))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortZeroBytes());
     }

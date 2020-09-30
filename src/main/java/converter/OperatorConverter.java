@@ -246,7 +246,7 @@ public final class OperatorConverter implements TestConverter {
         assert node.getOperator() == OperatorTypeNode.BOOL_AND || node.getOperator() == OperatorTypeNode.BOOL_OR;
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("true"))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
         bytes.addAll(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
         bytes.add(Bytecode.DUP_TOP.value);
         var bytecode = node.getOperator() == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_FALSE : Bytecode.JUMP_TRUE;
@@ -285,7 +285,7 @@ public final class OperatorConverter implements TestConverter {
             bytes.addAll(Util.zeroToBytes());
             bytes.add(Bytecode.POP_TOP.value);
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("str"))));  // TODO: Get errors
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.strConstant())));  // TODO: Get errors
             bytes.add(Bytecode.LOAD_CONST.value);
             var message = String.format("Value %s asserted non-null, was null", node.getOperands()[0]);
             bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));

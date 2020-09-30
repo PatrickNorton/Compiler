@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -193,7 +192,7 @@ public final class CompilerInfo {
         var variableInfo = varInfo(name);
         return constIndex(variableInfo.isPresent()
                 ? variableInfo.orElseThrow().constValue()
-                : Builtins.constantOf(name));
+                : Builtins.constantOf(name).orElseThrow());
     }
 
     /**
@@ -431,16 +430,29 @@ public final class CompilerInfo {
         return Optional.of(cls);
     }
 
+    /**
+     * Gets the constant representing a type.
+     * <p>
+     *     This is still pretty finicky; in particular there is not support yet
+     *     for "complex" types (those with generics, list types, etc.).
+     * </p>
+     *
+     * @param lineInfo The line information to use in case of an exception
+     * @param type The type from which to retrieve a constant
+     * @return The constant for the type
+     */
     @NotNull
-    public LangConstant typeConstant(@NotNull TypeObject type) {
+    public LangConstant typeConstant(Lined lineInfo, @NotNull TypeObject type) {
         var name = type.baseName();
         if (name.isEmpty()) {
             throw CompilerInternalError.of(
-                    "Error in literal conversion: Lists of non-nameable types not complete yet", node
+                    "Error in literal conversion: Lists of non-nameable types not complete yet", lineInfo
             );
         }
         if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
-            return Builtins.constantOf(name);
+            return Builtins.constantOf(name).orElseThrow(
+                    () -> CompilerException.format("Type %s not found", lineInfo, name)
+            );
         } else {
             for (int i = 0; i < constants.size(); i++) {
                 var constant = constants.get(i);
@@ -448,7 +460,7 @@ public final class CompilerInfo {
                     return constant;
                 }
             }
-            throw new NoSuchElementException("Type not found");
+            throw CompilerException.format("Type %s not found", lineInfo, name);
         }
     }
 
@@ -547,7 +559,7 @@ public final class CompilerInfo {
      */
     public TypeObject getType(String variable) {
         var info = varInfo(variable);
-        return info.isEmpty() ? Builtins.constantOf(variable).getType() : info.orElseThrow().getType();
+        return info.isEmpty() ? Builtins.constantOf(variable).orElseThrow().getType() : info.orElseThrow().getType();
     }
 
     /**

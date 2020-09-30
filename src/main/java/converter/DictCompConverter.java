@@ -45,7 +45,7 @@ public final class DictCompConverter implements TestConverter {
         bytes.add(Bytecode.DICT_CREATE.value);
         bytes.addAll(Util.shortToBytes((short) 0));
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getLooped().get(0), info, 1));
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 1));

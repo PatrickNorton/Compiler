@@ -34,7 +34,7 @@ public final class RangeConverter implements TestConverter {
         }
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
-        var constant = info.constIndex(Builtins.constantOf("range"));
+        var constant = info.constIndex(Builtins.rangeConstant());
         bytes.addAll(Util.shortToBytes(constant));
         convertPortion(start, bytes, node.getStart(), 0);
         convertPortion(start, bytes, node.getEnd(), 0);

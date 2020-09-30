@@ -177,7 +177,7 @@ public final class DotConverter implements TestConverter {
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.POP_TOP.value);
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("str"))));  // TODO: Error type
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.strConstant())));  // TODO: Error type
         bytes.add(Bytecode.LOAD_CONST.value);
         var message = String.format("Value %s asserted non-null, was null", postDot);
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
