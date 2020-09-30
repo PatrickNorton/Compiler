@@ -29,21 +29,18 @@ import java.util.Optional;
  * @author Patrick Norton
  */
 public final class CompilerInfo {
+    private static final GlobalCompilerInfo GLOBAL_INFO = new GlobalCompilerInfo();
+
     private final TopNode node;
     private final ImportHandler importHandler = new ImportHandler(this);
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
-    private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
     private final LoopManager loopManager = new LoopManager();
-    private final List<SwitchTable> tables = new ArrayList<>();
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
     private final List<Map<String, TypeObject>> localTypes = new ArrayList<>();
     private final IntAllocator varNumbers = new IntAllocator();
-    private final IntAllocator staticVarNumbers = new IntAllocator();
-
-    private final IntAllocator anonymousNums = new IntAllocator();
 
     private final FunctionReturnInfo fnReturns = new FunctionReturnInfo();
 
@@ -165,11 +162,11 @@ public final class CompilerInfo {
      * @param value The value to add
      */
     public short addConstant(LangConstant value) {
-        constants.add(value);
-        if (constants.indexOf(value) > Short.MAX_VALUE) {
+        GLOBAL_INFO.addConstant(value);
+        if (GLOBAL_INFO.indexOf(value) > Short.MAX_VALUE) {
             throw new RuntimeException("Too many constants");
         }
-        return (short) constants.indexOf(value);
+        return (short) GLOBAL_INFO.indexOf(value);
     }
 
     /**
@@ -179,7 +176,7 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public short constIndex(LangConstant value) {
-        return constants.contains(value) ? (short) constants.indexOf(value) : addConstant(value);
+        return GLOBAL_INFO.containsConst(value) ? (short) GLOBAL_INFO.indexOf(value) : addConstant(value);
     }
 
     /**
@@ -216,12 +213,12 @@ public final class CompilerInfo {
      * @param value The value to set this to
      */
     public void setReserved(short index, @NotNull LangConstant value) {
-        var constant = constants.get(index);
+        var constant = GLOBAL_INFO.getConstant(index);
         if (!(constant instanceof TempConst)) {
             throw CompilerInternalError.of("Cannot redefine constant not a TempConst", LineInfo.empty());
         }
         assert constant.getType().equals(value.getType());
-        constants.set(index, value);
+        GLOBAL_INFO.setConstant(index, value);
     }
 
     /**
@@ -232,11 +229,11 @@ public final class CompilerInfo {
      * @return The constant itself
      */
     public LangConstant getConstant(short index) {
-        return constants.get(index);
+        return GLOBAL_INFO.getConstant(index);
     }
 
     public IndexedSet<LangConstant> getConstants() {
-        return constants;
+        return GLOBAL_INFO.getConstants();
     }
 
     /**
@@ -454,6 +451,7 @@ public final class CompilerInfo {
                     () -> CompilerException.format("Type %s not found", lineInfo, name)
             );
         } else {
+            var constants = GLOBAL_INFO.getConstants();
             for (int i = 0; i < constants.size(); i++) {
                 var constant = constants.get(i);
                 if (constant.getType() instanceof TypeTypeObject && constant.name().equals(name)) {
@@ -721,7 +719,7 @@ public final class CompilerInfo {
      * @return The index of the variable for {@link Bytecode#LOAD_STATIC}
      */
     public short addStaticVar(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
-        var index = (short) staticVarNumbers.getNext();
+        var index = GLOBAL_INFO.claimStaticVar();
         addVariable(name, new VariableInfo(type, isConst, true, index, info.getLineInfo()));
         return index;
     }
@@ -850,11 +848,11 @@ public final class CompilerInfo {
      * @return The unique lambda name
      */
     public String lambdaName() {
-        return String.format("lambda$%d", anonymousNums.getNext());
+        return String.format("lambda$%d", GLOBAL_INFO.getAnonymous());
     }
 
     public String generatorName() {
-        return String.format("generator$%d", anonymousNums.getNext());
+        return String.format("generator$%d", GLOBAL_INFO.getAnonymous());
     }
 
     /**
@@ -891,12 +889,11 @@ public final class CompilerInfo {
     }
 
     public int addSwitchTable(SwitchTable val) {
-        tables.add(val);
-        return tables.size() - 1;
+        return GLOBAL_INFO.addTable(val);
     }
 
     public List<SwitchTable> getTables() {
-        return tables;
+        return GLOBAL_INFO.getTables();
     }
 
     /**
@@ -920,10 +917,5 @@ public final class CompilerInfo {
             );
             varFrame.put(pair.getKey(), varInfo);
         }
-    }
-
-    {  // Prevent "non-updating" compiler warning
-        anonymousNums.remove(0);
-        staticVarNumbers.remove(0);
     }
 }
