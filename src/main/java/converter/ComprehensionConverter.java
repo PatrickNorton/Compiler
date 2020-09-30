@@ -88,12 +88,12 @@ public final class ComprehensionConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         if (braceType.createCode != null) {
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(genericType()))));
+            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType()))));
             bytes.add(braceType.createCode.value);
             bytes.addAll(Util.shortToBytes((short) 0));
         }
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
         bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getLooped().get(0), info, 1));
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 1));

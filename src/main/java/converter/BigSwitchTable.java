@@ -21,7 +21,7 @@ public final class BigSwitchTable implements SwitchTable {
      * <p>
      *     The representation is as follows:
      * <code><pre>
-     * [byte] 0
+     * [byte] 1 (see {@link TableBytes#BIG})
      * The number of values
      * For each:
      *     [{@link BigintConstant#convertBigint Bigint}]The number
@@ -37,7 +37,7 @@ public final class BigSwitchTable implements SwitchTable {
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
-        bytes.add((byte) 1);
+        bytes.add(TableBytes.BIG.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values.entrySet()) {
             bytes.addAll(BigintConstant.convertBigint(val.getKey()));

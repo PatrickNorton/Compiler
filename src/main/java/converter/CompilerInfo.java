@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -193,7 +192,7 @@ public final class CompilerInfo {
         var variableInfo = varInfo(name);
         return constIndex(variableInfo.isPresent()
                 ? variableInfo.orElseThrow().constValue()
-                : Builtins.constantOf(name));
+                : Builtins.constantOf(name).orElseThrow());
     }
 
     /**
@@ -431,16 +430,29 @@ public final class CompilerInfo {
         return Optional.of(cls);
     }
 
+    /**
+     * Gets the constant representing a type.
+     * <p>
+     *     This is still pretty finicky; in particular there is not support yet
+     *     for "complex" types (those with generics, list types, etc.).
+     * </p>
+     *
+     * @param lineInfo The line information to use in case of an exception
+     * @param type The type from which to retrieve a constant
+     * @return The constant for the type
+     */
     @NotNull
-    public LangConstant typeConstant(@NotNull TypeObject type) {
+    public LangConstant typeConstant(Lined lineInfo, @NotNull TypeObject type) {
         var name = type.baseName();
         if (name.isEmpty()) {
             throw CompilerInternalError.of(
-                    "Error in literal conversion: Lists of non-nameable types not complete yet", node
+                    "Error in literal conversion: Lists of non-nameable types not complete yet", lineInfo
             );
         }
         if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
-            return Builtins.constantOf(name);
+            return Builtins.constantOf(name).orElseThrow(
+                    () -> CompilerException.format("Type %s not found", lineInfo, name)
+            );
         } else {
             for (int i = 0; i < constants.size(); i++) {
                 var constant = constants.get(i);
@@ -448,7 +460,7 @@ public final class CompilerInfo {
                     return constant;
                 }
             }
-            throw new NoSuchElementException("Type not found");
+            throw CompilerException.format("Type %s not found", lineInfo, name);
         }
     }
 
@@ -462,7 +474,12 @@ public final class CompilerInfo {
     }
 
     /**
-     * If the type has been previously been defined.
+     * If the type has been previously been defined locally.
+     * <p>
+     *     Unlike {@link #classOf(String)}, this does not check {@link
+     *     Builtins}, as its purpose is for checking if the type has been
+     *     linked, and is not for general use.
+     * </p>
      *
      * @param typeName The name of the type
      * @return If the type has been defined
@@ -471,37 +488,113 @@ public final class CompilerInfo {
         return typeMap.containsKey(typeName);
     }
 
+    /**
+     * Gets the (locally-defined) type with the given name.
+     * <p>
+     *     This method is meant to be used in conjunction with {@link
+     *     #hasType(String)}, and will return {@code null} iff that returns
+     *     {@code false}. Like {@link #hasType(String)}, this does not check
+     *     {@link Builtins}; {@link #classOf(String)} should be used for that
+     *     purpose.
+     * </p>
+     *
+     * @param typeName The name of the type
+     * @return The object representing the type
+     */
     public TypeObject getTypeObj(String typeName) {
         return typeMap.get(typeName);
     }
 
+    /**
+     * Adds a frame of local types to the stack.
+     * <p>
+     *     This is similar to {@link #addStackFrame()}, but is used for
+     *     generics (and eventually local types, when they are implemented),
+     *     where the type definitions are not accessible for the full file,
+     *     simply the region specified.
+     * </p>
+     * <p>
+     *     This method is meant to be used in conjunction with {@link
+     *     #removeLocalTypes()}. Calls to this method should have a
+     *     corresponding call to the other.
+     * </p>
+     *
+     * @param vals The list of values to add to the map
+     * @see #addStackFrame()
+     * @see #removeLocalTypes()
+     */
     public void addLocalTypes(Map<String, TypeObject> vals) {
         localTypes.add(vals);
     }
 
+    /**
+     * Removes a frame of local types from the stack.
+     * <p>
+     *     This method is meant to be used in conjunction with {@link
+     *     #addLocalTypes(Map)}. Calls to this method should have a
+     *     corresponding call to the other.
+     * </p>
+     *
+     * @see #removeStackFrame()
+     * @see #addLocalTypes(Map)
+     */
     public void removeLocalTypes() {
         localTypes.remove(localTypes.size() - 1);
     }
 
     /**
-     * Get the type of a variable.
+     * Gets the type of a variable.
+     * <p>
+     *     This is <i>not</i> equivalent to {@link #classOf(String)}. That
+     *     method gets the {@link TypeObject type} whose name is the given
+     *     string, while this method gets the type of any variable. It should,
+     *     however, be the case that if {@link #classOf(String)} returns a
+     *     non-{@link Optional#empty() empty} value {@code t}, then this method
+     *     should return <code>t.{@link TypeObject#getType() getType()}</code>.
+     * </p>
      *
      * @param variable The variable name to get the type from
      * @return The type of the variable
+     * @see #classOf(String)
      */
     public TypeObject getType(String variable) {
         var info = varInfo(variable);
-        return info.isEmpty() ? Builtins.constantOf(variable).getType() : info.orElseThrow().getType();
+        return info.isEmpty() ? Builtins.constantOf(variable).orElseThrow().getType() : info.orElseThrow().getType();
     }
 
+    /**
+     * Checks whether or not the variable is defined.
+     *
+     * @param name The name of the variable
+     * @return If the variable is defined
+     */
     public boolean varIsUndefined(String name) {
         return varInfo(name).isEmpty() && !Builtins.BUILTIN_MAP.containsKey(name);
     }
 
+    /**
+     * Checks whether the given name is defined in the current variable frame.
+     * <p>
+     *     The main purpose of this method is checking for double-definition
+     *     errors, not whether or not the variable is accessible (for that, see
+     *     {@link #varIsUndefined(String)}).
+     * </p>
+     *
+     * @param name The name of the variable to check
+     * @return If the variable is defined in the current frame
+     * @see #varIsUndefined(String)
+     */
     public boolean varDefinedInCurrentFrame(String name) {
-        return variables.get(variables.size() - 1).get(name) != null;
+        return variables.get(variables.size() - 1).containsKey(name);
     }
 
+    /**
+     * Throws an exception if there is already a variable defined in the
+     * current frame.
+     *
+     * @param name The name of the variable
+     * @param info The info to use if there is an error
+     */
     public void checkDefinition(String name, Lined info) {
         if (varDefinedInCurrentFrame(name)) {
             throw CompilerException.doubleDef(name, declarationInfo(name), info.getLineInfo());

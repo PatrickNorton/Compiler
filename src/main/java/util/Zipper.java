@@ -6,6 +6,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Provides an iterator for multiple items in parallel, using {@link Pair} to
+ * join the values.
+ *
+ * @param <A> The type of the first iterated item
+ * @param <B> The type of the second iterated item
+ * @author Patrick Norton
+ */
 public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
     private final Iterator<A> first;
     private final Iterator<B> second;
@@ -29,6 +37,15 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
         return Pair.of(first.next(), second.next());
     }
 
+    /**
+     * Constructs a {@link Zipper} out of the two given items.
+     *
+     * @param first The first iterable
+     * @param second The second iterable
+     * @param <A> The type iterated over by {@code first}
+     * @param <B> The type iterated over by {@code second}
+     * @return The iterable item
+     */
     @Contract(value = "_, _ -> new", pure = true)
     @NotNull
     public static <A, B> Iterable<Pair<A, B>> of(@NotNull Iterable<A> first, @NotNull Iterable<B> second) {

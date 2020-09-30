@@ -142,7 +142,7 @@ public final class ForConverter extends LoopConverter {
             @NotNull CompilerInfo info, int start, @NotNull List<Byte> bytes, @NotNull TestConverter converter
     ) {
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.constantOf("iter"))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 1));

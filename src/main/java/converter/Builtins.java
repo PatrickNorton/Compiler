@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public final class Builtins {
@@ -490,10 +491,30 @@ public final class Builtins {
 
     @NotNull
     @Contract("_ -> new")
-    public static LangConstant constantOf(String name) {
+    public static Optional<LangConstant> constantOf(String name) {
         var builtin = BUILTIN_MAP.get(name);
         var index = TRUE_BUILTINS.indexOf(builtin);
-        return index == -1 ? (LangConstant) builtin : new BuiltinConstant(index);
+        if (index == -1) {
+            return builtin instanceof LangConstant ? Optional.of((LangConstant) builtin) : Optional.empty();
+        } else {
+            return Optional.of(new BuiltinConstant(index));
+        }
+    }
+
+    private static final LangConstant STR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(STR));
+    private static final LangConstant ITER_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(ITER));
+    private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(RANGE));
+
+    public static LangConstant strConstant() {
+        return STR_CONSTANT;
+    }
+
+    public static LangConstant iterConstant() {
+        return ITER_CONSTANT;
+    }
+
+    public static LangConstant rangeConstant() {
+        return RANGE_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {

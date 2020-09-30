@@ -47,13 +47,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * @return If they match this function signature
      */
     public boolean matches(@NotNull Argument... args) {
-        Map<String, TypeObject> keywordMap = new HashMap<>();
         var newArgs = expandTuples(args);
-        for (var arg : newArgs) {
-            if (!arg.getName().isEmpty()) {
-                keywordMap.put(arg.getName(), arg.getType());
-            }
-        }
+        Map<String, TypeObject> keywordMap = initKeywords(newArgs);
         int argNo = 0;
         for (var arg : positionArgs) {
             if (keywordMap.containsKey(arg.getName())) {
@@ -197,9 +192,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
 
     public Optional<Map<Integer, TypeObject>> generifyArgs(@NotNull FunctionInfo parent, Argument... args) {
         var par = parent.toCallable();
-        Map<Integer, TypeObject> result = new HashMap<>();
-        Map<String, TypeObject> keywordMap = new HashMap<>();
         var newArgs = expandTuples(args);
+        Map<Integer, TypeObject> result = new HashMap<>();
+        Map<String, TypeObject> keywordMap = initKeywords(newArgs);
         for (var arg : newArgs) {
             if (!arg.getName().isEmpty()) {
                 keywordMap.put(arg.getName(), arg.getType());
@@ -215,7 +210,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
             }
             var passedArg = newArgs[argNo++];
             var argGenerics = passedArg.getType().generifyAs(par, arg.getType());
-            if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+            if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                 return Optional.empty();
             }
         }
@@ -223,7 +218,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
             var name = arg.getName();
             if (keywordMap.containsKey(name)) {
                 var argGenerics = keywordMap.get(name).generifyAs(par, arg.getType());
-                if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             } else {
@@ -232,7 +227,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 }
                 var passedArg = newArgs[argNo++];
                 var argGenerics = passedArg.getType().generifyAs(par, arg.getType());
-                if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             }
@@ -240,7 +235,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         for (var arg : keywordArgs) {
             if (keywordMap.containsKey(arg.getName())) {
                 var argGenerics = keywordMap.get(arg.getName()).generifyAs(par, arg.getType());
-                if (argGenerics.isEmpty() || !TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             } else {
@@ -279,6 +274,17 @@ public final class ArgumentInfo implements Iterable<Argument> {
 
     public int size() {
         return positionArgs.length + normalArgs.length + keywordArgs.length;
+    }
+
+    @NotNull
+    private Map<String, TypeObject> initKeywords(@NotNull Argument[] args) {
+        Map<String, TypeObject> keywordMap = new HashMap<>();
+        for (var arg : args) {
+            if (!arg.getName().isEmpty()) {
+                keywordMap.put(arg.getName(), arg.getType());
+            }
+        }
+        return keywordMap;
     }
 
     private class ArgIterator implements Iterator<Argument> {

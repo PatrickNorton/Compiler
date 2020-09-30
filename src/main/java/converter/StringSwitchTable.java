@@ -20,7 +20,7 @@ public final class StringSwitchTable implements SwitchTable {
      * <p>
      *     The representation is as follows:
      * <code><pre>
-     * [byte] 2
+     * [byte] 2 (see {@link TableBytes#STRING})
      * The number of values
      * For each:
      *     The string value
@@ -36,7 +36,7 @@ public final class StringSwitchTable implements SwitchTable {
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
-        bytes.add((byte) 2);
+        bytes.add(TableBytes.STRING.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var pair : values.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));

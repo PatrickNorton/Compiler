@@ -22,6 +22,13 @@ public class CompilerTodoError extends RuntimeException {
         super(s);
     }
 
+    /**
+     * Constructs a {@link CompilerTodoError} with a formatted error message.
+     *
+     * @param message The message to tell the user
+     * @param lineInfo The line information for the error
+     * @return The exception
+     */
     @Contract("_, _ -> new")
     @NotNull
     public static CompilerTodoError of(String message, @NotNull LineInfo lineInfo) {
@@ -34,6 +41,17 @@ public class CompilerTodoError extends RuntimeException {
         );
     }
 
+    /**
+     * Constructs a {@link CompilerTodoError} with a formatted error message.
+     * <p>
+     *     This is equivalent to {@code CompilerTodoError.of(message,
+     *     lineInfo.getLineInfo())}.
+     * </p>
+     *
+     * @param message The message to tell the user
+     * @param lineInfo The line information for the error
+     * @return The exception
+     */
     @NotNull
     public static CompilerTodoError of(String message, @NotNull Lined lineInfo) {
         return of(message, lineInfo.getLineInfo());

@@ -10,15 +10,11 @@ public interface SwitchTable {
      *     the type of switch table, followed by code defined by each table.
      * </p>
      * <p>
-     *     The currently used bytes are as follows:
-     *     <ol start="0">
-     *         <li>{@link CompactSwitchTable#toBytes() CompactSwitchTable}</li>
-     *         <li>{@link BigSwitchTable#toBytes() BigSwitchTable}</li>
-     *         <li>{@link StringSwitchTable#toBytes() StringSwitchTable}</li>
-     *     </ol>
+     *     For the currently used bytes, see {@link TableBytes}
      * </p>
      *
      * @return The list of bytes represented
+     * @see TableBytes
      */
     List<Byte> toBytes();
     String strDisassembly();
