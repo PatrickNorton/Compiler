@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,8 @@ public final class CompilerInfo {
 
     private final TopNode node;
     private final ImportHandler importHandler = new ImportHandler(this);
-    private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
+    private final int staticIndex;
+    private final Map<String, Integer> fnIndices = new HashMap<>();
     private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
     private final LoopManager loopManager = new LoopManager();
 
@@ -52,6 +52,7 @@ public final class CompilerInfo {
 
     public CompilerInfo(TopNode node) {
         this.node = node;
+        this.staticIndex = GLOBAL_INFO.reserveStatic();
         variables.add(new HashMap<>());
     }
 
@@ -84,7 +85,7 @@ public final class CompilerInfo {
         }
         this.removeStackFrame();
         // Put the default function at the beginning
-        functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
+        GLOBAL_INFO.setStatic(staticIndex, bytes);
         writeToFile(file);
         compiled = true;
         return this;
@@ -116,8 +117,9 @@ public final class CompilerInfo {
      * @return The index of the function when written
      */
     public int addFunction(@NotNull Function info) {
-        functions.add(info);
-        return functions.size() - 1;
+        int index = GLOBAL_INFO.addFunction(info);
+        fnIndices.put(info.getName(), index);
+        return index;
     }
 
     /**
@@ -128,12 +130,8 @@ public final class CompilerInfo {
      */
     @NotNull
     public Optional<FunctionInfo> fnInfo(String name) {
-        for (var fn : functions) {
-            if (fn != null && fn.getName().equals(name)) {
-                return Optional.of(fn.getInfo());
-            }
-        }
-        return Optional.empty();
+        var index = fnIndices.get(name);
+        return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index).getInfo());
     }
 
     /**
@@ -143,17 +141,12 @@ public final class CompilerInfo {
      * @return The index, or {@code -1} if not found
      */
     public short fnIndex(String name) {
-        for (int i = 0; i < functions.size(); i++) {
-            var fn = functions.get(i);
-            if (fn != null && fn.getName().equals(name)) {
-                return (short) i;
-            }
-        }
-        return -1;
+        var index = fnIndices.get(name);
+        return index == null ? -1 : index.shortValue();
     }
 
     public List<Function> getFunctions() {
-        return functions;
+        return GLOBAL_INFO.getFunctions();
     }
 
     /**
