@@ -84,14 +84,27 @@ public final class GlobalCompilerInfo {
     // Assumes this isn't used until file-writing
     public List<Function> getFunctions() {
         if (functions.get(0) == null) {
-            if (defaultFunctions.size() == 1) {
-                var bytes = defaultFunctions.get(0);
-                functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
-            } else {
-                throw new UnsupportedOperationException();  // TODO: Fix jump calculations
-            }
+            var bytes = defaultFunctions.size() == 1 ? defaultFunctions.get(0) : createDefaultFn();
+            functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
         }
         return functions;
+    }
+
+    @NotNull
+    private List<Byte> createDefaultFn() {
+        List<Byte> result = new ArrayList<>();
+        for (int i = defaultFunctions.size() - 1; i >= 0; i--) {
+            var func = defaultFunctions.get(i);
+            if (!func.isEmpty()) {
+                var fnName = String.format("__default__$%d", i);
+                var fn = new Function(new FunctionInfo(fnName, new ArgumentInfo()), func);
+                functions.add(fn);
+                result.add(Bytecode.CALL_FN.value);
+                result.addAll(Util.shortToBytes((short) (functions.size() - 1)));
+                result.addAll(Util.shortZeroBytes());
+            }
+        }
+        return result;
     }
 
     public int reserveStatic() {
