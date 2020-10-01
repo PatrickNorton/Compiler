@@ -7,7 +7,6 @@ import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.VariableNode;
-import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
 import main.java.util.Pair;
@@ -34,7 +33,6 @@ public final class CompilerInfo {
     private final ImportHandler importHandler = new ImportHandler(this);
     private final int staticIndex;
     private final Map<String, Integer> fnIndices = new HashMap<>();
-    private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
     private final LoopManager loopManager = new LoopManager();
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
@@ -243,12 +241,11 @@ public final class CompilerInfo {
      * @return The index of the class in the class pool
      */
     public int addClass(ClassInfo info) {
-        classes.add(info);
-        return classes.indexOf(info);
+        return GLOBAL_INFO.addClass(info);
     }
 
     public IndexedSet<ClassInfo> getClasses() {
-        return classes;
+        return GLOBAL_INFO.getClasses();
     }
 
     /**

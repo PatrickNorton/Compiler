@@ -30,6 +30,7 @@ public final class GlobalCompilerInfo {
 
     private final List<List<Byte>> defaultFunctions = new ArrayList<>();
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));  // Reserve for default
+    private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
 
     public void addConstant(LangConstant value) {
         constants.add(value);
@@ -115,6 +116,15 @@ public final class GlobalCompilerInfo {
     public void setStatic(int index, List<Byte> bytes) {
         assert defaultFunctions.get(index) == null;
         defaultFunctions.set(index, bytes);
+    }
+
+    public int addClass(ClassInfo info) {
+        classes.add(info);
+        return classes.indexOf(info);
+    }
+
+    public IndexedSet<ClassInfo> getClasses() {
+        return classes;
     }
 
     {  // Prevent "non-updating" compiler warning
