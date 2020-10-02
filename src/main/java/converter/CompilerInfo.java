@@ -371,10 +371,13 @@ public final class CompilerInfo {
             case "cls":
                 var cls = accessHandler.getCls();
                 if (cls == null) {
-                    throw CompilerException.of("No cls", node);
+                    throw CompilerException.of("Type 'cls' is not defined in this scope", node);
                 }
                 return wrap(accessHandler.getCls(), node);
             case "super":
+                if (accessHandler.getSuper() == null) {
+                    throw CompilerException.of("Type 'super' is not defined in this scope", node);
+                }
                 return wrap(accessHandler.getSuper(), node);
             case "":
                 return TypeObject.list(typesOf(node.getSubtypes()));
