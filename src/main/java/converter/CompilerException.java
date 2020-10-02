@@ -23,6 +23,9 @@ import org.jetbrains.annotations.NotNull;
  *     consistent error messages with information related to the lines on which
  *     the error occurred.
  * </p>
+ *
+ * @author Patrick Norton
+ * @see main.java.parser.ParserException
  */
 public class CompilerException extends RuntimeException {
     private static final String DEFAULT_MESSAGE = "%s%nError: File %s Line %d%n%s";
