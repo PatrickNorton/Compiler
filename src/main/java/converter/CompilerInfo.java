@@ -64,10 +64,9 @@ public final class CompilerInfo {
      *
      * @throws CompilerException If a compilation error occurs
      * @throws CompilerInternalError An unexpected internal error
-     * @param file The name of the file to be compiled
      * @return Itself
      */
-    public CompilerInfo compile(File file) {
+    public CompilerInfo compile() {
         if (compiled) {
             return this;
         }
@@ -84,7 +83,6 @@ public final class CompilerInfo {
         this.removeStackFrame();
         // Put the default function at the beginning
         GLOBAL_INFO.setStatic(staticIndex, bytes);
-        writeToFile(file);
         compiled = true;
         return this;
     }

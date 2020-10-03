@@ -169,7 +169,7 @@ public final class ImportHandler {
      * to set export information.
      * <p>
      *     This is called as part of the process in {@link
-     *     CompilerInfo#compile(File)} and probably should not be used anywhere
+     *     CompilerInfo#compile()} and probably should not be used anywhere
      *     else. It assumes it is only called once per object, but <i>probably
      *     </i> won't break if you do otherwise. If you do put in another call
      *     site, double-check this won't do anything weird.
@@ -553,7 +553,7 @@ public final class ImportHandler {
                 pair.getKey().link();
             }
             for (var pair : nextCompilationRound) {
-                pair.getKey().compile(pair.getValue());
+                pair.getKey().compile();
             }
         }
     }
