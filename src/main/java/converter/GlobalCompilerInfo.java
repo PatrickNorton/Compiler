@@ -85,10 +85,29 @@ public final class GlobalCompilerInfo {
     // Assumes this isn't used until file-writing
     public List<Function> getFunctions() {
         if (functions.get(0) == null) {
-            var bytes = defaultFunctions.size() == 1 ? defaultFunctions.get(0) : createDefaultFn();
+            var defaultNo = singleDefaultPos();
+            var bytes = defaultNo != -1 ? defaultFunctions.get(defaultNo) : createDefaultFn();
             functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
         }
         return functions;
+    }
+
+    private int singleDefaultPos() {
+        if (defaultFunctions.size() == 1) {
+            return 0;
+        }
+        int foundOne = -1;
+        for (int i = 0; i < defaultFunctions.size(); i++) {
+            var fn = defaultFunctions.get(i);
+            if (!fn.isEmpty()) {
+                if (foundOne != -1) {
+                    return -1;
+                } else {
+                    foundOne = i;
+                }
+            }
+        }
+        return foundOne == -1 ? 0 : foundOne;  // If no non-zero functions, we can just use any empty one
     }
 
     @NotNull
