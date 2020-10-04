@@ -12,6 +12,7 @@ import main.java.parser.TypedefStatementNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
@@ -457,6 +458,10 @@ public final class ImportHandler {
     public TypeObject importedType(@NotNull Lined lineInfo, Path file, String name) {
         var handler = ALL_FILES.get(file);
         return handler.importHandler().typeOfExport(name, lineInfo.getLineInfo(), new ArrayList<>());
+    }
+
+    public OptionalUint importedConstant(Lined lineInfo, Path file, String name) {
+        return OptionalUint.empty();
     }
 
     @NotNull

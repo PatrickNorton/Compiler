@@ -9,6 +9,7 @@ import main.java.parser.TypeNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
+import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
@@ -288,14 +289,16 @@ public final class CompilerInfo {
                     var asName = pair2.getValue();
                     if (!varMap.containsKey(asName)) {
                         var type = importHandler.importedType(info, path, name);
-                        varMap.put(asName, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                        var constIndex = importHandler.importedConstant(info, path, name);
+                        varMap.put(asName, getVariableInfo(info, type, constIndex, (short) varMap.size()));
                     }
                 }
             } else if (!info.getNames().get(0).equals("*")) {
                 for (var name : info.getNames()) {
                     if (!varMap.containsKey(name)) {
                         var type = importHandler.importedType(info, path, name);
-                        varMap.put(name, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                        var constIndex = importHandler.importedConstant(info, path, name);
+                        varMap.put(name, getVariableInfo(info, type, constIndex, (short) varMap.size()));
                     }
                 }
             } else {
@@ -307,6 +310,18 @@ public final class CompilerInfo {
                 }
             }
         }
+    }
+
+    @NotNull
+    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex, short mapSize) {
+        VariableInfo varInfo;
+        if (constIndex.isPresent()) {
+            var constant = GLOBAL_INFO.getConstant(constIndex.orElseThrow());
+            varInfo = new VariableInfo(type, constant, info.getLineInfo());
+        } else {
+            varInfo = new VariableInfo(type, true, mapSize, info.getLineInfo());
+        }
+        return varInfo;
     }
 
     public void loadDependents() {
