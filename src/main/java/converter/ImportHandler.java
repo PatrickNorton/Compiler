@@ -65,6 +65,7 @@ public final class ImportHandler {
     private final CompilerInfo info;
     private final Map<String, TypeObject> exports = new HashMap<>();
     private final Map<String, Path> fromExports = new HashMap<>();
+    private final Map<String, OptionalUint> exportConstants = new HashMap<>();
     private final Map<Path, ImportInfo> imports = new HashMap<>();
     private final IndexedSet<String> importStrings = new IndexedHashSet<>();
     private final Set<Path> wildcardExports = new HashSet<>();
@@ -190,6 +191,7 @@ public final class ImportHandler {
             }
             assert exports.containsKey(exportName);
             this.exports.put(exportName, exportType);
+            this.exportConstants.put(exportName, OptionalUint.empty());
         }
     }
 
@@ -460,8 +462,10 @@ public final class ImportHandler {
         return handler.importHandler().typeOfExport(name, lineInfo.getLineInfo(), new ArrayList<>());
     }
 
-    public OptionalUint importedConstant(Lined lineInfo, Path file, String name) {
-        return OptionalUint.empty();
+    @NotNull
+    public OptionalUint importedConstant(@NotNull Lined lineInfo, Path file, String name) {
+        var handler = ALL_FILES.get(file);
+        return handler.importHandler().importedConst(name, lineInfo.getLineInfo(), new ArrayList<>());
     }
 
     @NotNull
@@ -544,6 +548,41 @@ public final class ImportHandler {
             var path = fromExports.get(name);
             previousFiles.add(Pair.of(lineInfo, name));
             return ALL_FILES.get(path).importHandler().typeOfExport(name, lineInfo, previousFiles);
+        } else {
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
+    }
+
+    @NotNull
+    public OptionalUint importedConst(
+            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+    ) {
+        assert !name.equals("*");
+        for (var pair : previousFiles) {
+            var info = pair.getKey();
+            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
+                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
+            }
+        }
+        if (!exports.containsKey(name)) {
+            previousFiles.add(Pair.of(lineInfo, name));
+            for (var path : wildcardExports) {
+                var handler = ALL_FILES.get(path).importHandler();
+                try {
+                    return handler.importedConst(name, lineInfo, previousFiles);
+                } catch (CompilerException ignored) {
+                    // If value was not exported, don't fail, just continue
+                }
+            }
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
+        var export = exportConstants.get(name);
+        if (export != null) {
+            return export;
+        } else if (fromExports.containsKey(name)) {
+            var path = fromExports.get(name);
+            previousFiles.add(Pair.of(lineInfo, name));
+            return ALL_FILES.get(path).importHandler().importedConst(name, lineInfo, previousFiles);
         } else {
             throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
         }
