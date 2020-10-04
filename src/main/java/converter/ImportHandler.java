@@ -544,6 +544,13 @@ public final class ImportHandler {
         }
     }
 
+    public static void linkAll() {
+        loadDefaultInterfaces();
+        for (var file : ALL_FILES.values()) {
+            file.link();
+        }
+    }
+
     public static void compileAll() {
         loadDefaultInterfaces();
         while (!toCompile.isEmpty()) {
