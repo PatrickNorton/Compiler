@@ -42,20 +42,18 @@ public final class VariableConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
-            if (!node.getName().equals("null") && info.varIsUndefined(node.getName())) {
-                throw CompilerException.format("Variable '%s' not defined", node, node.getName());
-            }
+            checkDef();
             CompilerWarning.warnf("Unused variable %s", node, node.getName());
             return Collections.emptyList();
+        } else if (retCount > 1) {
+            checkDef();
+            throw CompilerException.format("Variable only returns 1 value, expected %d", node, retCount);
         }
-        assert retCount == 1;
         String name = node.getName();
         if (name.equals("null")) {
             return List.of(Bytecode.LOAD_NULL.value);
         }
-        if (info.varIsUndefined(node.getName())) {
-            throw CompilerException.format("Variable '%s' not defined", node, node.getName());
-        }
+        checkDef();
         if (info.variableIsStatic(node.getName())) {
             var bytecode = Bytecode.LOAD_STATIC;
             List<Byte> bytes = new ArrayList<>(bytecode.size());
@@ -71,6 +69,12 @@ public final class VariableConverter implements TestConverter {
             short index = isConst ? info.constIndex(name) : info.varIndex(node);
             bytes.addAll(Util.shortToBytes(index));
             return bytes;
+        }
+    }
+
+    private void checkDef() {
+        if (!node.getName().equals("null") && info.varIsUndefined(node.getName())) {
+            throw CompilerException.format("Variable '%s' not defined", node, node.getName());
         }
     }
 }
