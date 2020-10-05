@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class FunctionConstant implements LangConstant {
     private final String name;
@@ -33,5 +34,19 @@ public final class FunctionConstant implements LangConstant {
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FunctionConstant that = (FunctionConstant) o;
+        return functionIndex == that.functionIndex &&
+                Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, functionIndex);
     }
 }

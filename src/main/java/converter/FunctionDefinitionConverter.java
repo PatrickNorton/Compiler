@@ -27,13 +27,22 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @NotNull
     @Override
     public @Unmodifiable List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
         var generics = getGenerics();
         var retTypes =  info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, convertArgs(generics), trueRet);
-        int index = info.addFunction(new Function(fnInfo, bytes));
+        var predefined = info.getFn(node.getName().getName());
+        int index;
+        List<Byte> bytes;
+        if (predefined.isPresent()) {
+            var fn = predefined.orElseThrow();
+            index = info.fnIndex(node.getName().getName());
+            bytes = fn.getBytes();
+        } else {
+            bytes = new ArrayList<>();
+            index = info.addFunction(new Function(fnInfo, bytes));
+        }
         var constVal = new FunctionConstant(node.getName().getName(), index);
         info.checkDefinition(node.getName().getName(), node);
         info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);

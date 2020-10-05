@@ -131,6 +131,11 @@ public final class CompilerInfo {
         return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index).getInfo());
     }
 
+    public Optional<Function> getFn(String name) {
+        var index = fnIndices.get(name);
+        return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index));
+    }
+
     /**
      * Get the index of a function in the function list.
      *
