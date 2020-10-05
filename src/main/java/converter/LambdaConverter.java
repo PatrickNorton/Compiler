@@ -31,8 +31,9 @@ public final class LambdaConverter implements TestConverter {
         if (retCount == 0) {
             CompilerWarning.warn("Unused lambda", node);
             return Collections.emptyList();
+        } else if (retCount > 1) {
+            throw CompilerException.format("Lambda literal only returns one value, not %d", node, retCount);
         }
-        assert retCount == 1;
         List<Byte> bytes = new ArrayList<>();
         var name = info.lambdaName();
         var fnInfo = new FunctionInfo(name, convertArgs(), info.typesOf(node.getReturns()));

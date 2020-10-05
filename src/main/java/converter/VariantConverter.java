@@ -28,7 +28,11 @@ public final class VariantConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert retCount == 1 || retCount == 0;
+        if (retCount == 0) {
+            CompilerWarning.warn("Unused variant access", node);
+        } else if (retCount > 1) {
+            throw CompilerException.format("Union variant can only return one value, not %d", node, retCount);
+        }
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
         var retType = unionConverter.returnType()[0];
         assert retType instanceof TypeTypeObject;

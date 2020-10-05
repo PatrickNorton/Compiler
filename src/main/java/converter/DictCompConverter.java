@@ -40,7 +40,11 @@ public final class DictCompConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {  // TODO: Refactor with ComprehensionConverter (and ForConverter?)
-        assert retCount == 1 || retCount == 0;
+        if (retCount == 0) {
+            CompilerWarning.warn("Unnecessary dict creation", node);
+        } else if (retCount > 1) {
+            throw CompilerException.format("Dict comprehension only returns one value, got %d", node, retCount);
+        }
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.DICT_CREATE.value);
         bytes.addAll(Util.shortToBytes((short) 0));
