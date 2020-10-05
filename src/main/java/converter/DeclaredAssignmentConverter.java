@@ -65,8 +65,9 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             }
             boolean needsMakeOption = checkTypes(assignedType, valueType);
             boolean isConst = mutability.isConstRef();
-            if (isConst && converter instanceof ConstantConverter) {
-                var constant = ((ConstantConverter) converter).constant();
+            var constValue = converter.constantReturn();
+            if (isConst && constValue.isPresent()) {
+                var constant = constValue.orElseThrow();
                 info.checkDefinition(assignedName, node);
                 if (needsMakeOption) {
                     short constIndex = info.addConstant(constant);

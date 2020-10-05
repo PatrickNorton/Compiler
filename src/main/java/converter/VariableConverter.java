@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public final class VariableConverter implements TestConverter {
     private final CompilerInfo info;
@@ -16,6 +17,16 @@ public final class VariableConverter implements TestConverter {
         this.info = info;
         this.node = node;
         this.retCount = retCount;
+    }
+
+    @Override
+    public Optional<LangConstant> constantReturn() {
+        // Check for 'null' at the moment b/c serializing NullConstant fails
+        if (!node.getName().equals("null") && info.variableIsConstant(node.getName())) {
+            return Optional.of(info.getConstant(info.constIndex(node.getName())));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @NotNull

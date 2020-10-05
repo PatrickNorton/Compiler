@@ -22,10 +22,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public interface TestConverter extends BaseConverter {
     @NotNull
     TypeObject[] returnType();
+
+    default Optional<LangConstant> constantReturn() {
+        return Optional.empty();
+    }
 
     @NotNull
     static List<Byte> bytes(int start, @NotNull TestNode node, CompilerInfo info, int retCount) {

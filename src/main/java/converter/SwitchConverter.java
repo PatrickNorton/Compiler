@@ -114,10 +114,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             var label = stmt.getLabel()[0];
             var lblConverter = TestConverter.of(info, stmt.getLabel()[0], 1);
-            if (!(lblConverter instanceof ConstantConverter)) {  // TODO: Variable switch arguments
-                throw literalException("int", label);
-            }
-            var constant = ((ConstantConverter) lblConverter).constant();
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
             if (constant instanceof IntConstant) {
                 jumps.put(BigInteger.valueOf(((IntConstant) constant).getValue()), start + bytes.size());
             } else if (constant instanceof BigintConstant) {
@@ -154,10 +151,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             var label = stmt.getLabel()[0];
             var lblConverter = TestConverter.of(info, label, 1);
-            if (!(lblConverter instanceof ConstantConverter)) {
-                throw literalException("string", label);
-            }
-            var constant = ((ConstantConverter) lblConverter).constant();
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
             if (constant instanceof StringConstant) {
                 jumps.put(((StringConstant) constant).getValue(), start + bytes.size());
             } else {
