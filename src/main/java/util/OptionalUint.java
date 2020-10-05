@@ -49,7 +49,7 @@ public final class OptionalUint {
      * @see java.util.Optional#isEmpty()
      */
     public boolean isEmpty() {
-        return value <= 0;
+        return value < 0;
     }
 
     /**
@@ -61,7 +61,7 @@ public final class OptionalUint {
      * @see java.util.Optional#orElseThrow()
      */
     public int orElseThrow() {
-        if (isEmpty()) {
+        if (value < 0) {
             throw new NoSuchElementException("Called 'orElseThrow' on an empty OptionalUint");
         }
         return value;
