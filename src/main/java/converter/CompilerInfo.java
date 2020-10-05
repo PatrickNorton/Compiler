@@ -322,15 +322,13 @@ public final class CompilerInfo {
 
     @NotNull
     private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex, short mapSize) {
-        VariableInfo varInfo;
         if (constIndex.isPresent()) {
             var constant = GLOBAL_INFO.getConstant(constIndex.orElseThrow());
-            varInfo = new VariableInfo(type, constant, info.getLineInfo());
+            return new VariableInfo(type, constant, info.getLineInfo());
         } else {
             CompilerWarning.warn("Import is not a compile-time constant, may fail at runtime", info);
-            varInfo = new VariableInfo(type, true, mapSize, info.getLineInfo());
+            return new VariableInfo(type, true, mapSize, info.getLineInfo());
         }
-        return varInfo;
     }
 
     public void loadDependents() {
