@@ -6,7 +6,6 @@ import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public final class DeclaredAssignmentConverter implements BaseConverter {
@@ -76,10 +75,10 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                 } else {
                     info.addVariable(assignedName, assignedType, constant, node);
                 }
-                return Collections.emptyList();
+            } else {
+                bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
+                finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
             }
-            bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
-            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
         }
         if (isStatic) {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
