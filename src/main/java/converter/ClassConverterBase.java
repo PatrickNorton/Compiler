@@ -120,13 +120,13 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                                    List<Short> superConstants, @NotNull ConverterHolder converter) {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
-        info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
+        var constant = new ClassConstant(name, info.classIndex(type), type);
+        info.addVariable(name, Builtins.TYPE.generify(type), constant, node);
         var cls = createClass(type, variants, superConstants, converter);
-        int classIndex = info.setClass(cls);
+        info.setClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
         }
-        info.setReservedVar(name, new ClassConstant(name, classIndex, type));
     }
 
     protected final void addToInfo(UserType<?> type, String defType, List<String> variants,

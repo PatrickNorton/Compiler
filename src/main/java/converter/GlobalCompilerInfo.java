@@ -159,6 +159,10 @@ public final class GlobalCompilerInfo {
         return index;
     }
 
+    public int classIndex(UserType<?> type) {
+        return classMap.get(new BaseType(type));
+    }
+
     public List<ClassInfo> getClasses() {
         assert !classes.contains(null);
         return classes;

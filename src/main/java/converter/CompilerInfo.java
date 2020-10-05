@@ -255,6 +255,10 @@ public final class CompilerInfo {
         return GLOBAL_INFO.setClass(info);
     }
 
+    public int classIndex(UserType<?> type) {
+        return GLOBAL_INFO.classIndex(type);
+    }
+
     /**
      * Links this.
      * <p>
