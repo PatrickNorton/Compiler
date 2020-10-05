@@ -59,6 +59,12 @@ public final class Util {
         };
     }
 
+    private static final byte[] ZERO_BYTE_ARRAY = new byte[] {(byte) 0, (byte) 0, (byte) 0, (byte) 0};
+
+    static byte[] zeroByteArray() {
+        return ZERO_BYTE_ARRAY;
+    }
+
     @NotNull
     @Contract(value = "_ -> new", pure = true)
     static byte[] toByteArray(short value) {
