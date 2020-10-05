@@ -26,8 +26,9 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         var trueSupers = convertSupers(supers);
         var descriptors = node.getDescriptors();
         var isFinal = !descriptors.contains(DescriptorNode.NONFINAL);
+        var hasType = info.hasType(node.strName());
         StdTypeObject type;
-        if (!info.hasType(node.strName())) {
+        if (!hasType) {
             var generics = GenericInfo.parse(info, node.getName().getSubtypes());
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
             ensureProperInheritance(type, trueSupers);
@@ -54,7 +55,11 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             superConstants.add(info.constIndex(sup.name()));
         }
         checkContract(type, trueSupers);
-        addToInfo(type, "class", superConstants, converter);
+        if (hasType) {
+            putInInfo(type, "class", superConstants, converter);
+        } else {
+            addToInfo(type, "class", superConstants, converter);
+        }
         return Collections.emptyList();
     }
 
@@ -116,11 +121,11 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         }
     }
 
-    public static void completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj) {
-        new ClassConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj) {
+        return new ClassConverter(info, node).completeType(obj);
     }
 
-    private void completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
@@ -129,6 +134,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             checkConstSupers(obj, obj.getSupers());
         }
         parseIntoObject(converter, obj, isConst);
+        return info.reserveClass(obj);
     }
 
     private TypeObject superType(@NotNull StdTypeObject obj) {

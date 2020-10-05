@@ -59,11 +59,15 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         return Collections.emptyList();
     }
 
-    public static void completeType(CompilerInfo info, InterfaceDefinitionNode node, InterfaceType obj) {
-        new InterfaceConverter(info, node).completeType(obj);
+    public static void completeWithoutReserving(CompilerInfo info, InterfaceDefinitionNode node, InterfaceType obj) {
+        new InterfaceConverter(info, node).completeWithoutReserving(obj);
     }
 
-    private void completeType(@NotNull InterfaceType obj) {
+    public static int completeType(CompilerInfo info, InterfaceDefinitionNode node, InterfaceType obj) {
+        return new InterfaceConverter(info, node).completeType(obj);
+    }
+
+    private void completeWithoutReserving(@NotNull InterfaceType obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
@@ -74,6 +78,11 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             info.accessHandler().removeCls();
         }
         // Note: 'auto' interfaces should already be registered with the compiler, so no action is needed
+    }
+
+    private int completeType(@NotNull InterfaceType obj) {
+        completeWithoutReserving(obj);
+        return info.reserveClass(obj);
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull InterfaceType obj) {

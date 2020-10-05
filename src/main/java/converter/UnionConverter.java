@@ -36,8 +36,9 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(supers);
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
+        var hasType = info.hasType(node.strName());
         StdTypeObject type;
-        if (!info.hasType(node.strName())) {
+        if (!hasType) {
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, true);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
@@ -54,7 +55,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             superConstants.add(info.constIndex(sup.name()));
         }
         checkContract(type, trueSupers);
-        addToInfo(type, "union", convertVariants(), superConstants, converter);
+        if (hasType) {
+            putInInfo(type, "union", convertVariants(), superConstants, converter);
+        } else {
+            addToInfo(type, "union", convertVariants(), superConstants, converter);
+        }
         return Collections.emptyList();
     }
 
@@ -114,11 +119,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         }
     }
 
-    public static void completeType(CompilerInfo info, UnionDefinitionNode node, StdTypeObject obj) {
-        new UnionConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, UnionDefinitionNode node, StdTypeObject obj) {
+        return new UnionConverter(info, node).completeType(obj);
     }
 
-    private void completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         try {
             info.accessHandler().addCls(obj);
@@ -126,6 +131,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         } finally {
             info.accessHandler().removeCls();
         }
+        return info.reserveClass(obj);
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {

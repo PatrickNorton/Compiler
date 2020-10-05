@@ -243,8 +243,16 @@ public final class CompilerInfo {
         return GLOBAL_INFO.addClass(info);
     }
 
-    public IndexedSet<ClassInfo> getClasses() {
+    public List<ClassInfo> getClasses() {
         return GLOBAL_INFO.getClasses();
+    }
+
+    public int reserveClass(UserType<?> type) {
+        return GLOBAL_INFO.reserveClass(type);
+    }
+
+    public int setClass(ClassInfo info) {
+        return GLOBAL_INFO.setClass(info);
     }
 
     /**
@@ -319,6 +327,7 @@ public final class CompilerInfo {
             var constant = GLOBAL_INFO.getConstant(constIndex.orElseThrow());
             varInfo = new VariableInfo(type, constant, info.getLineInfo());
         } else {
+            CompilerWarning.warn("Import is not a compile-time constant, may fail at runtime", info);
             varInfo = new VariableInfo(type, true, mapSize, info.getLineInfo());
         }
         return varInfo;

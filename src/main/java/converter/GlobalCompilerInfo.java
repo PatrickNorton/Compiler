@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The class for compiler information that is shared between all files.
@@ -30,7 +32,8 @@ public final class GlobalCompilerInfo {
 
     private final List<List<Byte>> defaultFunctions = new ArrayList<>();
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));  // Reserve for default
-    private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
+    private final List<ClassInfo> classes = new ArrayList<>();
+    private final Map<BaseType, Integer> classMap = new HashMap<>();
 
     public void addConstant(LangConstant value) {
         constants.add(value);
@@ -139,10 +142,25 @@ public final class GlobalCompilerInfo {
 
     public int addClass(ClassInfo info) {
         classes.add(info);
-        return classes.indexOf(info);
+        classMap.put(new BaseType(info.getType()), classes.size() - 1);
+        return classes.size() - 1;
     }
 
-    public IndexedSet<ClassInfo> getClasses() {
+    public int reserveClass(UserType<?> type) {
+        classes.add(null);
+        classMap.put(new BaseType(type), classes.size() - 1);
+        return classes.size() - 1;
+    }
+
+    public int setClass(@NotNull ClassInfo info) {
+        int index = classMap.get(new BaseType(info.getType()));
+        assert classes.get(index) == null;
+        classes.set(index, info);
+        return index;
+    }
+
+    public List<ClassInfo> getClasses() {
+        assert !classes.contains(null);
         return classes;
     }
 

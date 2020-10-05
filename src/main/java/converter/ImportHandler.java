@@ -182,6 +182,7 @@ public final class ImportHandler {
     public void setFromLinker(@NotNull Linker linker) {
         var exports = linker.getExports();
         var globals = linker.getGlobals();
+        var constants = linker.getConstants();
         for (var entry : exports.entrySet()) {
             var exportName = entry.getValue().getKey();
             var exportType = globals.get(entry.getKey());
@@ -191,7 +192,12 @@ public final class ImportHandler {
             }
             assert exports.containsKey(exportName);
             this.exports.put(exportName, exportType);
-            this.exportConstants.put(exportName, OptionalUint.empty());
+            this.exportConstants.put(exportName, OptionalUint.ofNullable(constants.get(exportName)));
+        }
+        for (var exportName : this.exports.keySet()) {
+            if (!exportConstants.containsKey(exportName)) {
+                exportConstants.put(exportName, OptionalUint.ofNullable(constants.get(exportName)));
+            }
         }
     }
 
@@ -613,7 +619,7 @@ public final class ImportHandler {
         for (var pair : ALL_DEFAULT_INTERFACES.entrySet()) {
             if (pair.getValue().isPresent()) {
                 var infoPair = pair.getValue().get();
-                InterfaceConverter.completeType(infoPair.getKey(), infoPair.getValue(), pair.getKey());
+                InterfaceConverter.completeWithoutReserving(infoPair.getKey(), infoPair.getValue(), pair.getKey());
                 pair.setValue(Optional.empty());
             }
         }

@@ -114,13 +114,28 @@ public final class OptionalUint {
      * @apiNote
      * The closest analogue in {@link java.util.Optional Optional} is the
      * {@link java.util.Optional#ofNullable(Object) ofNullable} method, however
-     * this is differently named b/c that name may be used in future for
-     * conversions from {@link Integer}, which would be closer in meaning.
+     * this is differently named b/c that name {@link #ofNullable is used} for
+     * conversions from {@link Integer}, which is closer in meaning.
      *
      * @param value The value to convert, which may be negative
      * @return an {@code OptionalUInt} possibly containing the value
      */
     public static OptionalUint ofSigned(int value) {
         return value < 0 ? empty() : of(value);
+    }
+
+    /**
+     * Returns an {@code OptionalUint} describing the given non-negative value,
+     * if non-{@code null}, otherwise returns an empty {@code OptionalUint}.
+     *
+     * @param value the possibly-{@code null} value to describe
+     * @return an {@code OptionalUint} with a present value if the specified
+     *         value is non-{@code null}, otherwise an empty {@code
+     *         OptionalUint}
+     * @see java.util.Optional#ofNullable
+     * @see #ofSigned(int)
+     */
+    public static OptionalUint ofNullable(Integer value) {
+        return value == null ? empty() : of(value);
     }
 }

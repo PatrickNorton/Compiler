@@ -43,11 +43,13 @@ public final class Linker {
     private final CompilerInfo info;
     private final Map<String, Pair<String, LineInfo>> exports;
     private final Map<String, TypeObject> globals;
+    private final Map<String, Integer> constants;
 
     public Linker(CompilerInfo info) {
         this.info = info;
         this.exports = new HashMap<>();
         this.globals = new HashMap<>();
+        this.constants = new HashMap<>();
     }
 
     public Map<String, Pair<String, LineInfo>> getExports() {
@@ -56,6 +58,10 @@ public final class Linker {
 
     public Map<String, TypeObject> getGlobals() {
         return globals;
+    }
+
+    public Map<String, Integer> getConstants() {
+        return constants;
     }
 
     /**
@@ -128,22 +134,30 @@ public final class Linker {
         } else if (stmt instanceof ClassDefinitionNode) {
             var clsNode = (ClassDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName()).orElseThrow();
-            ClassConverter.completeType(info, clsNode, predeclaredType);
+            int index = ClassConverter.completeType(info, clsNode, predeclaredType);
+            var constant = new ClassConstant(clsNode.strName(), index, predeclaredType);
+            constants.put(clsNode.strName(), (int) info.addConstant(constant));
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof EnumDefinitionNode) {
             var enumNode = (EnumDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName()).orElseThrow();
-            EnumConverter.completeType(info, enumNode, predeclaredType);
+            int index = EnumConverter.completeType(info, enumNode, predeclaredType);
+            var constant = new ClassConstant(enumNode.getName().strName(), index, predeclaredType);
+            constants.put(enumNode.getName().strName(), (int) info.addConstant(constant));
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof InterfaceDefinitionNode) {
             var interfaceNode = (InterfaceDefinitionNode) stmt;
             var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName()).orElseThrow();
-            InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
+            int index = InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
+            var constant = new ClassConstant(interfaceNode.getName().strName(), index, predeclaredType);
+            constants.put(interfaceNode.getName().strName(), (int) info.addConstant(constant));
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof UnionDefinitionNode) {
             var unionNode = (UnionDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
-            UnionConverter.completeType(info, unionNode, predeclaredType);
+            int index = UnionConverter.completeType(info, unionNode, predeclaredType);
+            var constant = new ClassConstant(unionNode.strName(), index, predeclaredType);
+            constants.put(unionNode.strName(), (int) info.addConstant(constant));
             return Builtins.TYPE.generify(predeclaredType);
         } else {
             throw CompilerInternalError.format("Unknown definition %s", stmt, name.getClass());
