@@ -4,6 +4,7 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypedArgumentNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -60,7 +61,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     @Contract(" -> new")
     @NotNull
-    public TypeObject parseHeader() {
+    public Pair<TypeObject, Integer> parseHeader() {
         if (node.getGenerics().length == 0) {
             var argInfo = ArgumentInfo.of(node.getArgs(), info);
             var returns = info.typesOf(node.getRetval());
@@ -68,8 +69,8 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
             var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, argInfo, trueRet);
             var func = new Function(fnInfo, new ArrayList<>());
-            info.addFunction(func);
-            return new FunctionInfoType(fnInfo);
+            int index = info.addFunction(func);
+            return Pair.of(new FunctionInfoType(fnInfo), index);
         } else {
             var generics = GenericInfo.parse(info, node.getGenerics());
             Map<String, TypeObject> genericNames = new HashMap<>(generics.size());
@@ -83,9 +84,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
             var fnInfo = new FunctionInfo(node.getName().getName(), argInfo, trueRet);
             var func = new Function(fnInfo, new ArrayList<>());
-            info.addFunction(func);
+            int index = info.addFunction(func);
             info.removeLocalTypes();
-            return new FunctionInfoType(fnInfo);
+            return Pair.of(new FunctionInfoType(fnInfo), index);
         }
     }
 
@@ -155,7 +156,8 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
     }
 
-    public static TypeObject parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
+    @NotNull
+    public static Pair<TypeObject, Integer> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
         return new FunctionDefinitionConverter(info, node).parseHeader();
     }
 }

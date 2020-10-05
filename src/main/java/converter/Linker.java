@@ -120,7 +120,10 @@ public final class Linker {
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;
-            return FunctionDefinitionConverter.parseHeader(info, fnNode);
+            var pair = FunctionDefinitionConverter.parseHeader(info, fnNode);
+            var constant = new FunctionConstant(fnNode.getName().getName(), pair.getValue());
+            constants.put(fnNode.getName().getName(), (int) info.addConstant(constant));
+            return pair.getKey();
         } else if (stmt instanceof PropertyDefinitionNode) {
             var typeNode = ((PropertyDefinitionNode) stmt).getType();
             return info.getType(typeNode);
