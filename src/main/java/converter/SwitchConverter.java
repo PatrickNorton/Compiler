@@ -28,6 +28,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     public List<Byte> trueConvert(int start) {
+        if (incompleteReturn()) {
+            throw CompilerException.format("Cannot get return from switch: Not all cases covered", node);
+        }
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
         if (Builtins.INT.isSuperclass(retType)) {
@@ -347,6 +350,19 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
         }
         throw CompilerException.of("Switch on a union must have properly-formed variants", label);
+    }
+
+    private boolean incompleteReturn() {  // TODO: Unions with all cases covered
+        if (retCount > 0) {
+            for (var stmt : node.getCases()) {
+                if (stmt instanceof DefaultStatementNode) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @NotNull
