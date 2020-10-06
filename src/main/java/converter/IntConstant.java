@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -48,5 +49,10 @@ public final class IntConstant implements LangConstant {
 
     public int getValue() {
         return value;
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(value != 0);
     }
 }

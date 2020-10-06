@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -22,5 +23,10 @@ public final class NullConstant implements LangConstant {
     @Override
     public @NotNull String name() {
         return "null";
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(false);
     }
 }

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -46,6 +47,11 @@ public final class DecimalConstant implements LangConstant {
     @Override
     public TypeObject getType() {
         return Builtins.DECIMAL;
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(value.signum() != 0);
     }
 
     @NotNull

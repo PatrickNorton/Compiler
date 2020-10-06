@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,5 +73,10 @@ public final class StringConstant implements LangConstant {
     @Override
     public String name() {
         return '"' + value + '"';
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(!value.isEmpty());
     }
 }

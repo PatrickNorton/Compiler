@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,6 +37,11 @@ public final class ClassConstant implements LangConstant {
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(true);
     }
 
     @Override
