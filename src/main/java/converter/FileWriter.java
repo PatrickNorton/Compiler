@@ -59,27 +59,11 @@ public final class FileWriter {
             }
         }
         try (var writer = Files.newOutputStream(file.toPath())) {
-            var ieHandler = info.importHandler();
             writer.write(Util.MAGIC_NUMBER);
-            var imports = ieHandler.getImports();
-            writer.write(Util.toByteArray(imports.size()));
-            for (var name : imports) {
-                writer.write(StringConstant.strByteArray(name));
-                writer.write(StringConstant.strByteArray(name));  // TODO: Make these meaningfully different
-            }
+            writer.write(Util.zeroByteArray());  // In statically linked file, there are no imports or exports
+            writer.write(Util.zeroByteArray());
             writer.flush();
-            var exports = ieHandler.getExports();
             var constants = info.getConstants();
-            writer.write(Util.toByteArray(exports.size()));
-            for (var export : exports) {
-                writer.write(StringConstant.strByteArray(export));
-                for (int i = 0; i < constants.size(); i++) {
-                    if (constants.get(i).name().equals(export)) {
-                        writer.write(Util.toByteArray(i));
-                    }
-                }
-            }
-            writer.flush();
             writer.write(Util.toByteArray(constants.size()));
             for (var constant : constants) {
                 var byteArray = Util.toByteArray(constant.toBytes());

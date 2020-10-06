@@ -24,8 +24,9 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     public List<Byte> convert(int start) {
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));
+        var hasType = info.hasType(node.getName().strName());
         StdTypeObject type;
-        if (!info.hasType(node.getName().strName())) {
+        if (!hasType) {
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), GenericInfo.empty(), true);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
@@ -41,7 +42,11 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
         }
-        addToInfo(type, "enum", superConstants, converter);
+        if (hasType) {
+            putInInfo(type, "enum", superConstants, converter);
+        } else {
+            addToInfo(type, "enum", superConstants, converter);
+        }
         return getInitBytes(start, converter.getOperators().get(OpSpTypeNode.NEW));
     }
 
@@ -93,11 +98,11 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         return bytes;
     }
 
-    public static void completeType(CompilerInfo info, EnumDefinitionNode node, StdTypeObject obj) {
-        new EnumConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, EnumDefinitionNode node, StdTypeObject obj) {
+        return new EnumConverter(info, node).completeType(obj);
     }
 
-    private void completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         try {
@@ -106,6 +111,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         } finally {
             info.accessHandler().removeCls();
         }
+        return info.reserveClass(obj);
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {

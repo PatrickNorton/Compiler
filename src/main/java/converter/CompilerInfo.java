@@ -7,9 +7,9 @@ import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.parser.VariableNode;
-import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
+import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,21 +28,18 @@ import java.util.Optional;
  * @author Patrick Norton
  */
 public final class CompilerInfo {
+    private static final GlobalCompilerInfo GLOBAL_INFO = new GlobalCompilerInfo();
+
     private final TopNode node;
     private final ImportHandler importHandler = new ImportHandler(this);
-    private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));
-    private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
-    private final IndexedSet<ClassInfo> classes = new IndexedHashSet<>();
+    private final int staticIndex;
+    private final Map<String, Integer> fnIndices = new HashMap<>();
     private final LoopManager loopManager = new LoopManager();
-    private final List<SwitchTable> tables = new ArrayList<>();
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
     private final List<Map<String, TypeObject>> localTypes = new ArrayList<>();
     private final IntAllocator varNumbers = new IntAllocator();
-    private final IntAllocator staticVarNumbers = new IntAllocator();
-
-    private final IntAllocator anonymousNums = new IntAllocator();
 
     private final FunctionReturnInfo fnReturns = new FunctionReturnInfo();
 
@@ -55,6 +51,7 @@ public final class CompilerInfo {
 
     public CompilerInfo(TopNode node) {
         this.node = node;
+        this.staticIndex = GLOBAL_INFO.reserveStatic();
         variables.add(new HashMap<>());
     }
 
@@ -68,10 +65,9 @@ public final class CompilerInfo {
      *
      * @throws CompilerException If a compilation error occurs
      * @throws CompilerInternalError An unexpected internal error
-     * @param file The name of the file to be compiled
      * @return Itself
      */
-    public CompilerInfo compile(File file) {
+    public CompilerInfo compile() {
         if (compiled) {
             return this;
         }
@@ -87,8 +83,7 @@ public final class CompilerInfo {
         }
         this.removeStackFrame();
         // Put the default function at the beginning
-        functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
-        writeToFile(file);
+        GLOBAL_INFO.setStatic(staticIndex, bytes);
         compiled = true;
         return this;
     }
@@ -119,8 +114,9 @@ public final class CompilerInfo {
      * @return The index of the function when written
      */
     public int addFunction(@NotNull Function info) {
-        functions.add(info);
-        return functions.size() - 1;
+        int index = GLOBAL_INFO.addFunction(info);
+        fnIndices.put(info.getName(), index);
+        return index;
     }
 
     /**
@@ -131,12 +127,13 @@ public final class CompilerInfo {
      */
     @NotNull
     public Optional<FunctionInfo> fnInfo(String name) {
-        for (var fn : functions) {
-            if (fn != null && fn.getName().equals(name)) {
-                return Optional.of(fn.getInfo());
-            }
-        }
-        return Optional.empty();
+        var index = fnIndices.get(name);
+        return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index).getInfo());
+    }
+
+    public Optional<Function> getFn(String name) {
+        var index = fnIndices.get(name);
+        return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index));
     }
 
     /**
@@ -146,17 +143,12 @@ public final class CompilerInfo {
      * @return The index, or {@code -1} if not found
      */
     public short fnIndex(String name) {
-        for (int i = 0; i < functions.size(); i++) {
-            var fn = functions.get(i);
-            if (fn != null && fn.getName().equals(name)) {
-                return (short) i;
-            }
-        }
-        return -1;
+        var index = fnIndices.get(name);
+        return index == null ? -1 : index.shortValue();
     }
 
     public List<Function> getFunctions() {
-        return functions;
+        return GLOBAL_INFO.getFunctions();
     }
 
     /**
@@ -165,11 +157,11 @@ public final class CompilerInfo {
      * @param value The value to add
      */
     public short addConstant(LangConstant value) {
-        constants.add(value);
-        if (constants.indexOf(value) > Short.MAX_VALUE) {
+        GLOBAL_INFO.addConstant(value);
+        if (GLOBAL_INFO.indexOf(value) > Short.MAX_VALUE) {
             throw new RuntimeException("Too many constants");
         }
-        return (short) constants.indexOf(value);
+        return (short) GLOBAL_INFO.indexOf(value);
     }
 
     /**
@@ -179,7 +171,7 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public short constIndex(LangConstant value) {
-        return constants.contains(value) ? (short) constants.indexOf(value) : addConstant(value);
+        return GLOBAL_INFO.containsConst(value) ? (short) GLOBAL_INFO.indexOf(value) : addConstant(value);
     }
 
     /**
@@ -216,12 +208,12 @@ public final class CompilerInfo {
      * @param value The value to set this to
      */
     public void setReserved(short index, @NotNull LangConstant value) {
-        var constant = constants.get(index);
+        var constant = GLOBAL_INFO.getConstant(index);
         if (!(constant instanceof TempConst)) {
             throw CompilerInternalError.of("Cannot redefine constant not a TempConst", LineInfo.empty());
         }
         assert constant.getType().equals(value.getType());
-        constants.set(index, value);
+        GLOBAL_INFO.setConstant(index, value);
     }
 
     /**
@@ -232,11 +224,11 @@ public final class CompilerInfo {
      * @return The constant itself
      */
     public LangConstant getConstant(short index) {
-        return constants.get(index);
+        return GLOBAL_INFO.getConstant(index);
     }
 
     public IndexedSet<LangConstant> getConstants() {
-        return constants;
+        return GLOBAL_INFO.getConstants();
     }
 
     /**
@@ -253,12 +245,23 @@ public final class CompilerInfo {
      * @return The index of the class in the class pool
      */
     public int addClass(ClassInfo info) {
-        classes.add(info);
-        return classes.indexOf(info);
+        return GLOBAL_INFO.addClass(info);
     }
 
-    public IndexedSet<ClassInfo> getClasses() {
-        return classes;
+    public List<ClassInfo> getClasses() {
+        return GLOBAL_INFO.getClasses();
+    }
+
+    public int reserveClass(UserType<?> type) {
+        return GLOBAL_INFO.reserveClass(type);
+    }
+
+    public int setClass(ClassInfo info) {
+        return GLOBAL_INFO.setClass(info);
+    }
+
+    public int classIndex(UserType<?> type) {
+        return GLOBAL_INFO.classIndex(type);
     }
 
     /**
@@ -303,14 +306,16 @@ public final class CompilerInfo {
                     var asName = pair2.getValue();
                     if (!varMap.containsKey(asName)) {
                         var type = importHandler.importedType(info, path, name);
-                        varMap.put(asName, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                        var constIndex = importHandler.importedConstant(info, path, name);
+                        varMap.put(asName, getVariableInfo(info, type, constIndex, (short) varMap.size()));
                     }
                 }
             } else if (!info.getNames().get(0).equals("*")) {
                 for (var name : info.getNames()) {
                     if (!varMap.containsKey(name)) {
                         var type = importHandler.importedType(info, path, name);
-                        varMap.put(name, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                        var constIndex = importHandler.importedConstant(info, path, name);
+                        varMap.put(name, getVariableInfo(info, type, constIndex, (short) varMap.size()));
                     }
                 }
             } else {
@@ -321,6 +326,17 @@ public final class CompilerInfo {
                     varMap.put(name, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
                 }
             }
+        }
+    }
+
+    @NotNull
+    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex, short mapSize) {
+        if (constIndex.isPresent()) {
+            var constant = GLOBAL_INFO.getConstant(constIndex.orElseThrow());
+            return new VariableInfo(type, constant, info.getLineInfo());
+        } else {
+            CompilerWarning.warn("Import is not a compile-time constant, may fail at runtime", info);
+            return new VariableInfo(type, true, mapSize, info.getLineInfo());
         }
     }
 
@@ -457,6 +473,7 @@ public final class CompilerInfo {
                     () -> CompilerException.format("Type %s not found", lineInfo, name)
             );
         } else {
+            var constants = GLOBAL_INFO.getConstants();
             for (int i = 0; i < constants.size(); i++) {
                 var constant = constants.get(i);
                 if (constant.getType() instanceof TypeTypeObject && constant.name().equals(name)) {
@@ -724,7 +741,7 @@ public final class CompilerInfo {
      * @return The index of the variable for {@link Bytecode#LOAD_STATIC}
      */
     public short addStaticVar(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
-        var index = (short) staticVarNumbers.getNext();
+        var index = GLOBAL_INFO.claimStaticVar();
         addVariable(name, new VariableInfo(type, isConst, true, index, info.getLineInfo()));
         return index;
     }
@@ -853,11 +870,11 @@ public final class CompilerInfo {
      * @return The unique lambda name
      */
     public String lambdaName() {
-        return String.format("lambda$%d", anonymousNums.getNext());
+        return String.format("lambda$%d", GLOBAL_INFO.getAnonymous());
     }
 
     public String generatorName() {
-        return String.format("generator$%d", anonymousNums.getNext());
+        return String.format("generator$%d", GLOBAL_INFO.getAnonymous());
     }
 
     /**
@@ -894,12 +911,11 @@ public final class CompilerInfo {
     }
 
     public int addSwitchTable(SwitchTable val) {
-        tables.add(val);
-        return tables.size() - 1;
+        return GLOBAL_INFO.addTable(val);
     }
 
     public List<SwitchTable> getTables() {
-        return tables;
+        return GLOBAL_INFO.getTables();
     }
 
     /**
@@ -923,10 +939,5 @@ public final class CompilerInfo {
             );
             varFrame.put(pair.getKey(), varInfo);
         }
-    }
-
-    {  // Prevent "non-updating" compiler warning
-        anonymousNums.remove(0);
-        staticVarNumbers.remove(0);
     }
 }
