@@ -42,6 +42,10 @@ public interface TestConverter extends BaseConverter {
         return of(info, node, retCount).returnType();
     }
 
+    static Optional<LangConstant> constantReturn(TestNode node, CompilerInfo info, int retCount) {
+        return of(info, node, retCount).constantReturn();
+    }
+
     @NotNull
     static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
                                        int retCount, TypeObject endType) {
