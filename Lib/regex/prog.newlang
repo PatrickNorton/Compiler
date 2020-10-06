@@ -19,8 +19,8 @@ class Program {
     public bool isAnchoredStart
     public bool isAnchoredEnd
     public bool hasUnicodeWordBoundary
-    public LiteralSearcher prefixes
-    public int dfaSizeLimit
+    public mut LiteralSearcher prefixes
+    public mut int dfaSizeLimit
 
     public operator new() {
         self.insts = []

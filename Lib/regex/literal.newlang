@@ -31,16 +31,16 @@ class LiteralSearcher {
         self.matcher = matcher
     }
 
-    public static method empty() -> cls {
+    public static method empty() -> mut cls {
         return LiteralSearcher(Literals.empty(), Matcher.Empty())
     }
 
-    public static method prefixes(Literals lits) -> cls {
+    public static method prefixes(Literals lits) -> mut cls {
         var matcher = Matcher.prefixes(lits)
         return LiteralSearcher(lits, matcher)
     }
 
-    public static method suffixes(Literals lits) -> cls {
+    public static method suffixes(Literals lits) -> mut cls {
         var matcher = Matcher.prefixes(lits)
         return LiteralSearcher(lits, matcher)
     }

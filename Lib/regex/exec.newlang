@@ -1,6 +1,7 @@
 from .AhoCorasick import AhoCorasick
 from .prog import Program
 from .builder import RegexOptions
+from .cache import Cached
 from .compile import Compiler
 from .dfa import canExec
 from .hir import Hir, Literals
@@ -15,9 +16,9 @@ export Exec, ProgramCache, ExecBuilder
 
 class Exec {
     private ExecReadOnly ro
-    private ProgramCache cache
+    private Cached[ProgramCache] cache
 
-    public operator new (ExecReadOnly ro, ProgramCache cache) {
+    public operator new (ExecReadOnly ro, Cached cache) {
         self.ro = ro
         self.cache = cache
     }
@@ -66,7 +67,7 @@ class Exec {
     }
 
     public method searcher() -> ExecNoSync {
-        return ExecNoSync(self.ro, self.cache)
+        return ExecNoSync(self.ro, self.cache.get() ?? ProgramCache(self.ro))
     }
 
     public method regexStrings() -> list[str] {
@@ -170,7 +171,7 @@ const class ExecReadOnly {
 }
 
 class ExecBuilder {
-    private RegexOptions options
+    private mref RegexOptions options
     private mut MatchType? matchType
     private mut bool isBytes
     private mut bool utf8Only
@@ -214,8 +215,8 @@ class ExecBuilder {
 
     public method parse() -> Parsed {
         mut list[Hir] exprs = []
-        mut Literals? prefixes = Literals.empty()
-        mut Literals? suffixes = Literals.empty()
+        mut Literals? prefixes = Literals()
+        mut Literals? suffixes = Literals()
         mut bool isBytes = false
         var isSet = self.options.pats.length >= 1
 
@@ -269,8 +270,10 @@ class ExecBuilder {
 
     public method build() -> Exec {
         if not self.options.pats {
+            list[str] res = []  # FIXME: Can't deduce type in function calls
+            AhoCorasick? aho = null  # FIXME: Same thing with null -> Optional
             var ro = ExecReadOnly(
-                [], Program(), Program(), Program(), LiteralSearcher(), null, MatchType.Nothing
+                res, Program(), Program(), Program(), LiteralSearcher.empty(), aho, MatchType.Nothing()
             )
             return Exec(ro, Cached())
         }
@@ -302,15 +305,15 @@ class ExecBuilder {
             self.options.pats,
             nfa, dfa, dfaReverse,
             LiteralSearcher.suffixes(parsed.suffixes),
-            ac, MatchType.Nothing,
+            ac, MatchType.Nothing(),
         )
-        var ro = ExecReadOnly(
+        var ro2 = ExecReadOnly(
             self.options.pats,
             nfa, dfa, dfaReverse,
             LiteralSearcher.suffixes(parsed.suffixes),
             ac, ro1.chooseMatchType(self.matchType),
         )
-        return Exec(ro, Cached())
+        return Exec(ro2, Cached())
     }
 
     private method buildAhoCorasick(Parsed parsed) -> AhoCorasick? {

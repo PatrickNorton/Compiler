@@ -56,7 +56,7 @@ class Compiler {
         return self
     }
 
-    public mut method compile(list[Hir] exprs) -> Program {
+    public mut method compile(list[Hir] exprs) -> mut Program {
         assert exprs
         if exprs.length == 1 {
             return self.compileOne(exprs[0])
@@ -65,7 +65,7 @@ class Compiler {
         }
     }
 
-    private mut method compileOne(Hir expr) -> Program {
+    private mut method compileOne(Hir expr) -> mut Program {
         mut var dotstarPatch = Patch(Hole.None, 0)
         self.compiled.isAnchoredStart = expr.isAnchoredStart()
         self.compiled.isAnchoredEnd = expr.isAnchoredEnd()
@@ -86,7 +86,7 @@ class Compiler {
         return self.compileFinish()
     }
 
-    private mut method compileMany(list[Hir] exprs) -> Program {
+    private mut method compileMany(list[Hir] exprs) -> mut Program {
         assert exprs.length > 1
 
         self.compiled.isAnchoredStart = all(e.isAnchoredStart() for var e in exprs)
@@ -118,7 +118,7 @@ class Compiler {
         return self.compileFinish()
     }
 
-    private mut method compileFinish() -> Program {
+    private mut method compileFinish() -> mut Program {
         self.compiled.insts = [inst.unwrap() for var inst in self.insts]
         self.compiled.byteClasses = self.byteClasses.byteClasses()
         self.compiled.captureNameIdx = self.captureNameIdx
