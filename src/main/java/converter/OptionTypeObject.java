@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class OptionTypeObject extends TypeObject {  // TODO: Properly make options
     private final String typedefName;
@@ -82,6 +84,20 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     @Override
     public TypeObject stripNull() {
         return optionVal;
+    }
+
+    @Override
+    public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
+        if (other instanceof OptionTypeObject) {
+            return optionVal.generifyAs(parent, ((OptionTypeObject) other).optionVal);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        return TypeObject.optional(optionVal.generifyWith(parent, values));
     }
 
     public static List<Byte> maybeWrapBytes(@NotNull List<Byte> bytes, boolean wrap) {

@@ -88,7 +88,9 @@ public final class FunctionInfoType extends TypeObject {
 
     @Override
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
-        assert other instanceof FunctionInfoType;
+        if (!(other instanceof FunctionInfoType)) {
+            return Optional.empty();
+        }
         var otherT = (FunctionInfoType) other;
         var otherInfo = otherT.info;
         Map<Integer, TypeObject> result = new HashMap<>();
@@ -109,5 +111,10 @@ public final class FunctionInfoType extends TypeObject {
             result.putAll(gen.orElseThrow());
         }
         return Optional.of(result);
+    }
+
+    @Override
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        return new FunctionInfoType(info.generify(parent, values));
     }
 }

@@ -103,12 +103,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
     @NotNull
     private TypeObject generifyAttrType(TypeObject type) {
-        if (type instanceof TemplateParam) {
-            var t = (TemplateParam) type;
-            return generics.isEmpty() ? t.getBound() : generics.get(t.getIndex());
-        } else {
-            return type;
-        }
+        return generics.isEmpty() ? type : type.generifyWith(this, generics);
     }
 
     public final void addFulfilledInterfaces() {
