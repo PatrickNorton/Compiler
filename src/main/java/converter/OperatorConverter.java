@@ -100,7 +100,6 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
         var op = node.getOperator();
         switch (op) {
             case NULL_COERCE:
@@ -119,7 +118,13 @@ public final class OperatorConverter implements TestConverter {
                 return convertIs(start);
             case OPTIONAL:
                 return convertQuestion(start);
+            default:
+                return convertNormal(start, op);
         }
+    }
+
+    private List<Byte> convertNormal(int start, OperatorTypeNode op) {
+        List<Byte> bytes = new ArrayList<>();
         int opCount = node.getOperands().length;
         TypeObject opType = null;
         ArgumentNode previousArg = null;
