@@ -188,7 +188,7 @@ public final class OperatorConverter implements TestConverter {
         if (!(condType instanceof OptionTypeObject)) {
             CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
         } else if (condType.equals(Builtins.NULL_TYPE)) {
-            CompilerWarning.warn("Using 'is null' comparison on variable that must be null", arg0);
+            CompilerWarning.warn("Using 'is not null' comparison on variable that must be null", arg0);
         }
         var asType = condType.stripNull();
         var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
