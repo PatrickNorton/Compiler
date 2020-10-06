@@ -5,6 +5,8 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -54,6 +56,11 @@ public final class TypeTypeObject extends TypeObject {
     @NotNull
     public String baseName() {
         return "type";
+    }
+
+    @Override
+    public List<TypeObject> getGenerics() {
+        return generic == null ? Collections.emptyList() : Collections.singletonList(generic);
     }
 
     @Override

@@ -8,7 +8,10 @@ import main.java.parser.DescribableNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.LineInfo;
+import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
+import main.java.parser.TestListNode;
+import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
@@ -192,7 +195,9 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             var variantNo = pair.getValue().getKey();
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
             var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, variantVal);
-            var body = new StatementBodyNode(LineInfo.empty(), stmt);
+            var list = new TestListNode(new TestNode[] {stmt}, new String[] {""});
+            var retStmt = new ReturnStatementNode(node.getLineInfo(), list, TestNode.empty());
+            var body = new StatementBodyNode(LineInfo.empty(), retStmt);
             result.put(pair.getKey(), new Method(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
         }
         return result;
