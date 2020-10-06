@@ -367,15 +367,7 @@ public final class ImportHandler {
         } else {
             path = Converter.findPath(moduleName, node);
         }
-        CompilerInfo f;
-        if (ALL_FILES.containsKey(path)) {
-            f = ALL_FILES.get(path);
-        } else {
-            f = new CompilerInfo(Parser.parse(path.toFile()));
-            ALL_FILES.put(path, f);
-            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
-        }
-        f.loadDependents();
+        loadInfo(path, moduleName);
         return path;
     }
 
@@ -418,6 +410,12 @@ public final class ImportHandler {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
                 : Converter.findPath(moduleName, node);
+        loadInfo(path, moduleName);
+        wildcardExports.add(path);
+        // FIXME: Register exports accurately
+    }
+
+    private void loadInfo(Path path, String moduleName) {
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
@@ -427,8 +425,6 @@ public final class ImportHandler {
             toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
         }
         f.loadDependents();
-        wildcardExports.add(path);
-        // FIXME: Register exports accurately
     }
 
     /**
@@ -494,12 +490,7 @@ public final class ImportHandler {
             @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
-        for (var pair : previousFiles) {
-            var info = pair.getKey();
-            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
-                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
-            }
-        }
+        checkCircular(name, previousFiles);
         if (!exports.containsKey(name)) {
             previousFiles.add(Pair.of(lineInfo, name));
             for (var path : wildcardExports) {
@@ -529,12 +520,7 @@ public final class ImportHandler {
             @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
-        for (var pair : previousFiles) {
-            var info = pair.getKey();
-            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
-                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
-            }
-        }
+        checkCircular(name, previousFiles);
         if (!exports.containsKey(name)) {
             previousFiles.add(Pair.of(lineInfo, name));
             for (var path : wildcardExports) {
@@ -564,12 +550,7 @@ public final class ImportHandler {
             @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
-        for (var pair : previousFiles) {
-            var info = pair.getKey();
-            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
-                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
-            }
-        }
+        checkCircular(name, previousFiles);
         if (!exports.containsKey(name)) {
             previousFiles.add(Pair.of(lineInfo, name));
             for (var path : wildcardExports) {
@@ -591,6 +572,15 @@ public final class ImportHandler {
             return ALL_FILES.get(path).importHandler().importedConst(name, lineInfo, previousFiles);
         } else {
             throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
+    }
+
+    private void checkCircular(String name, @NotNull List<Pair<LineInfo, String>> previousFiles) {
+        for (var pair : previousFiles) {
+            var info = pair.getKey();
+            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
+                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
+            }
         }
     }
 
