@@ -1,0 +1,21 @@
+export Cached
+
+class Cached[T] {
+    private final list[T] stack
+
+    public operator new() {
+        self.stack = []
+    }
+
+    public method get() -> T? {
+        if self.stack {
+            return self.stack.pop()
+        } else {
+            return null
+        }
+    }
+
+    public method put(T value) {
+        self.stack.push(value)
+    }
+}
