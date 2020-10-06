@@ -22,7 +22,7 @@ public final class RangeConstant implements LangConstant {
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
-        bytes.add((byte) ConstantBytes.BYTES.ordinal());
+        bytes.add((byte) ConstantBytes.RANGE.ordinal());
         addToBytes(bytes, start);
         addToBytes(bytes, stop);
         addToBytes(bytes, step);
@@ -37,10 +37,10 @@ public final class RangeConstant implements LangConstant {
             bytes.add((byte) 0);
         } else if (value.compareTo(BIG_MAX) <= 0 && value.compareTo(BIG_MIN) >= 0) {
             bytes.add((byte) 1);
-            bytes.addAll(new IntConstant(value.intValue()).toBytes());
+            bytes.addAll(Util.intToBytes(value.intValueExact()));
         } else {
             bytes.add((byte) 2);
-            bytes.addAll(new BigintConstant(value).toBytes());
+            bytes.addAll(BigintConstant.convertBigint(value));
         }
     }
 
