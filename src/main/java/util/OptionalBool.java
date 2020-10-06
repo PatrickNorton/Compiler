@@ -26,10 +26,32 @@ public final class OptionalBool {
         this.value = (byte) (value ? 1 : 0);
     }
 
+    /**
+     * Returns an {@code OptionalBool} describing the given non-negative
+     * value.
+     *
+     * @param value the value to describe, which must be non-negative
+     * @return an {@code OptionalBool} with the value present
+     * @throws IllegalArgumentException if value is negative
+     * @see java.util.Optional#of(Object)
+     */
     public static OptionalBool of(boolean value) {
         return value ? TRUE : FALSE;
     }
 
+    /**
+     * Returns an empty {@code OptionalBool} instance.  No value is present for
+     * this {@code OptionalBool}.
+     *
+     * @apiNote
+     * Though it may be tempting to do so, avoid testing if an object is empty
+     * by comparing with {@code ==} against instances returned by
+     * {@code OptionalBool.empty()}.  There is no guarantee that it is a
+     * singleton. Instead, use {@link #isPresent()}.
+     *
+     * @return an empty {@code OptionalUint}
+     * @see java.util.Optional#empty()
+     */
     public static OptionalBool empty() {
         return EMPTY;
     }
