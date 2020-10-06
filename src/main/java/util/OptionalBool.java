@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
  * @see java.util.Optional
  */
 public final class OptionalBool {
-    private byte value;
+    private final byte value;
 
     private static final OptionalBool EMPTY = new OptionalBool();
     private static final OptionalBool TRUE = new OptionalBool(true);
