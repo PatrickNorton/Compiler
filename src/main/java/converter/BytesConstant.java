@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,6 +42,11 @@ public final class BytesConstant implements LangConstant {
     @Override
     public TypeObject getType() {
         return Builtins.BYTES;
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(!value.isEmpty());
     }
 
     @NotNull

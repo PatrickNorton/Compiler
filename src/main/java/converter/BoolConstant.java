@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -24,6 +25,15 @@ public final class BoolConstant implements LangConstant {
     @Override
     public TypeObject getType() {
         return Builtins.BOOL;
+    }
+
+    public boolean getValue() {
+        return value;
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(value);
     }
 
     @Override

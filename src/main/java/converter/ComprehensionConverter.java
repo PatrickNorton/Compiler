@@ -7,6 +7,7 @@ import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class ComprehensionConverter implements TestConverter {
@@ -64,8 +65,16 @@ public final class ComprehensionConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        if (retCount > 1) {
+            throw CompilerException.format("Comprehension only returns 1 value, expected %d", node, retCount);
+        }
         var braceType = BraceType.fromBrace(node.getBrace(), node);
         if (braceType == BraceType.GENERATOR) {
+            if (retCount == 0) {
+                // Comprehensions that are not called have no side effects, so no need to deal with it
+                CompilerWarning.warn("Comprehension with no returns serves no purpose", node);
+                return Collections.emptyList();
+            }
             var bytes = innerConvert(0, braceType);
             bytes.add(Bytecode.RETURN.value);
             bytes.addAll(Util.shortZeroBytes());
@@ -137,6 +146,7 @@ public final class ComprehensionConverter implements TestConverter {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), whileJmp);
         }
         if (retCount == 0) {
+            assert braceType != BraceType.GENERATOR;
             bytes.add(Bytecode.POP_TOP.value);
         }
         info.removeStackFrame();

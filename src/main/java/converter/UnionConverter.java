@@ -8,7 +8,10 @@ import main.java.parser.DescribableNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.LineInfo;
+import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
+import main.java.parser.TestListNode;
+import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
@@ -36,8 +39,9 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(supers);
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
+        var hasType = info.hasType(node.strName());
         StdTypeObject type;
-        if (!info.hasType(node.strName())) {
+        if (!hasType) {
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, true);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
@@ -54,7 +58,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             superConstants.add(info.constIndex(sup.name()));
         }
         checkContract(type, trueSupers);
-        addToInfo(type, "union", convertVariants(), superConstants, converter);
+        if (hasType) {
+            putInInfo(type, "union", convertVariants(), superConstants, converter);
+        } else {
+            addToInfo(type, "union", convertVariants(), superConstants, converter);
+        }
         return Collections.emptyList();
     }
 
@@ -114,11 +122,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         }
     }
 
-    public static void completeType(CompilerInfo info, UnionDefinitionNode node, StdTypeObject obj) {
-        new UnionConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, UnionDefinitionNode node, StdTypeObject obj) {
+        return new UnionConverter(info, node).completeType(obj);
     }
 
-    private void completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         try {
             info.accessHandler().addCls(obj);
@@ -126,6 +134,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         } finally {
             info.accessHandler().removeCls();
         }
+        return info.reserveClass(obj);
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
@@ -186,7 +195,9 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             var variantNo = pair.getValue().getKey();
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
             var stmt = new VariantCreationNode(node.getLineInfo(), selfVar, pair.getKey(), variantNo, variantVal);
-            var body = new StatementBodyNode(LineInfo.empty(), stmt);
+            var list = new TestListNode(new TestNode[] {stmt}, new String[] {""});
+            var retStmt = new ReturnStatementNode(node.getLineInfo(), list, TestNode.empty());
+            var body = new StatementBodyNode(LineInfo.empty(), retStmt);
             result.put(pair.getKey(), new Method(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
         }
         return result;

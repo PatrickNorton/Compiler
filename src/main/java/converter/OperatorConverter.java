@@ -100,7 +100,6 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
         var op = node.getOperator();
         switch (op) {
             case NULL_COERCE:
@@ -119,7 +118,13 @@ public final class OperatorConverter implements TestConverter {
                 return convertIs(start);
             case OPTIONAL:
                 return convertQuestion(start);
+            default:
+                return convertNormal(start, op);
         }
+    }
+
+    private List<Byte> convertNormal(int start, OperatorTypeNode op) {
+        List<Byte> bytes = new ArrayList<>();
         int opCount = node.getOperands().length;
         TypeObject opType = null;
         ArgumentNode previousArg = null;
@@ -188,7 +193,7 @@ public final class OperatorConverter implements TestConverter {
         if (!(condType instanceof OptionTypeObject)) {
             CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
         } else if (condType.equals(Builtins.NULL_TYPE)) {
-            CompilerWarning.warn("Using 'is null' comparison on variable that must be null", arg0);
+            CompilerWarning.warn("Using 'is not null' comparison on variable that must be null", arg0);
         }
         var asType = condType.stripNull();
         var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
@@ -366,16 +371,29 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     private List<Byte> convertIs(int start) {
         assert node.getOperator() == OperatorTypeNode.IS || node.getOperator() == OperatorTypeNode.IS_NOT;
-        if (node.getOperands().length == 2) {
-            List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
-            bytes.addAll(TestConverter.bytes(start, node.getOperands()[1].getArgument(), info, 1));
-            bytes.add(Bytecode.IDENTICAL.value);
-            if (node.getOperator() == OperatorTypeNode.IS_NOT) {
-                bytes.add(Bytecode.BOOL_NOT.value);
+        var operands = node.getOperands();
+        switch (operands.length) {
+            case 0:
+            case 1: {
+                boolean isIs = node.getOperator() == OperatorTypeNode.IS;
+                CompilerWarning.warnf("'%s' with < 2 operands will always be %b", node, isIs ? "is" : "is not", isIs);
+                List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+                bytes.add(Bytecode.LOAD_CONST.value);
+                bytes.addAll(Util.shortToBytes(info.constIndex(isIs ? Builtins.TRUE : Builtins.FALSE)));
+                return bytes;
             }
-            return bytes;
-        } else {
-            throw CompilerTodoError.of("'is' with more than 2 operands not yet supported", node);
+            case 2: {
+                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+                bytes.addAll(TestConverter.bytes(start, operands[1].getArgument(), info, 1));
+                bytes.add(Bytecode.IDENTICAL.value);
+                if (node.getOperator() == OperatorTypeNode.IS_NOT) {
+                    bytes.add(Bytecode.BOOL_NOT.value);
+                }
+                return bytes;
+            }
+            default: {
+                throw CompilerTodoError.of("'is' with more than 2 operands not yet supported", node);
+            }
         }
     }
 

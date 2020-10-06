@@ -24,6 +24,8 @@ public final class NumberConverter implements ConstantConverter {
         if (retCount == 0) {
             CompilerWarning.warn("Numeric literal unused", node);
             return Collections.emptyList();
+        } else if (retCount > 1) {
+            throw CompilerException.format("Numeric literals return 1 value, %d were expected", node, retCount);
         }
         int constIndex = info.addConstant(constant());
         List<Byte> bytes = new ArrayList<>();

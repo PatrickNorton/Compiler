@@ -89,7 +89,9 @@ public final class LiteralConverter implements TestConverter {
         } else if (node.getBuilders().length == 0) {
             convertEmpty(bytes, literalType);
         } else {
-            assert retCount == 1;
+            if (retCount > 1) {
+                throw CompilerException.format("Literal returns 1 value, expected %d", node, retCount);
+            }
             var retType = returnTypes(node.getBuilders());
             for (var value : node.getBuilders()) {
                 bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));

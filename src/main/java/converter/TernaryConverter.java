@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.TernaryNode;
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -28,7 +29,12 @@ public final class TernaryConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getStatement(), info, 1));
+        var condConverter = TestConverter.of(info, node.getStatement(), 1);
+        var boolVal = constantBool(condConverter);
+        if (boolVal.isPresent()) {
+            return convertOpt(start, boolVal.orElseThrow());
+        }
+        List<Byte> bytes = new ArrayList<>(condConverter.convert(start));
         bytes.add(Bytecode.JUMP_FALSE.value);
         int jump1 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
@@ -49,5 +55,17 @@ public final class TernaryConverter implements TestConverter {
         }
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
         return bytes;
+    }
+
+    private OptionalBool constantBool(TestConverter condConverter) {
+        return condConverter.constantReturn().map(LangConstant::boolValue).orElse(OptionalBool.empty());
+    }
+
+    private List<Byte> convertOpt(int start, boolean condVal) {
+        CompilerWarning.warnf("Condition of ternary always evaluates to %b", node.getStatement(), condVal);
+        var evaluated = condVal ? node.getIfTrue() : node.getIfFalse();
+        var notEvaluated = condVal ? node.getIfFalse() : node.getIfTrue();
+        TestConverter.bytes(start, notEvaluated, info, retCount);  // Check for errors, but don't add to bytes
+        return TestConverter.bytes(start, evaluated, info, retCount);
     }
 }

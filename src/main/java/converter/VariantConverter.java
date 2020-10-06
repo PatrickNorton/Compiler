@@ -20,15 +20,18 @@ public final class VariantConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
-        var retType = unionConverter.returnType()[0];
-        var optionRet = TypeObject.optional(retType.tryAttrType(node, node.getVariantName(), AccessLevel.PUBLIC));
-        return new TypeObject[] {optionRet};
+        var retType = unionConverter.returnType()[0].getGenerics().get(0);
+        return new TypeObject[] {retType};
     }
 
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert retCount == 1 || retCount == 0;
+        if (retCount == 0) {
+            CompilerWarning.warn("Unused variant access", node);
+        } else if (retCount > 1) {
+            throw CompilerException.format("Union variant can only return one value, not %d", node, retCount);
+        }
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
         var retType = unionConverter.returnType()[0];
         assert retType instanceof TypeTypeObject;

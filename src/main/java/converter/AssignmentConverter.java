@@ -46,7 +46,6 @@ public final class AssignmentConverter implements BaseConverter {
                     node, names.length, values.size()
             );
         }
-        assert names.length == values.size() : "Multiple returns not supported yet";
         List<Byte> assignBytes = new ArrayList<>();
         List<Byte> storeBytes = new ArrayList<>(names.length * Bytecode.STORE.size());
         for (int i = 0; i < names.length; i++) {

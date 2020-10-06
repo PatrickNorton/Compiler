@@ -28,7 +28,11 @@ public final class FormattedStringConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert retCount == 0 || retCount == 1;
+        if (retCount == 0) {
+            CompilerWarning.warn("Unused formatted string", node);
+        } else if (retCount > 1) {
+            throw CompilerException.format("F-string literal only returns one value, not %d", node, retCount);
+        }
         List<Byte> bytes = new ArrayList<>();
         var strings = node.getStrings();
         var tests = node.getTests();

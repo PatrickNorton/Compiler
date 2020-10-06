@@ -12,6 +12,7 @@ import main.java.parser.TypedefStatementNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
@@ -64,6 +65,7 @@ public final class ImportHandler {
     private final CompilerInfo info;
     private final Map<String, TypeObject> exports = new HashMap<>();
     private final Map<String, Path> fromExports = new HashMap<>();
+    private final Map<String, OptionalUint> exportConstants = new HashMap<>();
     private final Map<Path, ImportInfo> imports = new HashMap<>();
     private final IndexedSet<String> importStrings = new IndexedHashSet<>();
     private final Set<Path> wildcardExports = new HashSet<>();
@@ -169,7 +171,7 @@ public final class ImportHandler {
      * to set export information.
      * <p>
      *     This is called as part of the process in {@link
-     *     CompilerInfo#compile(File)} and probably should not be used anywhere
+     *     CompilerInfo#compile()} and probably should not be used anywhere
      *     else. It assumes it is only called once per object, but <i>probably
      *     </i> won't break if you do otherwise. If you do put in another call
      *     site, double-check this won't do anything weird.
@@ -180,6 +182,7 @@ public final class ImportHandler {
     public void setFromLinker(@NotNull Linker linker) {
         var exports = linker.getExports();
         var globals = linker.getGlobals();
+        var constants = linker.getConstants();
         for (var entry : exports.entrySet()) {
             var exportName = entry.getValue().getKey();
             var exportType = globals.get(entry.getKey());
@@ -189,6 +192,12 @@ public final class ImportHandler {
             }
             assert exports.containsKey(exportName);
             this.exports.put(exportName, exportType);
+            this.exportConstants.put(exportName, OptionalUint.ofNullable(constants.get(exportName)));
+        }
+        for (var exportName : this.exports.keySet()) {
+            if (!exportConstants.containsKey(exportName)) {
+                exportConstants.put(exportName, OptionalUint.ofNullable(constants.get(exportName)));
+            }
         }
     }
 
@@ -358,15 +367,7 @@ public final class ImportHandler {
         } else {
             path = Converter.findPath(moduleName, node);
         }
-        CompilerInfo f;
-        if (ALL_FILES.containsKey(path)) {
-            f = ALL_FILES.get(path);
-        } else {
-            f = new CompilerInfo(Parser.parse(path.toFile()));
-            ALL_FILES.put(path, f);
-            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
-        }
-        f.loadDependents();
+        loadInfo(path, moduleName);
         return path;
     }
 
@@ -409,6 +410,12 @@ public final class ImportHandler {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
                 : Converter.findPath(moduleName, node);
+        loadInfo(path, moduleName);
+        wildcardExports.add(path);
+        // FIXME: Register exports accurately
+    }
+
+    private void loadInfo(Path path, String moduleName) {
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
@@ -418,8 +425,6 @@ public final class ImportHandler {
             toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
         }
         f.loadDependents();
-        wildcardExports.add(path);
-        // FIXME: Register exports accurately
     }
 
     /**
@@ -460,6 +465,12 @@ public final class ImportHandler {
     }
 
     @NotNull
+    public OptionalUint importedConstant(@NotNull Lined lineInfo, Path file, String name) {
+        var handler = ALL_FILES.get(file);
+        return handler.importHandler().importedConst(name, lineInfo.getLineInfo(), new ArrayList<>());
+    }
+
+    @NotNull
     private Map<String, TypeObject> exportedTypes(LineInfo lineInfo) {
         Map<String, TypeObject> result = new HashMap<>();
         for (var pair : exports.entrySet()) {
@@ -479,12 +490,7 @@ public final class ImportHandler {
             @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
-        for (var pair : previousFiles) {
-            var info = pair.getKey();
-            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
-                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
-            }
-        }
+        checkCircular(name, previousFiles);
         if (!exports.containsKey(name)) {
             previousFiles.add(Pair.of(lineInfo, name));
             for (var path : wildcardExports) {
@@ -514,12 +520,7 @@ public final class ImportHandler {
             @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
-        for (var pair : previousFiles) {
-            var info = pair.getKey();
-            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
-                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
-            }
-        }
+        checkCircular(name, previousFiles);
         if (!exports.containsKey(name)) {
             previousFiles.add(Pair.of(lineInfo, name));
             for (var path : wildcardExports) {
@@ -544,6 +545,52 @@ public final class ImportHandler {
         }
     }
 
+    @NotNull
+    public OptionalUint importedConst(
+            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+    ) {
+        assert !name.equals("*");
+        checkCircular(name, previousFiles);
+        if (!exports.containsKey(name)) {
+            previousFiles.add(Pair.of(lineInfo, name));
+            for (var path : wildcardExports) {
+                var handler = ALL_FILES.get(path).importHandler();
+                try {
+                    return handler.importedConst(name, lineInfo, previousFiles);
+                } catch (CompilerException ignored) {
+                    // If value was not exported, don't fail, just continue
+                }
+            }
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
+        var export = exportConstants.get(name);
+        if (export != null) {
+            return export;
+        } else if (fromExports.containsKey(name)) {
+            var path = fromExports.get(name);
+            previousFiles.add(Pair.of(lineInfo, name));
+            return ALL_FILES.get(path).importHandler().importedConst(name, lineInfo, previousFiles);
+        } else {
+            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+        }
+    }
+
+    private void checkCircular(String name, @NotNull List<Pair<LineInfo, String>> previousFiles) {
+        for (var pair : previousFiles) {
+            var info = pair.getKey();
+            if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
+                throw CompilerException.format("Circular import of '%s': name not defined in any file", info, name);
+            }
+        }
+    }
+
+    public static void linkAll() {
+        loadDefaultInterfaces();
+        for (var file : ALL_FILES.values()) {
+            file.link();
+        }
+    }
+
     public static void compileAll() {
         loadDefaultInterfaces();
         while (!toCompile.isEmpty()) {
@@ -553,7 +600,7 @@ public final class ImportHandler {
                 pair.getKey().link();
             }
             for (var pair : nextCompilationRound) {
-                pair.getKey().compile(pair.getValue());
+                pair.getKey().compile();
             }
         }
     }
@@ -562,7 +609,7 @@ public final class ImportHandler {
         for (var pair : ALL_DEFAULT_INTERFACES.entrySet()) {
             if (pair.getValue().isPresent()) {
                 var infoPair = pair.getValue().get();
-                InterfaceConverter.completeType(infoPair.getKey(), infoPair.getValue(), pair.getKey());
+                InterfaceConverter.completeWithoutReserving(infoPair.getKey(), infoPair.getValue(), pair.getKey());
                 pair.setValue(Optional.empty());
             }
         }

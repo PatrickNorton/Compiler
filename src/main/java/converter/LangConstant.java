@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.NumberNode;
 import main.java.parser.StringNode;
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +19,10 @@ public interface LangConstant extends LangObject {
     @NotNull
     default String name() {
         return "";
+    }
+
+    default OptionalBool boolValue() {
+        return OptionalBool.empty();
     }
 
     @NotNull

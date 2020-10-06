@@ -28,6 +28,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     public List<Byte> trueConvert(int start) {
+        if (incompleteReturn()) {
+            throw CompilerException.format("Cannot get return from switch: Not all cases covered", node);
+        }
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
         if (Builtins.INT.isSuperclass(retType)) {
@@ -114,10 +117,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             var label = stmt.getLabel()[0];
             var lblConverter = TestConverter.of(info, stmt.getLabel()[0], 1);
-            if (!(lblConverter instanceof ConstantConverter)) {  // TODO: Variable switch arguments
-                throw literalException("int", label);
-            }
-            var constant = ((ConstantConverter) lblConverter).constant();
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
             if (constant instanceof IntConstant) {
                 jumps.put(BigInteger.valueOf(((IntConstant) constant).getValue()), start + bytes.size());
             } else if (constant instanceof BigintConstant) {
@@ -154,10 +154,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             var label = stmt.getLabel()[0];
             var lblConverter = TestConverter.of(info, label, 1);
-            if (!(lblConverter instanceof ConstantConverter)) {
-                throw literalException("string", label);
-            }
-            var constant = ((ConstantConverter) lblConverter).constant();
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
             if (constant instanceof StringConstant) {
                 jumps.put(((StringConstant) constant).getValue(), start + bytes.size());
             } else {
@@ -353,6 +350,19 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
         }
         throw CompilerException.of("Switch on a union must have properly-formed variants", label);
+    }
+
+    private boolean incompleteReturn() {  // TODO: Unions with all cases covered
+        if (retCount > 0) {
+            for (var stmt : node.getCases()) {
+                if (stmt instanceof DefaultStatementNode) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @NotNull

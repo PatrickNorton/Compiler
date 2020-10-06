@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -76,5 +77,10 @@ public final class BigintConstant implements LangConstant {
     @Override
     public String name() {
         return value.toString();
+    }
+
+    @Override
+    public OptionalBool boolValue() {
+        return OptionalBool.of(value.signum() != 0);
     }
 }
