@@ -1,6 +1,7 @@
 package main.java.util;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * An optimized version of {@link java.util.Optional} for booleans.
@@ -90,5 +91,15 @@ public final class OptionalBool {
             throw new NoSuchElementException("Called 'orElseThrow' on an empty OptionalUint");
         }
         return value != 0;
+    }
+
+    public <T> Optional<T> mapValues(T ifTrue, T ifFalse) {
+        if (value < 0) {
+            return Optional.empty();
+        } else if (value == 0) {
+            return Optional.of(ifFalse);
+        } else {
+            return Optional.of(ifTrue);
+        }
     }
 }
