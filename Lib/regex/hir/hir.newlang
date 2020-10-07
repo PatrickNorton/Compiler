@@ -320,6 +320,10 @@ class Hir {
             return Hir.type(Class.Unicode(clsBytes))
         }
     }
+
+    public method isAlwaysUtf8() -> bool {
+        return self.info.isAlwaysUtf8
+    }
 }
 
 union HirKind {

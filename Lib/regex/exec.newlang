@@ -6,6 +6,7 @@ from .compile import Compiler
 from .dfa import canExec
 from .hir import Hir, Literals
 from .literal import LiteralSearcher
+from .parser import ParserBuilder
 from .trait import Locations
 
 from .backtrack import Cache as BacktrackCache
@@ -231,41 +232,12 @@ class ExecBuilder {
                 .allowInvalidUtf8(not self.utf8Only)
                 .nestLimit(self.options.nestLimit)
                 .build())
-            var expr = parser.parse(patt)
+            var expr = parser.parse(pat)
             isBytes = isBytes or not expr.isAlwaysUtf8()
             exprs.push(expr)
         }
 
-        if not expr.isAnchoredStart() and expr.isAnyAnchoredStart() {
-            # Partial anchors unfortunately make it hard to use
-            # prefixes, so disable them.
-            prefixes = null
-        } elif isSet and expr.isAnchoredStart() {
-            # Regex sets with anchors do not go well with literal
-            # optimizations.
-            prefixes = null
-        }
-        if prefixes? as p {
-            if not p.unionPrefixes(expr) {
-                prefixes = null
-            }
-        }
-        if not expr.isAnchoredEnd() and expr.isAnyAnchoredEnd() {
-            # Partial anchors unfortunately make it hard to use
-            # suffixes, so disable them.
-            suffixes = null
-        } elif isSet and expr.isAnchoredEnd() {
-            # Regex sets with anchors do not go well with literal
-            # optimizations.
-            suffixes = null
-        }
-        if suffixes? as s {
-            if not s.unionSuffixes(expr) {
-                suffixes = null
-            }
-        }
-
-        return Parsed(exprs, prefixes ?? Literals.empty(), suffixes ?? Literals.empty(), isBytes)
+        return Parsed(exprs, prefixes ?? Literals(), suffixes ?? Literals(), isBytes)
     }
 
     public method build() -> Exec {
@@ -792,4 +764,25 @@ class ExecNoSyncStr {
     public method captureNameIdx() -> dict[str, int] {
         return self.value.captureNameIdx()
     }
+}
+
+func alternationLiterals(Hir expr) -> list[bytes]? {
+    return null if not expr.isAlternationLiteral()
+
+    var alts = expr.kind.Alternation
+
+    final list[byte] lits = []
+    for var alt in alts {
+        mut bytes lit = []
+        switch alt.kind() {
+            case HirKind.Literal as x {
+                # TODO
+            }
+            case HirKind.Concat as x {
+                # TODO
+            }
+        }
+        lits.add(lit)
+    }
+    return lits
 }
