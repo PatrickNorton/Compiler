@@ -117,40 +117,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.supers;
     }
 
-    @NotNull
-    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
-        return typeFromAttr(info.attributes.get(value), access);
-    }
-
-    @NotNull
-    @Override
-    public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
-        return typeFromAttr(info.staticAttributes.get(value), access);
-    }
-
-    private Optional<TypeObject> typeFromAttr(AttributeInfo attr, AccessLevel access) {
-        if (attr == null) {
-            return Optional.empty();
-        }
-        if (attr.getMutType() == MutableType.MUT_METHOD) {
-            return isConst ? Optional.empty() : Optional.of(attr.getType());
-        } else if (isConst) {
-            return AccessLevel.canAccess(attr.getAccessLevel(), access)
-                    ? Optional.of(attr.getType().makeConst()) : Optional.empty();
-        } else if (attr.getAccessLevel() == AccessLevel.PUBGET) {
-            return Optional.of(AccessLevel.canAccess(AccessLevel.PRIVATE, access)
-                    ? attr.getType() : attr.getType().makeConst());
-        } else if (AccessLevel.canAccess(attr.getAccessLevel(), access)) {
-            if (attr.getMutType().isConstType()) {
-                return Optional.of(attr.getType().makeConst());
-            } else {
-                return Optional.of(attr.getType().makeMut());
-            }
-        } else {
-            return Optional.empty();
-        }
-    }
-
     public void setAttributes(Map<String, AttributeInfo> attributes) {
         assert !info.isSealed && info.attributes == null;
         info.attributes = attributes;
@@ -159,11 +125,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     public void setStaticAttributes(Map<String, AttributeInfo> attributes) {
         assert !info.isSealed && info.staticAttributes == null;
         info.staticAttributes = attributes;
-    }
-
-    void makeUnion() {
-        assert !info.isUnion && !info.isSealed;
-        info.isUnion = true;
     }
 
     void isConstClass() {
@@ -202,10 +163,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.isFinal;
     }
 
-    public boolean isUnion() {
-        return info.isUnion;
-    }
-
     public void seal() {
         addFulfilledInterfaces();
         info.seal();
@@ -227,20 +184,17 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     protected static final class Info extends UserType.Info<MethodInfo, AttributeInfo> {
         private boolean isConstClass;
         private final boolean isFinal;
-        private boolean isUnion;
 
         public Info(String name, List<TypeObject> supers) {
             super(name, supers, GenericInfo.empty());
             this.isFinal = true;
             this.isConstClass = false;
-            this.isUnion = false;
         }
 
         public Info(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
             super(name, supers, info);
             this.isFinal = isFinal;
             this.isConstClass = false;
-            this.isUnion = false;
         }
     }
 }

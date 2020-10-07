@@ -175,7 +175,7 @@ public final class ConverterHolder {
 
     @NotNull
     public Map<String, AttributeInfo> staticAttrs() {
-        return mergeAttrs(attrs.getStaticVars(), attrs.getStaticColons(), methods.getMethods(), new HashMap<>());
+        return mergeAttrs(attrs.getStaticVars(), attrs.getStaticColons(), methods.getStaticMethods(), new HashMap<>());
     }
 
     @NotNull

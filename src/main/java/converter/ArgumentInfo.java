@@ -222,8 +222,14 @@ public final class ArgumentInfo implements Iterable<Argument> {
                     return Optional.empty();
                 }
             } else {
+                if (argNo >= newArgs.length) {
+                    return Optional.empty();
+                }
                 while (!newArgs[argNo].getName().isEmpty()) {
                     argNo++;
+                    if (argNo >= newArgs.length) {
+                        return Optional.empty();
+                    }
                 }
                 var passedArg = newArgs[argNo++];
                 var argGenerics = passedArg.getType().generifyAs(par, arg.getType());

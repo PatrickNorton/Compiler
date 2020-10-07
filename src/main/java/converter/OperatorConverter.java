@@ -124,6 +124,7 @@ public final class OperatorConverter implements TestConverter {
     }
 
     private List<Byte> convertNormal(int start, OperatorTypeNode op) {
+        assert op == node.getOperator();
         List<Byte> bytes = new ArrayList<>();
         int opCount = node.getOperands().length;
         TypeObject opType = null;

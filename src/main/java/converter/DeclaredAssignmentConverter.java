@@ -51,9 +51,11 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             if (!valuePair.getValue().isEmpty()) {
                 throw CompilerException.of("Varargs not yet supported here", assigned);
             }
-            var converter = TestConverter.of(info, value, 1);
-            var valueType = converter.returnType()[0];
             var rawType = assigned.getType();
+            var converter = rawType.isDecided()
+                    ? TestConverter.of(info, value, 1, info.getType(rawType))
+                    : TestConverter.of(info, value, 1);
+            var valueType = converter.returnType()[0];
             var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
             var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
             var assignedType = mutability.isConstType()
