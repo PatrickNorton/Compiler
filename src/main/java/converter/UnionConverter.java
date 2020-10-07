@@ -40,14 +40,14 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         var trueSupers = convertSupers(supers);
         var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         var hasType = info.hasType(node.strName());
-        StdTypeObject type;
+        UnionTypeObject type;
         if (!hasType) {
-            type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, true);
+            type = new UnionTypeObject(node.getName().strName(), List.of(trueSupers), generics);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
             parseIntoObject(converter, type);
         } else {
-            type = (StdTypeObject) info.getType(node.strName());
+            type = (UnionTypeObject) info.getType(node.strName());
             parseStatements(converter);
         }
         if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
@@ -100,7 +100,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return node.getDescriptors().contains(DescriptorNode.STATIC);
     }
 
-    private void checkContract(StdTypeObject type, @NotNull UserType<?>... supers) {
+    private void checkContract(UnionTypeObject type, @NotNull UserType<?>... supers) {
         for (var sup : supers) {
             var contract = sup.contract();
             for (var attr : contract.getKey()) {
@@ -122,11 +122,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         }
     }
 
-    public static int completeType(CompilerInfo info, UnionDefinitionNode node, StdTypeObject obj) {
+    public static int completeType(CompilerInfo info, UnionDefinitionNode node, UnionTypeObject obj) {
         return new UnionConverter(info, node).completeType(obj);
     }
 
-    private int completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull UnionTypeObject obj) {
         var converter = new ConverterHolder(info);
         try {
             info.accessHandler().addCls(obj);
@@ -137,7 +137,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return info.reserveClass(obj);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
+    private void parseIntoObject(ConverterHolder converter, @NotNull UnionTypeObject obj) {
         parseStatements(converter);
         converter.attributes().addUnionMethods(variantMethods(obj));
         obj.setOperators(converter.getOperatorInfos());
@@ -145,7 +145,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         converter.checkAttributes();
         obj.setAttributes(withVariantInfos(converter.allAttrs()));
         obj.setStaticAttributes(withStaticVariants(converter.staticAttrs(), obj));
-        obj.makeUnion();
+        obj.setVariants(getVariants());
         obj.seal();
     }
 
@@ -162,7 +162,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     @NotNull
     private Map<String, AttributeInfo> withStaticVariants(
-            @NotNull Map<String, AttributeInfo> vars, StdTypeObject selfType
+            @NotNull Map<String, AttributeInfo> vars, UnionTypeObject selfType
     ) {
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
@@ -184,10 +184,22 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return result;
     }
 
+    private List<Pair<String, TypeObject>> getVariants() {
+        List<Pair<String, TypeObject>> result = new ArrayList<>(Collections.nCopies(variants.size(), null));
+        for (var pair : variants.entrySet()) {
+            int index = pair.getValue().getKey();
+            var name = pair.getKey();
+            var type = pair.getValue().getValue().getType();
+            assert result.get(index) == null;
+            result.set(index, Pair.of(name, type));
+        }
+        return result;
+    }
+
     private static final String VARIANT_NAME = "val";
 
     @NotNull
-    private Map<String, Method> variantMethods(StdTypeObject selfType) {
+    private Map<String, Method> variantMethods(UnionTypeObject selfType) {
         Map<String, Method> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
             var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType);
@@ -204,7 +216,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     @NotNull
-    private FunctionInfo variantInfo(TypeObject val, StdTypeObject type) {
+    private FunctionInfo variantInfo(TypeObject val, UnionTypeObject type) {
         var arg = new Argument(VARIANT_NAME, val);
         return new FunctionInfo(new ArgumentInfo(arg), type);
     }

@@ -6,6 +6,7 @@ import main.java.parser.DottedVariableNode;
 import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
+import main.java.parser.VariableNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,8 +38,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             return convertTbl(start);
         } else if (Builtins.STR.isSuperclass(retType)) {
             return convertStr(start);
-        } else if (retType instanceof StdTypeObject && ((StdTypeObject) retType).isUnion()) {
-            return convertUnion(start, (StdTypeObject) retType);
+        } else if (retType instanceof UnionTypeObject) {
+            return convertUnion(start, (UnionTypeObject) retType);
         }
         var switched = converter.convert(start);
         var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
@@ -73,6 +74,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         // TODO: Ensure 'default' statement is at the end
         var label = stmt.getLabel();
         List<Integer> jumpLocations = new ArrayList<>(label.length);
+        if (!stmt.getAs().isEmpty()) {
+            throw CompilerException.of("'as' clause not allowed here", stmt.getAs());
+        }
         if (!(stmt instanceof DefaultStatementNode)) {
             assert label.length != 0;
             if (label.length == 1) {
@@ -249,7 +253,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @NotNull
-    private List<Byte> convertUnion(int start, StdTypeObject union) {
+    private List<Byte> convertUnion(int start, UnionTypeObject union) {
         Map<Integer, Integer> jumps = new HashMap<>();
         boolean hasAs = anyHasAs();
         int defaultVal = 0;
@@ -310,7 +314,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return false;
     }
 
-    private int labelToVariantNo(TestNode label, StdTypeObject switchedType) {
+    private int labelToVariantNo(TestNode label, UnionTypeObject switchedType) {
         if (label instanceof DottedVariableNode) {
             var dottedLbl = (DottedVariableNode) label;
             var lblFirst = dottedLbl.getPreDot();
@@ -321,8 +325,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 var firstType = (TypeTypeObject) firstRetType;
                 var retType = firstType.representedType();
                 if (retType.equals(switchedType)) {
-                    // TODO: Get label
-                    return 0;
+                    if (lblSecond[0].getPostDot() instanceof VariableNode && lblSecond[0].getDotPrefix().isEmpty()) {
+                        var name = ((VariableNode) lblSecond[0].getPostDot()).getName();
+                        return switchedType.getVariantNumber(name).orElseThrow(() -> CompilerException.format(
+                                "Invalid name for union variant: %s", label, name
+                        ));
+                    }
                 } else {
                     throw CompilerException.of("Mismatched types in label", label);
                 }
@@ -332,7 +340,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @NotNull
-    private TypeObject labelToType(@NotNull TestNode label, StdTypeObject switchedType) {
+    private TypeObject labelToType(@NotNull TestNode label, UnionTypeObject switchedType) {
         if (label instanceof DottedVariableNode) {
             var dottedLbl = (DottedVariableNode) label;
             var lblFirst = dottedLbl.getPreDot();

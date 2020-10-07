@@ -9,6 +9,7 @@ import main.java.parser.Lined;
 import main.java.parser.Parser;
 import main.java.parser.TopNode;
 import main.java.parser.TypedefStatementNode;
+import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
@@ -137,7 +138,8 @@ public final class ImportHandler {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
                 var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
-                var type = new StdTypeObject(strName, generics);
+                var type = stmt instanceof UnionDefinitionNode
+                        ? new UnionTypeObject(strName, generics) : new StdTypeObject(strName, generics);
                 generics.setParent(type);
                 types.put(strName, Pair.of(type, cls));
                 lineInfos.put(strName, cls.getLineInfo());

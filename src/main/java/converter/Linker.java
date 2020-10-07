@@ -157,7 +157,7 @@ public final class Linker {
             return Builtins.TYPE.generify(predeclaredType);
         } else if (stmt instanceof UnionDefinitionNode) {
             var unionNode = (UnionDefinitionNode) stmt;
-            var predeclaredType = (StdTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
+            var predeclaredType = (UnionTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
             int index = UnionConverter.completeType(info, unionNode, predeclaredType);
             var constant = new ClassConstant(unionNode.strName(), index, predeclaredType);
             constants.put(unionNode.strName(), (int) info.addConstant(constant));

@@ -261,6 +261,42 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
+    @NotNull
+    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
+        var attr = info.attributes.get(value);
+        return typeFromAttr(attr == null ? null : attr.intoAttrInfo(), access);
+    }
+
+    @NotNull
+    @Override
+    public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
+        var attr = info.staticAttributes.get(value);
+        return typeFromAttr(attr == null ? null : attr.intoAttrInfo(), access);
+    }
+
+    private Optional<TypeObject> typeFromAttr(AttributeInfo attr, AccessLevel access) {
+        if (attr == null) {
+            return Optional.empty();
+        }
+        if (attr.getMutType() == MutableType.MUT_METHOD) {
+            return isConst ? Optional.empty() : Optional.of(attr.getType());
+        } else if (isConst) {
+            return AccessLevel.canAccess(attr.getAccessLevel(), access)
+                    ? Optional.of(attr.getType().makeConst()) : Optional.empty();
+        } else if (attr.getAccessLevel() == AccessLevel.PUBGET) {
+            return Optional.of(AccessLevel.canAccess(AccessLevel.PRIVATE, access)
+                    ? attr.getType() : attr.getType().makeConst());
+        } else if (AccessLevel.canAccess(attr.getAccessLevel(), access)) {
+            if (attr.getMutType().isConstType()) {
+                return Optional.of(attr.getType().makeConst());
+            } else {
+                return Optional.of(attr.getType().makeMut());
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
