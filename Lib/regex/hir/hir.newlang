@@ -324,6 +324,10 @@ class Hir {
     public method isAlwaysUtf8() -> bool {
         return self.info.isAlwaysUtf8
     }
+
+    public method isAlternationLiteral() -> bool {
+        return self.info.isAlternationLiteral
+    }
 }
 
 union HirKind {
