@@ -332,7 +332,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                         ));
                     }
                 } else {
-                    throw CompilerException.of("Mismatched types in label", label);
+                    throw CompilerException.format(
+                            "Mismatched types in label: label has type '%s', switched on type '%s'",
+                            label, retType.name(), switchedType.name()
+                    );
                 }
             }
         }
@@ -351,7 +354,13 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 var firstType = (TypeTypeObject) firstRetType;
                 var retType = firstType.representedType();
                 if (retType.equals(switchedType)) {
-                    return retType;
+                    var lblName = ((VariableNode) lblSecond[0].getPostDot()).getName();
+                    return switchedType.variantType(lblName).orElseThrow(
+                            () -> CompilerException.format(
+                                    "Invalid variant name in union '%s': '%s",
+                                    label, switchedType.name(), lblName
+                            )
+                    );
                 } else {
                     throw CompilerException.of("Mismatched types in label", label);
                 }
