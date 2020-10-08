@@ -12,6 +12,20 @@ class Cache {
     CacheInner inner
     set[int] qcur
     set[int] qnext
+
+    public operator new(Program prog) {
+        var numByteClasses = prog.byteClasses[255] + 1 + 1
+        final var starts = [STATE_UNKNOWN] * 256
+        self.inner = CacheInner(
+            StateMap(numByteClasses),
+            Transitions(numByteClasses),
+            starts,
+            [], 0, 0, []
+        )
+        self.qcur = {}
+        self.qnext = {}
+        self.inner.resetSize()
+    }
 }
 
 class CacheInner {
