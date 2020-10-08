@@ -1,10 +1,10 @@
-from .AhoCorasick import AhoCorasick
+from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, MatchKind
 from .prog import Program
 from .builder import RegexOptions
 from .cache import Cached
 from .compile import Compiler
 from .dfa import canExec
-from .hir import Hir, Literals
+from .hir import Hir, Literal, Literals, HirKind
 from .literal import LiteralSearcher
 from .parser import ParserBuilder
 from .trait import Locations
@@ -290,7 +290,7 @@ class ExecBuilder {
 
     private method buildAhoCorasick(Parsed parsed) -> AhoCorasick? {
         return null if parsed.exprs.length != 1
-        list[bytes] lits
+        mref list[bytes] lits
         if alternationLiterals(parsed.exprs[0])? as l {
             lits = l
         } else {
@@ -301,8 +301,7 @@ class ExecBuilder {
             .matchKind(MatchKind.LeftMostFirst())
             .autoConfigure(lits)
             .byteClasses(true)
-            .buildWithSize(lits)
-            ?? raise RuntimeError("AC automation too big"))
+            .build(lits))
     }
 }
 
@@ -360,7 +359,7 @@ class ProgramCache {
 func alternationLiterals(Hir expr) -> list[bytes]? {
     return null if not expr.isAlternationLiteral
     list[Hir] alts
-    if expr.kind().Alternation? as _alts {
+    if expr.kind.Alternation? as _alts {
         alts = _alts
     } else {
         return null
@@ -368,7 +367,7 @@ func alternationLiterals(Hir expr) -> list[bytes]? {
 
     mut list[bytes] lits = []
     for var alt in alts {
-        mut bytes lit = bytes()
+        mut bytes lit = bytes("")
         switch alt.kind {
             case HirKind.Literal as x {
                 switch x {
