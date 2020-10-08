@@ -33,7 +33,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
             info.addType(type);
             parseIntoObject(converter, type);
         } else {
-            type = (StdTypeObject) info.getType(node.getName().strName());
+            type = (StdTypeObject) info.getTypeObj(node.getName().strName());
             parseStatements(converter);
         }
         if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {

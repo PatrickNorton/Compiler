@@ -47,7 +47,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             info.addType(type);
             parseIntoObject(converter, type);
         } else {
-            type = (UnionTypeObject) info.getType(node.strName());
+            type = (UnionTypeObject) info.getTypeObj(node.strName());
             parseStatements(converter);
         }
         if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
