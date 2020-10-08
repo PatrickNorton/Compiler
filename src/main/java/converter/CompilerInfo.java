@@ -295,6 +295,22 @@ public final class CompilerInfo {
         return this;
     }
 
+    public void addGlobals(Map<String, TypeObject> globals, Map<String, Integer> constants) {
+        var varFrame = variables.get(0);
+        for (var pair : globals.entrySet()) {
+            var name = pair.getKey();
+            var type = pair.getValue();
+            if (!varFrame.containsKey(name)) {
+                if (constants.containsKey(name)) {
+                    var constant = getConstant(constants.get(name).shortValue());
+                    varFrame.put(name, new VariableInfo(type, constant, LineInfo.empty()));
+                } else {
+                    throw new UnsupportedOperationException();
+                }
+            }
+        }
+    }
+
     private void addLocals() {
         for (var pair : importHandler.importInfos().entrySet()) {
             var path = pair.getKey();
