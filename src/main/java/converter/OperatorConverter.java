@@ -14,6 +14,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public final class OperatorConverter implements TestConverter {
@@ -73,6 +74,21 @@ public final class OperatorConverter implements TestConverter {
     }
 
     @Override
+    public Optional<LangConstant> constantReturn() {
+        switch (node.getOperator()) {
+            case BOOL_NOT:
+                return boolNotConst();
+            case BOOL_AND:
+                return boolAndConst();
+            case BOOL_OR:
+                return boolOrConst();
+            case BOOL_XOR:
+                return boolXorConst();
+        }
+        return Optional.empty();
+    }
+
+    @Override
     @NotNull
     public TypeObject[] returnType() {
         switch (node.getOperator()) {
@@ -100,6 +116,13 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        var retConst = constantReturn();
+        if (retConst.isPresent()) {
+            List<Byte> bytes = new ArrayList<>();
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(retConst.orElseThrow())));
+            return bytes;
+        }
         var op = node.getOperator();
         switch (op) {
             case NULL_COERCE:
@@ -425,6 +448,74 @@ public final class OperatorConverter implements TestConverter {
             throw CompilerInternalError.of("Operator != not implemented", node);
         }
         return retType.orElseThrow();
+    }
+
+    private Optional<LangConstant> boolAndConst() {
+        assert node.getOperator() == OperatorTypeNode.BOOL_AND;
+        var values = boolValues(node.getOperands());
+        if (values.isPresent()) {
+            for (var value : values.orElseThrow()) {
+                if (!value) {
+                    return Optional.of(Builtins.FALSE);
+                }
+            }
+            return Optional.of(Builtins.TRUE);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<LangConstant> boolOrConst() {
+        assert node.getOperator() == OperatorTypeNode.BOOL_OR;
+        var values = boolValues(node.getOperands());
+        if (values.isPresent()) {
+            for (var value : values.orElseThrow()) {
+                if (value) {
+                    return Optional.of(Builtins.TRUE);
+                }
+            }
+            return Optional.of(Builtins.FALSE);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<LangConstant> boolXorConst() {
+        assert node.getOperator() == OperatorTypeNode.BOOL_XOR;
+        if (node.getOperands().length != 2) {
+            return Optional.empty();
+        }
+        var values = boolValues(node.getOperands());
+        if (values.isPresent()) {
+            var booleans = values.orElseThrow();
+            return Optional.of(booleans[0] ^ booleans[1] ? Builtins.TRUE : Builtins.FALSE);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<boolean[]> boolValues(ArgumentNode[] operands) {
+        var boolValues = new boolean[operands.length];
+        for (int i = 0; i < boolValues.length; i++) {
+            var opConst = TestConverter.constantReturn(operands[i].getArgument(), info, retCount);
+            if (opConst.isPresent()) {
+                var boolVal = opConst.orElseThrow().boolValue();
+                if (boolVal.isPresent()) {
+                    boolValues[i] = boolVal.orElseThrow();
+                } else {
+                    return Optional.empty();
+                }
+            } else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(boolValues);
+    }
+
+    private Optional<LangConstant> boolNotConst() {
+        if (node.getOperands().length > 1) {
+            return Optional.empty();
+        } else {
+            var constant = TestConverter.constantReturn(node.getOperands()[0].getArgument(), info, retCount);
+            return constant.flatMap(x -> x.boolValue().mapValues(Builtins.FALSE, Builtins.TRUE));
+        }
     }
 
     public static Pair<List<Byte>, TypeObject> convertWithAs(int start, OperatorNode node, CompilerInfo info, int retCount) {
