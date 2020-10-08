@@ -138,6 +138,8 @@ public final class Builtins {
 
     public static final InterfaceType THROWABLE = new InterfaceType("Throwable", GenericInfo.empty());
 
+    public static final StdTypeObject NOT_IMPLEMENTED = new StdTypeObject("NotImplemented", List.of(THROWABLE));
+
     public static final LangConstant NULL = new NullConstant();
 
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
@@ -401,6 +403,12 @@ public final class Builtins {
         ITERABLE.seal();
     }
 
+    static {
+        var notImplConstructor = MethodInfo.of();
+        NOT_IMPLEMENTED.setOperators(Map.of(OpSpTypeNode.NEW, notImplConstructor));
+        NOT_IMPLEMENTED.seal();
+    }
+
     static {  // null is const
         NULL_TYPE.isConstClass();
         NULL_TYPE.seal();
@@ -453,7 +461,8 @@ public final class Builtins {
             ENUMERATE,
             BYTES,
             DICT,
-            OBJECT
+            OBJECT,
+            NOT_IMPLEMENTED
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -486,6 +495,7 @@ public final class Builtins {
             Map.entry("Array", ARRAY),
             Map.entry("bytes", BYTES),
             Map.entry("enumerate", ENUMERATE),
+            Map.entry("NotImplemented", NOT_IMPLEMENTED),
             Map.entry("null", NULL)
     );
 
