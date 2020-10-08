@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.BaseClassNode;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContextDefinitionNode;
 import main.java.parser.DefinitionNode;
@@ -14,6 +15,7 @@ import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopLevelNode;
 import main.java.parser.TopNode;
+import main.java.parser.TypeNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -104,15 +106,17 @@ public final class Linker {
             } else if (stmt instanceof DefinitionNode) {
                 var def = (DefinitionNode) stmt;
                 if (!isAutoInterface(def)) {
-                    var name = def.getName();
+                    var name = def instanceof BaseClassNode
+                            ? ((TypeNode) def.getName()).strName() : def.getName().toString();
                     TypeObject type = linkDefinition(def);
-                    if (importHandler.getExports().contains(name.toString())) {
-                        importHandler.setExportType(name.toString(), type);
+                    if (importHandler.getExports().contains(name)) {
+                        importHandler.setExportType(name, type);
                     }
-                    globals.put(name.toString(), type);  // FIXME: Use strName instead of toString
+                    globals.put(name, type);
                 }
             }
         }
+        info.addGlobals(globals, constants);
         return this;
     }
 

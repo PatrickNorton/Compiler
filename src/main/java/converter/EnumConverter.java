@@ -6,6 +6,7 @@ import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.StatementBodyNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +33,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
             info.addType(type);
             parseIntoObject(converter, type);
         } else {
-            type = (StdTypeObject) info.getType(node.getName().strName());
+            type = (StdTypeObject) info.getTypeObj(node.getName().strName());
             parseStatements(converter);
         }
         if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
@@ -41,6 +42,9 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {
             superConstants.add(info.constIndex(sup.name()));
+        }
+        if (!converter.getOperators().containsKey(OpSpTypeNode.NEW)) {
+            converter.getOperators().put(OpSpTypeNode.NEW, defaultNew());
         }
         if (hasType) {
             putInInfo(type, "enum", superConstants, converter);
@@ -126,5 +130,10 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         obj.setAttributes(converter.allAttrs());
         obj.setStaticAttributes(converter.staticAttrs());
         obj.seal();
+    }
+
+    private Method defaultNew() {
+        var fnInfo = new FunctionInfo("", ArgumentInfo.of());
+        return new Method(AccessLevel.PRIVATE, fnInfo, new StatementBodyNode(), node.getLineInfo());
     }
 }
