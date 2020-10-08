@@ -392,11 +392,11 @@ func alternationLiterals(Hir expr) -> list[bytes]? {
                                 }
                             }
                         }
-                        default => raise NotImplemented
+                        default => raise NotImplemented()
                     }
                 }
             }
-            default => raise NotImplemented
+            default => raise NotImplemented()
         }
         lits.add(lit)
     }
@@ -410,10 +410,10 @@ class Parsed {
     mut bool bytes
 
     public operator new(
-        list[Hir] exprs,
-        Literals prefixes,
-        Literals suffixes,
-        bool bytes,
+        mut list[Hir] exprs,
+        mut Literals prefixes,
+        mut Literals suffixes,
+        mut bool bytes,
     ) {
         self.exprs = exprs
         self.prefixes = prefixes
@@ -443,7 +443,7 @@ class ExecNoSync {
         return null if not self.isAnchorEndMatch(text)
 
         return switch self.ro.matchType {
-            case MatchType.Literal as ty => self.findLiterals(ty, text, start).1
+            case MatchType.Literal as ty => self.findLiterals(ty, text, start)?.1
 
             case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
                 case Result.Match as end => end
@@ -670,6 +670,47 @@ class ExecNoSync {
             lastMatch = e
             yield (s, e)
         }
+    }
+
+    private method findLiterals(MatchLiteralType ty, bytes text, int start) -> tuple[int, int]? {
+        switch ty {
+            case MatchLiteralType.UNANCHORED {
+                var lits = self.ro.nfa.prefixes
+                if lits.find(text[start:])? as pair {
+                    return (start + pair.0, start + pair.1)
+                } else {
+                    return null
+                }
+            }
+            case MatchLiteralType.ANCHORED_START {
+                var lits = self.ro.nfa.prefixes
+                if not start or not self.ro.nfa.isAnchoredStart {
+                    if lits.findStart(text[start:]) as pair {
+                        return (start + pair.0, start + pair.1)
+                    }
+                }
+                return null
+            }
+            case MatchLiteralType.ANCHORED_END {
+                var lits = self.ro.suffixes
+                if lits.findEnd(text[start:]) as pair {
+                    return (start + pair.0, start + pair.1)
+                } else {
+                    return null
+                }
+            }
+            case MatchLiteralType.AHO_CORASICK {
+                if self.ro.ac!!.find(text[start:])? as pair {
+                    return (start + pair.0, start + pair.1)
+                } else {
+                    return null
+                }
+            }
+        }
+    }
+
+    private method isAnchorEndMatch(bytes text) -> bool {
+        return true
     }
 }
 
