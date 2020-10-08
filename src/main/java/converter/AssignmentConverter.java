@@ -144,6 +144,9 @@ public final class AssignmentConverter implements BaseConverter {
         var varType = info.getType(name);
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
+                if (varType.isSuperclass(valueType.makeMut())) {
+                    throw CompilerException.format("Cannot assign: Value must be 'mut' or 'final'", node);
+                }
                 throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
