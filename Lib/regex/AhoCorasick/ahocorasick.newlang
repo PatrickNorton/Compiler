@@ -182,7 +182,7 @@ class AhoCorasickBuilder {
         }
     }
 
-    public mut method autoConfigure(Iterable[bytes] patterns) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method autoConfigure(Iterable[bytes] patterns) -> mut cls {
         if patterns.length <= 100 {
             self.setDfa(true).byteClasses(false)
         } elif patterns.length <= 5000 {
@@ -191,42 +191,42 @@ class AhoCorasickBuilder {
         return self
     }
 
-    public mut method matchKind(MatchKind kind) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method matchKind(MatchKind kind) -> mut cls {
         self.nfaBuilder.matchKind(kind)
         return self
     }
 
-    public mut method anchored(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method anchored(bool yes) -> mut cls {
         self.nfaBuilder.anchored(yes)
         return self
     }
 
-    public mut method asciiCaseInsensitive(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method asciiCaseInsensitive(bool yes) -> mut cls {
         self.nfaBuilder.asciiCaseInsensitive(kind)
         return self
     }
 
-    public mut method denseDepth(int depth) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method denseDepth(int depth) -> mut cls {
         self.nfaBuilder.denseDepth(depth)
         return self
     }
 
-    public mut method setDfa(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method setDfa(bool yes) -> mut cls {
         self.dfa = yes
         return self
     }
 
-    public mut method prefilter(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method prefilter(bool yes) -> mut cls {
         self.nfaBuilder.prefilter(yes)
         return self
     }
 
-    public mut method byteClasses(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method byteClasses(bool yes) -> mut cls {
         self.dfaBuilder.byteClasses(yes)
         return self
     }
 
-    public mut method premultiply(bool yes) -> cls {  # FIXME: Should be 'mut cls'
+    public mut method premultiply(bool yes) -> mut cls {
         self.dfaBuilder.preMultiply(yes)
         return self
     }
