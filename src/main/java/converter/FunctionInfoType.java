@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 public final class FunctionInfoType extends TypeObject {
     private final FunctionInfo info;
@@ -55,14 +56,23 @@ public final class FunctionInfoType extends TypeObject {
     @Contract(pure = true)
     @Override
     public String name() {
-        return "";
+        var argStr = info.getArgs().argStr();
+        if (info.getReturns().length == 0) {
+            return "func" + argStr;
+        } else {
+            var joiner = new StringJoiner(", ", "func" + argStr + " -> ", "");
+            for (var ret : info.getReturns()) {
+                joiner.add(ret.name());
+            }
+            return joiner.toString();
+        }
     }
 
     @Contract(pure = true)
     @Override
     @NotNull
     public String baseName() {
-        return "";
+        return name();
     }
 
     @Override
