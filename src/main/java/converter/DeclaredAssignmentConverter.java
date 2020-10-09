@@ -144,7 +144,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                 return true;
             } else {
                 throw CompilerException.format(
-                        "Object of type %s cannot be assigned to object of type %s",
+                        "Object of type '%s' cannot be assigned to object of type '%s'",
                         node, valueType.name(), assignedType.name());
             }
         } else {
