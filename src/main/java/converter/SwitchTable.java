@@ -17,5 +17,12 @@ public interface SwitchTable {
      * @see TableBytes
      */
     List<Byte> toBytes();
+
+    /**
+     * The {@link String string} representation of the table, for use in
+     * disassembly printing.
+     *
+     * @return The representation
+     */
     String strDisassembly();
 }
