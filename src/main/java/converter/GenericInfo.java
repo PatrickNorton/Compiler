@@ -60,7 +60,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         }
         List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
-            if (isValid(args[i], params.get(i))) {
+            if (isInvalid(args[i], params.get(i))) {
                 return Optional.empty();
             }
             result.add(args[i]);
@@ -75,7 +75,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         List<TypeObject> result = new ArrayList<>(params.size());
         int i;
         for (i = 0; i < args.length && !params.get(i).isVararg(); i++) {
-            if (isValid(args[i], params.get(i))) {
+            if (isInvalid(args[i], params.get(i))) {
                 return Optional.empty();
             }
             result.add(args[i]);
@@ -86,7 +86,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             // Number of types resulted in empty vararg, proceed accordingly
             result.add(TypeObject.list());
             for (; i < args.length; i++) {
-                if (isValid(args[i], params.get(i + 1))) {
+                if (isInvalid(args[i], params.get(i + 1))) {
                     return Optional.empty();
                 }
                 result.add(args[i]);
@@ -95,7 +95,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             // Exactly one parameter goes into the vararg (refactored b/c easy)
             result.add(TypeObject.list(args[i++]));
             for (; i < args.length; i++) {
-                if (isValid(args[i], params.get(i))) {
+                if (isInvalid(args[i], params.get(i))) {
                     return Optional.empty();
                 }
                 result.add(args[i]);
@@ -107,7 +107,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             result.add(TypeObject.list(listArgs.toArray(new TypeObject[0])));
             i++;
             for (; i < params.size(); i++) {
-                if (isValid(args[i + diff], params.get(i))) {
+                if (isInvalid(args[i + diff], params.get(i))) {
                     return Optional.empty();
                 }
                 result.add(args[i + diff]);
@@ -116,7 +116,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return Optional.of(result);
     }
 
-    private boolean isValid(TypeObject arg, @NotNull TemplateParam param) {
+    private boolean isInvalid(TypeObject arg, @NotNull TemplateParam param) {
         boolean isList = param.getBound() instanceof ListTypeObject;
         if (isList != arg instanceof ListTypeObject) {
             return true;
