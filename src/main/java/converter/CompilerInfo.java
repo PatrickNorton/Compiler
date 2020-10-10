@@ -400,7 +400,7 @@ public final class CompilerInfo {
             case "null":
                 assert node.getSubtypes().length == 0;
                 if (node.isOptional()) {
-                    CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
+                    CompilerWarning.warn("Type 'null?' is equivalent to null", type);
                 }
                 return Builtins.NULL_TYPE;
             case "cls":
