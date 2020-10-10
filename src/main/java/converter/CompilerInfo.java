@@ -390,6 +390,9 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
+        if (!type.isDecided()) {
+            throw CompilerInternalError.format("Cannot call 'getType' on 'var'", type);
+        }
         assert type instanceof TypeNode;
         var node = (TypeNode) type;
         var name = node.getName().toString();
