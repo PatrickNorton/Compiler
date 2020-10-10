@@ -56,4 +56,23 @@ public class CompilerTodoError extends RuntimeException {
     public static CompilerTodoError of(String message, @NotNull Lined lineInfo) {
         return of(message, lineInfo.getLineInfo());
     }
+
+    /**
+     * Creates a CompilerTodoError with a formatted error message.
+     * <p>
+     *     Equivalent to {@code CompilerTodoError.of(String.format(message,
+     *     args), lineInfo)}.
+     * </p>
+     *
+     * @param message The message to be formatted
+     * @param lineInfo The {@link Lined} object to get a {@link LineInfo} from
+     * @param args The formatting args
+     * @return The exception
+     * @see #of(String, Lined)
+     * @see String#format(String, Object...)
+     */
+    @NotNull
+    public static CompilerTodoError format(String message, LineInfo lineInfo, Object... args) {
+        return of(String.format(message, args), lineInfo);
+    }
 }

@@ -782,7 +782,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         } else if (b.isSuperclass(a)) {
             return b;
         }
-        assert a instanceof UserType && b instanceof UserType;
+        if (!(a instanceof UserType) || !(b instanceof UserType)) {
+            throw CompilerTodoError.format(
+                    "'getSuper' on non-user type '%s' or '%s'",
+                    LineInfo.empty(), a.name(), b.name()
+            );
+        }
         var userA = (UserType<?>) a;
         var userB = (UserType<?>) b;
         Set<TypeObject> aSupers = new HashSet<>();

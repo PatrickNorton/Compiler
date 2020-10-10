@@ -54,10 +54,26 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     @Override
     public TypeObject[] returnType() {
         var cases = node.getCases();
+        var switchRet = TestConverter.returnType(node.getSwitched(), info, 1)[0];
         TypeObject[][] types = new TypeObject[cases.length][retCount];
         for (int i = 0; i < cases.length; i++) {
             assert cases[i].isArrow();
+            var hasAs = !cases[i].getAs().isEmpty();
+            if (hasAs) {
+                info.addStackFrame();
+                if (!(switchRet instanceof UnionTypeObject)) {
+                    throw CompilerException.format(
+                            "Switch with 'as' clause must be over a union, not '%s'",
+                            node.getSwitched(), switchRet.name()
+                    );
+                }
+                var varType = labelToType(cases[i].getLabel()[0], (UnionTypeObject) switchRet);
+                info.addVariable(cases[i].getAs().getName(), varType, cases[i].getAs());
+            }
             types[i] = TestConverter.returnType((TestNode) cases[i].getBody().get(0), info, retCount);
+            if (hasAs) {
+                info.removeStackFrame();
+            }
         }
         TypeObject[] finalTypes = new TypeObject[retCount];
         for (int i = 0; i < retCount; i++) {
@@ -353,7 +369,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
                 var firstType = (TypeTypeObject) firstRetType;
                 var retType = firstType.representedType();
-                if (retType.equals(switchedType)) {
+                if (retType.sameBaseType(switchedType)) {
                     var lblName = ((VariableNode) lblSecond[0].getPostDot()).getName();
                     return switchedType.variantType(lblName).orElseThrow(
                             () -> CompilerException.format(
