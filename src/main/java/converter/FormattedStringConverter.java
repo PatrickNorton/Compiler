@@ -37,6 +37,9 @@ public final class FormattedStringConverter implements TestConverter {
         var strings = node.getStrings();
         var tests = node.getTests();
         assert strings.length == tests.length || strings.length == tests.length + 1;
+        if (tests.length == 0) {
+            CompilerWarning.warn("F-string with no formatted arguments", node);
+        }
         for (int i = 0; i < node.getStrings().length; i++) {
             bytes.add(Bytecode.LOAD_CONST.value);
             var constValue = LangConstant.of(strings[i]);
@@ -50,7 +53,6 @@ public final class FormattedStringConverter implements TestConverter {
             }
         }
         if (retCount == 0) {
-            CompilerWarning.warn("Unused f-string literal", node);
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
@@ -77,6 +79,8 @@ public final class FormattedStringConverter implements TestConverter {
             case 'r':
                 convertToRepr(arg, start, bytes);
                 break;
+            default:
+                throw CompilerException.format("Invalid format argument %c", node, fStr.charAt(0));
         }
     }
 

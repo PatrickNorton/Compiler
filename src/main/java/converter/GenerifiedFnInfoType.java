@@ -35,14 +35,14 @@ public final class GenerifiedFnInfoType extends TypeObject {
     @Contract(pure = true)
     @Override
     public String name() {
-        return "";
+        return new FunctionInfoType(info.generify(this, generics)).name();
     }
 
     @NotNull
     @Contract(pure = true)
     @Override
     public String baseName() {
-        return "";
+        return baseType().baseName();
     }
 
     @Override

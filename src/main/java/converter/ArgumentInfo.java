@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 public final class ArgumentInfo implements Iterable<Argument> {
     private final Argument[] positionArgs;
@@ -291,6 +292,40 @@ public final class ArgumentInfo implements Iterable<Argument> {
             }
         }
         return keywordMap;
+    }
+
+    public String argStr() {
+        var joiner = new StringJoiner(", ", "(", ")");
+        if (positionArgs.length > 0) {
+            for (var arg : positionArgs) {
+                if (arg.isVararg()) {
+                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
+                } else {
+                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
+                }
+            }
+            joiner.add("/");
+        }
+        if (normalArgs.length > 0) {
+            for (var arg : normalArgs) {
+                if (arg.isVararg()) {
+                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
+                } else {
+                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
+                }
+            }
+        }
+        if (keywordArgs.length > 0) {
+            joiner.add("*");
+            for (var arg : keywordArgs) {
+                if (arg.isVararg()) {
+                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
+                } else {
+                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
+                }
+            }
+        }
+        return joiner.toString();
     }
 
     private class ArgIterator implements Iterator<Argument> {

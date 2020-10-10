@@ -47,7 +47,7 @@ public final class RaiseConverter implements TestConverter {
         if (!Builtins.THROWABLE.isSuperclass(retType)) {
             throw CompilerException.format(
                     "Expected superclass of 'Throwable' in raise statement body, got '%s'",
-                    node, retType
+                    node, retType.name()
             );
         }
         bytes.addAll(converter.convert(start + bytes.size()));
