@@ -79,6 +79,8 @@ public final class FormattedStringConverter implements TestConverter {
             case 'r':
                 convertToRepr(arg, start, bytes);
                 break;
+            default:
+                throw CompilerException.format("Invalid format argument %c", node, fStr.charAt(0));
         }
     }
 
