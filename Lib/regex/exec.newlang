@@ -3,7 +3,7 @@ from .prog import Program
 from .builder import RegexOptions
 from .cache import Cached
 from .compile import Compiler
-from .dfa import canExec
+from .dfa import canExec, Result, Fsm
 from .hir import Hir, Literal, Literals, HirKind
 from .literal import LiteralSearcher
 from .parser import ParserBuilder
@@ -707,6 +707,14 @@ class ExecNoSync {
                 }
             }
         }
+    }
+
+    private method shortestNfa(bytes text, int start) -> int? {
+        return self.shortestNfaType(MatchNfaType.Auto(), text, start)
+    }
+
+    private method shortestDfa(bytes text, int start) -> Result[int] {
+        return dfa.forward(self.ro.dfa, self.cache.value(), true, text, start)
     }
 
     private method isAnchorEndMatch(bytes text) -> bool {
