@@ -124,7 +124,11 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         for (int i = 0; i < info.variants.size(); i++) {
             var pair = info.variants.get(i);
             if (pair.getKey().equals(name)) {
-                return Optional.of(pair.getValue());
+                if (generics.isEmpty()) {
+                    return Optional.of(pair.getValue());
+                } else {
+                    return Optional.of(pair.getValue().generifyWith(this, generics));
+                }
             }
         }
         return Optional.empty();
