@@ -98,7 +98,7 @@ public class FormattedStringNode extends StringLikeNode {
      * @return The freshly parsed TestNode
      */
     private static TestNode parseTest(LineInfo info, String section) {
-        TokenList tokens = Tokenizer.parse(section);
+        TokenList tokens = Tokenizer.parse(section, info.getPath(), info.getLineNumber());
         TestNode test;
         try {
             test = TestNode.parse(tokens);
