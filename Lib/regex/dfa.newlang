@@ -1,4 +1,4 @@
-export canExec, Cache, InstPtr
+export canExec, Cache, InstPtr, Result, Fsm
 
 from .prog import Program
 
