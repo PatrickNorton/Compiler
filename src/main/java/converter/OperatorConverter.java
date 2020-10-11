@@ -395,52 +395,8 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     private List<Byte> convertIs(int start) {
         assert node.getOperator() == OperatorTypeNode.IS || node.getOperator() == OperatorTypeNode.IS_NOT;
-        var operands = node.getOperands();
-        switch (operands.length) {
-            case 0:
-            case 1: {
-                boolean isIs = node.getOperator() == OperatorTypeNode.IS;
-                CompilerWarning.warnf("'%s' with < 2 operands will always be %b", node, isIs ? "is" : "is not", isIs);
-                List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
-                bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(isIs ? Builtins.TRUE : Builtins.FALSE)));
-                return bytes;
-            }
-            case 2: {
-                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
-                bytes.addAll(TestConverter.bytes(start, operands[1].getArgument(), info, 1));
-                bytes.add(Bytecode.IDENTICAL.value);
-                if (node.getOperator() == OperatorTypeNode.IS_NOT) {
-                    bytes.add(Bytecode.BOOL_NOT.value);
-                }
-                return bytes;
-            }
-            default: {
-                if (node.getOperator() != OperatorTypeNode.IS_NOT) {
-                    throw CompilerException.format(
-                            "'is not' only works with 2 or fewer operands (got %d)",
-                            node, operands.length
-                    );
-                }
-                // Since object identity is transitive, it's much easier if we
-                // simply compare everything to the first object given.
-                // Since nothing in life is ever simple, we have to do some
-                // shenanigans with the stack to ensure everything winds
-                // up in the right place.
-                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
-                for (int i = 1; i < operands.length; i++) {
-                    if (i != operands.length - 1) {
-                        bytes.add(Bytecode.DUP_TOP.value);
-                    }
-                    bytes.addAll(TestConverter.bytes(start, operands[i].getArgument(), info, 1));
-                    bytes.add(Bytecode.IDENTICAL.value);  // Compare the values
-                    bytes.add(Bytecode.SWAP_3.value);     // Bring up the next one (below result & operands[0])
-                    bytes.add(Bytecode.BOOL_AND.value);   // 'and' them together
-                    bytes.add(Bytecode.SWAP_2.value);     // Put operands[0] back on top
-                }
-                return bytes;
-            }
-        }
+        var isType = node.getOperator() == OperatorTypeNode.IS;
+        return new IsConverter(isType, node.getOperands(), node, info, retCount).convert(start);
     }
 
     @NotNull
