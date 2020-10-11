@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.NumberNode;
 import main.java.parser.StringNode;
+import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,7 @@ public interface LangConstant extends LangObject {
     TypeObject getType();
 
     @NotNull
-    default String name() {
+    default String name(IndexedSet<LangConstant> constants) {
         return "";
     }
 

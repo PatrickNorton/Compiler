@@ -1,11 +1,13 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 public final class TupleConstant implements LangConstant {
     private final List<Pair<Short, TypeObject>> values;
@@ -38,8 +40,12 @@ public final class TupleConstant implements LangConstant {
 
     @Override
     @NotNull
-    public String name() {
-        return String.format("tuple[len=%d]", values.size());
+    public String name(IndexedSet<LangConstant> constants) {
+        var joiner = new StringJoiner(", ", "(", ")");
+        for (var pair : values) {
+            joiner.add(constants.get(pair.getKey()).name(constants));
+        }
+        return joiner.toString();
     }
 
     @Override

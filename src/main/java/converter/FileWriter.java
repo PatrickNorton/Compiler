@@ -103,7 +103,7 @@ public final class FileWriter {
         System.out.println("Constants:");
         var constants = info.getConstants();
         for (var constant : constants) {
-            System.out.printf("%d: %s%n", constants.indexOf(constant), constant.name());
+            System.out.printf("%d: %s%n", constants.indexOf(constant), constant.name(constants));
         }
         var functions = info.getFunctions();
         for (var function : functions) {
