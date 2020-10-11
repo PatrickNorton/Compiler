@@ -134,6 +134,18 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         return Optional.empty();
     }
 
+    public Optional<String> variantName(int index) {
+        if (index < info.variants.size()) {
+            return Optional.of(info.variants.get(index).getKey());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public int variantCount() {
+        return info.variants.size();
+    }
+
     public void setVariants(List<Pair<String, TypeObject>> variants) {
         assert !info.isSealed && info.variants.isEmpty();
         info.variants.addAll(variants);

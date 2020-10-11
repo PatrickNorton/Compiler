@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private final SwitchStatementNode node;
@@ -29,11 +30,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     public List<Byte> trueConvert(int start) {
-        if (incompleteReturn()) {
-            throw CompilerException.format("Cannot get return from switch: Not all cases covered", node);
-        }
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
+        if (!(retType instanceof UnionTypeObject) && incompleteReturn()) {
+            throw CompilerException.format("Cannot get return from switch: Not all cases covered", node);
+        }
         if (Builtins.INT.isSuperclass(retType)) {
             return convertTbl(start);
         } else if (Builtins.STR.isSuperclass(retType)) {
@@ -282,10 +283,13 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         bytes.add(Bytecode.SWITCH_TABLE.value);
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
+        boolean hasDefault = false;
+        List<Integer> usedVariants = new ArrayList<>();
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
                 assert defaultVal == 0;
                 assert stmt.getAs().isEmpty();
+                hasDefault = true;
                 if (hasAs) {
                     bytes.add(Bytecode.POP_TOP.value);
                 }
@@ -294,6 +298,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             var lblConverter = stmt.getLabel()[0];
             var lblNo = labelToVariantNo(lblConverter, union);
+            usedVariants.add(lblNo);
             jumps.put(lblNo, start + bytes.size());
             if (!stmt.getAs().isEmpty()) {
                 var as = stmt.getAs();
@@ -313,6 +318,16 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             bytes.addAll(Util.zeroToBytes());
             if (!stmt.getAs().isEmpty()) {
                 info.removeStackFrame();
+            }
+        }
+        if (!hasDefault) {
+            var missingUnion = incompleteUnion(union, usedVariants);
+            if (missingUnion.isPresent()) {
+                var missingVariants = String.join(", ", missingUnion.orElseThrow());
+                throw CompilerException.format(
+                        "Cannot get return type of switch: Missing union variants %s",
+                        node, missingVariants
+                );
             }
         }
         var switchTable = smallTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
@@ -383,6 +398,28 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
         }
         throw CompilerException.of("Switch on a union must have properly-formed variants", label);
+    }
+
+    private Optional<String[]> incompleteUnion(UnionTypeObject obj, List<Integer> variants) {
+        List<Boolean> containsVariant = new ArrayList<>(Collections.nCopies(obj.variantCount(), false));
+        if (retCount > 0) {
+            for (var variantNo : variants) {
+                containsVariant.set(variantNo, true);
+            }
+            if (!containsVariant.contains(false)) {
+                return Optional.empty();
+            } else {
+                List<String> result = new ArrayList<>();
+                for (int i = 0; i < containsVariant.size(); i++) {
+                    if (!containsVariant.get(i)) {
+                        result.add(obj.variantName(i).orElseThrow());
+                    }
+                }
+                return Optional.of(result.toArray(new String[0]));
+            }
+        } else {
+            return Optional.empty();
+        }
     }
 
     private boolean incompleteReturn() {  // TODO: Unions with all cases covered
