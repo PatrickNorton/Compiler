@@ -75,6 +75,29 @@ class Fsm {
         assert dfa.start != STATE_UNKNOWN
         return dfa.execAtReverse(cache.qcur, cache.qnext, text)
     }
+
+    public static method forward(
+        Program prog,
+        mut ProgramCache cache,
+        bool quitAfterMatch,
+        bytes text,
+        int at
+    ) -> Result[int] {
+        var dfaCache = cache.dfa
+        mut var dfa = Fsm(prog, 0, at, quitAfterMatch, STATE_UNKNOWN, at, dfaCache.inner)
+        var emptyFlags, var stateFlags = dfa.startFlags(text, at)
+        if dfa.startState(dfaCache.qcur, emptyFlags, stateFlags)? as r {
+            if r == STATE_DEAD {
+                return Result.NoMatch(at)
+            } else {
+                dfa.start = si
+            }
+        } else {
+            return Result.Quit()
+        }
+        assert dfa.start != STATE_UNKNOWN
+        return dfa.execAt(cache.qcur, cache.qnext, text)
+    }
 }
 
 union Result[T] {
