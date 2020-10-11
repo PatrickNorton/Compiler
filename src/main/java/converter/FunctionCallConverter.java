@@ -4,6 +4,7 @@ import main.java.parser.ArgumentNode;
 import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
@@ -52,6 +53,9 @@ public final class FunctionCallConverter implements TestConverter {
         assert node.getCaller() instanceof EscapedOperatorNode;
         List<Byte> bytes = new ArrayList<>();
         var caller = (EscapedOperatorNode) node.getCaller();
+        if (caller.getOperator().operator == OperatorTypeNode.IS) {
+            return new IsConverter(true, node.getParameters(), node, info, retCount).convert(start);
+        }
         var op = OpSpTypeNode.translate(caller.getOperator().operator);
         var first = firstArgType();
         ensureTypesMatch(op, first, getArgsExceptFirst(node.getParameters()));
