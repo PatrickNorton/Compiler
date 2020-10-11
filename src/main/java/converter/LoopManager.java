@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The class for managing loop-like statements and their {@code break} and
+ * {@code continue} statements.
+ *
+ * @author Patrick Norton
+ */
 public final class LoopManager {
     private final Deque<Boolean> loopLevel = new ArrayDeque<>();
     private final Map<Integer, Set<Integer>> breakPointers = new HashMap<>();
