@@ -7,4 +7,8 @@ public interface IndexedSet<E> extends Set<E> {
     void set(int index, E value);
     E remove(int index);
     int indexOf(E object);
+
+    static <T> IndexedSet<T> unmodifiable(IndexedSet<T> value) {
+        return new UnmodifiableIndexedSet<>(value);
+    }
 }

@@ -228,7 +228,7 @@ public final class CompilerInfo {
     }
 
     public IndexedSet<LangConstant> getConstants() {
-        return GLOBAL_INFO.getConstants();
+        return IndexedSet.unmodifiable(GLOBAL_INFO.getConstants());
     }
 
     /**
