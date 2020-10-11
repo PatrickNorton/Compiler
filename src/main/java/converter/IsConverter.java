@@ -80,17 +80,22 @@ public final class IsConverter implements TestConverter {
                 // Since nothing in life is ever simple, we have to do some
                 // shenanigans with the stack to ensure everything winds
                 // up in the right place.
-                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
-                for (int i = 1; i < operands.length; i++) {
-                    if (i != operands.length - 1) {
-                        bytes.add(Bytecode.DUP_TOP.value);
-                    }
+                List<Byte> bytes = new ArrayList<>();
+                bytes.add(Bytecode.LOAD_CONST.value);
+                bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
+                bytes.addAll(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+                for (int i = 1; i < operands.length - 1; i++) {
+                    bytes.add(Bytecode.DUP_TOP.value);
                     bytes.addAll(TestConverter.bytes(start, operands[i].getArgument(), info, 1));
                     bytes.add(Bytecode.IDENTICAL.value);  // Compare the values
                     bytes.add(Bytecode.SWAP_3.value);     // Bring up the next one (below result & operands[0])
                     bytes.add(Bytecode.BOOL_AND.value);   // 'and' them together
-                    bytes.add(Bytecode.SWAP_2.value);     // Put operands[0] back on top
+                    bytes.add(Bytecode.SWAP_2.value);     // Put operands[0] back on top}
                 }
+                // Last one is special b/c cleanup...
+                bytes.addAll(TestConverter.bytes(start, operands[operands.length - 1].getArgument(), info, 1));
+                bytes.add(Bytecode.IDENTICAL.value);
+                bytes.add(Bytecode.BOOL_AND.value);
                 return bytes;
             }
         }
