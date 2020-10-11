@@ -416,7 +416,29 @@ public final class OperatorConverter implements TestConverter {
                 return bytes;
             }
             default: {
-                throw CompilerTodoError.of("'is' with more than 2 operands not yet supported", node);
+                if (node.getOperator() != OperatorTypeNode.IS_NOT) {
+                    throw CompilerException.format(
+                            "'is not' only works with 2 or fewer operands (got %d)",
+                            node, operands.length
+                    );
+                }
+                // Since object identity is transitive, it's much easier if we
+                // simply compare everything to the first object given.
+                // Since nothing in life is ever simple, we have to do some
+                // shenanigans with the stack to ensure everything winds
+                // up in the right place.
+                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+                for (int i = 1; i < operands.length; i++) {
+                    if (i != operands.length - 1) {
+                        bytes.add(Bytecode.DUP_TOP.value);
+                    }
+                    bytes.addAll(TestConverter.bytes(start, operands[i].getArgument(), info, 1));
+                    bytes.add(Bytecode.IDENTICAL.value);  // Compare the values
+                    bytes.add(Bytecode.SWAP_3.value);     // Bring up the next one (below result & operands[0])
+                    bytes.add(Bytecode.BOOL_AND.value);   // 'and' them together
+                    bytes.add(Bytecode.SWAP_2.value);     // Put operands[0] back on top
+                }
+                return bytes;
             }
         }
     }
