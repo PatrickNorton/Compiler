@@ -445,7 +445,14 @@ class ExecNoSync {
         return switch self.ro.matchType {
             case MatchType.Literal as ty => self.findLiterals(ty, text, start)?.1
 
-            case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
+            case MatchType.Dfa => switch self.shortestDfa(text, start) {
+                case Result.Match as end => end
+                case Result.NoMatch => null
+                case Result.Quit => self.shortestNfa(text, start)
+            }
+
+            # FIXME: Merge this with above
+            case  MatchType.DfaMany => switch self.shortestDfa(text, start) {
                 case Result.Match as end => end
                 case Result.NoMatch => null
                 case Result.Quit => self.shortestNfa(text, start)
@@ -481,9 +488,16 @@ class ExecNoSync {
         # filling in captures[1], but a RegexSet has no captures. In other
         # words, a RegexSet can't (currently) use shortest_match. ---AG
         return switch self.ro.matchType {
-            case MatchType.Literal as ty => self.find_literals(ty, text, start)?
+            case MatchType.Literal as ty => self.findLiterals(ty, text, start)?
 
-            case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
+            case MatchType.Dfa => switch self.shortestDfa(text, start) {
+                case Result.Match => true
+                case Result.NoMatch => false
+                case Result.Quit => self.matchNfa(text, start)
+            }
+
+            # FIXME: Merge this with above
+            case MatchType.DfaMany => switch self.shortestDfa(text, start) {
                 case Result.Match => true
                 case Result.NoMatch => false
                 case Result.Quit => self.matchNfa(text, start)
@@ -685,7 +699,7 @@ class ExecNoSync {
             case MatchLiteralType.ANCHORED_START {
                 var lits = self.ro.nfa.prefixes
                 if not start or not self.ro.nfa.isAnchoredStart {
-                    if lits.findStart(text[start:]) as pair {
+                    if lits.findStart(text[start:])? as pair {
                         return (start + pair.0, start + pair.1)
                     }
                 }
@@ -693,7 +707,7 @@ class ExecNoSync {
             }
             case MatchLiteralType.ANCHORED_END {
                 var lits = self.ro.suffixes
-                if lits.findEnd(text[start:]) as pair {
+                if lits.findEnd(text[start:])? as pair {
                     return (start + pair.0, start + pair.1)
                 } else {
                     return null
@@ -701,7 +715,7 @@ class ExecNoSync {
             }
             case MatchLiteralType.AHO_CORASICK {
                 if self.ro.ac!!.find(text[start:])? as pair {
-                    return (start + pair.0, start + pair.1)
+                    return (start + pair.start, start + pair.end)
                 } else {
                     return null
                 }
@@ -713,13 +727,40 @@ class ExecNoSync {
         return self.shortestNfaType(MatchNfaType.Auto(), text, start)
     }
 
+    private method shortestNfaType(MatchNfaType type, bytes text, int start) -> int? {
+        mut list[int?] slots = [null, null]
+        if self.execNfa(ty, [false], slots, true, true, text, start, text.length) {
+            return slots[1]
+        } else {
+            return null
+        }
+    }
+
     private method shortestDfa(bytes text, int start) -> Result[int] {
         return dfa.forward(self.ro.dfa, self.cache.value(), true, text, start)
+    }
+
+    private method shortestDfaReverseSuffix(bytes text, int start) -> Result[int] {
+        if self.execDfaReverseSuffix(text, start)? as r {
+            return r.Match?.1
+        } else {
+            return self.shortestDfa(text, start)
+        }
     }
 
     private method isAnchorEndMatch(bytes text) -> bool {
         return true
     }
+
+    private method matchNfa(bytes text, int start) -> bool {
+        return self.matchNfaType(MatchNfaType.Auto, text, start)
+    }
+
+    private method matchNfaType(MatchNfaType type, bytes text, int start) -> bool {
+        return self.execNfa(ty, [false], [], true, false, text, start, text.length)
+    }
+
+
 }
 
 class ExecNoSyncStr {
