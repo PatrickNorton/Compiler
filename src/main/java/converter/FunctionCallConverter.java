@@ -238,7 +238,7 @@ public final class FunctionCallConverter implements TestConverter {
             result[0] = new Argument(res0.getName(), resType, res0.isVararg(), res0.getLineInfo());
         return result;
         } else {
-            return getArgs(Arrays.copyOf(args, args.length - 1));
+            return getArgs(Arrays.copyOfRange(args, 1, args.length));
         }
     }
 
