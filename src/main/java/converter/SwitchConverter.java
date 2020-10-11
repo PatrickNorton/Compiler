@@ -340,7 +340,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
                 var firstType = (TypeTypeObject) firstRetType;
                 var retType = firstType.representedType();
-                if (retType.equals(switchedType)) {
+                if (retType.sameBaseType(switchedType)) {
                     if (lblSecond[0].getPostDot() instanceof VariableNode && lblSecond[0].getDotPrefix().isEmpty()) {
                         var name = ((VariableNode) lblSecond[0].getPostDot()).getName();
                         return switchedType.getVariantNumber(name).orElseThrow(() -> CompilerException.format(
