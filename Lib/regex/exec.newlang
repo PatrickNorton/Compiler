@@ -723,6 +723,36 @@ class ExecNoSync {
         }
     }
 
+    private method findDfaForward(bytes text, int start) -> Result[tuple[int, int]] {
+        mut int end
+        switch Fsm.forward(self.ro.dfa, self.cache.value, false, text, start) {
+            case Result.NoMatch as i {
+                return Result.NoMatch(i)
+            }
+            case Result.Quit {
+                return Result.Quit()
+            }
+            case Result.Match as end_ {
+                if start == end_ {
+                    return Result.Match((start, start))
+                } else {
+                    end = end_
+                }
+            }
+        }
+
+        return switch Fsm.reverse(self.ro.dfaReverse,
+            self.cache.value,
+            false,
+            text[start:],
+            end - start,
+        ) {
+            case Result.Match as s => Result.Match((start + s, end))
+            case Result.NoMatch as i => Result.NoMatch(i)
+            case Result.Quit => Result.Quit()
+        }
+    }
+
     private method shortestNfa(bytes text, int start) -> int? {
         return self.shortestNfaType(MatchNfaType.Auto(), text, start)
     }
