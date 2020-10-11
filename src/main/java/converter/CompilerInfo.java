@@ -495,7 +495,9 @@ public final class CompilerInfo {
             var constants = GLOBAL_INFO.getConstants();
             for (int i = 0; i < constants.size(); i++) {
                 var constant = constants.get(i);
-                if (constant.getType() instanceof TypeTypeObject && constant.name().equals(name)) {
+                var constType = constant.getType();
+                if (constType instanceof TypeTypeObject &&
+                        ((TypeTypeObject) constType).representedType().sameBaseType(type)) {
                     return constant;
                 }
             }
