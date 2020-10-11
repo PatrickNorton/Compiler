@@ -390,6 +390,9 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
+        if (!type.isDecided()) {
+            throw CompilerInternalError.format("Cannot call 'getType' on 'var'", type);
+        }
         assert type instanceof TypeNode;
         var node = (TypeNode) type;
         var name = node.getName().toString();
@@ -397,7 +400,7 @@ public final class CompilerInfo {
             case "null":
                 assert node.getSubtypes().length == 0;
                 if (node.isOptional()) {
-                    CompilerWarning.warn("Type 'null?' is equivalent to null", type.getLineInfo());
+                    CompilerWarning.warn("Type 'null?' is equivalent to null", type);
                 }
                 return Builtins.NULL_TYPE;
             case "cls":

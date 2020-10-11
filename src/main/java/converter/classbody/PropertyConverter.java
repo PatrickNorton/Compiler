@@ -17,64 +17,64 @@ import java.util.Map;
 
 public final class PropertyConverter {
     private final Map<String, AttributeInfo> properties;
-        private final Map<String, StatementBodyNode> getters;
-        private final Map<String, StatementBodyNode> setters;
-        private final Map<String, LineInfo> lineInfos;
-        private final CompilerInfo info;
+    private final Map<String, StatementBodyNode> getters;
+    private final Map<String, StatementBodyNode> setters;
+    private final Map<String, LineInfo> lineInfos;
+    private final CompilerInfo info;
 
-        public PropertyConverter(CompilerInfo info) {
-            this.properties = new HashMap<>();
-            this.getters = new HashMap<>();
-            this.setters = new HashMap<>();
-            this.lineInfos = new HashMap<>();
-            this.info = info;
-        }
+    public PropertyConverter(CompilerInfo info) {
+        this.properties = new HashMap<>();
+        this.getters = new HashMap<>();
+        this.setters = new HashMap<>();
+        this.lineInfos = new HashMap<>();
+        this.info = info;
+    }
 
-        public void parse(@NotNull PropertyDefinitionNode node) {
-            var name = node.getName().getName();
-            var type = info.getType(node.getType());
-            if (properties.containsKey(name)) {
-                throw CompilerException.format(
-                        "Illegal name: property with name '%s' already defined in this class (see line %d)",
-                        node, name, lineInfos.get(name).getLineNumber()
-                );
-            }
-            var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
-            assert MutableType.fromDescriptors(node.getDescriptors()) == MutableType.STANDARD
-                    : "Properties should never be mut";
-            properties.put(name, new AttributeInfo(accessLevel, type));
-            getters.put(name, node.getGet());
-            setters.put(name, node.getSet());  // TODO: If setter is empty
-            lineInfos.put(name, node.getLineInfo());
+    public void parse(@NotNull PropertyDefinitionNode node) {
+        var name = node.getName().getName();
+        var type = info.getType(node.getType());
+        if (properties.containsKey(name)) {
+            throw CompilerException.format(
+                    "Illegal name: property with name '%s' already defined in this class (see line %d)",
+                    node, name, lineInfos.get(name).getLineNumber()
+            );
         }
+        var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
+        assert MutableType.fromDescriptors(node.getDescriptors()) == MutableType.STANDARD
+                : "Properties should never be mut";
+        properties.put(name, new AttributeInfo(accessLevel, type));
+        getters.put(name, node.getGet());
+        setters.put(name, node.getSet());  // TODO: If setter is empty
+        lineInfos.put(name, node.getLineInfo());
+    }
 
-        public Map<String, AttributeInfo> getProperties() {
-            return properties;
-        }
+    public Map<String, AttributeInfo> getProperties() {
+        return properties;
+    }
 
-        @NotNull
-        public Map<String, Method> getGetters() {
-            Map<String, Method> result = new HashMap<>();
-            for (var pair : getters.entrySet()) {
-                var property = properties.get(pair.getKey());
-                var fnInfo = new FunctionInfo(property.getType());
-                var mInfo = new Method(property.getAccessLevel(), fnInfo,
-                        pair.getValue(), pair.getValue().getLineInfo());
-                result.put(pair.getKey(), mInfo);
-            }
-            return result;
+    @NotNull
+    public Map<String, Method> getGetters() {
+        Map<String, Method> result = new HashMap<>();
+        for (var pair : getters.entrySet()) {
+            var property = properties.get(pair.getKey());
+            var fnInfo = new FunctionInfo(property.getType());
+            var mInfo = new Method(property.getAccessLevel(), fnInfo,
+                    pair.getValue(), pair.getValue().getLineInfo());
+            result.put(pair.getKey(), mInfo);
         }
+        return result;
+    }
 
-        @NotNull
-        public Map<String, Method> getSetters() {
-            Map<String, Method> result = new HashMap<>();
-            for (var pair : setters.entrySet()) {
-                var property = properties.get(pair.getKey());
-                var fnInfo = new FunctionInfo(ArgumentInfo.of(properties.get(pair.getKey()).getType()));
-                var mInfo = new Method(property.getAccessLevel(), fnInfo,
-                        pair.getValue(), pair.getValue().getLineInfo());
-                result.put(pair.getKey(), mInfo);
-            }
-            return result;
+    @NotNull
+    public Map<String, Method> getSetters() {
+        Map<String, Method> result = new HashMap<>();
+        for (var pair : setters.entrySet()) {
+            var property = properties.get(pair.getKey());
+            var fnInfo = new FunctionInfo(ArgumentInfo.of(properties.get(pair.getKey()).getType()));
+            var mInfo = new Method(property.getAccessLevel(), fnInfo,
+                    pair.getValue(), pair.getValue().getLineInfo());
+            result.put(pair.getKey(), mInfo);
         }
+        return result;
+    }
 }
