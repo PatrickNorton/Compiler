@@ -3,10 +3,12 @@ package main.java.converter;
 import main.java.parser.Lined;
 import main.java.parser.LiteralNode;
 import main.java.parser.TestNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class LiteralConverter implements TestConverter {
     private final LiteralNode node;
@@ -26,6 +28,24 @@ public final class LiteralConverter implements TestConverter {
         this.info = info;
         this.retCount = retCount;
         this.expected = null;
+    }
+
+    @Override
+    public Optional<LangConstant> constantReturn() {
+        if (LiteralType.fromBrace(node.getBraceType(), node) != LiteralType.TUPLE) {
+            return Optional.empty();
+        }
+        List<Pair<Short, TypeObject>> values = new ArrayList<>(node.getBuilders().length);
+        for (var builder : node.getBuilders()) {
+            var constant = TestConverter.constantReturn(builder, info, 1);
+            if (constant.isEmpty()) {
+                return Optional.empty();
+            } else {
+                var value = constant.orElseThrow();
+                values.add(Pair.of(info.addConstant(value), value.getType()));
+            }
+        }
+        return Optional.of(new TupleConstant(values));
     }
 
     private enum LiteralType {
