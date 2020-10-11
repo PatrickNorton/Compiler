@@ -464,7 +464,7 @@ public final class OperatorConverter implements TestConverter {
         var values = boolValues(node.getOperands());
         if (values.isPresent()) {
             var booleans = values.orElseThrow();
-            return Optional.of(booleans[0] ^ booleans[1] ? Builtins.TRUE : Builtins.FALSE);
+            return Optional.of(LangConstant.of(booleans[0] ^ booleans[1]));
         }
         return Optional.empty();
     }

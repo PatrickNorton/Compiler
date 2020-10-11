@@ -32,7 +32,7 @@ public final class IsConverter implements TestConverter {
     @Override
     public Optional<LangConstant> constantReturn() {
         if (operands.length < 2) {
-            return Optional.of(isType ? Builtins.TRUE : Builtins.FALSE);
+            return Optional.of(LangConstant.of(isType));
         } else {
             return Optional.empty();
         }
@@ -56,7 +56,7 @@ public final class IsConverter implements TestConverter {
                 CompilerWarning.warnf("'%s' with < 2 operands will always be %b", lineInfo, isType ? "is" : "is not", isType);
                 List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
                 bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(isType ? Builtins.TRUE : Builtins.FALSE)));
+                bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(isType))));
                 return bytes;
             }
             case 2: {

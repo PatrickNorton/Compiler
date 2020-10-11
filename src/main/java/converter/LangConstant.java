@@ -62,4 +62,8 @@ public interface LangConstant extends LangObject {
     static LangConstant of(int value) {
         return new IntConstant(value);
     }
+
+    static LangConstant of(boolean value) {
+        return value ? Builtins.TRUE : Builtins.FALSE;
+    }
 }
