@@ -2,13 +2,15 @@ package main.java.converter;
 
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
+import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class IsConverter implements TestConverter {
+public final class IsConverter extends OperatorConverter {
     private final boolean isType;
     private final ArgumentNode[] operands;
     private final Lined lineInfo;
@@ -99,5 +101,35 @@ public final class IsConverter implements TestConverter {
                 return bytes;
             }
         }
+    }
+
+    @Override
+    @NotNull
+    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+        assert operands.length == 2;
+        if (isType) {
+            throw asException(lineInfo);
+        }
+        var arg0 = operands[0].getArgument();
+        var arg1 = operands[1].getArgument();
+        if (!(arg1 instanceof VariableNode) || !((VariableNode) arg1).getName().equals("null")) {
+            throw CompilerException.of(
+                    "Cannot use 'as' here, 'is not' comparison must be done to null",
+                    arg1
+            );
+        }
+        var condType = TestConverter.returnType(arg0, info, 1)[0];
+        if (!(condType instanceof OptionTypeObject)) {
+            CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
+        } else if (condType.equals(Builtins.NULL_TYPE)) {
+            CompilerWarning.warn("Using 'is not null' comparison on variable that must be null", arg0);
+        }
+        var asType = condType.stripNull();
+        var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), arg1, info, 1));
+        bytes.add(Bytecode.IDENTICAL.value);
+        bytes.add(Bytecode.BOOL_NOT.value);
+        return Pair.of(bytes, asType);
     }
 }

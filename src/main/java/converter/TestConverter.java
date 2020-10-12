@@ -93,7 +93,7 @@ public interface TestConverter extends BaseConverter {
         } else if (node instanceof NumberNode) {
             return new NumberConverter(info, (NumberNode) node, retCount);
         } else if (node instanceof OperatorNode) {
-            return new OperatorConverter(info, (OperatorNode) node, retCount);
+            return OperatorConverter.of(info, (OperatorNode) node, retCount);
         } else if (node instanceof RaiseStatementNode) {
             return new RaiseConverter(info, (RaiseStatementNode) node, retCount);
         } else if (node instanceof RangeLiteralNode) {
