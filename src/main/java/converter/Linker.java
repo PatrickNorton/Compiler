@@ -90,11 +90,6 @@ public final class Linker {
         }
         var importedTypes = info.importHandler().importedTypes();
         info.addPredeclaredTypes(importedTypes);
-        for (var pair : importedTypes.entrySet()) {
-            var name = pair.getKey();
-            var valPair = pair.getValue();
-            info.addVariable(name, Builtins.TYPE.generify(valPair.getKey()), true, valPair.getValue());
-        }
         // Filters out auto interfaces, which are registered earlier
         var importHandler = info.importHandler();
         for (var stmt : node) {
