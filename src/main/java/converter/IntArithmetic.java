@@ -97,15 +97,15 @@ public final class IntArithmetic {
     }
 
     private static BigInteger diff(BigInteger... values) {
-        var result = BigInteger.ZERO;
-        for (var value : values) {
-            result = result.subtract(value);
+        var result = values[0];
+        for (int i = 1; i < values.length; i++) {
+            result = result.subtract(values[i]);
         }
         return result;
     }
 
     private static BigInteger prod(BigInteger... values) {
-        var result = BigInteger.ZERO;
+        var result = BigInteger.ONE;
         for (var value : values) {
             result = result.multiply(value);
         }
@@ -113,16 +113,17 @@ public final class IntArithmetic {
     }
 
     private static BigInteger quot(BigInteger... values) {
-        var result = BigInteger.ZERO;
-        for (var value : values) {
-            result = result.divide(value);
+        var result = values[0];
+        for (int i = 1; i < values.length; i++) {
+            result = result.divide(values[i]);
         }
         return result;
     }
 
     private static Optional<BigInteger> pow(BigInteger... values) {
-        var result = BigInteger.ZERO;
-        for (var value : values) {
+        var result = values[0];
+        for (int i = 1; i < values.length; i++) {
+            var value = values[i];
             if (Util.fitsInInt(value)) {
                 result = result.pow(value.intValueExact());
             } else {
@@ -133,25 +134,25 @@ public final class IntArithmetic {
     }
 
     private static BigInteger and(BigInteger... values) {
-        var result = BigInteger.ZERO;
-        for (var value : values) {
-            result = result.and(value);
+        var result = values[0];
+        for (int i = 1; i < values.length; i++) {
+            result = result.and(values[i]);
         }
         return result;
     }
 
     private static BigInteger or(BigInteger... values) {
-        var result = BigInteger.ZERO;
-        for (var value : values) {
-            result = result.or(value);
+        var result = values[0];
+        for (int i = 1; i < values.length; i++) {
+            result = result.or(values[i]);
         }
         return result;
     }
 
     private static BigInteger xor(BigInteger... values) {
-        var result = BigInteger.ZERO;
-        for (var value : values) {
-            result = result.xor(value);
+        var result = values[0];
+        for (int i = 1; i < values.length; i++) {
+            result = result.xor(values[i]);
         }
         return result;
     }
