@@ -339,7 +339,8 @@ public final class CompilerInfo {
                 for (var export : handler.exportTypes()) {
                     var name = export.getKey();
                     var type = export.getValue();
-                    varMap.put(name, new VariableInfo(type, true, (short) varNumbers.getNext(), info.getLineInfo()));
+                    var constIndex = importHandler.importedConstant(info, path, name);
+                    varMap.put(name, getVariableInfo(info, type, constIndex));
                 }
             }
         }

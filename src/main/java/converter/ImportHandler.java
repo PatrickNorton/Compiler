@@ -566,12 +566,14 @@ public final class ImportHandler {
             throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
         }
         var export = exportConstants.get(name);
-        if (export != null) {
+        if (export != null && export.isPresent()) {
             return export;
         } else if (fromExports.containsKey(name)) {
             var path = fromExports.get(name);
             previousFiles.add(Pair.of(lineInfo, name));
             return ALL_FILES.get(path).importHandler().importedConst(name, lineInfo, previousFiles);
+        } else if (export != null) {
+            return export;
         } else {
             throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
         }
