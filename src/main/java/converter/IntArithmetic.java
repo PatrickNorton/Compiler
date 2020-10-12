@@ -51,6 +51,26 @@ public final class IntArithmetic {
                 } else {
                     return Optional.empty();
                 }
+            case BITWISE_AND:
+                return Optional.of(LangConstant.of(and(values)));
+            case BITWISE_OR:
+                return Optional.of(LangConstant.of(or(values)));
+            case BITWISE_XOR:
+                return Optional.of(LangConstant.of(xor(values)));
+            case BITWISE_NOT:
+                if (values.length == 1) {
+                    return Optional.of(LangConstant.of(values[0].not()));
+                } else {
+                    return Optional.empty();
+                }
+            case MODULO:
+                if (values.length == 2) {
+                    return Optional.of(LangConstant.of(values[0].mod(values[1])));
+                } else {
+                    return Optional.empty();
+                }
+            case POWER:
+                return pow(values).map(LangConstant::of);
             default:
                 return Optional.empty();
         }
@@ -96,6 +116,42 @@ public final class IntArithmetic {
         var result = BigInteger.ZERO;
         for (var value : values) {
             result = result.divide(value);
+        }
+        return result;
+    }
+
+    private static Optional<BigInteger> pow(BigInteger... values) {
+        var result = BigInteger.ZERO;
+        for (var value : values) {
+            if (Util.fitsInInt(value)) {
+                result = result.pow(value.intValueExact());
+            } else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(result);
+    }
+
+    private static BigInteger and(BigInteger... values) {
+        var result = BigInteger.ZERO;
+        for (var value : values) {
+            result = result.and(value);
+        }
+        return result;
+    }
+
+    private static BigInteger or(BigInteger... values) {
+        var result = BigInteger.ZERO;
+        for (var value : values) {
+            result = result.or(value);
+        }
+        return result;
+    }
+
+    private static BigInteger xor(BigInteger... values) {
+        var result = BigInteger.ZERO;
+        for (var value : values) {
+            result = result.xor(value);
         }
         return result;
     }
