@@ -71,6 +71,14 @@ public final class IntArithmetic {
                 }
             case POWER:
                 return pow(values).map(LangConstant::of);
+            case GREATER_THAN:
+                return Optional.of(LangConstant.of(gt(values)));
+            case LESS_THAN:
+                return Optional.of(LangConstant.of(lt(values)));
+            case GREATER_EQUAL:
+                return Optional.of(LangConstant.of(ge(values)));
+            case LESS_EQUAL:
+                return Optional.of(LangConstant.of(le(values)));
             default:
                 return Optional.empty();
         }
@@ -155,5 +163,41 @@ public final class IntArithmetic {
             result = result.xor(values[i]);
         }
         return result;
+    }
+
+    private static boolean gt(BigInteger... values) {
+        for (int i = 0; i < values.length - 1; i++) {
+            if (!(values[i].compareTo(values[i + 1]) > 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean ge(BigInteger... values) {
+        for (int i = 0; i < values.length - 1; i++) {
+            if (!(values[i].compareTo(values[i + 1]) >= 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean lt(BigInteger... values) {
+        for (int i = 0; i < values.length - 1; i++) {
+            if (!(values[i].compareTo(values[i + 1]) < 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean le(BigInteger... values) {
+        for (int i = 0; i < values.length - 1; i++) {
+            if (!(values[i].compareTo(values[i + 1]) <= 0)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
