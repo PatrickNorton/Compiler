@@ -30,13 +30,10 @@ public final class RangeConstant implements LangConstant {
         return bytes;
     }
 
-    private static final BigInteger BIG_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
-    private static final BigInteger BIG_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
-
     private static void addToBytes(List<Byte> bytes, BigInteger value) {
         if (value == null) {
             bytes.add((byte) 0);
-        } else if (value.compareTo(BIG_MAX) <= 0 && value.compareTo(BIG_MIN) >= 0) {
+        } else if (Util.fitsInInt(value)) {
             bytes.add((byte) 1);
             bytes.addAll(Util.intToBytes(value.intValueExact()));
         } else {
