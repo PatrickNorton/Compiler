@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
@@ -51,7 +52,7 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
-    public @NotNull String name() {
+    public @NotNull String name(IndexedSet<LangConstant> constants) {
         var startStr = start == null ? "" : start.toString();
         var stopStr = stop == null ? "" : stop.toString();
         if (step == null) {

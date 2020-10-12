@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public final class BuiltinConstant implements LangConstant {
 
     @NotNull
     @Override
-    public String name() {
+    public String name(IndexedSet<LangConstant> constants) {
         var result = Builtins.TRUE_BUILTINS.get(builtinIndex);
         for (var pair : Builtins.BUILTIN_MAP.entrySet()) {
             if (pair.getValue() == result) {

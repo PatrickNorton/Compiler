@@ -200,7 +200,7 @@ public enum Bytecode {
             case TABLE_NO:
                 return Integer.toString(value);
             case CONSTANT:
-                return String.format("%d (%s)", value, info.getConstant((short) value).name());
+                return String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
             case OPERATOR:
                 return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
             default:

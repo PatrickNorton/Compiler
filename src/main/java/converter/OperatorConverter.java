@@ -77,13 +77,11 @@ public final class OperatorConverter implements TestConverter {
     public Optional<LangConstant> constantReturn() {
         switch (node.getOperator()) {
             case BOOL_NOT:
-                return boolNotConst();
             case BOOL_AND:
-                return boolAndConst();
             case BOOL_OR:
-                return boolOrConst();
             case BOOL_XOR:
-                return boolXorConst();
+                var boolConv = new BoolOpConverter(node.getOperator(), node.getOperands(), node, info, retCount);
+                return boolConv.constantReturn();
         }
         return Optional.empty();
     }
@@ -129,7 +127,10 @@ public final class OperatorConverter implements TestConverter {
                 return convertNullCoerce(start);
             case BOOL_AND:
             case BOOL_OR:
-                return convertBoolOp(start);
+            case BOOL_NOT:
+            case BOOL_XOR:
+                var boolConv = new BoolOpConverter(node.getOperator(), node.getOperands(), node, info, retCount);
+                return boolConv.convert(start);
             case NOT_NULL:
                 return convertNotNull(start);
             case NOT_EQUALS:
@@ -270,25 +271,6 @@ public final class OperatorConverter implements TestConverter {
         return bytes;
     }
 
-    @NotNull
-    private List<Byte> convertBoolOp(int start) {
-        assert node.getOperator() == OperatorTypeNode.BOOL_AND || node.getOperator() == OperatorTypeNode.BOOL_OR;
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
-        bytes.addAll(TestConverter.bytes(start, node.getOperands()[0].getArgument(), info, 1));
-        bytes.add(Bytecode.DUP_TOP.value);
-        var bytecode = node.getOperator() == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_FALSE : Bytecode.JUMP_TRUE;
-        bytes.add(bytecode.value);
-        addPostJump(start, bytes);
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
-        }
-        return bytes;
-    }
-
     private void addPostJump(int start, @NotNull List<Byte> bytes) {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
@@ -395,30 +377,8 @@ public final class OperatorConverter implements TestConverter {
     @NotNull
     private List<Byte> convertIs(int start) {
         assert node.getOperator() == OperatorTypeNode.IS || node.getOperator() == OperatorTypeNode.IS_NOT;
-        var operands = node.getOperands();
-        switch (operands.length) {
-            case 0:
-            case 1: {
-                boolean isIs = node.getOperator() == OperatorTypeNode.IS;
-                CompilerWarning.warnf("'%s' with < 2 operands will always be %b", node, isIs ? "is" : "is not", isIs);
-                List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
-                bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(isIs ? Builtins.TRUE : Builtins.FALSE)));
-                return bytes;
-            }
-            case 2: {
-                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
-                bytes.addAll(TestConverter.bytes(start, operands[1].getArgument(), info, 1));
-                bytes.add(Bytecode.IDENTICAL.value);
-                if (node.getOperator() == OperatorTypeNode.IS_NOT) {
-                    bytes.add(Bytecode.BOOL_NOT.value);
-                }
-                return bytes;
-            }
-            default: {
-                throw CompilerTodoError.of("'is' with more than 2 operands not yet supported", node);
-            }
-        }
+        var isType = node.getOperator() == OperatorTypeNode.IS;
+        return new IsConverter(isType, node.getOperands(), node, info, retCount).convert(start);
     }
 
     @NotNull
@@ -448,74 +408,6 @@ public final class OperatorConverter implements TestConverter {
             throw CompilerInternalError.of("Operator != not implemented", node);
         }
         return retType.orElseThrow();
-    }
-
-    private Optional<LangConstant> boolAndConst() {
-        assert node.getOperator() == OperatorTypeNode.BOOL_AND;
-        var values = boolValues(node.getOperands());
-        if (values.isPresent()) {
-            for (var value : values.orElseThrow()) {
-                if (!value) {
-                    return Optional.of(Builtins.FALSE);
-                }
-            }
-            return Optional.of(Builtins.TRUE);
-        }
-        return Optional.empty();
-    }
-
-    private Optional<LangConstant> boolOrConst() {
-        assert node.getOperator() == OperatorTypeNode.BOOL_OR;
-        var values = boolValues(node.getOperands());
-        if (values.isPresent()) {
-            for (var value : values.orElseThrow()) {
-                if (value) {
-                    return Optional.of(Builtins.TRUE);
-                }
-            }
-            return Optional.of(Builtins.FALSE);
-        }
-        return Optional.empty();
-    }
-
-    private Optional<LangConstant> boolXorConst() {
-        assert node.getOperator() == OperatorTypeNode.BOOL_XOR;
-        if (node.getOperands().length != 2) {
-            return Optional.empty();
-        }
-        var values = boolValues(node.getOperands());
-        if (values.isPresent()) {
-            var booleans = values.orElseThrow();
-            return Optional.of(booleans[0] ^ booleans[1] ? Builtins.TRUE : Builtins.FALSE);
-        }
-        return Optional.empty();
-    }
-
-    private Optional<boolean[]> boolValues(ArgumentNode[] operands) {
-        var boolValues = new boolean[operands.length];
-        for (int i = 0; i < boolValues.length; i++) {
-            var opConst = TestConverter.constantReturn(operands[i].getArgument(), info, retCount);
-            if (opConst.isPresent()) {
-                var boolVal = opConst.orElseThrow().boolValue();
-                if (boolVal.isPresent()) {
-                    boolValues[i] = boolVal.orElseThrow();
-                } else {
-                    return Optional.empty();
-                }
-            } else {
-                return Optional.empty();
-            }
-        }
-        return Optional.of(boolValues);
-    }
-
-    private Optional<LangConstant> boolNotConst() {
-        if (node.getOperands().length > 1) {
-            return Optional.empty();
-        } else {
-            var constant = TestConverter.constantReturn(node.getOperands()[0].getArgument(), info, retCount);
-            return constant.flatMap(x -> x.boolValue().mapValues(Builtins.FALSE, Builtins.TRUE));
-        }
     }
 
     public static Pair<List<Byte>, TypeObject> convertWithAs(int start, OperatorNode node, CompilerInfo info, int retCount) {

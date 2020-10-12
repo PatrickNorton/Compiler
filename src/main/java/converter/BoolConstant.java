@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -51,7 +52,7 @@ public final class BoolConstant implements LangConstant {
 
     @NotNull
     @Override
-    public String name() {
+    public String name(IndexedSet<LangConstant> constants) {
         return Boolean.toString(value);
     }
 }

@@ -21,9 +21,13 @@ public final class TernaryConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        var ifTrue = TestConverter.of(info, node.getIfTrue(), retCount);
-        var ifFalse = TestConverter.of(info, node.getIfFalse(), retCount);
-        return new TypeObject[] {TypeObject.union(ifTrue.returnType()[0], ifFalse.returnType()[0])};
+        var ifTrue = TestConverter.returnType(node.getIfTrue(), info, retCount);
+        var ifFalse = TestConverter.returnType(node.getIfFalse(), info, retCount);
+        var result = new TypeObject[Math.min(ifTrue.length, ifFalse.length)];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = TypeObject.union(ifTrue[i], ifFalse[i]);
+        }
+        return result;
     }
 
     @NotNull

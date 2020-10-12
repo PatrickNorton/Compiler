@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public final class FunctionConstant implements LangConstant {
 
     @NotNull
     @Override
-    public String name() {
+    public String name(IndexedSet<LangConstant> constants) {
         return name;
     }
 

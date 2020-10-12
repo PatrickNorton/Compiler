@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -32,8 +33,8 @@ public final class OptionConstant implements LangConstant {
 
     @Override
     @NotNull
-    public String name() {
-        return String.format("Option[%d]", constVal);
+    public String name(IndexedSet<LangConstant> constants) {
+        return String.format("Option[%s]", constants.get(constVal).name(constants));
     }
 
     @Override

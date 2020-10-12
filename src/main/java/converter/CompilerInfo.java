@@ -228,7 +228,7 @@ public final class CompilerInfo {
     }
 
     public IndexedSet<LangConstant> getConstants() {
-        return GLOBAL_INFO.getConstants();
+        return IndexedSet.unmodifiable(GLOBAL_INFO.getConstants());
     }
 
     /**
@@ -323,7 +323,7 @@ public final class CompilerInfo {
                     if (!varMap.containsKey(asName)) {
                         var type = importHandler.importedType(info, path, name);
                         var constIndex = importHandler.importedConstant(info, path, name);
-                        varMap.put(asName, getVariableInfo(info, type, constIndex, (short) varMap.size()));
+                        varMap.put(asName, getVariableInfo(info, type, constIndex));
                     }
                 }
             } else if (!info.getNames().get(0).equals("*")) {
@@ -331,7 +331,7 @@ public final class CompilerInfo {
                     if (!varMap.containsKey(name)) {
                         var type = importHandler.importedType(info, path, name);
                         var constIndex = importHandler.importedConstant(info, path, name);
-                        varMap.put(name, getVariableInfo(info, type, constIndex, (short) varMap.size()));
+                        varMap.put(name, getVariableInfo(info, type, constIndex));
                     }
                 }
             } else {
@@ -339,20 +339,20 @@ public final class CompilerInfo {
                 for (var export : handler.exportTypes()) {
                     var name = export.getKey();
                     var type = export.getValue();
-                    varMap.put(name, new VariableInfo(type, true, (short) varMap.size(), info.getLineInfo()));
+                    varMap.put(name, new VariableInfo(type, true, (short) varNumbers.getNext(), info.getLineInfo()));
                 }
             }
         }
     }
 
     @NotNull
-    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex, short mapSize) {
+    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex) {
         if (constIndex.isPresent()) {
             var constant = GLOBAL_INFO.getConstant(constIndex.orElseThrow());
             return new VariableInfo(type, constant, info.getLineInfo());
         } else {
             CompilerWarning.warn("Import is not a compile-time constant, may fail at runtime", info);
-            return new VariableInfo(type, true, mapSize, info.getLineInfo());
+            return new VariableInfo(type, true, (short) varNumbers.getNext(), info.getLineInfo());
         }
     }
 
@@ -495,7 +495,9 @@ public final class CompilerInfo {
             var constants = GLOBAL_INFO.getConstants();
             for (int i = 0; i < constants.size(); i++) {
                 var constant = constants.get(i);
-                if (constant.getType() instanceof TypeTypeObject && constant.name().equals(name)) {
+                var constType = constant.getType();
+                if (constType instanceof TypeTypeObject &&
+                        ((TypeTypeObject) constType).representedType().sameBaseType(type)) {
                     return constant;
                 }
             }
@@ -946,17 +948,11 @@ public final class CompilerInfo {
      */
     void addPredeclaredTypes(@NotNull Map<String, Pair<TypeObject, Lined>> types) {
         assert !linked;
-        var varFrame = variables.get(variables.size() - 1);
         for (var pair : types.entrySet()) {
             var name = pair.getKey();
             var valPair = pair.getValue();
             var obj = valPair.getKey();
-            var lined = valPair.getValue();
             typeMap.put(name, obj);
-            var varInfo = new VariableInfo(
-                    Builtins.TYPE.generify(obj), true, (short) varFrame.size(), lined.getLineInfo()
-            );
-            varFrame.put(pair.getKey(), varInfo);
         }
     }
 }

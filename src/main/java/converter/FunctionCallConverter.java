@@ -4,6 +4,7 @@ import main.java.parser.ArgumentNode;
 import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
@@ -52,6 +53,9 @@ public final class FunctionCallConverter implements TestConverter {
         assert node.getCaller() instanceof EscapedOperatorNode;
         List<Byte> bytes = new ArrayList<>();
         var caller = (EscapedOperatorNode) node.getCaller();
+        if (caller.getOperator().operator == OperatorTypeNode.IS) {
+            return new IsConverter(true, node.getParameters(), node, info, retCount).convert(start);
+        }
         var op = OpSpTypeNode.translate(caller.getOperator().operator);
         var first = firstArgType();
         ensureTypesMatch(op, first, getArgsExceptFirst(node.getParameters()));
@@ -140,6 +144,8 @@ public final class FunctionCallConverter implements TestConverter {
             if (fn.isPresent()) {
                 return fn.orElseThrow().getReturns();
             }
+        } else if (node.getCaller() instanceof EscapedOperatorNode) {
+            return escapedOpReturn();
         }
         var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
         var retInfo = retType.tryOperatorInfo(node, OpSpTypeNode.CALL, info);
@@ -160,6 +166,21 @@ public final class FunctionCallConverter implements TestConverter {
                 result[i] = returns[i].generifyWith(cls, gen);
             }
             return result;
+        }
+    }
+
+    private TypeObject[] escapedOpReturn() {
+        assert node.getCaller() instanceof EscapedOperatorNode;
+        var escapedOp = (EscapedOperatorNode) node.getCaller();
+        switch (escapedOp.getOperator().operator) {
+            case IS:
+            case IS_NOT:
+                return new TypeObject[] {Builtins.BOOL};
+            default:
+                throw CompilerTodoError.format(
+                        "Return type for %s not implemented yet",
+                        node, escapedOp.getOperator().operator
+                );
         }
     }
 

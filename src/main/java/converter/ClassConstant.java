@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,7 @@ public final class ClassConstant implements LangConstant {
 
     @NotNull
     @Override
-    public String name() {
+    public String name(IndexedSet<LangConstant> constants) {
         return name;
     }
 

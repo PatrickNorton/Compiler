@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,7 @@ public final class BytesConstant implements LangConstant {
     @NotNull
     @Contract(pure = true)
     @Override
-    public String name() {
+    public String name(IndexedSet<LangConstant> constants) {
         StringBuilder result = new StringBuilder();
         for (var b : value) {
             result.append((char) b.byteValue());
