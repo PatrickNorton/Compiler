@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
-import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,8 +60,7 @@ public final class InstanceConverter extends OperatorConverter {
                     "'instanceof' operator requires second argument to be an instance of 'type'", arg1
             );
         }
-        // calling a type will always return an instance
-        var instanceCls = arg1ret.tryOperatorReturnType(lineInfo, OpSpTypeNode.CALL, info)[0];
+        var instanceCls = ((TypeTypeObject) arg1ret).representedType();
         var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
         if (dupFirst) {
             bytes.add(Bytecode.DUP_TOP.value);
