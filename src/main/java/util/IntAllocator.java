@@ -111,7 +111,7 @@ public class IntAllocator extends AbstractCollection<Integer> implements Collect
             while (removed.contains(current)) {
                 current++;
             }
-            return current;
+            return current++;
         }
     }
 }
