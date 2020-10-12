@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.ElifStatementNode;
 import main.java.parser.IfStatementNode;
+import main.java.parser.Lined;
 import main.java.parser.OperatorNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.parser.StatementBodyNode;
@@ -28,6 +29,7 @@ public final class IfConverter implements BaseConverter {
         List<Byte> bytes;
         boolean hasAs = !node.getAs().isEmpty();
         boolean hasElse = !node.getElseStmt().isEmpty();
+        checkConditions();
         if (hasAs) {
             bytes = addAs(start, node.getConditional(), node.getAs());
             addBodyWithAs(bytes, start, node.getBody(), node.getAs());
@@ -126,6 +128,27 @@ public final class IfConverter implements BaseConverter {
         info.checkDefinition(as.getName(), as);
         info.addVariable(as.getName(), asType, as);
         return bytes;
+    }
+
+    private void checkConditions() {
+        // TODO: Use this information to actually change emitted bytecode
+        var firstConst = TestConverter.constantReturn(node.getConditional(), info, 1);
+        if (firstConst.isPresent()) {
+            checkCond(firstConst.orElseThrow(), node.getConditional());
+        }
+        for (var elif : node.getElifs()) {
+            var constant = TestConverter.constantReturn(elif.getTest(), info, 1);
+            if (constant.isPresent()) {
+                checkCond(constant.orElseThrow(), node.getConditional());
+            }
+        }
+    }
+
+    private void checkCond(LangConstant value, Lined node) {
+        var boolVal = value.boolValue();
+        if (boolVal.isPresent()) {
+            CompilerWarning.warnf("Statement in conditional will always evaluate to %b", node, boolVal.orElseThrow());
+        }
     }
 
     @NotNull
