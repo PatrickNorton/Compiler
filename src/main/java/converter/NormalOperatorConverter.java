@@ -6,8 +6,10 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class NormalOperatorConverter extends OperatorConverter {
     private final OperatorTypeNode op;
@@ -31,6 +33,11 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
+    public Optional<LangConstant> constantReturn() {
+        return allInts(args).flatMap(values -> IntArithmetic.computeConst(op, values));
+    }
+
+    @Override
     @NotNull
     public TypeObject[] returnType() {
         var firstOpConverter = TestConverter.of(info, args[0].getArgument(), 1);
@@ -41,6 +48,13 @@ public final class NormalOperatorConverter extends OperatorConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            List<Byte> bytes = new ArrayList<>();
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.addConstant(constant.orElseThrow())));
+            return bytes;
+        }
         if (op == OperatorTypeNode.NOT_EQUALS) {
             return convertNotEquals(start);
         }
@@ -104,5 +118,24 @@ public final class NormalOperatorConverter extends OperatorConverter {
     @NotNull
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
+    }
+
+    private Optional<BigInteger[]> allInts(ArgumentNode[] args) {
+        BigInteger[] result = new BigInteger[args.length];
+        for (int i = 0; i < args.length; i++) {
+            var constant = TestConverter.constantReturn(args[i].getArgument(), info, 1);
+            if (constant.isEmpty()) {
+                return Optional.empty();
+            }
+            var constVal = constant.orElseThrow();
+            if (constVal instanceof IntConstant) {
+                result[i] = BigInteger.valueOf(((IntConstant) constVal).getValue());
+            } else if (constVal instanceof BigintConstant) {
+                result[i] = ((BigintConstant) constVal).getValue();
+            } else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(result);
     }
 }

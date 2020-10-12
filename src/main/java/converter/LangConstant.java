@@ -46,8 +46,7 @@ public interface LangConstant extends LangObject {
         if (value.scale() == 0 || value.stripTrailingZeros().scale() == 0) {
             var bigInt = value.toBigIntegerExact();
             // If the integer is small enough to fit into an int, do so
-            if (bigInt.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0
-                    && bigInt.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0) {
+            if (Util.fitsInInt(bigInt)) {
                 return new IntConstant(bigInt.intValueExact());
             } else {
                 return new BigintConstant(bigInt);
@@ -61,6 +60,14 @@ public interface LangConstant extends LangObject {
     @Contract(value = "_ -> new", pure = true)
     static LangConstant of(int value) {
         return new IntConstant(value);
+    }
+
+    static LangConstant of(BigInteger value) {
+        if (Util.fitsInInt(value)) {
+            return new IntConstant(value.intValueExact());
+        } else {
+            return new BigintConstant(value);
+        }
     }
 
     static LangConstant of(boolean value) {
