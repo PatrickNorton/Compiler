@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class RangeConstant implements LangConstant {
     private final BigInteger start;
@@ -17,6 +18,18 @@ public final class RangeConstant implements LangConstant {
         this.start = start;
         this.stop = stop;
         this.step = step;
+    }
+
+    public Optional<BigInteger> getStart() {
+        return Optional.of(start);
+    }
+
+    public Optional<BigInteger> getStop() {
+        return Optional.of(stop);
+    }
+
+    public Optional<BigInteger> getStep() {
+        return Optional.of(step);
     }
 
     @Override

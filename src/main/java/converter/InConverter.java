@@ -5,8 +5,10 @@ import main.java.parser.Lined;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class InConverter extends OperatorConverter {
     private final boolean inType;
@@ -27,6 +29,25 @@ public final class InConverter extends OperatorConverter {
         this.lineInfo = lineInfo;
         this.info = info;
         this.retCount = retCount;
+    }
+
+    @Override
+    public Optional<LangConstant> constantReturn() {
+        if (args.length != 2) {
+            return Optional.empty();
+        }
+        var arg0const = TestConverter.constantReturn(args[0].getArgument(), info, 1);
+        var arg1const = TestConverter.constantReturn(args[1].getArgument(), info, 1);
+        if (arg0const.isEmpty() || arg1const.isEmpty()) {
+            return Optional.empty();
+        }
+        var arg0 = arg0const.orElseThrow();
+        var arg1 = arg1const.orElseThrow();
+        if (arg1 instanceof RangeConstant) {
+            return rangeConst(arg0, (RangeConstant) arg1);
+        } else {
+            return Optional.empty();  // TODO: String/bytes
+        }
     }
 
     @Override
@@ -57,5 +78,66 @@ public final class InConverter extends OperatorConverter {
     @NotNull
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
+    }
+
+    private Optional<LangConstant> rangeConst(LangConstant arg0, RangeConstant arg1) {
+        BigInteger value;
+        if (arg0 instanceof IntConstant) {
+            value = BigInteger.valueOf(((IntConstant) arg0).getValue());
+        } else if (arg0 instanceof BigintConstant) {
+            value = ((BigintConstant) arg0).getValue();
+        } else {
+            return Optional.empty();
+        }
+        var mStart = arg1.getStart();
+        var mStop = arg1.getStop();
+        var step = arg1.getStep().orElse(BigInteger.ONE);
+        if (mStart.isPresent()) {
+            var start = mStart.orElseThrow();
+            if (mStop.isPresent()) {
+                var stop = mStop.orElseThrow();
+                boolean isBetween;
+                if (step.signum() >= 0) {
+                    isBetween = value.compareTo(start) >= 0
+                            && value.compareTo(stop) < 0
+                            && goesInto(value, start, step);
+                } else {
+                    isBetween = value.compareTo(stop) >= 0
+                            && value.compareTo(start) < 0
+                            && goesInto(value, start, step.negate());
+                }
+                return Optional.of(LangConstant.of(isBetween));
+            } else {
+                boolean isBetween;
+                if (step.signum() >= 0) {
+                    isBetween = value.compareTo(start) >= 0 && goesInto(value, start, step);
+                } else {
+                    isBetween = value.compareTo(start) <= 0 && goesInto(value, start, step.negate());
+                }
+                return Optional.of(LangConstant.of(isBetween));
+            }
+        } else {
+            if (mStop.isPresent()) {
+                var stop = mStop.orElseThrow();
+                boolean isBetween;
+                if (step.signum() >= 0) {
+                    isBetween = value.compareTo(stop) < 0 && goesInto(value, stop, step);
+                } else {
+                    isBetween = value.compareTo(stop) > 0 && goesInto(value, stop, step.negate());
+                }
+                return Optional.of(LangConstant.of(isBetween));
+            } else {
+                if (!step.equals(BigInteger.ONE)) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(LangConstant.of(true));
+                }
+            }
+        }
+    }
+
+    private static boolean goesInto(BigInteger value, BigInteger start, BigInteger step) {
+        // Equivalent to (value - start) % step == 0
+        return value.subtract(start).mod(step).signum() == 0;
     }
 }
