@@ -2,13 +2,17 @@ package main.java.converter;
 
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
+import main.java.parser.OperatorTypeNode;
+import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class IsConverter implements TestConverter {
+public final class IsConverter extends OperatorConverter {
     private final boolean isType;
     private final ArgumentNode[] operands;
     private final Lined lineInfo;
@@ -31,11 +35,8 @@ public final class IsConverter implements TestConverter {
 
     @Override
     public Optional<LangConstant> constantReturn() {
-        if (operands.length < 2) {
-            return Optional.of(LangConstant.of(isType));
-        } else {
-            return Optional.empty();
-        }
+        var op = isType ? OperatorTypeNode.IS : OperatorTypeNode.IS_NOT;
+        return allInts(info, operands).flatMap(values -> IntArithmetic.computeConst(op, values));
     }
 
     @Override
@@ -54,12 +55,16 @@ public final class IsConverter implements TestConverter {
             case 0:
             case 1: {
                 CompilerWarning.warnf("'%s' with < 2 operands will always be %b", lineInfo, isType ? "is" : "is not", isType);
-                List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+                // Have to get side-effects
+                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+                bytes.add(Bytecode.POP_TOP.value);
                 bytes.add(Bytecode.LOAD_CONST.value);
                 bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(isType))));
                 return bytes;
             }
             case 2: {
+                List<Byte> constBytes = getConstant();
+                if (constBytes != null) return constBytes;
                 List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
                 bytes.addAll(TestConverter.bytes(start, operands[1].getArgument(), info, 1));
                 bytes.add(Bytecode.IDENTICAL.value);
@@ -75,6 +80,8 @@ public final class IsConverter implements TestConverter {
                             lineInfo, operands.length
                     );
                 }
+                List<Byte> constBytes = getConstant();
+                if (constBytes != null) return constBytes;
                 // Since object identity is transitive, it's much easier if we
                 // simply compare everything to the first object given.
                 // Since nothing in life is ever simple, we have to do some
@@ -99,5 +106,47 @@ public final class IsConverter implements TestConverter {
                 return bytes;
             }
         }
+    }
+
+    @Nullable
+    private List<Byte> getConstant() {
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
+            return bytes;
+        }
+        return null;
+    }
+
+    @Override
+    @NotNull
+    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+        assert operands.length == 2;
+        if (isType) {
+            throw asException(lineInfo);
+        }
+        var arg0 = operands[0].getArgument();
+        var arg1 = operands[1].getArgument();
+        if (!(arg1 instanceof VariableNode) || !((VariableNode) arg1).getName().equals("null")) {
+            throw CompilerException.of(
+                    "Cannot use 'as' here, 'is not' comparison must be done to null",
+                    arg1
+            );
+        }
+        var condType = TestConverter.returnType(arg0, info, 1)[0];
+        if (!(condType instanceof OptionTypeObject)) {
+            CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
+        } else if (condType.equals(Builtins.NULL_TYPE)) {
+            CompilerWarning.warn("Using 'is not null' comparison on variable that must be null", arg0);
+        }
+        var asType = condType.stripNull();
+        var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.addAll(TestConverter.bytes(start + bytes.size(), arg1, info, 1));
+        bytes.add(Bytecode.IDENTICAL.value);
+        bytes.add(Bytecode.BOOL_NOT.value);
+        return Pair.of(bytes, asType);
     }
 }

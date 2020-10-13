@@ -3,13 +3,14 @@ package main.java.converter;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class BoolOpConverter implements TestConverter {
+public final class BoolOpConverter extends OperatorConverter {
     private final OperatorTypeNode op;
     private final ArgumentNode[] args;
     private final Lined lineInfo;
@@ -181,5 +182,11 @@ public final class BoolOpConverter implements TestConverter {
             var constant = TestConverter.constantReturn(args[0].getArgument(), info, retCount);
             return constant.flatMap(x -> x.boolValue().mapValues(Builtins.FALSE, Builtins.TRUE));
         }
+    }
+
+    @Override
+    @NotNull
+    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+        throw asException(lineInfo);
     }
 }

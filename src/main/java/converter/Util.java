@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public final class Util {
@@ -87,5 +88,12 @@ public final class Util {
         for (int i = 0; i < toInsert.size(); i++) {
             original.set(start + i, toInsert.get(i));
         }
+    }
+
+    private static final BigInteger BIG_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
+    private static final BigInteger BIG_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
+
+    static boolean fitsInInt(BigInteger value) {
+        return value.compareTo(BIG_MAX) <= 0 && value.compareTo(BIG_MIN) >= 0;
     }
 }

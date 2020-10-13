@@ -110,6 +110,11 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         }
     }
 
+    @Override
+    public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
+        return new UnionTypeObject(this, generifyWithInner(parent, values));
+    }
+
     public OptionalUint getVariantNumber(String name) {
         for (int i = 0; i < info.variants.size(); i++) {
             var pair = info.variants.get(i);
