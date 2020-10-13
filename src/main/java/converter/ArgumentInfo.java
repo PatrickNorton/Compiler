@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -179,7 +180,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
     }
 
     public Argument get(int i) {
-        if (i > size()) {
+        if (i >= size()) {
             throw new IndexOutOfBoundsException(i);
         }
         if (i < positionArgs.length) {
@@ -194,6 +195,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
     public Optional<Map<Integer, TypeObject>> generifyArgs(@NotNull FunctionInfo parent, Argument... args) {
         var par = parent.toCallable();
         var newArgs = expandTuples(args);
+        if (size() == 0) {
+            return newArgs.length == 0 ? Optional.of(Collections.emptyMap()) : Optional.empty();
+        }
         Map<Integer, TypeObject> result = new HashMap<>();
         Map<String, TypeObject> keywordMap = initKeywords(newArgs);
         for (var arg : newArgs) {
