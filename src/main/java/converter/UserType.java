@@ -195,6 +195,9 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
     @NotNull
     protected final List<TypeObject> generifyWithInner(TypeObject parent, List<TypeObject> values) {
+        if (this.sameBaseType(parent)) {
+            return values;
+        }
         List<TypeObject> result = new ArrayList<>(generics.size());
         for (var generic : generics) {
             if (generic instanceof TemplateParam) {
