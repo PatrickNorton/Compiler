@@ -2,9 +2,11 @@ package main.java.converter;
 
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
+import main.java.parser.OperatorTypeNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +35,8 @@ public final class IsConverter extends OperatorConverter {
 
     @Override
     public Optional<LangConstant> constantReturn() {
-        if (operands.length < 2) {
-            return Optional.of(LangConstant.of(isType));
-        } else {
-            return Optional.empty();
-        }
+        var op = isType ? OperatorTypeNode.IS : OperatorTypeNode.IS_NOT;
+        return allInts(info, operands).flatMap(values -> IntArithmetic.computeConst(op, values));
     }
 
     @Override
@@ -56,12 +55,16 @@ public final class IsConverter extends OperatorConverter {
             case 0:
             case 1: {
                 CompilerWarning.warnf("'%s' with < 2 operands will always be %b", lineInfo, isType ? "is" : "is not", isType);
-                List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+                // Have to get side-effects
+                List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+                bytes.add(Bytecode.POP_TOP.value);
                 bytes.add(Bytecode.LOAD_CONST.value);
                 bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(isType))));
                 return bytes;
             }
             case 2: {
+                List<Byte> constBytes = getConstant();
+                if (constBytes != null) return constBytes;
                 List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
                 bytes.addAll(TestConverter.bytes(start, operands[1].getArgument(), info, 1));
                 bytes.add(Bytecode.IDENTICAL.value);
@@ -77,6 +80,8 @@ public final class IsConverter extends OperatorConverter {
                             lineInfo, operands.length
                     );
                 }
+                List<Byte> constBytes = getConstant();
+                if (constBytes != null) return constBytes;
                 // Since object identity is transitive, it's much easier if we
                 // simply compare everything to the first object given.
                 // Since nothing in life is ever simple, we have to do some
@@ -101,6 +106,18 @@ public final class IsConverter extends OperatorConverter {
                 return bytes;
             }
         }
+    }
+
+    @Nullable
+    private List<Byte> getConstant() {
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
+            return bytes;
+        }
+        return null;
     }
 
     @Override

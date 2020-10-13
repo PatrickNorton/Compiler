@@ -7,11 +7,13 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public abstract class OperatorConverter implements TestConverter {
@@ -106,5 +108,24 @@ public abstract class OperatorConverter implements TestConverter {
                 "Cannot use 'as' here, condition must be an " +
                         "'instanceof', '?', or 'is not null' statement", lineInfo
         );
+    }
+
+    protected static Optional<BigInteger[]> allInts(CompilerInfo info, ArgumentNode[] args) {
+        BigInteger[] result = new BigInteger[args.length];
+        for (int i = 0; i < args.length; i++) {
+            var constant = TestConverter.constantReturn(args[i].getArgument(), info, 1);
+            if (constant.isEmpty()) {
+                return Optional.empty();
+            }
+            var constVal = constant.orElseThrow();
+            if (constVal instanceof IntConstant) {
+                result[i] = BigInteger.valueOf(((IntConstant) constVal).getValue());
+            } else if (constVal instanceof BigintConstant) {
+                result[i] = ((BigintConstant) constVal).getValue();
+            } else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(result);
     }
 }
