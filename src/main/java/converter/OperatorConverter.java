@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorNode;
 import main.java.parser.OperatorTypeNode;
@@ -60,30 +61,36 @@ public abstract class OperatorConverter implements TestConverter {
     }
 
     public static OperatorConverter of(CompilerInfo info, OperatorNode node, int retCount) {
-        switch (node.getOperator()) {
+        return ofComponents(info, node.getOperator(), node.getOperands(), node, retCount);
+    }
+
+    public static OperatorConverter ofComponents(
+            CompilerInfo info, OperatorTypeNode op, ArgumentNode[] args, Lined node, int retCount
+    ) {
+        switch (op) {
             case NULL_COERCE:
             case NOT_NULL:
             case OPTIONAL:
-                return new NullOpConverter(node.getOperator(), node.getOperands(), node, info, retCount);
+                return new NullOpConverter(op, args, node, info, retCount);
             case BOOL_AND:
             case BOOL_OR:
             case BOOL_NOT:
             case BOOL_XOR:
-                return new BoolOpConverter(node.getOperator(), node.getOperands(), node, info, retCount);
+                return new BoolOpConverter(op, args, node, info, retCount);
             case IS:
-                return new IsConverter(true, node.getOperands(), node, info, retCount);
+                return new IsConverter(true, args, node, info, retCount);
             case IS_NOT:
-                return new IsConverter(false, node.getOperands(), node, info, retCount);
+                return new IsConverter(false, args, node, info, retCount);
             case IN:
-                return new InConverter(true, node.getOperands(), node, info, retCount);
+                return new InConverter(true, args, node, info, retCount);
             case NOT_IN:
-                return new InConverter(false, node.getOperands(), node, info, retCount);
+                return new InConverter(false, args, node, info, retCount);
             case INSTANCEOF:
-                return new InstanceConverter(true, node.getOperands(), node, info, retCount);
+                return new InstanceConverter(true, args, node, info, retCount);
             case NOT_INSTANCEOF:
-                return new InstanceConverter(false, node.getOperands(), node, info, retCount);
+                return new InstanceConverter(false, args, node, info, retCount);
             default:
-                return new NormalOperatorConverter(node.getOperator(), node.getOperands(), node, info, retCount);
+                return new NormalOperatorConverter(op, args, node, info, retCount);
         }
     }
 

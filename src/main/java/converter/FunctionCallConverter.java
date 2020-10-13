@@ -4,16 +4,15 @@ import main.java.parser.ArgumentNode;
 import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
-import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class FunctionCallConverter implements TestConverter {
     private final CompilerInfo info;
@@ -24,6 +23,17 @@ public final class FunctionCallConverter implements TestConverter {
         this.info = info;
         this.node = node;
         this.retCount = retCount;
+    }
+
+    @Override
+    public Optional<LangConstant> constantReturn() {
+        if (node.getCaller() instanceof EscapedOperatorNode) {
+            var op = ((EscapedOperatorNode) node.getCaller()).getOperator().operator;
+            var conv = OperatorConverter.ofComponents(info, op, node.getParameters(), node, retCount);
+            return conv.constantReturn();
+        } else {
+            return Optional.empty();
+        }
     }
 
     @NotNull
@@ -51,42 +61,15 @@ public final class FunctionCallConverter implements TestConverter {
 
     private List<Byte> convertOp(int start) {
         assert node.getCaller() instanceof EscapedOperatorNode;
-        List<Byte> bytes = new ArrayList<>();
-        var caller = (EscapedOperatorNode) node.getCaller();
-        if (caller.getOperator().operator == OperatorTypeNode.IS) {
-            return new IsConverter(true, node.getParameters(), node, info, retCount).convert(start);
-        }
-        var op = OpSpTypeNode.translate(caller.getOperator().operator);
-        var first = firstArgType();
-        ensureTypesMatch(op, first, getArgsExceptFirst(node.getParameters()));
-        var opInfo = first.tryOperatorInfo(node, op, info);
-        int argc = convertOpArgs(bytes, start, opInfo);
-        bytes.add(Bytecode.CALL_OP.value);
-        bytes.addAll(Util.shortToBytes((short) op.ordinal()));
-        bytes.addAll(Util.shortToBytes((short) argc));
-        return bytes;
-    }
-
-    private TypeObject firstArgType() {
-        var param = node.getParameters()[0];
-        var retType = TestConverter.returnType(param.getArgument(), info, 1)[0];
-        if (param.isVararg()) {
-            return retType.getGenerics().get(0);
-        } else {
-            return retType;
-        }
+        var op = ((EscapedOperatorNode) node.getCaller()).getOperator().operator;
+        var conv = OperatorConverter.ofComponents(info, op, node.getParameters(), node, retCount);
+        return conv.convert(start);
     }
 
     private int convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo) {
         var params = node.getParameters();
         var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
         return convertInnerArgs(bytes, start, params, argPositions);
-    }
-
-    private int convertOpArgs(List<Byte> bytes, int start, FunctionInfo fnInfo) {
-        var params = node.getParameters();
-        var argPositions = fnInfo.getArgs().argPositions(getArgsExceptFirst(params));
-        return convertInnerArgs(bytes, start, params, argPositions) - 1;
     }
 
     private int convertInnerArgs(List<Byte> bytes, int start, ArgumentNode[] params, @NotNull int[] argPositions) {
@@ -206,14 +189,10 @@ public final class FunctionCallConverter implements TestConverter {
         return result;
     }
 
-    @NotNull
-    private FunctionInfo ensureTypesMatch(@NotNull TypeObject callerType) {
-        return ensureTypesMatch(OpSpTypeNode.CALL, callerType, getArgs(node.getParameters()));
-    }
-
-    private FunctionInfo ensureTypesMatch(OpSpTypeNode operator, TypeObject callerType, Argument[] args) {
+    private FunctionInfo ensureTypesMatch(TypeObject callerType) {
+        var args = getArgs(node.getParameters());
         var accessLevel = info.accessLevel(callerType);
-        var operatorInfo = callerType.operatorInfo(operator, accessLevel);
+        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL, accessLevel);
         if (operatorInfo.isEmpty()) {
             throw CompilerException.format(
                     "Object of type '%s' has no overloaded 'operator ()'",
@@ -246,21 +225,6 @@ public final class FunctionCallConverter implements TestConverter {
             result[i] = new Argument(arg.getVariable().getName(), type, arg.isVararg(), lineInfo);
         }
         return result;
-    }
-
-    private Argument[] getArgsExceptFirst(ArgumentNode... args) {
-        if (args[0].isVararg()) {
-            var result = getArgs(args);
-            var res0 = result[0];
-            assert res0.getType() instanceof TupleType;
-            var generics = res0.getType().getGenerics();
-            var newGen = generics.subList(0, generics.size() - 1).toArray(new TypeObject[0]);
-            var resType = Builtins.TUPLE.generify(newGen);
-            result[0] = new Argument(res0.getName(), resType, res0.isVararg(), res0.getLineInfo());
-        return result;
-        } else {
-            return getArgs(Arrays.copyOfRange(args, 1, args.length));
-        }
     }
 
     private boolean isDeterminedFunction(TestNode name) {
