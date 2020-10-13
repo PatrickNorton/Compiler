@@ -239,7 +239,8 @@ public final class AssignmentConverter implements BaseConverter {
         }
         if (!opInfo.orElseThrow().matches(indexTypes.toArray(new Argument[0]))) {
             throw CompilerException.format(
-                    "Cannot assign variable to index: '%s'.operator []= does not match the given types", node
+                    "Cannot assign variable to index: '%s'.operator []= does not match the given types",
+                    node, varType.name()
             );
         }
     }
