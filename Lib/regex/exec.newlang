@@ -726,15 +726,15 @@ class ExecNoSync {
     private method findDfaForward(bytes text, int start) -> Result[tuple[int, int]] {
         mut int end
         switch Fsm.forward(self.ro.dfa, self.cache.value, false, text, start) {
-            case Result.NoMatch as i {
-                return Result.NoMatch(i)
+            case Result.NoMatch as i {  # FIXME: Determine generics automatically
+                return Result[tuple[int, int]].NoMatch(i)
             }
             case Result.Quit {
-                return Result.Quit()
+                return Result[tuple[int, int]].Quit()
             }
             case Result.Match as end_ {
                 if start == end_ {
-                    return Result.Match((start, start))
+                    return Result[tuple[int, int]].Match((start, start))
                 } else {
                     end = end_
                 }
@@ -747,9 +747,9 @@ class ExecNoSync {
             text[start:],
             end - start,
         ) {
-            case Result.Match as s => Result.Match((start + s, end))
-            case Result.NoMatch as i => Result.NoMatch(i)
-            case Result.Quit => Result.Quit()
+            case Result.Match as s => Result[tuple[int, int]].Match((start + s, end))
+            case Result.NoMatch as i => Result[tuple[int, int]].NoMatch(i)
+            case Result.Quit => Result[tuple[int, int]].Quit()
         }
     }
 
