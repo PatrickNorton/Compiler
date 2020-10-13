@@ -462,7 +462,8 @@ public final class Builtins {
             BYTES,
             DICT,
             OBJECT,
-            NOT_IMPLEMENTED
+            NOT_IMPLEMENTED,
+            TUPLE
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
