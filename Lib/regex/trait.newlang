@@ -31,4 +31,8 @@ class Locations {
             return self.value.length // 2
         }
     }
+
+    public method asSlots() -> list[Slot] {
+        return self.values
+    }
 }

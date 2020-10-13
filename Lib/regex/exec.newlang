@@ -7,7 +7,7 @@ from .dfa import canExec, Result, Fsm
 from .hir import Hir, Literal, Literals, HirKind
 from .literal import LiteralSearcher
 from .parser import ParserBuilder
-from .trait import Locations
+from .trait import Locations, Slot
 
 from .backtrack import Cache as BacktrackCache
 from .dfa import Cache as DfaCache
@@ -538,7 +538,7 @@ class ExecNoSync {
                 case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
             }
 
-            case MatchType.DfaAnchoredReverse => switch self.find_dfa_anchored_reverse(text, start) {
+            case MatchType.DfaAnchoredReverse => switch self.findDfaAnchoredReverse(text, start) {
                 case Result.Match as pair => pair
                 case Result.NoMatch => null
                 case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
@@ -552,7 +552,7 @@ class ExecNoSync {
             case MatchType.Nfa as ty => self.findNfa(ty, text, start)
             case MatchType.Nothing => null
 
-            case MatchType.DfaMany => raise ValueError("BUG: RegexSet cannot be used with find")
+            case MatchType.DfaMany => raise NotImplemented()  # BUG: RegexSet cannot be used with find
         }
     }
 
@@ -562,7 +562,7 @@ class ExecNoSync {
         int start,
     ) -> tuple[int, int]? {
         var slots = locs.asSlots()
-        for int i in enumerate(slots) {
+        for int i in [0:slots.length] {
              slots[i] = null
         }
         # If the caller unnecessarily uses this, then we try to save them
@@ -723,6 +723,68 @@ class ExecNoSync {
         }
     }
 
+    private method findNfa(MatchNfaType ty, bytes text, int start) -> tuple[int, int]? {
+        mut list[Slot] slots = [null, null]
+        if self.execNfa(
+            ty,
+            [false],
+            slots,
+            false,
+            false,
+            text,
+            start,
+            text.length,
+        ) {
+            if slots[0]? as s0 {
+                if slots[1]? as s1 {
+                    return (s0, s1)
+                }
+            }
+        }
+        return null
+    }
+
+    private method execDfaReverseSuffix(
+        bytes text,
+        int originalStart,
+    ) -> Result[tuple[int, int]]? {
+
+        var lcs = self.ro.suffixes.lcs()
+        assert lcs.length >= 1
+        mut var start = originalStart
+        mut var end = start
+        mut var lastLiteral = start
+        while end <= text.length {
+            if lcs.find(text[lastLiteral:])? as i {
+                lastLiteral += i
+            } else {
+                return Result[tuple[int, int]].NoMatch(text.length)
+            }
+            end = lastLiteral + lcs.length
+            switch Fsm.reverse(
+                self.ro.dfaReverse,
+                self.cache.value(),
+                false,
+                text[start:end],
+                end - start,
+            ) {
+                case Result.Match as i {
+                    return Result[tuple[int, int]].Match((start + i, end)) if i else null
+                }
+                case Result.NoMatch as i {
+                    return null if not i
+                    start += i
+                    lastLiteral += i
+                }
+                case Result.Quit {
+                    return Result.Quit()
+                }
+            }
+        }
+        return Result[tuple[int, int]].NoMatch(text.len())
+    }
+
+
     private method findDfaForward(bytes text, int start) -> Result[tuple[int, int]] {
         mut int end
         switch Fsm.forward(self.ro.dfa, self.cache.value, false, text, start) {
@@ -749,6 +811,44 @@ class ExecNoSync {
         ) {
             case Result.Match as s => Result[tuple[int, int]].Match((start + s, end))
             case Result.NoMatch as i => Result[tuple[int, int]].NoMatch(i)
+            case Result.Quit => Result[tuple[int, int]].Quit()
+        }
+    }
+
+    private method findDfaAnchoredReverse(bytes text, int start) -> Result[tuple[int, int]] {
+        return switch Fsm.reverse(
+            self.ro.dfaReverse,
+            self.cache.value(),
+            false,
+            text[start:],
+            text.length - start,
+        ) {
+            case Result.Match as s => Result[tuple[int, int]].Match((start + s, text.length))
+            case Result.NoMatch as i => Result[tuple[int, int]].NoMatch(i)
+            case Result.Quit => Result[tuple[int, int]].Quit()
+        }
+    }
+
+    private method findDfaReverseSuffix(bytes text, int start) -> Result[tuple[int, int]] {
+        int matchStart
+        if self.execDfaReverseSuffix(text, start)? as m {
+            if m.Match? as p {
+                matchStart = p.0
+            } else {
+                return m
+            }
+        } else {
+            return self.findDfaForward(text, start)
+        }
+        return switch Fsm.forward(
+            self.ro.dfa,
+            self.cache.value(),
+            false,
+            text,
+            matchStart,
+        ) {
+            case Result.Match as e => Result[tuple[int, int]].Match((matchStart, e))
+            case Result.NoMatch as i => raise NotImplemented()  # BUG: reverse match implies forward match
             case Result.Quit => Result[tuple[int, int]].Quit()
         }
     }
@@ -787,10 +887,99 @@ class ExecNoSync {
     }
 
     private method matchNfaType(MatchNfaType type, bytes text, int start) -> bool {
-        return self.execNfa(ty, [false], [], true, false, text, start, text.length)
+        list[Slot] slots = []
+        return self.execNfa(type, [false], slots, true, false, text, start, text.length)
     }
 
+    private method execNfa(
+        mut MatchNfaType ty,
+        mut list[bool] matches,
+        mut list[Slot] slots,
+        bool quitAfterMatch,
+        bool quitAfterMatchWithPos,
+        bytes text,
+        int start,
+        int end,
+    ) -> bool {
+        if ty is MatchNfaType.AUTO {
+            ty = MatchNfaType.BACKTRACK
+        }
+        if quitAfterMatchWithPos or ty is MatchNfaType.PIKE_VM {
+            return self.execPikevm(
+                matches,
+                slots,
+                quitAfterMatch,
+                text,
+                start,
+                end,
+            )
+        } else {
+            return self.execBacktrack(matches, slots, text, start, end)
+        }
+    }
 
+    private method execPikevm(
+        mut list[bool] matches,
+        mut list[Slot] slots,
+        bool quitAfterMatch,
+        bytes text,
+        int start,
+        int end,
+    ) -> bool {
+        if self.ro.nfa.usesBytes() {
+            return Fsm.exec(
+                self.ro.nfa,
+                self.cache.value(),
+                matches,
+                slots,
+                quitAfterMatch,
+                ByteInput(text, self.ro.nfa.onlyUtf8),
+                start,
+                end,
+            )
+        } else {
+            return Fsm.exec(
+                self.ro.nfa,
+                self.cache.value(),
+                matches,
+                slots,
+                quitAfterMatch,
+                CharInput(text),
+                start,
+                end,
+            )
+        }
+    }
+
+    private method execBacktrack(
+        mut list[bool] matches,
+        mut list[Slot] slots,
+        bytes text,
+        int start,
+        int end,
+    ) -> bool {
+        if self.ro.nfa.usesBytes() {
+            Bounded.exec(
+                self.ro.nfa,
+                self.cache.value(),
+                matches,
+                slots,
+                ByteInput(text, self.ro.nfa.onlyUtf8),
+                start,
+                end,
+            )
+        } else {
+            Bounded.exec(
+                self.ro.nfa,
+                self.cache.value(),
+                matches,
+                slots,
+                CharInput(text),
+                start,
+                end,
+            )
+        }
+    }
 }
 
 class ExecNoSyncStr {
