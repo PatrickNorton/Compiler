@@ -21,15 +21,15 @@ public final class RangeConstant implements LangConstant {
     }
 
     public Optional<BigInteger> getStart() {
-        return Optional.of(start);
+        return Optional.ofNullable(start);
     }
 
     public Optional<BigInteger> getStop() {
-        return Optional.of(stop);
+        return Optional.ofNullable(stop);
     }
 
     public Optional<BigInteger> getStep() {
-        return Optional.of(step);
+        return Optional.ofNullable(step);
     }
 
     @Override
