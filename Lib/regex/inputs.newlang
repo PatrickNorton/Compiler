@@ -1,7 +1,7 @@
 from .literal import LiteralSearcher
 from .prog import InstEmptyLook
 
-export InputAt, Input, CharInput
+export InputAt, Input, CharInput, ByteInput
 
 class InputAt {
     pubget mut int pos
@@ -136,3 +136,5 @@ class CharInput {
         return self.value
     }
 }
+
+class ByteInput {}
