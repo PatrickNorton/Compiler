@@ -47,6 +47,10 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         return tests[index];
     }
 
+    public String getVararg(int index) {
+        return varargs[index];
+    }
+
     @NotNull
     @Override
     public Iterator<Pair<TestNode, String>> iterator() {

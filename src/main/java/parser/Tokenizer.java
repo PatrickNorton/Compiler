@@ -39,17 +39,18 @@ public final class Tokenizer {
 
     @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
-        this(new FileReader(name), name.toPath());
+        this(new FileReader(name), name.toPath(), 0);
     }
 
     @Contract(pure = true)
-    private Tokenizer(String str) {
-        this(new StringReader(str), Path.of(""));
+    private Tokenizer(String str, Path path, int lineNo) {
+        this(new StringReader(str), path, lineNo);
     }
 
     @Contract(pure = true)
-    private Tokenizer(Reader r, Path path) {
+    private Tokenizer(Reader r, Path path, int lineNo) {
         file = new LineNumberReader(r);
+        file.setLineNumber(lineNo);
         next = readLine();
         if (next == null) next = "";
         fullLine = next;
@@ -251,8 +252,8 @@ public final class Tokenizer {
      * @return The tokenizer with the list of tokens
      */
     @NotNull
-    @Contract("_ -> new")
-    public static TokenList parse(String str) {
-        return new TokenList(new Tokenizer(str));
+    @Contract("_, _, _ -> new")
+    public static TokenList parse(String str, Path path, int lineNo) {
+        return new TokenList(new Tokenizer(str, path, lineNo));
     }
 }
