@@ -726,7 +726,8 @@ class ExecNoSync {
     }
 
     private method findNfa(MatchNfaType ty, bytes text, int start) -> tuple[int, int]? {
-        mut list[Slot] slots = [null, null]
+        Slot s = null  # FIXME
+        mut list[Slot] slots = [s, s]
         if self.execNfa(
             ty,
             [false],
@@ -751,7 +752,7 @@ class ExecNoSync {
         int originalStart,
     ) -> Result[tuple[int, int]]? {
 
-        var lcs = self.ro.suffixes.lcs()
+        var lcs = self.ro.suffixes.lcs
         assert lcs.length >= 1
         mut var start = originalStart
         mut var end = start
@@ -779,7 +780,7 @@ class ExecNoSync {
                     lastLiteral += i
                 }
                 case Result.Quit {
-                    return Result.Quit()
+                    return Result[tuple[int, int]].Quit()
                 }
             }
         }
@@ -860,8 +861,9 @@ class ExecNoSync {
     }
 
     private method shortestNfaType(MatchNfaType type, bytes text, int start) -> int? {
-        mut list[int?] slots = [null, null]
-        if self.execNfa(ty, [false], slots, true, true, text, start, text.length) {
+        int? s = null  # FIXME
+        mut list[int?] slots = [s, s]
+        if self.execNfa(type, [false], slots, true, true, text, start, text.length) {
             return slots[1]
         } else {
             return null
