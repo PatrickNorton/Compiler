@@ -5,13 +5,14 @@ from .cache import Cached
 from .compile import Compiler
 from .dfa import canExec, Result, Fsm
 from .hir import Hir, Literal, Literals, HirKind
+from .inputs import ByteInput, CharInput
 from .literal import LiteralSearcher
 from .parser import ParserBuilder
 from .trait import Locations, Slot
 
 from .backtrack import Cache as BacktrackCache
 from .dfa import Cache as DfaCache
-from .pikevm import Cache as PikeVMCache
+from .pikevm import Cache, Fsm as PikeVMCache, PikeFsm
 
 export Exec, ProgramCache, ExecBuilder
 
@@ -603,7 +604,7 @@ class ExecNoSync {
 
             case MatchType.Dfa {
                 if self.ro.nfa.isAnchoredStart {
-                    return self.captures_nfa(slots, text, start)
+                    return self.capturesNfa(slots, text, start)
                 } else {
                     return switch self.findDfaForward(text, start) {
                         case Result.Match as pair => self.capturesNfaType(
@@ -614,14 +615,14 @@ class ExecNoSync {
                             pair.second,
                         )
                         case Result.NoMatch => null
-                        case Result.Quit => self.captures_nfa(slots, text, start)
+                        case Result.Quit => self.capturesNfa(slots, text, start)
                     }
                 }
             }
 
             case MatchType.DfaAnchoredReverse {
                 return switch self.findDfaAnchoredReverse(text, start) {
-                    case Result.Match as pair => self.captures_nfa_type(
+                    case Result.Match as pair => self.capturesNfaType(
                         MatchNfaType.Auto,
                         slots,
                         text,
@@ -636,7 +637,7 @@ class ExecNoSync {
 
             case MatchType.DfaSuffix {
                 return switch self.findDfaReverseSuffix(text, start) {
-                    case Result.Match as pair => self.captures_nfa_type(
+                    case Result.Match as pair => self.capturesNfaType(
                         MatchNfaType.Auto,
                         slots,
                         text,
@@ -655,7 +656,7 @@ class ExecNoSync {
             }
 
             case MatchType.DfaMany {
-                raise ValueError("BUG: RegexSet cannot be used with captures")
+                # raise ValueError("BUG: RegexSet cannot be used with captures")
             }
         }
     }
@@ -666,7 +667,7 @@ class ExecNoSync {
 
         while lastEnd <= text.length {
             var pair = self.findAt(text, lastEnd)
-            return if not pair?
+            break if not pair?
 
             int s, int e = *(pair!!)
             if s == e {
@@ -676,8 +677,7 @@ class ExecNoSync {
                 lastEnd = self.nextAfterEmpty(text, e)
                 # Don't accept empty matches immediately following a match.
                 # Just move on to the next match.
-                if self.lastMatch? as e {
-                    yield self.next()
+                if lastMatch? as e {
                     continue
                 }
             } else {
@@ -869,7 +869,7 @@ class ExecNoSync {
     }
 
     private method shortestDfa(bytes text, int start) -> Result[int] {
-        return dfa.forward(self.ro.dfa, self.cache.value(), true, text, start)
+        return Fsm.forward(self.ro.dfa, self.cache.value(), true, text, start)
     }
 
     private method shortestDfaReverseSuffix(bytes text, int start) -> Result[int] {
@@ -891,6 +891,48 @@ class ExecNoSync {
     private method matchNfaType(MatchNfaType type, bytes text, int start) -> bool {
         list[Slot] slots = []
         return self.execNfa(type, [false], slots, true, false, text, start, text.length)
+    }
+
+    private method capturesNfa(
+        mut list[Slot] slots,
+        bytes text,
+        int start,
+    ) -> tuple[int, int]? {
+        return self.capturesNfaType(
+            MatchNfaType.AUTO,
+            slots,
+            text,
+            start,
+            text.length,
+        )
+    }
+
+
+    private method capturesNfaType(
+        MatchNfaType ty,
+        mut list[Slot] slots,
+        bytes text,
+        int start,
+        int end,
+    ) -> tuple[int, int]? {
+        if self.execNfa(
+            ty,
+            [false],
+            slots,
+            false,
+            false,
+            text,
+            start,
+            end,
+        ) {
+            if slots[0]? and slots[1]? {
+                return (slots[0]!!, slots[1]!!)
+            } else {
+                return null
+            }
+        } else {
+            return null
+        }
     }
 
     private method execNfa(
@@ -929,7 +971,7 @@ class ExecNoSync {
         int end,
     ) -> bool {
         if self.ro.nfa.usesBytes() {
-            return Fsm.exec(
+            return PikeFsm.exec(
                 self.ro.nfa,
                 self.cache.value(),
                 matches,
@@ -940,7 +982,7 @@ class ExecNoSync {
                 end,
             )
         } else {
-            return Fsm.exec(
+            return PikeFsm.exec(
                 self.ro.nfa,
                 self.cache.value(),
                 matches,
