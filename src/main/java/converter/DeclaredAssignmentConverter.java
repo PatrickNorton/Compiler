@@ -32,6 +32,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
 
     @NotNull
     private List<Byte> convertMultiple(int start) {
+        // FIXME: Tuple expansion
         var types = node.getTypes();
         var values = node.getValues();
         if (types.length != values.size()) {
@@ -95,7 +96,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         assert values.size() == 1;
         var value = node.getValues().get(0);
         var valueConverter = TestConverter.of(info, value, types.length);
-        var valueTypes = valueConverter.returnType();
+        var valueTypes = expandZeroTuple(valueConverter);
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         List<Byte> bytes = new ArrayList<>();
         int fillPos = addStatic(bytes, isStatic);
@@ -161,5 +162,19 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                 : info.addVariable(assignedName, assignedType, isConst, node);
         bytes.add(isStatic ? Bytecode.STORE_STATIC.value : Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(index));
+    }
+
+    private TypeObject[] expandZeroTuple(TestConverter valueConverter) {
+        var valT = valueConverter.returnType();
+        if (node.getValues().getVararg(0).isEmpty()) {
+            return valT;
+        } else if (valT[0] instanceof TupleType) {
+            return valT[0].getGenerics().toArray(new TypeObject[0]);
+        } else {
+            throw CompilerException.format(
+                    "Vararg used on non-tuple argument (returned type '%s')",
+                    node.getValues().get(0), valT[0].name()
+            );
+        }
     }
 }
