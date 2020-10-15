@@ -137,4 +137,28 @@ class CharInput {
     }
 }
 
-class ByteInput {}
+class ByteInput {
+    bytes text
+    bool onlyUtf8
+
+    public operator new(bytes text, bool onlyUtf8) {
+        self.text = text
+        self.onlyUtf8 = onlyUtf8
+    }
+
+    public operator [] (int i) -> int {
+        return self.text[i]
+    }
+
+    public operator [:] (slice s) -> bytes {
+        return self.text.operator[:](s)
+    }
+
+    public method at(int i) -> InputAt {
+        if i >= self.len() {
+            return InputAt(self.length, null, null, 0)
+        } else {
+            return InputAt(i, null, self[i], 1)
+        }
+    }
+}
