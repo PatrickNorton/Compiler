@@ -747,7 +747,33 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      */
     static TypeObject union(@NotNull TypeObject... values) {
         assert values.length != 0;
-        Set<TypeObject> valueSet = new HashSet<>(Arrays.asList(values));
+        return union(new HashSet<>(Arrays.asList(values)));
+    }
+
+    /**
+     * Gets the union of the values given.
+     * <p>
+     *     In older versions of the language, this would simply construct a
+     *     {@code LangUnion}, but that no longer exists, so the algorithm is
+     *     slightly more complicated.
+     * </p>
+     * <p>
+     *     The current union algorithm is meant to return the "most specific"
+     *     class that is a superclass of all given values. If the list of values
+     *     has length 1, the given value is returned. If all given values are
+     *     the special value {@link Builtins#THROWS}, it is returned, otherwise
+     *     it is removed from the set.
+     * </p>
+     *
+     * @param values The values to get the union of
+     * @return A type that is a superclass of all of them
+     */
+    static TypeObject union(@NotNull List<TypeObject> values) {
+        assert values.size() != 0;
+        return union(new HashSet<>(values));
+    }
+
+    private static TypeObject union(Set<TypeObject> valueSet) {
         if (valueSet.size() == 1) {
             return valueSet.iterator().next();
         } else {

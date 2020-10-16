@@ -179,7 +179,7 @@ public final class LiteralConverter implements TestConverter {
     @NotNull
     private TypeObject returnTypes(@NotNull TestNode[] args, String[] varargs) {
         if (expected != null) {
-            return TypeObject.union(expected[0].getGenerics().toArray(new TypeObject[0]));
+            return TypeObject.union(expected[0].getGenerics());
         }
         List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
@@ -200,7 +200,7 @@ public final class LiteralConverter implements TestConverter {
                 }
             }
         }
-        return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result.toArray(new TypeObject[0]));
+        return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
     }
 
     @NotNull
