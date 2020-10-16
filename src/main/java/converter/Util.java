@@ -92,8 +92,14 @@ public final class Util {
 
     private static final BigInteger BIG_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
     private static final BigInteger BIG_MIN = BigInteger.valueOf(Integer.MIN_VALUE);
+    private static final BigInteger BYTE_MAX = BigInteger.valueOf(Byte.MAX_VALUE);
+    private static final BigInteger BYTE_MIN = BigInteger.valueOf(Byte.MIN_VALUE);
 
     static boolean fitsInInt(BigInteger value) {
         return value.compareTo(BIG_MAX) <= 0 && value.compareTo(BIG_MIN) >= 0;
+    }
+
+    static boolean fitsInByte(BigInteger value) {
+        return value.compareTo(BYTE_MAX) <= 0 && value.compareTo(BYTE_MIN) >= 0;
     }
 }
