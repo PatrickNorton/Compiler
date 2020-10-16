@@ -20,7 +20,7 @@ public class AhoCorasick {
         return AhoCorasickBuilder().build(patterns)
     }
 
-    public static method newAutoConfigured(list[bytes] patterns) {
+    public static method newAutoConfigured(list[bytes] patterns) -> cls {
         return AhoCorasickBuilder().autoConfigure(patterns).build(patterns)
     }
 
@@ -85,6 +85,10 @@ public class AhoCorasick {
     public method supportsStream() -> bool {
         return self.matchKind.supportsStream()
     }
+
+    public method maxPatternLen() -> int {
+        return self.imp.maxPatternLen()
+    }
 }
 
 union Imp {
@@ -112,7 +116,7 @@ union Imp {
         }
     }
 
-    public method patternCount() -> MatchKind {
+    public method patternCount() -> int {
         return switch self {
             case Imp.NFA as nfa => nfa.patternCount()
             case Imp.DFA as dfa => dfa.patternCount()
@@ -251,5 +255,9 @@ enum MatchKind {
 
     public method isLeftmostFirst() -> bool {
         return self == Matchkind.LEFTMOST_FIRST
+    }
+
+    public method supportsStream() -> bool {
+        self.isStandard()
     }
 }
