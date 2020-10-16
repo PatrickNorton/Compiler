@@ -1,4 +1,18 @@
-export Utf8Sequence, Utf8Range, Utf8Sequences
+export Utf8Sequence, Utf8Range, Utf8Sequences, nextUtf8
+
+func nextUtf8(bytes text, int i) -> int {
+    return i + 1 if not text.get(i)?
+    var b = text[i]
+    if b <= 0x7F {
+        return i + 1
+    } elif b <= 0b110_11111 {
+        return i + 2
+    } elif b <= 0b1110_1111 {
+        return i + 3
+    } else {
+        return i + 4
+    }
+}
 
 union Utf8Sequence {
     Utf8Range One
