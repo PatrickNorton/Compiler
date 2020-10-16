@@ -43,10 +43,12 @@ public final class InConverter extends OperatorConverter {
         }
         var arg0 = arg0const.orElseThrow();
         var arg1 = arg1const.orElseThrow();
-        if (arg1 instanceof RangeConstant) {
+        if (arg1 instanceof BytesConstant) {
+            return bytesConst(arg0, (BytesConstant) arg1);
+        } else if (arg1 instanceof RangeConstant) {
             return rangeConst(arg0, (RangeConstant) arg1);
         } else {
-            return Optional.empty();  // TODO: String/bytes
+            return Optional.empty();  // TODO: String
         }
     }
 
@@ -78,6 +80,27 @@ public final class InConverter extends OperatorConverter {
     @NotNull
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
+    }
+
+    private Optional<LangConstant> bytesConst(LangConstant arg0, BytesConstant arg1) {
+        byte value;
+        if (arg0 instanceof IntConstant) {
+            var val = ((IntConstant) arg0).getValue();
+            if (val < Byte.MIN_VALUE || val > Byte.MAX_VALUE) {
+                return Optional.of(Builtins.FALSE);
+            }
+            value = (byte) val;
+        } else if (arg0 instanceof BigintConstant) {
+            var val = ((BigintConstant) arg0).getValue();
+            if (!Util.fitsInByte(val)) {
+                return Optional.of(Builtins.FALSE);
+            }
+            value = val.byteValueExact();
+        } else {
+            return Optional.empty();
+        }
+        var bytes = arg1.getValue();
+        return Optional.of(LangConstant.of(bytes.contains(value)));
     }
 
     private Optional<LangConstant> rangeConst(LangConstant arg0, RangeConstant arg1) {
