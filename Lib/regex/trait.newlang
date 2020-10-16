@@ -5,6 +5,10 @@ typedef Slot as int?
 class Locations {
     list[Slot] values
 
+    public operator new(list[Slot] values) {
+        self.values = values
+    }
+
     public method pos(int i) -> tuple[int, int]? {
         var s = i * 2
         var e = s + 1
