@@ -393,7 +393,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                             )
                     );
                 } else {
-                    throw CompilerException.of("Mismatched types in label", label);
+                    throw CompilerException.format(
+                            "Mismatched types in label: Switched on union '%s', label has type '%s'",
+                            label, switchedType.name(), retType.name()
+                    );
                 }
             }
         }

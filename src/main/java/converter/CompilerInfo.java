@@ -482,6 +482,9 @@ public final class CompilerInfo {
      */
     @NotNull
     public LangConstant typeConstant(Lined lineInfo, @NotNull TypeObject type) {
+        if (type instanceof OptionTypeObject) {
+            return optionConstant(lineInfo, (OptionTypeObject) type);
+        }
         var name = type.baseName();
         if (name.isEmpty()) {
             throw CompilerInternalError.of(
@@ -504,6 +507,12 @@ public final class CompilerInfo {
             }
             throw CompilerException.format("Type %s not found", lineInfo, name);
         }
+    }
+
+    private LangConstant optionConstant(Lined lineInfo, OptionTypeObject type) {
+        var interiorType = type.getOptionVal();
+        var typeConst = typeConstant(lineInfo, interiorType);
+        return new OptionTypeConstant(interiorType.name(), constIndex(typeConst), interiorType);
     }
 
     /**
