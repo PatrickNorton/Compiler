@@ -147,6 +147,9 @@ public final class LiteralConverter implements TestConverter {
 
     @NotNull
     private TypeObject returnTypes(@NotNull TestNode[] args) {
+        if (expected != null) {
+            return TypeObject.union(expected[0].getGenerics().toArray(new TypeObject[0]));
+        }
         var result = new TypeObject[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = TestConverter.returnType(args[i], info, 1)[0];
@@ -156,6 +159,9 @@ public final class LiteralConverter implements TestConverter {
 
     @NotNull
     private TypeObject[] tupleReturnTypes(@NotNull TestNode[] args) {
+        if (expected != null) {
+            return expected[0].getGenerics().toArray(new TypeObject[0]);
+        }
         var result = new TypeObject[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = TestConverter.returnType(args[i], info, 1)[0];
