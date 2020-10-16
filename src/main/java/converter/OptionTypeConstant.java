@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class OptionTypeConstant implements LangConstant {
     private final String genericName;
@@ -42,5 +43,20 @@ public final class OptionTypeConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(true);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OptionTypeConstant that = (OptionTypeConstant) o;
+        return constantIndex == that.constantIndex &&
+                Objects.equals(genericName, that.genericName) &&
+                Objects.equals(genericType, that.genericType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genericName, constantIndex, genericType);
     }
 }
