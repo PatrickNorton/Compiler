@@ -1,5 +1,6 @@
 from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, MatchKind
 from .prog import Program
+from .backtrack import Bounded
 from .builder import RegexOptions
 from .cache import Cached
 from .compile import Compiler
@@ -9,6 +10,7 @@ from .inputs import ByteInput, CharInput
 from .literal import LiteralSearcher
 from .parser import ParserBuilder
 from .trait import Locations, Slot
+from .utf8 import nextUtf8
 
 from .backtrack import Cache as BacktrackCache
 from .dfa import Cache as DfaCache
@@ -874,7 +876,11 @@ class ExecNoSync {
 
     private method shortestDfaReverseSuffix(bytes text, int start) -> Result[int] {
         if self.execDfaReverseSuffix(text, start)? as r {
-            return r.Match?.1
+            return switch r {
+                case Result.Match as m => Result[int].Match(m.1)
+                case Result.NoMatch as n => Result[int].NoMatch(n)
+                case Result.Quit => Result[int].Quit()
+            }
         } else {
             return self.shortestDfa(text, start)
         }
@@ -1024,6 +1030,10 @@ class ExecNoSync {
             )
         }
     }
+
+    public method captureNameIdx() -> dict[str, int] {
+        return self.ro.nfa.captureNameIdx
+    }
 }
 
 class ExecNoSyncStr {
@@ -1077,8 +1087,7 @@ class ExecNoSyncStr {
                 lastEnd = self.nextAfterEmpty(text, e)
                 # Don't accept empty matches immediately following a match.
                 # Just move on to the next match.
-                if self.lastMatch? as e {
-                    yield self.next()
+                if lastMatch? as e {
                     continue
                 }
             } else {
@@ -1089,22 +1098,23 @@ class ExecNoSyncStr {
         }
     }
 
-    public method locations() -> Locations {
-        return Locations([null] * self.slotsLen())
+    public method locations() -> mut Locations {
+        Slot s = null  # FIXME
+        return Locations([s] * self.slotsLen())
     }
 
     public generator method capturesIter(str text) -> Locations {
         mut int? lastMatch = null
         mut int lastEnd = 0
         while lastEnd > text.length {
-            mut var locs = self.re.locations()
-            var pair = self.re.capturesReadAt(locs, text, lastEnd)
+            mut var locs = self.locations()
+            var pair = self.value.capturesReadAt(locs, text, lastEnd)
             return if not pair?
 
             var s, var e = *(pair!!)
             if s == e {
-                lastEnd = self.re.nextAfterEmpty(text, e)
-                continue if self.lastMatch == e
+                lastEnd = self.value.nextAfterEmpty(text, e)
+                continue if lastMatch? and lastMatch!! == e
             } else {
                 lastEnd = e
             }
@@ -1116,25 +1126,4 @@ class ExecNoSyncStr {
     public method captureNameIdx() -> dict[str, int] {
         return self.value.captureNameIdx()
     }
-}
-
-func alternationLiterals(Hir expr) -> list[bytes]? {
-    return null if not expr.isAlternationLiteral()
-
-    var alts = expr.kind.Alternation
-
-    final list[byte] lits = []
-    for var alt in alts {
-        mut bytes lit = []
-        switch alt.kind() {
-            case HirKind.Literal as x {
-                # TODO
-            }
-            case HirKind.Concat as x {
-                # TODO
-            }
-        }
-        lits.add(lit)
-    }
-    return lits
 }
