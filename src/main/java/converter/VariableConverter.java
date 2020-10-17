@@ -21,8 +21,7 @@ public final class VariableConverter implements TestConverter {
 
     @Override
     public Optional<LangConstant> constantReturn() {
-        // Check for 'null' at the moment b/c serializing NullConstant fails
-        if (!node.getName().equals("null") && info.variableIsConstant(node.getName())) {
+        if (info.variableIsConstant(node.getName())) {
             return Optional.of(info.getConstant(info.constIndex(node.getName())));
         } else {
             return Optional.empty();

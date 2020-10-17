@@ -1,6 +1,7 @@
 package main.java.converter;
 
 public enum ConstantBytes {
+    NULL,
     STR,
     INT,
     BIGINT,

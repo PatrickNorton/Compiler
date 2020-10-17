@@ -12,7 +12,7 @@ public final class NullConstant implements LangConstant {
     @NotNull
     @Override
     public List<Byte> toBytes() {
-        throw new UnsupportedOperationException("NullConstant should not be serialized");
+        return List.of((byte) ConstantBytes.NULL.ordinal());
     }
 
     @NotNull
