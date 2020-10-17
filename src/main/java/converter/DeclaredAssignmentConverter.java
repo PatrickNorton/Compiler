@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
+import main.java.parser.TypeLikeNode;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,6 +45,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         List<Byte> bytes = new ArrayList<>();
         int fillPos = addStatic(bytes, isStatic);
+        var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
+        boolean isConst = mutability.isConstRef();
         for (var pair : Zipper.of(List.of(types), values)) {
             var assigned = pair.getKey();
             var valuePair = pair.getValue();
@@ -56,16 +59,12 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                     ? TestConverter.of(info, value, 1, info.getType(rawType))
                     : TestConverter.of(info, value, 1);
             var valueType = converter.returnType()[0];
-            var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
-            var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
-            var assignedType = mutability.isConstType()
-                    ? nonConstAssignedType.makeConst() : nonConstAssignedType.makeMut();
+            var assignedType = getAssigned(valueType, rawType, mutability);
             var assignedName = assigned.getVariable().getName();
             if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
                 throw CompilerException.of("Illegal name " + assignedName, node);
             }
             boolean needsMakeOption = checkTypes(assignedType, valueType);
-            boolean isConst = mutability.isConstRef();
             var constValue = converter.constantReturn();
             if (isConst && constValue.isPresent()) {
                 var constant = constValue.orElseThrow();
@@ -100,22 +99,19 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         List<Byte> bytes = new ArrayList<>();
         int fillPos = addStatic(bytes, isStatic);
         bytes.addAll(valueConverter.convert(start + bytes.size()));
+        var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
+        boolean isConst = mutability.isConstRef();
         // Iterate backward b/c variables are in reversed order on the stack
         // B/c this is *declared* assignment, we know this to be side-effect free, so this is safe
         for (int i = types.length - 1; i >= 0; i--) {
             var assigned = types[i];
             var valueType = valueTypes[i];
-            var rawType = assigned.getType();
-            var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
-            var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
-            var assignedType = mutability.isConstType()
-                    ? nonConstAssignedType.makeConst() : nonConstAssignedType.makeMut();
+            var assignedType = getAssigned(valueType, assigned.getType(), mutability);
             var assignedName = assigned.getVariable().getName();
             if (Builtins.FORBIDDEN_NAMES.contains(assignedName)) {
                 throw CompilerException.of("Illegal name " + assignedName, node);
             }
             boolean needsMakeOption = checkTypes(assignedType, valueType);
-            boolean isConst = mutability.isConstRef();
             if (needsMakeOption) {
                 bytes.add(Bytecode.MAKE_OPTION.value);
             }
@@ -125,6 +121,11 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
         }
         return bytes;
+    }
+
+    private TypeObject getAssigned(TypeObject valueType, TypeLikeNode rawType, MutableType mutability) {
+        var nonConstAssignedType = rawType.isDecided() ? info.getType(rawType) : valueType;
+        return mutability.isConstType() ? nonConstAssignedType.makeConst() : nonConstAssignedType.makeMut();
     }
 
     private int addStatic(List<Byte> bytes, boolean isStatic) {
