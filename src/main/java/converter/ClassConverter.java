@@ -7,7 +7,6 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,12 +22,12 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);
-        var trueSupers = convertSupers(supers);
         var descriptors = node.getDescriptors();
         var isFinal = !descriptors.contains(DescriptorNode.NONFINAL);
         var hasType = info.hasType(node.strName());
         StdTypeObject type;
         if (!hasType) {
+            var trueSupers = convertSupers(supers);
             var generics = GenericInfo.parse(info, node.getName().getSubtypes());
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
             ensureProperInheritance(type, trueSupers);
@@ -50,11 +49,8 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
                 info.accessHandler().removeSuper();
             }
         }
-        List<Short> superConstants = new ArrayList<>();
-        for (var sup : trueSupers) {
-            superConstants.add(info.constIndex(sup.name()));
-        }
-        checkContract(type, trueSupers);
+        var superConstants = getSuperConstants(type);
+        checkContract(type, type.getSupers());
         if (hasType) {
             putInInfo(type, "class", superConstants, converter);
         } else {
@@ -88,28 +84,6 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return true;
     }
 
-    private void checkContract(StdTypeObject type, @NotNull UserType<?>... supers) {
-        for (var sup : supers) {
-            var contract = sup.contract();
-            for (var attr : contract.getKey()) {
-                if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
-                    throw CompilerException.format(
-                            "Missing impl for method '%s' (defined by interface %s)",
-                            node, attr, sup.name()
-                    );
-                }
-            }
-            for (var op : contract.getValue()) {
-                if (type.operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {
-                    throw CompilerException.format(
-                            "Missing impl for %s (defined by interface %s)",
-                            node, op, sup.name()
-                    );
-                }
-            }
-        }
-    }
-
     private void checkConstSupers(StdTypeObject type, @NotNull Iterable<TypeObject> supers) {
         for (var cls : supers) {
             if (cls instanceof StdTypeObject && ((StdTypeObject) cls).constSemantics()) {
@@ -129,6 +103,9 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
+        var supers = convertSupers(info.typesOf(node.getSuperclasses()));
+        obj.setSupers(Arrays.asList(supers));
+        ensureProperInheritance(obj, supers);
         var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
         if (!isConst) {
             checkConstSupers(obj, obj.getSupers());
