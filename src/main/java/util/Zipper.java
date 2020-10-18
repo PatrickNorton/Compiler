@@ -67,4 +67,19 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
     public static <A, B> Iterable<Pair<A, B>> of(@NotNull A[] first, @NotNull B[] second) {
         return () -> new Zipper<>(Arrays.asList(first).iterator(), Arrays.asList(second).iterator());
     }
+
+    /**
+     * Constructs a {@link Zipper} out of the two given items.
+     *
+     * @param first The first iterable
+     * @param second The second iterable
+     * @param <A> The type iterated over by {@code first}
+     * @param <B> The type iterated over by {@code second}
+     * @return The iterable item
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    @NotNull
+    public static <A, B> Iterable<Pair<A, B>> of(@NotNull A[] first, @NotNull Iterable<B> second) {
+        return () -> new Zipper<>(Arrays.asList(first).iterator(), second.iterator());
+    }
 }

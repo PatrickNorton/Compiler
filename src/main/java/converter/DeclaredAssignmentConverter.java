@@ -47,7 +47,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         int fillPos = addStatic(bytes, isStatic);
         var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
         boolean isConst = mutability.isConstRef();
-        for (var pair : Zipper.of(List.of(types), values)) {
+        for (var pair : Zipper.of(types, values)) {
             var assigned = pair.getKey();
             var valuePair = pair.getValue();
             var value = valuePair.getKey();
