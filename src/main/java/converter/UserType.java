@@ -84,7 +84,18 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var types = operatorReturnTypeWithGenerics(o, access);
-        return types.map(t -> Arrays.copyOf(t, t.length));
+        return types.map(this::generifyAll);
+    }
+
+    private TypeObject[] generifyAll(TypeObject[] values) {
+        if (generics.isEmpty()) {
+            return Arrays.copyOf(values, values.length);
+        }
+        TypeObject[] result = new TypeObject[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = values[i].generifyWith(this, generics);
+        }
+        return result;
     }
 
     @Override

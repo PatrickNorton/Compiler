@@ -36,7 +36,7 @@ public final class ReturnConverter implements BaseConverter {
             throw CompilerException.of("Return with arguments invalid in generator", node);
         }
         var fnReturns = retInfo.currentFnReturns();
-        if (fnReturns.length == 0) {  // Zero-returning functions are easy to deal with
+        if (fnReturns.length == 0 || retInfo.isGenerator()) {  // Zero-returning functions are easy to deal with
             if (!node.getReturned().isEmpty()) {
                 throw CompilerException.of(
                         "Non-empty 'return' statement invalid in function with no return types", node
@@ -57,6 +57,9 @@ public final class ReturnConverter implements BaseConverter {
     }
 
     private void convertMultiple(int start, @NotNull List<Byte> bytes) {
+        if (node.getReturned().isEmpty()) {
+            throw CompilerException.of("Empty return is invalid in non-void function", node);
+        }
         checkReturnTypes();
         var fnReturns = info.getFnReturns();
         var currentReturns = fnReturns.currentFnReturns();

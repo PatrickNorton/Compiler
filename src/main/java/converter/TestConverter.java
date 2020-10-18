@@ -46,10 +46,7 @@ public interface TestConverter extends BaseConverter {
         return of(info, node, retCount).constantReturn();
     }
 
-    @NotNull
-    static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
-                                       int retCount, TypeObject endType) {
-        var converter = of(info, node, retCount);
+    static List<Byte> bytesMaybeOption(TestConverter converter, int start, TypeObject endType) {
         var retType = converter.returnType()[0];
         if (endType instanceof OptionTypeObject && !(retType instanceof OptionTypeObject)) {
             List<Byte> bytes = new ArrayList<>(converter.convert(start));
@@ -58,6 +55,13 @@ public interface TestConverter extends BaseConverter {
         } else {
             return converter.convert(start);
         }
+    }
+
+    @NotNull
+    static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
+                                       int retCount, TypeObject endType) {
+        var converter = of(info, node, retCount);
+        return bytesMaybeOption(converter, start, endType);
     }
 
     @NotNull

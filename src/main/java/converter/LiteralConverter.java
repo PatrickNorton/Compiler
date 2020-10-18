@@ -4,6 +4,7 @@ import main.java.parser.Lined;
 import main.java.parser.LiteralNode;
 import main.java.parser.TestNode;
 import main.java.util.Pair;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -92,7 +93,8 @@ public final class LiteralConverter implements TestConverter {
             var generics = expected[0].getGenerics();
             return new TypeObject[] {literalCls.generify(node, generics.toArray(new TypeObject[0]))};
         } else {
-            return new TypeObject[]{literalCls.generify(returnTypes(node.getBuilders())).makeMut()};
+            var generics = returnTypes(node.getBuilders(), node.getIsSplats());
+            return new TypeObject[]{literalCls.generify(generics).makeMut()};
         }
     }
 
@@ -109,22 +111,51 @@ public final class LiteralConverter implements TestConverter {
         } else if (node.getBuilders().length == 0) {
             convertEmpty(bytes, literalType);
         } else {
-            if (retCount > 1) {
-                throw CompilerException.format("Literal returns 1 value, expected %d", node, retCount);
-            }
-            var retType = returnTypes(node.getBuilders());
-            for (var value : node.getBuilders()) {
-                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
-            }
-            if (literalType != LiteralType.TUPLE) {
-                var genericType = returnTypes(node.getBuilders());
-                bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
-            }
-            bytes.add(literalType.bytecode.value);
-            bytes.addAll(Util.shortToBytes((short) node.getBuilders().length));
+            convertSingle(bytes, start, literalType);
         }
         return bytes;
+    }
+
+    private void convertSingle(List<Byte> bytes, int start, LiteralType literalType) {
+        if (retCount > 1) {
+            throw CompilerException.format("Literal returns 1 value, expected %d", node, retCount);
+        }
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
+            return;
+        }
+        short builderLen = (short) node.getBuilders().length;
+        var retType = returnTypes(node.getBuilders(), node.getIsSplats());
+        for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
+            builderLen += convertInner(bytes, start, pair.getKey(), pair.getValue(), retType);
+        }
+        if (literalType != LiteralType.TUPLE) {
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+        }
+        bytes.add(literalType.bytecode.value);
+        bytes.addAll(Util.shortToBytes(builderLen));
+    }
+
+    private short convertInner(List<Byte> bytes, int start, TestNode value, String splat, TypeObject retType) {
+        if (splat.isEmpty()) {
+            bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
+            return 0;
+        } else if (splat.equals("*")) {
+            var converter = TestConverter.of(info, value, 1);
+            var convRet = converter.returnType()[0];
+            bytes.addAll(TestConverter.bytesMaybeOption(converter, start + bytes.size(), retType));
+            if (convRet instanceof TupleType) {
+                bytes.add(Bytecode.UNPACK_TUPLE.value);
+                return (short) (convRet.getGenerics().size() - 1);
+            } else {
+                throw CompilerException.of("Splats not implemented yet", value);
+            }
+        } else {
+            throw CompilerException.format("Invalid splat '%s'", value, splat);
+        }
     }
 
     private void convertEmpty(List<Byte> bytes, LiteralType literalType) {
@@ -138,7 +169,7 @@ public final class LiteralConverter implements TestConverter {
         }
         var generics = expected[0].getGenerics();
         literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
-        var genericType = returnTypes(node.getBuilders());
+        var genericType = returnTypes(node.getBuilders(), node.getIsSplats());
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
         bytes.add(literalType.bytecode.value);
@@ -146,13 +177,28 @@ public final class LiteralConverter implements TestConverter {
     }
 
     @NotNull
-    private TypeObject returnTypes(@NotNull TestNode[] args) {
+    private TypeObject returnTypes(@NotNull TestNode[] args, String[] varargs) {
         if (expected != null) {
-            return TypeObject.union(expected[0].getGenerics().toArray(new TypeObject[0]));
+            return TypeObject.union(expected[0].getGenerics());
         }
-        var result = new TypeObject[args.length];
+        List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
-            result[i] = TestConverter.returnType(args[i], info, 1)[0];
+            if (varargs[i].isEmpty()) {
+                result.add(TestConverter.returnType(args[i], info, 1)[0]);
+            } else {
+                assert varargs[i].equals("*");
+                var retType = TestConverter.returnType(args[i], info, 1)[0];
+                if (retType instanceof TupleType) {
+                    result.addAll(retType.getGenerics());
+                } else if (Builtins.ITERABLE.isSuperclass(retType)) {
+                    result.add(Builtins.deIterable(retType)[0]);
+                } else {
+                    throw CompilerException.format(
+                            "* is only valid with tuples or iterables, not '%s'",
+                            args[i], retType
+                    );
+                }
+            }
         }
         return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
     }
