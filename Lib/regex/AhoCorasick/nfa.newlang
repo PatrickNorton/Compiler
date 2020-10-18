@@ -11,7 +11,7 @@ typedef PatternId as int
 typedef PatternLength as int
 
 class NFA from Automaton {
-    MatchKind matchKind
+    pubget MatchKind matchKind
     int startId
     pubget int maxPatternLen
     pubget int patternCount

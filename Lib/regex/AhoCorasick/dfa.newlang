@@ -24,12 +24,10 @@ union DFA {
         }
     }
 
-    public method matchKind() -> MatchKind {
-        return self.rep().matchKind
-    }
-
-    public method heapBytes() -> int {
-        return self.rep().heapBytes
+    public property MatchKind matchKind {
+        get {
+            return self.rep().matchKind
+        }
     }
 
     public property int maxPatternLen {
@@ -38,8 +36,10 @@ union DFA {
         }
     }
 
-    public method patternCount() -> int {
-        return self.rep().patternCount
+    public property int patternCount {
+        get {
+            return self.rep().patternCount
+        }
     }
 
     public method startState() -> int {
