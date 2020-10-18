@@ -1,4 +1,5 @@
 from .ahocorasick import MatchKind
+from .automaton import Automaton
 from .classes import ByteClasses, ByteClassBuilder
 from .match import Match
 from .prefilter import PrefilterObj, Prefilter, Builder as PrefilterObj, Prefilter, PrefilterBuilder

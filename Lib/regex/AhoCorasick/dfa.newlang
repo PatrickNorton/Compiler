@@ -1,6 +1,7 @@
 from numtools import IntRef
 
 from .ahocorasick import MatchKind
+from .automaton import Automaton
 from .classes import ByteClasses
 from .match import Match
 from .nfa import PatternId, PatternLength, NFA
@@ -96,7 +97,7 @@ union DFA {
     }
 }
 
-class Standard from Automation {
+class Standard from Automaton {
     Rep value
 
     public method rep() -> Rep {
@@ -145,7 +146,7 @@ class Standard from Automation {
     }
 }
 
-class ByteClass from Automation {
+class ByteClass from Automaton {
     Rep value
 
     public method rep() -> Rep {
@@ -196,7 +197,7 @@ class ByteClass from Automation {
     }
 }
 
-class Premultiplied from Automation {
+class Premultiplied from Automaton {
     Rep value
 
     public method rep() -> Rep {
@@ -251,7 +252,7 @@ class Premultiplied from Automation {
     }
 }
 
-class PremultipliedByteClass from Automation {
+class PremultipliedByteClass from Automaton {
     Rep value
 
     public method rep() -> Rep {

@@ -1,4 +1,4 @@
-from .interval import IntervalSet
+from .interval import IntervalSet, Interval
 from .unicode import simpleFold
 
 export Hir, HirKind, Literal, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group

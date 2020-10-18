@@ -1,0 +1,33 @@
+from .ahocorasick import MatchKind
+from .match import Match
+from .prefilter import Prefilter
+
+export Automaton
+
+interface Automaton {
+    public method matchKind() -> MatchKind
+
+    public method anchored() -> bool
+
+    public method prefilter() -> Prefilter?
+
+    public method startState() -> int
+
+    public method isValid(int idVal) -> bool
+
+    public method isMatchState(int idVal) -> bool
+
+    public method isMatchOrDeadState(int idVal) -> bool {
+        return idVal == deadId() or self.isMatchState(idVal)
+    }
+
+    public method getMatch(
+        int idVal,
+        int matchIndex,
+        int end,
+    ) -> Match?
+
+    public method matchCount(int idVal) -> int
+
+    public method nextState(int current, int inputVal) -> int
+}
