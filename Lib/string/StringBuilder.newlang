@@ -14,7 +14,7 @@ class StringBuilder {
 #     }
 
     public operator new (*object objects) {
-        self.chars = [*str(i) for var i in objects]
+        # self.chars = [*str(i) for var i in objects]
     }
 
     public operator + (object obj) -> cls {
