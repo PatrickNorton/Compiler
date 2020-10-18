@@ -32,8 +32,10 @@ union DFA {
         return self.rep().heapBytes
     }
 
-    public method maxPatternLen() -> int {
-        return self.rep().maxPatternLen
+    public property int maxPatternLen {
+        get {
+            return self.rep().maxPatternLen
+        }
     }
 
     public method patternCount() -> int {
