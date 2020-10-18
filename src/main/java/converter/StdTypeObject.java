@@ -6,6 +6,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,10 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
     public StdTypeObject(String name, GenericInfo info) {
         this(name, Collections.emptyList(), info, true);
+    }
+
+    public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info) {
+        this(name, supers, info, true);
     }
 
     public StdTypeObject(String name, List<TypeObject> supers, GenericInfo info, boolean isFinal) {
@@ -114,7 +119,15 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     public List<TypeObject> getSupers() {
-        return info.supers;
+        if (generics.isEmpty()) {
+            return info.supers;
+        } else {
+            List<TypeObject> result = new ArrayList<>(info.supers.size());
+            for (var value : info.supers) {
+                result.add(value.generifyWith(this, generics));
+            }
+            return result;
+        }
     }
 
     public void setSupers(List<TypeObject> supers) {

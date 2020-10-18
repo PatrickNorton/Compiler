@@ -67,7 +67,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         } else if (!isConst && this.makeConst().equals(other)) {
             return true;
         }
-        for (var sup : info.supers) {
+        for (var sup : getSupers()) {
             if (other.isSuperclass(sup)) {
                 return true;
             }

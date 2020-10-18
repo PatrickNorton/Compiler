@@ -37,7 +37,20 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
 
     @Override
     public boolean isSuperclass(@NotNull TypeObject other) {
-        throw new UnsupportedOperationException("Should not be instancing list types");
+        if (other instanceof ListTypeObject) {
+            var list = (ListTypeObject) other;
+            if (values.size() != list.values.size()) {
+                return false;
+            }
+            for (var pair : Zipper.of(values, list.values)) {
+                if (!pair.getKey().isSuperclass(pair.getValue())) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            throw new UnsupportedOperationException("Should not be instancing list types");
+        }
     }
 
     @Override
