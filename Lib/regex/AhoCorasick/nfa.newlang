@@ -56,6 +56,10 @@ class NFA from Automaton {
         return self.stateMut(self.startId)
     }
 
+    public method prefilterObj() -> PrefilterObj? {
+        return self.prefilter.asRef()
+    }
+
     private generator method iterTransitionsMut(int idVal) -> tuple[int, int] {
         mut int cur = 0
         while true {

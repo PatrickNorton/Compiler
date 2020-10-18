@@ -105,6 +105,10 @@ union DFA {
 class Standard from Automaton {
     Rep value
 
+    public operator new(Rep value) {
+        self.value = value
+    }
+
     public method rep() -> Rep {
         return self.value
     }
@@ -153,6 +157,10 @@ class Standard from Automaton {
 
 class ByteClass from Automaton {
     Rep value
+
+    public operator new(Rep value) {
+        self.value = value
+    }
 
     public method rep() -> Rep {
         return self.value
@@ -204,6 +212,10 @@ class ByteClass from Automaton {
 
 class Premultiplied from Automaton {
     Rep value
+
+    public operator new(Rep value) {
+        self.value = value
+    }
 
     public method rep() -> Rep {
         return self.value
@@ -260,6 +272,10 @@ class Premultiplied from Automaton {
 
 class PremultipliedByteClass from Automaton {
     Rep value
+
+    public operator new(Rep value) {
+        self.value = value
+    }
 
     public method rep() -> Rep {
         return self.value
@@ -328,6 +344,36 @@ class Rep {
     ByteClasses byteClasses
     final list[int] trans
     final list[list[tuple[PatternId, PatternLength]]] matches
+
+    operator new(
+        MatchKind matchKind,
+        bool anchored,
+        bool premultiplied,
+        int startId,
+        int maxPatternLen,
+        int patternCount,
+        int stateCount,
+        int maxMatch,
+        int heapBytes,
+        PrefilterObj? prefilter,
+        ByteClasses byteClasses,
+        mut list[int] trans,
+        mut list[list[tuple[PatternId, PatternLength]]] matches,
+    ) {
+        self.matchKind = matchKind
+        self.anchored = anchored
+        self.premultiplied = premultiplied
+        self.startId = startId
+        self.maxPatternLen = maxPatternLen
+        self.patternCount = patternCount
+        self.stateCount = stateCount
+        self.maxMatch = maxMatch
+        self.heapBytes = heapBytes
+        self.prefilter = prefilter
+        self.byteClasses = byteClasses
+        self.trans = trans
+        self.matches = matches
+    }
 
     method alphabetLen() -> int {
         return self.byteClasses.alphabetLen()
@@ -460,7 +506,7 @@ class Builder {
             nfa.stateLen(),
             FAIL_ID,
             0,
-            nfa.prefilterObj,
+            nfa.prefilterObj(),
             byteClasses,
             trans,
             matches,
@@ -471,7 +517,7 @@ class Builder {
             var fail = nfa.failureTransition(idVal)
             nfa.iterAllTransitions(byteClasses, idVal, lambda (int b, mut int next) {
                     if next == FAIL_ID {
-                        next = nfaNextStateMemoized(nfa, repr, idVal, fail, b)
+                        next = nfaNextStateMemoized(nfa, rep, idVal, fail, b)
                     }
                     repr.setNextState(idVal, b, next)
                 }
