@@ -4,6 +4,7 @@ import main.java.converter.classbody.ConverterHolder;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -23,12 +24,12 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);
-        var trueSupers = convertSupers(supers);
         var descriptors = node.getDescriptors();
         var isFinal = !descriptors.contains(DescriptorNode.NONFINAL);
         var hasType = info.hasType(node.strName());
         StdTypeObject type;
         if (!hasType) {
+            var trueSupers = convertSupers(supers);
             var generics = GenericInfo.parse(info, node.getName().getSubtypes());
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), generics, isFinal);
             ensureProperInheritance(type, trueSupers);
@@ -51,10 +52,10 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             }
         }
         List<Short> superConstants = new ArrayList<>();
-        for (var sup : trueSupers) {
-            superConstants.add(info.constIndex(sup.name()));
+        for (var sup : Zipper.of(node.getSuperclasses(), type.getSupers())) {
+            superConstants.add(info.constIndex(info.typeConstant(sup.getKey(), sup.getValue())));
         }
-        checkContract(type, trueSupers);
+        checkContract(type, type.getSupers());
         if (hasType) {
             putInInfo(type, "class", superConstants, converter);
         } else {
@@ -88,9 +89,11 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return true;
     }
 
-    private void checkContract(StdTypeObject type, @NotNull UserType<?>... supers) {
+    private void checkContract(StdTypeObject type, @NotNull List<TypeObject> supers) {
         for (var sup : supers) {
-            var contract = sup.contract();
+            if (!(sup instanceof UserType<?>)) continue;
+
+            var contract = ((UserType<?>) sup).contract();
             for (var attr : contract.getKey()) {
                 if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
                     throw CompilerException.format(
