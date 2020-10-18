@@ -9,6 +9,9 @@ from .prefilter import Prefilter, PrefilterObj, PrefilterState
 
 export DFA, Builder
 
+int FAIL_ID = 0
+int DEAD_ID = 1
+
 union DFA {
     Standard Standard
     ByteClass ByteClass
@@ -115,7 +118,7 @@ class Standard from Automaton {
     }
 
     public method prefilter() -> Prefilter? {
-        return self.value.prefilter
+        return self.value.prefilter?.asRef()
     }
 
     public method startState() -> int {
@@ -164,7 +167,7 @@ class ByteClass from Automaton {
     }
 
     public method prefilter() -> Prefilter? {
-        return self.value.prefilter
+        return self.value.prefilter?.asRef()
     }
 
     public method startState() -> int {
@@ -215,7 +218,7 @@ class Premultiplied from Automaton {
     }
 
     public method prefilter() -> Prefilter? {
-        return self.value.prefilter
+        return self.value.prefilter?.asRef()
     }
 
     public method startState() -> int {
@@ -223,7 +226,7 @@ class Premultiplied from Automaton {
     }
 
     public method isValid(int idVal) -> bool {
-        return idVal / 256 < self.value.stateCount
+        return idVal // 256 < self.value.stateCount
     }
 
     public method isMatchState(int idVal) -> bool {
@@ -236,15 +239,16 @@ class Premultiplied from Automaton {
 
     public method getMatch(int idVal, int matchIndex, int end) -> Match? {
         return null if idVal > self.value.maxMatch
-        if self.value.matches.get(idVal / 256)?.get(matchIndex)? as m {
-            return Match(m.first, m.second)
-        } else {
-            return null
+        if self.value.matches.get(idVal // 256)? as a {
+            if a.get(matchIndex)? as m {
+                return Match(*m, end)
+            }
         }
+        return null
     }
 
     public method matchCount(int idVal) -> int {
-        var o = idVal / 256
+        var o = idVal // 256
         return self.value.matches[o].length
     }
 
@@ -270,7 +274,7 @@ class PremultipliedByteClass from Automaton {
     }
 
     public method prefilter() -> Prefilter? {
-        return self.value.prefilter
+        return self.value.prefilter?.asRef()
     }
 
     public method startState() -> int {
@@ -278,7 +282,7 @@ class PremultipliedByteClass from Automaton {
     }
 
     public method isValid(int idVal) -> bool {
-        return idVal / self.value.alphabetLen() < self.value.stateCount
+        return idVal // self.value.alphabetLen() < self.value.stateCount
     }
 
     public method isMatchState(int idVal) -> bool {
@@ -291,20 +295,21 @@ class PremultipliedByteClass from Automaton {
 
     public method getMatch(int idVal, int matchIndex, int end) -> Match? {
         return null if idVal > self.value.maxMatch
-        if self.value.matches.get(idVal / self.value.alphabetLen())?.get(matchIndex)? as m {
-            return Match(m.first, m.second)
-        } else {
-            return null
+        if self.value.matches.get(idVal // self.value.alphabetLen())? as a {
+            if a.get(matchIndex)? as m {
+                return Match(*m, end)
+            }
         }
+        return null
     }
 
     public method matchCount(int idVal) -> int {
-        var o = idVal / self.value.alphabetLen()
+        var o = idVal // self.value.alphabetLen()
         return self.value.matches[o].length
     }
 
     public method nextState(int current, int inputVal) -> int {
-        var o = current + self.value.byteClasses.get(inputVal)
+        var o = current + self.value.byteClasses[inputVal]
         return self.value.trans[o]
     }
 }
@@ -312,12 +317,12 @@ class PremultipliedByteClass from Automaton {
 class Rep {
     MatchKind matchKind
     bool anchored
-    bool premultiplied
-    int startId
+    mut bool premultiplied
+    mut int startId
     int maxPatternLen
     int patternCount
     int stateCount
-    int maxMatch
+    mut int maxMatch
     int heapBytes
     PrefilterObj? prefilter
     ByteClasses byteClasses
@@ -329,7 +334,7 @@ class Rep {
     }
 
     method isMatchState(int idVal) -> bool {
-        return idVal <= self.maxMatch and idVal > deadId()
+        return idVal <= self.maxMatch and idVal > DEAD_ID
     }
 
     method isMatchOrDeadState(int idVal) -> bool {
@@ -338,11 +343,12 @@ class Rep {
 
     method getMatch(int idVal, int matchIndex, int end) -> Match? {
         return null if idVal > self.maxMatch
-        if self.matches.get(idVal)?.get(matchIndex)? as m {
-            return Match(m.first, m.second)
-        } else {
-            return null
+        if self.matches.get(idVal)? as a {
+            if a.get(matchIndex)? as m {
+                return Match(*m, end)
+            }
         }
+        return null
     }
 
     method matchCount(int idVal) -> int {
@@ -350,11 +356,12 @@ class Rep {
     }
 
     method nextState(int fromVal, int byte) -> int {
-        return self.trans[fromVal * self.alphabetLen() + self.byteClasses.get(byte)]
+        return self.trans[fromVal * self.alphabetLen() + self.byteClasses[byte]]
     }
 
     mut method setNextState(int fromVal, int byte, int to) {
-        self.trans[fromVal * self.alphabetLen() + self.byteClasses.get(byte)] = to
+        var trans = self.trans  # FIXME
+        trans[fromVal * self.alphabetLen() + self.byteClasses[byte]] = to
     }
 
     mut method swapStates(int id1, int id2) {
@@ -376,7 +383,7 @@ class Rep {
             firstNonMatch++
         }
 
-        final var swaps = [failId()] * self.stateCount
+        final var swaps = [FAIL_ID for var _ in [0:self.stateCount]]  # FIXME: * on a mut list should be mut
         mut var cur = self.stateCount - 1
         while cur > firstNonMatch {
             if self.matches[cur] {
@@ -395,28 +402,29 @@ class Rep {
             var alphabetLen = self.alphabetLen()
             var offset = idVal * alphabetLen
             for int i, var next in enumerate(self.trans[offset:offset + alphabetLen]) {
-                if swaps[next] != failId() {
-                    self.trans[i + offset] = next
+                if swaps[next] != FAIL_ID {
+                    var trans = self.trans  # FIXME
+                    trans[i + offset] = next
                 }
             }
         }
-        if swaps[self.startId] != failId() {
+        if swaps[self.startId] != FAIL_ID {
             self.startId = swaps[self.startId]
         }
         self.maxMatch = firstNonMatch - 1
     }
 
-    method premultiply() {
+    mut method premultiply() {
         return if self.premultiplied or self.stateCount <= 1
 
         var alphaLen = self.alphabetLen()
-        premultiplyOverflowError(self.stateCount - 1, alphaLen)
 
         for var idVal in [2:self.stateCount] {
             var offset = idVal * alphaLen
             for int i, var next in enumerate(self.trans[offset:offset + alphaLen]) {
-                if next != deadId() {
-                    self.trans[offset + i] = next * alphaLen
+                if next != DEAD_ID {
+                    var trans = self.trans  # FIXME
+                    trans[offset + i] = next * alphaLen
                 }
             }
         }
@@ -437,21 +445,22 @@ class Builder {
     }
 
     public method build(NFA nfa) -> DFA {
-        var byteClasses = nfa.byteClasses() if self.byteClasses_ else ByteClasses.singletons()
+        var byteClasses = nfa.byteClasses if self.byteClasses_ else ByteClasses.singletons()
         var alphabetLen = byteClasses.alphabetLen()
-        var trans = [failId()] * (alphabetLen * nfa.stateLen())
-        var matches = [[] * nfa.stateLen()]
+        var trans = [FAIL_ID] * (alphabetLen * nfa.stateLen())
+        list[tuple[PatternId, PatternLength]] empty = []
+        var matches = [empty * nfa.stateLen()]
         mut var rep = Rep(
-            nfa.matchKind(),
-            nfa.anchored(),
+            nfa.matchKind,
+            nfa.anchored,
             false,
             nfa.startState(),
-            nfa.maxPatternLen(),
-            nfa.patternCount(),
+            nfa.maxPatternLen,
+            nfa.patternCount,
             nfa.stateLen(),
-            failId(),
+            FAIL_ID,
             0,
-            nfa.prefilterObj(),
+            nfa.prefilterObj,
             byteClasses,
             trans,
             matches,
@@ -461,7 +470,7 @@ class Builder {
 
             var fail = nfa.failureTransition(idVal)
             nfa.iterAllTransitions(byteClasses, idVal, lambda (int b, mut int next) {
-                    if next == failId() {
+                    if next == FAIL_ID {
                         next = nfaNextStateMemoized(nfa, repr, idVal, fail, b)
                     }
                     repr.setNextState(idVal, b, next)
@@ -500,7 +509,7 @@ func nfaNextStateMemoized(NFA nfa, Rep dfa, int populating, mut int current, int
     while true {
         return dfa.nextState(current, inputVal) if current < populating
         var next = nfa.nextState(current, inputVal)
-        return next if next != failId()
+        return next if next != FAIL_ID
         current = nfa.failureTransition(current)
     }
 }
