@@ -102,7 +102,10 @@ public final class ArgumentInfo implements Iterable<Argument> {
                         result.add(new Argument("", generic));
                     }
                 } else {
-                    throw CompilerException.of("Illegal parameter expansion in argument", arg);
+                    throw CompilerException.format(
+                            "Illegal parameter expansion in argument: type '%s' is not a tuple",
+                            arg, arg.getType().name()
+                    );
                 }
             } else {
                 result.add(arg);

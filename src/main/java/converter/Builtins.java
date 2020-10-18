@@ -98,7 +98,9 @@ public final class Builtins {
 
     private static final TemplateParam LIST_PARAM = new TemplateParam("T", 0, OBJECT);
 
-    public static final StdTypeObject LIST = new StdTypeObject("list", GenericInfo.of(LIST_PARAM));
+    public static final StdTypeObject LIST = new StdTypeObject(
+            "list", List.of(ITERABLE.generify(LIST_PARAM)), GenericInfo.of(LIST_PARAM)
+    );
 
     private static final TemplateParam SET_PARAM = new TemplateParam("T", 0, OBJECT);
 

@@ -59,7 +59,7 @@ public final class ComprehensionConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var resultType = BraceType.fromBrace(node.getBrace(), node).type;
-        return new TypeObject[] {resultType.generify(genericType())};
+        return new TypeObject[] {resultType.generify(genericType()).makeMut()};
     }
 
     @NotNull
