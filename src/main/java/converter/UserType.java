@@ -278,7 +278,18 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @NotNull
     public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
-        return typeFromAttr(attr == null ? null : attr.intoAttrInfo(), access);
+        if (attr == null) {
+            var newAccess = access == AccessLevel.PRIVATE ? AccessLevel.PROTECTED : access;
+            for (var superCls : info.supers) {
+                var supAttr = superCls.attrTypeWithGenerics(value, newAccess);
+                if (supAttr.isPresent()) {
+                    return supAttr;
+                }
+            }
+            return Optional.empty();
+        } else {
+            return typeFromAttr(attr.intoAttrInfo(), access);
+        }
     }
 
     @NotNull

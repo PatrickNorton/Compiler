@@ -16,6 +16,7 @@ import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.TopLevelNode;
 import main.java.parser.TopNode;
 import main.java.parser.TypeNode;
+import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -109,6 +110,10 @@ public final class Linker {
                     }
                     globals.put(name, type);
                 }
+            } else if (stmt instanceof TypedefStatementNode) {
+                var tdNode = (TypedefStatementNode) stmt;
+                var constant = info.typeConstant(tdNode, info.getType(tdNode.getType()));
+                constants.put(tdNode.getName().strName(), (int) info.constIndex(constant));
             }
         }
         info.addGlobals(globals, constants);
