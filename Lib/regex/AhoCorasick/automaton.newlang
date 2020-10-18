@@ -1,6 +1,6 @@
 from .ahocorasick import MatchKind
 from .match import Match
-from .prefilter import Prefilter
+from .prefilter import Prefilter, PrefilterState
 
 export Automaton
 
@@ -30,4 +30,133 @@ interface Automaton {
     public method matchCount(int idVal) -> int
 
     public method nextState(int current, int inputVal) -> int
+
+    public method nextStateNoFail(int current, int inputVal) -> int {
+        var next = self.nextState(current, inputVal)
+        assert next != failId()
+        return next
+    }
+
+    public method standardFindAt(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+        mut int stateId,
+    ) -> Match? {
+        if self.prefilter()? as pre {
+            return self.standardFindAtImp(
+                prestate,
+                pre,
+                haystack,
+                at,
+                stateId,
+            )
+        } else {
+            self.standardFindAtImp(prestate, null, haystack, at, stateId)
+        }
+    }
+
+    public method standardFindAtImp(
+        mut PrefilterState prestate,
+        Prefilter? prefilter,
+        bytes haystack,
+        mut int at,
+        mut int stateId,
+    ) -> Match? {
+        while at < haystack.len() {
+            if prefilter? as pre {
+                if prestate.isEffective(at) and stateId == self.startState() {
+                    var c = next(prestate, pre, haystack, at).intoOption()
+                    if c? as i {
+                        at = i
+                    } else {
+                        return null
+                    }
+                }
+            }
+            # CORRECTNESS: next_state is correct for all possible u8 values,
+            # so the only thing we're concerned about is the validity of
+            # `state_id`. `state_id` either comes from the caller (in which
+            # case, we assume it is correct), or it comes from the return
+            # value of next_state, which is guaranteed to be correct.
+            stateId = self.nextStateNoFail(stateId, haystack[at])
+            at++
+            # This routine always quits immediately after seeing a
+            # match, and since dead states can only come after seeing
+            # a match, seeing a dead state here is impossible. (Unless
+            # we have an anchored automaton, in which case, dead states
+            # are used to stop a search.)
+            assert stateId != deadId() or self.anchored()
+
+            if self.isMatchOrDeadState(stateId) {
+                if stateId == deadId() {
+                    return null
+                } else {
+                    self.getMatch(stateId, 0, at)
+                }
+            }
+        }
+        return null
+    }
+
+    public method overlappingFindAt(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+        mut int stateId,
+        mut int matchIndex,
+    ) -> Match? {
+        return null if self.anchored() and at > 0 and stateId == self.startState()
+
+        var matchCount = self.matchCount(*stateId)
+        if matchIndex < matchCount {
+            var result = self.getMatch(stateId, matchIndex, at)
+            assert result? as "must be a match"
+            matchIndex++
+            return result
+        }
+
+        matchIndex = 0
+        if self.standardFindAt(prestate, haystack, at, stateId)? as m {
+            matchIndex = 1
+            return m
+        } else {
+            return null
+        }
+    }
+
+    public method earliestFindAt(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+        mut int stateId,
+    ) -> Match? {
+        if stateId == self.startState() {
+            return null if self.anchored() and at > 0
+
+            if self.getMatch(stateId, 0, at)? as m {
+                return m
+            }
+        }
+        self.standardFindAt(prestate, haystack, at, stateId)
+    }
+
+    public method findAtNoState(
+        PrefilterState prestate,
+        bytes haystack,
+        int at,
+    ) -> Match? {
+        switch self.matchKind() {
+            case MatchKind.Standard {
+                mut var state = self.startState()
+                return self.earliestFindAt(prestate, haystack, at, state)
+            }
+            case MatchKind.LeftmostFirst {
+                return self.leftmostFindAtNoState(prestate, haystack, at)
+            }
+            case MatchKind.LeftmostLongest {
+                return self.leftmostFindAtNoState(prestate, haystack, at)
+            }
+        }
+    }
 }
