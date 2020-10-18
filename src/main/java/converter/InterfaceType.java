@@ -130,23 +130,6 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         return info.staticOperatorReturnType(o);
     }
 
-    @NotNull
-    public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
-        var attr = info.attributes.get(value);
-        if (attr == null || (isConst && attr.intoAttrInfo().getMutType() == MutableType.MUT_METHOD)) {
-            return Optional.empty();
-        }
-        var attrInfo = attr.intoAttrInfo();
-        var accessLevel = attrInfo.getAccessLevel();
-        if (accessLevel == AccessLevel.PUBGET) {
-            return Optional.of(AccessLevel.canAccess(AccessLevel.PRIVATE, access)
-                    ? attrInfo.getType() : attrInfo.getType().makeConst());
-        } else {
-            return AccessLevel.canAccess(attr.intoAttrInfo().getAccessLevel(), access)
-                    ? Optional.of(attr.intoAttrInfo().getType()) : Optional.empty();
-        }
-    }
-
     @Override
     @NotNull
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
