@@ -151,6 +151,11 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         return info.variants.size();
     }
 
+    public void setSupers(List<TypeObject> supers) {
+        assert !info.isSealed && info.supers.isEmpty();
+        info.supers = supers;
+    }
+
     public void setVariants(List<Pair<String, TypeObject>> variants) {
         assert !info.isSealed && info.variants.isEmpty();
         info.variants.addAll(variants);

@@ -4,11 +4,9 @@ import main.java.converter.classbody.ConverterHolder;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
-import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -51,10 +49,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
                 info.accessHandler().removeSuper();
             }
         }
-        List<Short> superConstants = new ArrayList<>();
-        for (var sup : Zipper.of(node.getSuperclasses(), type.getSupers())) {
-            superConstants.add(info.constIndex(info.typeConstant(sup.getKey(), sup.getValue())));
-        }
+        var superConstants = getSuperConstants(type);
         checkContract(type, type.getSupers());
         if (hasType) {
             putInInfo(type, "class", superConstants, converter);
@@ -87,30 +82,6 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             }
         }
         return true;
-    }
-
-    private void checkContract(StdTypeObject type, @NotNull List<TypeObject> supers) {
-        for (var sup : supers) {
-            if (!(sup instanceof UserType<?>)) continue;
-
-            var contract = ((UserType<?>) sup).contract();
-            for (var attr : contract.getKey()) {
-                if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
-                    throw CompilerException.format(
-                            "Missing impl for method '%s' (defined by interface %s)",
-                            node, attr, sup.name()
-                    );
-                }
-            }
-            for (var op : contract.getValue()) {
-                if (type.operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {
-                    throw CompilerException.format(
-                            "Missing impl for %s (defined by interface %s)",
-                            node, op, sup.name()
-                    );
-                }
-            }
-        }
     }
 
     private void checkConstSupers(StdTypeObject type, @NotNull Iterable<TypeObject> supers) {

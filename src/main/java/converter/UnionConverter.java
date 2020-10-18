@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,13 +36,13 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     @NotNull
     @Unmodifiable
     public List<Byte> convert(int start) {
-        var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);
-        var trueSupers = convertSupers(supers);
-        var generics = GenericInfo.parse(info, node.getName().getSubtypes());
         var hasType = info.hasType(node.strName());
         UnionTypeObject type;
         if (!hasType) {
+            var supers = info.typesOf(node.getSuperclasses());
+            var trueSupers = convertSupers(supers);
+            var generics = GenericInfo.parse(info, node.getName().getSubtypes());
             type = new UnionTypeObject(node.getName().strName(), List.of(trueSupers), generics);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
@@ -53,11 +54,8 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
             throw CompilerException.of("Union may not be nonfinal", node);
         }
-        List<Short> superConstants = new ArrayList<>();
-        for (var sup : trueSupers) {
-            superConstants.add(info.constIndex(sup.name()));
-        }
-        checkContract(type, trueSupers);
+        var superConstants = getSuperConstants(type);
+        checkContract(type, type.getSupers());
         if (hasType) {
             putInInfo(type, "union", convertVariants(), superConstants, converter);
         } else {
@@ -100,34 +98,15 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return node.getDescriptors().contains(DescriptorNode.STATIC);
     }
 
-    private void checkContract(UnionTypeObject type, @NotNull UserType<?>... supers) {
-        for (var sup : supers) {
-            var contract = sup.contract();
-            for (var attr : contract.getKey()) {
-                if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
-                    throw CompilerException.format(
-                            "Missing impl for method '%s' (defined by interface %s)",
-                            node, attr, sup.name()
-                    );
-                }
-            }
-            for (var op : contract.getValue()) {
-                if (type.operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {
-                    throw CompilerException.format(
-                            "Missing impl for %s (defined by interface %s)",
-                            node, op, sup.name()
-                    );
-                }
-            }
-        }
-    }
-
     public static int completeType(CompilerInfo info, UnionDefinitionNode node, UnionTypeObject obj) {
         return new UnionConverter(info, node).completeType(obj);
     }
 
     private int completeType(@NotNull UnionTypeObject obj) {
         var converter = new ConverterHolder(info);
+        var supers = convertSupers(info.typesOf(node.getSuperclasses()));
+        obj.setSupers(Arrays.asList(supers));
+        ensureProperInheritance(obj, supers);
         try {
             info.accessHandler().addCls(obj);
             parseIntoObject(converter, obj);

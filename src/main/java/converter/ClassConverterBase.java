@@ -11,8 +11,10 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.util.Pair;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -206,5 +208,37 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             result.put(key, Pair.of(pair.getValue(), second.get(key)));
         }
         return result;
+    }
+
+    protected List<Short> getSuperConstants(UserType<?> type) {
+        List<Short> superConstants = new ArrayList<>(node.getSuperclasses().length);
+        for (var sup : Zipper.of(node.getSuperclasses(), type.getSupers())) {
+            superConstants.add(info.constIndex(info.typeConstant(sup.getKey(), sup.getValue())));
+        }
+        return superConstants;
+    }
+
+    protected void checkContract(UserType<?> type, @NotNull List<TypeObject> supers) {
+        for (var sup : supers) {
+            if (!(sup instanceof UserType<?>)) continue;
+
+            var contract = ((UserType<?>) sup).contract();
+            for (var attr : contract.getKey()) {
+                if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
+                    throw CompilerException.format(
+                            "Missing impl for method '%s' (defined by interface %s)",
+                            node, attr, sup.name()
+                    );
+                }
+            }
+            for (var op : contract.getValue()) {
+                if (type.operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {
+                    throw CompilerException.format(
+                            "Missing impl for %s (defined by interface %s)",
+                            node, op, sup.name()
+                    );
+                }
+            }
+        }
     }
 }
