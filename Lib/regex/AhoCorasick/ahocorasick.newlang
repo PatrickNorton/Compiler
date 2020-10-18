@@ -97,8 +97,8 @@ union Imp {
 
     public method matchKind() -> MatchKind {
         return switch self {
-            case Imp.NFA as nfa => nfa.matchKind()
-            case Imp.DFA as dfa => dfa.matchKind()
+            case Imp.NFA as nfa => nfa.matchKind
+            case Imp.DFA as dfa => dfa.matchKind
         }
     }
 
@@ -111,15 +111,15 @@ union Imp {
 
     public method maxPatternLen() -> int {
         return switch self {
-            case Imp.NFA as nfa => nfa.maxPatternLen()
-            case Imp.DFA as dfa => dfa.maxPatternLen()
+            case Imp.NFA as nfa => nfa.maxPatternLen
+            case Imp.DFA as dfa => dfa.maxPatternLen
         }
     }
 
     public method patternCount() -> int {
         return switch self {
-            case Imp.NFA as nfa => nfa.patternCount()
-            case Imp.DFA as dfa => dfa.patternCount()
+            case Imp.NFA as nfa => nfa.patternCount
+            case Imp.DFA as dfa => dfa.patternCount
         }
     }
 
@@ -177,7 +177,7 @@ class AhoCorasickBuilder {
 
     public method build(Iterable[bytes] patterns) -> AhoCorasick {
         var nfa = self.nfaBuilder.build(patterns)
-        var matchKind = nfa.matchKind()
+        var matchKind = nfa.matchKind
         if self.dfa {
             var dfa = self.dfaBuilder.build(nfa)
             return AhoCorasick(Imp.DFA(dfa), matchKind)
@@ -186,7 +186,7 @@ class AhoCorasickBuilder {
         }
     }
 
-    public mut method autoConfigure(Iterable[bytes] patterns) -> mut cls {
+    public mut method autoConfigure(list[bytes] patterns) -> mut cls {
         if patterns.length <= 100 {
             self.setDfa(true).byteClasses(false)
         } elif patterns.length <= 5000 {
@@ -206,7 +206,7 @@ class AhoCorasickBuilder {
     }
 
     public mut method asciiCaseInsensitive(bool yes) -> mut cls {
-        self.nfaBuilder.asciiCaseInsensitive(kind)
+        self.nfaBuilder.asciiCaseInsensitive(yes)
         return self
     }
 
@@ -242,19 +242,19 @@ enum MatchKind {
     LEFTMOST_LONGEST
 
     public method supportsOverlapping() -> bool {
-        return self == MatchKind.STANDARD
+        return self is MatchKind.STANDARD
     }
 
     public method isStandard() -> bool {
-        return self == MatchKind.STANDARD
+        return self is MatchKind.STANDARD
     }
 
     public method isLeftmost() -> bool {
-        return self == MatchKind.LEFTMOST_FIRST or self == MatchKind.LEFTMOST_LONGEST
+        return self is MatchKind.LEFTMOST_FIRST or self is MatchKind.LEFTMOST_LONGEST
     }
 
     public method isLeftmostFirst() -> bool {
-        return self == Matchkind.LEFTMOST_FIRST
+        return self is MatchKind.LEFTMOST_FIRST
     }
 
     public method supportsStream() -> bool {
