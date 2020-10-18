@@ -129,6 +129,9 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
+        var supers = convertSupers(info.typesOf(node.getSuperclasses()));
+        obj.setSupers(Arrays.asList(supers));
+        ensureProperInheritance(obj, supers);
         var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
         if (!isConst) {
             checkConstSupers(obj, obj.getSupers());

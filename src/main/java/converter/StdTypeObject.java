@@ -117,6 +117,11 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         return info.supers;
     }
 
+    public void setSupers(List<TypeObject> supers) {
+        assert !info.isSealed && info.supers.isEmpty();
+        info.supers = supers;
+    }
+
     public void setAttributes(Map<String, AttributeInfo> attributes) {
         assert !info.isSealed && info.attributes == null;
         info.attributes = attributes;
