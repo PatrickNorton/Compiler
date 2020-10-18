@@ -147,6 +147,9 @@ public final class DotConverter implements TestConverter {
                     throw new RuntimeException("Unknown value for dot prefix");
             }
         }
+        if (retCount == 0) {  // FIXME: Ensure return counts are correct
+            bytes.add(Bytecode.POP_TOP.value);
+        }
         return bytes;
     }
 
@@ -231,7 +234,7 @@ public final class DotConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes((short) 1));
         } else {
             for (var value : indices) {  // TODO: Merge with IndexNode
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, retCount));
+                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, 1));
             }
             if (indices.length == 1) {
                 bytes.add(Bytecode.SUBSCRIPT.value);
