@@ -3,6 +3,7 @@ from numtools import IntRef
 from .match import Match
 from .dfa import DFA, Builder as DFA, DfaBuilder
 from .nfa import NFA, Builder as NFA, NfaBuilder
+from .packed import MatchKind as PackedMatch
 from .prefilter import PrefilterState
 
 export AhoCorasick, AhoCorasickBuilder, MatchKind
@@ -259,5 +260,18 @@ enum MatchKind {
 
     public method supportsStream() -> bool {
         self.isStandard()
+    }
+
+    public method asPacked() -> PackedMatch? {
+        # FIXME: Switch on enum
+        if self == MatchKind.STANDARD {
+            return null
+        } elif self == MatchKind.LEFTMOST_FIRST {
+            return PackedMatch.LEFTMOST_FIRST
+        } elif self == MatchKind.LEFTMOST_LONGEST {
+            return PackedMatch.LEFTMOST_LONGEST
+        } else {
+            raise NotImplemented()
+        }
     }
 }

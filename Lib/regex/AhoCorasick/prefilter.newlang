@@ -1,8 +1,8 @@
 from .ahocorasick import MatchKind
 from .match import Match
-from .packed import Builder, Searcher as PackedBuilder, PackedSearcher
+from .packed import Builder, Config, Searcher as PackedBuilder, PackedConfig, PackedSearcher
 
-export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder
+export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder, next
 
 union Candidate {
     null None
@@ -12,7 +12,7 @@ union Candidate {
     public method intoOption() -> int? {
         return switch self {
             case Candidate.None => null
-            case Candidate.Match as m => m.start()
+            case Candidate.Match as m => m.start
             case Candidate.PossibleStartOfMatch as start => start
         }
     }
@@ -47,8 +47,8 @@ class PrefilterState {
     mut int skips
     mut int skipped
     int maxMatchLen
-    bool inert
-    int lastScanAt
+    mut bool inert
+    mut int lastScanAt
 
     public operator new(int maxMatchLen) {
         self.skips = 0
@@ -59,7 +59,7 @@ class PrefilterState {
     }
 
     mut method updateSkippedBytes(int skipped) {
-        self.skips++
+        self.skips += 1
         self.skipped += skipped
     }
 
@@ -84,9 +84,9 @@ class PrefilterState {
 
 class Builder {
     int count
-    bool asciiCaseInsensitive_
-    StartBytesBuilder startBytes
-    RareBytesBuilder rareBytes
+    mut bool asciiCaseInsensitive_
+    mut StartBytesBuilder startBytes
+    mut RareBytesBuilder rareBytes
     PackedBuilder? packed
 
     public operator new(MatchKind kind) -> Builder {
@@ -101,7 +101,7 @@ class Builder {
         }
     }
 
-    public mut method asciiCaseInsensitive(bool yes) -> cls {
+    public mut method asciiCaseInsensitive(bool yes) -> mut cls {
         self.asciiCaseInsensitive_ = yes
         self.startBytes = self.startBytes.asciiCaseInsensitive(yes)
         self.rareBytes = self.rareBytes.asciiCaseInsensitive(yes)
@@ -109,8 +109,8 @@ class Builder {
     }
 
     public mut method build() -> PrefilterObj? {
-        if self.startBytes.build? as prestart {
-            if self.rareBytes.build? as prerare {
+        if self.startBytes.build()? as prestart {
+            if self.rareBytes.build()? as prerare {
                 var hasFewerBytes = self.startBytes.count < self.rareBytes.count
                 var hasRarerBytes = self.startBytes.rankSum <= self.rareBytes.rankSum + 50
                 return prestart if hasFewerBytes or hasRarerBytes else prerare
@@ -118,24 +118,25 @@ class Builder {
                 return prestart
             }
         } else {
-            if self.rareBytes.build? as prerare {
+            if self.rareBytes.build()? as prerare {
                 return prerare
             } else {
                 if self.asciiCaseInsensitive_ {
                     return null
                 } else {
-                    if self.packed.asRef()?.build()? as s {
-                        return PrefilterObj(Match.Packed(s))
-                    } else {
-                        return null
+                    if self.packed? as p {
+                        if p.build()? as s {
+                            return PrefilterObj(Packed(s))
+                        }
                     }
+                    return null
                 }
             }
         }
     }
 
     public mut method add(bytes b) {
-        self.count++
+        self.count += 1
         self.startBytes.add(b)
         self.rareBytes.add(b)
         if self.packed? as pbuilder {
@@ -169,30 +170,30 @@ class Packed from Prefilter {
 }
 
 class RareBytesBuilder {
-    bool asciiCaseInsensitive_
+    mut bool asciiCaseInsensitive_
     ByteSet rareSet
-    RareByteOffsets byteOffsets
-    bool available
+    mut RareByteOffsets byteOffsets
+    mut bool available
     int count
     int rankSum
 
     public operator new() {
         self.asciiCaseInsensitive_ = false
-        self.rareSet = ByteSet()
+        self.rareSet = ByteSet.empty()
         self.byteOffsets = RareByteOffsets()
         self.available = true
         self.count = 0
         self.rankSum = 0
     }
 
-    public method asciiCaseInsensitive(bool yes) -> cls {
+    public mut method asciiCaseInsensitive(bool yes) -> mut cls {
         self.asciiCaseInsensitive_ = yes
         return self
     }
 
-    public method build() -> PrefilterObj? {
+    public mut method build() -> PrefilterObj? {
         return null if not self.available or self.count > 3
-        mut var byteVals = bytes()
+        mut var byteVals = bytes("")
         mut var len = 0
         for var b in [0:256] {
             if b in self.rareSet {
@@ -205,16 +206,16 @@ class RareBytesBuilder {
                 return null
             }
             case 1 {
-                return PrefilterObj(RareBytesOne(self.byteOffsets, self.byteOffsets.add(byteVals[0])))
+                return PrefilterObj(RareBytesOne(byteVals[0], self.byteOffsets.value[byteVals[0]]))
             }
             case 2 {
                 return PrefilterObj(RareBytesTwo(self.byteOffsets, byteVals[0], byteVals[1]))
             }
             case 3 {
-                return PrefilterObj(RareBytesTwo(self.byteOffsets, byteVals[0], byteVals[1], byteVals[2]))
+                return PrefilterObj(RareBytesThree(self.byteOffsets, byteVals[0], byteVals[1], byteVals[2]))
             }
             default {
-                raise RuntimeError()
+                raise NotImplemented()
             }
         }
     }
@@ -269,7 +270,7 @@ class RareBytesBuilder {
 
     private mut method addOneRareByte(int byte) {
         if self.rareSet.insert(byte) {
-            self.count++
+            self.count += 1
             self.rankSum += freqRank(byte)
         }
     }
@@ -280,6 +281,10 @@ class ByteSet {
 
     public operator new(Array[bool] value = Array(false, 256)) {
         self.value = value
+    }
+
+    public static method empty() -> mut cls {
+       return ByteSet(Array[bool](false, 256))
     }
 
     public operator in (int b) {
@@ -294,16 +299,17 @@ class ByteSet {
     public mut method insert(int b) -> bool {
         assert b in [0:255]
         var new = b not in self
-        self.value[b] = true
+        var value = self.value  # FIXME
+        value[b] = true
         return new
     }
 }
 
 class RareByteOffsets {
-    Array[RareByteOffset] value
+    mut Array[RareByteOffset] value
 
     public operator new() {
-        self.value = Array(RareByteOffset(), 256)
+        self.value = Array[RareByteOffset](RareByteOffset(0), 256)
     }
 
     public mut method add(int byte, RareByteOffset off) {
@@ -428,7 +434,7 @@ class StartBytesBuilder {
         self.rankSum = 0
     }
 
-    mut method asciiCaseInsensitive(bool yes) -> cls {
+    mut method asciiCaseInsensitive(bool yes) -> mut cls {
         self.asciiCaseInsensitive_ = yes
         return self
     }
@@ -563,4 +569,8 @@ func oppositeAsciiCase(int b) -> int {
 
 func freqRank(int b) -> int {
     return BYTE_FREQUENCIES[b]
+}
+
+func max(int a, int b) -> int {
+    return a if a > b else b
 }
