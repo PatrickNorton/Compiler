@@ -171,6 +171,7 @@ public final class DotConverter implements TestConverter {
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.UNWRAP_OPTION.value);
         convertPostDot(start, bytes, postDot);
+        bytes.add(Bytecode.MAKE_OPTION.value);
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
