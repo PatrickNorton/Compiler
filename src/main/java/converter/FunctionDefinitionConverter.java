@@ -39,6 +39,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var fn = predefined.orElseThrow();
             index = info.fnIndex(node.getName().getName());
             bytes = fn.getBytes();
+            assert bytes.isEmpty();
         } else {
             bytes = new ArrayList<>();
             index = info.addFunction(new Function(fnInfo, bytes));
