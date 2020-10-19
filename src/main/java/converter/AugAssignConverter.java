@@ -104,7 +104,7 @@ public final class AugAssignConverter implements BaseConverter {
                 );
             }
             var returnType = fnInfo.getReturns()[0];
-            if (!returnType.isSuperclass(assignedReturn)) {
+            if (!assignedReturn.isSuperclass(returnType)) {
                 throw CompilerException.format(
                         "Value of type %s has a return type of '%s', which is incompatible with the type of '%s'",
                         node, assignedReturn.name(), returnType.name(), node.getName()

@@ -58,7 +58,11 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
             for (var cls : generics) {
                 valueJoiner.add(cls.name());
             }
-            return info.name + valueJoiner.toString();
+            if (isConst) {
+                return info.name + valueJoiner.toString();
+            } else {
+                return String.format("mut %s%s", info.name, valueJoiner);
+            }
         }
     }
 
