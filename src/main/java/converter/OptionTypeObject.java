@@ -4,12 +4,17 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class OptionTypeObject extends TypeObject {  // TODO: Properly make options
+public final class OptionTypeObject extends TypeObject {
+    private static final Map<BaseType, FunctionInfo> MAP_CACHE = new HashMap<>();
+    private static final Map<BaseType, FunctionInfo> FLAT_MAP_CACHE = new HashMap<>();
+
     private final String typedefName;
     private final TypeObject optionVal;
 
@@ -90,6 +95,8 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (other instanceof OptionTypeObject) {
             return optionVal.generifyAs(parent, ((OptionTypeObject) other).optionVal);
+        } else if (other instanceof ObjectType) {
+            return Optional.of(Collections.emptyMap());
         } else {
             return Optional.empty();
         }
@@ -127,5 +134,40 @@ public final class OptionTypeObject extends TypeObject {  // TODO: Properly make
     public static boolean superWithOption(TypeObject maybeOption, TypeObject other) {
         assert needsMakeOption(maybeOption, other);
         return other.sameBaseType(Builtins.NULL_TYPE) || maybeOption.isSuperclass(TypeObject.optional(other));
+    }
+
+    @Override
+    @NotNull
+    public Optional<TypeObject> attrType(String value, AccessLevel access) {
+        var base = new BaseType(optionVal);
+        switch (value) {
+            case "map":
+                return Optional.of(
+                        MAP_CACHE.computeIfAbsent(base, OptionTypeObject::getMap).toCallable()
+                );
+            case "flatMap":
+                return Optional.of(
+                        FLAT_MAP_CACHE.computeIfAbsent(base, OptionTypeObject::getFlatMap).toCallable()
+                );
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private static FunctionInfo getMap(BaseType type) {
+        var param = new TemplateParam("T", 0, Builtins.OBJECT);
+        var innerFn = new FunctionInfo(ArgumentInfo.of(type.getValue()), param).toCallable();
+        var fnInfo = new FunctionInfo("map", false, ArgumentInfo.of(innerFn), TypeObject.optional(param));
+        param.setParent(fnInfo.toCallable());
+        return fnInfo;
+    }
+
+    private static FunctionInfo getFlatMap(BaseType type) {
+        var param = new TemplateParam("T", 0, Builtins.OBJECT);
+        var optionParam = TypeObject.optional(param);
+        var innerFn = new FunctionInfo(ArgumentInfo.of(type.getValue()), optionParam).toCallable();
+        var fnInfo = new FunctionInfo("flatMap", false, ArgumentInfo.of(innerFn), optionParam);
+        param.setParent(fnInfo.toCallable());
+        return fnInfo;
     }
 }

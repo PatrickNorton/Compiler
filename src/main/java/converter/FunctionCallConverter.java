@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.ArgumentNode;
 import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
@@ -125,19 +126,29 @@ public final class FunctionCallConverter implements TestConverter {
             }
             var fn = info.fnInfo(name);
             if (fn.isPresent()) {
-                return fn.orElseThrow().getReturns();
+                return generifyReturns(fn.orElseThrow());
             }
         } else if (node.getCaller() instanceof EscapedOperatorNode) {
             return escapedOpReturn();
         }
         var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
         var retInfo = retType.tryOperatorInfo(node, OpSpTypeNode.CALL, info);
-        var generics = retInfo.generifyArgs(getArgs(node.getParameters()));
+        return generifyReturns(retInfo);
+    }
+
+    private TypeObject[] generifyReturns(FunctionInfo fnInfo) {
+        return generifyReturns(fnInfo, info, node.getParameters(), node, retCount);
+    }
+
+    public static TypeObject[] generifyReturns(
+            FunctionInfo fnInfo, CompilerInfo info, ArgumentNode[] params, Lined node, int retCount
+    ) {
+        var generics = fnInfo.generifyArgs(getArgs(info, params));
         if (generics.isEmpty()) {
-            return retInfo.getReturns();
+            return fnInfo.getReturns();
         } else {
-            var cls = retInfo.toCallable();
-            var returns = retInfo.getReturns();
+            var cls = fnInfo.toCallable();
+            var returns = fnInfo.getReturns();
             var gen = turnMapToList(generics.orElseThrow());
             if (returns.length < retCount) {
                 throw CompilerInternalError.format(
@@ -217,6 +228,11 @@ public final class FunctionCallConverter implements TestConverter {
 
     @NotNull
     private Argument[] getArgs(@NotNull ArgumentNode... args) {
+        return getArgs(info, args);
+    }
+
+    @NotNull
+    private static Argument[] getArgs(CompilerInfo info, @NotNull ArgumentNode... args) {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];

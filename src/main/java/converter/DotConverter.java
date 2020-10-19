@@ -84,11 +84,14 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
             var attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
-            var retTypes = attrType.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
+            var opInfo = attrType.tryOperatorInfo(postDot, OpSpTypeNode.CALL, info);
+            var retTypes = opInfo.getReturns();
             if (retTypes.length == 0) {
                 throw CompilerException.of("Function does not return a value", dot);
             }
-            return retTypes[0];
+            var params = ((FunctionCallNode) postDot).getParameters();
+            var trueRet = FunctionCallConverter.generifyReturns(opInfo, info, params, postDot, retCount);
+            return trueRet[0];
         } else if (postDot instanceof SpecialOpNameNode) {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
             return result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable();
@@ -147,6 +150,9 @@ public final class DotConverter implements TestConverter {
                     throw new RuntimeException("Unknown value for dot prefix");
             }
         }
+        if (retCount == 0) {  // FIXME: Ensure return counts are correct
+            bytes.add(Bytecode.POP_TOP.value);
+        }
         return bytes;
     }
 
@@ -165,6 +171,7 @@ public final class DotConverter implements TestConverter {
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.UNWRAP_OPTION.value);
         convertPostDot(start, bytes, postDot);
+        bytes.add(Bytecode.MAKE_OPTION.value);
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
@@ -231,7 +238,7 @@ public final class DotConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes((short) 1));
         } else {
             for (var value : indices) {  // TODO: Merge with IndexNode
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, retCount));
+                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, 1));
             }
             if (indices.length == 1) {
                 bytes.add(Bytecode.SUBSCRIPT.value);

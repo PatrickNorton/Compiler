@@ -286,15 +286,16 @@ public final class Builtins {
     }
 
     static {  // Set list operators
+        var listGen = LIST.generify(LIST_PARAM);
         var listMap = Map.of(
                 OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), LIST_PARAM),
                 OpSpTypeNode.SET_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT, LIST_PARAM)),
                 OpSpTypeNode.DEL_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT)),
-                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), LIST.generify(LIST_PARAM)),
+                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), listGen),
                 OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(LIST_PARAM), BOOL),
-                OpSpTypeNode.REVERSED, MethodInfo.of(LIST.generify(LIST_PARAM)),
-                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(LIST.generify(LIST_PARAM)), LIST.generify(LIST_PARAM)),
-                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), LIST.generify(LIST_PARAM)),
+                OpSpTypeNode.REVERSED, MethodInfo.of(listGen),
+                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(listGen), listGen.makeMut()),
+                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), listGen.makeMut()),
                 OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(LIST_PARAM))
         );
         LIST.setOperators(listMap);
