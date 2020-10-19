@@ -52,7 +52,12 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     @Override
     public String name() {
         if (generics.isEmpty()) {
-            return typedefName.isEmpty() ? info.name : typedefName;
+            String name = typedefName.isEmpty() ? info.name : typedefName;
+            if (isConst) {
+                return name;
+            } else {
+                return String.format("mut %s", name);
+            }
         } else {
             var valueJoiner = new StringJoiner(", ", "[", "]");
             for (var cls : generics) {
