@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +95,8 @@ public final class OptionTypeObject extends TypeObject {
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (other instanceof OptionTypeObject) {
             return optionVal.generifyAs(parent, ((OptionTypeObject) other).optionVal);
+        } else if (other instanceof ObjectType) {
+            return Optional.of(Collections.emptyMap());
         } else {
             return Optional.empty();
         }
