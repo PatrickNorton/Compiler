@@ -84,11 +84,14 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
             var attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
-            var retTypes = attrType.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
+            var opInfo = attrType.tryOperatorInfo(postDot, OpSpTypeNode.CALL, info);
+            var retTypes = opInfo.getReturns();
             if (retTypes.length == 0) {
                 throw CompilerException.of("Function does not return a value", dot);
             }
-            return retTypes[0];
+            var params = ((FunctionCallNode) postDot).getParameters();
+            var trueRet = FunctionCallConverter.generifyReturns(opInfo, info, params, postDot, retCount);
+            return trueRet[0];
         } else if (postDot instanceof SpecialOpNameNode) {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
             return result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable();
