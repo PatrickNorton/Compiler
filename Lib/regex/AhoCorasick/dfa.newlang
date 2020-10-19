@@ -493,9 +493,8 @@ class Builder {
     public method build(NFA nfa) -> DFA {
         var byteClasses = nfa.byteClasses if self.byteClasses_ else ByteClasses.singletons()
         var alphabetLen = byteClasses.alphabetLen()
-        var trans = [FAIL_ID] * (alphabetLen * nfa.stateLen())
-        list[tuple[PatternId, PatternLength]] empty = []
-        var matches = [empty * nfa.stateLen()]
+        mut var trans = [FAIL_ID] * (alphabetLen * nfa.stateLen())
+        mut var matches = [empty() for var _ in [0:nfa.stateLen()]]
         mut var rep = Rep(
             nfa.matchKind,
             nfa.anchored,
@@ -549,6 +548,11 @@ class Builder {
         self.premultiply_ = yes
         return self
     }
+}
+
+func empty() -> list[tuple[PatternId, PatternLength]] {
+    list[tuple[PatternId, PatternLength]] empty = []  # FIXME
+    return empty
 }
 
 func nfaNextStateMemoized(NFA nfa, Rep dfa, int populating, mut int current, int inputVal) -> int {

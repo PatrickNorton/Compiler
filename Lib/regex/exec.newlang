@@ -198,12 +198,12 @@ class ExecBuilder {
     }
 
     public mut method nfa() -> cls {
-        self.matchType = MatchType.Nfa(MatchNfaType.PikeVM)
+        self.matchType = MatchType.Nfa(MatchNfaType.PIKE_VM)
         return self
     }
 
     public mut method boundedBacktracking() -> cls {
-        self.matchType = MatchType.Nfa(MatchNfaType.Backtrack)
+        self.matchType = MatchType.Nfa(MatchNfaType.BACKTRACK)
         return self
     }
 
@@ -228,7 +228,7 @@ class ExecBuilder {
             mut var parser = (ParserBuilder()
                 .octal(self.options.octal)
                 .caseInsensitive(self.options.multiLine)
-                .dotMatchesNewline(self.options.dotMatchesNewline)
+                .dotMatchesNewline(self.options.dotMatchesNewLine)
                 .swapGreed(self.options.swapGreed)
                 .ignoreWhitespace(self.options.ignoreWhitespace)
                 .unicode(self.options.unicode)
@@ -301,7 +301,7 @@ class ExecBuilder {
         }
         return null if lits.length <= 32
         return (AhoCorasickBuilder()
-            .matchKind(MatchKind.LeftMostFirst())
+            .matchKind(MatchKind.LEFTMOST_FIRST)
             .autoConfigure(lits)
             .byteClasses(true)
             .build(lits))
@@ -463,7 +463,7 @@ class ExecNoSync {
 
             case MatchType.DfaAnchoredReverse => switch Fsm.reverse(
                 self.ro.dfaReverse,
-                self.cache.value(),
+                self.cache,
                 true,
                 text[start:],
                 text.length,
@@ -508,7 +508,7 @@ class ExecNoSync {
 
             case MatchType.DfaAnchoredReverse => switch Fsm.reverse(
                 self.ro.dfaReverse,
-                self.cache.value(),
+                self.cache,
                 true,
                 text[start:],
                 text.length,
@@ -538,19 +538,19 @@ class ExecNoSync {
             case MatchType.Dfa => switch self.findDfaForward(text, start) {
                 case Result.Match as pair => pair
                 case Result.NoMatch => null
-                case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
+                case Result.Quit => self.findNfa(MatchNfaType.AUTO, text, start)
             }
 
             case MatchType.DfaAnchoredReverse => switch self.findDfaAnchoredReverse(text, start) {
                 case Result.Match as pair => pair
                 case Result.NoMatch => null
-                case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
+                case Result.Quit => self.findNfa(MatchNfaType.AUTO, text, start)
             }
 
             case MatchType.DfaSuffix => switch self.findDfaReverseSuffix(text, start) {
                 case Result.Match as pair => pair
                 case Result.NoMatch => null
-                case Result.Quit => self.findNfa(MatchNfaType.Auto, text, start)
+                case Result.Quit => self.findNfa(MatchNfaType.AUTO, text, start)
             }
             case MatchType.Nfa as ty => self.findNfa(ty, text, start)
             case MatchType.Nothing => null
@@ -593,11 +593,10 @@ class ExecNoSync {
             case MatchType.Literal as ty {
                 if self.findLiterals(ty, text, start)? as pair {
                     return self.capturesNfaType(
-                        MatchNfaType.Auto,
+                        MatchNfaType.AUTO,
                         slots,
                         text,
-                        pair.first,
-                        pair.second,
+                        *pair
                     )
                 } else {
                     return null
@@ -610,11 +609,10 @@ class ExecNoSync {
                 } else {
                     return switch self.findDfaForward(text, start) {
                         case Result.Match as pair => self.capturesNfaType(
-                            MatchNfaType.Auto,
+                            MatchNfaType.AUTO,
                             slots,
                             text,
-                            pair.first,
-                            pair.second,
+                            *pair
                         )
                         case Result.NoMatch => null
                         case Result.Quit => self.capturesNfa(slots, text, start)
@@ -625,11 +623,10 @@ class ExecNoSync {
             case MatchType.DfaAnchoredReverse {
                 return switch self.findDfaAnchoredReverse(text, start) {
                     case Result.Match as pair => self.capturesNfaType(
-                        MatchNfaType.Auto,
+                        MatchNfaType.AUTO,
                         slots,
                         text,
-                        pair.first,
-                        pair.second,
+                        *pair
                     )
                     case Result.NoMatch => null
                     case Result.Quit => self.capturesNfa(slots, text, start)
@@ -640,11 +637,10 @@ class ExecNoSync {
             case MatchType.DfaSuffix {
                 return switch self.findDfaReverseSuffix(text, start) {
                     case Result.Match as pair => self.capturesNfaType(
-                        MatchNfaType.Auto,
+                        MatchNfaType.AUTO,
                         slots,
                         text,
-                        pair.first,
-                        pair.second,
+                        *pair
                     )
                     case Result.NoMatch => null
                     case Result.Quit => self.capturesNfa(slots, text, start)
@@ -767,7 +763,7 @@ class ExecNoSync {
             end = lastLiteral + lcs.length
             switch Fsm.reverse(
                 self.ro.dfaReverse,
-                self.cache.value(),
+                self.cache,
                 false,
                 text[start:end],
                 end - start,
@@ -785,13 +781,13 @@ class ExecNoSync {
                 }
             }
         }
-        return Result[tuple[int, int]].NoMatch(text.len())
+        return Result[tuple[int, int]].NoMatch(text.length)
     }
 
 
     private method findDfaForward(bytes text, int start) -> Result[tuple[int, int]] {
         mut int end
-        switch Fsm.forward(self.ro.dfa, self.cache.value, false, text, start) {
+        switch Fsm.forward(self.ro.dfa, self.cache, false, text, start) {
             case Result.NoMatch as i {  # FIXME: Determine generics automatically
                 return Result[tuple[int, int]].NoMatch(i)
             }
@@ -808,7 +804,7 @@ class ExecNoSync {
         }
 
         return switch Fsm.reverse(self.ro.dfaReverse,
-            self.cache.value,
+            self.cache,
             false,
             text[start:],
             end - start,
@@ -822,7 +818,7 @@ class ExecNoSync {
     private method findDfaAnchoredReverse(bytes text, int start) -> Result[tuple[int, int]] {
         return switch Fsm.reverse(
             self.ro.dfaReverse,
-            self.cache.value(),
+            self.cache,
             false,
             text[start:],
             text.length - start,
@@ -846,7 +842,7 @@ class ExecNoSync {
         }
         return switch Fsm.forward(
             self.ro.dfa,
-            self.cache.value(),
+            self.cache,
             false,
             text,
             matchStart,
@@ -858,7 +854,7 @@ class ExecNoSync {
     }
 
     private method shortestNfa(bytes text, int start) -> int? {
-        return self.shortestNfaType(MatchNfaType.Auto(), text, start)
+        return self.shortestNfaType(MatchNfaType.AUTO, text, start)
     }
 
     private method shortestNfaType(MatchNfaType type, bytes text, int start) -> int? {
@@ -871,7 +867,7 @@ class ExecNoSync {
     }
 
     private method shortestDfa(bytes text, int start) -> Result[int] {
-        return Fsm.forward(self.ro.dfa, self.cache.value(), true, text, start)
+        return Fsm.forward(self.ro.dfa, self.cache, true, text, start)
     }
 
     private method shortestDfaReverseSuffix(bytes text, int start) -> Result[int] {
@@ -891,7 +887,7 @@ class ExecNoSync {
     }
 
     private method matchNfa(bytes text, int start) -> bool {
-        return self.matchNfaType(MatchNfaType.Auto, text, start)
+        return self.matchNfaType(MatchNfaType.AUTO, text, start)
     }
 
     private method matchNfaType(MatchNfaType type, bytes text, int start) -> bool {
@@ -979,7 +975,7 @@ class ExecNoSync {
         if self.ro.nfa.usesBytes() {
             return PikeFsm.exec(
                 self.ro.nfa,
-                self.cache.value(),
+                self.cache,
                 matches,
                 slots,
                 quitAfterMatch,
@@ -990,7 +986,7 @@ class ExecNoSync {
         } else {
             return PikeFsm.exec(
                 self.ro.nfa,
-                self.cache.value(),
+                self.cache,
                 matches,
                 slots,
                 quitAfterMatch,
