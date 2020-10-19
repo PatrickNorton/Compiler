@@ -217,8 +217,9 @@ public final class FunctionCallConverter implements TestConverter {
                 var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
                 var expectedStr = String.join(", ", nameArr);
                 throw CompilerException.format(
-                        "Cannot call object of type '%s': arguments given (%s)" +
-                                " do not match the arguments of the function (%s)",
+                        "Cannot call object of type '%s': arguments given" +
+                                " do not match the arguments of the function%n" +
+                                "Arguments received: %s%nArguments expected: %s",
                         node, callerType.name(), argsString, expectedStr
                 );
             }
