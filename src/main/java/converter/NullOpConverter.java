@@ -172,7 +172,7 @@ public final class NullOpConverter extends OperatorConverter {
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = converter.returnType()[0];
         if (!(retType instanceof OptionTypeObject)) {
-            throw CompilerException.format("Cannot use ? on a non-optional type '%s", args[0], retType);
+            throw CompilerException.format("Cannot use ? on a non-optional type '%s'", args[0], retType.name());
         }
         var resultType = ((OptionTypeObject) retType).getOptionVal();
         List<Byte> bytes = unwrapSecond(start, converter);

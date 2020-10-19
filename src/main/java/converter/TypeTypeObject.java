@@ -118,7 +118,7 @@ public final class TypeTypeObject extends TypeObject {
         if (generic != null) {
             if (o == OpSpTypeNode.CALL) {
                 var opInfo = generic.operatorInfo(OpSpTypeNode.NEW, access);
-                return opInfo.map(functionInfo -> new FunctionInfo(functionInfo.getArgs(), generic));
+                return opInfo.map(functionInfo -> new FunctionInfo(functionInfo.getArgs(), generic.makeMut()));
             } else {
                 return Optional.empty();
             }

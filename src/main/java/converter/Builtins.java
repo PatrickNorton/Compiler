@@ -66,7 +66,7 @@ public final class Builtins {
 
     public static final StdTypeObject RANGE = new StdTypeObject("range");
 
-    public static final StdTypeObject BYTES = new StdTypeObject("bytes");
+    public static final StdTypeObject BYTES = new StdTypeObject("bytes", List.of(ITERABLE.generify(INT)));
 
     public static final StdTypeObject THROWS = new StdTypeObject("throws");
 
@@ -104,13 +104,17 @@ public final class Builtins {
 
     private static final TemplateParam SET_PARAM = new TemplateParam("T", 0, OBJECT);
 
-    public static final StdTypeObject SET = new StdTypeObject("set", GenericInfo.of(SET_PARAM));
+    public static final StdTypeObject SET = new StdTypeObject(
+            "set", List.of(ITERABLE.generify(SET_PARAM)), GenericInfo.of(SET_PARAM)
+    );
 
     private static final TemplateParam DICT_KEY = new TemplateParam("K", 0, OBJECT);
 
     private static final TemplateParam DICT_VAL = new TemplateParam("V", 1, OBJECT);
 
-    public static final StdTypeObject DICT = new StdTypeObject("dict", GenericInfo.of(DICT_KEY, DICT_VAL));
+    public static final StdTypeObject DICT = new StdTypeObject(
+            "dict", List.of(ITERABLE.generify(DICT_KEY, DICT_VAL)), GenericInfo.of(DICT_KEY, DICT_VAL)
+    );
 
     public static final LangConstant TRUE = new BoolConstant(true);
 
@@ -373,6 +377,7 @@ public final class Builtins {
     }
 
     static {
+        var arrayNewInfo = MethodInfo.of(ArgumentInfo.of(ARRAY_PARAM, INT));
         var arrayGetInfo = MethodInfo.of(ArgumentInfo.of(INT), ARRAY_PARAM);
         var arraySetInfo = MethodInfo.of(ArgumentInfo.of(INT, ARRAY_PARAM));
         var arrayIterInfo = MethodInfo.of(ITERABLE.generify(ARRAY_PARAM));
@@ -382,6 +387,7 @@ public final class Builtins {
         var arrayReversedInfo = MethodInfo.of(ARRAY);
 
         var arrayMap = Map.of(
+                OpSpTypeNode.NEW, arrayNewInfo,
                 OpSpTypeNode.GET_ATTR, arrayGetInfo,
                 OpSpTypeNode.SET_ATTR, arraySetInfo,
                 OpSpTypeNode.ITER, arrayIterInfo,
