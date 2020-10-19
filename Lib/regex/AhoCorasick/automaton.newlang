@@ -1,8 +1,11 @@
 from .ahocorasick import MatchKind
 from .match import Match
-from .prefilter import Prefilter, PrefilterState
+from .prefilter import Prefilter, PrefilterState, next, Candidate
 
 export Automaton
+
+var FAIL_ID = 0
+var DEAD_ID = 1
 
 interface Automaton {
     public method matchKind() -> MatchKind
@@ -18,7 +21,7 @@ interface Automaton {
     public method isMatchState(int idVal) -> bool
 
     public method isMatchOrDeadState(int idVal) -> bool {
-        return idVal == deadId() or self.isMatchState(idVal)
+        return idVal == DEAD_ID or self.isMatchState(idVal)
     }
 
     public method getMatch(
@@ -33,7 +36,7 @@ interface Automaton {
 
     public method nextStateNoFail(int current, int inputVal) -> int {
         var next = self.nextState(current, inputVal)
-        assert next != failId()
+        assert next != FAIL_ID
         return next
     }
 
@@ -63,7 +66,7 @@ interface Automaton {
         mut int at,
         mut int stateId,
     ) -> Match? {
-        while at < haystack.len() {
+        while at < haystack.length {
             if prefilter? as pre {
                 if prestate.isEffective(at) and stateId == self.startState() {
                     var c = next(prestate, pre, haystack, at).intoOption()
@@ -86,10 +89,10 @@ interface Automaton {
             # a match, seeing a dead state here is impossible. (Unless
             # we have an anchored automaton, in which case, dead states
             # are used to stop a search.)
-            assert stateId != deadId() or self.anchored()
+            assert stateId != DEAD_ID or self.anchored()
 
             if self.isMatchOrDeadState(stateId) {
-                if stateId == deadId() {
+                if stateId == DEAD_ID {
                     return null
                 } else {
                     self.getMatch(stateId, 0, at)
@@ -98,6 +101,79 @@ interface Automaton {
         }
         return null
     }
+
+    public method leftmostFindAtNoState(
+        mut PrefilterState prestate,
+        bytes haystack,
+        int at,
+    ) -> Match? {
+        if self.prefilter()? as pre {
+            return self.leftmostFindAtNoStateImp(
+                prestate,
+                pre,
+                haystack,
+                at,
+            )
+        } else {
+            return self.leftmostFindAtNoStateImp(prestate, null, haystack, at)
+        }
+    }
+
+    public method leftmostFindAtNoStateImp(
+        mut PrefilterState prestate,
+        Prefilter? prefilter,
+        bytes haystack,
+        mut int at,
+    ) -> Match? {
+        assert self.matchKind().isLeftmost()
+        return null if self.anchored() and at > 0
+
+        if prefilter? as pre {
+            assert not self.anchored()
+            if not pre.reportsFalsePositives() {
+                return switch pre.nextCandidate(prestate, haystack, at) {
+                    case Candidate.None => null
+                    case Candidate.Match as m => m
+                    case Candidate.PossibleStartOfMatch => raise NotImplemented()
+                }
+            }
+        }
+
+        mut var stateId = self.startState()
+        mut var lastMatch = self.getMatch(stateId, 0, at)
+        while at < haystack.length {
+            if prefilter? as pre {
+                if prestate.isEffective(at) and stateId == self.startState() {
+                    switch next(prestate, pre, haystack, at) {
+                        case Candidate.None {
+                            return null
+                        }
+                        case Candidate.Match as m {
+                            return m
+                        }
+                        case Candidate.PossibleStartOfMatch as i {
+                            at = i
+                        }
+                    }
+                }
+            }
+            # CORRECTNESS: next_state is correct for all possible u8 values,
+            # so the only thing we're concerned about is the validity of
+            # `state_id`. `state_id` either comes from the caller (in which
+            # case, we assume it is correct), or it comes from the return
+            # value of next_state, which is guaranteed to be correct.
+            stateId = self.nextStateNoFail(stateId, haystack[at])
+            at++
+            if self.isMatchOrDeadState(stateId) {
+                if stateId == DEAD_ID {
+                    return lastMatch
+                }
+                lastMatch = self.getMatch(stateId, 0, at)
+            }
+        }
+        return lastMatch
+    }
+
 
     public method overlappingFindAt(
         mut PrefilterState prestate,
@@ -108,7 +184,7 @@ interface Automaton {
     ) -> Match? {
         return null if self.anchored() and at > 0 and stateId == self.startState()
 
-        var matchCount = self.matchCount(*stateId)
+        var matchCount = self.matchCount(stateId)
         if matchIndex < matchCount {
             var result = self.getMatch(stateId, matchIndex, at)
             assert result? as "must be a match"
