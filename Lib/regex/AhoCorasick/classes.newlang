@@ -20,11 +20,12 @@ class ByteClasses {
     }
 
     public operator []= (int index, int value) {
-        self.value[index] = value
+        var val = self.value  # FIXME
+        val[index] = value
     }
 
     public method alphabetLen() -> int {
-        return self.values[255] + 1
+        return self.value[255] + 1
     }
 
     public method isSingleton() -> bool {
@@ -33,19 +34,19 @@ class ByteClasses {
 
     public generator method representatives() -> int {
         mut int byte = 0
-        int? lastClass = null
+        mut int? lastClass = null
         while byte < 256 {
             var type = self[byte]
             byte++
-            if self.lastClass != byte {
-                self.lastClass = byte
-                return byte
+            if lastClass != byte {
+                lastClass = byte
+                yield type
             }
         }
     }
 
     public method elements(int equiv) -> bytes, int {
-        mut var array = bytes()
+        mut var array = bytes("")
         mut var len = 0
         for var b in [0:256] {
             if self[b] == equiv {
@@ -66,10 +67,11 @@ class ByteClassBuilder {
 
     public method setRange(int start, int end) {
         assert start in [0:256] and end in [start:256]
+        var val = self.value  # FIXME
         if start > 0 {
-            self.value[start - 1] = true
+            val[start - 1] = true
         }
-        self.value[end] = true
+        val[end] = true
     }
 
     public method build() -> ByteClasses {

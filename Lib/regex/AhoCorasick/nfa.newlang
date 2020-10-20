@@ -86,7 +86,7 @@ class NFA from Automaton {
     }
 
     private mut method copyMatches(int src, int dst) {
-        var pair = self.states[src], self.states[dst]
+        var pair = (self.states[src], self.states[dst])
         dst.matches.extend(src.matches)
     }
 
@@ -95,9 +95,11 @@ class NFA from Automaton {
     }
 
     private mut method addDenseState(int depth) -> int {
-        var trans = Transitions.Dense(Dense())
+        list[int] val = []
+        var trans = Transitions.Dense(Dense(val))
         var idVal = intToStateId(self.states.length)
-        self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, [])
+        list[int] val2 = []
+        self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, val2)
         return idVal
     }
 
