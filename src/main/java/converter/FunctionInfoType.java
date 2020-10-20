@@ -104,9 +104,11 @@ public final class FunctionInfoType extends TypeObject {
         var otherT = (FunctionInfoType) other;
         var otherInfo = otherT.info;
         Map<Integer, TypeObject> result = new HashMap<>();
-        var argC = Math.min(otherInfo.getArgs().size(), info.getArgs().size());
+        var args = info.getArgs();
+        var otherArgs = otherInfo.getArgs();
+        var argC = Math.min(args.size(), otherArgs.size());
         for (int i = 0; i < argC; i++) {
-            var gen = info.getArgs().get(i).getType().generifyAs(parent, otherInfo.getArgs().get(i).getType());
+            var gen = args.get(i).getType().generifyAs(parent, otherArgs.get(i).getType());
             if (gen.isEmpty()) {
                 return Optional.empty();
             }

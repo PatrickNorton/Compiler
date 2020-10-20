@@ -295,7 +295,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), LIST_PARAM),
                 OpSpTypeNode.SET_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT, LIST_PARAM)),
                 OpSpTypeNode.DEL_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT)),
-                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), listGen),
+                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), listGen.makeMut()),
                 OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(LIST_PARAM), BOOL),
                 OpSpTypeNode.REVERSED, MethodInfo.of(listGen),
                 OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(listGen), listGen.makeMut()),

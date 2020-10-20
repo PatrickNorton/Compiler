@@ -256,7 +256,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 return Optional.empty();  // TODO: Default values
             }
         }
-        return Optional.of(result);
+        return argNo + keywordMap.size() == newArgs.length ? Optional.of(result) : Optional.empty();
     }
 
     @NotNull
