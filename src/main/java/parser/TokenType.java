@@ -89,7 +89,7 @@ public enum TokenType {
     /**
      * Numbers in all bases and decimals.
      */
-    NUMBER("^(0x[0-9a-f][0-9a-f_]*(\\.[0-9a-f_]+)?|(0[ob])?[0-9][0-9_]*(\\.[0-9_]+)?)\\b"),
+    NUMBER("^(0x[0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F_]+)?|(0[ob])?[0-9][0-9_]*(\\.[0-9_]+)?)\\b"),
     /**
      * Special operator names, for operator overload definitions.
      */
