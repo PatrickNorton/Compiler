@@ -97,8 +97,8 @@ public final class DotConverter implements TestConverter {
             return result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable();
         } else if (postDot instanceof IndexNode) {
             var index = (IndexNode) postDot;
-            var variable = ((VariableNode) index.getVar()).getName();
-            var attrType = result.tryAttrType(postDot, variable, info);
+            var variable = new DottedVar(dot.getLineInfo(), dot.getDotPrefix(),  (NameNode) index.getVar());
+            var attrType = normalDotReturnType(result, variable);
             var operator = index.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
             return attrType.tryOperatorReturnType(node, operator, info)[0];
         } else {
@@ -224,10 +224,9 @@ public final class DotConverter implements TestConverter {
     }
 
     private void convertIndex(int start, @NotNull List<Byte> bytes, @NotNull IndexNode postDot) {
-        var name = ((VariableNode) postDot.getVar()).getName();
-        bytes.add(Bytecode.LOAD_DOT.value);
-        var nameConst = LangConstant.of(name);
-        bytes.addAll(Util.shortToBytes(info.constIndex(nameConst)));
+        // FIXME: Check types
+        var preIndex = (NameNode) postDot.getVar();
+        convertPostDot(start, bytes, preIndex);
         var indices = postDot.getIndices();
         if (indices[0] instanceof SliceNode) {
             assert indices.length == 1;
