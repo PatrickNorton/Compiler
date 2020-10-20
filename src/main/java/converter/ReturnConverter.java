@@ -66,10 +66,15 @@ public final class ReturnConverter implements BaseConverter {
         if (currentReturns.length == 1) {
             bytes.addAll(TestConverter.bytesMaybeOption(start, node.getReturned().get(0), info, 1, currentReturns[0]));
         } else if (!node.getReturned().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start, node.getReturned().get(0), info, currentReturns.length));
+            for (var ret : node.getReturned()) {
+                if (!ret.getValue().isEmpty()) {
+                    throw CompilerTodoError.format("Cannot convert return with varargs yet", ret.getKey());
+                }
+                bytes.addAll(TestConverter.bytes(start, ret.getKey(), info, 1));
+            }
         }
         bytes.add(Bytecode.RETURN.value);
-        bytes.addAll(Util.shortToBytes((short) node.getReturned().size()));
+        bytes.addAll(Util.shortToBytes((short) currentReturns.length));
     }
 
     private void convertSingle(int start, @NotNull List<Byte> bytes) {
