@@ -76,14 +76,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             var constValue = converter.constantReturn();
             if (isConst && constValue.isPresent()) {
                 var constant = constValue.orElseThrow();
-                info.checkDefinition(assignedName, node);
-                if (needsMakeOption) {
-                    short constIndex = info.addConstant(constant);
-                    var trueConst = new OptionConstant(valueType, constIndex);
-                    info.addVariable(assignedName, assignedType, trueConst, node);
-                } else {
-                    info.addVariable(assignedName, assignedType, constant, node);
-                }
+                addConstant(valueType, assignedType, assignedName, needsMakeOption, constant);
             } else {
                 bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
                 finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
@@ -93,6 +86,18 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
         }
         return bytes;
+    }
+
+    private void addConstant(TypeObject valueType, TypeObject assignedType, String assignedName,
+                             boolean needsMakeOption, LangConstant constant) {
+        info.checkDefinition(assignedName, node);
+        if (needsMakeOption) {
+            short constIndex = info.addConstant(constant);
+            var trueConst = new OptionConstant(valueType, constIndex);
+            info.addVariable(assignedName, assignedType, trueConst, node);
+        } else {
+            info.addVariable(assignedName, assignedType, constant, node);
+        }
     }
 
     @NotNull
