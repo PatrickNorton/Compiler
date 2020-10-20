@@ -227,11 +227,11 @@ public final class Builtins {
 
     static {  // Set bytes operators
         var bytesMap = Map.of(
-                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(BYTES), BYTES),
-                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), BYTES),
+                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(BYTES), BYTES.makeMut()),
+                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), BYTES.makeMut()),
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(BYTES), BOOL),
                 OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), INT),
-                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), BYTES),
+                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), BYTES.makeMut()),
                 OpSpTypeNode.SET_ATTR, MethodInfo.of(ArgumentInfo.of(INT, INT)),
                 OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(INT)),
                 OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))
