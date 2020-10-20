@@ -39,8 +39,8 @@ class RabinKarp {
     # This panics if any of the patterns in the collection are empty, or if
     # the collection is itself empty.
     public operator new(Patterns patterns) {
-        assert patterns.len() >= 1
-        var hashLen = patterns.minimum_len()
+        assert patterns.length >= 1
+        var hashLen = patterns.minimumLen
         assert hashLen >= 1
 
         mut var hash2pow = 1
@@ -50,20 +50,22 @@ class RabinKarp {
             hash2pow &= (1 << 32) - 1
         }
 
-        self.buckets = [[]] * NUM_BUCKETS
+        # FIXME: Type deduction
+        # self.buckets = [[]] * NUM_BUCKETS
         self.hashLen = hashLen
         self.hash2pow = hash2pow
         self.maxPatternId = patterns.maxPatternId
 
         for var pair in patterns {
-            var idVal, var pat = *pair
+            # FIXME: Tuple expansion
+            var idVal, var pat = pair.0, pair.1
             var hashVal = self.hash(pat.bytes()[:self.hashLen])
             var bucket = hashVal % NUM_BUCKETS
             self.buckets[bucket].add((hashVal, idVal))
         }
     }
 
-    # Return the first matching pattern in the given haystack, begining the
+    # Return the first matching pattern in the given haystack, beginning the
     # search at `at`.
     public method findAt(
         Patterns patterns,
@@ -79,7 +81,8 @@ class RabinKarp {
         while true {
             var bucket = self.buckets[hashVal % NUM_BUCKETS]
             for var pair in bucket {
-                var phash, var pid = *pair
+                # FIXME: Tuple unpacking
+                var phash, var pid = pair.0, pair.1
                 if phash == hashVal {
                     if self.verify(patterns, pid, haystack, at)? as c {
                         return c
@@ -99,20 +102,13 @@ class RabinKarp {
 
     # Verify whether the pattern with the given id matches at
     # `haystack[at..]`.
-    #
-    # We tag this function as `cold` because it helps improve codegen.
-    # Intuitively, it would seem like inlining it would be better. However,
-    # the only time this is called and a match is not found is when there
-    # there is a hash collision, or when a prefix of a pattern matches but
-    # the entire pattern doesn't match. This is hopefully fairly rare, and
-    # if it does occur a lot, it's going to be slow no matter what we do.
     method verify(
         Patterns patterns,
         PatternID patternId,
         bytes haystack,
         mut int at,
     ) -> Match? {
-        var pat = patterns.get(patternId)
+        var pat = patterns[patternId]
         if pat.isPrefix(haystack[at:]) {
             return Match.fromSpan(patternId, at, at + pat.length)
         } else {
@@ -121,14 +117,23 @@ class RabinKarp {
     }
 
     # Hash the given bytes.
-    method hash( bytes b) -> Hash {
+    method hash(bytes b) -> Hash {
         assert self.hashLen == b.length
 
-        mut var hash = 0
+        mut var hashVal = 0
         for var byte in b {
             hashVal <<= 1
-            hashVal += b
+            hashVal += byte
         }
-        return hash
+        return hashVal
+    }
+
+    public method updateHash(Hash prev, int oldByte, int newByte) -> Hash {
+        assert oldByte in [0:256] and newByte in [0:256]
+        mut var result = prev - oldByte  # FIXME: Wrapping operations
+        result *= self.hash2pow
+        result <<= 1
+        result += newByte
+        return result
     }
 }

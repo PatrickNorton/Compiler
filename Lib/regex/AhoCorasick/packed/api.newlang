@@ -1,5 +1,6 @@
 from .patterns import Patterns
 from .teddy import Teddy
+from .teddy import Builder as TeddyBuilder
 from .rabinkarp import RabinKarp
 
 from ..match import Match
@@ -22,12 +23,12 @@ class Config {
     public operator new() {
         self.kind = MatchKind.LEFTMOST_FIRST
         self.force = null
-        self.forceTeddyFat = null
-        self.forceAvx = null
+        self.forceTeddyFat_ = null
+        self.forceAvx_ = null
     }
 
     public method builder() -> Builder {
-        return Builder.fromConfig(self)
+        return Builder(self)
     }
 
     public mut method matchKind(MatchKind kind) -> cls {
@@ -56,7 +57,12 @@ class Config {
     }
 
     public method clone() -> cls {
-        return cls(self.kind, self.force, self.forceTeddyFat_, self.forceAvx_)
+        mut var result = cls()
+        result.kind = self.kind
+        result.force = self.force
+        result.forceTeddyFat_ = self.forceTeddyFat_
+        result.forceAvx_ = self.forceAvx_
+        return result
     }
 }
 
@@ -67,13 +73,13 @@ enum ForceAlgorithm {
 
 class Builder {
     Config config
-    bool inert
+    mut bool inert
     Patterns patterns
 
     public operator new(Config config = Config()) {
         self.config = config
         self.inert = false
-        self.patterns = patterns
+        self.patterns = Patterns()
     }
 
     public method build() -> Searcher? {
@@ -114,6 +120,13 @@ class Builder {
         return Searcher(self.config.clone(), patterns, rabinKarp, searchKind, minimumLen)
     }
 
+    public method buildTeddy(Patterns patterns) -> Teddy? {
+        return (TeddyBuilder()
+            .avx(self.config.forceAvx_)
+            .fat(self.config.forceTeddyFat_)
+            .build(patterns))
+    }
+
     public mut method add(bytes pattern) -> cls {
         return self if self.inert
         if self.patterns.length >= PATTERN_LIMIT {
@@ -151,6 +164,20 @@ class Searcher {
     SearchKind searchKind
     int minimumLen
 
+    public operator new (
+        Config config,
+        Patterns patterns,
+        RabinKarp rabinKarp,
+        SearchKind searchKind,
+        int minimumLen,
+    ) {
+        self.config = config
+        self.patterns = patterns
+        self.rabinKarp = rabinKarp
+        self.searchKind = searchKind
+        self.minimumLen = minimumLen
+    }
+
     public method find(bytes haystack) -> Match? {
         return self.findAt(haystack, 0)
     }
@@ -158,7 +185,7 @@ class Searcher {
     public method findAt(bytes haystack, int at) -> Match? {
         switch self.searchKind {
             case SearchKind.Teddy as teddy {
-                if haystack[at:].length < teddy.minimumLength {
+                if haystack[at:].length < teddy.minimumLen() {
                     return self.slowAt(haystack, at)
                 }
                 return teddy.findAt(self.patterns, haystack, at)
@@ -170,9 +197,9 @@ class Searcher {
     }
 
     public generator method findIter(bytes haystack) -> Match {
-        var at = 0
+        mut var at = 0
         while at < haystack.length {
-            if self.searcher.findAt(haystack, at)? as c {
+            if self.findAt(haystack, at)? as c {
                 at = c.end
                 yield c
             } else {

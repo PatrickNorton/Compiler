@@ -313,12 +313,13 @@ class RareByteOffsets {
     }
 
     public mut method add(int byte, RareByteOffset off) {
-        self.value[byte].max = max(self.value[byte].max, off.max)
+        var value = self.value
+        value[byte] = RareByteOffset(max(self.value[byte].max, off.max))
     }
 }
 
-class RareByteOffset {
-    mut int max
+const class RareByteOffset {
+    int max
 
     public operator new(int max = 0) {
         assert max in [0:255]
@@ -340,7 +341,7 @@ class RareBytesOne from Prefilter {
         if haystack[at:].indexOf(self.byte1)? as i {
             var pos = i + 1
             state.lastScanAt = pos
-            return Candidate.PossibleStartOfMatch(max(at, pos - self.offset.max, 0))
+            return Candidate.PossibleStartOfMatch(max3(at, pos - self.offset.max, 0))
         } else {
             return Candidate.None()
         }
@@ -366,8 +367,8 @@ class RareBytesTwo from Prefilter {
         if memchr2(self.byte1, self.byte2, haystack[at:])? as i {
             var pos = at + i
             state.updateAt(i)
-            var offset = self.offsets.add(haystack[pos]).max
-            return Candidate.PossibleStartOfMatch(max(at, pos - offset, 0))
+            var offset = self.offsets.value[haystack[pos]].max
+            return Candidate.PossibleStartOfMatch(max3(at, pos - offset, 0))
         }
     }
 
@@ -402,8 +403,8 @@ class RareBytesThree from Prefilter {
         if memchr3(self.byte1, self.byte2, self.byte3, haystack[at:])? as i {
             var pos = at + i
             state.updateAt(i)
-            var offset = self.offsets.add(haystack[pos]).max
-            return Candidate.PossibleStartOfMatch(max(at, pos - offset, 0))
+            var offset = self.offsets.value[haystack[pos]].max
+            return Candidate.PossibleStartOfMatch(max3(at, pos - offset, 0))
         }
     }
 
@@ -422,14 +423,14 @@ func memchr3(int b1, int b2, int b3, bytes b) -> int? {
 }
 
 class StartBytesBuilder {
-    bool asciiCaseInsensitive_
+    mut bool asciiCaseInsensitive_
     list[bool] byteSet
     int count
     int rankSum
 
     public operator new() {
         self.asciiCaseInsensitive_ = false
-        self.byteset = [false] * 256
+        self.byteSet = [false] * 256
         self.count = 0
         self.rankSum = 0
     }
@@ -441,7 +442,7 @@ class StartBytesBuilder {
 
     mut method build() -> PrefilterObj? {
         return null if self.count > 3
-        mut var byteVals = bytes()
+        mut var byteVals = bytes("")
         for var b in [0:256] {
             continue if not self.byteSet[b]
             return null if b > 0x7F
@@ -452,7 +453,7 @@ class StartBytesBuilder {
             case 1 => PrefilterObj(StartBytesOne(byteVals[0]))
             case 2  => PrefilterObj(StartBytesTwo(byteVals[0], byteVals[1]))
             case 3 => PrefilterObj(StartBytesThree(byteVals[0], byteVals[1], byteVals[2]))
-            default => raise RuntimeError()
+            default => raise NotImplemented()
         }
     }
 
@@ -467,15 +468,16 @@ class StartBytesBuilder {
     }
 
     private mut method addOneByte(int b) {
-        if not self.byteset[b] {
-            self.byteset[b] = true
-            self.count++
+        if not self.byteSet[b] {
+            var byteSet = self.byteSet # FIXME
+            byteSet[b] = true
+            self.count += 1
             self.rankSum += freqRank(b)
         }
     }
 }
 
-class StartBytesOne {
+class StartBytesOne from Prefilter {
     int byte1
 
     public operator new(int byte1) {
@@ -486,7 +488,7 @@ class StartBytesOne {
         if haystack[at:].indexOf(self.byte1)? as i {
             return Candidate.PossibleStartOfMatch(at + i)
         } else {
-            return Candidate.None
+            return Candidate.None()
         }
     }
 
@@ -495,7 +497,7 @@ class StartBytesOne {
     }
 }
 
-class StartBytesTwo {
+class StartBytesTwo from Prefilter {
     int byte1
     int byte2
 
@@ -508,7 +510,7 @@ class StartBytesTwo {
         if memchr2(self.byte1, self.byte2, haystack[at:])? as i {
             return Candidate.PossibleStartOfMatch(at + i)
         } else {
-            return Candidate.None
+            return Candidate.None()
         }
     }
 
@@ -517,7 +519,7 @@ class StartBytesTwo {
     }
 }
 
-class StartBytesThree {
+class StartBytesThree from Prefilter {
     int byte1
     int byte2
     int byte3
@@ -532,7 +534,7 @@ class StartBytesThree {
         if memchr3(self.byte1, self.byte2, self.byte3, haystack[at:])? as i {
             return Candidate.PossibleStartOfMatch(at + i)
         } else {
-            return Candidate.None
+            return Candidate.None()
         }
     }
 
@@ -568,9 +570,14 @@ func oppositeAsciiCase(int b) -> int {
 }
 
 func freqRank(int b) -> int {
-    return BYTE_FREQUENCIES[b]
+    # FIXME: Write this & have it not break @ runtime
+    # return BYTE_FREQUENCIES[b]
 }
 
 func max(int a, int b) -> int {
     return a if a > b else b
+}
+
+func max3(int a, int b, int c) -> int {
+    return max(a, c) if a > b else max(b, c)
 }

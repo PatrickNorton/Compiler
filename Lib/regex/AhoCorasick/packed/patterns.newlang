@@ -5,20 +5,37 @@ export Patterns, PatternID
 typedef PatternID as int
 
 class Patterns {
-    MatchKind kind
-    list[bytes] byId
-    list[PatternID] order
-    int minimumLen
-    PatternID maxPatternId
-    int totalPatternBytes
+    mut MatchKind kind
+    mut list[bytes] byId
+    mut list[PatternID] order
+    pubget mut int minimumLen
+    pubget mut PatternID maxPatternId
+    mut int totalPatternBytes
 
     public operator new {
-        self.kind = MatchKind()
+        self.kind = MatchKind.LEFTMOST_FIRST
         self.byId = []
         self.order = []
         self.minimumLen = -1
         self.maxPatternId = 0
         self.totalPatternBytes = 0
+    }
+
+    public operator iter -> tuple[PatternID, Pattern] {
+        for int i in [0:self.length] {
+            var index = self.order[i]
+            yield (index, self[index])
+        }
+    }
+
+    public operator [] (int i) -> Pattern {
+        return Pattern(self.byId[i])
+    }
+
+    public property int length {
+        get {
+            return self.byId.length
+        }
     }
 
     public mut method add(bytes b) {
@@ -31,6 +48,34 @@ class Patterns {
         self.byId.add(b)
         self.minimumLen = min(self.minimumLen, b.length)
         self.totalPatternBytes += b.length
+    }
+
+    public method clone() -> mut cls {
+        mut var result = cls()
+        result.kind = self.kind
+        result.byId = self.byId[:]
+        result.order = self.order[:]
+        result.minimumLen = self.minimumLen
+        result.maxPatternId = self.maxPatternId
+        result.totalPatternBytes = self.totalPatternBytes
+    }
+}
+
+class Pattern {
+    bytes value
+
+    public operator new (bytes value) {
+        self.value = value
+    }
+
+    public property int length {
+        get {
+            return self.value.length
+        }
+    }
+
+    public method bytes() -> bytes {
+        return self.value
     }
 }
 
