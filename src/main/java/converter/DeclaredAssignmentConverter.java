@@ -24,11 +24,16 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         if (node.isColon()) {
             throw CompilerException.of(":= is only allowed for defining class members", node);
         }
-        if (node.getValues().size() == 1 && node.getNames().length > 1) {
+        if (isSingle()) {
             return convertSingle(start);
         } else {
             return convertMultiple(start);
         }
+    }
+
+    private boolean isSingle() {
+        return node.getValues().size() == 1 && node.getNames().length > 1
+                && node.getValues().getVararg(0).isEmpty();
     }
 
     @NotNull
@@ -50,6 +55,9 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         for (var pair : Zipper.of(types, values)) {
             var assigned = pair.getKey();
             var valuePair = pair.getValue();
+            if (!valuePair.getValue().isEmpty()) {
+                throw CompilerTodoError.of("Cannot convert varargs in declared assignment yet", node);
+            }
             var value = valuePair.getKey();
             if (!valuePair.getValue().isEmpty()) {
                 throw CompilerException.of("Varargs not yet supported here", assigned);
