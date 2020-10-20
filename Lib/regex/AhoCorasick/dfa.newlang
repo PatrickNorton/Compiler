@@ -429,7 +429,7 @@ class Rep {
             firstNonMatch++
         }
 
-        final var swaps = [FAIL_ID for var _ in [0:self.stateCount]]  # FIXME: * on a mut list should be mut
+        final var swaps = [FAIL_ID] * self.stateCount
         mut var cur = self.stateCount - 1
         while cur > firstNonMatch {
             if self.matches[cur] {

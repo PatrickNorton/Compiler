@@ -44,7 +44,7 @@ class NFA from Automaton {
         return self.states[idVal]
     }
 
-    private mut method stateMut(int idVal) -> State {  # FIXME: Should be 'mut State'
+    private mut method stateMut(int idVal) -> mut State {
         return self.states[idVal]
     }
 

@@ -57,8 +57,7 @@ class RabinKarp {
         self.maxPatternId = patterns.maxPatternId
 
         for var pair in patterns {
-            # FIXME: Tuple expansion
-            var idVal, var pat = pair.0, pair.1
+            var idVal, var pat = *pair
             var hashVal = self.hash(pat.bytes()[:self.hashLen])
             var bucket = hashVal % NUM_BUCKETS
             self.buckets[bucket].add((hashVal, idVal))
@@ -81,8 +80,7 @@ class RabinKarp {
         while true {
             var bucket = self.buckets[hashVal % NUM_BUCKETS]
             for var pair in bucket {
-                # FIXME: Tuple unpacking
-                var phash, var pid = pair.0, pair.1
+                var phash, var pid = *pair
                 if phash == hashVal {
                     if self.verify(patterns, pid, haystack, at)? as c {
                         return c
