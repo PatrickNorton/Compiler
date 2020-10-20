@@ -10,6 +10,9 @@ typedef PatternId as int
 
 typedef PatternLength as int
 
+int FAIL_ID = 0
+int DEAD_ID = 1
+
 class NFA from Automaton {
     pubget MatchKind matchKind
     int startId
@@ -19,6 +22,26 @@ class NFA from Automaton {
     pubget bool anchored
     pubget ByteClasses byteClasses
     list[State] states
+
+    public operator new(
+        MatchKind matchKind,
+        int startId,
+        int maxPatternLen,
+        int patternCount,
+        PrefilterObj? prefilter,
+        bool anchored,
+        ByteClasses byteClasses,
+        list[State] states,
+    ) {
+        self.matchKind = matchKind
+        self.startId = startId
+        self.maxPatternLen = maxPatternLen
+        self.patternCount = patternCount
+        self.prefilter = prefilter
+        self.anchored = anchored
+        self.byteClasses = byteClasses
+        self.states = states
+    }
 
     public method stateLen() -> int {
         return self.states.length
@@ -44,20 +67,16 @@ class NFA from Automaton {
         return self.states[idVal]
     }
 
-    private mut method stateMut(int idVal) -> mut State {
-        return self.states[idVal]
-    }
-
     private method start() -> State {
         return self.state(self.startId)
     }
 
-    private method startMut() -> State {
-        return self.stateMut(self.startId)
+    public method prefilterObj() -> PrefilterObj? {
+        return self.prefilter
     }
 
-    public method prefilterObj() -> PrefilterObj? {
-        return self.prefilter.asRef()
+    method setByteClasses(mut ByteClasses classes) {
+        self.byteClasses = classes
     }
 
     private generator method iterTransitionsMut(int idVal) -> tuple[int, int] {
@@ -74,10 +93,10 @@ class NFA from Automaton {
                         assert cur < 256
 
                         var idVal = dense[cur]
-                        if idVal != failId() {
-                            return (cur, idVal)
+                        if idVal != FAIL_ID {
+                            yield (cur, idVal)
                         }
-                        self.cur++
+                        cur++
                     }
                     return
                 }
@@ -97,16 +116,18 @@ class NFA from Automaton {
     private mut method addDenseState(int depth) -> int {
         list[int] val = []
         var trans = Transitions.Dense(Dense(val))
-        var idVal = intToStateId(self.states.length)
+        var idVal = self.states.length
         list[int] val2 = []
-        self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, val2)
+        self.states.push(State(trans, DEAD_ID if self.anchored else self.startId), depth, val2)
         return idVal
     }
 
     private mut method addSparseState(int depth) -> int {
-        var trans = Transitions.Sparse([])
-        var idVal = intToStateId(self.states.length)
-        self.states.push(State(trans, deadId() if self.anchored else self.startId), depth, [])
+        list[tuple[int, int]] empty = []  # FIXME
+        var trans = Transitions.Sparse(empty)
+        var idVal = self.states.length
+        list[int] val = []
+        self.states.push(State(trans, DEAD_ID if self.anchored else self.startId), depth, val)
     }
 
     public method startState() -> int {
@@ -125,7 +146,7 @@ class NFA from Automaton {
         return null if idVal > self.states.length
         var state = self.states[idVal]
         if state.matches.get(matchIndex)? as m {
-            return Match(m.first, m.second, end)
+            return Match(*m, end)
         } else {
             return null
         }
@@ -142,19 +163,29 @@ class State {
     final list[tuple[PatternId, PatternLength]] matches
     int depth
 
+    public operator new(
+        Transitions trans,
+        int fail,
+    ) {
+        self.trans = trans
+        self.fail = fail
+        self.matches = []
+        self.depth = 0
+    }
+
     private mut method addMatch(PatternId i, PatternLength len) {
         self.matches.push((i, len))
     }
 
-    private method isMatch() -> bool {
+    public method isMatch() -> bool {
         return bool(self.matches)
     }
 
     private method getLongestMatchlen() -> int? {
-        return self.matches.get(0)?.second
+        return self.matches.get(0)?.1
     }
 
-    private method nextState(int inputVal) -> int {
+    public method nextState(int inputVal) -> int {
         return self.trans.nextState(inputVal)
     }
 
@@ -189,9 +220,9 @@ union Transitions {
         switch self {
             case Transitions.Sparse as sparse {
                 for var pair in sparse {
-                    return pair.second if pair.first
+                    return pair.1 if pair.0
                 }
-                return failId()
+                return FAIL_ID
             }
             case Transitions.Dense as dense {
                 return dense[inputVal]
@@ -209,7 +240,7 @@ class Builder {
 
     public operator new() {
         self.denseDepth_ = 2
-        self.matchKind_ = MatchKind()
+        self.matchKind_ = MatchKind.LEFTMOST_FIRST
         self.prefilter_ = true
         self.anchored_ = false
         self.asciiCaseInsensitive_ = false
@@ -240,14 +271,14 @@ class Builder {
     }
 
     public mut method asciiCaseInsensitive(bool yes) -> cls {
-        self.asciiCaseInsensitive_ = cls
+        self.asciiCaseInsensitive_ = yes
         return self
     }
 }
 
 class Compiler {
     private Builder builder
-    private PrefilterBuilder prefilter
+    private mut PrefilterBuilder prefilter
     private final NFA nfa
     private ByteClassBuilder byteClasses
 
@@ -255,13 +286,14 @@ class Compiler {
         self.builder = builder
         self.prefilter = (PrefilterBuilder(builder.matchKind_)
             .asciiCaseInsensitive(builder.asciiCaseInsensitive_))
+        list[State] states = []  # FIXME
+        PrefilterObj? objs = null  # FIXME
         self.nfa = NFA(
             builder.matchKind_,
-            intToStateId(2),
-            0, 0, 0, null,
+            0, 0, 0, objs,
             builder.anchored_,
             ByteClasses.singletons(),
-            []
+            states,
         )
         self.byteClasses = ByteClassBuilder()
     }
@@ -281,7 +313,7 @@ class Compiler {
             }
         }
         self.closeStartStateLoop()
-        self.nfa.byteClasses = self.byteClasses.build()
+        self.nfa.setByteClasses(self.byteClasses.build())
         if not self.builder.anchored {
             self.nfa.prefilter = self.prefilter.build()
         }
@@ -296,7 +328,7 @@ class Compiler {
     private mut method buildTrie(Iterable[bytes] patterns) {
         for int pati, var pat in enumerate(patterns) {
             self.nfa.maxPatternLen = max(self.nfa.maxPatternLen, pat.length)
-            self.nfa.patternCount++
+            self.nfa.patternCount = self.nfa.patternCount + 1  # FIXME
 
             mut var prev = self.nfa.startId
             mut var sawMatch = false
@@ -606,4 +638,8 @@ class QueuedSet {
             return false
         }
     }
+}
+
+func max(int i, int j) -> int {
+    return i if i > j else j
 }
