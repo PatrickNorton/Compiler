@@ -53,6 +53,10 @@ public final class EqualsConverter extends OperatorConverter {
                     lineInfo, equalsType ? "==" : "!=", retCount
             );
         }
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            return loadConstant(info, constant.orElseThrow());
+        }
         switch (args.length) {
             case 0:
             case 1:

@@ -49,10 +49,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
     public List<Byte> convert(int start) {
         var constant = constantReturn();
         if (constant.isPresent()) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.addConstant(constant.orElseThrow())));
-            return bytes;
+            return loadConstant(info, constant.orElseThrow());
         }
         if (op == OperatorTypeNode.NOT_EQUALS) {
             return convertNotEquals(start);

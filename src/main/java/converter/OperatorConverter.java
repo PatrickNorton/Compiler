@@ -8,6 +8,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -112,6 +113,13 @@ public abstract class OperatorConverter implements TestConverter {
                 "Cannot use 'as' here, condition must be an " +
                         "'instanceof', '?', or 'is not null' statement", lineInfo
         );
+    }
+
+    protected static List<Byte> loadConstant(CompilerInfo info, LangConstant constant) {
+        List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
+        return bytes;
     }
 
     protected static Optional<LangConstant> defaultConstant(
