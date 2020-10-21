@@ -33,7 +33,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
 
     @Override
     public Optional<LangConstant> constantReturn() {
-        return allInts(info, args).flatMap(values -> IntArithmetic.computeConst(op, values));
+        return defaultConstant(op, info, args);
     }
 
     @Override

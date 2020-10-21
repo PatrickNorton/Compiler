@@ -36,7 +36,7 @@ public final class IsConverter extends OperatorConverter {
     @Override
     public Optional<LangConstant> constantReturn() {
         var op = isType ? OperatorTypeNode.IS : OperatorTypeNode.IS_NOT;
-        return allInts(info, operands).flatMap(values -> IntArithmetic.computeConst(op, values));
+        return defaultConstant(op, info, operands);
     }
 
     @Override

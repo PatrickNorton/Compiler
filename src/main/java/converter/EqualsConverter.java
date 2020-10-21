@@ -35,7 +35,7 @@ public final class EqualsConverter extends OperatorConverter {
     @Override
     public Optional<LangConstant> constantReturn() {
         var op = equalsType ? OperatorTypeNode.EQUALS : OperatorTypeNode.NOT_EQUALS;
-        return allInts(info, args).flatMap(values -> IntArithmetic.computeConst(op, values));
+        return defaultConstant(op, info, args);
     }
 
     @Override
