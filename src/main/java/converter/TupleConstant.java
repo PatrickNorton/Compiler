@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public final class TupleConstant implements LangConstant {
@@ -51,5 +52,18 @@ public final class TupleConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(!values.isEmpty());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TupleConstant that = (TupleConstant) o;
+        return Objects.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }

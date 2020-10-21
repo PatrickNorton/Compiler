@@ -2,6 +2,7 @@ package main.java.util;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * An optimized version of {@link java.util.Optional} for booleans.
@@ -88,11 +89,25 @@ public final class OptionalBool {
      */
     public boolean orElseThrow() {
         if (value < 0) {
-            throw new NoSuchElementException("Called 'orElseThrow' on an empty OptionalUint");
+            throw new NoSuchElementException("Called 'orElseThrow' on an empty OptionalBool");
         }
         return value != 0;
     }
 
+    /**
+     * Maps the {@code OptionalBool} onto the values given, returning {@link
+     * Optional#empty()} if empty, {@code ifTrue} if {@code true}, and {@code
+     * ifFalse} if {@code false}.
+     * <p>
+     *     This is intended as an alternative to {@link Optional#map(Function)},
+     *     since Java does not have a {@code BoolFunction} interface.
+     * </p>
+     *
+     * @param ifTrue The value to return if {@code this} is {@code true}
+     * @param ifFalse The value to return if {@code this} is {@code false}
+     * @param <T> The type of ifTrue and ifFalse
+     * @return The mapped value
+     */
     public <T> Optional<T> mapValues(T ifTrue, T ifFalse) {
         if (value < 0) {
             return Optional.empty();
