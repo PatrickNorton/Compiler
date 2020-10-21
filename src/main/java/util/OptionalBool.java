@@ -89,7 +89,7 @@ public final class OptionalBool {
      */
     public boolean orElseThrow() {
         if (value < 0) {
-            throw new NoSuchElementException("Called 'orElseThrow' on an empty OptionalUint");
+            throw new NoSuchElementException("Called 'orElseThrow' on an empty OptionalBool");
         }
         return value != 0;
     }
