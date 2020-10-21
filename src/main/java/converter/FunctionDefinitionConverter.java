@@ -39,10 +39,12 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var fn = predefined.orElseThrow();
             index = info.fnIndex(node.getName().getName());
             bytes = fn.getBytes();
-            assert bytes.isEmpty();
+            if (!bytes.isEmpty()) {
+                throw CompilerException.doubleDef(node.getName().getName(), fn, node);
+            }
         } else {
             bytes = new ArrayList<>();
-            index = info.addFunction(new Function(fnInfo, bytes));
+            index = info.addFunction(new Function(node, fnInfo, bytes));
         }
         var constVal = new FunctionConstant(node.getName().getName(), index);
         info.checkDefinition(node.getName().getName(), node);
@@ -78,7 +80,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
             var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
             var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, argInfo, trueRet);
-            var func = new Function(fnInfo, new ArrayList<>());
+            var func = new Function(node, fnInfo, new ArrayList<>());
             int index = info.addFunction(func);
             return Pair.of(new FunctionInfoType(fnInfo), index);
         } else {
@@ -93,7 +95,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
             var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
             var fnInfo = new FunctionInfo(node.getName().getName(), argInfo, trueRet);
-            var func = new Function(fnInfo, new ArrayList<>());
+            var func = new Function(node, fnInfo, new ArrayList<>());
             int index = info.addFunction(func);
             info.removeLocalTypes();
             return Pair.of(new FunctionInfoType(fnInfo), index);

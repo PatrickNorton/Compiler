@@ -37,7 +37,7 @@ public final class LambdaConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         var name = info.lambdaName();
         var fnInfo = new FunctionInfo(name, convertArgs(), info.typesOf(node.getReturns()));
-        int fnIndex = info.addFunction(new Function(fnInfo, convertBody()));
+        int fnIndex = info.addFunction(new Function(node, fnInfo, convertBody()));
         bytes.add(Bytecode.MAKE_FUNCTION.value);
         bytes.addAll(Util.shortToBytes((short) fnIndex));
         return bytes;
