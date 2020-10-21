@@ -22,7 +22,7 @@ class NFA from Automaton {
     pubget PrefilterObj? prefilter
     pubget bool anchored
     pubget ByteClasses byteClasses
-    list[State] states
+    private mut list[State] states
 
     public operator new(
         MatchKind matchKind,
@@ -32,7 +32,7 @@ class NFA from Automaton {
         PrefilterObj? prefilter,
         bool anchored,
         ByteClasses byteClasses,
-        list[State] states,
+        mut list[State] states,
     ) {
         self.matchKind = matchKind
         self.startId = startId
@@ -68,7 +68,12 @@ class NFA from Automaton {
         return self.states[idVal]
     }
 
-    private method start() -> State {
+    method setState(int idVal, State s) {
+        var states = self.states  # FIXME
+        states[idVal] = s
+    }
+
+    method start() -> State {
         return self.state(self.startId)
     }
 
@@ -92,7 +97,7 @@ class NFA from Automaton {
         self.patternCount = count
     }
 
-    private generator method iterTransitionsMut(int idVal) -> tuple[int, int] {
+    generator method iterTransitionsMut(int idVal) -> tuple[int, int] {
         mut int cur = 0
         while true {
             switch self.states[idVal].trans {
@@ -172,9 +177,9 @@ class NFA from Automaton {
 
 class State {
     Transitions trans
-    int fail
+    mut int fail
     final list[tuple[PatternId, PatternLength]] matches
-    int depth
+    mut int depth
 
     public operator new(
         Transitions trans,
@@ -184,6 +189,13 @@ class State {
         self.fail = fail
         self.matches = []
         self.depth = 0
+    }
+
+    public method clone() -> mut cls {
+        mut var new = State(self.trans, self.fail)
+        new.matches.addAll(self.matches[:])
+        new.depth = self.depth
+        return new
     }
 
     private mut method addMatch(PatternId i, PatternLength len) {
@@ -407,34 +419,35 @@ class Compiler {
         # out of the start state. We handle the start state specially because
         # we only want to follow non-self transitions. If we followed self
         # transitions, then this would never terminate.
-        final var queue = Queue()
+        final list[int] queue = []
         mut var seen = self.queuedSet()
         for var b in [0:256] {
             var next = self.nfa.start().nextState(b)
             if next != self.nfa.startId {
                 if next not in seen {
-                    queue.add(next)
+                    queue.insert(0, next)
                     seen.insert(next)
                 }
             }
         }
-        while queue.popFront()? as idVal {
-            mut var it = self.nfa.iterTransitionMut(idVal)
-            while it.next()? as pair {
-                var b = pair.first
-                var next = pair.second
+        while queue.pop()? as idVal {
+            for var pair in self.nfa.iterTransitionsMut(idVal) {
+                var b, var next = *pair
                 if next not in seen {
                     queue.pushBack(next)
                     seen.insert(next)
                 }
 
-                mut var fail = it.nfa().state(idVal).fail
-                while it.nfa().state(fail).nextState(b) == failId() {
-                    fail = it.nfa().state(fail).fail
+                mut var fail = self.nfa.state(idVal).fail
+                while self.nfa.state(fail).nextState(b) == FAIL_ID {
+                    fail = self.nfa.state(fail).fail
                 }
-                fail = it.nfa().state(fail).nextState(b)
-                it.nfa().stateMut(next).fail = fail
-                it.nfa().copyMatches(fail, next)
+                fail = self.nfa.state(fail).nextState(b)
+                # FIXME: Should be using stateMut when it becomes possible
+                mut var newState = self.nfa.state(next).clone()
+                newState.fail = fail
+                self.nfa.setState(next, newState)
+                self.nfa.copyMatches(fail, next)
             }
             # If the start state is a match state, then this automaton can
             # match the empty string. This implies all states are match states
@@ -445,7 +458,7 @@ class Compiler {
             # in addition to its own. For the non-overlapping case, such
             # states only report the first match, which is never empty since
             # it isn't a start state.
-            it.nfa().copyEmptyMatches(idVal)
+            self.nfa.copyEmptyMatches(idVal)
         }
     }
 
@@ -487,25 +500,24 @@ class Compiler {
         }
         while queue.pop_front()? as item {
             mut var anyTrans = false
-            mut var it = self.nfa.iterTransitionsMut(item.idVal)
-            while it.next()? as pair {
+            for var pair in self.nfa.iterTransitionsMut(item.idVal) {
                 var b = pair.first
                 var nextId = pair.second
                 anyTrans = true
 
                 # Queue up the next state.
-                var next = item.nextQueuedState(it.nfa(), nextId)
+                var next = item.nextQueuedState(self.nfa, nextId)
                 if next.idVal not in seen {
                     queue.add(next)
                     seen.insert(next.idVal)
                 }
 
                 # Find the failure state for next. Same as standard.
-                mut var fail = it.nfa().state(item.idVal).fail
-                while it.nfa().state(fail).nextState(b) == failId() {
-                    fail = it.nfa().state(fail).fail
+                mut var fail = self.nfa.state(item.idVal).fail
+                while self.nfa.state(fail).nextState(b) == failId() {
+                    fail = self.nfa.state(fail).fail
                 }
-                fail = it.nfa().state(fail).nextState(b)
+                fail = self.nfa.state(fail).nextState(b)
 
                 # This is the key difference from the standard formulation.
                 # Namely, if we've seen a match, then we only want a failure
@@ -541,22 +553,22 @@ class Compiler {
                 # backwards by figuring out which failure transitions should
                 # be removed. You should arrive at the same rule used below.
                 if next.matchAtDepth? as matchDepth {
-                    var failDepth = it.nfa().state(fail).depth
-                    var nextDepth = it.nfa().state(next.idVal).depth
+                    var failDepth = self.nfa.state(fail).depth
+                    var nextDepth = self.nfa.state(next.idVal).depth
                     if nextDepth - matchDepth + 1 > failDepth {
-                        it.nfa().stateMut(next.idVal).fail = deadId()
+                        self.nfa.stateMut(next.idVal).fail = deadId()
                         continue
                     }
-                    assert start.idVal != it.nfa().state(next.idVal).fail
+                    assert start.idVal != self.nfa.state(next.idVal).fail
                 }
-                it.nfa().stateMut(next.idVal).fail = fail
-                it.nfa().copyMatches(fail, next.idVal)
+                self.nfa.stateMut(next.idVal).fail = fail
+                self.nfa.copyMatches(fail, next.idVal)
             }
             # If there are no transitions for this state and if it's a match
             # state, then we must set its failure transition to the dead
             # state since we never want it to restart the search.
-            if not anyTrans and it.nfa().state(item.idVal).isMatch() {
-                it.nfa().stateMut(item.idVal).fail = deadId()
+            if not anyTrans and self.nfa.state(item.idVal).isMatch() {
+                self.nfa.stateMut(item.idVal).fail = deadId()
             }
             # We don't need to copy empty matches from the start state here
             # because that's only necessary for overlapping matches and
@@ -564,7 +576,7 @@ class Compiler {
         }
     }
 
-    method queuedSet() -> QueuedSet {
+    private method queuedSet() -> mut QueuedSet {
         if self.builder.asciiCaseInsensitive {
             return QueuedSet.active()
         } else {
@@ -630,11 +642,11 @@ class QueuedSet {
         self.value = value
     }
 
-    static method inert() -> cls {
+    static method inert() -> mut cls {
         return cls(null)
     }
 
-    static method active() -> cls {
+    static method active() -> mut cls {
         return cls({})
     }
 
