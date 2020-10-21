@@ -351,8 +351,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             var accessLevel = attrInfo.getAccessLevel();
             if (!AccessLevel.canAccess(accessLevel, access)) {
                 return false;
-            } else if (accessLevel == AccessLevel.PUBGET && !AccessLevel.canAccess(AccessLevel.PRIVATE, access)) {
-                return false;
+            } else if (accessLevel == AccessLevel.PUBGET) {
+                return AccessLevel.canAccess(AccessLevel.PRIVATE, access);
             } else {
                 return !attr.intoAttrInfo().getMutType().isConstRef();
             }
