@@ -2,7 +2,8 @@ from .ahocorasick import MatchKind
 from .automaton import Automaton
 from .classes import ByteClasses, ByteClassBuilder
 from .match import Match
-from .prefilter import PrefilterObj, Prefilter, Builder as PrefilterObj, Prefilter, PrefilterBuilder
+from .prefilter import oppositeAsciiCase, PrefilterObj, Prefilter
+from .prefilter import Builder as PrefilterBuilder
 
 export NFA, Builder, State, PatternId, PatternLength
 
@@ -63,7 +64,7 @@ class NFA from Automaton {
         return self.states[current].nextState(inputVal)
     }
 
-    private method state(int idVal) -> State {
+    method state(int idVal) -> State {
         return self.states[idVal]
     }
 
@@ -75,8 +76,20 @@ class NFA from Automaton {
         return self.prefilter
     }
 
-    method setByteClasses(mut ByteClasses classes) {
+    mut method setByteClasses(mut ByteClasses classes) {
         self.byteClasses = classes
+    }
+
+    mut method setPrefilter(mut PrefilterObj filter) {
+        self.prefilter = filter
+    }
+
+    mut method setPatternLen(int len) {
+        self.maxPatternLen = len
+    }
+
+    mut method setPatternCount(int count) {
+        self.patternCount = count
     }
 
     private generator method iterTransitionsMut(int idVal) -> tuple[int, int] {
@@ -315,7 +328,7 @@ class Compiler {
         self.closeStartStateLoop()
         self.nfa.setByteClasses(self.byteClasses.build())
         if not self.builder.anchored {
-            self.nfa.prefilter = self.prefilter.build()
+            self.nfa.setPrefilter(self.prefilter.build())
         }
         self.calculateSize()
         return self.nfa
@@ -327,8 +340,8 @@ class Compiler {
     # the end of the pattern.
     private mut method buildTrie(Iterable[bytes] patterns) {
         for int pati, var pat in enumerate(patterns) {
-            self.nfa.maxPatternLen = max(self.nfa.maxPatternLen, pat.length)
-            self.nfa.patternCount = self.nfa.patternCount + 1  # FIXME
+            self.nfa.setPatternLen(max(self.nfa.maxPatternLen, pat.length))
+            self.nfa.setPatternCount(self.nfa.patternCount + 1)
 
             mut var prev = self.nfa.startId
             mut var sawMatch = false
@@ -354,8 +367,8 @@ class Compiler {
                 # NFA, but it would require a second pass over the patterns.
                 self.byteClasses.setRange(b, b)
                 if self.builder.asciiCaseInsensitive {
-                    var b = oppositeAsciiCase(b)
-                    self.byte_classes.setRange(b, b)
+                    var b2 = oppositeAsciiCase(b)
+                    self.byteClasses.setRange(b2, b2)
                 }
 
                 # If the transition from prev using the current byte already
@@ -366,7 +379,7 @@ class Compiler {
                 # faster. Other states use a sparse representation that uses
                 # less memory but is slower.
                 var next = self.nfa.state(prev).nextState(b)
-                if next != failId() {
+                if next != FAIL_ID {
                     prev = next
                 } else {
                     var next = self.addState(depth + 1)

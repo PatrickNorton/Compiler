@@ -2,7 +2,7 @@ from .ahocorasick import MatchKind
 from .match import Match
 from .packed import Builder, Config, Searcher as PackedBuilder, PackedConfig, PackedSearcher
 
-export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder, next
+export Candidate, Prefilter, PrefilterObj, PrefilterState, Builder, next, oppositeAsciiCase
 
 union Candidate {
     null None
