@@ -1,4 +1,5 @@
 from .ahocorasick import MatchKind
+from .frequency import freqRank
 from .match import Match
 from .packed import Builder, Config, Searcher as PackedBuilder, PackedConfig, PackedSearcher
 
@@ -567,11 +568,6 @@ func oppositeAsciiCase(int b) -> int {
     } else {
         return b
     }
-}
-
-func freqRank(int b) -> int {
-    # FIXME: Write this & have it not break @ runtime
-    # return BYTE_FREQUENCIES[b]
 }
 
 func max(int a, int b) -> int {
