@@ -102,7 +102,7 @@ public final class ForConverter extends LoopConverter {
                         node, valueType.name(), iteratorType.name());
             }
             info.checkDefinition(iteratedName, typedVar);
-            info.addVariable(iteratedName, iteratorType, typedVar);
+            info.addVariable(iteratedName, iteratorType, typedVar.getVariable());
         }
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
