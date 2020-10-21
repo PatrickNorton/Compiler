@@ -18,10 +18,12 @@ public final class BodyConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        info.addStackFrame();
         List<Byte> bytes = new ArrayList<>();
         for (var stmt : node) {
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt, info));
         }
+        info.removeStackFrame();
         return bytes;
     }
 }
