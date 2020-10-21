@@ -75,14 +75,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @NotNull
     public Pair<TypeObject, Integer> parseHeader() {
         if (node.getGenerics().length == 0) {
-            var argInfo = ArgumentInfo.of(node.getArgs(), info);
-            var returns = info.typesOf(node.getRetval());
-            var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-            var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
-            var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, argInfo, trueRet);
-            var func = new Function(node, fnInfo, new ArrayList<>());
-            int index = info.addFunction(func);
-            return Pair.of(new FunctionInfoType(fnInfo), index);
+            return innerHeader();
         } else {
             var generics = GenericInfo.parse(info, node.getGenerics());
             Map<String, TypeObject> genericNames = new HashMap<>(generics.size());
@@ -90,16 +83,21 @@ public final class FunctionDefinitionConverter implements BaseConverter {
                 genericNames.put(generic.baseName(), generic);
             }
             info.addLocalTypes(genericNames);
-            var argInfo = ArgumentInfo.of(node.getArgs(), info);
-            var returns = info.typesOf(node.getRetval());
-            var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-            var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
-            var fnInfo = new FunctionInfo(node.getName().getName(), argInfo, trueRet);
-            var func = new Function(node, fnInfo, new ArrayList<>());
-            int index = info.addFunction(func);
+            var result = innerHeader();
             info.removeLocalTypes();
-            return Pair.of(new FunctionInfoType(fnInfo), index);
+            return result;
         }
+    }
+
+    private Pair<TypeObject, Integer> innerHeader() {
+        var argInfo = ArgumentInfo.of(node.getArgs(), info);
+        var returns = info.typesOf(node.getRetval());
+        var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
+        var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
+        var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, argInfo, trueRet);
+        var func = new Function(node, fnInfo, new ArrayList<>());
+        int index = info.addFunction(func);
+        return Pair.of(new FunctionInfoType(fnInfo), index);
     }
 
     @NotNull
