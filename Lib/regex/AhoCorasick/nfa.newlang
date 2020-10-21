@@ -382,11 +382,11 @@ class Compiler {
                 if next != FAIL_ID {
                     prev = next
                 } else {
-                    var next = self.addState(depth + 1)
+                    self.addState(depth + 1)
                     self.nfa.stateMut(prev).setNextState(b, next)
                     if self.builder.asciiCaseInsensitive {
-                        var b = oppositeAsciiCase(b)
-                        self.nfa.stateSut(prev).setNextState(b, next)
+                        var b2 = oppositeAsciiCase(b)
+                        self.nfa.stateSut(prev).setNextState(b2, next)
                     }
                     prev = next
                 }
