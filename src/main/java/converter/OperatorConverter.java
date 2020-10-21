@@ -8,6 +8,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -114,7 +115,42 @@ public abstract class OperatorConverter implements TestConverter {
         );
     }
 
-    protected static Optional<BigInteger[]> allInts(CompilerInfo info, ArgumentNode[] args) {
+    protected static List<Byte> loadConstant(CompilerInfo info, LangConstant constant) {
+        List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
+        return bytes;
+    }
+
+    protected static Optional<LangConstant> defaultConstant(
+            OperatorTypeNode op, CompilerInfo info, ArgumentNode[] args
+    ) {
+        var constants = allConsts(info, args);
+        if (constants.isEmpty()) {
+            return Optional.empty();
+        }
+        var consts = constants.orElseThrow();
+        if (consts[0] instanceof StringConstant) {
+            return StrArithmetic.computeConst(op, consts);
+        } else {
+            return allInts(info, args).flatMap(values -> IntArithmetic.computeConst(op, values));
+        }
+    }
+
+    private static Optional<LangConstant[]> allConsts(CompilerInfo info, ArgumentNode[] args) {
+        LangConstant[] result = new LangConstant[args.length];
+        for (int i = 0; i < args.length; i++) {
+            var constant = TestConverter.constantReturn(args[i].getArgument(), info, 1);
+            if (constant.isEmpty()) {
+                return Optional.empty();
+            } else {
+                result[i] = constant.orElseThrow();
+            }
+        }
+        return Optional.of(result);
+    }
+
+    private static Optional<BigInteger[]> allInts(CompilerInfo info, ArgumentNode[] args) {
         BigInteger[] result = new BigInteger[args.length];
         for (int i = 0; i < args.length; i++) {
             var constant = TestConverter.constantReturn(args[i].getArgument(), info, 1);

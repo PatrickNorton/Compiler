@@ -36,7 +36,7 @@ public final class IsConverter extends OperatorConverter {
     @Override
     public Optional<LangConstant> constantReturn() {
         var op = isType ? OperatorTypeNode.IS : OperatorTypeNode.IS_NOT;
-        return allInts(info, operands).flatMap(values -> IntArithmetic.computeConst(op, values));
+        return defaultConstant(op, info, operands);
     }
 
     @Override
@@ -123,10 +123,7 @@ public final class IsConverter extends OperatorConverter {
     private List<Byte> getConstant() {
         var constant = constantReturn();
         if (constant.isPresent()) {
-            List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
-            return bytes;
+            return loadConstant(info, constant.orElseThrow());
         }
         return null;
     }

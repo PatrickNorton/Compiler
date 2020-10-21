@@ -64,6 +64,10 @@ public final class InConverter extends OperatorConverter {
         if (args.length != 2) {
             throw CompilerException.format("Expected 2 arguments for 'in' operator, got %d", lineInfo, args.length);
         }
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            return loadConstant(info, constant.orElseThrow());
+        }
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
         bytes.addAll(TestConverter.bytes(start + bytes.size(), args[1].getArgument(), info, 1));
         bytes.add(Bytecode.SWAP_2.value);

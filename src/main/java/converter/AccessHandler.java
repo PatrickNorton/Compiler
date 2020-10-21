@@ -29,7 +29,9 @@ public final class AccessHandler {
      * @return The security access level of the type
      */
     public AccessLevel accessLevel(@NotNull TypeObject obj) {
-        var base = new BaseType(obj);
+        var base = obj instanceof TypeTypeObject
+                ? new BaseType(((TypeTypeObject) obj).representedType())
+                : new BaseType(obj);
         if (definedInFile.contains(base)) {  // FIXME: Protected & file access
             return classesWithAccess.contains(base) ? AccessLevel.PRIVATE : AccessLevel.FILE;
         }
