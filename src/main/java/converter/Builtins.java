@@ -407,6 +407,21 @@ public final class Builtins {
     }
 
     static {
+        var boolNewInfo = MethodInfo.of(ArgumentInfo.of(OBJECT));
+        var boolBoolInfo = MethodInfo.of(BOOL);
+
+        var boolMap = Map.of(
+                OpSpTypeNode.NEW, boolNewInfo,
+                OpSpTypeNode.BOOL, boolBoolInfo
+        );
+        BOOL.setOperators(boolMap);
+
+        BOOL.isConstClass();
+        BOOL.seal();
+
+    }
+
+    static {
         var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERABLE_PARAM));
 
         ITERABLE.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
@@ -427,9 +442,6 @@ public final class Builtins {
     static {  // seal everything else
         DECIMAL.isConstClass();
         DECIMAL.seal();
-
-        BOOL.isConstClass();
-        BOOL.seal();
 
         THROWS.isConstClass();
         THROWS.seal();
