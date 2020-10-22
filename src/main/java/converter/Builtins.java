@@ -306,23 +306,25 @@ public final class Builtins {
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
         var insertInfo = new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM));
         var popInfo = new FunctionInfo(TypeObject.optional(LIST_PARAM));
+        var popFirstInfo = new FunctionInfo(TypeObject.optional(LIST_PARAM));
         var reverseInfo = new FunctionInfo();
         var countInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), INT);
         var clearInfo = new FunctionInfo();
         var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
         var addAllInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(LIST_PARAM)));
         var indexOfInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM),TypeObject.optional(INT));
-        var listAttrs = Map.of(
-                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "get", new AttributeInfo(AccessLevel.PUBLIC, getInfo.toCallable()),
-                "insert", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, insertInfo.toCallable()),
-                "pop", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, popInfo.toCallable()),
-                "reverse", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, reverseInfo.toCallable()),
-                "count", new AttributeInfo(AccessLevel.PUBLIC, countInfo.toCallable()),
-                "clear", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, clearInfo.toCallable()),
-                "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexOfInfo.toCallable()),
-                "add", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, addInfo.toCallable()),
-                "addAll", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, addAllInfo.toCallable())
+        var listAttrs = Map.ofEntries(
+                Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
+                Map.entry("get", AttributeInfo.method(getInfo)),
+                Map.entry("insert", AttributeInfo.mutMethod(insertInfo)),
+                Map.entry("pop", AttributeInfo.mutMethod(popInfo)),
+                Map.entry("reverse", AttributeInfo.method(reverseInfo)),
+                Map.entry("count", AttributeInfo.method(countInfo)),
+                Map.entry("clear", AttributeInfo.mutMethod(clearInfo)),
+                Map.entry("indexOf", AttributeInfo.method(indexOfInfo)),
+                Map.entry("add", AttributeInfo.mutMethod(addInfo)),
+                Map.entry("addAll", AttributeInfo.mutMethod(addAllInfo)),
+                Map.entry("popFirst", AttributeInfo.mutMethod(popFirstInfo))
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();

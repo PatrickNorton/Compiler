@@ -32,6 +32,14 @@ public final class AttributeInfo implements Lined, IntoAttrInfo {
         this.lineInfo = lineInfo;
     }
 
+    public static AttributeInfo method(FunctionInfo info) {
+        return new AttributeInfo(AccessLevel.PUBLIC, MutableType.STANDARD, info.toCallable());
+    }
+
+    public static AttributeInfo mutMethod(FunctionInfo info) {
+        return new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, info.toCallable());
+    }
+
     public AccessLevel getAccessLevel() {
         return accessLevel;
     }
