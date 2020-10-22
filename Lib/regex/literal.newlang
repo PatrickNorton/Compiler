@@ -1,4 +1,3 @@
-
 from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher
 from .hir import Literal, Literals
 
@@ -17,8 +16,8 @@ class LiteralSearcher {
                 case Matcher.Bytes as sset => sset.dense.length
                 case Matcher.FreqyPacked => 1
                 case Matcher.BoyerMoore => 1
-                case Matcher.AC as pair => pair.0.patternCount
-                case Matcher.Packed as pair => pair.0.length
+                case Matcher.AC as pair => pair.0.patternCount()
+                case Matcher.Packed as pair => pair.1.length
             }
         }
     }
@@ -32,7 +31,7 @@ class LiteralSearcher {
     }
 
     public static method empty() -> mut cls {
-        return LiteralSearcher(Literals.empty(), Matcher.Empty())
+        return LiteralSearcher(Literals(), Matcher.Empty())
     }
 
     public static method prefixes(Literals lits) -> mut cls {
@@ -66,12 +65,12 @@ class LiteralSearcher {
             }
             case Matcher.AC as pair {
                 for var literal in pair.1 {
-                    yield literal.bytes
+                    yield literal.value
                 }
             }
             case Matcher.Packed as pair {
                 for var literal in pair.1 {
-                    yield literal.bytes
+                    yield literal.value
                 }
             }
         }
@@ -106,14 +105,14 @@ class LiteralSearcher {
                 }
             }
             case Matcher.AC as pair {
-                if pair.first.find(haystack)? as m {
+                if pair.0.find(haystack)? as m {
                     return (m.start, m.end)
                 } else {
                     return null
                 }
             }
             case Matcher.Packed as pair {
-                if pair.first.find(haystack)? as m {
+                if pair.0.find(haystack)? as m {
                     return (m.start, m.end)
                 } else {
                     return null
@@ -125,7 +124,7 @@ class LiteralSearcher {
     public method findStart(bytes haystack) -> tuple[int, int]? {
         for var lit in self {
             continue if lit.length > haystack.length
-            return tuple.of(0, lit.length) if lit == haystack[0:lit.length]
+            return (0, lit.length) if lit == haystack[0:lit.length]
         }
         return null
     }
@@ -349,6 +348,12 @@ class BoyerMooreSearch {
         self.guard, self.guardReverseIdx = cls.selectGuard(pattern)
         self.skipTable = cls.compileSkipTable(pattern)
         self.md2Shift = cls.compileMd2Shift(pattern)
+    }
+
+    public property int length {
+        get {
+            return self.pattern.length
+        }
     }
 
     public method find(bytes haystack) -> int? {
