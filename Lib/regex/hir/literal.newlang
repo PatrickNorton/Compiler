@@ -101,7 +101,7 @@ class Literals {
         final var new = self.toEmpty()
         while old {
             var oldPop = old.pop()
-            mref var candidate = Literal(oldPop.v[:], oldPop.cut)
+            mref var candidate = Literal(oldPop.value[:], oldPop.cut)
             continue if not candidate
             if new.lits {
                 new.lits.push(candidate)
@@ -110,20 +110,20 @@ class Literals {
             for int i, var lit2 in enumerate(new.lits) {
                 continue if not lit2
                 if candidate == lit2 {
-                    new.lits[i] = Literal(lit2.v, true)
+                    new.lits[i] = Literal(lit2.value, true)
                     continue # 2  FIXME: Should be 'continue 2', but that is broken atm
                 }
                 if candidate.length < lit2.length {
                     if position(candidate, lit2)? as i {
-                        candidate = Literal(candidate.v, true)
-                        var lit3 = Literal(lit2.v[:i], true)
+                        candidate = Literal(candidate.value, true)
+                        var lit3 = Literal(lit2.value[:i], true)
                         old.add(lit3)
                         new.lits[i] = Literal([], lit2.cut)
                     }
                 } else {
                     if position(lit2, candidate)? as i {
-                        new.lits[i] = Literal(lit2.v, true)
-                        mut var newCandidate = Literal(candidate.v[:i], true)
+                        new.lits[i] = Literal(lit2.value, true)
+                        mut var newCandidate = Literal(candidate.value[:i], true)
                         old.add(newCandidate)
                         candidate = Literal([], candidate.cut)
                     }
@@ -199,7 +199,7 @@ class Literals {
         }
         for var litsLit in lits.literals() {
             for var selfLit in base {
-                self.lits.push(Literal(selfLit.v + litsLit.v, litsLit.cut))
+                self.lits.push(Literal(selfLit.value + litsLit.value, litsLit.cut))
             }
         }
         return true
@@ -207,6 +207,6 @@ class Literals {
 }
 
 const class Literal {
-    bytes v
+    public bytes value
     bool cut
 }
