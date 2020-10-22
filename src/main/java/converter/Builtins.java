@@ -202,7 +202,7 @@ public final class Builtins {
         STR.setOperators(strMap);
         var fromCharsInfo = new FunctionInfo(ArgumentInfo.of(LIST.generify(CHAR)), STR);
         var staticStrMap = Map.of(
-                "fromChars", new AttributeInfo(AccessLevel.PUBLIC, fromCharsInfo.toCallable())
+                "fromChars", AttributeInfo.method(fromCharsInfo)
         );
         STR.setStaticAttributes(staticStrMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
@@ -213,13 +213,13 @@ public final class Builtins {
         var strAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR)),
-                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
-                "startsWith", new AttributeInfo(AccessLevel.PUBLIC, startsInfo.toCallable()),
-                "endsWith", new AttributeInfo(AccessLevel.PUBLIC, startsInfo.toCallable()),
-                "split", new AttributeInfo(AccessLevel.PUBLIC, splitInfo.toCallable()),
-                "splitLines", new AttributeInfo(AccessLevel.PUBLIC, splitLinesInfo.toCallable()),
-                "upper", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable()),
-                "lower", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable())
+                "join", AttributeInfo.method(joinInfo),
+                "startsWith", AttributeInfo.method(startsInfo),
+                "endsWith", AttributeInfo.method(startsInfo),
+                "split", AttributeInfo.method(splitInfo),
+                "splitLines", AttributeInfo.method(splitLinesInfo),
+                "upper", AttributeInfo.method(upperLowerInfo),
+                "lower", AttributeInfo.method(upperLowerInfo)
         );
         STR.setAttributes(strAttrs);
         STR.seal();
@@ -242,9 +242,9 @@ public final class Builtins {
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
-                "encode", new AttributeInfo(AccessLevel.PUBLIC, encodeInfo.toCallable()),
-                "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexInfo.toCallable())
+                "join", AttributeInfo.method(joinInfo),
+                "encode", AttributeInfo.method(encodeInfo),
+                "indexOf", AttributeInfo.method(indexInfo)
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();
@@ -275,10 +275,7 @@ public final class Builtins {
     static {  // Set slice operators
         SLICE.isConstClass();
         var endInfo = new AttributeInfo(AccessLevel.PUBLIC, TypeObject.optional(INT));
-        var rangeInfo = new AttributeInfo(
-                AccessLevel.PUBLIC,
-                new FunctionInfo(ArgumentInfo.of(INT), RANGE).toCallable()
-        );
+        var rangeInfo = AttributeInfo.method(new FunctionInfo(ArgumentInfo.of(INT), RANGE));
         var sliceMap = Map.of(
                 "start", endInfo,
                 "stop", endInfo,
@@ -373,7 +370,7 @@ public final class Builtins {
         DICT.setOperators(dictMap);
         var dictAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "get", new AttributeInfo(AccessLevel.PUBLIC, dictGetMInfo.toCallable())
+                "get", AttributeInfo.method(dictGetMInfo)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
