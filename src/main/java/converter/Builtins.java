@@ -180,7 +180,7 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.GREATER_THAN, intCompInfo),
                 Map.entry(OpSpTypeNode.GREATER_EQUAL, intCompInfo),
 
-                Map.entry(OpSpTypeNode.NEW, MethodInfo.of(OBJECT)),
+                Map.entry(OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))),
                 Map.entry(OpSpTypeNode.UNARY_MINUS, intUopInfo)
         );
 
@@ -202,7 +202,7 @@ public final class Builtins {
         STR.setOperators(strMap);
         var fromCharsInfo = new FunctionInfo(ArgumentInfo.of(LIST.generify(CHAR)), STR);
         var staticStrMap = Map.of(
-                "fromChars", new AttributeInfo(AccessLevel.PUBLIC, fromCharsInfo.toCallable())
+                "fromChars", AttributeInfo.method(fromCharsInfo)
         );
         STR.setStaticAttributes(staticStrMap);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
@@ -213,13 +213,13 @@ public final class Builtins {
         var strAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR)),
-                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
-                "startsWith", new AttributeInfo(AccessLevel.PUBLIC, startsInfo.toCallable()),
-                "endsWith", new AttributeInfo(AccessLevel.PUBLIC, startsInfo.toCallable()),
-                "split", new AttributeInfo(AccessLevel.PUBLIC, splitInfo.toCallable()),
-                "splitLines", new AttributeInfo(AccessLevel.PUBLIC, splitLinesInfo.toCallable()),
-                "upper", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable()),
-                "lower", new AttributeInfo(AccessLevel.PUBLIC, upperLowerInfo.toCallable())
+                "join", AttributeInfo.method(joinInfo),
+                "startsWith", AttributeInfo.method(startsInfo),
+                "endsWith", AttributeInfo.method(startsInfo),
+                "split", AttributeInfo.method(splitInfo),
+                "splitLines", AttributeInfo.method(splitLinesInfo),
+                "upper", AttributeInfo.method(upperLowerInfo),
+                "lower", AttributeInfo.method(upperLowerInfo)
         );
         STR.setAttributes(strAttrs);
         STR.seal();
@@ -242,9 +242,9 @@ public final class Builtins {
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "join", new AttributeInfo(AccessLevel.PUBLIC, joinInfo.toCallable()),
-                "encode", new AttributeInfo(AccessLevel.PUBLIC, encodeInfo.toCallable()),
-                "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexInfo.toCallable())
+                "join", AttributeInfo.method(joinInfo),
+                "encode", AttributeInfo.method(encodeInfo),
+                "indexOf", AttributeInfo.method(indexInfo)
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();
@@ -275,10 +275,7 @@ public final class Builtins {
     static {  // Set slice operators
         SLICE.isConstClass();
         var endInfo = new AttributeInfo(AccessLevel.PUBLIC, TypeObject.optional(INT));
-        var rangeInfo = new AttributeInfo(
-                AccessLevel.PUBLIC,
-                new FunctionInfo(ArgumentInfo.of(INT), RANGE).toCallable()
-        );
+        var rangeInfo = AttributeInfo.method(new FunctionInfo(ArgumentInfo.of(INT), RANGE));
         var sliceMap = Map.of(
                 "start", endInfo,
                 "stop", endInfo,
@@ -306,23 +303,25 @@ public final class Builtins {
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
         var insertInfo = new FunctionInfo(ArgumentInfo.of(INT, LIST_PARAM));
         var popInfo = new FunctionInfo(TypeObject.optional(LIST_PARAM));
+        var popFirstInfo = new FunctionInfo(TypeObject.optional(LIST_PARAM));
         var reverseInfo = new FunctionInfo();
         var countInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), INT);
         var clearInfo = new FunctionInfo();
         var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
         var addAllInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(LIST_PARAM)));
         var indexOfInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM),TypeObject.optional(INT));
-        var listAttrs = Map.of(
-                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "get", new AttributeInfo(AccessLevel.PUBLIC, getInfo.toCallable()),
-                "insert", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, insertInfo.toCallable()),
-                "pop", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, popInfo.toCallable()),
-                "reverse", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, reverseInfo.toCallable()),
-                "count", new AttributeInfo(AccessLevel.PUBLIC, countInfo.toCallable()),
-                "clear", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, clearInfo.toCallable()),
-                "indexOf", new AttributeInfo(AccessLevel.PUBLIC, indexOfInfo.toCallable()),
-                "add", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, addInfo.toCallable()),
-                "addAll", new AttributeInfo(AccessLevel.PUBLIC, MutableType.MUT_METHOD, addAllInfo.toCallable())
+        var listAttrs = Map.ofEntries(
+                Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
+                Map.entry("get", AttributeInfo.method(getInfo)),
+                Map.entry("insert", AttributeInfo.mutMethod(insertInfo)),
+                Map.entry("pop", AttributeInfo.mutMethod(popInfo)),
+                Map.entry("reverse", AttributeInfo.method(reverseInfo)),
+                Map.entry("count", AttributeInfo.method(countInfo)),
+                Map.entry("clear", AttributeInfo.mutMethod(clearInfo)),
+                Map.entry("indexOf", AttributeInfo.method(indexOfInfo)),
+                Map.entry("add", AttributeInfo.mutMethod(addInfo)),
+                Map.entry("addAll", AttributeInfo.mutMethod(addAllInfo)),
+                Map.entry("popFirst", AttributeInfo.mutMethod(popFirstInfo))
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
@@ -371,7 +370,7 @@ public final class Builtins {
         DICT.setOperators(dictMap);
         var dictAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "get", new AttributeInfo(AccessLevel.PUBLIC, dictGetMInfo.toCallable())
+                "get", AttributeInfo.method(dictGetMInfo)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
