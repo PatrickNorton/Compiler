@@ -5,7 +5,7 @@ from .builder import RegexOptions
 from .cache import Cached
 from .compile import Compiler
 from .dfa import canExec, Result, Fsm
-from .hir import Hir, Literal, Literals, HirKind
+from .hir import Hir, Literals, HirKind
 from .inputs import ByteInput, CharInput
 from .literal import LiteralSearcher
 from .parser import ParserBuilder
@@ -14,6 +14,7 @@ from .utf8 import nextUtf8
 
 from .backtrack import Cache as BacktrackCache
 from .dfa import Cache as DfaCache
+from .hir import HirLiteral as Literal
 from .pikevm import Cache, Fsm as PikeVMCache, PikeFsm
 
 export Exec, ProgramCache, ExecBuilder

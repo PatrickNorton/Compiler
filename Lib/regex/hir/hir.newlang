@@ -1,7 +1,7 @@
 from .interval import IntervalSet, Interval
 from .unicode import simpleFold
 
-export Hir, HirKind, Literal, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group
+export Hir, HirKind, HirLiteral, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group
 export Repetition, Anchor, WordBoundary, RepetitionKind, RepetitionRange, Class, GroupKind
 
 class Hir {
@@ -29,7 +29,7 @@ class Hir {
         return Hir(HirKind.Empty(), info)
     }
 
-    public static method literal(Literal lit) -> Hir {
+    public static method literal(HirLiteral lit) -> Hir {
         if lit.Byte? as b {
             assert (b > 0x7F)
         }
@@ -332,7 +332,7 @@ class Hir {
 
 union HirKind {
     null Empty
-    Literal Literal
+    HirLiteral Literal
     Class Class
     Anchor Anchor
     WordBoundary WordBoundary
@@ -350,7 +350,7 @@ union HirKind {
     }
 }
 
-union Literal {
+union HirLiteral {
     char Unicode
     int Byte
 
