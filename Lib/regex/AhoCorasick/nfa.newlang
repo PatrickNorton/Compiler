@@ -73,6 +73,13 @@ class NFA from Automaton {
         states[idVal] = s
     }
 
+    method setFail(int idVal, int fail) {
+        # FIXME: Should be using stateMut when it becomes possible
+        mut var newState = self.state(idVal).clone()
+        newState.fail = fail
+        self.setState(idVal, newState)
+    }
+
     method start() -> State {
         return self.state(self.startId)
     }
@@ -206,7 +213,7 @@ class State {
         return bool(self.matches)
     }
 
-    private method getLongestMatchlen() -> int? {
+    method getLongestMatchLen() -> int? {
         return self.matches.get(0)?.1
     }
 
@@ -443,10 +450,7 @@ class Compiler {
                     fail = self.nfa.state(fail).fail
                 }
                 fail = self.nfa.state(fail).nextState(b)
-                # FIXME: Should be using stateMut when it becomes possible
-                mut var newState = self.nfa.state(next).clone()
-                newState.fail = fail
-                self.nfa.setState(next, newState)
+                self.nfa.setFail(next, fail)
                 self.nfa.copyMatches(fail, next)
             }
             # If the start state is a match state, then this automaton can
@@ -474,12 +478,12 @@ class Compiler {
         # out of the start state. We handle the start state specially because
         # we only want to follow non-self transitions. If we followed self
         # transitions, then this would never terminate.
-        final Deque[QueuedState] queue = VecDeque()
+        final list[QueuedState] queue = []
         mut var seen = self.queuedSet()
         var start = QueuedState.start(self.nfa)
         for var b in [0:256] {
-            var nextId = self.nfa.start().next_state(b)
-            if nextId != startId {
+            var nextId = self.nfa.start().nextState(b)
+            if nextId != start.idVal {
                 var next = start.nextQueuedState(self.nfa, nextId)
                 if nextId != start.idVal {
                     queue.add(next)
@@ -494,15 +498,14 @@ class Compiler {
                 # N.B. This is a special case of the more general handling
                 # found below.
                 if self.nfa.state(nextId).isMatch() {
-                    self.nfa.stateMut(nextId).fail = deadId()
+                    self.nfa.setFail(nextId, DEAD_ID)
                 }
             }
         }
-        while queue.pop_front()? as item {
+        while queue.popFirst()? as item {
             mut var anyTrans = false
             for var pair in self.nfa.iterTransitionsMut(item.idVal) {
-                var b = pair.first
-                var nextId = pair.second
+                var b, var nextId = *pair
                 anyTrans = true
 
                 # Queue up the next state.
@@ -514,7 +517,7 @@ class Compiler {
 
                 # Find the failure state for next. Same as standard.
                 mut var fail = self.nfa.state(item.idVal).fail
-                while self.nfa.state(fail).nextState(b) == failId() {
+                while self.nfa.state(fail).nextState(b) == FAIL_ID {
                     fail = self.nfa.state(fail).fail
                 }
                 fail = self.nfa.state(fail).nextState(b)
@@ -556,19 +559,19 @@ class Compiler {
                     var failDepth = self.nfa.state(fail).depth
                     var nextDepth = self.nfa.state(next.idVal).depth
                     if nextDepth - matchDepth + 1 > failDepth {
-                        self.nfa.stateMut(next.idVal).fail = deadId()
+                        self.nfa.setFail(next.idVal, DEAD_ID)
                         continue
                     }
                     assert start.idVal != self.nfa.state(next.idVal).fail
                 }
-                self.nfa.stateMut(next.idVal).fail = fail
+                self.nfa.setFail(next.idVal, fail)
                 self.nfa.copyMatches(fail, next.idVal)
             }
             # If there are no transitions for this state and if it's a match
             # state, then we must set its failure transition to the dead
             # state since we never want it to restart the search.
             if not anyTrans and self.nfa.state(item.idVal).isMatch() {
-                self.nfa.stateMut(item.idVal).fail = deadId()
+                self.nfa.setFail(item.idVal, DEAD_ID)
             }
             # We don't need to copy empty matches from the start state here
             # because that's only necessary for overlapping matches and
@@ -586,16 +589,16 @@ class Compiler {
 
     method addStartStateLoop() {
         var startId = self.nfa.startId
-        var start = self.nfa.startMut()
+        var start = self.nfa.start()
         for var b in [0:256] {
-            if start.nextState(b) == failId() {
+            if start.nextState(b) == FAIL_ID {
                 start.setNextState(b, startId)
             }
         }
     }
 
     method addState(int depth) {
-        if depth < self.builder.denseDepth {
+        if depth < self.builder.denseDepth_ {
             self.nfa.addDenseState(depth)
         } else {
             self.nfa.addSparseState(depth)
@@ -603,21 +606,29 @@ class Compiler {
     }
 
     method matchKind() -> MatchKind {
-        return self.builder.matchKind
+        return self.builder.matchKind_
     }
 }
 
 class QueuedState {
-    int idNum
+    int idVal
     int? matchAtDepth
+
+    public operator new(
+        int idVal,
+        int? matchAtDepth,
+    ) {
+        self.idVal = idVal
+        self.matchAtDepth = matchAtDepth
+    }
 
     static method start(NFA nfa) -> QueuedState {
         var matchAtDepth = 0 if nfa.start().isMatch() else null
         return cls(nfa.startId, matchAtDepth)
     }
 
-    method next_queued_state(NFA nfa, int idVal) -> QueuedState {
-        let matchAtDepth = self.nextMatchAtDepth(nfa, idVal)
+    method nextQueuedState(NFA nfa, int idVal) -> QueuedState {
+        var matchAtDepth = self.nextMatchAtDepth(nfa, idVal)
         return cls(idVal, matchAtDepth)
     }
 
@@ -643,11 +654,14 @@ class QueuedSet {
     }
 
     static method inert() -> mut cls {
-        return cls(null)
+        set[int]? i = null  # FIXME
+        return cls(i)
     }
 
     static method active() -> mut cls {
-        return cls({})
+        set[int] i = {}  # FIXME
+        set[int]? j = i  # DOUBLE FIXME
+        return cls(j)
     }
 
     method insert(int stateId) {
