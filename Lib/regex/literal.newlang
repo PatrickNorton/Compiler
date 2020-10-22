@@ -17,8 +17,8 @@ class LiteralSearcher {
                 case Matcher.Bytes as sset => sset.dense.length
                 case Matcher.FreqyPacked => 1
                 case Matcher.BoyerMoore => 1
-                case Matcher.AC as pair => pair.first.patternCount
-                case Matcher.Packed as pair => pair.first.length
+                case Matcher.AC as pair => pair.0.patternCount
+                case Matcher.Packed as pair => pair.0.length
             }
         }
     }
@@ -26,8 +26,8 @@ class LiteralSearcher {
     public operator new (Literals lits, Matcher matcher) {
         var complete = lits.allComplete()
         self.complete = complete
-        self.lcp = FreqyPacked(list(lits.longestCommonPrefix()))
-        self.lcs = FreqyPacked(list(lits.longestCommonSuffix()))
+        self.lcp = FreqyPacked(lits.longestCommonPrefix())
+        self.lcs = FreqyPacked(lits.longestCommonSuffix())
         self.matcher = matcher
     }
 
@@ -61,16 +61,16 @@ class LiteralSearcher {
             case Matcher.FreqyPacked as s {
                 yield s.pat
             }
-            case Matche.BoyerMoore as s {
+            case Matcher.BoyerMoore as s {
                 yield s.pattern
             }
             case Matcher.AC as pair {
-                for var literal in pair.second {
+                for var literal in pair.1 {
                     yield literal.bytes
                 }
             }
             case Matcher.Packed as pair {
-                for var literal in pair.second {
+                for var literal in pair.1 {
                     yield literal.bytes
                 }
             }
@@ -192,7 +192,7 @@ union Matcher {
 
 class SingleByteSet {
     private final list[bool] sparse
-    private final bytes dense
+    final bytes dense
     private mut bool complete
     private mut bool allAscii
 
@@ -260,6 +260,48 @@ class FreqyPacked {
     int rare1i
     int rare2
     int rare2i
+
+    public operator new(bytes pat) {
+        if not pat {
+            self.pat = pat,
+            self.charLen = 0
+            self.rare1 = 0
+            self.rare1i = 0
+            self.rare2 = 0
+            self.rare2i = 0
+            return
+        }
+
+        # Find the rarest two bytes. Try to make them distinct (but it's not
+        # required).
+        mut var rare1 = pat[0]
+        mut var rare2 = pat[0]
+        for var b in pat[1:] {
+            if freqRank(b) < freqRank(rare1) {
+                rare1 = b
+            }
+        }
+        for var b in pat {
+            if rare1 == rare2 {
+                rare2 = b
+            } elif b != rare1 and freqRank(b) < freqRank(rare2) {
+                rare2 = b
+            }
+        }
+
+        # And find the offsets of their last occurrences.
+        var rare1i = [i for int i, var b in enumerate(pat) if b == rare1][-1]
+        var rare2i = [i for int i, var b in enumerate(pat) if b == rare2][-1]
+
+        var charLen = charLenLossy(pat)
+
+        self.pat = pat
+        self.charLen = charLen
+        self.rare1 = rare1
+        self.rare1i = rare1i
+        self.rare2 = rare2
+        self.rare2i = rare2i
+    }
 
     public property int length {
         get {
