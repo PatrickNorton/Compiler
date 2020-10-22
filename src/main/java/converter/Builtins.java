@@ -180,7 +180,7 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.GREATER_THAN, intCompInfo),
                 Map.entry(OpSpTypeNode.GREATER_EQUAL, intCompInfo),
 
-                Map.entry(OpSpTypeNode.NEW, MethodInfo.of(OBJECT)),
+                Map.entry(OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))),
                 Map.entry(OpSpTypeNode.UNARY_MINUS, intUopInfo)
         );
 
