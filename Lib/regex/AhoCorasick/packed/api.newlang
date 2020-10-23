@@ -27,7 +27,7 @@ class Config {
         self.forceAvx_ = null
     }
 
-    public method builder() -> Builder {
+    public method builder() -> mut Builder {
         return Builder(self)
     }
 

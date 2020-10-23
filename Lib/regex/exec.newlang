@@ -162,7 +162,7 @@ const class ExecReadOnly {
         if not self.nfa.isAnchoredStart and self.nfa.isAnchoredEnd {
             return MatchType.DfaAnchoredReverse()
         }
-        if self.ro.shouldSuffixScan() {
+        if self.shouldSuffixScan() {
             return MatchType.DfaSuffix()
         }
         return MatchType.Dfa()

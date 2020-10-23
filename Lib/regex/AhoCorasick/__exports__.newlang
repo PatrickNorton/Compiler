@@ -1,4 +1,4 @@
 from .ahocorasick export AhoCorasick, AhoCorasickBuilder, MatchKind
 # from .state_id export StateId
 from .match export Match
-from .packed export Searcher
+from .packed export Config, Searcher

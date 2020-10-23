@@ -130,8 +130,7 @@ class NFA from Automaton {
     }
 
     private mut method copyMatches(int src, int dst) {
-        var pair = (self.states[src], self.states[dst])
-        dst.matches.extend(src.matches)
+        self.states[src].matches.extend(self.states[dst].matches)
     }
 
     private mut method copyEmptyMatches(int dst) {
@@ -374,7 +373,7 @@ class Compiler {
                 # difference in the automaton between the implementations for
                 # leftmost-first and leftmost-longest.
                 sawMatch = sawMatch or self.nfa.state(prev).isMatch()
-                if self.builder.matchKind.isLeftmostFirst() and sawMatch {
+                if self.builder.matchKind_.isLeftmostFirst() and sawMatch {
                     # Skip to the next pattern immediately. This avoids
                     # incorrectly adding a match after this loop terminates.
                     continue # 2 FIXME: Numeric continues
@@ -402,10 +401,10 @@ class Compiler {
                     prev = next
                 } else {
                     self.addState(depth + 1)
-                    self.nfa.stateMut(prev).setNextState(b, next)
+                    self.nfa.state(prev).setNextState(b, next)
                     if self.builder.asciiCaseInsensitive {
                         var b2 = oppositeAsciiCase(b)
-                        self.nfa.stateSut(prev).setNextState(b2, next)
+                        self.nfa.state(prev).setNextState(b2, next)
                     }
                     prev = next
                 }
@@ -413,7 +412,7 @@ class Compiler {
 
             # Once the pattern has been added, log the match in the final
             # state that it reached.
-            self.nfa.stateMut(prev).addMatch(pati, pat.length)
+            self.nfa.state(prev).addMatch(pati, pat.length)
             # ... and hand it to the prefilter builder, if applicable.
             if self.builder.prefilter {
                 self.prefilter.add(pat)
