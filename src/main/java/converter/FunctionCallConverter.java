@@ -155,8 +155,8 @@ public final class FunctionCallConverter implements TestConverter {
                         "Length %d less than length %d", node, returns.length, retCount
                 );
             }
-            TypeObject[] result = new TypeObject[retCount];
-            for (int i = 0; i < retCount; i++) {
+            TypeObject[] result = new TypeObject[retCount == -1 ? returns.length : retCount];
+            for (int i = 0; i < result.length; i++) {
                 result[i] = returns[i].generifyWith(cls, gen);
             }
             return result;
