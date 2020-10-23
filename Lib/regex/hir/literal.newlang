@@ -31,6 +31,12 @@ class Literals {
         return self.lits and all((not l.isEmpty() for var l in self.lits))
     }
 
+    public property list[Literal] literals {
+        get {
+            return self.lits
+        }
+    }
+
     public method minLen() -> int? {
         mut int? min = null
         for var lit in self.lits {
@@ -209,4 +215,14 @@ class Literals {
 const class Literal {
     public bytes value
     bool cut
+
+    public property int length {
+        get {
+            return self.value.length
+        }
+    }
+
+    public method get(int i) -> int? {
+        return self.value.get(i)
+    }
 }

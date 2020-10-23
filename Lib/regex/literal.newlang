@@ -1,4 +1,4 @@
-from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher
+from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher, Config, MatchKind
 from .hir import Literal, Literals
 
 export LiteralSearcher
@@ -159,11 +159,11 @@ union Matcher {
     }
 
     public static method new(Literals lits, SingleByteSet sset) -> cls {
-        return Matcher.Empty if not lits.literals
+        return Matcher.Empty() if not lits.literals
         return Matcher.Bytes(sset) if sset.complete
 
         if lits.literals.length == 1 {
-            var lit = list(lits.literals[0])
+            var lit = lits.literals[0].value
             if BoyerMooreSearch.shouldUse(lit) {
                 return Matcher.BoyerMoore(BoyerMooreSearch(lit))
             } else {
@@ -174,17 +174,16 @@ union Matcher {
         var pats = lits.literals
         var isAhoCorasickFast = sset.dense.length <= 1 and sset.allAscii
         if lits.literals.length <= 100 and not isAhoCorasickFast {
-            mut var builder = Config().matchKind(MatchKind.LeftmostFirst).builder()
+            mut var builder = Config().matchKind(MatchKind.LEFTMOST_FIRST).builder()
             if builder.extend(pats).build()? as s {
                 return Matcher.Packed((s, pats))
             }
         }
 
         var ac = (AhoCorasickBuilder()
-            .matchKind(MatchKind.LeftmostFirst)
-            .dfa(true)
-            .buildWithSize(pats)
-            .unwrap())
+            .matchKind(MatchKind.LEFTMOST_FIRST)
+            .setDfa(true)
+            .build(pats))
         return Matcher.AC((ac, pats))
     }
 }
@@ -197,7 +196,7 @@ class SingleByteSet {
 
     public operator new {
         self.sparse = [false] * 256
-        self.dense = bytes()
+        self.dense = bytes("")
         self.complete = true
         self.allAscii = true
     }
@@ -212,7 +211,8 @@ class SingleByteSet {
                         sset.allAscii = false
                     }
                     sset.dense.add(b)
-                    sset.sparse[b] = true
+                    var sparse = sset.sparse  # FIXME
+                    sparse[b] = true
                 }
             }
         }
@@ -221,7 +221,7 @@ class SingleByteSet {
 
     public static method suffixes(Literals lits) -> cls {
         mut var sset = SingleByteSet()
-        for lit in lits.literals {
+        for var lit in lits.literals {
             sset.complete = sset.complete and lit.length == 1
             if lit.get(-1)? as b {
                 if not sset.sparse[b] {
@@ -237,7 +237,7 @@ class SingleByteSet {
     }
 
     method find(bytes text) -> int? {
-        switch self.dense.length {
+        return switch self.dense.length {
             case 0 => null
             case 1 => text.indexOf(self.dense[0])
             default => self._find(text)
@@ -245,7 +245,7 @@ class SingleByteSet {
     }
 
     private method _find(bytes text) -> int? {
-        for int i, var b in enumerate(haystack) {
+        for int i, var b in enumerate(text) {
             return i if self.sparse[b]
         }
         return null
