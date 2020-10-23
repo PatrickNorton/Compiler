@@ -608,9 +608,11 @@ public final class CompilerInfo {
      * @return The type of the variable
      * @see #classOf(String)
      */
-    public TypeObject getType(String variable) {
+    public Optional<TypeObject> getType(String variable) {
         var info = varInfo(variable);
-        return info.isEmpty() ? Builtins.constantOf(variable).orElseThrow().getType() : info.orElseThrow().getType();
+        return info.isEmpty()
+                ? Builtins.constantOf(variable).map(LangConstant::getType)
+                : info.map(VariableInfo::getType);
     }
 
     /**

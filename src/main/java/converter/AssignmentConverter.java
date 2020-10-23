@@ -123,7 +123,7 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
         var name = variable.getName();
         checkDef(name, variable);
-        var varType = info.getType(name);
+        var varType = info.getType(name).orElseThrow();
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
                 throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
@@ -141,7 +141,7 @@ public final class AssignmentConverter implements BaseConverter {
         var valueType = valueConverter.returnType()[0];
         var name = variable.getName();
         checkDef(name, variable);
-        var varType = info.getType(name);
+        var varType = info.getType(name).orElseThrow();
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
                 if (varType.isSuperclass(valueType.makeMut())) {

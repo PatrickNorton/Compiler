@@ -31,10 +31,9 @@ public final class VariableConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        if (info.varIsUndefined(node.getName())) {
-            throw CompilerException.format("Variable '%s' not defined", node, node.getName());
-        }
-        return new TypeObject[]{info.getType(node.getName())};
+        return new TypeObject[]{info.getType(node.getName()).orElseThrow(
+                () -> CompilerException.format("Variable '%s' not defined", node, node.getName())
+        )};
     }
 
     @NotNull
