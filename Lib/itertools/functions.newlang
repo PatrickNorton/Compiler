@@ -22,25 +22,49 @@ func any(Iterable[Any] values) -> bool {
 
 generic T
 func count(Callable[T, [Any]] predicate = bool, Iterable[T] values, /) -> int {
-    return \+(1 for T i in values if predicate(i))
+    mut int x = 0
+    for T i in values {
+        if predicate(i) {
+            x++
+        }
+    }
+    return x
 }
 
 
 generic T
 func countEqual(T sentinel, Iterable[T] values, /) -> int {
-    return \+(1 for T i in values if i == sentinel)
+    mut int x = 0
+    for T i in values {
+        if sentinel == i {
+            x++
+        }
+    }
+    return x
 }
 
 
 generic T
 func countFalse(Callable[T, [Any]] predicate = bool, Iterable[T] values, /) -> int {
-    return \+(1 for T i in values if not predicate(i))
+    mut int x = 0
+    for T i in values {
+        if not predicate(i) {
+            x++
+        }
+    }
+    return x
 }
 
 
 generic T
 func countNotEqual(T sentinel, Iterable[T] values, /) -> int {
-    return \+(1 for T i in values if i != sentinel)
+    mut int x = 0
+    for T i in values {
+        if i != sentinel {
+            x++
+        }
+    }
+    return x
 }
 
 
