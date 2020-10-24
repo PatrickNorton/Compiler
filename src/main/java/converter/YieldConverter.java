@@ -45,6 +45,7 @@ public final class YieldConverter implements BaseConverter {
     }
 
     private void convertFrom(int start, List<Byte> bytes) {
+        assert node.isFrom();
         var retInfo = info.getFnReturns();
         if (!retInfo.isGenerator()) {
             throw noGeneratorError();
