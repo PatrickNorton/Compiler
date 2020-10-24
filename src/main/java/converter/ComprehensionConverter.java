@@ -111,6 +111,9 @@ public final class ComprehensionConverter implements TestConverter {
         int forJump = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.addAll(Util.shortToBytes((short) 1));
+        if (node.getVariables().length > 1) {
+            throw CompilerTodoError.of("Cannot convert comprehension with more than one variable yet", node);
+        }
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();
