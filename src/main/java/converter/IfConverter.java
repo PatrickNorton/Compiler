@@ -171,4 +171,16 @@ public final class IfConverter implements BaseConverter {
     private int trailingJumpBytes(boolean trailingJump) {
         return trailingJump ? Bytecode.JUMP.size() : 0;
     }
+
+    public static int addJump(int start, List<Byte> bytes, TestNode cond, CompilerInfo info) {
+        if (!cond.isEmpty()) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), cond, info, 1));
+            bytes.add(Bytecode.JUMP_FALSE.value);
+            var jumpPos = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            return jumpPos;
+        } else {
+            return -1;
+        }
+    }
 }

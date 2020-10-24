@@ -19,15 +19,7 @@ public final class ReturnConverter implements BaseConverter {
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        int jumpPos;
-        if (!node.getCond().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start, node.getCond(), info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            jumpPos = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-        } else {
-            jumpPos = -1;
-        }
+        int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);
         var retInfo = info.getFnReturns();
         if (retInfo.notInFunction()) {
             throw CompilerException.of("Cannot return from here", node);
