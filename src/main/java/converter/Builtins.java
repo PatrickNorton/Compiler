@@ -289,6 +289,7 @@ public final class Builtins {
     static {  // Set list operators
         var listGen = LIST.generify(LIST_PARAM);
         var listMap = Map.of(
+                OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(ITERABLE.generify(LIST_PARAM))),
                 OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), LIST_PARAM),
                 OpSpTypeNode.SET_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT, LIST_PARAM)),
                 OpSpTypeNode.DEL_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT)),
@@ -529,6 +530,9 @@ public final class Builtins {
     @Contract("_ -> new")
     public static Optional<LangConstant> constantOf(String name) {
         var builtin = BUILTIN_MAP.get(name);
+        if (builtin == null) {
+            return Optional.empty();
+        }
         var index = TRUE_BUILTINS.indexOf(builtin);
         if (index == -1) {
             return builtin instanceof LangConstant ? Optional.of((LangConstant) builtin) : Optional.empty();

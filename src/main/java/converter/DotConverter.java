@@ -54,15 +54,28 @@ public final class DotConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        var result = TestConverter.returnType(node.getPreDot(), info, 1)[0];
-        for (var dot : node.getPostDots()) {
-            result = dotReturnType(result, dot);
+        var result = TestConverter.returnType(node.getPreDot(), info, 1);
+        for (int i = 0; i < node.getPostDots().length; i++) {
+            var dot = node.getPostDots()[i];
+            if (result.length == 0) {  // Check that the previous one returned a value
+                throw CompilerException.of(
+                        "Dot does not return a value, expected at least 1",
+                        node.getPostDots()[i - 1]
+                );
+            }
+            result = dotReturnType(result[0], dot);
         }
-        return new TypeObject[]{result};
+        if (retCount > result.length) {
+            throw CompilerException.format(
+                    "Expected at least %d returns, but only got %d",
+                    node.getPostDots()[node.getPostDots().length - 1], retCount, result.length
+            );
+        }
+        return Arrays.copyOf(result, retCount);
     }
 
     @NotNull
-    private TypeObject dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         switch (dot.getDotPrefix()) {
             case "":
                 return normalDotReturnType(result, dot);
@@ -76,11 +89,11 @@ public final class DotConverter implements TestConverter {
     }
 
     @NotNull
-    private TypeObject normalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] normalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().isEmpty() || !result.isSuperclass(Builtins.NULL_TYPE);
         var postDot = dot.getPostDot();
         if (postDot instanceof VariableNode) {
-            return result.tryAttrType(postDot, ((VariableNode) postDot).getName(), info);
+            return new TypeObject[]{result.tryAttrType(postDot, ((VariableNode) postDot).getName(), info)};
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
             var attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
@@ -90,23 +103,22 @@ public final class DotConverter implements TestConverter {
                 throw CompilerException.of("Function does not return a value", dot);
             }
             var params = ((FunctionCallNode) postDot).getParameters();
-            var trueRet = FunctionCallConverter.generifyReturns(opInfo, info, params, postDot, retCount);
-            return trueRet[0];
+            return FunctionCallConverter.generifyReturns(opInfo, info, params, postDot, -1);
         } else if (postDot instanceof SpecialOpNameNode) {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
-            return result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable();
+            return new TypeObject[]{result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable()};
         } else if (postDot instanceof IndexNode) {
             var index = (IndexNode) postDot;
             var variable = new DottedVar(dot.getLineInfo(), dot.getDotPrefix(),  (NameNode) index.getVar());
-            var attrType = normalDotReturnType(result, variable);
+            var attrType = normalDotReturnType(result, variable)[0];
             var operator = index.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
-            return attrType.tryOperatorReturnType(node, operator, info)[0];
+            return new TypeObject[]{attrType.tryOperatorReturnType(node, operator, info)[0]};
         } else {
             throw CompilerInternalError.of("Unimplemented post-dot type", dot);
         }
     }
 
-    private TypeObject optionalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] optionalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().equals("?");
         if (!(result instanceof OptionTypeObject)) {
             return normalDotReturnType(result, dot);
@@ -114,18 +126,19 @@ public final class DotConverter implements TestConverter {
         var postDot = dot.getPostDot();
         if (postDot instanceof VariableNode) {
             var retType = result.stripNull().tryAttrType(postDot, ((VariableNode) postDot).getName(), info);
-            return TypeObject.optional(retType);
+            return new TypeObject[]{TypeObject.optional(retType)};
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
             var attrType = result.stripNull().tryAttrType(postDot, ((VariableNode) caller).getName(), info);
-            return TypeObject.optional(attrType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info)[0]);
+            var endType = TypeObject.optional(attrType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info)[0]);
+            return new TypeObject[]{endType};
         } else {
             throw CompilerInternalError.of("Unimplemented post-dot type", dot);
         }
     }
 
     @NotNull
-    private TypeObject nonNullReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] nonNullReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
         var hasNull = result instanceof OptionTypeObject;
         var bangType = hasNull ? result.stripNull() : result;
         return normalDotReturnType(bangType, dot);
@@ -134,8 +147,21 @@ public final class DotConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getPreDot(), info, 1));
-        for (var dot : node.getPostDots()) {
+        var preConverter = TestConverter.of(info, node.getPreDot(), 1);
+        List<Byte> bytes = new ArrayList<>(preConverter.convert(start));
+        TypeObject previous = preConverter.returnType()[0];
+        for (int i = 0; i < node.getPostDots().length; i++) {
+            var dot = node.getPostDots()[i];
+            // Here to check the proper return types exist. Does not check the
+            // last one b/c non-returning values will cause an error even
+            // though they are perfectly valid.
+            if (i != node.getPostDots().length - 1) {
+                var result = dotReturnType(previous, dot);
+                if (result.length == 0) {
+                    throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
+                }
+                previous = result[0];
+            }
             switch (dot.getDotPrefix()) {
                 case "":
                     convertNormal(start, bytes, dot);
