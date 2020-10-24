@@ -520,7 +520,7 @@ public final class CompilerInfo {
      *
      * @param type The type to add
      */
-    public void addType(NameableType type) {
+    public void addType(TypeObject type) {
         typeMap.put(type.name(), type);
     }
 
