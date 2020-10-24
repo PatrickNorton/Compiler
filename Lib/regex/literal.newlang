@@ -1,4 +1,4 @@
-from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher, Config, MatchKind
+from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher, Config, MatchKind, freqRank
 from .hir import Literal, Literals
 
 export LiteralSearcher
@@ -229,7 +229,8 @@ class SingleByteSet {
                         sset.allAscii = false
                     }
                     sset.dense.add(b)
-                    sset.sparse[b] = true
+                    var sparse = sset.sparse  # FIXME
+                    sparse[b] = true
                 }
             }
         }
