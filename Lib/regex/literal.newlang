@@ -1,3 +1,5 @@
+from itertools import all
+
 from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher, Config, MatchKind, freqRank
 from .hir import Literal, Literals
 
@@ -293,7 +295,7 @@ class FreqyPacked {
         var rare1i = [i for int i, var b in enumerate(pat) if b == rare1][-1]
         var rare2i = [i for int i, var b in enumerate(pat) if b == rare2][-1]
 
-        var charLen = charLenLossy(pat)
+        var charLen = str(pat).length
 
         self.pat = pat
         self.charLen = charLen
@@ -312,14 +314,14 @@ class FreqyPacked {
     public method find(bytes haystack) -> int? {
         return null if haystack.length < self.pat.length or not self.pat
         mut int i = self.rare1i
-        while i < self.haystack.length {
+        while i < haystack.length {
             if haystack[i:].indexOf(self.rare1)? as n {
                 i += n
             } else {
                 return null
             }
             var start = i - self.rare1i
-            var end = start + pat.length
+            var end = start + self.pat.length
             return null if end > haystack.length
             var aligned = haystack[start:end]
             if aligned[self.rare2i] == self.rare2 and aligned == self.pat {
@@ -363,7 +365,7 @@ class BoyerMooreSearch {
         var numUnroll = 10
         var shortCircuit = (numUnroll + 2) * self.pattern.length
         if haystack.length < shortCircuit {
-            var backstop = haystack.length - ((NumUnroll + 1) * self.pattern.length)
+            var backstop = haystack.length - ((numUnroll + 1) * self.pattern.length)
             while true {
                 if self.skipLoop(haystack, windowEnd, backstop)? as i {
                     windowEnd = i
@@ -416,4 +418,124 @@ class BoyerMooreSearch {
         }
         return true
     }
+
+    private method skipLoop(
+        bytes haystack,
+        mut int windowEnd,
+        int backstop,
+    ) -> int? {
+        var windowEndSnapshot = windowEnd
+        var skipOf = lambda int we -> int => (
+            self.skipTable[haystack[we]]
+        )
+
+        while true {
+            mut var skip = skipOf(windowEnd)
+            windowEnd += skip
+            skip = skipOf(windowEnd)
+            windowEnd += skip
+            if skip {
+                skip = skipOf(windowEnd)
+                windowEnd += skip
+                skip = skipOf(windowEnd)
+                windowEnd += skip
+                skip = skipOf(windowEnd)
+                windowEnd += skip
+                if skip {
+                    skip = skipOf(windowEnd)
+                    windowEnd += skip
+                    skip = skipOf(windowEnd)
+                    windowEnd += skip
+                    skip = skipOf(windowEnd)
+                    windowEnd += skip
+                    if skip {
+                        skip = skipOf(windowEnd)
+                        windowEnd += skip
+                        skip = skipOf(windowEnd)
+                        windowEnd += skip
+
+                        # If ten iterations did not make at least 16 words
+                        # worth of progress, we just fall back on memchr.
+                        if windowEnd - windowEndSnapshot > 16 * 4 {
+                            # Returning a windowEnd >= backstop will
+                            # immediately break us out of the inner loop in
+                            # `find`.
+                            if windowEnd >= backstop {
+                                return windowEnd
+                            }
+
+                            continue # we made enough progress
+                        } else {
+                            # In case we are already there, and so that
+                            # we will catch the guard char.
+                            windowEnd -= 1 + self.guardReverseIdx
+                            windowEnd = 0 if windowEnd < 0 else windowEnd
+
+                            if haystack[windowEnd:].indexOf(self.guard)? as gIdx {
+                                return windowEnd + gIdx + self.guardReverseIdx
+                            } else {
+                                return null
+                            }
+                        }
+                    }
+                }
+            }
+
+            return windowEnd
+        }
+    }
+
+    static method compileSkipTable(bytes pattern) -> list[int] {
+        mut var tab = [pattern.length] * 256
+
+        for int i, var c in enumerate(pattern) {
+            tab[int(c)] = (pattern.length - 1) - i
+        }
+
+        return tab
+    }
+
+    static method selectGuard(bytes pattern) -> int, int {
+        mut var rarest = pattern[0]
+        mut var rarestRevIdx = pattern.length - 1
+        for int i, var c in enumerate(pattern) {
+            if freqRank(c) < freqRank(rarest) {
+                rarest = c
+                rarestRevIdx = (pattern.length - 1) - i
+            }
+        }
+
+        return rarest, rarestRevIdx
+    }
+
+    static method compileMd2Shift(bytes pattern) -> int {
+        var shiftc = pattern[-1]
+
+        # For a pattern of length 1 we will never apply the
+        # shift rule, so we use a poison value on the principle
+        # that failing fast is a good thing.
+        if pattern.length == 1 {
+            return 0xDEADBEAF
+        }
+
+        mut var i = pattern.length - 2
+        while i > 0 {
+            if pattern[i] == shiftc {
+                return (pattern.length - 1) - i
+            }
+            i--
+        }
+
+        # The skip char never re-occurs in the pattern, so
+        # we can just shift the whole window length.
+        return pattern.length - 1
+    }
+}
+
+func max(int a, int b) -> int {
+    return a if a > b else b
+}
+
+func min(int a, int b) -> int {
+    return a if a < b else b
 }
