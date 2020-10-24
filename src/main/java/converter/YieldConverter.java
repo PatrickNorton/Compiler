@@ -93,12 +93,4 @@ public final class YieldConverter implements BaseConverter {
     private CompilerException noGeneratorError() {
         return CompilerException.of("'yield' is only valid in a generator", node);
     }
-
-    private void checkVarargs() {
-        for (var pair : node.getYielded()) {
-            if (!pair.getValue().isEmpty()) {
-                throw CompilerTodoError.of("Cannot use varargs with yield yet", pair.getKey());
-            }
-        }
-    }
 }
