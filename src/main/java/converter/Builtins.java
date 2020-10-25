@@ -244,7 +244,8 @@ public final class Builtins {
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "join", AttributeInfo.method(joinInfo),
                 "encode", AttributeInfo.method(encodeInfo),
-                "indexOf", AttributeInfo.method(indexInfo)
+                "indexOf", AttributeInfo.method(indexInfo),
+                "lastIndexOf", AttributeInfo.method(indexInfo)
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();
