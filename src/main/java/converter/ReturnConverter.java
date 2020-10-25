@@ -19,15 +19,7 @@ public final class ReturnConverter implements BaseConverter {
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        int jumpPos;
-        if (!node.getCond().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start, node.getCond(), info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            jumpPos = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-        } else {
-            jumpPos = -1;
-        }
+        int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);
         var retInfo = info.getFnReturns();
         if (retInfo.notInFunction()) {
             throw CompilerException.of("Cannot return from here", node);
@@ -36,14 +28,7 @@ public final class ReturnConverter implements BaseConverter {
         }
         var fnReturns = retInfo.currentFnReturns();
         if (fnReturns.length == 0 || retInfo.isGenerator()) {  // Zero-returning functions are easy to deal with
-            if (!node.getReturned().isEmpty()) {
-                throw CompilerException.of(
-                        "Non-empty 'return' statement invalid in function with no return types", node
-                );
-            } else {
-                bytes.add(Bytecode.RETURN.value);
-                bytes.addAll(Util.zeroToBytes());
-            }
+            convertEmpty(bytes);
         } else {
             var retConverter = new ReturnListConverter(node.getReturned(), info, fnReturns, Bytecode.RETURN);
             bytes.addAll(retConverter.convert(start + bytes.size()));
@@ -52,5 +37,16 @@ public final class ReturnConverter implements BaseConverter {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
         }
         return bytes;
+    }
+
+    private void convertEmpty(List<Byte> bytes) {
+        if (!node.getReturned().isEmpty()) {
+            throw CompilerException.of(
+                    "Non-empty 'return' statement invalid in function with no return types", node
+            );
+        } else {
+            bytes.add(Bytecode.RETURN.value);
+            bytes.addAll(Util.zeroToBytes());
+        }
     }
 }

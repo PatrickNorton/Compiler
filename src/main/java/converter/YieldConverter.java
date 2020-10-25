@@ -20,15 +20,7 @@ public final class YieldConverter implements BaseConverter {
     @NotNull
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
-        int jumpPos;
-        if (!node.getCond().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getCond(), info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            jumpPos = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-        } else {
-            jumpPos = -1;
-        }
+        int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);
         if (node.getYielded().isEmpty()) {
             throw CompilerException.of("Empty yield statements are illegal", node);
         } else if (node.isFrom()) {
@@ -45,6 +37,7 @@ public final class YieldConverter implements BaseConverter {
     }
 
     private void convertFrom(int start, List<Byte> bytes) {
+        assert node.isFrom();
         var retInfo = info.getFnReturns();
         if (!retInfo.isGenerator()) {
             throw noGeneratorError();
@@ -91,13 +84,5 @@ public final class YieldConverter implements BaseConverter {
     @NotNull
     private CompilerException noGeneratorError() {
         return CompilerException.of("'yield' is only valid in a generator", node);
-    }
-
-    private void checkVarargs() {
-        for (var pair : node.getYielded()) {
-            if (!pair.getValue().isEmpty()) {
-                throw CompilerTodoError.of("Cannot use varargs with yield yet", pair.getKey());
-            }
-        }
     }
 }

@@ -33,15 +33,7 @@ public final class RaiseConverter implements TestConverter {
         if (!node.getFrom().isEmpty()) {
             throw CompilerTodoError.of("'from' clauses in raise statements not supported yet", node);
         }
-        int condLoc;
-        if (!node.getCond().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getCond(), info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            condLoc = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-        } else {
-            condLoc = -1;
-        }
+        int condLoc = IfConverter.addJump(start, bytes, node.getCond(), info);
         var converter = TestConverter.of(info, node.getRaised(), 1);
         var retType = converter.returnType()[0];
         if (!Builtins.THROWABLE.isSuperclass(retType)) {
