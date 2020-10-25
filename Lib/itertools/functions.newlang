@@ -78,6 +78,15 @@ func first(Callable[T, [Any]] predicate, Iterable[T] values, T fallback) -> T {
 
 
 generic T
+func firstIndex(Callable[T, [Any]] predicate, Iterable[T] values) -> int? {
+    for int i, T value in enumerate(values) {
+        return i if predicate(value)
+    }
+    return null
+}
+
+
+generic T
 func last(Callable[T, [Any]] predicate, Iterable[T] values, T fallback) -> T {
     mut T lastSoFar = fallback
     for T value in values {
@@ -87,3 +96,16 @@ func last(Callable[T, [Any]] predicate, Iterable[T] values, T fallback) -> T {
     }
     return lastSoFar
 }
+
+
+generic T
+func lastIndex(Callable[T, [Any]] predicate, Iterable[T] values) -> int? {
+    mut int? lastSoFar = null
+    for int i, T value in enumerate(values) {
+        if predicate(value) {
+            lastSoFar = i
+        }
+    }
+    return lastSoFar
+}
+

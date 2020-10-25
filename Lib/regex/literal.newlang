@@ -292,8 +292,8 @@ class FreqyPacked {
         }
 
         # And find the offsets of their last occurrences.
-        var rare1i = [i for int i, var b in enumerate(pat) if b == rare1][-1]
-        var rare2i = [i for int i, var b in enumerate(pat) if b == rare2][-1]
+        var rare1i = pat.lastIndexOf(rare1)!!
+        var rare2i = pat.lastIndexOf(rare2)!!
 
         var charLen = str(pat).length
 
