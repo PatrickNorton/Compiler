@@ -27,53 +27,58 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @NotNull
     @Override
     public @Unmodifiable List<Byte> convert(int start) {
+        var name = node.getName().getName();
         var generics = getGenerics();
         var retTypes =  info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(retTypes)} : retTypes;
-        var predefined = info.getFn(node.getName().getName());
+        var predefined = info.getFn(name);
         int index;
         List<Byte> bytes;
         FunctionInfo fnInfo;
         if (predefined.isPresent()) {
             var fn = predefined.orElseThrow();
             fnInfo = fn.getInfo();
-            index = info.fnIndex(node.getName().getName());
+            index = info.fnIndex(name);
             bytes = fn.getBytes();
             if (!bytes.isEmpty()) {
-                throw CompilerException.doubleDef(node.getName().getName(), fn, node);
+                throw CompilerException.doubleDef(name, fn, node);
             }
         } else {
-            fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, convertArgs(generics), trueRet);
+            fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
             bytes = new ArrayList<>();
             index = info.addFunction(new Function(node, fnInfo, bytes));
         }
         for (var generic : generics.values()) {
             generic.setParent(fnInfo.toCallable());
         }
-        var constVal = new FunctionConstant(node.getName().getName(), index);
-        info.checkDefinition(node.getName().getName(), node);
-        info.addVariable(node.getName().getName(), fnInfo.toCallable(), constVal, node);
+        var constVal = new FunctionConstant(name, index);
+        info.checkDefinition(name, node);
+        info.addVariable(name, fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
         checkGen();
         addGenerics(generics);
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
-        for (var arg : node.getArgs()) {
-            var type = info.getType(arg.getType());
-            var name = arg.getName().getName();
-            if (arg.getVararg()) {
-                info.addVariable(name, Builtins.ITERABLE.generify(arg, type), arg);
-            } else {
-                info.addVariable(name, type, arg);
-            }
-        }
+        addArgs();
         for (var statement : node.getBody()) {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));
         }
         info.removeStackFrame();
         retInfo.popFnReturns();
         return Collections.emptyList();
+    }
+
+    private void addArgs() {
+        for (var arg : node.getArgs()) {
+            var type = info.getType(arg.getType());
+            var argName = arg.getName().getName();
+            if (arg.getVararg()) {
+                info.addVariable(argName, Builtins.ITERABLE.generify(arg, type), arg);
+            } else {
+                info.addVariable(argName, type, arg);
+            }
+        }
     }
 
     @Contract(" -> new")
