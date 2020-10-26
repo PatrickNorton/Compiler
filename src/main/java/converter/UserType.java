@@ -198,6 +198,20 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return generics;
     }
 
+    /**
+     * The "meat" of the {@link #generifyWith} implementation for {@code
+     * UserTypes}.
+     * <p>
+     *     This exists to be used in overloads of {@link #generifyWith}, in the
+     *     manner as it is used in e.g. {@link StdTypeObject#generifyWith},
+     *     because Java has no concept of {@code cls}.
+     * </p>
+     *
+     * @param parent The parent of all changed {@code TemplateParams}
+     * @param values The values to generify with
+     * @return The new list of generic values
+     * @see #generifyWith(TypeObject, List)
+     */
     @NotNull
     protected final List<TypeObject> generifyWithInner(TypeObject parent, List<TypeObject> values) {
         if (this.sameBaseType(parent)) {
