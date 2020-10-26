@@ -143,24 +143,25 @@ public final class FunctionCallConverter implements TestConverter {
     public static TypeObject[] generifyReturns(
             FunctionInfo fnInfo, CompilerInfo info, ArgumentNode[] params, Lined node, int retCount
     ) {
-        var generics = fnInfo.generifyArgs(getArgs(info, params));
+        var args = getArgs(info, params);
+        var generics = fnInfo.generifyArgs(args)
+                .orElseThrow(() -> argError(node, fnInfo.toCallable().name(), args, fnInfo.getArgs().getNormalArgs()));
         if (generics.isEmpty()) {
             return fnInfo.getReturns();
-        } else {
-            var cls = fnInfo.toCallable();
-            var returns = fnInfo.getReturns();
-            var gen = turnMapToList(generics.orElseThrow());
-            if (returns.length < retCount) {
-                throw CompilerInternalError.format(
-                        "Length %d less than length %d", node, returns.length, retCount
-                );
-            }
-            TypeObject[] result = new TypeObject[retCount == -1 ? returns.length : retCount];
-            for (int i = 0; i < result.length; i++) {
-                result[i] = returns[i].generifyWith(cls, gen);
-            }
-            return result;
         }
+        var cls = fnInfo.toCallable();
+        var returns = fnInfo.getReturns();
+        var gen = turnMapToList(generics);
+        if (returns.length < retCount) {
+            throw CompilerInternalError.format(
+                    "Length %d less than length %d", node, returns.length, retCount
+            );
+        }
+        TypeObject[] result = new TypeObject[retCount == -1 ? returns.length : retCount];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = returns[i].generifyWith(cls, gen);
+        }
+        return result;
     }
 
     private TypeObject[] escapedOpReturn() {
@@ -213,18 +214,22 @@ public final class FunctionCallConverter implements TestConverter {
             var opInfo = operatorInfo.orElseThrow();
             var opGenerics = opInfo.generifyArgs(args);
             if (opGenerics.isEmpty()) {
-                var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
-                var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
-                var expectedStr = String.join(", ", nameArr);
-                throw CompilerException.format(
-                        "Cannot call object of type '%s': arguments given" +
-                                " do not match the arguments of the function%n" +
-                                "Arguments received: %s%nArguments expected: %s",
-                        node, callerType.name(), argsString, expectedStr
-                );
+                throw argError(node, callerType.name(), args, opInfo.getArgs().getNormalArgs());
             }
             return opInfo;
         }
+    }
+
+    private static CompilerException argError(Lined node, String name, Argument[] args, Argument[] expected) {
+        var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
+        var nameArr = TypeObject.name(Argument.typesOf(expected));
+        var expectedStr = String.join(", ", nameArr);
+        return CompilerException.format(
+                "Cannot call object of type '%s': arguments given" +
+                        " do not match the arguments of the function%n" +
+                        "Arguments received: %s%nArguments expected: %s",
+                node, name, argsString, expectedStr
+        );
     }
 
     @NotNull

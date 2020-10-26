@@ -198,7 +198,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     @NotNull
     private FunctionInfo variantInfo(TypeObject val, UnionTypeObject type) {
-        var arg = new Argument(VARIANT_NAME, val);
-        return new FunctionInfo(new ArgumentInfo(arg), type);
+        if (val.sameBaseType(Builtins.NULL_TYPE)) {
+            return new FunctionInfo(type);
+        } else {
+            var arg = new Argument(VARIANT_NAME, val);
+            return new FunctionInfo(new ArgumentInfo(arg), type);
+        }
     }
 }

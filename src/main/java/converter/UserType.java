@@ -130,23 +130,17 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     @NotNull
     public final Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
-        if (sameBaseType(other)) {
+        if (isSuperclass(other)) {
+            return Optional.of(Collections.emptyMap());
+        } else if (sameBaseType(other)) {
             return makeMatch(parent, generics, other.getGenerics());
-        } else if (other instanceof ObjectType) {
-            return Optional.of(new HashMap<>());
-        } else if (other instanceof TemplateParam) {
-            var param = (TemplateParam) other;
-            if (param.getParent().sameBaseType(parent)) {
-                return Optional.of(Map.of(param.getIndex(), this));
-            } else {
-                return Optional.empty();
-            }
-        }
-        for (var sup : this.recursiveSupers()) {
-            if (sup.sameBaseType(other)) {
-                var supGenerics = sup.getGenerics();
-                var objGenerics = other.getGenerics();
-                return makeMatch(parent, supGenerics, objGenerics);
+        } else if (other instanceof UserType<?>) {
+            for (var sup : other.recursiveSupers()) {
+                if (sameBaseType(sup)) {
+                    var supGenerics = sup.getGenerics();
+                    var objGenerics = other.getGenerics();
+                    return makeMatch(parent, supGenerics, objGenerics);
+                }
             }
         }
         return Optional.empty();

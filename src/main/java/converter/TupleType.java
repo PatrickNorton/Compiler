@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -114,6 +116,30 @@ public final class TupleType extends TypeObject {
                 sj.add(generic.name());
             }
             return sj.toString();
+        }
+    }
+
+    @Override
+    public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
+        if (isSuperclass(other) || equals(other)) {
+            return Optional.of(Collections.emptyMap());
+        } else if (sameBaseType(other)) {
+            var otherGen = other.getGenerics();
+            if (generics.isEmpty()) {
+                return Optional.of(Collections.emptyMap());
+            } else if (generics.size() != otherGen.size()) {
+                return Optional.empty();
+            }
+            Map<Integer, TypeObject> result = new HashMap<>(generics.size());
+            for (var pair : Zipper.of(generics, otherGen)) {
+                var map = pair.getKey().generifyAs(parent, pair.getValue());
+                if (map.isEmpty() || TypeObject.addGenericsToMap(map.orElseThrow(), result)) {
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(result);
+        } else {
+            return Optional.empty();
         }
     }
 
