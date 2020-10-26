@@ -20,7 +20,7 @@ class Fsm {
 
     public static method exec(
         Program prog,
-        mut ProgramCache cache,
+        ProgramCache cache,
         list[bool] matches,
         list[Slot] slots,
         bool quitAfterMatch,

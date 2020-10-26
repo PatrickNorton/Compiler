@@ -32,7 +32,7 @@ class Exec {
         switch ty {
             case MatchLiteralType.UNANCHORED {
                 var lits = self.ro.nfa.prefixes
-                if lits.find(text[start:])? as f {
+                if lits.find(bytes(text[start:]))? as f {
                     return (f.0 + start, f.1 + start)
                 } else {
                     return null
@@ -41,7 +41,7 @@ class Exec {
             case MatchLiteralType.ANCHORED_START {
                 var lits = self.ro.nfa.prefixes
                 if not start or not self.ro.nfa.isAnchoredStart {
-                    if lits.findStart(text[start:])? as f {
+                    if lits.findStart(bytes(text[start:]))? as f {
                         return (f.0 + start, f.1 + start)
                     } else {
                         return null
@@ -50,7 +50,7 @@ class Exec {
             }
             case MatchLiteralType.ANCHORED_END {
                 var lits = self.ro.suffixes
-                if lits.findEnd(text[start:])? as f {
+                if lits.findEnd(bytes(text[start:]))? as f {
                     return (f.0 + start, f.1 + start)
                 } else {
                     return null
@@ -58,7 +58,7 @@ class Exec {
             }
             case MatchLiteralType.AHO_CORASICK {
                 if self.ro.ac? as ac {
-                    if ac.find(text[start:])? as m {
+                    if ac.find(bytes(text[start:]))? as m {
                         return (m.start + start, m.end + start)
                     }
                 }

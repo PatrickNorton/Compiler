@@ -28,7 +28,7 @@ class Regex {
     }
 
     public generator method findIter(str text) -> Match {
-        var value = self.value.searcherStr().findIter(text)
+        var value = self.value.searcherStr().findIter(bytes(text))
         for var n in value {
             yield Match(text, *n)
         }
@@ -145,7 +145,7 @@ class Regex {
     }
 
     public method capturesReadAt(mut CaptureLocations locs, str text, int start) -> Match? {
-        if self.value.searcherStr().capturesReadAt(text, start)? as x {
+        if self.value.searcherStr().capturesReadAt(locs.value, bytes(text), start)? as x {
             return Match(text, *x)
         } else {
             return null
@@ -258,11 +258,11 @@ class ReplacerStr {
     }
 
     public mut method replaceAppend(Captures caps, str dst) -> str {
-        return caps.expand(self.val, dst)
+        return dst + caps.expand(self.val)
     }
 
     public mut method noExpansion() -> str? {
-        if bytes(self).indexOf(b"$")? {
+        if bytes(self).indexOf(b"$"[0])? {
             return null
         } else {
             return self.val
