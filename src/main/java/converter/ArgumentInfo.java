@@ -24,9 +24,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
     }
 
     public ArgumentInfo(Argument[] positionArgs, Argument[] normalArgs, Argument[] keywordArgs) {
-        this.positionArgs = positionArgs;
-        this.normalArgs = normalArgs;
-        this.keywordArgs = keywordArgs;
+        this.positionArgs = deList(positionArgs);
+        this.normalArgs = deList(normalArgs);
+        this.keywordArgs = deList(keywordArgs);
     }
 
     /**
@@ -357,5 +357,18 @@ public final class ArgumentInfo implements Iterable<Argument> {
             resultArgs[i] = new Argument("", args[i]);
         }
         return new ArgumentInfo(resultArgs);
+    }
+
+    private static Argument[] deList(Argument... args) {
+        if (args.length == 1 && args[0].getType() instanceof ListTypeObject) {
+            var argTypes = ((ListTypeObject) args[0].getType()).toArray();
+            var result = new Argument[argTypes.length];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = new Argument("", argTypes[i]);
+            }
+            return result;
+        } else {
+            return args;
+        }
     }
 }
