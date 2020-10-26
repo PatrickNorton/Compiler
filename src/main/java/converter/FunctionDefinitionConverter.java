@@ -31,20 +31,25 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var retTypes =  info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(retTypes)} : retTypes;
-        var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, convertArgs(generics), trueRet);
         var predefined = info.getFn(node.getName().getName());
         int index;
         List<Byte> bytes;
+        FunctionInfo fnInfo;
         if (predefined.isPresent()) {
             var fn = predefined.orElseThrow();
+            fnInfo = fn.getInfo();
             index = info.fnIndex(node.getName().getName());
             bytes = fn.getBytes();
             if (!bytes.isEmpty()) {
                 throw CompilerException.doubleDef(node.getName().getName(), fn, node);
             }
         } else {
+            fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, convertArgs(generics), trueRet);
             bytes = new ArrayList<>();
             index = info.addFunction(new Function(node, fnInfo, bytes));
+        }
+        for (var generic : generics.values()) {
+            generic.setParent(fnInfo.toCallable());
         }
         var constVal = new FunctionConstant(node.getName().getName(), index);
         info.checkDefinition(node.getName().getName(), node);

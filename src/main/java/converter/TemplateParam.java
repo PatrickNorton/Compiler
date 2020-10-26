@@ -4,6 +4,7 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,7 +121,9 @@ public final class TemplateParam extends NameableType {
     @Override
     @NotNull
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
-        if (this.parent.sameBaseType(parent)) {
+        if (this.equals(other)) {
+            return Optional.of(Collections.emptyMap());
+        } else if (this.parent.sameBaseType(parent)) {
             return Optional.of(Map.of(index, other));
         } else {
             return Optional.empty();
