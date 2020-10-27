@@ -68,6 +68,8 @@ public interface TestConverter extends BaseConverter {
     static TestConverter of(CompilerInfo info, TestNode node, int retCount, TypeObject... expectedReturns) {
         if (node instanceof DictLiteralNode) {
             return new DictLiteralConverter(info, (DictLiteralNode) node, retCount, expectedReturns);
+        } else if (node instanceof LambdaNode) {
+            return new LambdaConverter(info, (LambdaNode) node, retCount, expectedReturns);
         } else if (node instanceof LiteralNode) {
             return new LiteralConverter(info, (LiteralNode) node, retCount, expectedReturns);
         }
