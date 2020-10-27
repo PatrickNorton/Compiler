@@ -1,6 +1,10 @@
 package main.java.converter;
 
+import main.java.parser.BaseNode;
 import main.java.parser.LambdaNode;
+import main.java.parser.ReturnStatementNode;
+import main.java.parser.StatementBodyNode;
+import main.java.parser.TestListNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -65,12 +69,20 @@ public final class LambdaConverter implements TestConverter {
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
-        List<Byte> fnBytes = new ArrayList<>(node.isArrow()
-                ? TestConverter.bytes(0, (TestNode) node.getBody().get(0), info, lambdaReturnType().length)
-                : BaseConverter.bytes(0, node.getBody(), info));
+        List<Byte> fnBytes = new ArrayList<>(BaseConverter.bytes(0, fnBody(), info ));
         info.removeStackFrame();
         retInfo.popFnReturns();
         return fnBytes;
+    }
+
+    private BaseNode fnBody() {
+        if (node.isArrow()) {
+            var body = (TestNode) node.getBody().get(0);
+            var list = new TestListNode(body);
+            return new StatementBodyNode(new ReturnStatementNode(body.getLineInfo(), list, TestNode.empty()));
+        } else {
+            return node.getBody();
+        }
     }
 
     @NotNull
