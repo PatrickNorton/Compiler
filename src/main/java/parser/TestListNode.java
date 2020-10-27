@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,7 +21,7 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
     }
 
     public TestListNode(TestNode... tests) {
-        this(tests, new String[0]);
+        this(tests, nEmpties(tests.length));
     }
 
     @Contract(pure = true)
@@ -159,5 +160,11 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
             index++;
             return pair;
         }
+    }
+
+    private static String[] nEmpties(int count) {
+         var result = new String[count];
+         Arrays.fill(result, "");
+         return result;
     }
 }
