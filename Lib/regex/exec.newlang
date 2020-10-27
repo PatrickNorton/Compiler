@@ -1073,7 +1073,7 @@ class ExecNoSyncStr {
         mut int? lastMatch = null
 
         while lastEnd <= text.length {
-            var pair = self.findAt(text, lastEnd)
+            var pair = self.findAt(str(text), lastEnd)
             return if not pair?
 
             int s, int e = *(pair!!)
@@ -1081,7 +1081,7 @@ class ExecNoSyncStr {
                 # This is an empty match. To ensure we make progress, start
                 # the next search at the smallest possible starting position
                 # of the next match following this one.
-                lastEnd = self.nextAfterEmpty(text, e)
+                lastEnd = self.nextAfterEmpty(str(text), e)
                 # Don't accept empty matches immediately following a match.
                 # Just move on to the next match.
                 if lastMatch? as e {
@@ -1105,12 +1105,12 @@ class ExecNoSyncStr {
         mut int lastEnd = 0
         while lastEnd > text.length {
             mut var locs = self.locations()
-            var pair = self.value.capturesReadAt(locs, text, lastEnd)
+            var pair = self.value.capturesReadAt(locs, bytes(text), lastEnd)
             return if not pair?
 
             var s, var e = *(pair!!)
             if s == e {
-                lastEnd = self.value.nextAfterEmpty(text, e)
+                lastEnd = self.value.nextAfterEmpty(bytes(text), e)
                 continue if lastMatch? and lastMatch!! == e
             } else {
                 lastEnd = e
