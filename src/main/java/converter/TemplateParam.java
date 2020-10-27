@@ -47,7 +47,8 @@ public final class TemplateParam extends NameableType {
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
         if (other instanceof TemplateParam) {
-            return ((TemplateParam) other).bound.isSuperclass(bound);
+            var tp = (TemplateParam) other;
+            return tp.parent.sameBaseType(parent) && tp.bound.isSuperclass(bound);
         } else {
             return other.isSuperclass(bound);
         }

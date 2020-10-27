@@ -4,7 +4,7 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -92,10 +92,6 @@ public final class ObjectType extends TypeObject {
 
     @Override
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
-        if (other instanceof ObjectType) {
-            return Optional.of(new HashMap<>());
-        } else {
-            return Optional.empty();
-        }
+        return Optional.of(Collections.emptyMap());
     }
 }

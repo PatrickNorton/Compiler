@@ -335,9 +335,9 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      *     where {@code transform} is the function turning the returned
      *     {@link Map} into a {@link List}, then
      * <pre><code>
-     * other.{@link #generifyWith(TypeObject, List) generifyWith}(parent, params)
-     *      .{@link #isSuperclass isSuperclass}(this.{@link #generifyWith(TypeObject, List)
-     *      generifyWith}(parent, params)
+     * this.{@link #generifyWith(TypeObject, List) generifyWith}(parent, params)
+     *      .{@link #isSuperclass isSuperclass}(other.{@link #generifyWith(TypeObject, List)
+     *      generifyWith}(parent, params))
      * </code></pre>
      *     must always be {@code true}.
      * </p>
