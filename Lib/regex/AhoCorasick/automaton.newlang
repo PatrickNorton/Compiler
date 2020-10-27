@@ -49,15 +49,17 @@ interface Automaton {
         mut int stateId,
     ) -> Match? {
         if self.prefilter()? as pre {
+            Prefilter? pref = pre  # FIXME
             return self.standardFindAtImp(
                 prestate,
-                pre,
+                pref,
                 haystack,
                 at,
                 stateId,
             )
         } else {
-            self.standardFindAtImp(prestate, null, haystack, at, stateId)
+            Prefilter? pref = null  # FIXME
+            self.standardFindAtImp(prestate, pref, haystack, at, stateId)
         }
     }
 
@@ -110,14 +112,16 @@ interface Automaton {
         int at,
     ) -> Match? {
         if self.prefilter()? as pre {
+            Prefilter? pref = pre  # FIXME
             return self.leftmostFindAtNoStateImp(
                 prestate,
-                pre,
+                pref,
                 haystack,
                 at,
             )
         } else {
-            return self.leftmostFindAtNoStateImp(prestate, null, haystack, at)
+            Prefilter? pref = null  # FIXME
+            return self.leftmostFindAtNoStateImp(prestate, pref, haystack, at)
         }
     }
 
@@ -186,17 +190,17 @@ interface Automaton {
     ) -> Match? {
         return null if self.anchored() and at > 0 and stateId == self.startState()
 
-        var matchCount = self.matchCount(stateId)
+        var matchCount = self.matchCount(int(stateId))
         if matchIndex < matchCount {
-            var result = self.getMatch(stateId, matchIndex, at)
+            var result = self.getMatch(int(stateId), int(matchIndex), at)
             assert result? as "must be a match"
-            matchIndex++
+            matchIndex.inc()
             return result
         }
 
-        matchIndex = 0
-        if self.standardFindAt(prestate, haystack, at, stateId)? as m {
-            matchIndex = 1
+        matchIndex.set(0)
+        if self.standardFindAt(prestate, haystack, at, int(stateId))? as m {
+            matchIndex.set(0)
             return m
         } else {
             return null
@@ -212,7 +216,7 @@ interface Automaton {
         if stateId == self.startState() {
             return null if self.anchored() and at > 0
 
-            if self.getMatch(stateId, 0, at)? as m {
+            if self.getMatch(int(stateId), 0, at)? as m {
                 return m
             }
         }
@@ -227,7 +231,7 @@ interface Automaton {
         switch self.matchKind() {
             case MatchKind.Standard {
                 mut var state = self.startState()
-                return self.earliestFindAt(prestate, haystack, at, state)
+                return self.earliestFindAt(prestate, haystack, at, IntRef(state))
             }
             case MatchKind.LeftmostFirst {
                 return self.leftmostFindAtNoState(prestate, haystack, at)

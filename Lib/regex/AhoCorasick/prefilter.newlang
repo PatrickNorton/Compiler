@@ -96,7 +96,7 @@ class Builder {
         self.startBytes = StartBytesBuilder()
         self.rareBytes = RareBytesBuilder()
         if kind.asPacked()? as k {
-            self.packed = PackedConfig().matchKind(kind).builder()
+            self.packed = PackedConfig().matchKind(k).builder()
         } else {
             self.packed = null
         }
