@@ -137,8 +137,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         } else if (other instanceof UserType<?>) {
             for (var sup : other.recursiveSupers()) {
                 if (sameBaseType(sup)) {
-                    var supGenerics = sup.getGenerics();
-                    var objGenerics = other.getGenerics();
+                    var supGenerics = this.getGenerics();
+                    var objGenerics = sup.getGenerics();
                     return makeMatch(parent, supGenerics, objGenerics);
                 }
             }
