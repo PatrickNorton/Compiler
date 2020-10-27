@@ -1,3 +1,5 @@
+from numtools import IntRef
+
 from .ahocorasick import MatchKind
 from .match import Match
 from .prefilter import Prefilter, PrefilterState, next, Candidate
@@ -179,8 +181,8 @@ interface Automaton {
         mut PrefilterState prestate,
         bytes haystack,
         int at,
-        mut int stateId,
-        mut int matchIndex,
+        mut IntRef stateId,
+        mut IntRef matchIndex,
     ) -> Match? {
         return null if self.anchored() and at > 0 and stateId == self.startState()
 
@@ -205,7 +207,7 @@ interface Automaton {
         mut PrefilterState prestate,
         bytes haystack,
         int at,
-        mut int stateId,
+        mut IntRef stateId,
     ) -> Match? {
         if stateId == self.startState() {
             return null if self.anchored() and at > 0
