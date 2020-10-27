@@ -67,6 +67,14 @@ final class IntRef {
         return IntRef(self.value ^ other.value)
     }
 
+    public operator < (cls other) -> bool {
+        return self.value < other.value
+    }
+
+    public operator > (cls other) -> bool {
+        return self.value > other.value
+    }
+
     public mut method iadd(cls other) {
         self.value += other.value
     }
@@ -113,5 +121,17 @@ final class IntRef {
 
     public mut method ixor(cls other) {
         self.value ^= other.value
+    }
+
+    public mut method inc() {
+        self.value += 1
+    }
+
+    public mut method dec() {
+        self.value -= 1
+    }
+
+    public mut method set(int value) {
+        self.value = value
     }
 }
