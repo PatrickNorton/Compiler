@@ -570,12 +570,12 @@ public final class CompilerInfo {
      *     corresponding call to the other.
      * </p>
      *
-     * @param vals The list of values to add to the map
+     * @param values The list of values to add to the map
      * @see #addStackFrame()
      * @see #removeLocalTypes()
      */
-    public void addLocalTypes(Map<String, TypeObject> vals) {
-        localTypes.add(vals);
+    public void addLocalTypes(Map<String, TypeObject> values) {
+        localTypes.add(values);
     }
 
     /**
