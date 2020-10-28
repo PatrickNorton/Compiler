@@ -28,29 +28,31 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @Override
     public @Unmodifiable List<Byte> convert(int start) {
         var name = node.getName().getName();
-        var generics = getGenerics();
-        var retTypes =  info.typesOf(node.getRetval());
+        var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(retTypes)} : retTypes;
+        var trueRet = isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(retTypes)} : retTypes;
         var predefined = info.getFn(name);
         int index;
         List<Byte> bytes;
+        Map<String, TemplateParam> generics;
         FunctionInfo fnInfo;
         if (predefined.isPresent()) {
             var fn = predefined.orElseThrow();
             fnInfo = fn.getInfo();
+            generics = getGenerics(fnInfo.getGenerics().getParams());
             index = info.fnIndex(name);
             bytes = fn.getBytes();
             if (!bytes.isEmpty()) {
                 throw CompilerException.doubleDef(name, fn, node);
             }
         } else {
+            generics = getGenerics();
             fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
             bytes = new ArrayList<>();
             index = info.addFunction(new Function(node, fnInfo, bytes));
-        }
-        for (var generic : generics.values()) {
-            generic.setParent(fnInfo.toCallable());
+            for (var generic : generics.values()) {
+                generic.setParent(fnInfo.toCallable());
+            }
         }
         var constVal = new FunctionConstant(name, index);
         info.checkDefinition(name, node);
@@ -95,6 +97,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             info.addLocalTypes(genericNames);
             var result = innerHeader();
             info.removeLocalTypes();
+            for (var generic : generics) {
+                generic.setParent(result.getKey());
+            }
             return result;
         }
     }
@@ -159,6 +164,14 @@ public final class FunctionDefinitionConverter implements BaseConverter {
                         "Function template params may not contain unions or intersections", generic
                 );
             }
+        }
+        return result;
+    }
+
+    private Map<String, TemplateParam> getGenerics(List<TemplateParam> params) {
+        Map<String, TemplateParam> result = new HashMap<>();
+        for (var generic : params) {
+            result.put(generic.baseName(), generic);
         }
         return result;
     }
