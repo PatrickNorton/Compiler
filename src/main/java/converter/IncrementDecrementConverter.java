@@ -27,7 +27,7 @@ public final class IncrementDecrementConverter implements BaseConverter {
         if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
             throw CompilerException.format(
                     "TypeError: Object of type %s cannot be %s",
-                    node.getLineInfo(), converter.returnType()[0].name(), isDecrement ? "incremented" : "decremented");
+                    node.getLineInfo(), converter.returnType()[0].name(), isDecrement ? "decremented" : "incremented");
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.LOAD_CONST.value);
