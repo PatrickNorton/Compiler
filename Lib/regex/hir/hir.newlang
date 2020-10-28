@@ -1,3 +1,5 @@
+from itertools import any
+
 from .interval import IntervalSet, Interval
 from .unicode import simpleFold
 
@@ -96,7 +98,7 @@ class Hir {
                 info.setLineAnchoredEnd(true)
             }
         }
-        return Hir(HirKind.Anchor(anchor, info))
+        return Hir(HirKind.Anchor(anchor), info)
     }
 
     public static method word_boundary(WordBoundary wordBoundary) -> Hir {
@@ -166,7 +168,7 @@ class Hir {
     public static method concat(list[Hir] exprs) -> Hir {
         switch exprs.length {
             case 0 {
-                return Hir.Empty()
+                return Hir.empty()
             }
             case 1 {
                 return exprs[0]
@@ -259,7 +261,7 @@ class Hir {
                 info.setLineAnchoredEnd(true)
 
                 # Some attributes require analyzing all sub-expressions.
-                for e in exprs {
+                for var e in exprs {
                     var x = info.isAlwaysUtf8() and e.isAlwaysUtf8()
                     info.setAlwaysUtf8(x)
 
@@ -303,8 +305,8 @@ class Hir {
             return Hir.type(Class.Bytes(clsBytes))
         } else {
             mut var clsBytes = ClassBytes.empty()
-            clsBytes.push(ClassUnicodeRange(0, 0x9))
-            clsBytes.push(ClassUnicodeRange(0xB, 0x10FFFF))
+            clsBytes.push(ClassUnicodeRange(char(0), char(0x9)))
+            clsBytes.push(ClassUnicodeRange(char(0xB), char(0x10FFFF)))
             return Hir.type(Class.Bytes(clsBytes))
         }
     }
@@ -477,6 +479,11 @@ class ClassBytes {
         self.value = value
     }
 
+    public static method empty() -> mut cls {
+        list[ClassBytesRange] empty = []  # FIXME
+        return ClassBytes([])
+    }
+
     public operator iter -> ClassBytesRange {
         yield from self.value
     }
@@ -493,6 +500,12 @@ class ClassBytes {
 class ClassBytesRange from Interval {
     int start
     int end
+
+    public operator new(int start, int end) {
+        assert start in [0:255] and end in [0:255]
+        self.start = start
+        self.end = end
+    }
 
     public property int lower {
         get {
@@ -599,5 +612,27 @@ union RepetitionRange {
 }
 
 class HirInfo {
-    int bools # Bool-vector, represented as such to save space
+    private mut int bools # Bool-vector, represented as such to save space
+
+    public operator new {
+        self.bools = 0
+    }
+
+    public property bool isAlwaysUtf8 {
+        get {
+            return bool(self.bools & 1)
+        }
+        set (bool value) {
+            self.bools |= value
+        }
+    }
+
+    public property bool isAlternationLiteral {
+        get {
+            return bool(self.bools & (1 << 10))
+        }
+        set (bool value) {
+            self.bools |= value << 10
+        }
+    }
 }
