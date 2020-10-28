@@ -5,23 +5,23 @@ from .rabinkarp import RabinKarp
 
 from ..match import Match
 
-export Config, MatchKind, Builder, ForceAlgorithm, Searcher
+export Config, PackedMatch, Builder, ForceAlgorithm, Searcher
 
 var PATTERN_LIMIT = 128
 
-enum MatchKind {
+enum PackedMatch {
     LEFTMOST_FIRST,
     LEFTMOST_LONGEST
 }
 
 class Config {
-    mut MatchKind kind
+    mut PackedMatch kind
     mut ForceAlgorithm? force
     mut bool? forceTeddyFat_
     mut bool? forceAvx_
 
     public operator new() {
-        self.kind = MatchKind.LEFTMOST_FIRST
+        self.kind = PackedMatch.LEFTMOST_FIRST
         self.force = null
         self.forceTeddyFat_ = null
         self.forceAvx_ = null
@@ -31,7 +31,7 @@ class Config {
         return Builder(self)
     }
 
-    public mut method matchKind(MatchKind kind) -> cls {
+    public mut method matchKind(PackedMatch kind) -> cls {
         self.kind = kind
         return self
     }

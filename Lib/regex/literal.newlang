@@ -1,6 +1,6 @@
 from itertools import all
 
-from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher, Config, MatchKind, freqRank
+from .AhoCorasick import AhoCorasick, AhoCorasickBuilder, Searcher, Config, MatchKind, freqRank, PackedMatch
 from .hir import Literal, Literals
 
 export LiteralSearcher
@@ -176,7 +176,7 @@ union Matcher {
         var pats = lits.literals
         var isAhoCorasickFast = sset.dense.length <= 1 and sset.allAscii
         if lits.literals.length <= 100 and not isAhoCorasickFast {
-            mut var builder = Config().matchKind(MatchKind.LEFTMOST_FIRST).builder()
+            mut var builder = Config().matchKind(PackedMatch.LEFTMOST_FIRST).builder()
             if builder.extend(pats).build()? as s {
                 return Matcher.Packed((s, pats))
             }

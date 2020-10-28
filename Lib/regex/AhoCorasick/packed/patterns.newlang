@@ -1,11 +1,11 @@
-from .api import MatchKind
+from .api import PackedMatch
 
 export Patterns, PatternID
 
 typedef PatternID as int
 
 class Patterns {
-    mut MatchKind kind
+    mut PackedMatch kind
     mut list[bytes] byId
     mut list[PatternID] order
     pubget mut int minimumLen
@@ -13,7 +13,7 @@ class Patterns {
     mut int totalPatternBytes
 
     public operator new {
-        self.kind = MatchKind.LEFTMOST_FIRST
+        self.kind = PackedMatch.LEFTMOST_FIRST
         self.byId = []
         self.order = []
         self.minimumLen = -1
