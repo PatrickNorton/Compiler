@@ -297,8 +297,8 @@ class Hir {
         }
     }
 
-    public static method dot(bool bytes) -> Hir {
-        if bytes {
+    public static method dot(bool b) -> Hir {
+        if b {
             mut var clsBytes = ClassBytes.empty()
             clsBytes.push(ClassBytesRange(0, 0x9))
             clsBytes.push(ClassBytesRange(0xB, 0xFF))
@@ -311,8 +311,8 @@ class Hir {
         }
     }
 
-    public static method any(bool bytes) -> Hir {
-        if bytes {
+    public static method any(bool b) -> Hir {
+        if b {
             mut var clsBytes = ClassBytes.empty()
             clsBytes.push(ClassBytesRange(0, 0xFF))
             return Hir.type(Class.Bytes(clsBytes))
