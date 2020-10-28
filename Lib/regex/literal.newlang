@@ -174,10 +174,11 @@ union Matcher {
         }
 
         var pats = lits.literals
+        var pats2 = [i.value for var i in pats]
         var isAhoCorasickFast = sset.dense.length <= 1 and sset.allAscii
         if lits.literals.length <= 100 and not isAhoCorasickFast {
             mut var builder = Config().matchKind(PackedMatch.LEFTMOST_FIRST).builder()
-            if builder.extend(pats).build()? as s {
+            if builder.extend(pats2).build()? as s {
                 return Matcher.Packed((s, pats))
             }
         }
@@ -185,7 +186,7 @@ union Matcher {
         var ac = (AhoCorasickBuilder()
             .matchKind(MatchKind.LEFTMOST_FIRST)
             .setDfa(true)
-            .build(pats))
+            .build(pats2))
         return Matcher.AC((ac, pats))
     }
 }
