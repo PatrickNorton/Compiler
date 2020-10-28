@@ -96,6 +96,8 @@ public abstract class OperatorConverter implements TestConverter {
                 return new EqualsConverter(true, args, node, info, retCount);
             case NOT_EQUALS:
                 return new EqualsConverter(false, args, node, info, retCount);
+            case CASTED:
+                return new CastedConverter(args, node, info, retCount);
             default:
                 return new NormalOperatorConverter(op, args, node, info, retCount);
         }
