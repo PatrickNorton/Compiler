@@ -139,12 +139,18 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             var label = stmt.getLabel()[0];
             var lblConverter = TestConverter.of(info, stmt.getLabel()[0], 1);
             var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
+            BigInteger value;
             if (constant instanceof IntConstant) {
-                jumps.put(BigInteger.valueOf(((IntConstant) constant).getValue()), start + bytes.size());
+                value = BigInteger.valueOf(((IntConstant) constant).getValue());
             } else if (constant instanceof BigintConstant) {
-                jumps.put(((BigintConstant) constant).getValue(), start + bytes.size());
+                value = ((BigintConstant) constant).getValue();
             } else {
                 throw literalException("int", label);
+            }
+            if (jumps.containsKey(value)) {
+                throw CompilerException.format("Cannot define number %d twice in switch statement", node, value);
+            } else {
+                jumps.put(value, start + bytes.size());
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
@@ -177,7 +183,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             var lblConverter = TestConverter.of(info, label, 1);
             var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
             if (constant instanceof StringConstant) {
-                jumps.put(((StringConstant) constant).getValue(), start + bytes.size());
+                var value = ((StringConstant) constant).getValue();
+                if (jumps.containsKey(value)) {
+                    throw CompilerException.format("Cannot define str \"%s\" twice in switch statement", node, value);
+                } else {
+                    jumps.put(value, start + bytes.size());
+                }
             } else {
                 throw literalException("string", label);
             }

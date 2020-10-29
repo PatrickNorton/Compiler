@@ -259,6 +259,11 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(CHAR), BOOL)
         );
         CHAR.setOperators(charMap);
+        var fromIntInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(CHAR));
+        var staticCharAttrs = Map.of(
+                "fromInt", AttributeInfo.method(fromIntInfo)
+        );
+        CHAR.setStaticAttributes(staticCharAttrs);
         CHAR.seal();
     }
 
