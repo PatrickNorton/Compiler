@@ -1,6 +1,7 @@
 package main.java.converter.classbody;
 
 import main.java.converter.AccessLevel;
+import main.java.converter.Argument;
 import main.java.converter.ArgumentInfo;
 import main.java.converter.AttributeInfo;
 import main.java.converter.CompilerException;
@@ -19,6 +20,7 @@ public final class PropertyConverter {
     private final Map<String, AttributeInfo> properties;
     private final Map<String, StatementBodyNode> getters;
     private final Map<String, StatementBodyNode> setters;
+    private final Map<String, ArgumentInfo> setterArgs;
     private final Map<String, LineInfo> lineInfos;
     private final CompilerInfo info;
 
@@ -27,6 +29,7 @@ public final class PropertyConverter {
         this.getters = new HashMap<>();
         this.setters = new HashMap<>();
         this.lineInfos = new HashMap<>();
+        this.setterArgs = new HashMap<>();
         this.info = info;
     }
 
@@ -42,9 +45,14 @@ public final class PropertyConverter {
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         assert MutableType.fromDescriptors(node.getDescriptors()) == MutableType.STANDARD
                 : "Properties should never be mut";
+        var argInfo = ArgumentInfo.of(node.getSetArgs(), info);
+        if (argInfo.size() > 0 && !argInfo.matches(new Argument("", type))) {
+            throw CompilerException.format("Invalid argument info for setter", node.getSetArgs());
+        }
         properties.put(name, new AttributeInfo(accessLevel, type));
         getters.put(name, node.getGet());
         setters.put(name, node.getSet());  // TODO: If setter is empty
+        setterArgs.put(name, argInfo);
         lineInfos.put(name, node.getLineInfo());
     }
 
@@ -70,8 +78,8 @@ public final class PropertyConverter {
         Map<String, Method> result = new HashMap<>();
         for (var pair : setters.entrySet()) {
             var property = properties.get(pair.getKey());
-            var fnInfo = new FunctionInfo(ArgumentInfo.of(properties.get(pair.getKey()).getType()));
-            var mInfo = new Method(property.getAccessLevel(), fnInfo,
+            var fnInfo = new FunctionInfo(setterArgs.get(pair.getKey()));
+            var mInfo = new Method(property.getAccessLevel(), true, fnInfo,
                     pair.getValue(), pair.getValue().getLineInfo());
             result.put(pair.getKey(), mInfo);
         }
