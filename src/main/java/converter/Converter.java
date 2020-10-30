@@ -133,7 +133,7 @@ public final class Converter {
     }
 
     private static Path builtinPath() {
-        return new File("Lib").toPath().toAbsolutePath();
+        return new File("../Lib").toPath().toAbsolutePath();
     }
 
     private static Path getPath(List<Path> result, String name, Lined lineInfo) {
