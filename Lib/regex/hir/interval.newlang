@@ -16,6 +16,10 @@ class IntervalSet[I[Interval]] {
         yield from self.ranges
     }
 
+    public operator [] (int index) -> I {
+        return self.ranges[index]
+    }
+
     public mut method caseFoldSimple() {
         var len = self.ranges.length
         try {

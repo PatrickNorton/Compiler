@@ -499,12 +499,12 @@ class ClassBytes {
     IntervalSet[ClassBytesRange] value
 
     public operator new(Iterable[ClassBytesRange] value = []) {
-        self.value = value
+        self.value = IntervalSet[ClassBytesRange](value)
     }
 
     public static method empty() -> mut cls {
         list[ClassBytesRange] empty = []  # FIXME
-        return ClassBytes([])
+        return ClassBytes(empty)
     }
 
     public operator iter -> ClassBytesRange {
@@ -520,13 +520,13 @@ class ClassBytes {
     }
 
     public method isAllAscii() -> bool {
-        return self.value and self.value[-1].end < 0x7f
+        return self.value and self.value[-1].upper < 0x7f
     }
 }
 
 class ClassBytesRange from Interval {
-    int start
-    int end
+    private mut int start
+    private mut int end
 
     public operator new(int start, int end) {
         assert start in [0:255] and end in [0:255]
@@ -619,7 +619,7 @@ class Repetition {
             case RepetitionKind.Range as r => switch r {
                 case RepetitionRange.Exactly as m => m == 0
                 case RepetitionRange.AtLeast as m => m == 0
-                case RepetitionRange.Bounded as m => m.first == 0
+                case RepetitionRange.Bounded as m => m.0 == 0
             }
         }
     }
@@ -698,4 +698,12 @@ class HirInfo {
             self.bools |= value << 10
         }
     }
+}
+
+func max(int a, int b) -> int {
+    return a if a > b else b
+}
+
+func min(int a, int b) -> int {
+    return a if a < b else b
 }
