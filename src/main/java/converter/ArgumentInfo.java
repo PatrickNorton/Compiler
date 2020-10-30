@@ -198,6 +198,22 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
     }
 
+    /**
+     * Computes the generics necessary for the given parameters to call the
+     * function.
+     * <p>
+     *     This returns two things: First, a {@code Map} for use in {@link
+     *     TypeObject#generifyWith(TypeObject, List)}, and a {@code Set}
+     *     containing the argument indices which will require a {@link
+     *     Bytecode#MAKE_OPTION} before passed.
+     * </p>
+     *
+     * @param parent The parent info to generify with (should be the case that
+     *               {@code parent.getArgs() == this}
+     * @param args The arguments passed to the function
+     * @return The values, or {@link Optional#empty()} if {@code
+     *         !this.matches(args)}
+     */
     public Optional<Pair<Map<Integer, TypeObject>, Set<Integer>>> generifyArgs(
             @NotNull FunctionInfo parent, Argument... args
     ) {
