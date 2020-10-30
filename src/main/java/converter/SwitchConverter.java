@@ -467,6 +467,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 return;
             case 1:
                 bytes.add(Bytecode.SWAP_2.value);
+                return;
             default:
                 bytes.add(Bytecode.SWAP_STACK.value);
                 bytes.addAll(Util.shortZeroBytes());
