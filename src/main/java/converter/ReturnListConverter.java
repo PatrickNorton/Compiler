@@ -87,7 +87,7 @@ public final class ReturnListConverter implements BaseConverter {
         assert !values.isEmpty();
         if (retTypes.length != values.size()) {
             throw CompilerException.format("Incorrect number of values returned: expected %d, got %d",
-                    values, retTypes.length, values.size());
+                    values.get(0), retTypes.length, values.size());
         }
         for (int i = 0; i < retTypes.length; i++) {
             var retType = TestConverter.returnType(values.get(i), info, 1)[0];
