@@ -111,9 +111,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         ensureProperInheritance(obj, supers);
         try {
             info.accessHandler().addCls(obj);
+            info.addLocalTypes(obj.getGenericInfo().getParamMap());
             parseIntoObject(converter, obj);
         } finally {
             info.accessHandler().removeCls();
+            info.removeLocalTypes();
         }
         return info.reserveClass(obj);
     }

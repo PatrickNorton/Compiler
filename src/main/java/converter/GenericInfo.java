@@ -8,8 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.RandomAccess;
 
@@ -43,6 +45,14 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         for (var param : params) {
             param.setParent(parent);
         }
+    }
+
+    public Map<String, TypeObject> getParamMap() {
+        Map<String, TypeObject> result = new HashMap<>(params.size());
+        for (var param : params) {
+            result.put(param.baseName(), param);
+        }
+        return result;
     }
 
     @NotNull
@@ -184,14 +194,13 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
                 var bound = generic.getSubtypes().length == 1 ? info.getType(generic.getSubtypes()[0]) : Builtins.OBJECT;
                 param = new TemplateParam(generic.strName(), i, bound);
             }
-            info.addType(param);
             params.add(param);
         }
         return new GenericInfo(Collections.unmodifiableList(params), true);
     }
 
     @NotNull
-    public static GenericInfo parseNoTypes(CompilerInfo info, @NotNull TypeLikeNode... generics) {
+    public static GenericInfo parseNoTypes(@NotNull TypeLikeNode... generics) {
         if (generics.length == 0) return empty();
         List<TemplateParam> params = new ArrayList<>(generics.length);
         for (int i = 0; i < generics.length; i++) {
@@ -208,7 +217,6 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
                 // FIXME: Default interfaces are done before types are registered, therefore this will cause a NPE
                 param = new TemplateParam(generic.strName(), i, null);
             }
-            info.addType(param);
             params.add(param);
         }
         return new GenericInfo(params, false);

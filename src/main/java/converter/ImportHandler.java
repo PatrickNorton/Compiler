@@ -121,7 +121,7 @@ public final class ImportHandler {
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
+                var generics = GenericInfo.parseNoTypes(cls.getName().getSubtypes());
                 var type = new InterfaceType(strName, generics);
                 generics.setParent(type);
                 types.put(strName, Pair.of(type, cls));
@@ -137,7 +137,7 @@ public final class ImportHandler {
                 if (types.containsKey(strName)) {
                     throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
                 }
-                var generics = GenericInfo.parseNoTypes(info, cls.getName().getSubtypes());
+                var generics = GenericInfo.parseNoTypes(cls.getName().getSubtypes());
                 var type = stmt instanceof UnionDefinitionNode
                         ? new UnionTypeObject(strName, generics) : new StdTypeObject(strName, generics);
                 generics.setParent(type);

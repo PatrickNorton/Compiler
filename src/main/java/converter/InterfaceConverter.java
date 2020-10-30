@@ -73,9 +73,11 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         obj.getGenericInfo().setParent(obj);
         try {
             info.accessHandler().addCls(obj);
+            info.addLocalTypes(obj.getGenericInfo().getParamMap());
             parseIntoObject(converter, obj);
         } finally {
             info.accessHandler().removeCls();
+            info.removeLocalTypes();
         }
         // Note: 'auto' interfaces should already be registered with the compiler, so no action is needed
     }
