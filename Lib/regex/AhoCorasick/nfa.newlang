@@ -318,10 +318,9 @@ class Compiler {
         self.prefilter = (PrefilterBuilder(builder.matchKind_)
             .asciiCaseInsensitive(builder.asciiCaseInsensitive_))
         list[State] states = []  # FIXME
-        PrefilterObj? objs = null  # FIXME
         self.nfa = NFA(
             builder.matchKind_,
-            0, 0, 0, objs,
+            0, 0, 0, null,
             builder.anchored_,
             ByteClasses.singletons(),
             states,
@@ -659,8 +658,7 @@ class QueuedSet {
 
     static method active() -> mut cls {
         set[int] i = {}  # FIXME
-        set[int]? j = i  # DOUBLE FIXME
-        return cls(j)
+        return cls(i)
     }
 
     method insert(int stateId) {

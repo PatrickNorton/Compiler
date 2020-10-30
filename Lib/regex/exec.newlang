@@ -247,9 +247,8 @@ class ExecBuilder {
     public method build() -> Exec {
         if not self.options.pats {
             list[str] res = []  # FIXME: Can't deduce type in function calls
-            AhoCorasick? aho = null  # FIXME: Same thing with null -> Optional
             var ro = ExecReadOnly(
-                res, Program(), Program(), Program(), LiteralSearcher.empty(), aho, MatchType.Nothing()
+                res, Program(), Program(), Program(), LiteralSearcher.empty(), null, MatchType.Nothing()
             )
             return Exec(ro, Cached())
         }

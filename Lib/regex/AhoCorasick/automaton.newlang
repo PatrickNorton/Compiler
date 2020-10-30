@@ -49,17 +49,15 @@ interface Automaton {
         mut int stateId,
     ) -> Match? {
         if self.prefilter()? as pre {
-            Prefilter? pref = pre  # FIXME
             return self.standardFindAtImp(
                 prestate,
-                pref,
+                pre,
                 haystack,
                 at,
                 stateId,
             )
         } else {
-            Prefilter? pref = null  # FIXME
-            self.standardFindAtImp(prestate, pref, haystack, at, stateId)
+            self.standardFindAtImp(prestate, null, haystack, at, stateId)
         }
     }
 
@@ -112,16 +110,14 @@ interface Automaton {
         int at,
     ) -> Match? {
         if self.prefilter()? as pre {
-            Prefilter? pref = pre  # FIXME
             return self.leftmostFindAtNoStateImp(
                 prestate,
-                pref,
+                pre,
                 haystack,
                 at,
             )
         } else {
-            Prefilter? pref = null  # FIXME
-            return self.leftmostFindAtNoStateImp(prestate, pref, haystack, at)
+            return self.leftmostFindAtNoStateImp(prestate, null, haystack, at)
         }
     }
 
