@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The interface for any sort of name, such as a function call, index, or
  * variable.
@@ -18,9 +15,8 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed NameNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static NameNode parse(@NotNull TokenList tokens) {
+
+    static NameNode parse(TokenList tokens) {
         return parse(tokens, false);
     }
 
@@ -34,8 +30,8 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed NameNode
      */
-    @NotNull
-    static NameNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    static NameNode parse(TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.NAME, "(");
         NameNode name;
         if (tokens.tokenIs(TokenType.NAME)) {
@@ -49,19 +45,16 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
         return parsePost(tokens, name, ignoreNewlines);
     }
 
-    @NotNull
-    static NameNode parsePost(@NotNull TokenList tokens, @NotNull NameNode name, boolean ignoreNewlines) {
+    static NameNode parsePost(TokenList tokens,NameNode name, boolean ignoreNewlines) {
         NameNode value = parsePostBraces(tokens, name, ignoreNewlines);
         return DottedVariableNode.parsePostDots(tokens, value, ignoreNewlines);
     }
 
-    @NotNull
-    static NameNode parsePostBraces(@NotNull TokenList tokens, @NotNull NameNode name) {
+    static NameNode parsePostBraces(TokenList tokens,NameNode name) {
         return parsePostBraces(tokens, name, false);
     }
 
-    @NotNull
-    static NameNode parsePostBraces(@NotNull TokenList tokens, @NotNull NameNode name, boolean ignoreNewlines) {
+    static NameNode parsePostBraces(TokenList tokens,NameNode name, boolean ignoreNewlines) {
         TestNode newName = TestNode.parsePostBraces(tokens, name, ignoreNewlines);
         if (newName instanceof NameNode) {
             return (NameNode) newName;
@@ -70,7 +63,7 @@ public interface NameNode extends AtomicNode, PostDottableNode, AssignableNode {
         }
     }
 
-    static String parenthesize(@NotNull TestNode stmt) {
+    static String parenthesize(TestNode stmt) {
         return stmt instanceof NameNode ? stmt.toString() : "(" + stmt + ")";
     }
 }

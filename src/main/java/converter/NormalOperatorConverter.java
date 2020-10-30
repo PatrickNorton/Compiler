@@ -4,7 +4,6 @@ import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         var firstOpConverter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(op, info);
@@ -45,7 +44,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         var constant = constantReturn();
         if (constant.isPresent()) {
@@ -92,7 +91,6 @@ public final class NormalOperatorConverter extends OperatorConverter {
         return bytes;
     }
 
-    @NotNull
     private List<Byte> convertNotEquals(int start) {
         int opCount = args.length;
         assert opCount == 2 && op == OperatorTypeNode.NOT_EQUALS;
@@ -111,7 +109,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

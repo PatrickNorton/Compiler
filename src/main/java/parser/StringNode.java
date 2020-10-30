@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Set;
 
 /**
@@ -22,8 +19,8 @@ public class StringNode extends StringLikeNode {
      * @param contents The contents of the string
      * @param prefixes The prefixes thereof
      */
-    @Contract(pure = true)
-    public StringNode(LineInfo lineInfo, String contents, @NotNull Set<StringPrefix> prefixes) {
+
+    public StringNode(LineInfo lineInfo, String contents,Set<StringPrefix> prefixes) {
         super(lineInfo, prefixes);
         this.contents = contents;
     }
@@ -37,9 +34,7 @@ public class StringNode extends StringLikeNode {
         return new String[] {contents};
     }
 
-    @NotNull
-    @Contract("_ -> new")
-    static StringNode parse(@NotNull Token token) {
+    static StringNode parse(Token token) {
         assert token.is(TokenType.STRING);
         LineInfo lineInfo = token.lineInfo;
         String inside = getContents(token);

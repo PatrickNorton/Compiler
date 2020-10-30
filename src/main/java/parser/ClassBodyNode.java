@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -18,12 +15,10 @@ public class ClassBodyNode implements BodyNode, Iterable<ClassStatementNode> {
     private LineInfo lineInfo;
     private ClassStatementNode[] statements;
 
-    @Contract(pure = true)
     public ClassBodyNode() {
         this(LineInfo.empty());
     }
 
-    @Contract(pure = true)
     public ClassBodyNode(LineInfo lineInfo, ClassStatementNode... statements) {
         this.lineInfo = lineInfo;
         this.statements = statements;
@@ -49,7 +44,6 @@ public class ClassBodyNode implements BodyNode, Iterable<ClassStatementNode> {
         return statements[i];
     }
 
-    @NotNull
     @Override
     public Iterator<ClassStatementNode> iterator() {
         return Arrays.asList(statements).iterator();
@@ -67,9 +61,8 @@ public class ClassBodyNode implements BodyNode, Iterable<ClassStatementNode> {
      * @param tokens The list of tokens passed
      * @return The parsed ClassBodyNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ClassBodyNode parse(@NotNull TokenList tokens) {
+
+    static ClassBodyNode parse(TokenList tokens) {
         // FIXME: Allow lack of newlines around braces
         if (!tokens.tokenIs("{")) {
             throw tokens.error("The body of a class must be enclosed in curly brackets");
@@ -92,22 +85,19 @@ public class ClassBodyNode implements BodyNode, Iterable<ClassStatementNode> {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed ClassBodyNode
      */
-    @NotNull
-    static ClassBodyNode parseEnum(@NotNull TokenList tokens) {
+
+    static ClassBodyNode parseEnum(TokenList tokens) {
         ClassBodyNode cb = parseUntilToken(tokens, "}");
         assert tokens.tokenIs("}");
         tokens.nextToken();
         return cb;
     }
 
-    @NotNull
-    private static ClassBodyNode parseUntilToken(@NotNull TokenList tokens, String... sentinels) {
+    private static ClassBodyNode parseUntilToken(TokenList tokens, String... sentinels) {
         return parseUntilToken(tokens.lineInfo(), tokens, sentinels);
     }
 
-    @NotNull
-    @Contract("_, _, _ -> new")
-    private static ClassBodyNode parseUntilToken(LineInfo lineInfo, @NotNull TokenList tokens, String... sentinels) {
+    private static ClassBodyNode parseUntilToken(LineInfo lineInfo,TokenList tokens, String... sentinels) {
         List<ClassStatementNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(sentinels)) {
             statements.add(ClassStatementNode.parse(tokens));
@@ -118,9 +108,7 @@ public class ClassBodyNode implements BodyNode, Iterable<ClassStatementNode> {
         return new ClassBodyNode(lineInfo, statements.toArray(new ClassStatementNode[0]));
     }
 
-    @NotNull
-    @Contract("_ -> new")
-    static ClassBodyNode fromList(@NotNull List<ClassStatementNode> statements) {
+    static ClassBodyNode fromList(List<ClassStatementNode> statements) {
         if (statements.isEmpty()) {
             return new ClassBodyNode();
         }

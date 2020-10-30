@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.DictComprehensionNode;
 import main.java.parser.TypedVariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ public final class DictCompConverter implements TestConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var variable = node.getVariables()[0];
@@ -37,7 +35,6 @@ public final class DictCompConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {  // TODO: Refactor with ComprehensionConverter (and ForConverter?)
         if (retCount == 0) {

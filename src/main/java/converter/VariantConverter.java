@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +14,6 @@ public final class VariantConverter implements TestConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
@@ -24,7 +21,6 @@ public final class VariantConverter implements TestConverter {
         return new TypeObject[] {retType};
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {

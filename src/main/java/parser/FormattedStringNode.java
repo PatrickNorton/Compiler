@@ -1,9 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,9 +25,9 @@ public class FormattedStringNode extends StringLikeNode {
      * @param strings The intermittent string literals
      * @param tests The non-string-literals which are interpolated
      */
-    @Contract(pure = true)
+
     public FormattedStringNode(LineInfo info, String[] strings, TestNode[] tests,
-                               FormatInfo[] formats, @NotNull Set<StringPrefix> flags) {
+                               FormatInfo[] formats,Set<StringPrefix> flags) {
         super(info, flags);
         this.strings = strings;
         this.tests = tests;
@@ -58,9 +54,8 @@ public class FormattedStringNode extends StringLikeNode {
      * @param token The token for the contents of the string
      * @return The freshly parsed FormattedStringNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static FormattedStringNode parse(@NotNull Token token) {
+
+    static FormattedStringNode parse(Token token) {
         LineInfo info = token.lineInfo;
         String inside = getContents(token);
         Set<StringPrefix> prefixes = getPrefixes(token);
@@ -122,7 +117,7 @@ public class FormattedStringNode extends StringLikeNode {
      * @param start The index to start at
      * @return The position one after the final brace.
      */
-    private static int sizeOfBrace(@NotNull String str, int start, boolean isRaw) {
+    private static int sizeOfBrace(String str, int start, boolean isRaw) {
         assert str.charAt(start) == '{' && isRaw || !isEscaped(str, start);
         int netBraces = 0;
         for (int index = start; index < str.length(); index++) {
@@ -143,7 +138,6 @@ public class FormattedStringNode extends StringLikeNode {
         return -1;
     }
 
-    @Contract(pure = true)
     private static boolean isEscaped(String str, int start) {
         for (int i = start - 1; i >= 0; i--) {
             if (str.charAt(i) != '\\') {
@@ -153,7 +147,6 @@ public class FormattedStringNode extends StringLikeNode {
         return start % 2 == 1;
     }
 
-    @Contract("true, _, _ -> param2; false, _, _ -> !null")
     private static String maybeProcessEscapes(boolean isRaw, String string, LineInfo info) {
         return isRaw ? string : processEscapes(string, info);
     }
@@ -192,12 +185,10 @@ public class FormattedStringNode extends StringLikeNode {
 
         private String specifier;
 
-        @Contract(pure = true)
         FormatInfo(String specifier) {
             this.specifier = specifier;
         }
 
-        @Contract(pure = true)
         public int size() {
             return specifier == null ? 0 : specifier.length() + 1;
         }
@@ -223,14 +214,12 @@ public class FormattedStringNode extends StringLikeNode {
          * @see <a href=https://www.python.org/dev/peps/pep-3101>
          *     Python's formatting grammar</a>
          */
-        @NotNull
-        @Contract("_, _, _ -> new")
+
         static FormatInfo parse(String str, int openBrace, int closeBrace) {
             String specifier = specifier(str, openBrace, closeBrace);
             return new FormatInfo(specifier);
         }
 
-        @Nullable
         private static String specifier(String str, int openBrace, int closeBrace) {
             StringBuilder sb = new StringBuilder();
             for (int i = closeBrace - 1; i > openBrace; i--) {

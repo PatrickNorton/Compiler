@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,7 +28,6 @@ public final class DecimalConstant implements LangConstant {
         return Objects.hash(value);
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -44,7 +42,6 @@ public final class DecimalConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.DECIMAL;
@@ -55,7 +52,6 @@ public final class DecimalConstant implements LangConstant {
         return OptionalBool.of(value.signum() != 0);
     }
 
-    @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {
         return value.toString();

@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a synchronized statement, for thread-safety.
  *
@@ -13,7 +10,6 @@ public class SynchronizedStatementNode implements ComplexStatementNode {
     private TestNode value;
     private StatementBodyNode body;
 
-    @Contract(pure = true)
     public SynchronizedStatementNode(LineInfo info, TestNode value, StatementBodyNode body) {
         this.lineInfo = info;
         this.value = value;
@@ -44,9 +40,8 @@ public class SynchronizedStatementNode implements ComplexStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed node
      */
-    @NotNull
-    @Contract("_ -> new")
-    static SynchronizedStatementNode parse(@NotNull TokenList tokens) {
+
+    static SynchronizedStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.SYNC);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

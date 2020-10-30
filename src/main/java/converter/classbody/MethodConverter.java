@@ -12,7 +12,6 @@ import main.java.parser.GenericFunctionNode;
 import main.java.parser.Lined;
 import main.java.parser.MethodDefinitionNode;
 import main.java.parser.StatementBodyNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ public final class MethodConverter {
         staticMethods = new HashMap<>();
     }
 
-    public void parse(@NotNull MethodDefinitionNode node) {
+    public void parse(MethodDefinitionNode node) {
         var name = methodName(node);
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
@@ -50,7 +49,7 @@ public final class MethodConverter {
         }
     }
 
-    public void parse(@NotNull GenericFunctionNode node) {
+    public void parse(GenericFunctionNode node) {
         var name = node.getName().getName();
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetvals());
@@ -80,16 +79,15 @@ public final class MethodConverter {
         return staticMethods;
     }
 
-    private String methodName(@NotNull MethodDefinitionNode node) {
+    private String methodName(MethodDefinitionNode node) {
         return node.getName().getName(); // TODO: Distinguish between args
     }
 
-    @NotNull
     private static CompilerException generatorError(Lined node) {
         return CompilerException.of("Generator functions must have at least one return", node);
     }
 
-    private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {
+    private static void checkVars(String strName, Lined name,Map<String, ? extends Lined> vars) {
         if (vars.containsKey(strName)) {
             throw CompilerException.doubleDef(strName, name, vars.get(strName));
         }

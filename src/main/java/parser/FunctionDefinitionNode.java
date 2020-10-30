@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -21,7 +18,6 @@ public class FunctionDefinitionNode implements DefinitionNode, GeneralizableNode
     private NameNode[] annotations = new NameNode[0];
     private TypeLikeNode[] generics = new TypeLikeNode[0];
 
-    @Contract(pure = true)
     public FunctionDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args,
                                   TypeLikeNode[] retval, StatementBodyNode body) {
         this.lineInfo = lineInfo;
@@ -109,9 +105,8 @@ public class FunctionDefinitionNode implements DefinitionNode, GeneralizableNode
      * @param tokens The list of tokens to be parsed destructively
      * @return The newly parsed FunctionDefinitionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static FunctionDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static FunctionDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.FUNC);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

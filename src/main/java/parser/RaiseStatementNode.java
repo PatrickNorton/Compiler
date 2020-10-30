@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing a raise statement.
@@ -17,7 +15,7 @@ public class RaiseStatementNode implements SimpleFlowNode, TestNode {
      * Create a new instance of RaiseStatementNode.
      * @param raised The statement to be raised
      */
-    @Contract(pure = true)
+
     public RaiseStatementNode(LineInfo lineInfo, TestNode raised, TestNode condition, TestNode from) {
         this.lineInfo = lineInfo;
         this.raised = raised;
@@ -53,9 +51,8 @@ public class RaiseStatementNode implements SimpleFlowNode, TestNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed RaiseStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static RaiseStatementNode parse(@NotNull TokenList tokens) {
+
+    static RaiseStatementNode parse(TokenList tokens) {
         return parse(tokens, false);
     }
 
@@ -69,9 +66,8 @@ public class RaiseStatementNode implements SimpleFlowNode, TestNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed RaiseStatementNode
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static RaiseStatementNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    static RaiseStatementNode parse(TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(Keyword.RAISE);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken(ignoreNewlines);

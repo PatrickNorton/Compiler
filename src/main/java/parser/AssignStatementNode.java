@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The interface for assignment, whether it be declared or otherwise.
  * <p>
@@ -29,8 +27,8 @@ public interface AssignStatementNode extends SimpleStatementNode {
      *               into the node.
      * @return The statement that was parsed out
      */
-    @NotNull
-    static AssignStatementNode parse(@NotNull TokenList tokens) {
+
+    static AssignStatementNode parse(TokenList tokens) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return DeclaredAssignmentNode.parse(tokens);
         }

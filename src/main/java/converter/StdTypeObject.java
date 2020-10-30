@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,15 +35,15 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         super(new Info(name, supers, info, isFinal), "", true);
     }
 
-    private StdTypeObject(@NotNull StdTypeObject other, String typedefName) {
+    private StdTypeObject(StdTypeObject other, String typedefName) {
         super(other.info, typedefName, other.isConst);
     }
 
-    private StdTypeObject(@NotNull StdTypeObject other, boolean isConst) {
+    private StdTypeObject(StdTypeObject other, boolean isConst) {
         super(other.info, other.typedefName, other.generics, isConst);
     }
 
-    private StdTypeObject(@NotNull StdTypeObject other, List<TypeObject> generics) {
+    private StdTypeObject(StdTypeObject other, List<TypeObject> generics) {
         super(other.info, other.typedefName, generics, other.isConst);
     }
 
@@ -71,17 +69,13 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         }
     }
 
-    @NotNull
-    @Contract("_ -> new")
     @Override
     public TypeObject typedefAs(String name) {
         return new StdTypeObject(this, name);
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
     @Override
-    public TypeObject generify(LineInfo lineInfo, @NotNull TypeObject... args) {
+    public TypeObject generify(LineInfo lineInfo,TypeObject... args) {
         var trueArgs = info.info.generify(args);
         if (trueArgs.isEmpty() || trueArgs.orElseThrow().size() != info.info.getParams().size()) {
             throw CompilerException.of("Cannot generify object in this manner", lineInfo);
@@ -104,8 +98,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.staticOperators = args;
     }
 
-
-    @NotNull
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
@@ -122,7 +114,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
         return info.staticOperatorReturnType(o);
     }
@@ -195,15 +187,14 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.seal();
     }
 
-    @Contract("_, _ -> new")
     @Override
-    @NotNull
+
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         return new StdTypeObject(this, generifyWithInner(parent, values));
     }
 
     @Override
-    @NotNull
+
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
         return Pair.of(Collections.emptySet(), Collections.emptySet());
     }

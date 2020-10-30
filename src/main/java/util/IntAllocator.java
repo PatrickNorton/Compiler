@@ -1,7 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
@@ -46,7 +44,6 @@ public class IntAllocator extends AbstractCollection<Integer> implements Collect
         return max - removed.size();
     }
 
-    @NotNull
     @Override
     public Iterator<Integer> iterator() {
         return new IntIterator();
@@ -73,12 +70,12 @@ public class IntAllocator extends AbstractCollection<Integer> implements Collect
     }
 
     @Override
-    public boolean removeAll(@NotNull Collection<?> c) {
+    public boolean removeAll(Collection<?> c) {
         return false;
     }
 
     @Override
-    public boolean retainAll(@NotNull Collection<?> c) {
+    public boolean retainAll(Collection<?> c) {
         return false;
     }
 

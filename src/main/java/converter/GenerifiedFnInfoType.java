@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +15,10 @@ public final class GenerifiedFnInfoType extends TypeObject {
     }
 
     @Override
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         return false;  // TODO: Implement
     }
 
-    @NotNull
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
@@ -31,15 +28,11 @@ public final class GenerifiedFnInfoType extends TypeObject {
         }
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String name() {
         return new FunctionInfoType(info.generify(this, generics)).name();
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String baseName() {
         return baseType().baseName();
@@ -60,8 +53,6 @@ public final class GenerifiedFnInfoType extends TypeObject {
         return baseType().baseHash();
     }
 
-    @Contract(" -> new")
-    @NotNull
     public FunctionInfoType baseType() {
         return new FunctionInfoType(info);
     }

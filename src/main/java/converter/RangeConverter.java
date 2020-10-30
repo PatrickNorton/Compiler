@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.RangeLiteralNode;
 import main.java.parser.TestNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -56,13 +55,11 @@ public final class RangeConverter implements TestConverter {
         return Optional.of(new RangeConstant(start, end, step));
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.RANGE};
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
@@ -89,7 +86,7 @@ public final class RangeConverter implements TestConverter {
         return bytes;
     }
 
-    private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node, int defaultVal) {
+    private void convertPortion(int start, List<Byte> bytes,TestNode node, int defaultVal) {
         if (!node.isEmpty()) {
             var converter = TestConverter.of(info, node, 1);
             if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {

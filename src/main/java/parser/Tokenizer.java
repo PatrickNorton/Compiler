@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -17,7 +14,6 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 /**
  * The lexer of a file, separates it into a list of tokens.
@@ -37,17 +33,14 @@ public final class Tokenizer {
     private static final Pattern CLOSE_STRING = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*\"");
     private static final Pattern CLOSE_SINGLE_STRING = Pattern.compile("^.*?(?<!\\\\)(\\\\{2})*'");
 
-    @Contract(pure = true)
     private Tokenizer(File name) throws FileNotFoundException {
         this(new FileReader(name), name.toPath(), 0);
     }
 
-    @Contract(pure = true)
     private Tokenizer(String str, Path path, int lineNo) {
         this(new StringReader(str), path, lineNo);
     }
 
-    @Contract(pure = true)
     private Tokenizer(Reader r, Path path, int lineNo) {
         file = new LineNumberReader(r);
         file.setLineNumber(lineNo);
@@ -70,7 +63,6 @@ public final class Tokenizer {
         return nextToken;
     }
 
-    @NotNull
     private Optional<Token> getNext() {
         if (next.isEmpty()) {
             return Optional.of(emptyLine());
@@ -95,7 +87,6 @@ public final class Tokenizer {
         return Optional.empty();
     }
 
-    @NotNull
     private ParserException invalid() {
         for (InvalidToken info : InvalidToken.values()) {
             Matcher match = info.regex.matcher(next);
@@ -127,7 +118,7 @@ public final class Tokenizer {
     /**
      * Adjust {@link #next} for multiline tokens.
      */
-    @NotNull
+
     private Optional<Token> adjustForMultiline() {
         if (OPEN_COMMENT.matcher(next).find()) {
             return Optional.of(concatLines(CLOSE_COMMENT, TokenType.WHITESPACE));
@@ -144,9 +135,8 @@ public final class Tokenizer {
      * Concatenate lines to {@link #next} until the given pattern matches.
      * @param tillMatch The pattern to match to
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    private Token concatLines(@NotNull Pattern tillMatch, TokenType resultType) {
+
+    private Token concatLines(Pattern tillMatch, TokenType resultType) {
         LineInfo lineInfo = lineInfo();
         StringBuilder nextSequence = new StringBuilder(next);
         while (true) {
@@ -176,21 +166,17 @@ public final class Tokenizer {
         }
     }
 
-    @Contract(pure = true)
     private int lineIndex() {
         if (lbIndices.isEmpty()) return fullLine.length() - next.length();
         Integer index = lbIndices.lower(fullLine.length() - next.length());
         return fullLine.length() - next.length() - (index == null ? 0 : index);
     }
 
-    @Contract(pure = true)
     private int lineNumber() {
         return file.getLineNumber() + (lbIndices.isEmpty() ? 0 :
                 lbIndices.headSet(fullLine.length() - next.length(), true).size());
     }
 
-    @NotNull
-    @Contract(" -> new")
     private LineInfo lineInfo() {
         return new LineInfo(
                 fileName,
@@ -212,19 +198,14 @@ public final class Tokenizer {
         }
     }
 
-    @NotNull
-    @Contract("_ -> new")
-    private ParserException tokenError(@NotNull InvalidToken info) {
+    private ParserException tokenError(InvalidToken info) {
         return tokenError(info.errorMessage);
     }
 
-    @NotNull
     private ParserException tokenError() {
         return tokenError("Invalid syntax");
     }
 
-    @NotNull
-    @Contract("_ -> new")
     private ParserException tokenError(String message) {
         return ParserException.of(message, lineInfo());
     }
@@ -234,8 +215,7 @@ public final class Tokenizer {
      * @param f The file to pass
      * @return The tokenizer with the list of tokens
      */
-    @Contract("_ -> new")
-    @NotNull
+
     public static TokenList parse(File f) {
         Tokenizer tokenizer;
         try {
@@ -251,8 +231,7 @@ public final class Tokenizer {
      * @param str The string to parse
      * @return The tokenizer with the list of tokens
      */
-    @NotNull
-    @Contract("_, _, _ -> new")
+
     public static TokenList parse(String str, Path path, int lineNo) {
         return new TokenList(new Tokenizer(str, path, lineNo));
     }

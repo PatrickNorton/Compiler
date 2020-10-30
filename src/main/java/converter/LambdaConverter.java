@@ -7,7 +7,6 @@ import main.java.parser.StatementBodyNode;
 import main.java.parser.TestListNode;
 import main.java.parser.TestNode;
 import main.java.parser.TypedArgumentNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,13 +32,11 @@ public final class LambdaConverter implements TestConverter {
         this.expectedReturns = null;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[] {new FunctionInfo(convertArgs(), lambdaReturnType()).toCallable()};
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
@@ -71,7 +68,6 @@ public final class LambdaConverter implements TestConverter {
         }
     }
 
-    @NotNull
     private List<Byte> convertBody() {
         info.addStackFrame();
         var retInfo = info.getFnReturns();
@@ -95,7 +91,6 @@ public final class LambdaConverter implements TestConverter {
         }
     }
 
-    @NotNull
     private ArgumentInfo convertArgs() {
         var args = node.getArgs();
         var kwargs = getArgs(args.getNameArgs());
@@ -104,7 +99,7 @@ public final class LambdaConverter implements TestConverter {
         return new ArgumentInfo(kwargs, normalArgs, posArgs);
     }
 
-    private Argument[] getArgs(@NotNull TypedArgumentNode... args) {
+    private Argument[] getArgs(TypedArgumentNode... args) {
         var result = new Argument[args.length];
         var expected = (expectedReturns == null || expectedReturns.length == 0) ? null : expectedReturns[0];
         for (int i = 0; i < args.length; i++) {

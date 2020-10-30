@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a dotimes statement.
  * <p>
@@ -24,7 +21,7 @@ public class DotimesStatementNode implements FlowStatementNode {
      * @param body The body of the node
      * @param nobreak The nobreak statement
      */
-    @Contract(pure = true)
+
     public DotimesStatementNode(LineInfo lineInfo, TestNode iterations, StatementBodyNode body, StatementBodyNode nobreak) {
         this.lineInfo = lineInfo;
         this.iterations = iterations;
@@ -60,9 +57,8 @@ public class DotimesStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DotimesStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DotimesStatementNode parse(@NotNull TokenList tokens) {
+
+    static DotimesStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.DOTIMES);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

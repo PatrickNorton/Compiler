@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.Lined;
 import main.java.parser.TestListNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ public final class ReturnListConverter implements BaseConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         if (retTypes.length > 1 && values.size() == 1) {
             return convertSingle(start);
@@ -97,7 +96,7 @@ public final class ReturnListConverter implements BaseConverter {
         }
     }
 
-    private void checkSingleReturn(@NotNull TypeObject[] returns) {
+    private void checkSingleReturn(TypeObject[] returns) {
         assert values.size() == 1;
         var retInfo = info.getFnReturns();
         var fnReturns = retInfo.currentFnReturns();
@@ -116,7 +115,7 @@ public final class ReturnListConverter implements BaseConverter {
         }
     }
 
-    private static boolean badType(@NotNull TypeObject fnRet, TypeObject retType) {
+    private static boolean badType(TypeObject fnRet, TypeObject retType) {
         if (fnRet.isSuperclass(retType)) {
             return false;
         } else if (OptionTypeObject.needsMakeOption(fnRet, retType)) {
@@ -126,9 +125,8 @@ public final class ReturnListConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     private static CompilerException typeError(
-            Lined lined, int index, @NotNull TypeObject retType, @NotNull TypeObject fnRet
+            Lined lined, int index,TypeObject retType,TypeObject fnRet
     ) {
         return CompilerException.format(
                 "Value returned in position %d, of type '%s', is not a subclass of the required return '%s'",

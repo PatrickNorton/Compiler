@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing a return statement.
@@ -19,7 +17,7 @@ public class ReturnStatementNode implements SimpleFlowNode {
      * @param returned The list of tokens that are returned
      * @param cond The condition as to whether or not there is a return
      */
-    @Contract(pure = true)
+
     public ReturnStatementNode(LineInfo lineInfo, TestListNode returned, TestNode cond) {
         this.lineInfo = lineInfo;
         this.returned = returned;
@@ -50,9 +48,8 @@ public class ReturnStatementNode implements SimpleFlowNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed ReturnStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ReturnStatementNode parse(@NotNull TokenList tokens) {
+
+    static ReturnStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.RETURN);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

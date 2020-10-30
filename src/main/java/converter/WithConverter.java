@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.WithStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,6 @@ public final class WithConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         assert node.getManaged().size() == 1;

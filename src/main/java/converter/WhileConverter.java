@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.OperatorNode;
 import main.java.parser.WhileStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,6 @@ public final class WhileConverter extends LoopConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     protected List<Byte> trueConvert(int start) {
         List<Byte> bytes = new ArrayList<>();
@@ -63,7 +61,7 @@ public final class WhileConverter extends LoopConverter {
         bytes.addAll(pair.getKey());
     }
 
-    private void addNobreak(@NotNull List<Byte> bytes, int start, int jumpLoc) {
+    private void addNobreak(List<Byte> bytes, int start, int jumpLoc) {
         var nobreak = BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info);
         bytes.addAll(nobreak);
         if (!node.getAs().isEmpty()) {

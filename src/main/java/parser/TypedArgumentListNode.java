@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,12 +16,10 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
     private TypedArgumentNode[] normalArgs;
     private TypedArgumentNode[] nameArgs;
 
-    @Contract(pure = true)
     public TypedArgumentListNode(LineInfo lineInfo, TypedArgumentNode... args) {
         this(lineInfo, new TypedArgumentNode[0], args, new TypedArgumentNode[0]);
     }
 
-    @Contract(pure = true)
     public TypedArgumentListNode(LineInfo lineInfo, TypedArgumentNode[] positionArgs, TypedArgumentNode[] normalArgs,
                                  TypedArgumentNode[] nameArgs) {
         this.lineInfo = lineInfo;
@@ -69,12 +64,10 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TypedArgumentListNode
      */
-    static TypedArgumentListNode parseOnOpenBrace(@NotNull TokenList tokens) {
+    static TypedArgumentListNode parseOnOpenBrace(TokenList tokens) {
         return tokens.tokenIs("(") ? parse(tokens, false) : empty();
     }
 
-    @NotNull
-    @Contract(" -> new")
     static TypedArgumentListNode empty() {
         return new TypedArgumentListNode(LineInfo.empty());
     }
@@ -90,9 +83,8 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed TypedArgumentListNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static TypedArgumentListNode parse(@NotNull TokenList tokens) {
+
+    static TypedArgumentListNode parse(TokenList tokens) {
         return parse(tokens, false);
     }
 
@@ -110,9 +102,8 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
      * @param allowUntyped Whether or not to allow untyped arguments
      * @return The freshly parsed TypedArgumentListNode
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    private static TypedArgumentListNode parse(@NotNull TokenList tokens, boolean allowUntyped) {
+
+    private static TypedArgumentListNode parse(TokenList tokens, boolean allowUntyped) {
         assert tokens.tokenIs("(");
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
@@ -121,8 +112,6 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
         return list;
     }
 
-    @NotNull
-    @Contract("_, _, _ -> new")
     private static TypedArgumentListNode parseInsideParens(TokenList tokens, LineInfo info, boolean allowUntyped) {
         boolean untypedDecided = !allowUntyped;
         List<TypedArgumentNode> posArgs = null;  // Never used, so don't alloc memory for it
@@ -168,7 +157,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
                 args.toArray(new TypedArgumentNode[0]), kwArgs.toArray(new TypedArgumentNode[0]));
     }
 
-    static TypedArgumentListNode parseOptionalParens(@NotNull TokenList tokens) {
+    static TypedArgumentListNode parseOptionalParens(TokenList tokens) {
         return tokens.tokenIs("(")
                 ? parse(tokens, true)
                 : parseInsideParens(tokens, tokens.lineInfo(), true);
@@ -211,7 +200,6 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
         return positionArgs.length + nameArgs.length + normalArgs.length;
     }
 
-    @NotNull
     @Override
     public Iterator<TypedArgumentNode> iterator() {
         return new ArgIterator();

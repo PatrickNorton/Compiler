@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.ReturnStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,6 @@ public final class ReturnConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();

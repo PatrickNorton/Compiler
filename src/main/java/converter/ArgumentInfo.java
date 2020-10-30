@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +46,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * @param args The arguments to check for validity
      * @return If they match this function signature
      */
-    public boolean matches(@NotNull Argument... args) {
+    public boolean matches(Argument... args) {
         var newArgs = expandTuples(args);
         Map<String, TypeObject> keywordMap = initKeywords(newArgs);
         int argNo = 0;
@@ -92,8 +90,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return true;
     }
 
-    @NotNull
-    private Argument[] expandTuples(@NotNull Argument... args) {
+    private Argument[] expandTuples(Argument... args) {
         List<Argument> result = new ArrayList<>(args.length);
         for (var arg : args) {
             if (arg.isVararg()) {
@@ -134,8 +131,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * @param args The arguments to get the final order
      * @return The array containing that order
      */
-    @NotNull
-    public int[] argPositions(@NotNull Argument... args) {
+
+    public int[] argPositions(Argument... args) {
         Map<String, Integer> kwPositions = new HashMap<>();
         for (var arg : args) {
             if (!arg.getName().isEmpty()) {
@@ -195,7 +192,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
     }
 
-    public Optional<Map<Integer, TypeObject>> generifyArgs(@NotNull FunctionInfo parent, Argument... args) {
+    public Optional<Map<Integer, TypeObject>> generifyArgs(FunctionInfo parent, Argument... args) {
         var par = parent.toCallable();
         var newArgs = expandTuples(args);
         if (size() == 0) {
@@ -259,16 +256,14 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return argNo + keywordMap.size() == newArgs.length ? Optional.of(result) : Optional.empty();
     }
 
-    @NotNull
-    public static ArgumentInfo of(@NotNull TypedArgumentListNode args, CompilerInfo info) {
+    public static ArgumentInfo of(TypedArgumentListNode args, CompilerInfo info) {
         var posArgs = getArgs(info, args.getPositionArgs());
         var normalArgs = getArgs(info, args.getArgs());
         var kwArgs = getArgs(info, args.getNameArgs());
         return new ArgumentInfo(posArgs, normalArgs, kwArgs);
     }
 
-    @NotNull
-    public static Argument[] getArgs(CompilerInfo info, @NotNull TypedArgumentNode... args) {
+    public static Argument[] getArgs(CompilerInfo info,TypedArgumentNode... args) {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
@@ -280,7 +275,6 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return result;
     }
 
-    @NotNull
     @Override
     public Iterator<Argument> iterator() {
         return new ArgIterator();
@@ -290,8 +284,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return positionArgs.length + normalArgs.length + keywordArgs.length;
     }
 
-    @NotNull
-    private Map<String, TypeObject> initKeywords(@NotNull Argument[] args) {
+    private Map<String, TypeObject> initKeywords(Argument[] args) {
         Map<String, TypeObject> keywordMap = new HashMap<>();
         for (var arg : args) {
             if (!arg.getName().isEmpty()) {
@@ -349,9 +342,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
     }
 
-    @NotNull
-    @Contract("_ -> new")
-    public static ArgumentInfo of(@NotNull TypeObject... args) {
+    public static ArgumentInfo of(TypeObject... args) {
         Argument[] resultArgs = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             resultArgs[i] = new Argument("", args[i]);

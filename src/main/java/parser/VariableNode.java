@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a name token.
  * @author Patrick Norton
@@ -11,7 +8,6 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
     private LineInfo lineInfo;
     private String name;
 
-    @Contract(pure = true)
     public VariableNode(LineInfo lineInfo, String names) {
         this.lineInfo = lineInfo;
         this.name = names;
@@ -36,8 +32,6 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
         return false;
     }
 
-    @NotNull
-    @Contract(value = " -> new", pure = true)
     public static VariableNode empty() {
         return new VariableNode(LineInfo.empty(), "");
     }
@@ -54,8 +48,8 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
      * @param tokens The list of tokens to destructively parse
      * @return The freshly parsed VariableNode
      */
-    @NotNull
-    static VariableNode parseOnName(@NotNull TokenList tokens) {
+
+    static VariableNode parseOnName(TokenList tokens) {
         return tokens.tokenIs(TokenType.NAME) ? parse(tokens) : empty();
     }
 
@@ -66,7 +60,7 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
      * @param sentinel The keyword to check for
      * @return The freshly parsed VariableNode
      */
-    static VariableNode parseOnToken(@NotNull TokenList tokens, Keyword sentinel) {
+    static VariableNode parseOnToken(TokenList tokens, Keyword sentinel) {
         if (tokens.tokenIs(sentinel)) {
             tokens.nextToken();
             return parse(tokens);
@@ -83,9 +77,8 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
      * @param tokens The list of tokens to destructively parse
      * @return The freshly parsed VariableNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static VariableNode parse(@NotNull TokenList tokens) {
+
+    static VariableNode parse(TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw tokens.errorExpected("name");
         }
@@ -103,9 +96,8 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
      * @param tokens The list of tokens to destructively parse
      * @return The freshly parsed VariableNode
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static VariableNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    static VariableNode parse(TokenList tokens, boolean ignoreNewlines) {
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
@@ -126,9 +118,8 @@ public class VariableNode implements NameNode, VarLikeNode, EnumKeywordNode {
      * @param tokens The list of tokens to be parsed
      * @return The freshly parsed ellipsis
      */
-    @NotNull
-    @Contract("_ -> new")
-    static VariableNode parseEllipsis(@NotNull TokenList tokens) {
+
+    static VariableNode parseEllipsis(TokenList tokens) {
         assert tokens.tokenIs(TokenType.ELLIPSIS);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

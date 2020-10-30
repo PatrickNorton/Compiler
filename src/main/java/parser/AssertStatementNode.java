@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Node representing an assert statement, such as the ones in Java or any other
  * major programming language.
@@ -17,7 +14,6 @@ public class AssertStatementNode implements SimpleStatementNode {
     private LineInfo lineInfo;
     private TestNode asStatement;
 
-    @Contract(pure = true)
     public AssertStatementNode(LineInfo lineInfo, TestNode assertion, TestNode as) {
         this.assertion = assertion;
         this.lineInfo = lineInfo;
@@ -28,7 +24,7 @@ public class AssertStatementNode implements SimpleStatementNode {
      * Create new instance of AssertStatementNode.
      * @param assertion The assertion to be tested
      */
-    @Contract(pure = true)
+
     public AssertStatementNode(TestNode assertion, TestNode as) {
         this(assertion.getLineInfo(), assertion, as);
     }
@@ -54,9 +50,8 @@ public class AssertStatementNode implements SimpleStatementNode {
      *               all parsed tokens as part of the parsing
      * @return The new AbstractStatementNode which is created
      */
-    @NotNull
-    @Contract("_ -> new")
-    static AssertStatementNode parse(@NotNull TokenList tokens) {
+
+    static AssertStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.ASSERT);
         tokens.nextToken();
         TestNode assertion = TestNode.parse(tokens);

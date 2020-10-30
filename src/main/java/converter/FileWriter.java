@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,7 +49,7 @@ public final class FileWriter {
      *
      * @param file The file to write to
      */
-    public void writeToFile(@NotNull File file) {
+    public void writeToFile(File file) {
         printDisassembly();
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdir()) {

@@ -16,9 +16,6 @@ import main.java.util.IndexedSet;
 import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -95,7 +92,7 @@ public final class ImportHandler {
      *
      * @param node The node representing the file
      */
-    public void registerDependents(@NotNull TopNode node) {
+    public void registerDependents(TopNode node) {
         Map<String, Pair<TypeObject, Lined>> types = new HashMap<>();
         Map<String, LineInfo> lineInfos = new HashMap<>();
         Set<TypeObject> definedInFile = new HashSet<>();
@@ -181,7 +178,7 @@ public final class ImportHandler {
      *
      * @param linker The linker from which to set exports
      */
-    public void setFromLinker(@NotNull Linker linker) {
+    public void setFromLinker(Linker linker) {
         var exports = linker.getExports();
         var globals = linker.getGlobals();
         var constants = linker.getConstants();
@@ -214,8 +211,8 @@ public final class ImportHandler {
      * @param node The node to parse into an import
      * @return A map of strings to the import digits from this node
      */
-    @NotNull
-    public Map<String, Integer> addImport(@NotNull ImportExportNode node) {
+
+    public Map<String, Integer> addImport(ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         if (node.isWildcard()) {
             var path = loadFile(moduleName(node, 0), node);
@@ -263,7 +260,7 @@ public final class ImportHandler {
         }
     }
 
-    private void registerImports(@NotNull ImportExportNode node) {
+    private void registerImports(ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         if (node.isWildcard()) {
             var path = loadFile(moduleName(node, 0), node);
@@ -307,7 +304,7 @@ public final class ImportHandler {
         }
     }
 
-    private void checkAs(@NotNull ImportExportNode node) {
+    private void checkAs(ImportExportNode node) {
         if (node.getAs().length != 0 && node.getAs().length != node.getValues().length) {
             throw CompilerException.format(
                     "Import statement had %d 'as' clauses, expected %d (== to # of imported names)",
@@ -325,9 +322,7 @@ public final class ImportHandler {
      *
      * @return A view of all the exports in the file
      */
-    @Contract(pure = true)
-    @NotNull
-    @UnmodifiableView
+
     public Collection<String> getExports() {
         return Collections.unmodifiableSet(exports.keySet());
     }
@@ -341,9 +336,7 @@ public final class ImportHandler {
      *
      * @return A view of all the exports in the file
      */
-    @Contract(pure = true)
-    @NotNull
-    @UnmodifiableView
+
     public Collection<Map.Entry<String, TypeObject>> exportTypes() {
         return Collections.unmodifiableSet(exports.entrySet());
     }
@@ -352,13 +345,13 @@ public final class ImportHandler {
         exports.put(name, type);
     }
 
-    private void registerWildcardImport(String moduleName, @NotNull ImportExportNode node) {
+    private void registerWildcardImport(String moduleName,ImportExportNode node) {
         var path = loadFile(moduleName, node);
         imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of("*")));
         // FIXME: Add to importStrings
     }
 
-    private Path loadFile(String moduleName, @NotNull ImportExportNode node) {
+    private Path loadFile(String moduleName,ImportExportNode node) {
         Path path;
         if (node.getPreDots() > 0) {
             var parentPath = info.path();
@@ -373,7 +366,7 @@ public final class ImportHandler {
         return path;
     }
 
-    private void registerExports(@NotNull ImportExportNode node) {
+    private void registerExports(ImportExportNode node) {
         assert node.getType() == ImportExportNode.EXPORT;
         boolean notRenamed = node.getAs().length == 0;
         boolean isFrom = !node.getFrom().isEmpty();
@@ -408,7 +401,7 @@ public final class ImportHandler {
         }
     }
 
-    private void registerWildcardExport(String moduleName, @NotNull ImportExportNode node) {
+    private void registerWildcardExport(String moduleName,ImportExportNode node) {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
                 : Converter.findPath(moduleName, node);
@@ -435,7 +428,7 @@ public final class ImportHandler {
      *
      * @return The map of strings
      */
-    @NotNull
+
     public Map<String, Pair<TypeObject, Lined>> importedTypes() {
         Map<String, Pair<TypeObject, Lined>> importedTypes = new HashMap<>();
         for (var pair : imports.entrySet()) {
@@ -460,19 +453,16 @@ public final class ImportHandler {
         return importedTypes;
     }
 
-    @NotNull
-    public TypeObject importedType(@NotNull Lined lineInfo, Path file, String name) {
+    public TypeObject importedType(Lined lineInfo, Path file, String name) {
         var handler = ALL_FILES.get(file);
         return handler.importHandler().typeOfExport(name, lineInfo.getLineInfo(), new ArrayList<>());
     }
 
-    @NotNull
-    public OptionalUint importedConstant(@NotNull Lined lineInfo, Path file, String name) {
+    public OptionalUint importedConstant(Lined lineInfo, Path file, String name) {
         var handler = ALL_FILES.get(file);
         return handler.importHandler().importedConst(name, lineInfo.getLineInfo(), new ArrayList<>());
     }
 
-    @NotNull
     private Map<String, TypeObject> exportedTypes(LineInfo lineInfo) {
         Map<String, TypeObject> result = new HashMap<>();
         for (var pair : exports.entrySet()) {
@@ -489,7 +479,7 @@ public final class ImportHandler {
     }
 
     private Optional<TypeObject> exportedType(
-            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+String name, LineInfo lineInfo,List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
         checkCircular(name, previousFiles);
@@ -517,9 +507,8 @@ public final class ImportHandler {
         }
     }
 
-    @NotNull
     public TypeObject typeOfExport(
-            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+String name, LineInfo lineInfo,List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
         checkCircular(name, previousFiles);
@@ -547,9 +536,8 @@ public final class ImportHandler {
         }
     }
 
-    @NotNull
     public OptionalUint importedConst(
-            @NotNull String name, LineInfo lineInfo, @NotNull List<Pair<LineInfo, String>> previousFiles
+String name, LineInfo lineInfo,List<Pair<LineInfo, String>> previousFiles
     ) {
         assert !name.equals("*");
         checkCircular(name, previousFiles);
@@ -579,7 +567,7 @@ public final class ImportHandler {
         }
     }
 
-    private void checkCircular(String name, @NotNull List<Pair<LineInfo, String>> previousFiles) {
+    private void checkCircular(String name,List<Pair<LineInfo, String>> previousFiles) {
         for (var pair : previousFiles) {
             var info = pair.getKey();
             if (info.getPath().equals(this.info.path()) && pair.getValue().equals(name)) {
@@ -627,7 +615,7 @@ public final class ImportHandler {
         return imports;
     }
 
-    private static String moduleName(@NotNull ImportExportNode node, int i) {
+    private static String moduleName(ImportExportNode node, int i) {
         if (!node.getFrom().isEmpty()) {
             return ((VariableNode) node.getFrom().getPreDot()).getName();
         } else {

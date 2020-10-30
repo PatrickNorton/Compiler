@@ -18,26 +18,23 @@ import main.java.parser.SwitchStatementNode;
 import main.java.parser.TernaryNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public interface TestConverter extends BaseConverter {
-    @NotNull
+
     TypeObject[] returnType();
 
     default Optional<LangConstant> constantReturn() {
         return Optional.empty();
     }
 
-    @NotNull
-    static List<Byte> bytes(int start, @NotNull TestNode node, CompilerInfo info, int retCount) {
+    static List<Byte> bytes(int start,TestNode node, CompilerInfo info, int retCount) {
         return of(info, node, retCount).convert(start);
     }
 
-    @NotNull
     static TypeObject[] returnType(TestNode node, CompilerInfo info, int retCount) {
         return of(info, node, retCount).returnType();
     }
@@ -57,14 +54,12 @@ public interface TestConverter extends BaseConverter {
         }
     }
 
-    @NotNull
-    static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
+    static List<Byte> bytesMaybeOption(int start,TestNode node, CompilerInfo info,
                                        int retCount, TypeObject endType) {
         var converter = of(info, node, retCount);
         return bytesMaybeOption(converter, start, endType);
     }
 
-    @NotNull
     static TestConverter of(CompilerInfo info, TestNode node, int retCount, TypeObject... expectedReturns) {
         if (node instanceof DictLiteralNode) {
             return new DictLiteralConverter(info, (DictLiteralNode) node, retCount, expectedReturns);
@@ -76,8 +71,7 @@ public interface TestConverter extends BaseConverter {
         return of(info, node, retCount);
     }
 
-    @NotNull
-    static TestConverter of(CompilerInfo info, @NotNull TestNode node, int retCount) {
+    static TestConverter of(CompilerInfo info,TestNode node, int retCount) {
         if (node instanceof ComprehensionNode) {
             return new ComprehensionConverter(info, (ComprehensionNode) node, retCount);
         } else if (node instanceof DictComprehensionNode) {

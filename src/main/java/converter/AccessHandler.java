@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.util.Counter;
 import main.java.util.HashCounter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -28,7 +27,7 @@ public final class AccessHandler {
      * @param obj The object to get the access level for
      * @return The security access level of the type
      */
-    public AccessLevel accessLevel(@NotNull TypeObject obj) {
+    public AccessLevel accessLevel(TypeObject obj) {
         var base = obj instanceof TypeTypeObject
                 ? new BaseType(((TypeTypeObject) obj).representedType())
                 : new BaseType(obj);
@@ -108,7 +107,7 @@ public final class AccessHandler {
      * @param cls The type to be used
      * @see #removeCls()
      */
-    public void addCls(@NotNull TypeObject cls) {
+    public void addCls(TypeObject cls) {
         clsTypes.push(cls);
     }
 
@@ -123,7 +122,7 @@ public final class AccessHandler {
      * @param cls The type to be used
      * @see #removeSuper()
      */
-    public void addSuper(@NotNull TypeObject cls) {
+    public void addSuper(TypeObject cls) {
         superTypes.push(cls);
     }
 
@@ -181,18 +180,18 @@ public final class AccessHandler {
         constructors.pop();
     }
 
-    public boolean isInConstructor(@NotNull TypeObject type) {
+    public boolean isInConstructor(TypeObject type) {
         return containsBase(constructors, type);
     }
 
-    public void setDefinedInFile(@NotNull Set<TypeObject> values) {
+    public void setDefinedInFile(Set<TypeObject> values) {
         assert definedInFile.isEmpty();
         for (var value : values) {
             definedInFile.add(new BaseType(value));
         }
     }
 
-    private boolean containsBase(@NotNull Iterable<TypeObject> obj, TypeObject val) {
+    private boolean containsBase(Iterable<TypeObject> obj, TypeObject val) {
         for (var type : obj) {
             if (type.sameBaseType(val)) {
                 return true;

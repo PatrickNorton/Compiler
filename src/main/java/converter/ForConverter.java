@@ -4,8 +4,6 @@ import main.java.parser.ForStatementNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +18,6 @@ public final class ForConverter extends LoopConverter {
         this.info = info;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public List<Byte> trueConvert(int start) {
         var varLen = node.getVars().length;
@@ -35,7 +31,6 @@ public final class ForConverter extends LoopConverter {
         }
     }
 
-    @NotNull
     private List<Byte> convertSingleIter(int start) {
         var retCount = node.getVars().length;
         var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
@@ -53,7 +48,6 @@ public final class ForConverter extends LoopConverter {
         return bytes;
     }
 
-    @NotNull
     private List<Byte> convertMultipleIter(int start) {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
@@ -108,7 +102,7 @@ public final class ForConverter extends LoopConverter {
         bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
     }
 
-    private void addCleanup(int start, @NotNull List<Byte> bytes, int jumpPos) {
+    private void addCleanup(int start,List<Byte> bytes, int jumpPos) {
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addContinue(start + bytes.size());
@@ -117,7 +111,7 @@ public final class ForConverter extends LoopConverter {
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info));
     }
 
-    private TypeObject returnType(int i, @NotNull TestConverter valueConverter) {
+    private TypeObject returnType(int i,TestConverter valueConverter) {
         var opTypes = valueConverter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info);
         var opType = Builtins.deIterable(opTypes[0]);
         if (opType.length <= i) {
@@ -146,7 +140,7 @@ public final class ForConverter extends LoopConverter {
     }
 
     static void addIter(
-            @NotNull CompilerInfo info, int start, @NotNull List<Byte> bytes, @NotNull TestConverter converter
+CompilerInfo info, int start,List<Byte> bytes,TestConverter converter
     ) {
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));

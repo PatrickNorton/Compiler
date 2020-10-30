@@ -2,8 +2,6 @@ package main.java.parser;
 
 import main.java.util.CircularBuffer;
 import main.java.util.IndexedDeque;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -26,7 +24,7 @@ public final class TokenList implements Iterable<Token> {
      * </p>
      * @param tokenizer The tokenizer to collect from
      */
-    @Contract(pure = true)
+
     public TokenList(Tokenizer tokenizer) {
         this.buffer = new CircularBuffer<>();
         this.tokenizer = tokenizer;
@@ -88,8 +86,7 @@ public final class TokenList implements Iterable<Token> {
      * Create an iterable for a line of the code.
      * @return The iterable for the line
      */
-    @NotNull
-    @Contract(pure = true)
+
     private Iterable<Token> lineIterator() {
         return LineIterator::new;
     }
@@ -138,14 +135,11 @@ public final class TokenList implements Iterable<Token> {
      * The list of tokens within the first brace found
      * @return The list of tokens
      */
-    @NotNull
-    @Contract(pure = true)
+
     private Iterable<Token> firstLevel() {
         return FirstLevelIterator::new;
     }
 
-    @NotNull
-    @Contract(pure = true)
     private Iterable<Token> zerothLevel() {
         return ZerothLevelIterator::new;
     }
@@ -657,7 +651,7 @@ public final class TokenList implements Iterable<Token> {
          * Adjust the net number of braces to match the token given.
          * @param token The token to adjust based on
          */
-        private void adjustBraces(@NotNull Token token) {
+        private void adjustBraces(Token token) {
             switch (token.token) {
                 case OPEN_BRACE:
                     if (nextIsBlockBrace(token)) {
@@ -695,8 +689,6 @@ public final class TokenList implements Iterable<Token> {
         }
     }
 
-    @Contract(" -> new")
-    @NotNull
     @Override
     public Iterator<Token> iterator() {
         return new TokenIterator();
@@ -707,8 +699,7 @@ public final class TokenList implements Iterable<Token> {
      * @param i The number of spots from the beginning to start at
      * @return The new iterable
      */
-    @NotNull
-    @Contract(pure = true)
+
     public Iterable<Token> iteratorFrom(int i) {
         return () -> new TokenIterator(i);
     }
@@ -717,7 +708,7 @@ public final class TokenList implements Iterable<Token> {
      * Get the matching brace of the first token in the list.
      * @return The matching brace
      */
-    @NotNull
+
     public String matchingBrace() {
         assert tokenIs(TokenType.OPEN_BRACE);
         return TokenList.matchingBrace(tokenSequence());
@@ -729,7 +720,7 @@ public final class TokenList implements Iterable<Token> {
      * @param message The message to attach to the error
      * @return The new error
      */
-    @NotNull
+
     public ParserInternalError internalError(String message) {
         return ParserInternalError.of(message, getFirst());
     }
@@ -739,23 +730,19 @@ public final class TokenList implements Iterable<Token> {
      * @param message The message to attach to the error
      * @return The new error
      */
-    @NotNull
-    @Contract("_ -> new")
+
     public ParserException error(String message) {
         return ParserException.of(message, getFirst());
     }
 
-    @NotNull
     public ParserException errorf(String message, Object... args) {
         return ParserException.of(String.format(message, args), getFirst());
     }
 
-    @NotNull
     public ParserException errorWithFirst(String message) {
         return error(message + " " + getFirst());
     }
 
-    @NotNull
     public ParserException errorExpected(String expected) {
         return errorf("Expected %s, got %s", expected, getFirst());
     }
@@ -788,7 +775,6 @@ public final class TokenList implements Iterable<Token> {
         nextToken(ignoreNewlines);
     }
 
-    @NotNull
     public ParserException defaultError() {
         return errorWithFirst("Unexpected");
     }
@@ -806,9 +792,8 @@ public final class TokenList implements Iterable<Token> {
      * @param brace The brace to match
      * @return The matched brace
      */
-    @NotNull
-    @Contract(pure = true)
-    static String matchingBrace(@NotNull String brace) {
+
+    static String matchingBrace(String brace) {
         switch (brace) {
             case "(":
                 return ")";

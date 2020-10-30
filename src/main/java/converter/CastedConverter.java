@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +21,13 @@ public final class CastedConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
          throw asException(lineInfo);
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         if (args.length != 2) {
             throw argsException();
@@ -44,7 +43,7 @@ public final class CastedConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         if (args.length != 2) {
             throw argsException();

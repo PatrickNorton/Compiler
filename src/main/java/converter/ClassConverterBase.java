@@ -12,7 +12,6 @@ import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.util.Pair;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,8 +28,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         this.node = node;
     }
 
-    @NotNull
-    protected final <U> Map<U, List<Byte>> convert(UserType<?> type, @NotNull Map<U, Method> functions) {
+    protected final <U> Map<U, List<Byte>> convert(UserType<?> type,Map<U, Method> functions) {
         Map<U, List<Byte>> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
@@ -72,7 +70,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         return result;
     }
 
-    private TypeObject[] fnReturns(@NotNull FunctionInfo fnInfo) {
+    private TypeObject[] fnReturns(FunctionInfo fnInfo) {
         if (!fnInfo.isGenerator()) {
             return fnInfo.getReturns();
         }
@@ -82,7 +80,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         return Builtins.deIterable(currentReturn);
     }
 
-    private void recursivelyAllowProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
+    private void recursivelyAllowProtectedAccess(AccessHandler handler,UserType<?> type) {
         for (var superCls : type.getSupers()) {
             handler.allowProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
@@ -91,7 +89,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    private void recursivelyRemoveProtectedAccess(AccessHandler handler, @NotNull UserType<?> type) {
+    private void recursivelyRemoveProtectedAccess(AccessHandler handler,UserType<?> type) {
         for (var superCls : type.getSupers()) {
             handler.removeProtectedAccess(superCls);
             if (superCls instanceof StdTypeObject) {
@@ -101,7 +99,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     private ClassInfo createClass(UserType<?> type, List<String> variants,
-                                  List<Short> superConstants, @NotNull ConverterHolder converter) {
+                                  List<Short> superConstants,ConverterHolder converter) {
         return new ClassInfo.Factory()
                 .setType(type)
                 .setSuperConstants(superConstants)
@@ -119,7 +117,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     protected final void putInInfo(UserType<?> type, String defType, List<String> variants,
-                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+                                   List<Short> superConstants,ConverterHolder converter) {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
         var constant = new ClassConstant(name, info.classIndex(type), type);
@@ -132,7 +130,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     protected final void addToInfo(UserType<?> type, String defType, List<String> variants,
-                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+                                   List<Short> superConstants,ConverterHolder converter) {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
         info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
@@ -145,12 +143,12 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     protected final void putInInfo(UserType<?> type, String defType,
-                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+                                   List<Short> superConstants,ConverterHolder converter) {
         putInInfo(type, defType, null, superConstants, converter);
     }
 
     protected final void addToInfo(UserType<?> type, String defType,
-                                   List<Short> superConstants, @NotNull ConverterHolder converter) {
+                                   List<Short> superConstants,ConverterHolder converter) {
         addToInfo(type, defType, null, superConstants, converter);
     }
 
@@ -165,7 +163,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    protected final void ensureProperInheritance(UserType<?> type, @NotNull UserType<?>... supers) {
+    protected final void ensureProperInheritance(UserType<?> type,UserType<?>... supers) {
         for (var superCls : supers) {
             if (superCls.isFinal()) {
                 throw CompilerException.format(
@@ -198,8 +196,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         }
     }
 
-    @NotNull
-    protected static <T, U> Map<T, Pair<U, U>> merge(@NotNull Map<T, U> first, @NotNull Map<T, U> second) {
+    protected static <T, U> Map<T, Pair<U, U>> merge(Map<T, U> first,Map<T, U> second) {
         assert first.size() == second.size();
         Map<T, Pair<U, U>> result = new HashMap<>(first.size());
         for (var pair : first.entrySet()) {
@@ -218,7 +215,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         return superConstants;
     }
 
-    protected void checkContract(UserType<?> type, @NotNull List<TypeObject> supers) {
+    protected void checkContract(UserType<?> type,List<TypeObject> supers) {
         for (var sup : supers) {
             if (!(sup instanceof UserType<?>)) continue;
 

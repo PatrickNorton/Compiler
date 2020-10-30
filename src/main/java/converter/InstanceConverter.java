@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,18 +25,17 @@ public final class InstanceConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         return convertInner(start, false).getKey();
     }
 
-    @NotNull
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         return convertInner(start, true);
     }

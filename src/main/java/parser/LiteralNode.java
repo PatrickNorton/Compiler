@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.LinkedList;
 
 /**
@@ -20,7 +17,6 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
     private TestNode[] builders;
     private String[] isSplats;
 
-    @Contract(pure = true)
     public LiteralNode(LineInfo lineInfo, String braceType, TestNode[] builders, String[] isSplats) {
         this.lineInfo = lineInfo;
         this.braceType = braceType;
@@ -56,9 +52,8 @@ public class LiteralNode implements SubTestNode, PostDottableNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The newly parsed LiteralNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static LiteralNode parse(@NotNull TokenList tokens) {
+
+    static LiteralNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo lineInfo = tokens.lineInfo();
         String braceType = tokens.tokenSequence();

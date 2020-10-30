@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +18,7 @@ public interface VarLikeNode extends SubTestNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed list
      */
-    @NotNull
+
     static VarLikeNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
         List<VarLikeNode> vars = new ArrayList<>();
         while (TypeNode.nextIsType(tokens)) {
@@ -33,7 +31,6 @@ public interface VarLikeNode extends SubTestNode {
         return vars.toArray(new VarLikeNode[0]);
     }
 
-    @NotNull
     private static VarLikeNode parse(TokenList tokens, boolean ignoreNewlines) {
         int size = TypeLikeNode.sizeOfType(tokens);
         if (size == 0 || !tokens.tokenIs(size, TokenType.NAME)) {

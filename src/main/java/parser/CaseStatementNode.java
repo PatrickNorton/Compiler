@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing the "case" clause in a switch statement.
  * @author Patrick Norton
@@ -15,7 +12,6 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
     private boolean arrow;
     private VariableNode as;
 
-    @Contract(pure = true)
     public CaseStatementNode(LineInfo lineInfo, TestNode[] label, StatementBodyNode body, boolean arrow, VariableNode as) {
         this.lineInfo = lineInfo;
         this.label = label;
@@ -60,9 +56,8 @@ public class CaseStatementNode implements BaseNode, EmptiableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed CaseStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static CaseStatementNode parse(@NotNull TokenList tokens) {
+
+    public static CaseStatementNode parse(TokenList tokens) {
         if (tokens.tokenIs(Keyword.DEFAULT)) {
             return DefaultStatementNode.parse(tokens);
         }

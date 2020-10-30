@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.DeclarationNode;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,9 +14,8 @@ public final class DeclarationConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
-    @Unmodifiable
+
     public List<Byte> convert(int start) {
         if (!node.getType().isDecided()) {
             throw CompilerException.of("var not allowed in declarations", node);

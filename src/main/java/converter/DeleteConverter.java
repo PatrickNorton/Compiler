@@ -4,7 +4,6 @@ import main.java.parser.DeleteStatementNode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ public final class DeleteConverter implements BaseConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         var deleted = node.getDeleted();
@@ -56,7 +55,7 @@ public final class DeleteConverter implements BaseConverter {
         return bytes;
     }
 
-    private void checkAccess(@NotNull TestConverter value, List<TestConverter> indices) {
+    private void checkAccess(TestConverter value, List<TestConverter> indices) {
         var retType = value.returnType()[0];
         var maybeOpInfo = retType.operatorInfo(OpSpTypeNode.DEL_ATTR, info.accessLevel(retType));
         if (maybeOpInfo.isEmpty()) {

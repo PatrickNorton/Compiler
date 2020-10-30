@@ -4,7 +4,6 @@ import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,13 +46,13 @@ public final class BoolOpConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         switch (op) {
             case BOOL_AND:
@@ -68,7 +67,6 @@ public final class BoolOpConverter extends OperatorConverter {
         }
     }
 
-    @NotNull
     private List<Byte> convertBoolOp(int start) {
         assert op == OperatorTypeNode.BOOL_AND || op == OperatorTypeNode.BOOL_OR;
         List<Byte> bytes = new ArrayList<>();
@@ -108,7 +106,7 @@ public final class BoolOpConverter extends OperatorConverter {
         return bytes;
     }
 
-    private void addPostJump(int start, @NotNull List<Byte> bytes) {
+    private void addPostJump(int start,List<Byte> bytes) {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.POP_TOP.value);
@@ -185,7 +183,7 @@ public final class BoolOpConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

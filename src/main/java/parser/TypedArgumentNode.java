@@ -1,9 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 /**
  * The class representing a typed argument.
  * @author Patrick Norton
@@ -28,7 +24,7 @@ public class TypedArgumentNode implements BaseNode {
      * @param isVararg If the argument has a vararg
      * @param varargType The type of the vararg, if it exists
      */
-    @Contract(pure = true)
+
     public TypedArgumentNode(LineInfo lineInfo, TypeLikeNode type, VariableNode name, TestNode defaultVal,
                              boolean isVararg, String varargType) {
         this.lineInfo = lineInfo;
@@ -77,9 +73,8 @@ public class TypedArgumentNode implements BaseNode {
      * @param isTyped Whether or not the node is typed
      * @return The freshly parsed node
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static TypedArgumentNode parse(@NotNull TokenList tokens, boolean isTyped) {
+
+    static TypedArgumentNode parse(TokenList tokens, boolean isTyped) {
         String varargType;
         if (tokens.tokenIs("*", "**")) {
             varargType = tokens.tokenSequence();
@@ -99,9 +94,8 @@ public class TypedArgumentNode implements BaseNode {
      * @param varargType The type of the vararg ({@code ""} if no vararg)
      * @return The freshly parsed TypedArgumentNode
      */
-    @Contract("_, _, _ -> new")
-    @NotNull
-    private static TypedArgumentNode parse(@NotNull TokenList tokens, boolean isTyped, String varargType) {
+
+    private static TypedArgumentNode parse(TokenList tokens, boolean isTyped, String varargType) {
         if (tokens.tokenIs(Keyword.VAR)) {
             throw tokens.error("var is not allowed in a typed argument");
         }
@@ -122,8 +116,7 @@ public class TypedArgumentNode implements BaseNode {
      * @param typeDecided Whether or not it is known if the node is typed
      * @return The freshly parsed TypedArgumentNode, or null
      */
-    @Nullable
-    static TypedArgumentNode parseAllowingEmpty(@NotNull TokenList tokens, boolean allowUntyped, boolean typeDecided) {
+    static TypedArgumentNode parseAllowingEmpty(TokenList tokens, boolean allowUntyped, boolean typeDecided) {
         String varargType;
         tokens.passNewlines();
         if (tokens.tokenIs("*", "**")) {
@@ -147,7 +140,7 @@ public class TypedArgumentNode implements BaseNode {
      * @param tokens The list of tokens to use to make a decision
      * @return Whether or not the node is untyped
      */
-    static boolean argumentIsUntyped(@NotNull TokenList tokens) {
+    static boolean argumentIsUntyped(TokenList tokens) {
         int size = TypeLikeNode.sizeOfType(tokens, tokens.tokenIs("*", "**") ? 1 : 0);
         return size == 0 || !tokens.tokenIs(size + tokens.numberOfNewlines(size), TokenType.NAME);
     }

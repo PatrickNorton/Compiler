@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 /**
@@ -25,12 +23,12 @@ public final class TempConst implements LangConstant {
     }
 
     @Override
-    public @NotNull List<Byte> toBytes() {
+    public List<Byte> toBytes() {
         throw new UnsupportedOperationException("All temporary constants must be instantiated");
     }
 
     @Override
-    public @NotNull TypeObject getType() {
+    public TypeObject getType() {
         return type;
     }
 }

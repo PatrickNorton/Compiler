@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The exception thrown when a user input fails
  * @author Patrick Norton
@@ -39,14 +36,12 @@ public class ParserException extends RuntimeException {
      * @param token The token to get the context from
      * @return The new exception
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    public static ParserException of(String message, @NotNull Token token) {
+
+    public static ParserException of(String message,Token token) {
         return  ParserException.of(message, token.lineInfo);
     }
 
-    @NotNull
-    public static ParserException of(String message, @NotNull BaseNode node) {
+    public static ParserException of(String message,BaseNode node) {
         return ParserException.of(message, node.getLineInfo());
     }
 
@@ -56,9 +51,8 @@ public class ParserException extends RuntimeException {
      * @param lineInfo The info to get the context from
      * @return The new exception
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    public static ParserException of(String message, @NotNull LineInfo lineInfo) {
+
+    public static ParserException of(String message,LineInfo lineInfo) {
         return new ParserException(
                 String.format(DEFAULT_MESSAGE, message, lineInfo.getPath(),
                         lineInfo.getLineNumber(), lineInfo.infoString()),

@@ -8,7 +8,6 @@ import main.java.parser.FunctionCallNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +20,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));
@@ -54,7 +53,6 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         return getInitBytes(start, converter.getOperators().get(OpSpTypeNode.NEW));
     }
 
-    @NotNull
     private List<Byte> getInitBytes(int start, Method newOperatorInfo) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.DO_STATIC.value);
@@ -106,7 +104,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         return new EnumConverter(info, node).completeType(obj);
     }
 
-    private int completeType(@NotNull StdTypeObject obj) {
+    private int completeType(StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         try {
@@ -118,7 +116,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         return info.reserveClass(obj);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {
+    private void parseIntoObject(ConverterHolder converter,StdTypeObject obj) {
         parseStatements(converter);
         obj.isConstClass();
         converter.addEnumStatics(Arrays.asList(node.getNames()), obj);

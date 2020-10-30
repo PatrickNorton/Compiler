@@ -1,8 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -19,7 +16,7 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
     private final Iterator<A> first;
     private final Iterator<B> second;
 
-    private Zipper(@NotNull Iterator<A> first, @NotNull Iterator<B> second) {
+    private Zipper(Iterator<A> first, Iterator<B> second) {
         this.first = first;
         this.second = second;
     }
@@ -30,7 +27,7 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
     }
 
     @Override
-    @NotNull
+
     public Pair<A, B> next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -47,9 +44,8 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
      * @param <B> The type iterated over by {@code second}
      * @return The iterable item
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    @NotNull
-    public static <A, B> Iterable<Pair<A, B>> of(@NotNull Iterable<A> first, @NotNull Iterable<B> second) {
+
+    public static <A, B> Iterable<Pair<A, B>> of(Iterable<A> first,Iterable<B> second) {
         return () -> new Zipper<>(first.iterator(), second.iterator());
     }
 
@@ -62,9 +58,8 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
      * @param <B> The type iterated over by {@code second}
      * @return The iterable item
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    @NotNull
-    public static <A, B> Iterable<Pair<A, B>> of(@NotNull A[] first, @NotNull B[] second) {
+
+    public static <A, B> Iterable<Pair<A, B>> of(A[] first,B[] second) {
         return () -> new Zipper<>(Arrays.asList(first).iterator(), Arrays.asList(second).iterator());
     }
 
@@ -77,9 +72,8 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
      * @param <B> The type iterated over by {@code second}
      * @return The iterable item
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    @NotNull
-    public static <A, B> Iterable<Pair<A, B>> of(@NotNull A[] first, @NotNull Iterable<B> second) {
+
+    public static <A, B> Iterable<Pair<A, B>> of(A[] first,Iterable<B> second) {
         return () -> new Zipper<>(Arrays.asList(first).iterator(), second.iterator());
     }
 }

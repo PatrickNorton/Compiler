@@ -5,9 +5,6 @@ import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.TypeNode;
 import main.java.parser.TypedArgumentNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +21,8 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
-    @Unmodifiable
+
     public List<Byte> convert(int start) {
         var name = node.getName().getName();
         var predefined = info.getFn(name);
@@ -107,8 +103,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
     }
 
-    @Contract(" -> new")
-    @NotNull
     public Pair<TypeObject, Integer> parseHeader() {
         if (node.getGenerics().length == 0) {
             return innerHeader(GenericInfo.empty());
@@ -124,7 +118,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
     }
 
-    private Pair<TypeObject, Integer> innerHeader(@NotNull GenericInfo generics) {
+    private Pair<TypeObject, Integer> innerHeader(GenericInfo generics) {
         var argInfo = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
@@ -135,7 +129,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return Pair.of(new FunctionInfoType(fnInfo), index);
     }
 
-    @NotNull
     private ArgumentInfo convertArgs(Map<String, TemplateParam> generics) {
         var args = node.getArgs();
         var kwargs = convert(generics, args.getNameArgs());
@@ -144,8 +137,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return new ArgumentInfo(kwargs, normalArgs, posArgs);
     }
 
-    @NotNull
-    private Argument[] convert(Map<String, TemplateParam> generics, @NotNull TypedArgumentNode[] args) {
+    private Argument[] convert(Map<String, TemplateParam> generics,TypedArgumentNode[] args) {
         var converted = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
@@ -166,7 +158,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return converted;
     }
 
-    @NotNull
     private Map<String, TemplateParam> getGenerics() {
         var generics = node.getGenerics();
         Map<String, TemplateParam> result = new HashMap<>();
@@ -194,7 +185,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     public static Pair<TypeObject, Integer> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
         return new FunctionDefinitionConverter(info, node).parseHeader();
     }

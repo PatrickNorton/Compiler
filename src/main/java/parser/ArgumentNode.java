@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -35,7 +32,7 @@ public class ArgumentNode implements BaseNode {
      * @param argument What the actual argument is, e.g. what is actually
      *                 passed to the function in the end
      */
-    @Contract(pure = true)
+
     public ArgumentNode(LineInfo lineInfo, VariableNode variable, String vararg, TestNode argument) {
         this.lineInfo = lineInfo;
         this.variable = variable;
@@ -55,7 +52,6 @@ public class ArgumentNode implements BaseNode {
         this(variable.getLineInfo(), variable, vararg, argument);
     }
 
-    @Contract(pure = true)
     public ArgumentNode(LineInfo lineInfo, TestNode argument) {
         this(lineInfo, VariableNode.empty(), "", argument);
     }
@@ -64,8 +60,7 @@ public class ArgumentNode implements BaseNode {
         this(argument.getLineInfo(), argument);
     }
 
-    @NotNull
-    public static ArgumentNode[] fromTestNodes(@NotNull TestNode... testNodes) {
+    public static ArgumentNode[] fromTestNodes(TestNode... testNodes) {
         ArgumentNode[] args = new ArgumentNode[testNodes.length];
         for (int i = 0; i < testNodes.length; i++) {
             args[i] = new ArgumentNode(testNodes[i]);
@@ -106,8 +101,8 @@ public class ArgumentNode implements BaseNode {
      *               parsed tokens
      * @return List of ArgumentNodes representing the parsed tokens
      */
-    @NotNull
-    static ArgumentNode[] parseList(@NotNull TokenList tokens) {
+
+    static ArgumentNode[] parseList(TokenList tokens) {
         if (!tokens.tokenIs("(")) {
             throw tokens.error("Function call must start with open-paren");
         }
@@ -124,8 +119,7 @@ public class ArgumentNode implements BaseNode {
         return args;
     }
 
-    @NotNull
-    static ArgumentNode[] parseBraceFreeList(@NotNull TokenList tokens) {
+    static ArgumentNode[] parseBraceFreeList(TokenList tokens) {
         List<ArgumentNode> args = new ArrayList<>();
         while (tokens.tokenIs("*", "**") || TestNode.nextIsTest(tokens)) {
             VariableNode var = VariableNode.empty();
@@ -157,7 +151,7 @@ public class ArgumentNode implements BaseNode {
         return vararg + (variable.isEmpty() ? "" : variable + "=") + argument;
     }
 
-    public static String toString(@NotNull ArgumentNode... values) {
+    public static String toString(ArgumentNode... values) {
         StringJoiner sj = new StringJoiner(", ");
         for (ArgumentNode v : values) {
             sj.add(v.toString());

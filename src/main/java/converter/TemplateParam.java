@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,8 +32,7 @@ public final class TemplateParam extends NameableType {
         this.typedefName = "";
     }
 
-    @Contract(pure = true)
-    private TemplateParam(@NotNull TemplateParam other, String typedefName) {
+    private TemplateParam(TemplateParam other, String typedefName) {
         this.name = other.name;
         this.index = other.index;
         this.bound = other.bound;
@@ -45,7 +42,7 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         if (other instanceof TemplateParam) {
             var tp = (TemplateParam) other;
             return tp.parent.sameBaseType(parent) && tp.bound.isSuperclass(bound);
@@ -55,13 +52,13 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return bound.attrType(value, access);
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         return bound.staticAttrType(value, access);
     }
@@ -95,13 +92,11 @@ public final class TemplateParam extends NameableType {
         return parent;
     }
 
-    public void setParent(@NotNull TypeObject parent) {
+    public void setParent(TypeObject parent) {
         assert this.parent == null : "Should not set parent of TemplateParam more than once";
         this.parent = parent;
     }
 
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
     @Override
     public TypeObject typedefAs(String name) {
         return new TemplateParam(this, name);
@@ -120,7 +115,7 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-    @NotNull
+
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (this.equals(other)) {
             return Optional.of(Collections.emptyMap());

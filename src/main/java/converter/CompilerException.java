@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing an compilation error.
@@ -43,8 +41,8 @@ public class CompilerException extends RuntimeException {
      * @return The CompilerException
      * @see #of(String, LineInfo)
      */
-    @NotNull
-    public static CompilerException of(String message, @NotNull Lined info) {
+
+    public static CompilerException of(String message,Lined info) {
         return of(message, info.getLineInfo());
     }
 
@@ -61,9 +59,8 @@ public class CompilerException extends RuntimeException {
      *                 error occurred
      * @return The exception
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    public static CompilerException of(String message, @NotNull LineInfo lineInfo) {
+
+    public static CompilerException of(String message,LineInfo lineInfo) {
         return new CompilerException(
                 String.format(DEFAULT_MESSAGE, message, lineInfo.getPath(),
                         lineInfo.getLineNumber(), lineInfo.infoString())
@@ -84,8 +81,8 @@ public class CompilerException extends RuntimeException {
      * @see #of(String, Lined)
      * @see String#format(String, Object...)
      */
-    @NotNull
-    public static CompilerException format(String message, @NotNull Lined lineInfo, Object... args) {
+
+    public static CompilerException format(String message,Lined lineInfo, Object... args) {
         return format(message, lineInfo.getLineInfo(), args);
     }
 
@@ -103,7 +100,7 @@ public class CompilerException extends RuntimeException {
      * @see #of(String, Lined)
      * @see String#format(String, Object...)
      */
-    @NotNull
+
     public static CompilerException format(String message, LineInfo lineInfo, Object... args) {
         return of(String.format(message, args), lineInfo);
     }
@@ -117,8 +114,8 @@ public class CompilerException extends RuntimeException {
      * @param info2 The {@link LineInfo} for the illegal definition
      * @return The exception
      */
-    @NotNull
-    public static CompilerException doubleDef(String name, @NotNull LineInfo info1, @NotNull LineInfo info2) {
+
+    public static CompilerException doubleDef(String name,LineInfo info1,LineInfo info2) {
         return new CompilerException(
                 String.format(
                         "Error: name '%s' defined twice:%n" +
@@ -140,8 +137,8 @@ public class CompilerException extends RuntimeException {
      * @param info2 The {@link LineInfo} for the illegal definition
      * @return The exception
      */
-    @NotNull
-    public static CompilerException doubleDef(OpSpTypeNode op, @NotNull LineInfo info1, @NotNull LineInfo info2) {
+
+    public static CompilerException doubleDef(OpSpTypeNode op,LineInfo info1,LineInfo info2) {
         return new CompilerException(
                 String.format(
                         "Error: '%s' defined twice:%n" +
@@ -163,8 +160,8 @@ public class CompilerException extends RuntimeException {
      * @param info2 The {@link Lined} object for the illegal definition
      * @return The exception
      */
-    @NotNull
-    public static CompilerException doubleDef(String name, @NotNull Lined info1, @NotNull Lined info2) {
+
+    public static CompilerException doubleDef(String name,Lined info1,Lined info2) {
         return doubleDef(name, info1.getLineInfo(), info2.getLineInfo());
     }
 
@@ -177,8 +174,8 @@ public class CompilerException extends RuntimeException {
      * @param info2 The {@link Lined} object for the illegal definition
      * @return The exception
      */
-    @NotNull
-    public static CompilerException doubleDef(OpSpTypeNode op, @NotNull Lined info1, @NotNull Lined info2) {
+
+    public static CompilerException doubleDef(OpSpTypeNode op,Lined info1,Lined info2) {
         return doubleDef(op, info1.getLineInfo(), info2.getLineInfo());
     }
 }

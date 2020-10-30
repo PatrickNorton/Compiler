@@ -15,8 +15,6 @@ import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +31,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     @Override
-    @NotNull
-    @Unmodifiable
+
     public List<Byte> convert(int start) {
         var converter = new ConverterHolder(info);
         var hasType = info.hasType(node.strName());
@@ -86,7 +83,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         }
     }
 
-    private void addVariant(@NotNull DeclarationNode decl) {
+    private void addVariant(DeclarationNode decl) {
         var name = decl.getName().getName();
         var type = info.getType(decl.getType());
         if (variants.containsKey(name)) {
@@ -96,7 +93,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         }
     }
 
-    private boolean isStatic(@NotNull DescribableNode node) {
+    private boolean isStatic(DescribableNode node) {
         return node.getDescriptors().contains(DescriptorNode.STATIC);
     }
 
@@ -104,7 +101,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return new UnionConverter(info, node).completeType(obj);
     }
 
-    private int completeType(@NotNull UnionTypeObject obj) {
+    private int completeType(UnionTypeObject obj) {
         var converter = new ConverterHolder(info);
         var supers = convertSupers(info.typesOf(node.getSuperclasses()));
         obj.setSupers(Arrays.asList(supers));
@@ -120,7 +117,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return info.reserveClass(obj);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull UnionTypeObject obj) {
+    private void parseIntoObject(ConverterHolder converter,UnionTypeObject obj) {
         parseStatements(converter);
         converter.attributes().addUnionMethods(variantMethods(obj));
         obj.setOperators(converter.getOperatorInfos());
@@ -132,8 +129,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         obj.seal();
     }
 
-    @NotNull
-    private Map<String, AttributeInfo> withVariantInfos(@NotNull Map<String, AttributeInfo> vars) {
+    private Map<String, AttributeInfo> withVariantInfos(Map<String, AttributeInfo> vars) {
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
@@ -143,9 +139,8 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return result;
     }
 
-    @NotNull
     private Map<String, AttributeInfo> withStaticVariants(
-            @NotNull Map<String, AttributeInfo> vars, UnionTypeObject selfType
+Map<String, AttributeInfo> vars, UnionTypeObject selfType
     ) {
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
@@ -156,7 +151,6 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return result;
     }
 
-    @NotNull
     private List<String> convertVariants() {
         List<String> result = new ArrayList<>(Collections.nCopies(variants.size(), null));
         for (var pair : variants.entrySet()) {
@@ -181,7 +175,6 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     private static final String VARIANT_NAME = "val";
 
-    @NotNull
     private Map<String, Method> variantMethods(UnionTypeObject selfType) {
         Map<String, Method> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
@@ -198,7 +191,6 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return result;
     }
 
-    @NotNull
     private FunctionInfo variantInfo(TypeObject val, UnionTypeObject type) {
         if (val.sameBaseType(Builtins.NULL_TYPE)) {
             return new FunctionInfo(type);

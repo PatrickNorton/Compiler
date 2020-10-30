@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +8,6 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
     private TestNode switched;
     private CaseStatementNode[] cases;
 
-    @Contract(pure = true)
     public SwitchStatementNode(LineInfo lineInfo, TestNode switched, CaseStatementNode[] cases) {
         this.lineInfo = lineInfo;
         this.switched = switched;
@@ -31,9 +27,7 @@ public class SwitchStatementNode implements StatementNode, EmptiableNode, TestNo
         return cases;
     }
 
-    @NotNull
-    @Contract("_ -> new")
-    public static SwitchStatementNode parse(@NotNull TokenList tokens) {
+    public static SwitchStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.SWITCH);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

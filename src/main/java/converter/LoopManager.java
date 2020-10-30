@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
@@ -39,7 +37,7 @@ public final class LoopManager {
      *                  start of the function
      * @param bytes The list of bytes
      */
-    public void exitLoop(int listStart, @NotNull List<Byte> bytes) {
+    public void exitLoop(int listStart,List<Byte> bytes) {
         int level = loopLevel.size();
         boolean hasContinue = loopLevel.pop();
         int endLoop = listStart + bytes.size();

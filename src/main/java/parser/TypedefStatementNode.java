@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a typedef statement.
  * @author Patrick Norton
@@ -17,7 +14,7 @@ public class TypedefStatementNode implements SimpleStatementNode, TopLevelNode {
      * @param name The name of the typedef
      * @param type The type being assigned to
      */
-    @Contract(pure = true)
+
     public TypedefStatementNode(LineInfo lineInfo, TypeNode name, TypeLikeNode type) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -47,9 +44,8 @@ public class TypedefStatementNode implements SimpleStatementNode, TopLevelNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TypedefStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static TypedefStatementNode parse(@NotNull TokenList tokens) {
+
+    static TypedefStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.TYPEDEF);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

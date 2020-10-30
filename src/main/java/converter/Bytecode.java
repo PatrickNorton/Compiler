@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -134,8 +132,7 @@ public enum Bytecode {
     private final Type[] operands;
     private final int sum;
 
-    @Contract(pure = true)
-    Bytecode(int value, @NotNull Type... operands) {
+    Bytecode(int value,Type... operands) {
         this.value = (byte) value;
         this.operands = operands;
         int sum = 0;
@@ -167,8 +164,7 @@ public enum Bytecode {
         VALUE_MAP = Collections.unmodifiableMap(temp);
     }
 
-    @NotNull
-    static String disassemble(CompilerInfo info, @NotNull List<Byte> bytes) {
+    static String disassemble(CompilerInfo info,List<Byte> bytes) {
         var sb = new StringBuilder();
         for (int i = 0; i < bytes.size();) {
             var op = VALUE_MAP.get(bytes.get(i++));
@@ -190,7 +186,7 @@ public enum Bytecode {
         return sb.toString();
     }
 
-    private static String format(@NotNull Type operand, int value, CompilerInfo info) {
+    private static String format(Type operand, int value, CompilerInfo info) {
         switch (operand) {
             case ARGC:
             case LOCATION:
@@ -208,7 +204,7 @@ public enum Bytecode {
         }
     }
 
-    private static int fromBytes(@NotNull List<Byte> bytes) {
+    private static int fromBytes(List<Byte> bytes) {
         int total = 0;
         for (int i = 0; i < bytes.size(); i++) {
             total |= byteToInt(bytes.get(i)) << Byte.SIZE * (bytes.size() - i - 1);

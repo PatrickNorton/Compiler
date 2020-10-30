@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,13 +62,12 @@ public enum OpFuncTypeNode {
         values = Collections.unmodifiableMap(temp);
     }
 
-    @Contract(pure = true)
     OpFuncTypeNode(String name, OperatorTypeNode operator) {
         this.name = name;
         this.operator = operator;
     }
 
-    public static OpFuncTypeNode parse(@NotNull TokenList tokens) {
+    public static OpFuncTypeNode parse(TokenList tokens) {
         OpFuncTypeNode operator = find(tokens.tokenSequence().replaceFirst("^\\\\", ""));
         tokens.nextToken();
         return operator;
@@ -85,13 +81,10 @@ public enum OpFuncTypeNode {
         }
     }
 
-    @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String toString() {
         return "\\" + name;

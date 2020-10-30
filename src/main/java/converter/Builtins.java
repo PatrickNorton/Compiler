@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -532,8 +530,6 @@ public final class Builtins {
             Map.entry("null", NULL)
     );
 
-    @NotNull
-    @Contract("_ -> new")
     public static Optional<LangConstant> constantOf(String name) {
         var builtin = BUILTIN_MAP.get(name);
         if (builtin == null) {
@@ -563,7 +559,7 @@ public final class Builtins {
         return RANGE_CONSTANT;
     }
 
-    public static TypeObject[] deIterable(@NotNull TypeObject val) {
+    public static TypeObject[] deIterable(TypeObject val) {
         assert val.sameBaseType(Builtins.ITERABLE);
         var generics = val.getGenerics().get(0);
         assert generics instanceof ListTypeObject;

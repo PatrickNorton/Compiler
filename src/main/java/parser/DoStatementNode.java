@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The node representing a do-while statement.
  * <p>
@@ -20,7 +17,7 @@ public class DoStatementNode implements FlowStatementNode {
      * @param body The body of the loop
      * @param conditional The conditional tested for.
      */
-    @Contract(pure = true)
+
     public DoStatementNode(LineInfo lineInfo, StatementBodyNode body, TestNode conditional) {
         this.lineInfo = lineInfo;
         this.body = body;
@@ -53,9 +50,8 @@ public class DoStatementNode implements FlowStatementNode {
      *               with a TokenType.KEYWORD with text "do".
      * @return The newly parsed DoStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DoStatementNode parse(@NotNull TokenList tokens) {
+
+    static DoStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.DO);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

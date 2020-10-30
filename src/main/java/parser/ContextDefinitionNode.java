@@ -1,9 +1,6 @@
 package main.java.parser;
 // TODO: Non-local variables in context definition
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -24,7 +21,6 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
     private NameNode[] annotations = new NameNode[0];
     private NameNode[] decorators = new NameNode[0];
 
-    @Contract(pure = true)
     public ContextDefinitionNode(LineInfo info, VariableNode name, TypedArgumentListNode args, StatementBodyNode enter,
                                  StatementBodyNode exit, ArgumentNode[] exitArgs, ClassBodyNode others) {
         this.lineInfo = info;
@@ -122,9 +118,8 @@ public class ContextDefinitionNode implements DefinitionNode, ClassStatementNode
      * @param tokens The list of tokens to be parsed destructively
      * @return The new ContextDefinitionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ContextDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static ContextDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.CONTEXT);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

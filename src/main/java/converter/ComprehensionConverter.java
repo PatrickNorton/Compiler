@@ -4,7 +4,6 @@ import main.java.parser.ComprehensionNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +40,7 @@ public final class ComprehensionConverter implements TestConverter {
             this.addSwap = addSwap;
         }
 
-        static BraceType fromBrace(@NotNull String brace, Lined lineInfo) {
+        static BraceType fromBrace(String brace, Lined lineInfo) {
             switch (brace) {
                 case "[":
                     return BraceType.LIST;
@@ -55,14 +54,12 @@ public final class ComprehensionConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var resultType = BraceType.fromBrace(node.getBrace(), node).type;
         return new TypeObject[] {resultType.generify(genericType()).makeMut()};
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount > 1) {
@@ -91,8 +88,7 @@ public final class ComprehensionConverter implements TestConverter {
         }
     }
 
-    @NotNull
-    private List<Byte> innerConvert(int start, @NotNull BraceType braceType) {
+    private List<Byte> innerConvert(int start,BraceType braceType) {
         assert retCount == 1 || retCount == 0;
         List<Byte> bytes = new ArrayList<>();
         if (braceType.createCode != null) {
@@ -173,7 +169,7 @@ public final class ComprehensionConverter implements TestConverter {
         }
     }
 
-    private TypeObject varType(@NotNull TypedVariableNode typedVar) {
+    private TypeObject varType(TypedVariableNode typedVar) {
         var tvType = typedVar.getType();
         if (tvType.isDecided()) {
             return info.getType(tvType);

@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,12 +22,10 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
     private TestNode[] keys;
     private TestNode[] values;
 
-    @Contract(pure = true)
     public DictLiteralNode(LineInfo info) {
         this(info, new TestNode[0], new TestNode[0]);
     }
 
-    @Contract(pure = true)
     public DictLiteralNode(LineInfo info, TestNode[] keys, TestNode[] values) {
         this.lineInfo = info;
         this.keys = keys;
@@ -84,9 +80,8 @@ public class DictLiteralNode implements SubTestNode, PostDottableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed DictLiteralNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DictLiteralNode parse(@NotNull TokenList tokens) {
+
+    static DictLiteralNode parse(TokenList tokens) {
         assert tokens.tokenIs("{");
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);

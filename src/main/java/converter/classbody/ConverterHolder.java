@@ -10,7 +10,6 @@ import main.java.parser.EnumKeywordNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.StatementBodyNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +38,6 @@ public final class ConverterHolder {
         return attrs.getVars();
     }
 
-    @NotNull
     public Map<String, Short> varsWithInts() {
         return attrs.varsWithInts();
     }
@@ -48,7 +46,6 @@ public final class ConverterHolder {
         return attrs.getStaticVars();
     }
 
-    @NotNull
     public Map<String, Short> staticVarsWithInts() {
         return attrs.staticVarsWithInts();
     }
@@ -77,7 +74,6 @@ public final class ConverterHolder {
     public Map<String, Method> getStaticMethods() {
         return methods.getStaticMethods();
     }
-
 
     // OperatorDefConverter forwarding methods
     public OperatorDefConverter operators() {
@@ -109,14 +105,12 @@ public final class ConverterHolder {
             return props.getProperties();
         }
 
-    @NotNull
     public Map<String, Method> allGetters() {
         Map<String, Method> result = new HashMap<>(props.getGetters());
         result.putAll(attrs.getColons());
         return result;
     }
 
-    @NotNull
     public Map<String, Method> getSetters() {
         return props.getSetters();
     }
@@ -125,7 +119,6 @@ public final class ConverterHolder {
         return attrs.getStaticColons();
     }
 
-    @NotNull
     public Map<String, Method> staticSetters() {
         Map<String, Method> result = new HashMap<>(attrs.getStaticColons().size());
         for (var pair : attrs.getStaticColons().entrySet()) {
@@ -149,7 +142,7 @@ public final class ConverterHolder {
         checkMaps(methods.getStaticMethods(), attrs.getVars(), attrs.getStaticVars());
     }
 
-    private void checkMaps(@NotNull Map<String, ? extends Lined> vars, Map<String, ? extends Lined> methods,
+    private void checkMaps(Map<String, ? extends Lined> vars, Map<String, ? extends Lined> methods,
                            Map<String, ? extends Lined> staticMethods) {
         for (var pair : vars.entrySet()) {
             if (methods.containsKey(pair.getKey())) {
@@ -168,21 +161,18 @@ public final class ConverterHolder {
         }
     }
 
-    @NotNull
     public Map<String, AttributeInfo> allAttrs() {
         return mergeAttrs(attrs.getVars(), attrs.getColons(), methods.getMethods(), props.getProperties());
     }
 
-    @NotNull
     public Map<String, AttributeInfo> staticAttrs() {
         return mergeAttrs(attrs.getStaticVars(), attrs.getStaticColons(), methods.getStaticMethods(), new HashMap<>());
     }
 
-    @NotNull
     private Map<String, AttributeInfo> mergeAttrs(
             Map<String, AttributeInfo> attrs,
-            @NotNull Map<String, Method> colons,
-            @NotNull Map<String, Method> methods,
+Map<String, Method> colons,
+Map<String, Method> methods,
             Map<String, AttributeInfo> properties
     ) {
         var finalAttrs = new HashMap<>(attrs);
@@ -194,7 +184,7 @@ public final class ConverterHolder {
 
     private static void addInfos(
             Map<String, AttributeInfo> finalAttrs,
-            @NotNull Set<Map.Entry<String, Method>> entrySet
+Set<Map.Entry<String, Method>> entrySet
     ) {
         for (var pair : entrySet) {
             var methodInfo = pair.getValue();

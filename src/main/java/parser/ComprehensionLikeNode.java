@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 public abstract class ComprehensionLikeNode implements SubTestNode, PostDottableNode {
     private LineInfo lineInfo;
     private String brace;
@@ -17,7 +14,6 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
          this(lineInfo, brace, variables, ArgumentNode.fromTestNodes(builder), looped, condition, whileCond);
      }
 
-    @Contract(pure = true)
     public ComprehensionLikeNode(LineInfo lineInfo, String brace, VarLikeNode[] variables,
                                  ArgumentNode[] builder, TestListNode looped, TestNode condition, TestNode whileCond) {
         this.lineInfo = lineInfo;
@@ -58,8 +54,7 @@ public abstract class ComprehensionLikeNode implements SubTestNode, PostDottable
         return whileCond;
     }
 
-    @NotNull
-    static ComprehensionLikeNode parse(@NotNull TokenList tokens) {
+    static ComprehensionLikeNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         switch (tokens.tokenSequence()) {
             case "{":

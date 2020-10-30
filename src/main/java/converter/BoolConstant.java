@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.Objects;
@@ -15,14 +13,12 @@ public final class BoolConstant implements LangConstant {
         this.value = value;
     }
 
-    @NotNull
     @Override
-    @Unmodifiable
+
     public List<Byte> toBytes() {
         return List.of((byte) ConstantBytes.BOOL.ordinal(), (byte) (value ? 1 : 0));
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.BOOL;
@@ -50,7 +46,6 @@ public final class BoolConstant implements LangConstant {
         return Objects.hash(value);
     }
 
-    @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {
         return Boolean.toString(value);

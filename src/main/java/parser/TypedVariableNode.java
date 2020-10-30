@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.LinkedList;
 
 /**
@@ -15,12 +12,10 @@ public class TypedVariableNode implements VarLikeNode, SubTestNode {
     private TypeLikeNode type;
     private VariableNode var;
 
-    @Contract(pure = true)
     public TypedVariableNode(TypeLikeNode type, VariableNode var) {
         this(type.getLineInfo(), type, var);
     }
 
-    @Contract(pure = true)
     public TypedVariableNode(LineInfo lineInfo, TypeLikeNode type, VariableNode var) {
         this.lineInfo = lineInfo;
         this.type = type;
@@ -46,8 +41,7 @@ public class TypedVariableNode implements VarLikeNode, SubTestNode {
         return true;
     }
 
-    @NotNull
-    static TypedVariableNode[] parseListOnToken(@NotNull TokenList tokens, Keyword keyword) {
+    static TypedVariableNode[] parseListOnToken(TokenList tokens, Keyword keyword) {
         if (tokens.tokenIs(keyword)) {
             tokens.nextToken(false);
             return parseList(tokens);
@@ -61,7 +55,7 @@ public class TypedVariableNode implements VarLikeNode, SubTestNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TypedVariableNode array
      */
-    @NotNull
+
     static TypedVariableNode[] parseList(TokenList tokens) {
         LinkedList<TypedVariableNode> vars = new LinkedList<>();
         while (TypeNode.nextIsType(tokens)) {
@@ -83,8 +77,7 @@ public class TypedVariableNode implements VarLikeNode, SubTestNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed list of tokens
      */
-    @Contract("_, _ -> new")
-    @NotNull
+
     static TypedVariableNode parse(TokenList tokens, boolean ignoreNewlines) {
         TypeLikeNode type = TypeLikeNode.parse(tokens, ignoreNewlines);
         VariableNode var = VariableNode.parse(tokens);

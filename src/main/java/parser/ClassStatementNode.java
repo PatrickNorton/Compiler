@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The interface for statements which are valid in a class body.
  * <p>
@@ -28,8 +26,8 @@ public interface ClassStatementNode extends InterfaceStatementNode {
      *               them
      * @return The newly parsed ClassStatementNode
      */
-    @NotNull
-    static ClassStatementNode parse(@NotNull TokenList tokens) {
+
+    static ClassStatementNode parse(TokenList tokens) {
         if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {
             return StaticBlockNode.parse(tokens);
         }

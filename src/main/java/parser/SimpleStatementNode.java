@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The interface representing a simple statement.
  * @author Patrick Norton
@@ -12,8 +10,8 @@ public interface SimpleStatementNode extends StatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed node
      */
-    @NotNull
-    static SimpleStatementNode parseIncDec(@NotNull TokenList tokens) {
+
+    static SimpleStatementNode parseIncDec(TokenList tokens) {
         Token amount = tokens.getToken(tokens.sizeOfVariable());
         if (amount.is("++")) {
             return IncrementNode.parse(tokens);

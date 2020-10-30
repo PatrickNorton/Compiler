@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.DictLiteralNode;
 import main.java.parser.TestNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ public final class DictLiteralConverter implements TestConverter {
         this.expected = expected;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         if (node.getKeys().length == 0) {
@@ -44,7 +42,6 @@ public final class DictLiteralConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
@@ -71,8 +68,7 @@ public final class DictLiteralConverter implements TestConverter {
         return bytes;
     }
 
-    @NotNull
-    private TypeObject returnTypes(@NotNull TestNode[] args) {
+    private TypeObject returnTypes(TestNode[] args) {
         var result = new TypeObject[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = TestConverter.returnType(args[i], info, 1)[0];

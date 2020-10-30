@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing the try-except-finally statement.
  * <p>
@@ -20,7 +17,6 @@ public class TryStatementNode implements FlowStatementNode {
     private StatementBodyNode elseStmt;
     private StatementBodyNode finallyStmt;
 
-    @Contract(pure = true)
     public TryStatementNode(LineInfo lineInfo, StatementBodyNode body, StatementBodyNode except, TypeLikeNode[] excepted,
                             VariableNode asVar, StatementBodyNode elseStmt, StatementBodyNode finallyStmt) {
         this.lineInfo = lineInfo;
@@ -75,9 +71,8 @@ public class TryStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TryStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static TryStatementNode parse(@NotNull TokenList tokens) {
+
+    static TryStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.TRY);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

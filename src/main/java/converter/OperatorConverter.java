@@ -5,7 +5,6 @@ import main.java.parser.Lined;
 import main.java.parser.OperatorNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -107,7 +106,6 @@ public abstract class OperatorConverter implements TestConverter {
         return of(info, node, retCount).convertWithAs(start);
     }
 
-    @NotNull
     protected abstract Pair<List<Byte>, TypeObject> convertWithAs(int start);
 
     protected static CompilerException asException(Lined lineInfo) {

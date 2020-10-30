@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +103,7 @@ public final class ClassInfo {
      *
      * @return The byte representation of the class
      */
-    @NotNull
+
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(StringConstant.strBytes(type.name()));
         bytes.addAll(Util.intToBytes(superConstants.size()));
@@ -131,7 +130,7 @@ public final class ClassInfo {
         return bytes;
     }
 
-    private static void addVariables(@NotNull List<Byte> bytes, @NotNull Map<String, Short> byteMap) {
+    private static void addVariables(List<Byte> bytes,Map<String, Short> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
@@ -139,7 +138,7 @@ public final class ClassInfo {
         }
     }
 
-    private static void addOperators(@NotNull List<Byte> bytes, @NotNull Map<OpSpTypeNode, List<Byte>> byteMap) {
+    private static void addOperators(List<Byte> bytes,Map<OpSpTypeNode, List<Byte>> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
             bytes.add((byte) pair.getKey().ordinal());
@@ -148,7 +147,7 @@ public final class ClassInfo {
         }
     }
 
-    private static void addMethods(@NotNull List<Byte> bytes, @NotNull Map<String, List<Byte>> byteMap) {
+    private static void addMethods(List<Byte> bytes,Map<String, List<Byte>> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
@@ -157,7 +156,7 @@ public final class ClassInfo {
         }
     }
 
-    private static void addProperties(@NotNull List<Byte> bytes, @NotNull Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+    private static void addProperties(List<Byte> bytes,Map<String, Pair<List<Byte>, List<Byte>>> properties) {
         bytes.addAll(Util.intToBytes(properties.size()));
         for (var pair : properties.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
@@ -168,7 +167,7 @@ public final class ClassInfo {
         }
     }
 
-    private static void addSet(@NotNull List<Byte> bytes, @NotNull Set<String> set) {
+    private static void addSet(List<Byte> bytes,Set<String> set) {
         bytes.addAll(Util.intToBytes(set.size()));
         for (var str : set) {
             bytes.addAll(StringConstant.strBytes(str));

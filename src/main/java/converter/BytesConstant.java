@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +31,6 @@ public final class BytesConstant implements LangConstant {
         return Objects.hash(value);
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(value.size() + Integer.BYTES + 1);  // Guess capacity
@@ -43,7 +40,6 @@ public final class BytesConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.BYTES;
@@ -54,8 +50,6 @@ public final class BytesConstant implements LangConstant {
         return OptionalBool.of(!value.isEmpty());
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String name(IndexedSet<LangConstant> constants) {
         StringBuilder result = new StringBuilder();

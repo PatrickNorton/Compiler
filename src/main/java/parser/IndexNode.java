@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-
 /**
  * The node for a variable index.
  * @author Patrick Norton
@@ -20,7 +18,7 @@ public class IndexNode implements NameNode {
      * @param var The node being indexed
      * @param indices The list of indices in the square brackets
      */
-    @Contract(pure = true)
+
     public IndexNode(LineInfo lineInfo, TestNode var, TestNode... indices) {
         this.lineInfo = lineInfo;
         this.var = var;

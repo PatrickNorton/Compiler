@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,14 +72,12 @@ public enum Keyword {
     public final String name;
     private final Function<TokenList, IndependentNode> parseLeft;
 
-    @Contract(pure = true)
     Keyword(String name, Function<TokenList, IndependentNode> fn) {
         this.name = name;
         this.parseLeft = fn;
     }
 
-    @Contract(pure = true)
-    Keyword(String name, String errorMessage, @NotNull TokenPlace place) {
+    Keyword(String name, String errorMessage,TokenPlace place) {
         this.name = name;
         switch (place) {
             case LEFT:
@@ -124,8 +119,8 @@ public enum Keyword {
      * @param value The string value of the keyword
      * @return The keyword itself
      */
-    @NotNull
-    static Keyword find(@NotNull Token value) {
+
+    static Keyword find(Token value) {
         assert value.is(TokenType.KEYWORD);
         Keyword val = values.get(value.sequence);
         if (val == null) {
@@ -139,13 +134,10 @@ public enum Keyword {
         return this.parseLeft.apply(tokens);
     }
 
-    @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String toString() {
         return name.toLowerCase();

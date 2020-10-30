@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 
 /**
@@ -21,8 +19,8 @@ public interface InterfaceStatementNode extends IndependentNode, DescribableNode
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed interface statement
      */
-    @NotNull
-    static InterfaceStatementNode parse(@NotNull TokenList tokens) {  // TODO: Clean up method and/or factor out
+
+    static InterfaceStatementNode parse(TokenList tokens) {  // TODO: Clean up method and/or factor out
         if (tokens.tokenIs("static") && tokens.tokenIs(1, "{")) {
             return StaticBlockNode.parse(tokens);
         }

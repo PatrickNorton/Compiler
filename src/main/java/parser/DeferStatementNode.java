@@ -1,9 +1,6 @@
 // TODO: "defer return" statement
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The node representing a defer statement.
  *
@@ -13,7 +10,6 @@ public class DeferStatementNode implements FlowStatementNode {
     private LineInfo lineInfo;
     private StatementBodyNode body;
 
-    @Contract(pure = true)
     public DeferStatementNode(LineInfo info, StatementBodyNode body) {
         this.lineInfo = info;
         this.body = body;
@@ -38,9 +34,8 @@ public class DeferStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DeferStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static DeferStatementNode parse(@NotNull TokenList tokens) {
+
+    public static DeferStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEFER);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

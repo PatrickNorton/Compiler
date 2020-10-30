@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 public abstract class LoopConverter implements BaseConverter {
@@ -17,7 +15,6 @@ public abstract class LoopConverter implements BaseConverter {
         this.hasContinue = hasContinue;
     }
 
-    @NotNull
     @Override
     public final List<Byte> convert(int start) {
         info.loopManager().enterLoop(hasContinue);

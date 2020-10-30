@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +19,7 @@ public class DottedVariableNode implements NameNode {
     private TestNode preDot;
     private DottedVar[] newPostDots;
 
-    public DottedVariableNode(@NotNull TestNode preDot, DottedVar... postDots) {
+    public DottedVariableNode(TestNode preDot, DottedVar... postDots) {
         this.lineInfo = preDot.getLineInfo();
         this.preDot = preDot;
         this.newPostDots = postDots;
@@ -32,8 +29,7 @@ public class DottedVariableNode implements NameNode {
      * The constructor for an empty DottedVariableNode, which can be used in
      * certain situations where some code might require it.
      */
-    @NotNull
-    @Contract(value = " -> new", pure = true)
+
     public static DottedVariableNode empty() {
         return new DottedVariableNode(TestNode.empty());
     }
@@ -63,15 +59,12 @@ public class DottedVariableNode implements NameNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DottedVariableNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DottedVariableNode parseNamesOnly(@NotNull TokenList tokens) {
+
+    static DottedVariableNode parseNamesOnly(TokenList tokens) {
         return parseNamesOnly(tokens, false);
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
-    static DottedVariableNode parseNamesOnly(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    static DottedVariableNode parseNamesOnly(TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.NAME);
         NameNode name = VariableNode.parse(tokens);
         if (ignoreNewlines) {
@@ -84,17 +77,17 @@ public class DottedVariableNode implements NameNode {
         return new DottedVariableNode(name, postDots.toArray(new DottedVar[0]));
     }
 
-    static DottedVariableNode parseOnName(@NotNull TokenList tokens) {
+    static DottedVariableNode parseOnName(TokenList tokens) {
         return tokens.tokenIs(TokenType.NAME) ? parseNamesOnly(tokens) : empty();
     }
 
-    static TestNode parsePostDots(@NotNull TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
+    static TestNode parsePostDots(TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
         return tokens.tokenIs(TokenType.DOT)
                 ? DottedVariableNode.fromExpr(tokens, preDot, ignoreNewlines)
                 : preDot;
     }
 
-    static NameNode parsePostDots(@NotNull TokenList tokens, NameNode preDot, boolean ignoreNewlines) {
+    static NameNode parsePostDots(TokenList tokens, NameNode preDot, boolean ignoreNewlines) {
         return tokens.tokenIs(TokenType.DOT)
                 ? DottedVariableNode.fromExpr(tokens, preDot, ignoreNewlines)
                 : preDot;
@@ -111,15 +104,12 @@ public class DottedVariableNode implements NameNode {
      * @param preDot The node which comes before the dot
      * @return The freshly parsed node
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static DottedVariableNode fromExpr(@NotNull TokenList tokens, TestNode preDot) {
+
+    static DottedVariableNode fromExpr(TokenList tokens, TestNode preDot) {
         return fromExpr(tokens, preDot, false);
     }
 
-    @NotNull
-    @Contract("_, _, _ -> new")
-    static DottedVariableNode fromExpr(@NotNull TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
+    static DottedVariableNode fromExpr(TokenList tokens, TestNode preDot, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.DOT);
         DottedVar[] postDots = DottedVar.parseAll(tokens, ignoreNewlines);
         return new DottedVariableNode(preDot, postDots);
@@ -136,8 +126,8 @@ public class DottedVariableNode implements NameNode {
      * @param tokens The list of tokens to parse
      * @return The freshly parsed array of DottedVariableNodes
      */
-    @NotNull
-    static DottedVariableNode[] parseNameOnlyList(@NotNull TokenList tokens) {
+
+    static DottedVariableNode[] parseNameOnlyList(TokenList tokens) {
         boolean isBraced;
         List<DottedVariableNode> variables = new ArrayList<>();
         if (tokens.tokenIs("(") && !tokens.braceContains(Keyword.IN, Keyword.FOR)) {

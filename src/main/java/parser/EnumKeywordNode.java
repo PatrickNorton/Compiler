@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing an enum keyword.
  *
@@ -24,8 +22,8 @@ public interface EnumKeywordNode extends NameNode {
      * @param tokens The list of tokens to be parsed
      * @return The freshly parsed EnumKeywordNode
      */
-    @NotNull
-    static EnumKeywordNode parse(@NotNull TokenList tokens) {
+
+    static EnumKeywordNode parse(TokenList tokens) {
         if (!tokens.tokenIs(TokenType.NAME)) {
             throw tokens.error("Enum keyword must start with a variable name");
         }

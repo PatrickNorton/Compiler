@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a while statement.
  * @author Patrick Norton
@@ -15,7 +12,6 @@ public class WhileStatementNode implements FlowStatementNode {
     private StatementBodyNode body;
     private StatementBodyNode nobreak;
 
-    @Contract(pure = true)
     public WhileStatementNode(LineInfo lineInfo, TestNode cond, VariableNode as,
                               StatementBodyNode body, StatementBodyNode nobreak) {
         this.lineInfo = lineInfo;
@@ -58,9 +54,8 @@ public class WhileStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed while statement
      */
-    @NotNull
-    @Contract("_ -> new")
-    static WhileStatementNode parse(@NotNull TokenList tokens) {
+
+    static WhileStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.WHILE);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

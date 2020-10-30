@@ -4,7 +4,6 @@ import main.java.parser.DecrementNode;
 import main.java.parser.IncDecNode;
 import main.java.parser.IncrementNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ public final class IncrementDecrementConverter implements BaseConverter {
         this.info = info;
     }
 
-    @NotNull
     @Override
     public final List<Byte> convert(int start) {
         boolean isDecrement = node instanceof DecrementNode;

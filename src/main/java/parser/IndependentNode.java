@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a node that can be used in a BodyNode.
  * <p>
@@ -22,8 +19,8 @@ public interface IndependentNode extends BaseNode {
      * @param tokens The list of tokens which is to be parsed
      * @return The parsed node
      */
-    @Contract("_ -> new")
-    static IndependentNode parse(@NotNull TokenList tokens) {
+
+    static IndependentNode parse(TokenList tokens) {
         tokens.passNewlines();
         switch (tokens.tokenType()) {
             case KEYWORD:
@@ -70,8 +67,7 @@ public interface IndependentNode extends BaseNode {
         }
     }
 
-    @NotNull
-    static DescribableNode parseVar(@NotNull TokenList tokens) {
+    static DescribableNode parseVar(TokenList tokens) {
         assert tokens.tokenIs(Keyword.VAR);
         if (tokens.lineContains(TokenType.ASSIGN)) {
             return (DescribableNode) AssignStatementNode.parse(tokens);
@@ -87,8 +83,8 @@ public interface IndependentNode extends BaseNode {
      * @param tokens The token list to be parsed
      * @return The parsed node
      */
-    @Contract("_ -> new")
-    private static IndependentNode parseKeyword(@NotNull TokenList tokens) {
+
+    private static IndependentNode parseKeyword(TokenList tokens) {
         assert tokens.tokenIs(TokenType.KEYWORD);
         Keyword kw = Keyword.find(tokens.getFirst());
         return kw.parseLeft(tokens);
@@ -110,7 +106,7 @@ public interface IndependentNode extends BaseNode {
      * @param tokens List of tokens to be parsed
      * @return The parsed token
      */
-    private static IndependentNode parseLeftVariable(@NotNull TokenList tokens) {
+    private static IndependentNode parseLeftVariable(TokenList tokens) {
         assert tokens.tokenIs(TokenType.NAME, TokenType.OPEN_BRACE);
         Token afterVar = tokens.getToken(tokens.sizeOfVariable());
         if (isAssignment(tokens) || isNormalAssignment(tokens)) {
@@ -172,7 +168,7 @@ public interface IndependentNode extends BaseNode {
         return false;
     }
 
-    private static boolean isDeclaration(@NotNull TokenList tokens) {
+    private static boolean isDeclaration(TokenList tokens) {
         int varSize = TypeLikeNode.sizeOfType(tokens, 0);
         return varSize > 0
                 && tokens.tokenIs(varSize, TokenType.NAME)

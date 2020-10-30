@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,6 @@ public final class IntConstant implements LangConstant {
         return Objects.hash(value);
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(5);
@@ -37,14 +35,13 @@ public final class IntConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.INT;
     }
 
     @Override
-    public @NotNull String name(IndexedSet<LangConstant> constants) {
+    public String name(IndexedSet<LangConstant> constants) {
         return Integer.toString(value);
     }
 

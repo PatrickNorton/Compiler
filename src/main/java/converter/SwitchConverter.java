@@ -7,8 +7,6 @@ import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -28,7 +26,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         this.retCount = retCount;
     }
 
-    @NotNull
     public List<Byte> trueConvert(int start) {
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
@@ -51,7 +48,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var cases = node.getCases();
@@ -87,7 +83,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return finalTypes;
     }
 
-    private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes, TypeObject[] retTypes) {
+    private void addCase(CaseStatementNode stmt, int start,List<Byte> bytes, TypeObject[] retTypes) {
         // TODO: Ensure 'default' statement is at the end
         var label = stmt.getLabel();
         List<Integer> jumpLocations = new ArrayList<>(label.length);
@@ -120,7 +116,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    @NotNull
     private List<Byte> convertTbl(int start) {
         Map<BigInteger, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
@@ -163,7 +158,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
-    @NotNull
     private List<Byte> convertStr(int start) {
         Map<String, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
@@ -203,7 +197,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
-    @NotNull
     private List<Byte> tblHeader(int start) {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
         bytes.add(Bytecode.SWITCH_TABLE.value);
@@ -212,9 +205,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     private static final BigInteger BIG_MAX = BigInteger.valueOf(Integer.MAX_VALUE);
 
-    @Contract("_, _ -> new")
-    @NotNull
-    private SwitchTable getTbl(@NotNull Map<BigInteger, Integer> jumps, int defaultVal) {
+    private SwitchTable getTbl(Map<BigInteger, Integer> jumps, int defaultVal) {
         var threshold = 2 * (long) jumps.size();
         var max = Collections.max(jumps.keySet());
         if (max.compareTo(BigInteger.valueOf(threshold)) > 0 || max.compareTo(BIG_MAX) > 0) {
@@ -229,14 +220,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    @Contract(value = "_, _ -> new", pure = true)
-    @NotNull
     private SwitchTable strTbl(Map<String, Integer> jumps, int defaultVal) {
         return new StringSwitchTable(jumps, defaultVal);
     }
 
-    private void convertBody(int start, @NotNull List<Byte> bytes,
-                              @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
+    private void convertBody(int start,List<Byte> bytes,
+CaseStatementNode stmt,TypeObject[] retTypes) {
         if (stmt.isArrow()) {
             convertArrow(start, bytes, stmt, retTypes);
         } else {
@@ -249,8 +238,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    private void convertArrow(int start, @NotNull List<Byte> bytes,
-                              @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
+    private void convertArrow(int start,List<Byte> bytes,
+CaseStatementNode stmt,TypeObject[] retTypes) {
         assert stmt.isArrow();
         var converter = TestConverter.of(info, (TestNode) stmt.getBody().get(0), retCount);
         bytes.addAll(converter.convert(start + bytes.size()));
@@ -271,7 +260,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return convertDefault(start, bytes, (DefaultStatementNode) stmt);
     }
 
-    private int convertDefault(int start, @NotNull List<Byte> bytes, @NotNull DefaultStatementNode stmt) {
+    private int convertDefault(int start,List<Byte> bytes,DefaultStatementNode stmt) {
         var defaultVal = start + bytes.size();
         bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
         bytes.add(Bytecode.JUMP.value);
@@ -280,7 +269,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return defaultVal;
     }
 
-    @NotNull
     private List<Byte> convertUnion(int start, UnionTypeObject union) {
         Map<Integer, Integer> jumps = new HashMap<>();
         boolean hasAs = anyHasAs();
@@ -384,8 +372,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         throw CompilerException.of("Switch on a union must have properly-formed variants", label);
     }
 
-    @NotNull
-    private TypeObject labelToType(@NotNull TestNode label, UnionTypeObject switchedType) {
+    private TypeObject labelToType(TestNode label, UnionTypeObject switchedType) {
         if (label instanceof DottedVariableNode) {
             var dottedLbl = (DottedVariableNode) label;
             var lblFirst = dottedLbl.getPreDot();
@@ -449,9 +436,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
-    private SwitchTable smallTbl(@NotNull Map<Integer, Integer> jumps, int defaultVal) {
+    private SwitchTable smallTbl(Map<Integer, Integer> jumps, int defaultVal) {
         var max = Collections.max(jumps.keySet());
         var tblSize = max + 1;
         List<Integer> table = new ArrayList<>(tblSize);
@@ -474,7 +459,6 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    @NotNull
     private static CompilerException literalException(String literalType, TestNode label) {
         return CompilerException.format(
                 "'switch' on a %1$s requires a %1$s literal in each case statement",

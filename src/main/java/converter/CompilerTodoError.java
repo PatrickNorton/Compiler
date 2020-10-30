@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing an error caused by an operation not yet implemented
@@ -29,9 +27,8 @@ public class CompilerTodoError extends RuntimeException {
      * @param lineInfo The line information for the error
      * @return The exception
      */
-    @Contract("_, _ -> new")
-    @NotNull
-    public static CompilerTodoError of(String message, @NotNull LineInfo lineInfo) {
+
+    public static CompilerTodoError of(String message,LineInfo lineInfo) {
         return new CompilerTodoError(
                 String.format(
                         "%s%nError: Operation not yet implemented%nFile %s Line %d%n%s",
@@ -52,8 +49,8 @@ public class CompilerTodoError extends RuntimeException {
      * @param lineInfo The line information for the error
      * @return The exception
      */
-    @NotNull
-    public static CompilerTodoError of(String message, @NotNull Lined lineInfo) {
+
+    public static CompilerTodoError of(String message,Lined lineInfo) {
         return of(message, lineInfo.getLineInfo());
     }
 
@@ -71,7 +68,7 @@ public class CompilerTodoError extends RuntimeException {
      * @see #of(String, Lined)
      * @see String#format(String, Object...)
      */
-    @NotNull
+
     public static CompilerTodoError format(String message, LineInfo lineInfo, Object... args) {
         return of(String.format(message, args), lineInfo);
     }
@@ -90,7 +87,7 @@ public class CompilerTodoError extends RuntimeException {
      * @see #of(String, Lined)
      * @see String#format(String, Object...)
      */
-    @NotNull
+
     public static CompilerTodoError format(String message, Lined lineInfo, Object... args) {
         return of(String.format(message, args), lineInfo);
     }

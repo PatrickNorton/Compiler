@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -14,8 +11,7 @@ public class StaticBlockNode implements ClassStatementNode, ComplexStatementNode
     private LineInfo lineInfo;
     private StatementBodyNode body;
 
-    @Contract(pure = true)
-    public StaticBlockNode(LineInfo lineInfo, @NotNull StatementBodyNode body) {
+    public StaticBlockNode(LineInfo lineInfo,StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.body = body;
     }
@@ -54,9 +50,8 @@ public class StaticBlockNode implements ClassStatementNode, ComplexStatementNode
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed StaticBlockNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static StaticBlockNode parse(@NotNull TokenList tokens) {
+
+    public static StaticBlockNode parse(TokenList tokens) {
         assert tokens.tokenIs("static") && tokens.tokenIs(1, "{");
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

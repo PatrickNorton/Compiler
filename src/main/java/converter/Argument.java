@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -58,9 +56,7 @@ public final class Argument implements Lined {
         return Objects.hash(name, type);
     }
 
-    @NotNull
-    @Contract(pure = true)
-    public static TypeObject[] typesOf(@NotNull Argument... args) {
+    public static TypeObject[] typesOf(Argument... args) {
         TypeObject[] result = new TypeObject[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = args[i].getType();

@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-
 /**
  * The class representing an elif statement.
  * <p>
@@ -23,7 +21,7 @@ public class ElifStatementNode implements BaseNode {
      * @param test The conditional for the statement
      * @param body The body of the statement
      */
-    @Contract(pure = true)
+
     public ElifStatementNode(LineInfo lineInfo, TestNode test, VariableNode as, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.test = test;

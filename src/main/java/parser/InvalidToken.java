@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.regex.Pattern;
 
 public enum InvalidToken {
@@ -15,7 +12,7 @@ public enum InvalidToken {
     public final Pattern regex;
     public final String errorMessage;
 
-    InvalidToken(@NotNull @Language("regexp") String regex, String errorMessage) {
+    InvalidToken(String regex, String errorMessage) {
         assert regex.startsWith("^");
         this.regex = Pattern.compile(regex);
         this.errorMessage = errorMessage;

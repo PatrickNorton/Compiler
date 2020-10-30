@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +27,6 @@ public final class VariableConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[]{info.getType(node.getName()).orElseThrow(
@@ -36,7 +34,6 @@ public final class VariableConverter implements TestConverter {
         )};
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {

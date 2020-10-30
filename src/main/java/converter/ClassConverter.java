@@ -4,8 +4,6 @@ import main.java.converter.classbody.ConverterHolder;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,9 +14,8 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         super(info, node);
     }
 
-    @NotNull
     @Override
-    @Unmodifiable
+
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);
@@ -61,7 +58,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return Collections.emptyList();
     }
 
-    private static boolean classIsConstant(@NotNull ConverterHolder holder) {
+    private static boolean classIsConstant(ConverterHolder holder) {
         for (var info : holder.getVars().values()) {
             if (info.getMutType() != MutableType.STANDARD) {
                 return false;
@@ -86,7 +83,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return true;
     }
 
-    private void checkConstSupers(StdTypeObject type, @NotNull Iterable<TypeObject> supers) {
+    private void checkConstSupers(StdTypeObject type,Iterable<TypeObject> supers) {
         for (var cls : supers) {
             if (cls instanceof StdTypeObject && ((StdTypeObject) cls).constSemantics()) {
                 throw CompilerException.format(
@@ -101,7 +98,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return new ClassConverter(info, node).completeType(obj);
     }
 
-    private int completeType(@NotNull StdTypeObject obj) {
+    private int completeType(StdTypeObject obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
@@ -116,7 +113,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return info.reserveClass(obj);
     }
 
-    private TypeObject superType(@NotNull StdTypeObject obj) {
+    private TypeObject superType(StdTypeObject obj) {
         var supers = obj.getSupers();
         if (supers.isEmpty()) {
             return Builtins.OBJECT;
@@ -124,7 +121,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         return supers.get(0);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj, boolean isConst) {
+    private void parseIntoObject(ConverterHolder converter,StdTypeObject obj, boolean isConst) {
         try {
             info.accessHandler().addCls(obj);
             info.accessHandler().addSuper(superType(obj));
@@ -137,7 +134,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         }
     }
 
-    private void parseInner(ConverterHolder converter, @NotNull StdTypeObject obj, boolean isConst) {
+    private void parseInner(ConverterHolder converter,StdTypeObject obj, boolean isConst) {
         parseStatements(converter);
         if (isConst) {
             if (!classIsConstant(converter)) {

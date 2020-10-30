@@ -1,8 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 public final class MethodInfo implements IntoMethodInfo {
     private final AccessLevel accessLevel;
     private final boolean isMut;
@@ -35,20 +32,14 @@ public final class MethodInfo implements IntoMethodInfo {
         return this;
     }
 
-    @Contract("_, _ -> new")
-    @NotNull
     public static MethodInfo of(ArgumentInfo args, TypeObject... returns) {
         return new MethodInfo(AccessLevel.PUBLIC, false, new FunctionInfo(args, returns));
     }
 
-    @Contract("_ -> new")
-    @NotNull
     public static MethodInfo of(TypeObject... returns) {
         return new MethodInfo(AccessLevel.PUBLIC, false, new FunctionInfo(returns));
     }
 
-    @Contract("_, _ -> new")
-    @NotNull
     public static MethodInfo ofMut(ArgumentInfo args, TypeObject... returns) {
         return new MethodInfo(AccessLevel.PUBLIC, true, new FunctionInfo(args, returns));
     }

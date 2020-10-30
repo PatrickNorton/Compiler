@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -28,7 +25,7 @@ public class DeclarationNode implements DeclaredStatementNode, ClassStatementNod
      * @param type The type of the declared variable
      * @param name The name of that variable
      */
-    @Contract(pure = true)
+
     public DeclarationNode(LineInfo lineInfo, TypeLikeNode type, VariableNode name) {
         this.lineInfo = lineInfo;
         this.type = type;
@@ -95,7 +92,7 @@ public class DeclarationNode implements DeclaredStatementNode, ClassStatementNod
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed DeclarationNode
      */
-    @NotNull
+
     static DeclarationNode parse(TokenList tokens) {
         TypeLikeNode type = TypeLikeNode.parse(tokens);
         VariableNode var = VariableNode.parse(tokens);

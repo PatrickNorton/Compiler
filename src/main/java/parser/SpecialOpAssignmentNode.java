@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 
 /**
@@ -19,7 +16,6 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
         this(name.getLineInfo(), name, assignment, isColon);
     }
 
-    @Contract(pure = true)
     public SpecialOpAssignmentNode(LineInfo lineInfo, SpecialOpNameNode name, TestNode assignment, boolean isColon) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -65,9 +61,8 @@ public class SpecialOpAssignmentNode implements ClassStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed SpecialOpAssignmentNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static SpecialOpAssignmentNode parse(@NotNull TokenList tokens) {
+
+    public static SpecialOpAssignmentNode parse(TokenList tokens) {
         assert tokens.tokenIs(1, TokenType.ASSIGN);
         SpecialOpNameNode name = SpecialOpNameNode.parse(tokens);
         assert tokens.tokenIs(TokenType.ASSIGN);

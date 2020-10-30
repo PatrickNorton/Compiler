@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.util.IndexedSet;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,6 @@ public final class ImportConstant implements LangConstant {
         this.name = name;
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -24,14 +22,13 @@ public final class ImportConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         throw new RuntimeException("Cannot figure out type of this yet");
     }
 
     @Override
-    public @NotNull String name(IndexedSet<LangConstant> constants) {
+    public String name(IndexedSet<LangConstant> constants) {
         return name;
     }
 }

@@ -1,8 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +28,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
     private int size;
     private int start;
 
-    @Contract(pure = true)
     @SuppressWarnings("unchecked")
     public CircularBuffer() {
         values = (T[]) new Object[DEFAULT_SIZE];
@@ -114,13 +110,11 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
         return peekLast();
     }
 
-    @Contract(pure = true)
     @Override
     public T peekFirst() {
         return size == 0 ? null : values[internalIndex(0)];
     }
 
-    @Contract(pure = true)
     @Override
     public T peekLast() {
         return size == 0 ? null : values[internalIndex(size - 1)];
@@ -171,7 +165,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
         return getFirst();
     }
 
-    @Contract(pure = true)
     @Override
     public T peek() {
         return peekFirst();
@@ -187,7 +180,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
         return removeFirst();
     }
 
-    @Contract(pure = true)
     @Override
     public boolean contains(Object o) {
         for (T i : this) {
@@ -198,7 +190,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
         return false;
     }
 
-    @NotNull
     @Override
     public Iterator<T> iterator() {
         return new Iterator<>() {
@@ -223,13 +214,13 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
     }
 
     @Override
-    public boolean addAll(@NotNull Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends T> c) {
         ensureSize(size + c.size());
         return super.addAll(c);
     }
 
     @Override
-    public boolean addAll(int index, @NotNull Collection<? extends T> c) {
+    public boolean addAll(int index,Collection<? extends T> c) {
         ensureSize(size + c.size());
         for (T value : c) {
             add(index++, value);
@@ -249,7 +240,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
         return Arrays.hashCode(values);
     }
 
-    @Contract(pure = true)
     @Override
     public T get(int index) {
         verifyIndex(index);
@@ -338,7 +328,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
         return this.size;
     }
 
-    @NotNull
     @Override
     public Iterator<T> descendingIterator() {
         return new Iterator<>() {
@@ -384,7 +373,6 @@ public class CircularBuffer<T> extends AbstractList<T> implements IndexedDeque<T
             throw new IndexOutOfBoundsException(String.format("Index %d out of bounds for list of length %d", index, size));
     }
 
-    @Contract(pure = true)
     private int internalIndex(int index) {
         return Math.floorMod(start + index, values.length);
     }

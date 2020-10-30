@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a continue statement.
  *
@@ -13,7 +10,6 @@ public class ContinueStatementNode implements SimpleFlowNode {
     private LineInfo lineInfo;
     private TestNode cond;
 
-    @Contract(pure = true)
     public ContinueStatementNode(LineInfo lineInfo, TestNode cond) {
         this.lineInfo = lineInfo;
         this.cond = cond;
@@ -39,9 +35,8 @@ public class ContinueStatementNode implements SimpleFlowNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed ContinueStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ContinueStatementNode parse(@NotNull TokenList tokens) {
+
+    static ContinueStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.CONTINUE);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

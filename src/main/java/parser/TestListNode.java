@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +13,6 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
     private TestNode[] tests;
     private String[] varargs;
 
-    @Contract(pure = true)
     public TestListNode() {
         this(new TestNode[0], new String[0]);
     }
@@ -24,8 +21,7 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         this(tests, nEmpties(tests.length));
     }
 
-    @Contract(pure = true)
-    public TestListNode(@NotNull TestNode[] tests, @NotNull String[] varargs) {
+    public TestListNode(TestNode[] tests,String[] varargs) {
         assert tests.length == varargs.length;
         this.tests = tests;
         this.varargs = varargs;
@@ -52,7 +48,6 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         return varargs[index];
     }
 
-    @NotNull
     @Override
     public Iterator<Pair<TestNode, String>> iterator() {
         return new TestListIterator(tests, varargs);
@@ -63,8 +58,8 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
      * @param tokens The list of tokens to be destructively parsed
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The list of TestNodes
-     */@NotNull
-    @Contract("_, _ -> new")
+     */
+
     static TestListNode parse(TokenList tokens, boolean ignoreNewlines) {
         if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestListNode();
@@ -87,8 +82,6 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         return new TestListNode(tests.toArray(new TestNode[0]), varargs.toArray(new String[0]));
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
     static Pair<TestListNode, TestNode> parsePostIf(TokenList tokens, boolean ignoreNewlines) {
         if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return Pair.of(new TestListNode(), null);
@@ -137,8 +130,7 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         private final TestNode[] tests;
         private final String[] varargs;
 
-        @Contract(pure = true)
-        public TestListIterator(@NotNull TestNode[] tests, @NotNull String[] varargs) {
+        public TestListIterator(TestNode[] tests,String[] varargs) {
             assert tests.length == varargs.length;
             this.index = 0;
             this.tests = tests;
@@ -151,7 +143,7 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         }
 
         @Override
-        @NotNull
+
         public Pair<TestNode, String> next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();

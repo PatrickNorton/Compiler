@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -53,13 +52,13 @@ public final class InConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         if (args.length != 2) {
             throw CompilerException.format("Expected 2 arguments for 'in' operator, got %d", lineInfo, args.length);
@@ -81,7 +80,7 @@ public final class InConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

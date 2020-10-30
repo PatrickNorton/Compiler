@@ -1,9 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
-
 import java.math.BigInteger;
 import java.util.List;
 
@@ -31,9 +27,7 @@ public final class Util {
      * @param value The int value to get the bytes of
      * @return The list of bytes
      */
-    @NotNull
-    @Contract(pure = true)
-    @Unmodifiable
+
     static List<Byte> intToBytes(int value) {
         return List.of(
                 (byte) (value >>> 24),
@@ -78,9 +72,7 @@ public final class Util {
      * @param value The int value to get the bytes of
      * @return The list of bytes
      */
-    @NotNull
-    @Contract(pure = true)
-    @Unmodifiable
+
     static List<Byte> shortToBytes(short value) {
         return List.of(
                 (byte) (value >>> 8),
@@ -99,8 +91,7 @@ public final class Util {
      * @param value The int value to get the bytes of
      * @return The list of bytes
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
+
     static byte[] toByteArray(int value) {
         return new byte[] {
                 (byte) (value >>> 24),
@@ -133,8 +124,7 @@ public final class Util {
      * @param value The short value to get the bytes of
      * @return The list of bytes
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
+
     static byte[] toByteArray(short value) {
         return new byte[] {
                 (byte) (value >>> 8),
@@ -148,8 +138,8 @@ public final class Util {
      * @param values The list of bytes to unbox
      * @return The unboxed list
      */
-    @NotNull
-    static byte[] toByteArray(@NotNull List<Byte> values) {
+
+    static byte[] toByteArray(List<Byte> values) {
         var bytes = new byte[values.size()];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = values.get(i);
@@ -169,7 +159,7 @@ public final class Util {
      * @param toInsert The list to insert into the other
      * @param start The index to start at
      */
-    static void emplace(List<Byte> original, @NotNull List<Byte> toInsert, int start) {
+    static void emplace(List<Byte> original,List<Byte> toInsert, int start) {
         for (int i = 0; i < toInsert.size(); i++) {
             original.set(start + i, toInsert.get(i));
         }

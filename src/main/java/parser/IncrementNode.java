@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class for incrementing a variable.
  * @author Patrick Norton
@@ -20,7 +17,7 @@ public class IncrementNode implements IncDecNode {
      * Construct a new instance of IncrementNode.
      * @param variable The variable to be incremented
      */
-    @Contract(pure = true)
+
     public IncrementNode(LineInfo info, NameNode variable) {
         this.lineInfo = info;
         this.variable = variable;
@@ -44,8 +41,7 @@ public class IncrementNode implements IncDecNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed IncrementNode
      */
-    @NotNull
-    @Contract("_ -> new")
+
     static IncrementNode parse(TokenList tokens) {
         NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs("++")) {

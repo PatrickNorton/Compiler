@@ -5,7 +5,6 @@ import main.java.parser.LiteralNode;
 import main.java.parser.TestNode;
 import main.java.util.Pair;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +64,7 @@ public final class LiteralConverter implements TestConverter {
             this.bytecode = bytecode;
         }
 
-        static LiteralType fromBrace(@NotNull String brace, Lined lineInfo) {
+        static LiteralType fromBrace(String brace, Lined lineInfo) {
             switch (brace) {
                 case "[":
                     return LiteralType.LIST;
@@ -79,7 +78,6 @@ public final class LiteralConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
@@ -98,7 +96,6 @@ public final class LiteralConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
@@ -176,8 +173,7 @@ public final class LiteralConverter implements TestConverter {
         bytes.addAll(Util.shortZeroBytes());
     }
 
-    @NotNull
-    private TypeObject returnTypes(@NotNull TestNode[] args, String[] varargs) {
+    private TypeObject returnTypes(TestNode[] args, String[] varargs) {
         if (expected != null) {
             return TypeObject.union(expected[0].getGenerics());
         }
@@ -203,8 +199,7 @@ public final class LiteralConverter implements TestConverter {
         return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
     }
 
-    @NotNull
-    private TypeObject[] tupleReturnTypes(@NotNull TestNode[] args) {
+    private TypeObject[] tupleReturnTypes(TestNode[] args) {
         if (expected != null) {
             return expected[0].getGenerics().toArray(new TypeObject[0]);
         }

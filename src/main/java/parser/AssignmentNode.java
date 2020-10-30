@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -33,12 +30,11 @@ public class AssignmentNode implements AssignStatementNode, DescribableNode {
      * @param name The name(s) being assigned to
      * @param value The values to which they are assigned
      */
-    @Contract(pure = true)
+
     public AssignmentNode(boolean isColon, AssignableNode[] name, TestListNode value) {
         this(name[0].getLineInfo(), isColon, name, value);
     }
 
-    @Contract(pure = true)
     public AssignmentNode(LineInfo lineInfo, boolean isColon, AssignableNode[] name, TestListNode value) {
         this.isColon = isColon;
         this.name = name;
@@ -67,7 +63,7 @@ public class AssignmentNode implements AssignStatementNode, DescribableNode {
     }
 
     @Override
-    public void addDescriptor(@NotNull EnumSet<DescriptorNode> nodes) {
+    public void addDescriptor(EnumSet<DescriptorNode> nodes) {
         assert nodes.size() == 1 && mutability == null;
         for (var node : nodes) {
             mutability = node;
@@ -94,9 +90,8 @@ public class AssignmentNode implements AssignStatementNode, DescribableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed AssignmentNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static AssignmentNode parse(@NotNull TokenList tokens) {
+
+    public static AssignmentNode parse(TokenList tokens) {
         LinkedList<AssignableNode> name = new LinkedList<>();
         while (!tokens.tokenIs(TokenType.ASSIGN)) {
             name.add(AssignableNode.parse(tokens));

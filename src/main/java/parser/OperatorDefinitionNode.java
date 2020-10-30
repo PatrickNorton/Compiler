@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 
 /**
@@ -21,8 +18,8 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
     private NameNode[] decorators = new NameNode[0];
     private TypeLikeNode[] generics = new TypeLikeNode[0];
 
-    public OperatorDefinitionNode(@NotNull SpecialOpNameNode opCode, @NotNull TypeLikeNode[] retType,
-                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body,
+    public OperatorDefinitionNode(SpecialOpNameNode opCode,TypeLikeNode[] retType,
+TypedArgumentListNode args,StatementBodyNode body,
                                   boolean isEqStmt) {
         this(opCode.getLineInfo(), opCode, retType, args, body, isEqStmt);
     }
@@ -33,9 +30,9 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param args The arguments the operator takes
      * @param body The body of the operator definition
      */
-    @Contract(pure = true)
-    public OperatorDefinitionNode(LineInfo lineInfo, @NotNull SpecialOpNameNode opCode, @NotNull TypeLikeNode[] retType,
-                                  @NotNull TypedArgumentListNode args, @NotNull StatementBodyNode body,
+
+    public OperatorDefinitionNode(LineInfo lineInfo,SpecialOpNameNode opCode,TypeLikeNode[] retType,
+TypedArgumentListNode args,StatementBodyNode body,
                                   boolean isEqStmt) {
         this.lineInfo = lineInfo;
         this.opCode = opCode;
@@ -128,9 +125,8 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly-parsed OperatorDefinitionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static OperatorDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static OperatorDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         SpecialOpNameNode opCode = SpecialOpNameNode.parse(tokens);
         TypedArgumentListNode args = TypedArgumentListNode.parseOnOpenBrace(tokens);
@@ -145,17 +141,14 @@ public class OperatorDefinitionNode implements DefinitionNode, ClassStatementNod
         return new OperatorDefinitionNode(opCode, retval, args, body, isEqStmt);
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
-    static OperatorDefinitionNode fromGeneric(@NotNull TokenList tokens, @NotNull GenericOperatorNode op) {
+    static OperatorDefinitionNode fromGeneric(TokenList tokens,GenericOperatorNode op) {
         assert tokens.tokenIs("{");
         boolean isEqStmt = tokens.tokenIs("=");
         StatementBodyNode body = parseBody(tokens, isEqStmt);
         return new OperatorDefinitionNode(op.getOpCode(), op.getRetvals(), op.getArgs(), body, isEqStmt);
     }
 
-    @NotNull
-    private static StatementBodyNode parseBody(@NotNull TokenList tokens, boolean isEqStmt) {
+    private static StatementBodyNode parseBody(TokenList tokens, boolean isEqStmt) {
         assert isEqStmt == tokens.tokenIs("=");
         if (isEqStmt) {
             tokens.nextToken();

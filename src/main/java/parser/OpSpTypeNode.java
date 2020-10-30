@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -95,12 +92,11 @@ public enum OpSpTypeNode {
         values = Collections.unmodifiableMap(temp);
     }
 
-    @Contract(pure = true)
     OpSpTypeNode(String name) {
         this.name = name;
     }
 
-    public static OpSpTypeNode parse(@NotNull TokenList tokens) {
+    public static OpSpTypeNode parse(TokenList tokens) {
         OpSpTypeNode operator = find(tokens.tokenSequence().replaceFirst("operator *", ""));
         tokens.nextToken();
         return operator;
@@ -146,13 +142,10 @@ public enum OpSpTypeNode {
         return OP_SP_TRANSLATION_MAP.get(node);
     }
 
-    @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String toString() {
         return "operator " + name;

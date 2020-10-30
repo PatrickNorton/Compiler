@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,7 +20,6 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
         this(statements[0].getLineInfo(), statements);
     }
 
-    @Contract(pure = true)
     public StatementBodyNode(LineInfo lineInfo, IndependentNode... statements) {
         this.lineInfo = lineInfo;
         this.statements = statements;
@@ -48,8 +44,6 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
         return statements[i];
     }
 
-    @NotNull
-    @Contract(" -> new")
     public static StatementBodyNode empty() {
         return new StatementBodyNode();
     }
@@ -63,9 +57,8 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
      * @param types The tokens to parse on
      * @return The freshly parsed StatementBodyNode
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static StatementBodyNode parseOnToken(@NotNull TokenList tokens, String... types) {
+
+    static StatementBodyNode parseOnToken(TokenList tokens, String... types) {
         if (tokens.tokenIs(types)) {
             tokens.nextToken();
             return parse(tokens);
@@ -83,9 +76,8 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
      * @param types The tokens to parse on
      * @return The freshly parsed StatementBodyNode
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static StatementBodyNode parseOnToken(@NotNull TokenList tokens, Keyword... types) {
+
+    static StatementBodyNode parseOnToken(TokenList tokens, Keyword... types) {
         if (tokens.tokenIs(types)) {
             tokens.nextToken();
             return parse(tokens);
@@ -103,9 +95,8 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed StatementBodyNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static StatementBodyNode parse(@NotNull TokenList tokens) {
+
+    static StatementBodyNode parse(TokenList tokens) {
         if (!tokens.tokenIs("{")) {
             throw tokens.error("The body of a function must be enclosed in curly brackets");
         }
@@ -117,9 +108,7 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
         return st;
     }
 
-    @NotNull
-    @Contract("_, _, _ -> new")
-    private static StatementBodyNode parseUntilToken(LineInfo lineInfo, @NotNull TokenList tokens, String... values) {
+    private static StatementBodyNode parseUntilToken(LineInfo lineInfo,TokenList tokens, String... values) {
         ArrayList<IndependentNode> statements = new ArrayList<>();
         while (!tokens.tokenIs(values)) {
             statements.add(IndependentNode.parse(tokens));
@@ -135,7 +124,6 @@ public class StatementBodyNode implements BodyNode, Iterable<IndependentNode> {
         return isEmpty() ? "{}" : "{...}";
     }
 
-    @NotNull
     @Override
     public Iterator<IndependentNode> iterator() {
         return Arrays.asList(statements).iterator();

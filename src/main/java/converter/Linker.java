@@ -19,7 +19,6 @@ import main.java.parser.TypeNode;
 import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -120,7 +119,7 @@ public final class Linker {
         return this;
     }
 
-    private TypeObject linkDefinition(@NotNull DefinitionNode stmt) {
+    private TypeObject linkDefinition(DefinitionNode stmt) {
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;
@@ -171,7 +170,7 @@ public final class Linker {
         }
     }
 
-    private boolean isModule(@NotNull TopNode node) {
+    private boolean isModule(TopNode node) {
         for (var stmt : node) {
             if (stmt instanceof ImportExportNode && ((ImportExportNode) stmt).getType() == ImportExportNode.EXPORT) {
                 return true;

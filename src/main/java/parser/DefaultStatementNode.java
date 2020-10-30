@@ -1,20 +1,16 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a the default branch of a switch statement.
  *
  * @author Patrick Norton
  */
 public class DefaultStatementNode extends CaseStatementNode {
-    @Contract(pure = true)
+
     public DefaultStatementNode(LineInfo lineInfo, StatementBodyNode body, boolean fallthrough) {
         super(lineInfo, new TestNode[0], body, fallthrough, VariableNode.empty());
     }
 
-    @Contract(pure = true)
     public DefaultStatementNode(StatementBodyNode body, boolean fallthrough) {
         this(body.getLineInfo(), body, fallthrough);
     }
@@ -29,9 +25,8 @@ public class DefaultStatementNode extends CaseStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DefaultStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static DefaultStatementNode parse(@NotNull TokenList tokens) {
+
+    public static DefaultStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEFAULT);
         tokens.nextToken();
         StatementBodyNode body;

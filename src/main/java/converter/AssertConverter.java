@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.AssertStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ public final class AssertConverter implements BaseConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         // TODO: Debug vs release
         var bytes = new ArrayList<>(TestConverter.bytes(start, node.getAssertion(), info, 1));
@@ -32,7 +31,7 @@ public final class AssertConverter implements BaseConverter {
         return bytes;
     }
 
-    private @NotNull List<Byte> convertMessage(int start) {
+    private  List<Byte> convertMessage(int start) {
         if (node.getAs().isEmpty()) {
             List<Byte> bytes = new ArrayList<>();
             bytes.add(Bytecode.LOAD_CONST.value);

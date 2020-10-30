@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,13 +49,12 @@ public enum AugAssignTypeNode {
         values = Collections.unmodifiableMap(temp);
     }
 
-    @Contract(pure = true)
     AugAssignTypeNode(String sequence, OperatorTypeNode op) {
         this.sequence = sequence;
         this.operator = op;
     }
 
-    public static AugAssignTypeNode parse(@NotNull TokenList tokens) {
+    public static AugAssignTypeNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.AUG_ASSIGN);
         String sequence = tokens.tokenSequence();
         AugAssignTypeNode operator = find(sequence.substring(0, sequence.length() - 1));
@@ -74,13 +70,10 @@ public enum AugAssignTypeNode {
         }
     }
 
-    @Contract(pure = true)
     public static Pattern pattern() {
         return PATTERN;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String toString() {
         return sequence + '=';

@@ -4,7 +4,6 @@ import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         switch (op) {
             case NULL_COERCE:
@@ -46,7 +45,7 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         switch (op) {
             case NULL_COERCE:
@@ -61,7 +60,7 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         if (op == OperatorTypeNode.OPTIONAL) {
             return convertQuestionAs(start);
@@ -70,7 +69,6 @@ public final class NullOpConverter extends OperatorConverter {
         }
     }
 
-    @NotNull
     private List<Byte> convertNullCoerce(int start) {
         assert op == OperatorTypeNode.NULL_COERCE;
         var firstConverter = TestConverter.of(info, args[0].getArgument(), 1);
@@ -90,7 +88,6 @@ public final class NullOpConverter extends OperatorConverter {
         return bytes;
     }
 
-    @NotNull
     private List<Byte> convertNotNull(int start) {
         assert op == OperatorTypeNode.NOT_NULL;
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
@@ -125,7 +122,6 @@ public final class NullOpConverter extends OperatorConverter {
         return bytes;
     }
 
-    @NotNull
     private List<Byte> convertQuestion(int start) {
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = converter.returnType()[0];
@@ -140,7 +136,7 @@ public final class NullOpConverter extends OperatorConverter {
         return bytes;
     }
 
-    private void addPostJump(int start, @NotNull List<Byte> bytes) {
+    private void addPostJump(int start,List<Byte> bytes) {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.POP_TOP.value);
@@ -148,7 +144,6 @@ public final class NullOpConverter extends OperatorConverter {
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
-    @NotNull
     private TypeObject[] notNullReturn() {
         var retType = TestConverter.returnType(args[0].getArgument(), info, 1)[0];
         if (retType.equals(Builtins.NULL_TYPE)) {
@@ -159,7 +154,6 @@ public final class NullOpConverter extends OperatorConverter {
         }
     }
 
-    @NotNull
     private TypeObject[] nullCoerceReturn() {
         var ret0 = TestConverter.returnType(args[0].getArgument(), info, 1)[0];
         var ret1 = TestConverter.returnType(args[1].getArgument(), info, 1)[0];
@@ -167,7 +161,6 @@ public final class NullOpConverter extends OperatorConverter {
         return new TypeObject[] {result};
     }
 
-    @NotNull
     private Pair<List<Byte>, TypeObject> convertQuestionAs(int start) {
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = converter.returnType()[0];
@@ -180,8 +173,7 @@ public final class NullOpConverter extends OperatorConverter {
         return Pair.of(bytes, resultType);
     }
 
-    @NotNull
-    private static List<Byte> unwrapSecond(int start, @NotNull TestConverter converter) {
+    private static List<Byte> unwrapSecond(int start,TestConverter converter) {
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.SWAP_2.value);

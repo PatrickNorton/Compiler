@@ -8,9 +8,6 @@ import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -37,7 +34,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @return If this is a subtype
      * @see #isSuperclass
      */
-    protected abstract boolean isSubclass(@NotNull TypeObject other);
+    protected abstract boolean isSubclass(TypeObject other);
     public abstract String name();
     public abstract String baseName();
     public abstract boolean sameBaseType(TypeObject other);
@@ -54,7 +51,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param other The type to test for inheritance
      * @return If this is a supertype
      */
-    public boolean isSuperclass(@NotNull TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         return other.isSubclass(this);
     }
 
@@ -116,7 +113,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @return If the assignment is legal or not
      * @see #canSetAttr(String, AccessLevel)
      */
-    public final boolean canSetAttr(String name, @NotNull CompilerInfo info) {
+    public final boolean canSetAttr(String name,CompilerInfo info) {
         return canSetAttr(name, info.accessLevel(this));
     }
 
@@ -162,7 +159,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #operatorInfo(OpSpTypeNode, AccessLevel)
      * @see #tryOperatorInfo(LineInfo, OpSpTypeNode, CompilerInfo)
      */
-    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, @NotNull CompilerInfo info) {
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o,CompilerInfo info) {
         return operatorInfo(o, info.accessLevel(this));
     }
 
@@ -186,7 +183,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #tryOperatorReturnType(Lined, OpSpTypeNode, CompilerInfo)
      * @see #operatorReturnType(OpSpTypeNode, AccessLevel)
      */
-    public final Optional<TypeObject[]> operatorReturnType(OperatorTypeNode o, @NotNull CompilerInfo info) {
+    public final Optional<TypeObject[]> operatorReturnType(OperatorTypeNode o,CompilerInfo info) {
         return operatorReturnType(OpSpTypeNode.translate(o), info.accessLevel(this));
     }
 
@@ -241,7 +238,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @return The generified type
      * @see #generify(LineInfo, TypeObject...)
      */
-    public final TypeObject generify(@NotNull Lined lineInfo, TypeObject... args) {
+    public final TypeObject generify(Lined lineInfo, TypeObject... args) {
         return generify(lineInfo.getLineInfo(), args);
     }
 
@@ -274,7 +271,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #tryAttrType(Lined, String, AccessLevel)
      * @see #canSetAttr(String, AccessLevel)
      */
-    @NotNull
+
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return Optional.empty();
     }
@@ -294,7 +291,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @return The type of the attribute
      * @see #tryStaticAttrType(LineInfo, String, AccessLevel)
      */
-    @NotNull
+
     public Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         return Optional.empty();
     }
@@ -411,13 +408,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #operatorInfo(OpSpTypeNode, AccessLevel)
      * @see #tryOperatorInfo(Lined, OpSpTypeNode, CompilerInfo)
      */
-    @NotNull
+
     public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, AccessLevel access) {
         var info = operatorInfo(o, access);
         return info.orElseThrow(() -> opInfoException(lineInfo, o, access));
     }
 
-    @NotNull
     private CompilerException opInfoException(LineInfo lineInfo, OpSpTypeNode o, AccessLevel access) {
         if (access != AccessLevel.PRIVATE && operatorInfo(o, AccessLevel.PRIVATE).isPresent()) {
             return CompilerException.format(
@@ -454,13 +450,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @implNote This is not {@code final} because {@link TypeTypeObject} has a
      *           better version for itself
      */
-    @NotNull
+
     public TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = attrType(value, access);
         return info.orElseThrow(() -> attrException(lineInfo, value, access));
     }
 
-    @NotNull
     private CompilerException attrException(LineInfo lineInfo, String value, AccessLevel access) {
         if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE).isPresent()) {
             return CompilerException.format(
@@ -496,13 +491,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @return The information representing the operator
      * @see #staticAttrType(String, AccessLevel)
      */
-    @NotNull
+
     public final TypeObject tryStaticAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         var info = staticAttrType(value, access);
         return info.orElseThrow(() -> staticAttrException(lineInfo, value, access));
     }
 
-    @NotNull
     private CompilerException staticAttrException(LineInfo lineInfo, String value, AccessLevel access) {
         if (access != AccessLevel.PRIVATE && staticAttrType(value, AccessLevel.PRIVATE).isPresent()) {
             return CompilerException.format(
@@ -541,7 +535,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #operatorReturnType(OpSpTypeNode, AccessLevel)
      * @see #tryOperatorReturnType(Lined, OpSpTypeNode, CompilerInfo)
      */
-    @NotNull
+
     public final TypeObject[] tryOperatorReturnType(LineInfo lineInfo, OpSpTypeNode o, CompilerInfo info) {
         return tryOperatorInfo(lineInfo, o, info).getReturns();
     }
@@ -565,7 +559,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #operatorReturnType(OpSpTypeNode, AccessLevel)
      * @see #tryOperatorReturnType(LineInfo, OpSpTypeNode, CompilerInfo)
      */
-    public final TypeObject[] tryOperatorReturnType(@NotNull Lined lined, OpSpTypeNode o, CompilerInfo info) {
+    public final TypeObject[] tryOperatorReturnType(Lined lined, OpSpTypeNode o, CompilerInfo info) {
         return tryOperatorReturnType(lined.getLineInfo(), o, info);
     }
 
@@ -588,8 +582,8 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #operatorInfo(OpSpTypeNode, AccessLevel)
      * @see #tryOperatorInfo(LineInfo, OpSpTypeNode, AccessLevel)
      */
-    @NotNull
-    public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o, @NotNull CompilerInfo info) {
+
+    public final FunctionInfo tryOperatorInfo(LineInfo lineInfo, OpSpTypeNode o,CompilerInfo info) {
         return tryOperatorInfo(lineInfo, o, info.accessLevel(this));
     }
 
@@ -612,8 +606,8 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #operatorInfo(OpSpTypeNode, AccessLevel)
      * @see #tryOperatorInfo(Lined, OpSpTypeNode, CompilerInfo)
      */
-    @NotNull
-    public final FunctionInfo tryOperatorInfo(@NotNull Lined lined, OpSpTypeNode o, @NotNull CompilerInfo info) {
+
+    public final FunctionInfo tryOperatorInfo(Lined lined, OpSpTypeNode o,CompilerInfo info) {
         return tryOperatorInfo(lined.getLineInfo(), o, info.accessLevel(this));
     }
 
@@ -635,8 +629,8 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #attrType(String, AccessLevel)
      * @see #tryAttrType(LineInfo, String, AccessLevel)
      */
-    @NotNull
-    public final TypeObject tryAttrType(@NotNull Lined node, String value, @NotNull CompilerInfo info) {
+
+    public final TypeObject tryAttrType(Lined node, String value,CompilerInfo info) {
         return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
     }
 
@@ -657,8 +651,8 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @see #attrType(String, AccessLevel)
      * @see #tryAttrType(LineInfo, String, AccessLevel)
      */
-    @NotNull
-    public final TypeObject tryAttrType(@NotNull Lined node, String value, @NotNull AccessLevel level) {
+
+    public final TypeObject tryAttrType(Lined node, String value,AccessLevel level) {
         return tryAttrType(node.getLineInfo(), value, level);
     }
 
@@ -690,14 +684,13 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      *
      * @return An iterator over all the superclasses of {@code this}
      */
-    @Contract(pure = true)
-    @NotNull
+
     public final Iterable<TypeObject> recursiveSupers() {
         return () -> new RecursiveSuperIterator((UserType<?>) this);
     }
 
     @Override
-    public int compareTo(@NotNull TypeObject o) {
+    public int compareTo(TypeObject o) {
         return this.hashCode() - o.hashCode();
     }
 
@@ -712,7 +705,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param contractor The contractor to check the fulfillment of
      * @return Whether or not the contract is fulfilled
      */
-    public final boolean fulfillsContract(@NotNull UserType<?> contractor) {
+    public final boolean fulfillsContract(UserType<?> contractor) {
         var contract = contractor.contract();
         for (var attr : contract.getKey()) {
             if (attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
@@ -745,7 +738,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param values The values to get the union of
      * @return A type that is a superclass of all of them
      */
-    static TypeObject union(@NotNull TypeObject... values) {
+    static TypeObject union(TypeObject... values) {
         assert values.length != 0;
         return union(new HashSet<>(Arrays.asList(values)));
     }
@@ -768,7 +761,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param values The values to get the union of
      * @return A type that is a superclass of all of them
      */
-    static TypeObject union(@NotNull List<TypeObject> values) {
+    static TypeObject union(List<TypeObject> values) {
         assert values.size() != 0;
         return union(new HashSet<>(values));
     }
@@ -801,8 +794,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         }
     }
 
-    @NotNull
-    private static TypeObject getSuper(@NotNull TypeObject a, TypeObject b) {
+    private static TypeObject getSuper(TypeObject a, TypeObject b) {
         if (a.isSuperclass(b)) {
             return a;
         } else if (b.isSuperclass(a)) {
@@ -834,12 +826,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     private static final class RecursiveSuperIterator implements Iterator<TypeObject>, Iterable<TypeObject> {
         private final Deque<Iterator<TypeObject>> iterators;
 
-        public RecursiveSuperIterator(@NotNull UserType<?> val) {
+        public RecursiveSuperIterator(UserType<?> val) {
             this.iterators = new ArrayDeque<>();
             iterators.addLast(val.getSupers().iterator());
         }
 
-        @NotNull
         @Override
         public Iterator<TypeObject> iterator() {
             return this;
@@ -871,13 +862,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         }
     }
 
-    @NotNull
-    @Contract(pure = true)
-    static TypeObject optional(@NotNull TypeObject value) {
+    static TypeObject optional(TypeObject value) {
         return new OptionTypeObject(value);
     }
 
-    @Nullable
     static TypeObject of(CompilerInfo info, TestNode arg) {
         if (arg instanceof VariableNode) {
             return info.classOf(((VariableNode) arg).getName()).orElse(null);
@@ -917,7 +905,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param result The map to add to
      * @return If the addition was not successful
      */
-    static boolean addGenericsToMap(@NotNull Map<Integer, TypeObject> toAdd, Map<Integer, TypeObject> result) {
+    static boolean addGenericsToMap(Map<Integer, TypeObject> toAdd, Map<Integer, TypeObject> result) {
         for (var pair : toAdd.entrySet()) {
             int index = pair.getKey();
             var obj = pair.getValue();
@@ -935,14 +923,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return false;
     }
 
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
     static TypeObject list(TypeObject... args) {
         return new ListTypeObject(args);
     }
 
-    @NotNull
-    static String[] name(@NotNull TypeObject... args) {
+    static String[] name(TypeObject... args) {
         String[] result = new String[args.length];
         for (int i = 0; i < args.length; i++) {
             result[i] = args[i].name();

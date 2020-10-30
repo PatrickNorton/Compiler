@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -28,7 +25,7 @@ public class EnumDefinitionNode implements BaseClassNode {
      * @param names The names of the instances
      * @param body The rest of the enum body
      */
-    @Contract(pure = true)
+
     public EnumDefinitionNode(LineInfo lineInfo, TypeNode name, TypeLikeNode[] superclasses, EnumKeywordNode[] names, ClassBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -100,9 +97,8 @@ public class EnumDefinitionNode implements BaseClassNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed EnumDefinitionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static EnumDefinitionNode parse(@NotNull TokenList tokens) {
+
+    public static EnumDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.ENUM);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

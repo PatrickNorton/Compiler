@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a some statement.
  * @author Patrick Norton
@@ -17,7 +14,7 @@ public class SomeStatementNode implements SubTestNode {
      * @param contained The node which is contained
      * @param container The node which being tested if contained is a member
      */
-    @Contract(pure = true)
+
     public SomeStatementNode(LineInfo lineInfo, TestNode contained, TestNode container) {
         this.lineInfo = lineInfo;
         this.contained = contained;
@@ -47,9 +44,8 @@ public class SomeStatementNode implements SubTestNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed SomeStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static SomeStatementNode parse(@NotNull TokenList tokens) {
+
+    static SomeStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.SOME);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

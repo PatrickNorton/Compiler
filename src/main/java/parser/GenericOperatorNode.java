@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 
 /**
@@ -24,7 +21,6 @@ public class GenericOperatorNode implements GenericDefinitionNode {
     private TypeLikeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
-    @Contract(pure = true)
     public GenericOperatorNode(LineInfo lineInfo, SpecialOpNameNode opCode, TypedArgumentListNode args, TypeLikeNode... retvals) {
         this.lineInfo = lineInfo;
         this.opCode = opCode;
@@ -66,7 +62,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return If the operator is generic
      */
-    static boolean isGeneric(@NotNull TokenList tokens) {
+    static boolean isGeneric(TokenList tokens) {
         return isGeneric(tokens, 0);
     }
 
@@ -77,7 +73,7 @@ public class GenericOperatorNode implements GenericDefinitionNode {
      * @param start The starting point for the parse
      * @return If the operator is generic
      */
-    static boolean isGeneric(@NotNull TokenList tokens, int start) {
+    static boolean isGeneric(TokenList tokens, int start) {
         assert tokens.tokenIs(start, TokenType.OPERATOR_SP);
         int endPtr = start + 1;
         if (tokens.tokenIs(endPtr, "(")) {
@@ -100,9 +96,8 @@ public class GenericOperatorNode implements GenericDefinitionNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed GenericOperatorNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static GenericOperatorNode parse(@NotNull TokenList tokens) {
+
+    public static GenericOperatorNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPERATOR_SP);
         LineInfo info = tokens.lineInfo();
         SpecialOpNameNode opCode = SpecialOpNameNode.parse(tokens);

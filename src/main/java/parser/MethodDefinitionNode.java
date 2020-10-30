@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -29,7 +26,7 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode,
      * @param retval The return values of the method
      * @param body The body of the method
      */
-    @Contract(pure = true)
+
     public MethodDefinitionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeLikeNode[] retval, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -117,9 +114,8 @@ public class MethodDefinitionNode implements DefinitionNode, ClassStatementNode,
      * @param tokens The list of tokens to be parsed
      * @return The freshly-parsed method definition
      */
-    @NotNull
-    @Contract("_ -> new")
-    static MethodDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static MethodDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.METHOD);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

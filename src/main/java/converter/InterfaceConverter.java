@@ -7,8 +7,6 @@ import main.java.parser.GenericOperatorNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,8 +26,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
     }
 
     @Override
-    @NotNull
-    @Unmodifiable
+
     public List<Byte> convert(int start) {
         this.genericOps.clear();
         this.genericAttrs.clear();
@@ -67,7 +64,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         return new InterfaceConverter(info, node).completeType(obj);
     }
 
-    private void completeWithoutReserving(@NotNull InterfaceType obj) {
+    private void completeWithoutReserving(InterfaceType obj) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
@@ -82,12 +79,12 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         // Note: 'auto' interfaces should already be registered with the compiler, so no action is needed
     }
 
-    private int completeType(@NotNull InterfaceType obj) {
+    private int completeType(InterfaceType obj) {
         completeWithoutReserving(obj);
         return info.reserveClass(obj);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull InterfaceType obj) {
+    private void parseIntoObject(ConverterHolder converter,InterfaceType obj) {
         parseStatements(converter);
         converter.checkAttributes();
         obj.setOperators(converter.getOperatorInfos(), genericOps);

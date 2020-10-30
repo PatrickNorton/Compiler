@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -22,7 +19,7 @@ public class NumberNode implements AtomicNode {
      * Create a new instance of BigDecimal.
      * @param value The value of the decimal
      */
-    @Contract(pure = true)
+
     public NumberNode(LineInfo lineInfo, BigDecimal value) {
         this.lineInfo = lineInfo;
         this.value = value;
@@ -42,9 +39,8 @@ public class NumberNode implements AtomicNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed NumberNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static NumberNode parse(@NotNull TokenList tokens) {
+
+    static NumberNode parse(TokenList tokens) {
         /*
          * How this method works:
          *
@@ -121,9 +117,8 @@ public class NumberNode implements AtomicNode {
      * @param base The base of the number
      * @return The value of the string
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    private static BigDecimal parseInt(@NotNull String value, int base) {
+
+    private static BigDecimal parseInt(String value, int base) {
         try {
             return BigDecimal.valueOf(Long.parseLong(value, base));
         } catch (NumberFormatException e) {

@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Class containing methods for warnings.
@@ -29,7 +28,7 @@ public final class CompilerWarning {
      * @param message The message to warn
      * @param info The {@link LineInfo} for where the warning occurred
      */
-    public static void warn(String message, @NotNull LineInfo info) {
+    public static void warn(String message,LineInfo info) {
         System.err.printf("Warning - file %s, line %d: %s%n%s%n",
                 info.getPath(), info.getLineNumber(), message, info.infoString());
     }
@@ -42,7 +41,7 @@ public final class CompilerWarning {
      * @param message The message to warn
      * @param node The {@link Lined} object to get the location from
      */
-    public static void warn(String message, @NotNull Lined node) {
+    public static void warn(String message,Lined node) {
         warn(message, node.getLineInfo());
     }
 
@@ -54,7 +53,7 @@ public final class CompilerWarning {
      * @param info The {@link LineInfo} of where the warning occurred
      * @param args The args to format with
      */
-    public static void warnf(String message, @NotNull LineInfo info, Object... args) {
+    public static void warnf(String message,LineInfo info, Object... args) {
         warn(String.format(message, args), info);
     }
 
@@ -66,7 +65,7 @@ public final class CompilerWarning {
      * @param node The {@link Lined} object to get the location from
      * @param args The args to format with
      */
-    public static void warnf(String message, @NotNull Lined node, Object... args) {
+    public static void warnf(String message,Lined node, Object... args) {
         warn(String.format(message, args), node.getLineInfo());
     }
 }

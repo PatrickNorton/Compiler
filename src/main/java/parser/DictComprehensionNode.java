@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing a dictionary comprehension.
@@ -27,7 +25,7 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
      * @param vars The variables which are being incremented
      * @param looped The values being looped over
      */
-    @Contract(pure = true)
+
     public DictComprehensionNode(LineInfo lineInfo, TestNode key, TestNode val,
                                  VarLikeNode[] vars, TestListNode looped, TestNode condition,
                                  TestNode whileCond) {
@@ -53,9 +51,8 @@ public class DictComprehensionNode extends ComprehensionLikeNode {
      * @return The newly created DictComprehensionNode
      * @see ComprehensionNode#parse
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DictComprehensionNode parse(@NotNull TokenList tokens) {
+
+    static DictComprehensionNode parse(TokenList tokens) {
         assert tokens.tokenIs("{");
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);

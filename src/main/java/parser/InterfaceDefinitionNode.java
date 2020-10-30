@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -26,7 +23,7 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
      * @param superclasses The superclasses of the interface
      * @param body The body of the interface
      */
-    @Contract(pure = true)
+
     public InterfaceDefinitionNode(LineInfo lineInfo, TypeNode name, TypeLikeNode[] superclasses, InterfaceBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -100,9 +97,8 @@ public class InterfaceDefinitionNode implements DefinitionNode, ClassStatementNo
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed InterfaceDefinitionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static InterfaceDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static InterfaceDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.INTERFACE);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

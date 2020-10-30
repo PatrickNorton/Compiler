@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,6 @@ public final class IndexConverter implements TestConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var type = TypeObject.of(info, node);
@@ -30,7 +28,6 @@ public final class IndexConverter implements TestConverter {
         return TestConverter.returnType(node.getVar(), info, 1)[0].tryOperatorReturnType(node, operator, info);
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getVar(), info, 1));

@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing an internal error of the parser.
  * <p>
@@ -33,24 +30,20 @@ public class ParserInternalError extends RuntimeException {
      * @param message The message to be given
      * @return The error itself
      */
-    @NotNull
-    @Contract("_ -> new")
+
     public static ParserInternalError withHeader(String message) {
         return new ParserInternalError(DEFAULT_HEADER + message);
     }
 
-    @NotNull
-    public static ParserInternalError of(String message, @NotNull LineInfo info) {
+    public static ParserInternalError of(String message,LineInfo info) {
         return withHeader(String.format(DEFAULT_MESSAGE, message, info.getPath(), info.getLineNumber(), info.infoString()));
     }
 
-    @NotNull
-    public static ParserInternalError of(String message, @NotNull Token info) {
+    public static ParserInternalError of(String message,Token info) {
         return of(message, info.lineInfo);
     }
 
-    @NotNull
-    public static ParserInternalError of(String message, @NotNull BaseNode node) {
+    public static ParserInternalError of(String message,BaseNode node) {
         return of(message, node.getLineInfo());
     }
 }

@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing a yield statement.
@@ -14,7 +12,6 @@ public class YieldStatementNode implements SimpleFlowNode {
     private TestListNode yielded;
     private TestNode cond;
 
-    @Contract(pure = true)
     public YieldStatementNode(LineInfo lineInfo, boolean isFrom, TestListNode yielded, TestNode cond) {
         this.lineInfo = lineInfo;
         this.isFrom = isFrom;
@@ -50,9 +47,8 @@ public class YieldStatementNode implements SimpleFlowNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed YieldStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static YieldStatementNode parse(@NotNull TokenList tokens) {
+
+    static YieldStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.YIELD);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

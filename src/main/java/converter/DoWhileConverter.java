@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.DoStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,6 @@ public final class DoWhileConverter extends LoopConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     protected List<Byte> trueConvert(int start) {
         var body = BaseConverter.bytes(start, node.getBody(), info);

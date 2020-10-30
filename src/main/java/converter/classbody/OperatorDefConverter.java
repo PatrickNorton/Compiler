@@ -14,7 +14,6 @@ import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.StatementBodyNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -38,7 +37,7 @@ public final class OperatorDefConverter {
         this.info = info;
     }
 
-    public void parse(@NotNull OperatorDefinitionNode node) {
+    public void parse(OperatorDefinitionNode node) {
         var op = node.getOpCode().getOperator();
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetType());
@@ -59,7 +58,7 @@ public final class OperatorDefConverter {
         ops.put(op, new Method(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
     }
 
-    public void parse(@NotNull GenericOperatorNode node) {
+    public void parse(GenericOperatorNode node) {
         var op = node.getOpCode().getOperator();
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetvals());
@@ -94,8 +93,7 @@ public final class OperatorDefConverter {
         return staticOperators;
     }
 
-    @NotNull
-    private TypeObject[] validateReturns(LineInfo info, boolean isGenerator, OpSpTypeNode op, @NotNull TypeObject... returns) {
+    private TypeObject[] validateReturns(LineInfo info, boolean isGenerator, OpSpTypeNode op,TypeObject... returns) {
         if (MANDATORY_RETURNS.containsKey(op) && returns.length < MANDATORY_RETURNS.get(op)) {
             var retCount = MANDATORY_RETURNS.get(op);
             if (retCount == 1) {

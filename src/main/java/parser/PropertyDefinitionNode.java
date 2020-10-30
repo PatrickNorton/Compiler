@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -28,7 +25,7 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param setArgs The arguments for setting the property
      * @param set The setter attribute for the property
      */
-    @Contract(pure = true)
+
     public PropertyDefinitionNode(LineInfo lineInfo, VariableNode name, TypeLikeNode type,
                                   StatementBodyNode get, TypedArgumentListNode setArgs, StatementBodyNode set) {
         this.lineInfo = lineInfo;
@@ -115,9 +112,8 @@ public class PropertyDefinitionNode implements DefinitionNode, ClassStatementNod
      * @param tokens The list of tokens to be parsed
      * @return The freshly parsed PropertyDefinitionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static PropertyDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static PropertyDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.PROPERTY);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

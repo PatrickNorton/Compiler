@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -28,7 +25,6 @@ public enum StringPrefix {
     private static final Map<Character, StringPrefix> values;
     private static final Set<StringPrefix> INVALID_TOGETHER = Collections.unmodifiableSet(EnumSet.of(REGEX, BYTES));
 
-    @Contract(pure = true)
     StringPrefix(char c) {
         this.value = c;
     }
@@ -55,8 +51,8 @@ public enum StringPrefix {
      * @param chars The characters to be parsed
      * @return The string prefixes
      */
-    @NotNull
-    public static EnumSet<StringPrefix> getPrefixes(@NotNull String chars) {
+
+    public static EnumSet<StringPrefix> getPrefixes(String chars) {
         EnumSet<StringPrefix> prefixes = EnumSet.noneOf(StringPrefix.class);
         for (char c : chars.toCharArray()) {
             StringPrefix prefix = getPrefix(c);
@@ -71,8 +67,6 @@ public enum StringPrefix {
         return prefixes;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String toString() {
         return Character.toString(value);

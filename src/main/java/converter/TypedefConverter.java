@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.TypedefStatementNode;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,9 +14,8 @@ public final class TypedefConverter implements BaseConverter {
         this.info = info;
     }
 
-    @NotNull
     @Override
-    @Unmodifiable
+
     public List<Byte> convert(int start) {  // TODO: Recursive references in typedef
         var type = info.getType(node.getType()).typedefAs(node.getName().strName());
         info.addType(type);

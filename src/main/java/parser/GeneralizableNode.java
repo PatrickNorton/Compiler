@@ -1,13 +1,10 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 public interface GeneralizableNode extends BaseNode, DescribableNode {
     TypeLikeNode[] getGenerics();
     void addGenerics(TypeLikeNode... types);
 
-    @NotNull
-    static GeneralizableNode parse(@NotNull TokenList tokens) {
+    static GeneralizableNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.GENERIC);
         tokens.nextToken();
         TypeLikeNode[] types = TypeLikeNode.parseList(tokens);
@@ -22,8 +19,7 @@ public interface GeneralizableNode extends BaseNode, DescribableNode {
         }
     }
 
-    @NotNull
-    static String toString(@NotNull TypeLikeNode... generics) {
+    static String toString(TypeLikeNode... generics) {
         if (generics.length == 0) {
             return "";
         } else {

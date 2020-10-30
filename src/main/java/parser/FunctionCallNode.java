@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-
 import java.util.StringJoiner;
 
 /**
@@ -22,7 +20,6 @@ public class FunctionCallNode implements NameNode, EnumKeywordNode {
         this(caller.getLineInfo(), caller, parameters);
     }
 
-    @Contract(pure = true)
     public FunctionCallNode(LineInfo lineInfo, TestNode caller, ArgumentNode[] parameters) {
         this.lineInfo = lineInfo;
         this.caller = caller;

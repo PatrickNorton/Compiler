@@ -12,7 +12,6 @@ import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 import main.java.parser.PropertyDefinitionNode;
 import main.java.parser.StatementBodyNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ public final class PropertyConverter {
         this.info = info;
     }
 
-    public void parse(@NotNull PropertyDefinitionNode node) {
+    public void parse(PropertyDefinitionNode node) {
         var name = node.getName().getName();
         var type = info.getType(node.getType());
         if (properties.containsKey(name)) {
@@ -50,7 +49,6 @@ public final class PropertyConverter {
         return properties;
     }
 
-    @NotNull
     public Map<String, Method> getGetters() {
         Map<String, Method> result = new HashMap<>();
         for (var pair : propertyInfos.entrySet()) {
@@ -63,7 +61,6 @@ public final class PropertyConverter {
         return result;
     }
 
-    @NotNull
     public Map<String, Method> getSetters() {
         Map<String, Method> result = new HashMap<>();
         for (var pair : propertyInfos.entrySet()) {

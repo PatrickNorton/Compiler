@@ -1,9 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -41,8 +38,7 @@ public enum MutableType {
         return this == STANDARD || this == FINAL;
     }
 
-    @Contract(pure = true)
-    public static MutableType fromDescriptor(@NotNull DescriptorNode descriptor) {
+    public static MutableType fromDescriptor(DescriptorNode descriptor) {
         switch (descriptor) {
             case MUT:
                 return MUT;
@@ -55,8 +51,7 @@ public enum MutableType {
         }
     }
 
-    @Contract(pure = true)
-    public static MutableType fromNullable(@Nullable DescriptorNode descriptor) {
+    public static MutableType fromNullable(DescriptorNode descriptor) {
         return descriptor == null ? STANDARD : fromDescriptor(descriptor);
     }
 

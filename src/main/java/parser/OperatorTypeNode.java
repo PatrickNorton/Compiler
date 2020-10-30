@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,17 +68,14 @@ public enum OperatorTypeNode implements AtomicNode {
 
     private static final Map<String, OperatorTypeNode> values;
 
-    @Contract(pure = true)
     OperatorTypeNode(String name, int precedence) {
         this(name, precedence, false);
     }
 
-    @Contract(pure = true)
     OperatorTypeNode(String name, int precedence, boolean unary) {
         this(name, precedence, unary, false);
     }
 
-    @Contract(pure = true)
     OperatorTypeNode(String name, int precedence, boolean unary, boolean postfix) {
         this.name = name;
         this.precedence = precedence;
@@ -98,8 +92,6 @@ public enum OperatorTypeNode implements AtomicNode {
         values = Collections.unmodifiableMap(temp);
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public LineInfo getLineInfo() {
         return LineInfo.empty();
@@ -109,12 +101,11 @@ public enum OperatorTypeNode implements AtomicNode {
      * Whether or not the operator type is unary.
      * @return If the operator is unary
      */
-    @Contract(pure = true)
+
     public boolean isUnary() {
         return this.unary;
     }
 
-    @Contract(pure = true)
     public boolean isPostfix() {
         return postfix;
     }
@@ -124,7 +115,7 @@ public enum OperatorTypeNode implements AtomicNode {
      * @param name The sequence of the operator
      * @return The actual operator enum
      */
-    static OperatorTypeNode findOp(@NotNull String name) {
+    static OperatorTypeNode findOp(String name) {
         if (values.containsKey(name)) {
             return values.get(name);
         } else {
@@ -137,8 +128,8 @@ public enum OperatorTypeNode implements AtomicNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The freshly parsed OperatorTypeNode
      */
-    @NotNull
-    static OperatorTypeNode parse(@NotNull TokenList tokens) {
+
+    static OperatorTypeNode parse(TokenList tokens) {
         OperatorTypeNode op = fromToken(tokens.getFirst());
         tokens.nextToken();
         return op;
@@ -149,18 +140,16 @@ public enum OperatorTypeNode implements AtomicNode {
      * @param token The token from which to get the operator type
      * @return The OperatorTypeNode found.
      */
-    @NotNull
-    static OperatorTypeNode fromToken(@NotNull Token token) {
+
+    static OperatorTypeNode fromToken(Token token) {
         assert token.is(TokenType.OPERATOR, TokenType.KEYWORD);
         return findOp(token.sequence);
     }
 
-    @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
     }
 
-    @Contract(pure = true)
     @Override
     public String toString() {
         return name;

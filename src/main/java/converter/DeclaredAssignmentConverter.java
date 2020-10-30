@@ -7,7 +7,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypedVariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,6 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (node.isColon()) {
@@ -39,7 +37,6 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
                 && node.getValues().getVararg(0).isEmpty();
     }
 
-    @NotNull
     private List<Byte> convertMultiple(int start) {
         // FIXME: Tuple expansion
         var types = node.getTypes();
@@ -157,7 +154,6 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     private List<Byte> convertSingle(int start) {
         var values = node.getValues();
         var types = node.getTypes();
@@ -209,7 +205,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         }
     }
 
-    private boolean checkTypes(@NotNull TypeObject assignedType, @NotNull TypeObject valueType) {
+    private boolean checkTypes(TypeObject assignedType,TypeObject valueType) {
         if (!assignedType.isSuperclass(valueType)) {
             if (OptionTypeObject.needsMakeOption(assignedType, valueType)) {
                 return true;
@@ -224,7 +220,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     }
 
     private void finishAssignment(
-            @NotNull List<Byte> bytes, boolean isStatic, TypeObject assignedType, String assignedName, boolean isConst
+List<Byte> bytes, boolean isStatic, TypeObject assignedType, String assignedName, boolean isConst
     ) {
         info.checkDefinition(assignedName, node);
         var index = isStatic

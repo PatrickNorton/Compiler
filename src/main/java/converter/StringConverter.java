@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.StringNode;
 import main.java.parser.StringPrefix;
-import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ public final class StringConverter implements ConstantConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
@@ -37,7 +35,6 @@ public final class StringConverter implements ConstantConverter {
         return bytes;
     }
 
-    @NotNull
     @Override
     public LangConstant constant() {
         if (isBytes()) {
@@ -52,7 +49,6 @@ public final class StringConverter implements ConstantConverter {
         }
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[] {isBytes() ? Builtins.BYTES : Builtins.STR};

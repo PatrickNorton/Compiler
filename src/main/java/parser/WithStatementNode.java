@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a context statement.
  * @author Patrick Norton
@@ -13,7 +10,6 @@ public class WithStatementNode implements FlowStatementNode {
     private TypedVariableNode[] vars;
     private StatementBodyNode body;
 
-    @Contract(pure = true)
     public WithStatementNode(LineInfo lineInfo, TestListNode managed, TypedVariableNode[] vars, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.managed = managed;
@@ -50,9 +46,8 @@ public class WithStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed WithStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static WithStatementNode parse(@NotNull TokenList tokens) {
+
+    static WithStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.WITH);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

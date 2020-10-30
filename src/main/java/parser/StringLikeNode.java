@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Set;
 
 /**
@@ -14,7 +11,6 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
     private LineInfo lineInfo;
     private Set<StringPrefix> prefixes;
 
-    @Contract(pure = true)
     StringLikeNode(LineInfo lineInfo, Set<StringPrefix> prefixes) {
         this.prefixes = prefixes;
         this.lineInfo = lineInfo;
@@ -40,8 +36,8 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed string literal
      */
-    @NotNull
-    static StringLikeNode parse(@NotNull TokenList tokens) {
+
+    static StringLikeNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.STRING);
         Token token = tokens.getFirst();
         tokens.nextToken();
@@ -57,8 +53,8 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
      * @param str The string to be processed
      * @return The escaped string
      */
-    @NotNull
-    static String processEscapes(@NotNull String str, LineInfo info) {
+
+    static String processEscapes(String str, LineInfo info) {
         StringBuilder sb = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
             char chr = str.charAt(i);
@@ -141,7 +137,7 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
      * @param sequence The string to count the prefixes of
      * @return The prefix count
      */
-    private static int prefixCount(@NotNull String sequence) {
+    private static int prefixCount(String sequence) {
         return sequence.indexOf(delimiter(sequence));
     }
 
@@ -154,7 +150,7 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
      * @param sequence The string to get the delimiter fo
      * @return The delimiter
      */
-    private static char delimiter(@NotNull String sequence) {
+    private static char delimiter(String sequence) {
         return sequence.charAt(sequence.length() - 1);
     }
 
@@ -164,8 +160,8 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
      * @param token The token to be prefixed
      * @return The prefixes of the token
      */
-    @NotNull
-    static Set<StringPrefix> getPrefixes(@NotNull Token token) {
+
+    static Set<StringPrefix> getPrefixes(Token token) {
         assert token.is(TokenType.STRING);
         String sequence = token.sequence;
         String prefixes = sequence.substring(0, prefixCount(sequence));
@@ -178,8 +174,8 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
      * @param token The token from which to get the contents
      * @return The contents of the token
      */
-    @NotNull
-    static String getContents(@NotNull Token token) {
+
+    static String getContents(Token token) {
         assert token.is(TokenType.STRING);
         String sequence = token.sequence;
         return sequence.substring(prefixCount(sequence) + 1, sequence.length() - 1);

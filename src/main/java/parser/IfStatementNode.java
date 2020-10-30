@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.LinkedList;
 
 /**
@@ -25,7 +22,7 @@ public class IfStatementNode implements FlowStatementNode {
      * @param elifs All elif statements post-ceding the initial if
      * @param elseStmt The else statement at the end
      */
-    @Contract(pure = true)
+
     public IfStatementNode(LineInfo lineInfo, TestNode conditional, VariableNode as, StatementBodyNode body,
                            ElifStatementNode[] elifs, StatementBodyNode elseStmt) {
         this.lineInfo = lineInfo;
@@ -73,9 +70,8 @@ public class IfStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly-parsed if statement
      */
-    @NotNull
-    @Contract("_ -> new")
-    static IfStatementNode parse(@NotNull TokenList tokens) {
+
+    static IfStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.IF);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

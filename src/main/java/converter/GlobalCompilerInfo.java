@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,7 +75,7 @@ public final class GlobalCompilerInfo {
         return anonymousNums.getNext();
     }
 
-    public int addFunction(@NotNull Function info) {
+    public int addFunction(Function info) {
         functions.add(info);
         return functions.size() - 1;
     }
@@ -113,7 +112,6 @@ public final class GlobalCompilerInfo {
         return foundOne == -1 ? 0 : foundOne;  // If no non-zero functions, we can just use any empty one
     }
 
-    @NotNull
     private List<Byte> createDefaultFn() {
         List<Byte> result = new ArrayList<>();
         for (int i = defaultFunctions.size() - 1; i >= 0; i--) {
@@ -152,7 +150,7 @@ public final class GlobalCompilerInfo {
         return classes.size() - 1;
     }
 
-    public int setClass(@NotNull ClassInfo info) {
+    public int setClass(ClassInfo info) {
         int index = classMap.get(new BaseType(info.getType()));
         assert classes.get(index) == null;
         classes.set(index, info);

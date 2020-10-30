@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +20,7 @@ public interface TypeLikeNode extends AtomicNode {
         return parse(tokens, false);
     }
 
-    static TypeLikeNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    static TypeLikeNode parse(TokenList tokens, boolean ignoreNewlines) {
         if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
             var descriptor = DescriptorNode.parse(tokens);
             if (DescriptorNode.MUT_NODES.contains(descriptor)) {
@@ -37,7 +35,7 @@ public interface TypeLikeNode extends AtomicNode {
         }
     }
 
-    static TypeLikeNode parseNoMut(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    static TypeLikeNode parseNoMut(TokenList tokens, boolean ignoreNewlines) {
         if (tokens.tokenIs("(")) {
             tokens.nextToken(true);
             TypeLikeNode type = parseNoMut(tokens, true);
@@ -51,13 +49,11 @@ public interface TypeLikeNode extends AtomicNode {
         return TypeNode.parse(tokens, ignoreNewlines);
     }
 
-    @NotNull
-    static TypeLikeNode[] parseList(@NotNull TokenList tokens) {
+    static TypeLikeNode[] parseList(TokenList tokens) {
         return parseList(tokens, false);
     }
 
-    @NotNull
-    static TypeLikeNode[] parseList(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    static TypeLikeNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
         List<TypeLikeNode> types = new ArrayList<>();
         while (tokens.tokenIs(TokenType.NAME, Keyword.VAR) || tokens.tokenIs(TokenType.DESCRIPTOR)) {
             types.add(parse(tokens, ignoreNewlines));
@@ -69,8 +65,7 @@ public interface TypeLikeNode extends AtomicNode {
         return types.toArray(new TypeLikeNode[0]);
     }
 
-    @NotNull
-    static TypeLikeNode[] parseListOnToken(@NotNull TokenList tokens, TokenType sentinel, boolean ignoreNewlines) {
+    static TypeLikeNode[] parseListOnToken(TokenList tokens, TokenType sentinel, boolean ignoreNewlines) {
         if (tokens.tokenIs(sentinel)) {
             tokens.nextToken(ignoreNewlines);
             return parseList(tokens);
@@ -79,8 +74,7 @@ public interface TypeLikeNode extends AtomicNode {
         }
     }
 
-    @NotNull
-    static TypeLikeNode[] parseListOnToken(@NotNull TokenList tokens, Keyword sentinel) {
+    static TypeLikeNode[] parseListOnToken(TokenList tokens, Keyword sentinel) {
         if (tokens.tokenIs(sentinel)) {
             tokens.nextToken();
             return parseList(tokens);
@@ -98,17 +92,16 @@ public interface TypeLikeNode extends AtomicNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The list of return types for the function being parsed
      */
-    @NotNull
-    static TypeLikeNode[] parseRetVal(@NotNull TokenList tokens) {
+
+    static TypeLikeNode[] parseRetVal(TokenList tokens) {
         return parseListOnToken(tokens, TokenType.ARROW, false);
     }
 
-    @NotNull
     static TypeLikeNode[] parseRetVal(TokenList tokens, boolean ignoreNewlines) {
         return parseListOnToken(tokens, TokenType.ARROW, ignoreNewlines);
     }
 
-    static String returnString(@NotNull TypeLikeNode... values) {
+    static String returnString(TypeLikeNode... values) {
         if (values.length == 0) {
             return "";
         }
@@ -123,7 +116,7 @@ public interface TypeLikeNode extends AtomicNode {
         return sizeOfType(tokens, 0);
     }
 
-    static int sizeOfType(@NotNull TokenList tokens, int start) {
+    static int sizeOfType(TokenList tokens, int start) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return start + 1;
         }

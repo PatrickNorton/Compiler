@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +31,7 @@ public final class StringSwitchTable implements SwitchTable {
      * @return The list of bytes represented
      */
     @Override
-    @NotNull
+
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.STRING.byteValue());
@@ -47,7 +45,7 @@ public final class StringSwitchTable implements SwitchTable {
     }
 
     @Override
-    @NotNull
+
     public String strDisassembly() {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {

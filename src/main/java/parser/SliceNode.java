@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a slice an in index.
  * @author Patrick Norton
@@ -20,7 +17,7 @@ public class SliceNode implements SubTestNode {
      * @param end The end of the slice
      * @param step The step amount
      */
-    @Contract(pure = true)
+
     public SliceNode(LineInfo lineInfo, TestNode start, TestNode end, TestNode step) {
         this.lineInfo = lineInfo;
         this.start = start;
@@ -71,9 +68,8 @@ public class SliceNode implements SubTestNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed node
      */
-    @NotNull
-    @Contract("_ -> new")
-    static SliceNode parse(@NotNull TokenList tokens) {
+
+    static SliceNode parse(TokenList tokens) {
         assert tokens.tokenIs("[");
         LineInfo info = tokens.lineInfo();
         tokens.nextToken(true);
@@ -102,8 +98,8 @@ public class SliceNode implements SubTestNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The parsed TestNode
      */
-    @NotNull
-    private static TestNode sliceTest(@NotNull TokenList tokens) {
+
+    private static TestNode sliceTest(TokenList tokens) {
         tokens.expect(TokenType.COLON, ":", true);
         if (tokens.tokenIs(TokenType.COLON, "]")) {
             return TestNode.empty();

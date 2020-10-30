@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class for all import, export, and typeget nodes.
  * @author Patrick Norton
@@ -30,7 +27,6 @@ public class ImportExportNode implements SimpleStatementNode, TopLevelNode {
         this(type, lineInfo, ports, from, new DottedVariableNode[0], preDots);
     }
 
-    @Contract(pure = true)
     public ImportExportNode(Type type, LineInfo lineInfo, DottedVariableNode[] ports,
                             DottedVariableNode from, DottedVariableNode[] as, int preDots) {
         this.type = type;
@@ -79,9 +75,8 @@ public class ImportExportNode implements SimpleStatementNode, TopLevelNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed ImportExportNode
      */
-    @Contract("_ -> new")
-    @NotNull
-    static ImportExportNode parse(@NotNull TokenList tokens) {
+
+    static ImportExportNode parse(TokenList tokens) {
         DottedVariableNode from = DottedVariableNode.empty();
         LineInfo info = null;
         int preDots = 0;
@@ -130,7 +125,7 @@ public class ImportExportNode implements SimpleStatementNode, TopLevelNode {
         return new ImportExportNode(type, info, imports, from, preDots);
     }
 
-    private static int parsePreDots(@NotNull TokenList tokens) {
+    private static int parsePreDots(TokenList tokens) {
         int dotCount = 0;
         while (true) {
             if (tokens.tokenIs(TokenType.ELLIPSIS)) {
@@ -168,7 +163,6 @@ public class ImportExportNode implements SimpleStatementNode, TopLevelNode {
         TYPEGET,
         ;
 
-        @NotNull
         @Override
         public String toString() {
             return name().toLowerCase();

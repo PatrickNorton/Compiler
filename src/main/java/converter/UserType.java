@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +45,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return info.name;
     }
 
-    public final boolean isSubclass(@NotNull TypeObject other) {
+    public final boolean isSubclass(TypeObject other) {
         if (this.equals(other)) {
             return true;
         } else if (other instanceof UserType && this.sameBaseType(other)) {
@@ -75,12 +74,10 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return false;
     }
 
-    @NotNull
     public final Optional<TypeObject[]> operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
         return info.operatorReturnTypeWithGenerics(o, access);
     }
 
-    @NotNull
     @Override
     public final Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         var types = operatorReturnTypeWithGenerics(o, access);
@@ -99,20 +96,19 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
-    @NotNull
+
     public final Optional<TypeObject> attrType(String value, AccessLevel access) {
         var type = attrTypeWithGenerics(value, access);
         return type.map(this::generifyAttrType);
     }
 
     @Override
-    @NotNull
+
     public final Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         var type = staticAttrTypeWithGenerics(value, access);
         return type.map(this::generifyAttrType);
     }
 
-    @NotNull
     private TypeObject generifyAttrType(TypeObject type) {
         return generics.isEmpty() ? type : type.generifyWith(this, generics);
     }
@@ -128,7 +124,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
-    @NotNull
+
     public final Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (isSuperclass(other)) {
             return Optional.of(Collections.emptyMap());
@@ -147,7 +143,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     private Optional<Map<Integer, TypeObject>> makeMatch(
-            TypeObject parent, @NotNull List<TypeObject> supGenerics, List<TypeObject> objGenerics
+            TypeObject parent,List<TypeObject> supGenerics, List<TypeObject> objGenerics
     ) {
         if (supGenerics.isEmpty() && objGenerics.isEmpty()) {
             return Optional.of(Collections.emptyMap());
@@ -212,7 +208,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
      * @return The new list of generic values
      * @see #generifyWith(TypeObject, List)
      */
-    @NotNull
+
     protected final List<TypeObject> generifyWithInner(TypeObject parent, List<TypeObject> values) {
         if (this.sameBaseType(parent)) {
             return values;
@@ -233,7 +229,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
-    @NotNull
     private List<TypeObject> fulfilledInterfaces() {
         List<TypeObject> result = new ArrayList<>();
         for (var inter : ImportHandler.ALL_DEFAULT_INTERFACES.keySet()) {
@@ -244,8 +239,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
-    @NotNull
-    private TypeObject[] generifiedParams(@NotNull UserType<?> contractor) {
+    private TypeObject[] generifiedParams(UserType<?> contractor) {
         var genericCount = contractor.info.info.size();
         if (genericCount == 0) {
             return new TypeObject[0];
@@ -283,7 +277,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return result;
     }
 
-    @NotNull
     public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.attributes.get(value);
         if (attr == null) {
@@ -300,7 +293,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
-    @NotNull
     @Override
     public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.staticAttributes.get(value);
@@ -386,7 +378,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             this.isSealed = false;
         }
 
-        @NotNull
         public final Optional<TypeObject[]> operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
             if (operators.containsKey(o)) {  // TODO: Bounds-check
                 return Optional.of(operators.get(o).intoMethodInfo().getReturns());
@@ -400,7 +391,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             return Optional.empty();
         }
 
-        @NotNull
         public final Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
             if (staticOperators.containsKey(o)) {
                 return Optional.of(staticOperators.get(o).intoMethodInfo().getReturns());

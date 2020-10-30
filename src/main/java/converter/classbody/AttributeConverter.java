@@ -17,7 +17,6 @@ import main.java.parser.ReturnStatementNode;
 import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +37,7 @@ public final class AttributeConverter {
         staticColons = new HashMap<>();
     }
 
-    public void parse(@NotNull DeclarationNode node) {
+    public void parse(DeclarationNode node) {
         for (var name : node.getNames()) {
             var strName = ((VariableNode) name).getName();
             var descriptors = node.getDescriptors();
@@ -55,7 +54,7 @@ public final class AttributeConverter {
         }
     }
 
-    public void parse(@NotNull DeclaredAssignmentNode node) {
+    public void parse(DeclaredAssignmentNode node) {
         if (node.isColon()) {
             parseColon(node);
         } else {
@@ -67,7 +66,6 @@ public final class AttributeConverter {
         return vars;
     }
 
-    @NotNull
     public Map<String, Short> varsWithInts() {
         Map<String, Short> result = new HashMap<>();
         for (var pair : vars.entrySet()) {
@@ -80,7 +78,6 @@ public final class AttributeConverter {
         return staticVars;
     }
 
-    @NotNull
     public Map<String, Short> staticVarsWithInts() {
         Map<String, Short> result = new HashMap<>();
         for (var pair : vars.entrySet()) {
@@ -97,7 +94,7 @@ public final class AttributeConverter {
         return staticColons;
     }
 
-    public void addEnumStatics(@NotNull List<EnumKeywordNode> names, TypeObject type) {
+    public void addEnumStatics(List<EnumKeywordNode> names, TypeObject type) {
         for (var name : names) {
             var strName = name.getVariable().getName();
             if (staticVars.containsKey(strName)) {
@@ -107,7 +104,7 @@ public final class AttributeConverter {
         }
     }
 
-    public void addUnionMethods(@NotNull Map<String, Method> variantMethods) {
+    public void addUnionMethods(Map<String, Method> variantMethods) {
         for (var pair : variantMethods.entrySet()) {
             checkVars(pair.getKey(), pair.getValue(), staticVars);
             checkVars(pair.getKey(), pair.getValue(), staticColons);
@@ -115,7 +112,7 @@ public final class AttributeConverter {
         staticColons.putAll(variantMethods);
     }
 
-    private void parseNonColon(@NotNull DeclaredAssignmentNode node) {
+    private void parseNonColon(DeclaredAssignmentNode node) {
         var attrType = info.getType(node.getTypes()[0].getType());
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var mutType = MutableType.fromDescriptors(node.getDescriptors());
@@ -132,7 +129,7 @@ public final class AttributeConverter {
         }
     }
 
-    private void parseColon(@NotNull DeclaredAssignmentNode node) {
+    private void parseColon(DeclaredAssignmentNode node) {
         assert node.isColon();
         var lineInfo = node.getLineInfo();
         var retStmt = new ReturnStatementNode(lineInfo, node.getValues(), TestNode.empty());
@@ -149,7 +146,7 @@ public final class AttributeConverter {
         (isStatic ? staticColons : colons).put(strName, new Method(accessLevel, isMut, fnInfo, body, lineInfo));
     }
 
-    private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {
+    private static void checkVars(String strName, Lined name,Map<String, ? extends Lined> vars) {
         if (vars.containsKey(strName)) {
             throw CompilerException.doubleDef(strName, name, vars.get(strName));
         }

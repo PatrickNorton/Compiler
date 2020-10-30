@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.util.Zipper;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,8 +19,7 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         this.typedefName = "";
     }
 
-    @Contract(pure = true)
-    private ListTypeObject(@NotNull ListTypeObject other, String typedefName) {
+    private ListTypeObject(ListTypeObject other, String typedefName) {
         this.values = other.values;
         this.typedefName = typedefName;
     }
@@ -36,7 +33,7 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
     }
 
     @Override
-    public boolean isSuperclass(@NotNull TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         if (other instanceof ListTypeObject) {
             var list = (ListTypeObject) other;
             if (values.size() != list.values.size()) {
@@ -58,7 +55,7 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         return false;
     }
 
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         throw new UnsupportedOperationException("Should not be instancing list types");
     }
 
@@ -74,9 +71,8 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         return sj.toString();
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String baseName() {
         return "";
     }
@@ -91,14 +87,12 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         throw new UnsupportedOperationException();
     }
 
-    @Contract(value = "_ -> new", pure = true)
     @Override
-    @NotNull
+
     public TypeObject typedefAs(String name) {
         return new ListTypeObject(this, name);
     }
 
-    @NotNull
     @Override
     public Iterator<TypeObject> iterator() {
         return values.iterator();
@@ -119,9 +113,8 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
         return Optional.of(result);
     }
 
-    @Contract("_, _ -> new")
     @Override
-    @NotNull
+
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         if (this.values.size() == 1
                 && this.values.get(0) instanceof TemplateParam

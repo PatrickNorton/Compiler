@@ -1,7 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -47,21 +45,18 @@ final class UnmodifiableIndexedSet<T> implements IndexedSet<T> {
         return value.contains(o);
     }
 
-    @NotNull
     @Override
     public Iterator<T> iterator() {
         return new UnmodifiableIterator<>(value.iterator());
     }
 
-    @NotNull
     @Override
     public Object[] toArray() {
         return value.toArray();
     }
 
-    @NotNull
     @Override
-    public <T1> T1[] toArray(@NotNull T1[] a) {
+    public <T1> T1[] toArray(T1[] a) {
         return value.toArray(a);
     }
 
@@ -76,22 +71,22 @@ final class UnmodifiableIndexedSet<T> implements IndexedSet<T> {
     }
 
     @Override
-    public boolean containsAll(@NotNull Collection<?> c) {
+    public boolean containsAll(Collection<?> c) {
         return value.containsAll(c);
     }
 
     @Override
-    public boolean addAll(@NotNull Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends T> c) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean retainAll(@NotNull Collection<?> c) {
+    public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean removeAll(@NotNull Collection<?> c) {
+    public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 

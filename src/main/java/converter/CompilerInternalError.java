@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing an internal compiler error.
@@ -38,8 +36,7 @@ public class CompilerInternalError extends RuntimeException {
      * @param message The message to be given
      * @return The error itself
      */
-    @NotNull
-    @Contract("_ -> new")
+
     public static CompilerInternalError withHeader(String message) {
         return new CompilerInternalError(DEFAULT_HEADER + message);
     }
@@ -52,8 +49,8 @@ public class CompilerInternalError extends RuntimeException {
      * @param info The {@link LineInfo} to get line information from
      * @return The exception
      */
-    @NotNull
-    public static CompilerInternalError of(String message, @NotNull LineInfo info) {
+
+    public static CompilerInternalError of(String message,LineInfo info) {
         return withHeader(String.format(DEFAULT_MESSAGE, message, info.getPath(), info.getLineNumber(), info.infoString()));
     }
 
@@ -66,8 +63,8 @@ public class CompilerInternalError extends RuntimeException {
      * @return The exception
      * @see #of(String, LineInfo)
      */
-    @NotNull
-    public static CompilerInternalError of(String message, @NotNull Lined node) {
+
+    public static CompilerInternalError of(String message,Lined node) {
         return of(message, node.getLineInfo());
     }
 
@@ -85,7 +82,7 @@ public class CompilerInternalError extends RuntimeException {
      * @see #of(String, Lined)
      * @see String#format(String, Object...)
      */
-    @NotNull
+
     public static CompilerInternalError format(String message, Lined node, Object... values) {
         return of(String.format(message, values), node);
     }

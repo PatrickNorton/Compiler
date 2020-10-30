@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 public class RangeLiteralNode implements TestNode, PostDottableNode {
     private LineInfo lineInfo;
     private TestNode start;
@@ -15,7 +12,7 @@ public class RangeLiteralNode implements TestNode, PostDottableNode {
      * @param end The end of the slice
      * @param step The step amount
      */
-    @Contract(pure = true)
+
     public RangeLiteralNode(LineInfo lineInfo, TestNode start, TestNode end, TestNode step) {
         this.lineInfo = lineInfo;
         this.start = start;
@@ -40,14 +37,11 @@ public class RangeLiteralNode implements TestNode, PostDottableNode {
         return step;
     }
 
-    @NotNull
     public static RangeLiteralNode parse(TokenList tokens) {
         return fromSlice(SliceNode.parse(tokens));
     }
 
-    @NotNull
-    @Contract("_ -> new")
-    public static RangeLiteralNode fromSlice(@NotNull SliceNode node) {
+    public static RangeLiteralNode fromSlice(SliceNode node) {
         return new RangeLiteralNode(node.getLineInfo(), node.getStart(), node.getEnd(), node.getStep());
     }
 

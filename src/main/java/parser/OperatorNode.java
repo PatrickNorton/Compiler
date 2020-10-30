@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,8 +19,8 @@ public class OperatorNode implements SubTestNode {
      * @param operator The operator itself
      * @param operands The operands of the operator
      */
-    @Contract(pure = true)
-    public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator, @NotNull ArgumentNode... operands) {
+
+    public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator,ArgumentNode... operands) {
         this.lineInfo = lineInfo;
         this.operator = operator;
         this.operands = new ArrayList<>(Arrays.asList(operands));
@@ -34,12 +31,11 @@ public class OperatorNode implements SubTestNode {
      * @param operator The operator itself
      * @param operands The operands of the operator
      */
-    @Contract(pure = true)
+
     public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator, TestNode... operands) {
         this(lineInfo, operator, ArgumentNode.fromTestNodes(operands));
     }
 
-    @Contract(pure = true)
     public OperatorNode(LineInfo lineInfo, OperatorTypeNode operator) {
         this(lineInfo, operator, new ArgumentNode[0]);
     }
@@ -48,7 +44,7 @@ public class OperatorNode implements SubTestNode {
      * Construct a new OperatorNode with no operands
      * @param operator The operator type
      */
-    @Contract(pure = true)
+
     private OperatorNode(OperatorTypeNode operator) {
         this(operator.getLineInfo(), operator, new ArgumentNode[0]);
     }
@@ -124,7 +120,6 @@ public class OperatorNode implements SubTestNode {
         }
     }
 
-    @NotNull
     private String unaryString() {
         assert operands.size() == 1;
         if (operator.isUnary()) {

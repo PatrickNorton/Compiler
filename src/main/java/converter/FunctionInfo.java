@@ -1,8 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,13 +69,10 @@ public final class FunctionInfo {
         return generics;
     }
 
-    @NotNull
-    @Contract(value = " -> new", pure = true)
     public TypeObject toCallable() {
         return new FunctionInfoType(this);
     }
 
-    @NotNull
     public FunctionInfo boundify() {
         var posArgs = boundifyArray(arguments.getPositionArgs());
         var normArgs = boundifyArray(arguments.getNormalArgs());
@@ -87,9 +81,7 @@ public final class FunctionInfo {
         return new FunctionInfo(name, isGenerator, argInfo, boundifyArray(returns));
     }
 
-    @NotNull
-    @Contract(pure = true)
-    private Argument[] boundifyArray(@NotNull Argument[] arr) {
+    private Argument[] boundifyArray(Argument[] arr) {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
             var type = boundifyType(arr[i].getType());
@@ -98,9 +90,7 @@ public final class FunctionInfo {
         return result;
     }
 
-    @NotNull
-    @Contract(pure = true)
-    private TypeObject[] boundifyArray(@NotNull TypeObject[] arr) {
+    private TypeObject[] boundifyArray(TypeObject[] arr) {
         var result = new TypeObject[arr.length];
         for (int i = 0; i < arr.length; i++) {
             result[i] = boundifyType(arr[i]);
@@ -121,7 +111,6 @@ public final class FunctionInfo {
         }
     }
 
-    @NotNull
     public FunctionInfo generify(TypeObject parent, List<TypeObject> args) {
         var posArgs = generifyArray(parent, arguments.getPositionArgs(), args);
         var normArgs = generifyArray(parent, arguments.getNormalArgs(), args);
@@ -130,8 +119,7 @@ public final class FunctionInfo {
         return new FunctionInfo(name, argInfo, generifyArray(parent, returns, args));
     }
 
-    @NotNull
-    private static Argument[] generifyArray(TypeObject parent, @NotNull Argument[] arr, List<TypeObject> generics) {
+    private static Argument[] generifyArray(TypeObject parent, Argument[] arr, List<TypeObject> generics) {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
             var argType = arr[i].getType();
@@ -141,8 +129,7 @@ public final class FunctionInfo {
         return result;
     }
 
-    @NotNull
-    private static TypeObject[] generifyArray(TypeObject parent, @NotNull TypeObject[] arr, List<TypeObject> generics) {
+    private static TypeObject[] generifyArray(TypeObject parent, TypeObject[] arr, List<TypeObject> generics) {
         var result = new TypeObject[arr.length];
         for (int i = 0; i < arr.length; i++) {
             TypeObject type = generifyType(arr[i], parent, generics);
@@ -168,7 +155,7 @@ public final class FunctionInfo {
         return arguments.generifyArgs(this, args);
     }
 
-    private static TypeObject[] properReturns(@NotNull TypeObject... returns) {
+    private static TypeObject[] properReturns(TypeObject... returns) {
         if (returns.length == 1 && returns[0] instanceof ListTypeObject) {
             return ((ListTypeObject) returns[0]).toArray();
         } else {

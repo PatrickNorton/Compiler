@@ -1,13 +1,9 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 public class EscapedOperatorNode implements NameNode {
     private LineInfo lineInfo;
     private OpFuncTypeNode operator;
 
-    @Contract(pure = true)
     public EscapedOperatorNode(LineInfo lineInfo, OpFuncTypeNode operator) {
         this.lineInfo = lineInfo;
         this.operator = operator;
@@ -22,9 +18,7 @@ public class EscapedOperatorNode implements NameNode {
         return operator;
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
-    public static NameNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    public static NameNode parse(TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.OP_FUNC);
         LineInfo info = tokens.lineInfo();
         OpFuncTypeNode operator = OpFuncTypeNode.parse(tokens);

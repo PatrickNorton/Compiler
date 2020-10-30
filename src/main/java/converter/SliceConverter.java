@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.SliceNode;
 import main.java.parser.TestNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +15,13 @@ public final class SliceConverter implements TestConverter {
         this.info = info;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[0];
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getStart().isEmpty()) {

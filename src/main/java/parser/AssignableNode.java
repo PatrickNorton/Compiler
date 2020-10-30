@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The interface representing any statement which can function on the left side
  * of an equals sign.
@@ -20,8 +18,8 @@ public interface AssignableNode extends TestNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed AssignableNode
      */
-    @NotNull
-    static AssignableNode parse(@NotNull TokenList tokens) {
+
+    static AssignableNode parse(TokenList tokens) {
         assert tokens.lineContains(TokenType.ASSIGN);
         switch (tokens.tokenType()) {
             case NAME:

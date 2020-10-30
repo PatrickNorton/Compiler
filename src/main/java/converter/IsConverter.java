@@ -5,8 +5,6 @@ import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +38,13 @@ public final class IsConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         if (retCount > 1) {
             throw CompilerException.format("'is' only returns 1 value, %d expected", lineInfo, retCount);
@@ -119,7 +117,6 @@ public final class IsConverter extends OperatorConverter {
         return bytes;
     }
 
-    @Nullable
     private List<Byte> getConstant() {
         var constant = constantReturn();
         if (constant.isPresent()) {
@@ -129,7 +126,6 @@ public final class IsConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         assert operands.length == 2;
         if (isType) {

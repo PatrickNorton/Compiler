@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,6 @@ public final class OptionTypeConstant implements LangConstant {
         this.genericType = type;
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
@@ -28,13 +26,11 @@ public final class OptionTypeConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.TYPE.generify(TypeObject.optional(genericType));
     }
 
-    @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {
         return genericName + "?";

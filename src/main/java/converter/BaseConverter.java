@@ -29,21 +29,18 @@ import main.java.parser.UnionDefinitionNode;
 import main.java.parser.WhileStatementNode;
 import main.java.parser.WithStatementNode;
 import main.java.parser.YieldStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public interface BaseConverter {
-    @NotNull
+
     List<Byte> convert(int start);
 
-    @NotNull
     static List<Byte> bytes(int start, BaseNode tokens, CompilerInfo info) {
         return toBytes(tokens, info).convert(start);
     }
 
-    @NotNull
-    private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
+    private static BaseConverter toBytes(BaseNode node, CompilerInfo info) {
         if (node instanceof TestNode) {
             return TestConverter.of(info, (TestNode) node, 0);
         } else if (node instanceof AssertStatementNode) {

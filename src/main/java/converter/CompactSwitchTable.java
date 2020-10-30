@@ -1,7 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +30,7 @@ public final class CompactSwitchTable implements SwitchTable {
      * @return The list of bytes represented
      */
     @Override
-    @NotNull
+
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.COMPACT.byteValue());
@@ -45,7 +43,7 @@ public final class CompactSwitchTable implements SwitchTable {
     }
 
     @Override
-    @NotNull
+
     public String strDisassembly() {
         var value = new StringBuilder();
         for (int i = 0; i < values.size(); i++) {

@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.converter.CompilerException;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,6 @@ public class DottedVar implements BaseNode {
     private NameNode postDot;
     private String dotPrefix;
 
-    @Contract(pure = true)
     public DottedVar(LineInfo info, String dotType, NameNode postDot) {
         this.lineInfo = info;
         this.dotPrefix = dotType;
@@ -32,9 +29,7 @@ public class DottedVar implements BaseNode {
         return postDot;
     }
 
-    @NotNull
-    @Contract("_, _, _ -> new")
-    public static DottedVar parse(@NotNull TokenList tokens, boolean namesOnly, boolean ignoreNewlines) {
+    public static DottedVar parse(TokenList tokens, boolean namesOnly, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.DOT);
         LineInfo info = tokens.lineInfo();
         String dotType = tokens.tokenSequence().substring(0, tokens.tokenSequence().length() - 1);
@@ -65,8 +60,7 @@ public class DottedVar implements BaseNode {
         return new DottedVar(info, dotType, postDot);
     }
 
-    @NotNull
-    public static DottedVar[] parseAll(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    public static DottedVar[] parseAll(TokenList tokens, boolean ignoreNewlines) {
         List<DottedVar> vars = new ArrayList<>();
         while (tokens.tokenIs(TokenType.DOT)) {
             vars.add(parse(tokens, false, ignoreNewlines));

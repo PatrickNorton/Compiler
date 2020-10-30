@@ -1,9 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -44,8 +41,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * Construct a new empty TestNode.
      * @return The empty node
      */
-    @NotNull
-    @Contract(value = " -> new", pure = true)
+
     static TestNode empty() {
         return EMPTY;
     }
@@ -59,7 +55,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TestNode
      */
-    @NotNull
+
     static TestNode parse(TokenList tokens) {
         return parse(tokens, false);
     }
@@ -75,8 +71,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed TestNode
      */
-    @NotNull
-    static TestNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    static TestNode parse(TokenList tokens, boolean ignoreNewlines) {
         TestNode ifTrue = parseNoTernary(tokens, ignoreNewlines);
         if (tokens.tokenIs(Keyword.IF)) {
             tokens.nextToken(ignoreNewlines);
@@ -100,7 +96,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The TestNode
      */
-    static TestNode parseOnToken(@NotNull TokenList tokens, String token, boolean ignoreNewlines) {
+    static TestNode parseOnToken(TokenList tokens, String token, boolean ignoreNewlines) {
         if (tokens.tokenIs(token)) {
             tokens.nextToken(ignoreNewlines);
             return parse(tokens, ignoreNewlines);
@@ -117,7 +113,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The TestNode
      */
-    static TestNode parseOnToken(@NotNull TokenList tokens, Keyword token, boolean ignoreNewlines) {
+    static TestNode parseOnToken(TokenList tokens, Keyword token, boolean ignoreNewlines) {
         if (tokens.tokenIs(token)) {
             tokens.nextToken(ignoreNewlines);
             return parse(tokens, ignoreNewlines);
@@ -149,8 +145,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param ignoreNewlines Whether or not to ignore newlines
      * @return The freshly parsed TestNode
      */
-    @NotNull
-    private static TestNode parseNoTernary(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    private static TestNode parseNoTernary(TokenList tokens, boolean ignoreNewlines) {
         LineInfo info = tokens.lineInfo();
         TestNode node = parseExpression(tokens, ignoreNewlines);
         if (tokens.tokenIs(TokenType.ASSIGN, TokenType.AUG_ASSIGN)) {
@@ -168,8 +164,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         public final LineInfo lineInfo;
         public final int precedence;
 
-        @Contract(pure = true)
-        public DummyOp(@NotNull OperatorTypeNode op, LineInfo lineInfo) {
+        public DummyOp(OperatorTypeNode op, LineInfo lineInfo) {
             this.op = op;
             this.lineInfo = lineInfo;
             this.precedence = op.precedence;
@@ -195,7 +190,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      *
      * @implNote This is essentially an RPN calculator
      */
-    private static TestNode parseExpression(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    private static TestNode parseExpression(TokenList tokens, boolean ignoreNewlines) {
         Queue<TestNode> queue = new ArrayDeque<>();
         Deque<DummyOp> stack = new ArrayDeque<>();
         boolean parseCurly = true;
@@ -243,7 +238,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return convertQueueToNode(queue);
     }
 
-    private static TestNode convertQueueToNode(@NotNull Queue<TestNode> queue) {
+    private static TestNode convertQueueToNode(Queue<TestNode> queue) {
         Deque<TestNode> temp = new ArrayDeque<>();
         for (TestNode t : queue) {
             if (t instanceof DummyOp) {
@@ -271,8 +266,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return node;
     }
 
-    @Nullable
-    private static TestNode parseNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
+    private static TestNode parseNode(TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
         TestNode node = parseInternalNode(tokens, ignoreNewlines, parseCurly);
         if (node instanceof PostDottableNode) {
             return parsePost(tokens, node, ignoreNewlines);
@@ -290,8 +284,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param parseCurly Whether or not to parse a curly brace
      * @return The freshly parsed node
      */
-    @Nullable
-    private static TestNode parseInternalNode(@NotNull TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
+    private static TestNode parseInternalNode(TokenList tokens, boolean ignoreNewlines, boolean parseCurly) {
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
@@ -330,8 +323,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed node
      */
-    @Nullable
-    private static TestNode parseKeywordNode(@NotNull TokenList tokens, boolean ignoreNewlines) {
+    private static TestNode parseKeywordNode(TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(TokenType.KEYWORD);
         switch (Keyword.find(tokens.getFirst())) {
             case SOME:
@@ -354,20 +346,19 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed TestNode
      */
-    @NotNull
-    static TestNode parseOpenBrace(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    static TestNode parseOpenBrace(TokenList tokens, boolean ignoreNewlines) {
         // Types of brace statement: comprehension, literal, grouping paren, casting
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         return parsePost(tokens, parseOpenBraceNoDot(tokens), ignoreNewlines);
     }
 
-    static TestNode parsePost(@NotNull TokenList tokens, TestNode pre, boolean ignoreNewlines) {
+    static TestNode parsePost(TokenList tokens, TestNode pre, boolean ignoreNewlines) {
         TestNode value = parsePostBraces(tokens, pre, ignoreNewlines);
         return DottedVariableNode.parsePostDots(tokens, value, ignoreNewlines);
     }
 
-    @NotNull
-    static TestNode parsePostBraces(@NotNull TokenList tokens, TestNode pre, boolean ignoreNewlines) {
+    static TestNode parsePostBraces(TokenList tokens, TestNode pre, boolean ignoreNewlines) {
         if (ignoreNewlines) {
             tokens.passNewlines();
         }
@@ -393,8 +384,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return pre;
     }
 
-    @NotNull
-    private static TestNode parseOpenBraceNoDot(@NotNull TokenList tokens) {
+    private static TestNode parseOpenBraceNoDot(TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         switch (tokens.tokenSequence()) {
             case "(":
@@ -437,7 +427,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The list of TestNodes
      */
-    @NotNull
+
     static TestNode[] parseList(TokenList tokens, boolean ignoreNewlines) {
         if (!ignoreNewlines && tokens.tokenIs(TokenType.NEWLINE)) {
             return new TestNode[0];
@@ -453,8 +443,6 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return tests.toArray(new TestNode[0]);
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
     static Pair<TestNode, TestNode> parseMaybePostIf(TokenList tokens, boolean ignoreNewlines) {
         TestNode preIf = parseNoTernary(tokens, ignoreNewlines);
         if (!tokens.tokenIs(Keyword.IF)) {
@@ -471,11 +459,11 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         }
     }
 
-    static boolean nextIsTest(@NotNull TokenList tokens) {
+    static boolean nextIsTest(TokenList tokens) {
         return tokens.tokenIs(PARSABLE_TOKENS) || tokens.tokenIsKeyword(PARSABLE_KEYWORDS);
     }
 
-    static String toString(@NotNull TestNode... vars) {
+    static String toString(TestNode... vars) {
         StringJoiner sj = new StringJoiner(", ");
         for (TestNode t : vars) {
             sj.add(t.toString());
@@ -483,7 +471,7 @@ public interface TestNode extends IndependentNode, EmptiableNode {
         return sj.toString();
     }
 
-    static String toString(@NotNull Iterable<? extends TestNode> vars) {
+    static String toString(Iterable<? extends TestNode> vars) {
         StringJoiner sj = new StringJoiner(", ");
         for (TestNode t : vars) {
             sj.add(t.toString());

@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.util.IndexedSet;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,6 @@ public final class BuiltinConstant implements LangConstant {
         builtinIndex = index;
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
@@ -23,7 +21,6 @@ public final class BuiltinConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.TRUE_BUILTINS.get(builtinIndex).getType();
@@ -42,7 +39,6 @@ public final class BuiltinConstant implements LangConstant {
         return Objects.hash(builtinIndex);
     }
 
-    @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {
         var result = Builtins.TRUE_BUILTINS.get(builtinIndex);

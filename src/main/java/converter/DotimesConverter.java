@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.DotimesStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,6 @@ public final class DotimesConverter extends LoopConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     public List<Byte> trueConvert(int start) {
         var countConverter = TestConverter.of(info, node.getIterations(), 1);

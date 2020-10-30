@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a lambda statement.
  * @author Patrick Norton
@@ -19,7 +16,7 @@ public class LambdaNode implements SubTestNode {
      * @param args The arguments passed to the lambda
      * @param body The body of the lambda
      */
-    @Contract(pure = true)
+
     public LambdaNode(LineInfo lineInfo, TypedArgumentListNode args, TypeLikeNode[] returns, boolean isArrow, StatementBodyNode body) {
         this.lineInfo = lineInfo;
         this.args = args;
@@ -60,9 +57,8 @@ public class LambdaNode implements SubTestNode {
      * @param tokens The list of tokens to be parsed destructively
      * @return The newly parsed lambda
      */
-    @NotNull
-    @Contract("_, _ -> new")
-    static LambdaNode parse(@NotNull TokenList tokens, boolean ignoreNewlines) {
+
+    static LambdaNode parse(TokenList tokens, boolean ignoreNewlines) {
         assert tokens.tokenIs(Keyword.LAMBDA);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken(ignoreNewlines);

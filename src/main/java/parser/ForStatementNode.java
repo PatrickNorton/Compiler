@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class representing a for-statement.
  * @author Patrick Norton
@@ -21,7 +18,7 @@ public class ForStatementNode implements FlowStatementNode {
      * @param body The body of the loop
      * @param nobreak The nobreak statement body
      */
-    @Contract(pure = true)
+
     public ForStatementNode(LineInfo lineInfo, VarLikeNode[] vars, TestListNode iterables,
                             StatementBodyNode body, StatementBodyNode nobreak) {
         this.lineInfo = lineInfo;
@@ -66,9 +63,8 @@ public class ForStatementNode implements FlowStatementNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed ForStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ForStatementNode parse(@NotNull TokenList tokens) {
+
+    static ForStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.FOR);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

@@ -1,8 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
@@ -84,8 +81,7 @@ public final class OptionalUint {
      * @throws IllegalArgumentException if value is negative
      * @see java.util.Optional#of(Object)
      */
-    @Contract("_ -> new")
-    @NotNull
+
     public static OptionalUint of(int value) {
         return new OptionalUint(value);
     }

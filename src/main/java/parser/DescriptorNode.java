@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -94,13 +91,10 @@ public enum DescriptorNode implements AtomicNode {
         values = Collections.unmodifiableMap(temp);
     }
 
-    @Contract(pure = true)
     DescriptorNode(String name) {
         this.name = name;
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public LineInfo getLineInfo() {
         return LineInfo.empty();
@@ -120,8 +114,8 @@ public enum DescriptorNode implements AtomicNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The parsed DescriptorNode
      */
-    @NotNull
-    public static DescriptorNode parse(@NotNull TokenList tokens) {
+
+    public static DescriptorNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.DESCRIPTOR);
         DescriptorNode descriptor = find(tokens.tokenSequence());
         if (descriptor == null) {
@@ -136,8 +130,8 @@ public enum DescriptorNode implements AtomicNode {
      * @param tokens The list of tokens to be parsed
      * @return The array of DescriptorNodes being parsed
      */
-    @NotNull
-    public static EnumSet<DescriptorNode> parseList(@NotNull TokenList tokens) {
+
+    public static EnumSet<DescriptorNode> parseList(TokenList tokens) {
         int setsNum = 0;
         EnumSet<DescriptorNode> descriptors = EnumSet.noneOf(DescriptorNode.class);
         while (tokens.tokenIs(TokenType.DESCRIPTOR)) {
@@ -158,17 +152,16 @@ public enum DescriptorNode implements AtomicNode {
      * Returns an empty EnumSet for descriptors
      * @return The empty set
      */
-    @NotNull
+
     public static EnumSet<DescriptorNode> emptySet() {
         return EnumSet.noneOf(DescriptorNode.class);
     }
 
-    @Contract(pure = true)
     static Pattern pattern() {
         return PATTERN;
     }
 
-    public static boolean isLessStrict(DescriptorNode x, @NotNull DescriptorNode y) {
+    public static boolean isLessStrict(DescriptorNode x,DescriptorNode y) {
         assert EnumSet.range(PUBLIC, PRIVATE).contains(x) && EnumSet.range(PUBLIC, PRIVATE).contains(y);
         return x.ordinal() <= y.ordinal();
     }
@@ -182,13 +175,12 @@ public enum DescriptorNode implements AtomicNode {
         throw new RuntimeException();
     }
 
-    @Contract(pure = true)
     @Override
     public String toString() {
         return name;
     }
 
-    static String join(@NotNull EnumSet<DescriptorNode> values) {
+    static String join(EnumSet<DescriptorNode> values) {
         if (values.isEmpty()) return "";
         StringJoiner sj = new StringJoiner(" ", "", " ");
         for (DescriptorNode d : values) {

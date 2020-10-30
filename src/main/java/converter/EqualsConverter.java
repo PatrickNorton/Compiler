@@ -5,7 +5,6 @@ import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +38,13 @@ public final class EqualsConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         if (retCount > 1) {
             throw CompilerException.format(
@@ -98,7 +97,7 @@ public final class EqualsConverter extends OperatorConverter {
     }
 
     @Override
-    @NotNull
+
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

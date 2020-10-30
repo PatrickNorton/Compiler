@@ -3,9 +3,6 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,17 +30,13 @@ public final class TupleType extends TypeObject {
         this.typedefName = typedefName;
     }
 
-    @Contract(pure = true)
-    @NotNull
-    @UnmodifiableView
     @Override
     public List<TypeObject> getGenerics() {
         return Collections.unmodifiableList(generics);
     }
 
     @Override
-    @Contract("_, _ -> new")
-    @NotNull
+
     public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         if (generics.isEmpty()) {
             return new TupleType(args);
@@ -53,7 +46,7 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         try {
             var intVal = Integer.parseInt(value);
@@ -64,8 +57,8 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    @NotNull
-    public Optional<FunctionInfo> operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
+
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
                 return Optional.of(new FunctionInfo(
@@ -83,7 +76,7 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         if (other instanceof TupleType) {
             var tuple = (TupleType) other;
             if (generics.size() != tuple.generics.size()) {
@@ -102,9 +95,8 @@ public final class TupleType extends TypeObject {
         }
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String name() {
         if (!typedefName.isEmpty()) {
             return typedefName;
@@ -143,9 +135,8 @@ public final class TupleType extends TypeObject {
         }
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String baseName() {
         return "tuple";
     }
@@ -160,9 +151,8 @@ public final class TupleType extends TypeObject {
         return baseName().hashCode();
     }
 
-    @Contract("_ -> new")
     @Override
-    @NotNull
+
     public TypeObject typedefAs(String name) {
         return new TupleType(name, generics.toArray(new TypeObject[0]));
     }

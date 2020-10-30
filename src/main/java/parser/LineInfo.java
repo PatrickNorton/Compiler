@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -12,7 +9,6 @@ public class LineInfo {
     private final String line;
     private final int startingPoint;
 
-    @Contract(pure = true)
     public LineInfo(Path path, int lineNumber, String line, int startingPoint) {
         this.path = path;
         this.lineNumber = lineNumber;
@@ -33,8 +29,6 @@ public class LineInfo {
         return String.format("%d: %s%n%s^", lineNumber, line, " ".repeat(numSpaces));
     }
 
-    @NotNull
-    @Contract(value = " -> new", pure = true)
     public static LineInfo empty() {
         return new LineInfo(Path.of(""), -1, "", 0) {
             @Override

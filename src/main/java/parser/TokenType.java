@@ -1,9 +1,5 @@
 package main.java.parser;
 
-import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -123,19 +119,18 @@ public enum TokenType {
     private Pattern regex;
     private final Callable<Pattern> regexMaker;
 
-    TokenType(@NotNull @Language("RegExp") String regex) {
+    TokenType(String regex) {
         assert regex.startsWith("^");  // Make sure regex will only match the beginning of strings
         this.regex = Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
         this.regexMaker = null;
     }
 
-    @Contract(pure = true)
     TokenType(Callable<Pattern> regexMaker) {
         this.regexMaker = regexMaker;
         this.regex = null;
     }
 
-    @NotNull Matcher matcher(CharSequence input) {
+    Matcher matcher(CharSequence input) {
         if (this.regex == null) {
             try {
                 this.regex = regexMaker.call();

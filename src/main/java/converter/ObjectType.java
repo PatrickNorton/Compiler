@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,7 +19,7 @@ public final class ObjectType extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(@NotNull TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         return true;
     }
 
@@ -30,7 +28,7 @@ public final class ObjectType extends TypeObject {
         return false;
     }
 
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         return other.equals(this);
     }
 
@@ -38,8 +36,8 @@ public final class ObjectType extends TypeObject {
     private static final FunctionInfo STR_INFO = new FunctionInfo(ArgumentInfo.of(), Builtins.STR);
 
     @Override
-    @NotNull
-    public Optional<FunctionInfo> operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
+
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
                 return Optional.of(EQUALS_INFO);
@@ -56,16 +54,14 @@ public final class ObjectType extends TypeObject {
         return typedefName.isEmpty() ? "object" : typedefName;
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String baseName() {
         return "object";
     }
 
-    @Contract("_ -> new")
     @Override
-    @NotNull
+
     public TypeObject typedefAs(String name) {
         return new ObjectType(name);
     }

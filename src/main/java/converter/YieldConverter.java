@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.YieldStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ public final class YieldConverter implements BaseConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);
@@ -58,7 +57,7 @@ public final class YieldConverter implements BaseConverter {
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
-    private void checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {
+    private void checkReturnType(TypeObject[] expected,TypeObject[] gotten) {
         if (expected.length > gotten.length) {
             throw CompilerException.format(
                     "Mismatched types: function yields %d items, yield statement gave %d",
@@ -81,7 +80,6 @@ public final class YieldConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     private CompilerException noGeneratorError() {
         return CompilerException.of("'yield' is only valid in a generator", node);
     }

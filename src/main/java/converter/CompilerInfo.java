@@ -12,8 +12,6 @@ import main.java.util.IntAllocator;
 import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -113,7 +111,7 @@ public final class CompilerInfo {
      * @param info The (already-compiled) function info
      * @return The index of the function when written
      */
-    public int addFunction(@NotNull Function info) {
+    public int addFunction(Function info) {
         int index = GLOBAL_INFO.addFunction(info);
         fnIndices.put(info.getName(), index);
         return index;
@@ -125,7 +123,7 @@ public final class CompilerInfo {
      * @param name The name of the function
      * @return The function info, or {@code null} if not found
      */
-    @NotNull
+
     public Optional<FunctionInfo> fnInfo(String name) {
         var index = fnIndices.get(name);
         return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index).getInfo());
@@ -207,7 +205,7 @@ public final class CompilerInfo {
      * @param index The index to redefine
      * @param value The value to set this to
      */
-    public void setReserved(short index, @NotNull LangConstant value) {
+    public void setReserved(short index,LangConstant value) {
         var constant = GLOBAL_INFO.getConstant(index);
         if (!(constant instanceof TempConst)) {
             throw CompilerInternalError.of("Cannot redefine constant not a TempConst", LineInfo.empty());
@@ -346,8 +344,7 @@ public final class CompilerInfo {
         }
     }
 
-    @NotNull
-    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex) {
+    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type,OptionalUint constIndex) {
         if (constIndex.isPresent()) {
             var constant = GLOBAL_INFO.getConstant(constIndex.orElseThrow());
             return new VariableInfo(type, constant, info.getLineInfo());
@@ -374,7 +371,7 @@ public final class CompilerInfo {
      * @param file The file to write to
      * @see FileWriter#writeToFile
      */
-    public void writeToFile(@NotNull File file) {
+    public void writeToFile(File file) {
         new FileWriter(this).writeToFile(file);
     }
 
@@ -388,9 +385,8 @@ public final class CompilerInfo {
      * @param type The node to translate
      * @return The compiler's type
      */
-    @NotNull
-    @Contract(pure = true)
-    public TypeObject getType(@NotNull TypeLikeNode type) {
+
+    public TypeObject getType(TypeLikeNode type) {
         if (!type.isDecided()) {
             throw CompilerInternalError.format("Cannot call 'getType' on 'var'", type);
         }
@@ -441,7 +437,7 @@ public final class CompilerInfo {
         }
     }
 
-    private static TypeObject wrap(TypeObject obj, @NotNull TypeLikeNode node) {
+    private static TypeObject wrap(TypeObject obj,TypeLikeNode node) {
         var mutNode = MutableType.fromNullable(node.getMutability().orElse(null));
         if (!mutNode.isConstType()) {
             if (node.isOptional()) {
@@ -464,7 +460,7 @@ public final class CompilerInfo {
      * @param str The name of the class
      * @return The class, or {@code null} if not found
      */
-    @NotNull
+
     public Optional<TypeObject> classOf(String str) {
         var cls = typeMap.get(str);
         if (cls == null) {
@@ -485,8 +481,8 @@ public final class CompilerInfo {
      * @param type The type from which to retrieve a constant
      * @return The constant for the type
      */
-    @NotNull
-    public LangConstant typeConstant(Lined lineInfo, @NotNull TypeObject type) {
+
+    public LangConstant typeConstant(Lined lineInfo,TypeObject type) {
         if (type instanceof OptionTypeObject) {
             return optionConstant(lineInfo, (OptionTypeObject) type);
         }
@@ -683,7 +679,7 @@ public final class CompilerInfo {
      * @param type The type of the variable
      * @param constValue The constant value the variable has
      */
-    public void addVariable(String name, TypeObject type, LangConstant constValue, @NotNull Lined info) {
+    public void addVariable(String name, TypeObject type, LangConstant constValue,Lined info) {
         addConstant(constValue);
         addVariable(name, new VariableInfo(type, constValue, info.getLineInfo()));
     }
@@ -697,7 +693,7 @@ public final class CompilerInfo {
      * @param info The {@link LineInfo} for the variable's definition
      * @return The index of the variable for {@link Bytecode#LOAD_VALUE}
      */
-    public short addVariable(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+    public short addVariable(String name, TypeObject type, boolean isConst,Lined info) {
         var index = (short) varNumbers.getNext();
         addVariable(name, new VariableInfo(type, isConst, index, info.getLineInfo()));
         return index;
@@ -709,7 +705,7 @@ public final class CompilerInfo {
      * @param name The name of the variable
      * @param type The type of the variable
      */
-    public void addVariable(String name, TypeObject type, @NotNull Lined info) {
+    public void addVariable(String name, TypeObject type,Lined info) {
         addVariable(name, new VariableInfo(type, (short) varNumbers.getNext(), info.getLineInfo()));
     }
 
@@ -734,7 +730,7 @@ public final class CompilerInfo {
      * @see TempConst
      * @see #addVariable(String, TypeObject, LangConstant, Lined)
      */
-    public void reserveConstVar(String name, TypeObject type, @NotNull Lined info) {
+    public void reserveConstVar(String name, TypeObject type,Lined info) {
         var constant = new TempConst(type);
         addConstant(constant);
         addVariable(name, new VariableInfo(type, constant, info.getLineInfo()));
@@ -778,7 +774,7 @@ public final class CompilerInfo {
      * @param info The {@link LineInfo} representing the variable
      * @return The index of the variable for {@link Bytecode#LOAD_STATIC}
      */
-    public short addStaticVar(String name, TypeObject type, boolean isConst, @NotNull Lined info) {
+    public short addStaticVar(String name, TypeObject type, boolean isConst,Lined info) {
         var index = GLOBAL_INFO.claimStaticVar();
         addVariable(name, new VariableInfo(type, isConst, true, index, info.getLineInfo()));
         return index;
@@ -806,7 +802,6 @@ public final class CompilerInfo {
         return info.map(VariableInfo::isStatic).orElse(false);
     }
 
-    @NotNull
     private Optional<VariableInfo> varInfo(String name) {  // TODO: Universally accessible globals
         for (int i = variables.size() - 1; i >= 0; i--) {
             var map = variables.get(i);
@@ -832,7 +827,7 @@ public final class CompilerInfo {
      * @param node The node representing the variable
      * @return The index in the stack
      */
-    public short varIndex(@NotNull VariableNode node) {
+    public short varIndex(VariableNode node) {
         return varInfo(node.getName()).orElseThrow(
                 () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
         ).getLocation();
@@ -844,7 +839,7 @@ public final class CompilerInfo {
      * @param node The node representing the variable
      * @return The index
      */
-    public short staticVarIndex(@NotNull VariableNode node) {
+    public short staticVarIndex(VariableNode node) {
         return varInfo(node.getName()).orElseThrow(
                 () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
         ).getStaticLocation();
@@ -859,7 +854,7 @@ public final class CompilerInfo {
      * @param name The name to check for
      * @return The {@link LineInfo} for the declaration
      */
-    @NotNull
+
     public LineInfo declarationInfo(String name) {
         return varInfo(name).orElseThrow().getDeclarationInfo();
     }
@@ -873,9 +868,8 @@ public final class CompilerInfo {
      * @param types The types
      * @return The array of translated types
      */
-    @NotNull
-    @Contract(pure = true)
-    public TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
+
+    public TypeObject[] typesOf(TypeLikeNode... types) {
         var typeObjects = new TypeObject[types.length];
         for (int i = 0; i < types.length; i++) {
             typeObjects[i] = getType(types[i]);
@@ -963,7 +957,7 @@ public final class CompilerInfo {
      *
      * @param types The types to add
      */
-    void addPredeclaredTypes(@NotNull Map<String, Pair<TypeObject, Lined>> types) {
+    void addPredeclaredTypes(Map<String, Pair<TypeObject, Lined>> types) {
         assert !linked;
         for (var pair : types.entrySet()) {
             var name = pair.getKey();

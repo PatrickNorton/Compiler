@@ -2,9 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,9 +59,7 @@ public final class ImportInfo implements Lined {
      * @param asNames Optionally, the names specified by an {@code as} clause
      * @return The new {@link ImportInfo}
      */
-    @Contract("_, _ -> new")
-    @NotNull
-    public ImportInfo merge(List<String> names, @Nullable List<String> asNames) {
+    public ImportInfo merge(List<String> names, List<String> asNames) {
         var newNames = new ArrayList<>(this.names);
         newNames.addAll(names);
         if (this.asNames == null && asNames == null) {

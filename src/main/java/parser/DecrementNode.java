@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The class for decrementing a variable.
  *
@@ -21,7 +18,7 @@ public class DecrementNode implements IncDecNode {
      * Create new DecrementNode from a variable.
      * @param variable The decremented variable
      */
-    @Contract(pure = true)
+
     public DecrementNode(LineInfo lineInfo, NameNode variable) {
         this.lineInfo = lineInfo;
         this.variable = variable;
@@ -46,8 +43,7 @@ public class DecrementNode implements IncDecNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed node
      */
-    @NotNull
-    @Contract("_ -> new")
+
     static DecrementNode parse(TokenList tokens) {
         NameNode var = NameNode.parse(tokens);
         if (!tokens.tokenIs("--")) {

@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,12 +17,10 @@ public final class FunctionInfoType extends TypeObject {
     }
 
     @Override
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         return this.equals(other);
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
@@ -34,8 +30,6 @@ public final class FunctionInfoType extends TypeObject {
         }
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
@@ -45,15 +39,11 @@ public final class FunctionInfoType extends TypeObject {
         }
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
     @Override
     public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         return new GenerifiedFnInfoType(info, List.of(args));
     }
 
-    @NotNull
-    @Contract(pure = true)
     @Override
     public String name() {
         var argStr = info.getArgs().argStr();
@@ -68,9 +58,8 @@ public final class FunctionInfoType extends TypeObject {
         }
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String baseName() {
         return name();
     }

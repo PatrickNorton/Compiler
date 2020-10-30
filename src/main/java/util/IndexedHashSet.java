@@ -1,7 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +23,6 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
         this.valueList = new ArrayList<>(values);
     }
 
-    @NotNull
     public Iterator<E> iterator() {
         return new IHSIterator();
     }
@@ -79,7 +76,7 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
     }
 
     @Override
-    public boolean removeAll(@NotNull Collection<?> c) {
+    public boolean removeAll(Collection<?> c) {
         boolean modified = false;
         for (var value : c) {
             if (contains(value)) {
@@ -95,7 +92,6 @@ public class IndexedHashSet<E> extends AbstractSet<E> implements IndexedSet<E> {
         return valueList.indexOf(object);
     }
 
-    @NotNull
     @Override
     public Object[] toArray() {
         return valueList.toArray();

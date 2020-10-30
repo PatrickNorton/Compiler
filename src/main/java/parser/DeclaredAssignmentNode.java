@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +25,7 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      * @param assigned The variables being assigned to
      * @param value The values being assigned
      */
-    @Contract(pure = true)
+
     public DeclaredAssignmentNode(LineInfo lineInfo, boolean isColon, TypedVariableNode[] assigned, TestListNode value) {
         this.lineInfo = lineInfo;
         this.isColon = isColon;
@@ -109,9 +106,8 @@ public class DeclaredAssignmentNode implements AssignStatementNode, ClassStateme
      * @param tokens The list of tokens to be destructively parsed
      * @return The newly parsed DeclaredAssignmentNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DeclaredAssignmentNode parse(@NotNull TokenList tokens) {
+
+    static DeclaredAssignmentNode parse(TokenList tokens) {
         LineInfo info = tokens.lineInfo();
         TypedVariableNode[] assigned = TypedVariableNode.parseList(tokens);
         boolean isColon = tokens.tokenIs(":=");

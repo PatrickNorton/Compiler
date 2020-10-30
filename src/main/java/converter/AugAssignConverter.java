@@ -4,7 +4,6 @@ import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ public final class AugAssignConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         var name = node.getName();
@@ -33,7 +31,6 @@ public final class AugAssignConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     private List<Byte> convertVar(int start) {
         assert node.getName() instanceof VariableNode;
         var assignedConverter = TestConverter.of(info, node.getName(), 1);
@@ -51,7 +48,6 @@ public final class AugAssignConverter implements BaseConverter {
         return bytes;
     }
 
-    @NotNull
     private List<Byte> convertDot(int start) {
         assert node.getName() instanceof DottedVariableNode;
         var operator = node.getOperator().operator;
@@ -74,7 +70,6 @@ public final class AugAssignConverter implements BaseConverter {
         return bytes;
     }
 
-    @NotNull
     private TestConverter dotValueConverter() {
         var value = node.getName();
         assert value instanceof DottedVariableNode;

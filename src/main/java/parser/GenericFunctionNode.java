@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 
 /**
@@ -22,7 +19,6 @@ public class GenericFunctionNode implements GenericDefinitionNode {
     private TypeLikeNode[] retvals;
     private EnumSet<DescriptorNode> descriptors = DescriptorNode.emptySet();
 
-    @Contract(pure = true)
     public GenericFunctionNode(LineInfo lineInfo, VariableNode name, TypedArgumentListNode args, TypeLikeNode... retvals) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -63,7 +59,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return If the method is generic
      */
-    static boolean isGeneric(@NotNull TokenList tokens) {
+    static boolean isGeneric(TokenList tokens) {
         return isGeneric(tokens, 0);
     }
 
@@ -74,7 +70,7 @@ public class GenericFunctionNode implements GenericDefinitionNode {
      * @param start The starting point for the parse
      * @return If the method is generic
      */
-    static boolean isGeneric(@NotNull TokenList tokens, int start) {
+    static boolean isGeneric(TokenList tokens, int start) {
         assert tokens.tokenIs(start, Keyword.METHOD);
         int endPtr = start + 1;
         assert tokens.tokenIs(endPtr, TokenType.NAME);
@@ -98,9 +94,8 @@ public class GenericFunctionNode implements GenericDefinitionNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed GenericFunctionNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static GenericFunctionNode parse(@NotNull TokenList tokens) {
+
+    public static GenericFunctionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.METHOD);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

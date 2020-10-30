@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The class representing a non-dictionary comprehension
@@ -19,7 +17,7 @@ public class ComprehensionNode extends ComprehensionLikeNode {
      *                built object
      * @param looped The iterable being looped over
      */
-    @Contract(pure = true)
+
     public ComprehensionNode(LineInfo lineInfo, String braceType, VarLikeNode[] variables,
                              ArgumentNode[] builder, TestListNode looped, TestNode condition, TestNode whileCond) {
         super(lineInfo, braceType, variables, builder, looped, condition, whileCond);
@@ -37,9 +35,8 @@ public class ComprehensionNode extends ComprehensionLikeNode {
      * @param tokens The tokens which are operated destructively on to parse
      * @return The newly parsed comprehension
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ComprehensionNode parse(@NotNull TokenList tokens) {
+
+    static ComprehensionNode parse(TokenList tokens) {
         assert tokens.tokenIs(TokenType.OPEN_BRACE);
         LineInfo info = tokens.lineInfo();
         String braceType = tokens.tokenSequence();

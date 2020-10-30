@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 
 /**
@@ -13,7 +10,6 @@ public class InterfaceBodyNode implements BodyNode {
     private LineInfo lineInfo;
     private InterfaceStatementNode[] statements;
 
-    @Contract(pure = true)
     public InterfaceBodyNode(LineInfo lineInfo, InterfaceStatementNode... statements) {
         this.lineInfo = lineInfo;
         this.statements = statements;
@@ -49,9 +45,8 @@ public class InterfaceBodyNode implements BodyNode {
      * @param tokens The list of tokens to be parsed
      * @return The freshly parsed InterfaceBodyNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static InterfaceBodyNode parse(@NotNull TokenList tokens) {
+
+    static InterfaceBodyNode parse(TokenList tokens) {
         if (!tokens.tokenIs("{")) {
             throw tokens.error("The body of a class must be enclosed in curly brackets");
         }

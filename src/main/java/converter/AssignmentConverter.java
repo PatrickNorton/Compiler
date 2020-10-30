@@ -8,7 +8,6 @@ import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,6 @@ public final class AssignmentConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (node.isColon()) {
@@ -35,7 +33,6 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     private List<Byte> assignMultipleVariable(int start) {
         var names = node.getNames();
         var values = node.getValues();
@@ -66,7 +63,6 @@ public final class AssignmentConverter implements BaseConverter {
         return assignBytes;
     }
 
-    @NotNull
     private List<Byte> assignSingleVariable(int start) {
         assert node.getValues().size() == 1;
         var names = node.getNames();
@@ -120,7 +116,7 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
+    private void assignTopToVariable(List<Byte> bytes,VariableNode variable, TypeObject valueType) {
         var name = variable.getName();
         checkDef(name, variable);
         var varType = info.getType(name).orElseThrow();
@@ -136,8 +132,8 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
     }
 
-    private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
-                                  @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
+    private void assignToVariable(List<Byte> bytes, List<Byte> storeBytes, int start,
+VariableNode variable,TestConverter valueConverter) {
         var valueType = valueConverter.returnType()[0];
         var name = variable.getName();
         checkDef(name, variable);
@@ -169,7 +165,7 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private void assignTopToIndex(
-            @NotNull List<Byte> bytes, int start, @NotNull IndexNode variable, TypeObject valueType
+List<Byte> bytes, int start,IndexNode variable, TypeObject valueType
     ) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
@@ -200,8 +196,8 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    private void assignToIndex(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
-                               @NotNull IndexNode variable, @NotNull TestConverter valueConverter) {
+    private void assignToIndex(List<Byte> bytes, List<Byte> storeBytes, int start,
+IndexNode variable,TestConverter valueConverter) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
         var indexConverters = convertIndices(indices);
@@ -215,8 +211,7 @@ public final class AssignmentConverter implements BaseConverter {
         storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
     }
 
-    @NotNull
-    private List<TestConverter> convertIndices(@NotNull TestNode[] indices) {
+    private List<TestConverter> convertIndices(TestNode[] indices) {
         List<TestConverter> indexConverters = new ArrayList<>(indices.length);
         for (var index : indices) {
             indexConverters.add(TestConverter.of(info, index, 1));
@@ -224,7 +219,7 @@ public final class AssignmentConverter implements BaseConverter {
         return indexConverters;
     }
 
-    private void checkTypes(TypeObject varType, @NotNull List<TestConverter> values, TypeObject setType) {
+    private void checkTypes(TypeObject varType,List<TestConverter> values, TypeObject setType) {
         List<Argument> indexTypes = new ArrayList<>(values.size());
         for (var index : values) {
             indexTypes.add(new Argument("", index.returnType()[0]));
@@ -245,8 +240,8 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
-                             @NotNull DottedVariableNode variable, @NotNull TestNode value) {
+    private void assignToDot(List<Byte> bytes,List<Byte> storeBytes, int start,
+DottedVariableNode variable,TestNode value) {
         var pair = DotConverter.exceptLast(info, variable, 1);
         var preDotConverter = pair.getKey();
         var assignedType = assignType(preDotConverter, pair.getValue(), value);
@@ -261,7 +256,7 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private void assignTopToDot(
-            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+List<Byte> bytes, int start,DottedVariableNode variable, TypeObject valueType
     ) {
         assert variable.getPostDots().length == 1 : "Deeper-than-1-dot assignment not implemented";
         var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
@@ -276,14 +271,13 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
     }
 
-    @NotNull
-    private TypeObject assignType(@NotNull TestConverter preDotConverter, String postDot, Lined node) {
+    private TypeObject assignType(TestConverter preDotConverter, String postDot, Lined node) {
         var preDotRet = preDotConverter.returnType()[0];
         return preDotRet.tryAttrType(node, postDot, info);
     }
 
     private boolean checkAssign(
-            @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
+TestConverter preDotConverter,DottedVariableNode variable, TypeObject valueType
     ) {
         assert variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode;
         var dotType = TestConverter.returnType(variable, info, 1)[0];
@@ -326,7 +320,7 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    private boolean preDotIsSelf(@NotNull DottedVariableNode variableNode) {
+    private boolean preDotIsSelf(DottedVariableNode variableNode) {
         if (variableNode.getPostDots().length != 1) {
             return false;
         }
@@ -335,7 +329,7 @@ public final class AssignmentConverter implements BaseConverter {
         return preDot instanceof VariableNode && ((VariableNode) preDot).getName().equals("self");
     }
 
-    private static int quickNonVarCount(@NotNull AssignableNode[] names) {
+    private static int quickNonVarCount(AssignableNode[] names) {
         int count = 0;
         for (var name : names) {
             if (!(name instanceof VariableNode)) {

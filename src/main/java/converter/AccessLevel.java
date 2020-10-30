@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.DescriptorNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -40,8 +38,7 @@ public enum AccessLevel {
         return AccessLevel.FILE;
     }
 
-    @Contract(pure = true)
-    public static boolean canAccess(@NotNull AccessLevel valueLevel, AccessLevel accessLevel) {
+    public static boolean canAccess(AccessLevel valueLevel, AccessLevel accessLevel) {
         switch (valueLevel) {
             case PUBLIC:
                 return true;

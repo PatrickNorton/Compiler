@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.util.IndexedSet;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -33,7 +32,7 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add((byte) ConstantBytes.RANGE.ordinal());
@@ -56,13 +55,13 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
-    @NotNull
+
     public TypeObject getType() {
         return Builtins.RANGE;
     }
 
     @Override
-    public @NotNull String name(IndexedSet<LangConstant> constants) {
+    public String name(IndexedSet<LangConstant> constants) {
         var startStr = start == null ? "" : start.toString();
         var stopStr = stop == null ? "" : stop.toString();
         if (step == null) {

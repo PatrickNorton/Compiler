@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.Lined;
 import main.java.parser.TopNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -37,7 +36,7 @@ public final class Converter {
      * @param file The name of the file compiled
      * @param node The AST node to compile
      */
-    public static void convertToFile(@NotNull File file, TopNode node) {
+    public static void convertToFile(File file, TopNode node) {
         if (destFile != null) {
             throw CompilerInternalError.of(
                     "Cannot call Converter#convertToFile more than once per compilation", node
@@ -63,7 +62,7 @@ public final class Converter {
      * @param name The name of the module
      * @return The {@link Path path} to the module
      */
-    @NotNull
+
     public static Path findPath(String name, Lined info) {
         var path = System.getenv("NEWLANG_PATH");
         for (String filename : path.split(":")) {
@@ -105,8 +104,8 @@ public final class Converter {
      * @param lineInfo The info for the line of the import
      * @return The {@link Path path} to the file
      */
-    @NotNull
-    public static Path localModulePath(@NotNull Path parentPath, String name, Lined lineInfo) {
+
+    public static Path localModulePath(Path parentPath, String name, Lined lineInfo) {
         List<Path> result = new ArrayList<>();
         for (var file : Objects.requireNonNull(parentPath.toFile().listFiles())) {
             var path = file.toPath();
@@ -120,7 +119,6 @@ public final class Converter {
         throw CompilerException.of("Cannot find module " + name, lineInfo);
     }
 
-    @NotNull
     static File resolveFile(String name) {
         return destFile.toPath().resolve(name + Util.BYTECODE_EXTENSION).toFile();
     }
@@ -134,13 +132,11 @@ public final class Converter {
         }
     }
 
-    @NotNull
     private static Path builtinPath() {
         return new File("Lib").toPath().toAbsolutePath();
     }
 
-    @NotNull
-    private static Path getPath(@NotNull List<Path> result, String name, Lined lineInfo) {
+    private static Path getPath(List<Path> result, String name, Lined lineInfo) {
         var endFile = result.get(0).toFile();
         if (endFile.isDirectory()) {
             var exportFiles = endFile.listFiles(EXPORT_FILTER);
@@ -154,7 +150,7 @@ public final class Converter {
         return endFile.toPath();
     }
 
-    private static boolean nameMatches(@NotNull String wantedName, @NotNull String actualName) {
+    private static boolean nameMatches(String wantedName,String actualName) {
         return wantedName.equals(actualName) || (wantedName + Util.FILE_EXTENSION).equals(actualName);
     }
 }

@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -31,15 +29,15 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         this.seal();
     }
 
-    private InterfaceType(@NotNull InterfaceType other, String typedefName) {
+    private InterfaceType(InterfaceType other, String typedefName) {
         super(other.info, typedefName, other.generics, other.isConst);
     }
 
-    private InterfaceType(@NotNull InterfaceType other, boolean isConst) {
+    private InterfaceType(InterfaceType other, boolean isConst) {
         super(other.info, other.typedefName, other.generics, isConst);
     }
 
-    private InterfaceType(@NotNull InterfaceType other, List<TypeObject> generics) {
+    private InterfaceType(InterfaceType other, List<TypeObject> generics) {
         super(other.info, other.typedefName, generics, other.isConst);
     }
 
@@ -61,7 +59,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Override
-    @NotNull
+
     public TypeObject typedefAs(String name) {
         return new InterfaceType(this, name);
     }
@@ -80,8 +78,6 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         return info.info;
     }
 
-    @Contract("_, _ -> new")
-    @NotNull
     @Override
     public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         var trueArgs = info.info.generify(args);
@@ -92,14 +88,12 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         }
     }
 
-    @Contract("_, _ -> new")
     @Override
-    @NotNull
+
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         return new InterfaceType(this, generifyWithInner(parent, values));
     }
 
-    @NotNull
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
@@ -125,13 +119,13 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
         return info.staticOperatorReturnType(o);
     }
 
     @Override
-    @NotNull
+
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
         if (info.cachedContract != null) {
             return info.cachedContract;
@@ -165,7 +159,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         return contract;
     }
 
-    public void setAttributes(@NotNull Map<String, AttributeInfo> attributes, Set<String> generics) {
+    public void setAttributes(Map<String, AttributeInfo> attributes, Set<String> generics) {
         assert !info.isSealed && info.attributes == null;
         Map<String, InterfaceAttrInfo> result = new HashMap<>();
         for (var pair : attributes.entrySet()) {
@@ -174,7 +168,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         info.attributes = result;
     }
 
-    public void setStaticAttributes(@NotNull Map<String, AttributeInfo> attributes, Set<String> generics) {
+    public void setStaticAttributes(Map<String, AttributeInfo> attributes, Set<String> generics) {
         assert !info.isSealed && info.staticAttributes == null;
         Map<String, InterfaceAttrInfo> result = new HashMap<>();
         for (var pair : attributes.entrySet()) {
@@ -183,7 +177,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         info.staticAttributes = result;
     }
 
-    public void setOperators(@NotNull Map<OpSpTypeNode, MethodInfo> args, Set<OpSpTypeNode> generics) {
+    public void setOperators(Map<OpSpTypeNode, MethodInfo> args, Set<OpSpTypeNode> generics) {
         assert !info.isSealed && info.operators.isEmpty();
         Map<OpSpTypeNode, InterfaceFnInfo> result = new HashMap<>();
         for (var pair : args.entrySet()) {
@@ -192,7 +186,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         info.operators = result;
     }
 
-    public void setStaticOperators(@NotNull Map<OpSpTypeNode, MethodInfo> args) {
+    public void setStaticOperators(Map<OpSpTypeNode, MethodInfo> args) {
         assert !info.isSealed && info.staticOperators.isEmpty();
         Map<OpSpTypeNode, InterfaceFnInfo> result = new HashMap<>();
         for (var pair : args.entrySet()) {
@@ -228,8 +222,7 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
             this.staticOperators = new EnumMap<>(OpSpTypeNode.class);
         }
 
-        @NotNull
-        private <T> Map<T, InterfaceFnInfo> convertMap(@NotNull Map<T, MethodInfo> arg) {
+        private <T> Map<T, InterfaceFnInfo> convertMap(Map<T, MethodInfo> arg) {
             Map<T, InterfaceFnInfo> result = new HashMap<>();
             for (var pair : arg.entrySet()) {
                 result.put(pair.getKey(), new InterfaceFnInfo(pair.getValue(), false));

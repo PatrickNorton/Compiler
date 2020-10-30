@@ -1,8 +1,5 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +26,7 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     @Override
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         if (equals(other)) {
             return true;
         }
@@ -44,16 +41,14 @@ public final class OptionTypeObject extends TypeObject {
         return typedefName.isEmpty() ? optionVal.name() + "?" : typedefName;
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String baseName() {
         return "";
     }
 
-    @Contract("_ -> new")
     @Override
-    @NotNull
+
     public TypeObject typedefAs(String name) {
         return new OptionTypeObject(name, this.optionVal);
     }
@@ -107,16 +102,14 @@ public final class OptionTypeObject extends TypeObject {
         return TypeObject.optional(optionVal.generifyWith(parent, values));
     }
 
-    public static List<Byte> maybeWrapBytes(@NotNull List<Byte> bytes, boolean wrap) {
+    public static List<Byte> maybeWrapBytes(List<Byte> bytes, boolean wrap) {
         if (wrap) {
             return wrapBytes(bytes);
         }
         return bytes;
     }
 
-    @Contract("_ -> param1")
-    @NotNull
-    public static List<Byte> wrapBytes(@NotNull List<Byte> bytes) {
+    public static List<Byte> wrapBytes(List<Byte> bytes) {
         List<Byte> result = new ArrayList<>(bytes);
         result.add(Bytecode.MAKE_OPTION.value);
         return result;
@@ -137,7 +130,7 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         var base = new BaseType(optionVal);
         switch (value) {

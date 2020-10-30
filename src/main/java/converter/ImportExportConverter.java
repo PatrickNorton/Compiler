@@ -1,8 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.ImportExportNode;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,9 +14,8 @@ public final class ImportExportConverter implements BaseConverter {
         this.node = node;
     }
 
-    @NotNull
     @Override
-    @Unmodifiable
+
     public List<Byte> convert(int start) {
         switch (node.getType()) {
             case IMPORT:

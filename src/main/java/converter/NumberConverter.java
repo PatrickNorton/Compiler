@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.NumberNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,6 @@ public final class NumberConverter implements ConstantConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
@@ -34,13 +32,11 @@ public final class NumberConverter implements ConstantConverter {
         return bytes;
     }
 
-    @NotNull
     @Override
     public LangConstant constant() {
         return LangConstant.of(node);
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var constant = constant();

@@ -1,8 +1,6 @@
 package main.java.parser;
 
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * The node representing a break statement.
@@ -20,7 +18,7 @@ public class BreakStatementNode implements SimpleFlowNode {
      * @param loops The number of loops to be broken from
      * @param cond The conditional to be tested for
      */
-    @Contract(pure = true)
+
     public BreakStatementNode(LineInfo lineInfo, Integer loops, TestNode cond, TestNode as) {
         this.lineInfo = lineInfo;
         this.loops = loops;
@@ -55,9 +53,8 @@ public class BreakStatementNode implements SimpleFlowNode {
      * @param tokens The list of tokens to be parsed
      * @return The parsed break node
      */
-    @NotNull
-    @Contract("_ -> new")
-    static BreakStatementNode parse(@NotNull TokenList tokens) {
+
+    static BreakStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.BREAK);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

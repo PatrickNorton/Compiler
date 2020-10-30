@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -34,8 +31,8 @@ public interface DescribableNode extends IndependentNode {
      * @param tokens The list of tokens to be parsed
      * @return The freshly parsed DescribableNode
      */
-    @NotNull
-    static DescribableNode parse(@NotNull TokenList tokens) {
+
+    static DescribableNode parse(TokenList tokens) {
         EnumSet<DescriptorNode> descriptors;
         if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
             descriptors = DescriptorNode.parseList(tokens);
@@ -49,8 +46,7 @@ public interface DescribableNode extends IndependentNode {
         }
     }
 
-    @NotNull
-    private static DescribableNode parseMutability(@NotNull TokenList tokens, EnumSet<DescriptorNode> descriptors) {
+    private static DescribableNode parseMutability(TokenList tokens, EnumSet<DescriptorNode> descriptors) {
         assert !Collections.disjoint(descriptors, DescriptorNode.MUT_NODES);
         if (tokens.tokenIs(Keyword.VAR)) {
             return finishParse(IndependentNode.parseVar(tokens), descriptors);
@@ -67,8 +63,7 @@ public interface DescribableNode extends IndependentNode {
         }
     }
 
-    @NotNull
-    private static DescribableNode finishParse(@NotNull IndependentNode stmt, EnumSet<DescriptorNode> descriptors) {
+    private static DescribableNode finishParse(IndependentNode stmt, EnumSet<DescriptorNode> descriptors) {
         if (stmt instanceof DescribableNode) {
             DescribableNode statement = (DescribableNode) stmt;
             if (!statement.validDescriptors().containsAll(descriptors)) {
@@ -81,9 +76,7 @@ public interface DescribableNode extends IndependentNode {
         }
     }
 
-    @NotNull
-    @Contract(pure = true)
-    private static String errorMessage(@NotNull DescribableNode stmt, @NotNull EnumSet<DescriptorNode> descriptors) {
+    private static String errorMessage(DescribableNode stmt,EnumSet<DescriptorNode> descriptors) {
         Set<DescriptorNode> disjoint = EnumSet.copyOf(descriptors);
         disjoint.removeAll(stmt.validDescriptors());
         return "Invalid descriptor(s): " + TestNode.toString(disjoint) + " not allowed in statement";

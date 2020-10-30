@@ -10,7 +10,6 @@ import main.java.parser.SliceNode;
 import main.java.parser.SpecialOpNameNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +26,8 @@ public final class DotConverter implements TestConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     public static Pair<TestConverter, String> exceptLast(
-            CompilerInfo info, @NotNull DottedVariableNode node, int retCount
+            CompilerInfo info,DottedVariableNode node, int retCount
     ) {
         var postDots = node.getPostDots();
         if (!(postDots[postDots.length - 1].getPostDot() instanceof VariableNode)) {
@@ -51,7 +49,6 @@ public final class DotConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var result = TestConverter.returnType(node.getPreDot(), info, 1);
@@ -74,8 +71,7 @@ public final class DotConverter implements TestConverter {
         return Arrays.copyOf(result, retCount);
     }
 
-    @NotNull
-    private TypeObject[] dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] dotReturnType(TypeObject result,DottedVar dot) {
         switch (dot.getDotPrefix()) {
             case "":
                 return normalDotReturnType(result, dot);
@@ -88,8 +84,7 @@ public final class DotConverter implements TestConverter {
         }
     }
 
-    @NotNull
-    private TypeObject[] normalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] normalDotReturnType(TypeObject result,DottedVar dot) {
         assert dot.getDotPrefix().isEmpty() || !result.isSuperclass(Builtins.NULL_TYPE);
         var postDot = dot.getPostDot();
         if (postDot instanceof VariableNode) {
@@ -118,7 +113,7 @@ public final class DotConverter implements TestConverter {
         }
     }
 
-    private TypeObject[] optionalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] optionalDotReturnType(TypeObject result,DottedVar dot) {
         assert dot.getDotPrefix().equals("?");
         if (!(result instanceof OptionTypeObject)) {
             return normalDotReturnType(result, dot);
@@ -137,14 +132,12 @@ public final class DotConverter implements TestConverter {
         }
     }
 
-    @NotNull
-    private TypeObject[] nonNullReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
+    private TypeObject[] nonNullReturnType(TypeObject result,DottedVar dot) {
         var hasNull = result instanceof OptionTypeObject;
         var bangType = hasNull ? result.stripNull() : result;
         return normalDotReturnType(bangType, dot);
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         var preConverter = TestConverter.of(info, node.getPreDot(), 1);
@@ -182,13 +175,13 @@ public final class DotConverter implements TestConverter {
         return bytes;
     }
 
-    private void convertNormal(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
+    private void convertNormal(int start,List<Byte> bytes,DottedVar dot) {
         assert dot.getDotPrefix().isEmpty();
         var postDot = dot.getPostDot();
         convertPostDot(start, bytes, postDot);
     }
 
-    private void convertNullDot(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
+    private void convertNullDot(int start,List<Byte> bytes,DottedVar dot) {
         assert dot.getDotPrefix().equals("?");  // TODO: Optimizations & warnings for non-null types
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
@@ -201,7 +194,7 @@ public final class DotConverter implements TestConverter {
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
-    private void convertNotNullDot(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
+    private void convertNotNullDot(int start,List<Byte> bytes,DottedVar dot) {
         assert dot.getDotPrefix().equals("!!");  // TODO: Optimizations & warnings for non-null types
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
@@ -221,7 +214,7 @@ public final class DotConverter implements TestConverter {
         convertPostDot(start, bytes, postDot);
     }
 
-    private void convertPostDot(int start, @NotNull List<Byte> bytes, @NotNull NameNode postDot) {
+    private void convertPostDot(int start,List<Byte> bytes,NameNode postDot) {
         if (postDot instanceof VariableNode) {
             bytes.add(Bytecode.LOAD_DOT.value);
             var name = LangConstant.of(((VariableNode) postDot).getName());
@@ -239,7 +232,7 @@ public final class DotConverter implements TestConverter {
         }
     }
 
-    private void convertMethod(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+    private void convertMethod(int start,List<Byte> bytes,FunctionCallNode postDot) {
         var name = ((VariableNode) postDot.getCaller()).getName();
         for (var value : postDot.getParameters()) {  // TODO: Varargs, merge with FunctionCallNode
             bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
@@ -249,7 +242,7 @@ public final class DotConverter implements TestConverter {
         bytes.addAll(Util.shortToBytes((short) postDot.getParameters().length));
     }
 
-    private void convertIndex(int start, @NotNull List<Byte> bytes, @NotNull IndexNode postDot) {
+    private void convertIndex(int start,List<Byte> bytes,IndexNode postDot) {
         // FIXME: Check types
         var preIndex = (NameNode) postDot.getVar();
         convertPostDot(start, bytes, preIndex);

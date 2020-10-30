@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.util.IndexedSet;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ public final class OptionConstant implements LangConstant {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(Short.BYTES + 1);
         bytes.add((byte) ConstantBytes.OPTION.ordinal());
@@ -26,13 +25,13 @@ public final class OptionConstant implements LangConstant {
     }
 
     @Override
-    @NotNull
+
     public TypeObject getType() {
         return TypeObject.optional(optionVal);
     }
 
     @Override
-    @NotNull
+
     public String name(IndexedSet<LangConstant> constants) {
         return String.format("Option[%s]", constants.get(constVal).name(constants));
     }

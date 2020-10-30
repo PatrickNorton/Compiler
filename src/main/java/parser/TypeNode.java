@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,17 +16,14 @@ public class TypeNode implements TypeLikeNode {
     private boolean optional;
     private DescriptorNode mutablility;
 
-    @Contract(pure = true)
     public TypeNode(DottedVariableNode name, boolean optional) {
         this(name, new TypeNode[0], false, optional);
     }
 
-    @Contract(pure = true)
     public TypeNode(DottedVariableNode name, TypeLikeNode[] subtypes, boolean isVararg, boolean optional) {
         this(name.getLineInfo(), name, subtypes, isVararg, optional);
     }
 
-    @Contract(pure = true)
     public TypeNode(LineInfo lineInfo, DottedVariableNode name, TypeLikeNode[] subtypes, boolean isVararg, boolean optional) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -86,8 +80,6 @@ public class TypeNode implements TypeLikeNode {
         return name.isEmpty() && subtypes.length == 0;
     }
 
-    @NotNull
-    @Contract(" -> new")
     static TypeNode empty() {
         return new TypeNode(DottedVariableNode.empty(), false);
     }
@@ -104,12 +96,11 @@ public class TypeNode implements TypeLikeNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The parsed TypeNode
      */
-    @NotNull
+
     static TypeNode parse(TokenList tokens) {
         return parse(tokens, false, false, false);
     }
 
-    @NotNull
     static TypeNode parse(TokenList tokens, boolean ignoreNewlines) {
         return parse(tokens, false, false, ignoreNewlines);
     }
@@ -121,9 +112,8 @@ public class TypeNode implements TypeLikeNode {
      * @param isVararg Whether or not the type is a vararg.
      * @return The freshly parsed TypeNode
      */
-    @NotNull
-    @Contract("_, _, _, _ -> new")
-    private static TypeNode parse(@NotNull TokenList tokens, boolean allowEmpty, boolean isVararg, boolean ignoreNewlines) {
+
+    private static TypeNode parse(TokenList tokens, boolean allowEmpty, boolean isVararg, boolean ignoreNewlines) {
         if (tokens.tokenIs(Keyword.VAR)) {
             return parseVar(tokens);
         }
@@ -176,14 +166,13 @@ public class TypeNode implements TypeLikeNode {
         return new TypeNode(main, subtypes.toArray(new TypeLikeNode[0]), isVararg, optional);
     }
 
-    @NotNull
-    private static TypeNode parseVar(@NotNull TokenList tokens) {
+    private static TypeNode parseVar(TokenList tokens) {
         assert tokens.tokenIs(Keyword.VAR);
         tokens.nextToken();
         return var();
     }
 
-    static boolean nextIsType(@NotNull TokenList tokens) {
+    static boolean nextIsType(TokenList tokens) {
         return tokens.tokenIs(TokenType.NAME, Keyword.VAR) || TYPE_NODE_POSSIBLE.contains(tokens.tokenSequence())
                 || (tokens.tokenIs(TokenType.DESCRIPTOR) &&
                         DescriptorNode.MUT_NODES.contains(DescriptorNode.find(tokens.getFirst().sequence)));
@@ -194,8 +183,7 @@ public class TypeNode implements TypeLikeNode {
      *
      * @return The new TypeNode
      */
-    @NotNull
-    @Contract(" -> new")
+
     public static TypeNode var() {
         return new TypeNode(DottedVariableNode.empty(), false) {
             @Override

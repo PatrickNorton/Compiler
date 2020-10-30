@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import main.java.parser.RaiseStatementNode;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +17,6 @@ public final class RaiseConverter implements TestConverter {
         this.retCount = retCount;
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         var result = new TypeObject[retCount];
@@ -27,7 +25,7 @@ public final class RaiseConverter implements TestConverter {
     }
 
     @Override
-    @NotNull
+
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getFrom().isEmpty()) {

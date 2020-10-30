@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-
 /**
  * The class representing a ternary statement.
  * @author Patrick Norton
@@ -16,7 +14,6 @@ public class TernaryNode implements TestNode {
         this(ifTrue.getLineInfo(), ifTrue, statement, ifFalse);
     }
 
-    @Contract(pure = true)
     public TernaryNode(LineInfo lineInfo, TestNode ifTrue, TestNode statement, TestNode ifFalse) {
         this.lineInfo = lineInfo;
         this.ifTrue = ifTrue;

@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * The node representing the deletion of a variable.
  *
@@ -12,7 +9,6 @@ public class DeleteStatementNode implements SimpleStatementNode {
     private LineInfo lineInfo;
     private TestNode deleted;
 
-    @Contract(pure = true)
     public DeleteStatementNode(LineInfo lineInfo, TestNode deleted) {
         this.lineInfo = lineInfo;
         this.deleted = deleted;
@@ -36,9 +32,8 @@ public class DeleteStatementNode implements SimpleStatementNode {
      * @param tokens The list of tokens which is to be parsed destructively
      * @return The newly parsed DeleteStatementNode
      */
-    @NotNull
-    @Contract("_ -> new")
-    static DeleteStatementNode parse(@NotNull TokenList tokens) {
+
+    static DeleteStatementNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.DEL);
         LineInfo lineInfo = tokens.lineInfo();
         tokens.nextToken();

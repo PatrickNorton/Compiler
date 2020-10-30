@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +17,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
     private final List<TemplateParam> params;
     private boolean isRegistered;
 
-    private GenericInfo(@NotNull List<TemplateParam> params, boolean isRegistered) {
+    private GenericInfo(List<TemplateParam> params, boolean isRegistered) {
         this.params = params;
         this.isRegistered = isRegistered;
         assert params.stream().filter(TemplateParam::isVararg).count() <= 1;
@@ -55,8 +53,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return result;
     }
 
-    @NotNull
-    public Optional<List<TypeObject>> generify(@NotNull TypeObject... args) {
+    public Optional<List<TypeObject>> generify(TypeObject... args) {
         if (!hasVararg()) {
             return generifyNoVarargs(args);
         } else {
@@ -64,7 +61,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         }
     }
 
-    private Optional<List<TypeObject>> generifyNoVarargs(@NotNull TypeObject... args) {
+    private Optional<List<TypeObject>> generifyNoVarargs(TypeObject... args) {
         if (args.length != params.size()) {
             return Optional.empty();
         }
@@ -78,7 +75,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return Optional.of(result);
     }
 
-    private Optional<List<TypeObject>> generifyVararg(@NotNull TypeObject... args) {
+    private Optional<List<TypeObject>> generifyVararg(TypeObject... args) {
         if (args.length < params.size() - 1) {
             return Optional.empty();
         }
@@ -126,7 +123,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return Optional.of(result);
     }
 
-    private boolean isInvalid(TypeObject arg, @NotNull TemplateParam param) {
+    private boolean isInvalid(TypeObject arg,TemplateParam param) {
         boolean isList = param.getBound() instanceof ListTypeObject;
         if (isList != arg instanceof ListTypeObject) {
             return true;
@@ -157,7 +154,6 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         params.addAll(genInfo.params);
     }
 
-    @NotNull
     @Override
     public Iterator<TemplateParam> iterator() {
         return new InfoIterator();
@@ -177,9 +173,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         }
     }
 
-    @NotNull
-    @Contract(pure = true)
-    public static GenericInfo parse(CompilerInfo info, @NotNull TypeLikeNode... generics) {
+    public static GenericInfo parse(CompilerInfo info,TypeLikeNode... generics) {
         if (generics.length == 0) return empty();
         List<TemplateParam> params = new ArrayList<>(generics.length);
         for (int i = 0; i < generics.length; i++) {
@@ -199,8 +193,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return new GenericInfo(Collections.unmodifiableList(params), true);
     }
 
-    @NotNull
-    public static GenericInfo parseNoTypes(@NotNull TypeLikeNode... generics) {
+    public static GenericInfo parseNoTypes(TypeLikeNode... generics) {
         if (generics.length == 0) return empty();
         List<TemplateParam> params = new ArrayList<>(generics.length);
         for (int i = 0; i < generics.length; i++) {
@@ -222,16 +215,12 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
         return new GenericInfo(params, false);
     }
 
-    @NotNull
-    @Contract("_ -> new")
     public static GenericInfo of(TemplateParam... args) {
         return new GenericInfo(Collections.unmodifiableList(List.of(args)), true);
     }
 
     private static final GenericInfo EMPTY = new GenericInfo(List.of(), true);
 
-    @NotNull
-    @Contract(" -> new")
     public static GenericInfo empty() {
         return EMPTY;
     }

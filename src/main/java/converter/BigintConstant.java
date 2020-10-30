@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ public final class BigintConstant implements LangConstant {
         return Objects.hash(value);
     }
 
-    @NotNull
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -44,13 +42,11 @@ public final class BigintConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public TypeObject getType() {
         return Builtins.INT;
     }
 
-    @NotNull
     public static List<Byte> convertBigint(BigInteger val) {
         var inst = new BigintConstant(val);
         List<Byte> bytes = new ArrayList<>();
@@ -60,7 +56,6 @@ public final class BigintConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     private List<Byte> bigintBytes() {
         var byteArray = value.toByteArray();
         var addedBytes = Integer.BYTES - byteArray.length % Integer.BYTES;
@@ -74,7 +69,6 @@ public final class BigintConstant implements LangConstant {
         return bytes;
     }
 
-    @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {
         return value.toString();

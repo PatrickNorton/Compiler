@@ -2,8 +2,6 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +27,7 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    public boolean isSuperclass(@NotNull TypeObject other) {
+    public boolean isSuperclass(TypeObject other) {
         return other instanceof TypeTypeObject
                 || other instanceof ObjectType;
     }
@@ -40,7 +38,7 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    protected boolean isSubclass(@NotNull TypeObject other) {
+    protected boolean isSubclass(TypeObject other) {
         return other instanceof TypeTypeObject || other instanceof ObjectType;
     }
 
@@ -51,9 +49,8 @@ public final class TypeTypeObject extends TypeObject {
                 : typedefName;
     }
 
-    @Contract(pure = true)
     @Override
-    @NotNull
+
     public String baseName() {
         return "type";
     }
@@ -73,9 +70,8 @@ public final class TypeTypeObject extends TypeObject {
         return baseName().hashCode();
     }
 
-    @Contract("_ -> new")
     @Override
-    @NotNull
+
     public TypeObject typedefAs(String name) {
         return new TypeTypeObject(this.generic, name);
     }
@@ -90,19 +86,17 @@ public final class TypeTypeObject extends TypeObject {
         return Objects.hash(TypeTypeObject.class, "type");
     }
 
-    @Contract("_, _ -> new")
     @Override
-    @NotNull
-    public TypeObject generify(LineInfo lineInfo, @NotNull TypeObject... args) {
+
+    public TypeObject generify(LineInfo lineInfo,TypeObject... args) {
         if (args.length != 1) {
             throw CompilerException.of("Cannot generify object in this manner", lineInfo);
         }
         return new TypeTypeObject(args[0], this.typedefName);
     }
 
-    @Contract(value = "_, _ -> new", pure = true)
     @Override
-    @NotNull
+
     public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         assert access == AccessLevel.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
@@ -113,7 +107,7 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    @NotNull
+
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (generic != null) {
             if (o == OpSpTypeNode.CALL) {
@@ -128,13 +122,13 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-    @NotNull
+
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return generic == null ? Optional.empty() : generic.staticAttrType(value, access);
     }
 
     @Override
-    public @NotNull TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
+    public TypeObject tryAttrType(LineInfo lineInfo, String value, AccessLevel access) {
         if (generic == null) {
             throw CompilerException.of("Cannot get attribute '%s' from type 'type'", lineInfo);
         } else {

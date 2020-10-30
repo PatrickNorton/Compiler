@@ -9,7 +9,6 @@ import main.java.parser.StatementBodyNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +22,6 @@ public final class IfConverter implements BaseConverter {
         this.info = info;
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         List<Byte> bytes;
@@ -59,7 +57,7 @@ public final class IfConverter implements BaseConverter {
     }
 
     private void addBody(
-            @NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean trailingJump, boolean jumpType
+List<Byte> bytes, int start, StatementBodyNode body, boolean trailingJump, boolean jumpType
     ) {
         var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP_FALSE.size(), body, info);
         // Jump index
@@ -69,7 +67,7 @@ public final class IfConverter implements BaseConverter {
         bytes.addAll(bodyBytes);
     }
 
-    private void addBodyWithAs(@NotNull List<Byte> bytes, int start, StatementBodyNode body, VariableNode asName) {
+    private void addBodyWithAs(List<Byte> bytes, int start, StatementBodyNode body, VariableNode asName) {
         bytes.add(Bytecode.JUMP_FALSE.value);
         int jumpInsert = bytes.size();
         bytes.addAll(Util.zeroToBytes());
@@ -79,7 +77,7 @@ public final class IfConverter implements BaseConverter {
         Util.emplace(bytes, Util.intToBytes(start + bytes.size() + trailingJumpBytes(true)), jumpInsert);
     }
 
-    private void addElif(@NotNull List<Byte> bytes, int start, @NotNull ElifStatementNode elif, boolean trailingJump, boolean popAs) {
+    private void addElif(List<Byte> bytes, int start,ElifStatementNode elif, boolean trailingJump, boolean popAs) {
         var cond = elif.getTest();
         var body = elif.getBody();
         bytes.add(Bytecode.JUMP.value);
@@ -102,7 +100,7 @@ public final class IfConverter implements BaseConverter {
         Util.emplace(bytes, target, jumpTarget);
     }
 
-    private void addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean popAs) {
+    private void addElse(List<Byte> bytes, int start, StatementBodyNode body, boolean popAs) {
         var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP.size(), body, info);
         // Jump index
         var popAsBytes = popAs ? Bytecode.POP_TOP.value : 0;
@@ -151,7 +149,6 @@ public final class IfConverter implements BaseConverter {
         }
     }
 
-    @NotNull
     private Pair<List<Byte>, Boolean> convertOptimizedNot(int start, TestNode cond) {
         if (cond instanceof OperatorNode) {
             var op = (OperatorNode) cond;

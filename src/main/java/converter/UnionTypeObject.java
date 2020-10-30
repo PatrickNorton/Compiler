@@ -4,8 +4,6 @@ import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.OptionalUint;
 import main.java.util.Pair;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,11 +23,11 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         super(new Info(name, supers, info, new ArrayList<>()), "", true);
     }
 
-    private UnionTypeObject(@NotNull UnionTypeObject other, List<TypeObject> generics) {
+    private UnionTypeObject(UnionTypeObject other, List<TypeObject> generics) {
         super(other.info, other.typedefName, generics, other.isConst);
     }
 
-    private UnionTypeObject(@NotNull UnionTypeObject other, String typedefName) {
+    private UnionTypeObject(UnionTypeObject other, String typedefName) {
         super(other.info, typedefName, other.generics, other.isConst);
     }
 
@@ -66,7 +64,6 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         }
     }
 
-    @NotNull
     @Override
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         var trueInfo = trueOperatorInfo(o, access);
@@ -98,10 +95,8 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         return new UnionTypeObject(this, name);
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
     @Override
-    public TypeObject generify(LineInfo lineInfo, @NotNull TypeObject... args) {
+    public TypeObject generify(LineInfo lineInfo,TypeObject... args) {
         var trueArgs = info.info.generify(args);
         if (trueArgs.isEmpty() || trueArgs.orElseThrow().size() != info.info.getParams().size()) {
             throw CompilerException.of("Cannot generify object in this manner", lineInfo);

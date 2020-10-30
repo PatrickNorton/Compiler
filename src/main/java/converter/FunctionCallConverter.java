@@ -8,7 +8,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,6 @@ public final class FunctionCallConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public List<Byte> convert(int start) {
         if (node.getCaller() instanceof EscapedOperatorNode) {
@@ -67,13 +65,13 @@ public final class FunctionCallConverter implements TestConverter {
         return conv.convert(start);
     }
 
-    private int convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo) {
+    private int convertArgs(List<Byte> bytes, int start,FunctionInfo fnInfo) {
         var params = node.getParameters();
         var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
         return convertInnerArgs(bytes, start, params, argPositions);
     }
 
-    private int convertInnerArgs(List<Byte> bytes, int start, ArgumentNode[] params, @NotNull int[] argPositions) {
+    private int convertInnerArgs(List<Byte> bytes, int start, ArgumentNode[] params,int[] argPositions) {
         var argc = params.length;
         for (var value : params) {
             var converter = TestConverter.of(info, value.getArgument(), 1);
@@ -112,7 +110,6 @@ public final class FunctionCallConverter implements TestConverter {
         }
     }
 
-    @NotNull
     @Override
     public TypeObject[] returnType() {
         if (node.getCaller() instanceof VariableNode) {
@@ -179,8 +176,7 @@ public final class FunctionCallConverter implements TestConverter {
         }
     }
 
-    @NotNull
-    private static List<TypeObject> turnMapToList(@NotNull Map<Integer, TypeObject> values) {
+    private static List<TypeObject> turnMapToList(Map<Integer, TypeObject> values) {
         List<TypeObject> result = new ArrayList<>();
         for (var pair : values.entrySet()) {
             int index = pair.getKey();
@@ -232,13 +228,11 @@ public final class FunctionCallConverter implements TestConverter {
         );
     }
 
-    @NotNull
-    private Argument[] getArgs(@NotNull ArgumentNode... args) {
+    private Argument[] getArgs(ArgumentNode... args) {
         return getArgs(info, args);
     }
 
-    @NotNull
-    private static Argument[] getArgs(CompilerInfo info, @NotNull ArgumentNode... args) {
+    private static Argument[] getArgs(CompilerInfo info,ArgumentNode... args) {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
@@ -259,7 +253,6 @@ public final class FunctionCallConverter implements TestConverter {
                 && (BUILTINS_TO_OPERATORS.containsKey(strName) || strName.equals("type")));
     }
 
-    @NotNull
     private List<Byte> convertOptimized(int start, FunctionInfo fnInfo) {
         assert node.getCaller() instanceof VariableNode;
         var strName = ((VariableNode) node.getCaller()).getName();
@@ -278,7 +271,6 @@ public final class FunctionCallConverter implements TestConverter {
             "iter", OpSpTypeNode.ITER
     );
 
-    @NotNull
     private List<Byte> convertBuiltin(int start, String strName) {
         assert Builtins.BUILTIN_MAP.containsKey(strName);
         List<Byte> bytes = new ArrayList<>();
@@ -303,7 +295,6 @@ public final class FunctionCallConverter implements TestConverter {
 
     }
 
-    @NotNull
     private List<Byte> convertCallFn(int start, String strName, FunctionInfo fnInfo) {
         var fnIndex = info.fnIndex(strName);
         assert fnIndex != -1;
@@ -326,8 +317,8 @@ public final class FunctionCallConverter implements TestConverter {
      * @param values The values to figure out how to sort
      * @return The pairs of values to swap
      */
-    @NotNull
-    private List<Pair<Integer, Integer>> swapsToOrder(@NotNull int... values) {
+
+    private List<Pair<Integer, Integer>> swapsToOrder(int... values) {
         List<Pair<Integer, Integer>> swaps = new ArrayList<>();
         int[] currentState = values.clone();
         for (int i = 0; i < values.length; i++) {
@@ -341,7 +332,7 @@ public final class FunctionCallConverter implements TestConverter {
         return swaps;
     }
 
-    private static void arrSwap(@NotNull int[] values, int a, int b) {
+    private static void arrSwap(int[] values, int a, int b) {
         int temp = values[a];
         values[a] = values[b];
         values[b] = temp;

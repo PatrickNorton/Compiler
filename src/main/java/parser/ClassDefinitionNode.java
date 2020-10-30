@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumSet;
 
 /**
@@ -25,7 +22,7 @@ public class ClassDefinitionNode implements BaseClassNode {
      * @param superclasses The superclasses of the class
      * @param body The main body of the class
      */
-    @Contract(pure = true)
+
     public ClassDefinitionNode(LineInfo lineInfo, TypeNode name, TypeLikeNode[] superclasses, ClassBodyNode body) {
         this.lineInfo = lineInfo;
         this.name = name;
@@ -99,9 +96,8 @@ public class ClassDefinitionNode implements BaseClassNode {
      *               this.
      * @return The new ClassDefinitionNode which was parsed
      */
-    @NotNull
-    @Contract("_ -> new")
-    static ClassDefinitionNode parse(@NotNull TokenList tokens) {
+
+    static ClassDefinitionNode parse(TokenList tokens) {
         assert tokens.tokenIs(Keyword.CLASS);
         LineInfo info = tokens.lineInfo();
         tokens.nextToken();

@@ -1,7 +1,5 @@
 package main.java.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -68,7 +66,7 @@ public class HashCounter<T> implements Counter<T> {
      *
      * @return The iterator over all keys
      */
-    @NotNull
+
     @Override
     public Iterator<T> iterator() {
         return map.keySet().iterator();

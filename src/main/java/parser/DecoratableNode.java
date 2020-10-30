@@ -1,7 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.LinkedList;
 
 /**
@@ -21,8 +19,8 @@ public interface DecoratableNode extends IndependentNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DecoratableNode, with decorations added
      */
-    @NotNull
-    static DecoratableNode parseLeftDecorator(@NotNull TokenList tokens) {
+
+    static DecoratableNode parseLeftDecorator(TokenList tokens) {
         assert tokens.tokenIs(TokenType.AT);
         LinkedList<NameNode> decorators = new LinkedList<>();
         while (tokens.tokenIs(TokenType.AT)) {
@@ -40,7 +38,7 @@ public interface DecoratableNode extends IndependentNode {
      * @param tokens The list of tokens to be destructively parsed
      * @return The freshly parsed DecoratableNode
      */
-    @NotNull
+
     static DecoratableNode parse(TokenList tokens) {
         IndependentNode stmt = IndependentNode.parse(tokens);
         if (stmt instanceof DecoratableNode) {

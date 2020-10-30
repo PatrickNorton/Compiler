@@ -1,8 +1,5 @@
 package main.java.parser;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Set;
 
 /**
@@ -19,8 +16,8 @@ public class Token {
      * @param token The type of token which this is
      * @param sequence The sequence of text the token belongs to
      */
-    @Contract(pure = true)
-    public Token(@NotNull TokenType token, @NotNull String sequence, LineInfo lineInfo) {
+
+    public Token(TokenType token,String sequence, LineInfo lineInfo) {
         this.token = token;
         this.sequence = sequence;
         this.lineInfo = lineInfo;
@@ -40,7 +37,7 @@ public class Token {
      * @param tokens The list of token types to test if this is a member of
      * @return Whether or not this is one of those types
      */
-    public boolean is(@NotNull TokenType... tokens) {
+    public boolean is(TokenType... tokens) {
         for (TokenType token : tokens) {
             if (this.token == token) {
                 return true;
@@ -63,7 +60,7 @@ public class Token {
      * @param sequences The sequences to be tested
      * @return Whether or not this is one of those sequences
      */
-    public boolean is(@NotNull String... sequences) {
+    public boolean is(String... sequences) {
         for (String sequence : sequences) {
             if (this.sequence.equals(sequence)) {
                 return true;
@@ -86,7 +83,7 @@ public class Token {
      * @param tokens The keywords to test
      * @return If the token is one of those keywords
      */
-    public boolean is(@NotNull Keyword... tokens) {
+    public boolean is(Keyword... tokens) {
         if (this.is(TokenType.KEYWORD)) {
             Keyword keyword = Keyword.find(this);
             for (Keyword k : tokens) {
@@ -98,7 +95,7 @@ public class Token {
         return false;
     }
 
-    public boolean is(@NotNull Set<TokenType> types) {
+    public boolean is(Set<TokenType> types) {
         return types.contains(token);
     }
 
@@ -110,8 +107,7 @@ public class Token {
      * Return an Epsilon token.
      * @return The token
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
+
     public static Token Epsilon(LineInfo lineInfo) {
         return new Token(TokenType.EPSILON, "", lineInfo);
     }
@@ -120,8 +116,7 @@ public class Token {
      * Return a Newline token.
      * @return The token
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
+
     public static Token Newline(LineInfo lineInfo) {
         return new Token(TokenType.NEWLINE, "\n", lineInfo);
     }
