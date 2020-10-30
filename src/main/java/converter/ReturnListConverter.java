@@ -120,7 +120,7 @@ public final class ReturnListConverter implements BaseConverter {
         if (fnRet.isSuperclass(retType)) {
             return false;
         } else if (OptionTypeObject.needsMakeOption(fnRet, retType)) {
-            return !fnRet.isSuperclass(TypeObject.optional(retType)) && !retType.sameBaseType(Builtins.NULL_TYPE);
+            return !OptionTypeObject.superWithOption(fnRet, retType);
         } else {
             return true;
         }
