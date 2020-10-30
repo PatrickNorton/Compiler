@@ -420,6 +420,11 @@ public final class CompilerInfo {
         }
         var value = typeMap.get(type.strName());
         if (value == null) {
+            for (var localType : localTypes) {
+                if (localType.containsKey(type.strName())) {
+                    return localType.get(type.strName());
+                }
+            }
             var builtin = Builtins.BUILTIN_MAP.get(type.strName());
             if (builtin instanceof TypeObject) {
                 var typeObj = (TypeObject) builtin;
