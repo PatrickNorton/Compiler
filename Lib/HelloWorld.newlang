@@ -1,0 +1,193 @@
+#!/usr/local/bin/newlang
+
+# IMPORTANT: Cannot define non-constant variables before classes
+
+from test import Foo2
+
+generator func testGen() -> char {
+    for var c in "abcdefg" {
+        yield c
+    }
+}
+
+var test = 2
+
+switch test {
+    case 1 {print("Fail")}
+    case 2 {print("Not fail!")}
+    default {print("Fail")}
+}
+
+switch test {
+    case 2 {print("Not fail")}
+    case 12 {print("Fail")}
+}
+
+func testKwargs(int i, int j) {
+    print(f"testKwargs.i: {i}")
+    print(f"testKwargs.j: {j}")
+}
+
+testKwargs(j = 1, i = 0)
+
+class Foo {
+    private int i
+    private str j
+
+    public operator new(int i, str j) {
+        self.i = i
+        self.j = j
+    }
+
+    public operator str {
+        return f"Foo[{self.i}, {self.j}]"
+    }
+
+    public operator + (Foo other) -> Foo {
+        return Foo(self.i + other.i, self.j + other.j)
+    }
+
+    public method highestOneBit2() -> int {
+        return 0 if not self.i
+        var bsCount = [i for var i in [0:self.i] while self.i >> i][-1]
+        return 1 << bsCount
+    }
+
+    public method highestOneBit() -> int {
+        return 0 if not self.i
+        mut int bsCount = 0
+        mut int i = self.i
+        while i != 0 {
+            i >>= 1
+            bsCount++
+        }
+        return 1 << (bsCount - 1)
+    }
+
+    public method foo() -> int {
+        return self.i + 1
+    }
+}
+
+class MutTest {
+    mut int value
+
+    public operator new() {
+        self.value = 0
+    }
+}
+
+func bar() -> int {
+    return 1
+}
+
+print(2 ** 2)
+
+mut int? x = 2
+mut int z = 0
+
+while x? as y {
+    z++
+    print(y)
+    x = x if z % 4 else null
+}
+
+print(f"bar = {bar()}")
+
+var intInput = 100 # int(input("Enter a number: "))
+var strInput = "abc" # input("Enter a string: ")
+
+var foo = Foo(intInput, strInput)
+print(f"foo = {foo}")
+print(f"foo = {foo !r}")
+print(f"foo.highestOneBit: {foo.highestOneBit()}")
+print(f"foo.highestOneBit2: {foo.highestOneBit2()}")
+print(f"foo.foo: {foo.foo()}")
+print(f"foo + foo: {foo + foo}")
+
+# Union concept:
+union Test {
+    int Apple
+    str Orange
+}
+
+Test x = Test.Apple(0)
+int? y = x.Apple
+
+var test = Test.Apple(3)
+switch test {
+    case Test.Apple as i => print(f"Apple: {i}")
+    case Test.Orange as i => print(f"Orange: {i}")
+}
+
+if test.Orange? as j {
+    print("It's an orange")
+}
+
+bool isOrange = test.Orange?
+print(f"isOrange: {isOrange}")
+
+int apple = test.Apple!!
+print(f"apple: {apple}")
+
+# Maybe:
+int? maybeApple = test.Apple
+int appleNo = test.Apple ?? 0
+print(f"maybeApple: {maybeApple}")
+print(f"appleNo: {appleNo}")
+
+# Option special-case
+str? a = ":)"
+int? b = null
+
+if a? as i {
+    print(i)
+}
+
+str c = a!!
+int? d = a?.length
+str e = a ?? ":("
+
+func testMut(mut MutTest i) {}
+
+testMut(MutTest())
+
+var tupleTest = (1, "a")
+var newFoo = Foo(*tupleTest)
+
+func gen() -> int {
+    print(0)
+    return 1
+}
+
+var genTest = (gen() for var i in [0:2])
+print("Should be before all numbers")
+for var z in genTest {
+    print(z)
+}
+
+switch "a" {
+    case "a" {
+        print("Switch success")
+    }
+    case "b" {
+        print("Nope: b")
+    }
+    default {
+        print("Nope")
+    }
+}
+print(\is(1, 1, 1, 2))
+
+var _ = [1, *(2, 3)]
+
+func intTest(int i) -> int? {
+    return 2
+}
+
+print(d.flatMap(intTest))
+
+int t1, int t2 = *(1, 2)
+
+bool boo = "a" == "a"
+print(boo)
