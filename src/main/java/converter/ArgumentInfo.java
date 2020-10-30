@@ -352,34 +352,38 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var joiner = new StringJoiner(", ", "(", ")");
         if (positionArgs.length > 0) {
             for (var arg : positionArgs) {
-                if (arg.isVararg()) {
-                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
-                } else {
-                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
-                }
+                joiner.add(argStr(arg));
             }
             joiner.add("/");
         }
         if (normalArgs.length > 0) {
             for (var arg : normalArgs) {
-                if (arg.isVararg()) {
-                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
-                } else {
-                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
-                }
+                joiner.add(argStr(arg));
             }
         }
         if (keywordArgs.length > 0) {
             joiner.add("*");
             for (var arg : keywordArgs) {
-                if (arg.isVararg()) {
-                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
-                } else {
-                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
-                }
+                joiner.add(argStr(arg));
             }
         }
         return joiner.toString();
+    }
+
+    private String argStr(Argument arg) {
+        if (arg.getName().isBlank()) {
+            if (arg.isVararg()) {
+                return "*" + arg.getType().name();
+            } else {
+                return arg.getType().name();
+            }
+        } else {
+            if (arg.isVararg()) {
+                return String.format("*%s %s", arg.getType().name(), arg.getName());
+            } else {
+                return String.format("%s %s", arg.getType().name(), arg.getName());
+            }
+        }
     }
 
     private class ArgIterator implements Iterator<Argument> {
