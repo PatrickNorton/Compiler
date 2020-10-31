@@ -20,7 +20,6 @@ public final class ReturnListConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         if (retTypes.length > 1 && values.size() == 1) {
             return convertSingle(start);

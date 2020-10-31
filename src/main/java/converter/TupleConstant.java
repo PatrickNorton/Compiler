@@ -17,7 +17,6 @@ public final class TupleConstant implements LangConstant {
     }
 
     @Override
-
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add((byte) ConstantBytes.TUPLE.ordinal());
@@ -29,7 +28,6 @@ public final class TupleConstant implements LangConstant {
     }
 
     @Override
-
     public TypeObject getType() {
         var generics = new TypeObject[values.size()];
         for (int i = 0; i < values.size(); i++) {
@@ -39,7 +37,6 @@ public final class TupleConstant implements LangConstant {
     }
 
     @Override
-
     public String name(IndexedSet<LangConstant> constants) {
         var joiner = new StringJoiner(", ", "(", ")");
         for (var pair : values) {

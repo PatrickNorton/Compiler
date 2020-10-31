@@ -27,7 +27,6 @@ public final class Zipper<A, B> implements Iterator<Pair<A, B>> {
     }
 
     @Override
-
     public Pair<A, B> next() {
         if (!hasNext()) {
             throw new NoSuchElementException();

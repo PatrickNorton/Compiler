@@ -52,13 +52,11 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return bound.attrType(value, access);
     }
 
     @Override
-
     public Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         return bound.staticAttrType(value, access);
     }
@@ -115,7 +113,6 @@ public final class TemplateParam extends NameableType {
     }
 
     @Override
-
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (this.equals(other)) {
             return Optional.of(Collections.emptyMap());

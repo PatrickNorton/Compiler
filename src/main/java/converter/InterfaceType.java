@@ -59,7 +59,6 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Override
-
     public TypeObject typedefAs(String name) {
         return new InterfaceType(this, name);
     }
@@ -89,7 +88,6 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Override
-
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         return new InterfaceType(this, generifyWithInner(parent, values));
     }
@@ -119,13 +117,11 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
     }
 
     @Override
-
     public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
         return info.staticOperatorReturnType(o);
     }
 
     @Override
-
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
         if (info.cachedContract != null) {
             return info.cachedContract;

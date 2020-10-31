@@ -22,7 +22,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         var name = node.getName().getName();
         var predefined = info.getFn(name);

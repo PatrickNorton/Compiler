@@ -46,13 +46,11 @@ public final class BoolOpConverter extends OperatorConverter {
     }
 
     @Override
-
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         switch (op) {
             case BOOL_AND:
@@ -183,7 +181,6 @@ public final class BoolOpConverter extends OperatorConverter {
     }
 
     @Override
-
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

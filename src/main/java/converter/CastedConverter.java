@@ -21,13 +21,11 @@ public final class CastedConverter extends OperatorConverter {
     }
 
     @Override
-
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
          throw asException(lineInfo);
     }
 
     @Override
-
     public TypeObject[] returnType() {
         if (args.length != 2) {
             throw argsException();
@@ -43,7 +41,6 @@ public final class CastedConverter extends OperatorConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         if (args.length != 2) {
             throw argsException();

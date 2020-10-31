@@ -36,7 +36,6 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-
     public TypeObject generify(LineInfo lineInfo, TypeObject... args) {
         if (generics.isEmpty()) {
             return new TupleType(args);
@@ -46,7 +45,6 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         try {
             var intVal = Integer.parseInt(value);
@@ -57,7 +55,6 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
@@ -96,7 +93,6 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-
     public String name() {
         if (!typedefName.isEmpty()) {
             return typedefName;
@@ -136,7 +132,6 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-
     public String baseName() {
         return "tuple";
     }
@@ -152,7 +147,6 @@ public final class TupleType extends TypeObject {
     }
 
     @Override
-
     public TypeObject typedefAs(String name) {
         return new TupleType(name, generics.toArray(new TypeObject[0]));
     }

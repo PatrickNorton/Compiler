@@ -52,13 +52,11 @@ public final class InConverter extends OperatorConverter {
     }
 
     @Override
-
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         if (args.length != 2) {
             throw CompilerException.format("Expected 2 arguments for 'in' operator, got %d", lineInfo, args.length);
@@ -80,7 +78,6 @@ public final class InConverter extends OperatorConverter {
     }
 
     @Override
-
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

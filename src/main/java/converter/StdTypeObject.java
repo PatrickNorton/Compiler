@@ -114,7 +114,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @Override
-
     public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {
         return info.staticOperatorReturnType(o);
     }
@@ -188,13 +187,11 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     }
 
     @Override
-
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         return new StdTypeObject(this, generifyWithInner(parent, values));
     }
 
     @Override
-
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
         return Pair.of(Collections.emptySet(), Collections.emptySet());
     }

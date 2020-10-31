@@ -16,7 +16,6 @@ public final class OptionConstant implements LangConstant {
     }
 
     @Override
-
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(Short.BYTES + 1);
         bytes.add((byte) ConstantBytes.OPTION.ordinal());
@@ -25,13 +24,11 @@ public final class OptionConstant implements LangConstant {
     }
 
     @Override
-
     public TypeObject getType() {
         return TypeObject.optional(optionVal);
     }
 
     @Override
-
     public String name(IndexedSet<LangConstant> constants) {
         return String.format("Option[%s]", constants.get(constVal).name(constants));
     }

@@ -31,7 +31,6 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         var converter = new ConverterHolder(info);
         var hasType = info.hasType(node.strName());

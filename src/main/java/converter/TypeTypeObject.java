@@ -50,7 +50,6 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-
     public String baseName() {
         return "type";
     }
@@ -71,7 +70,6 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-
     public TypeObject typedefAs(String name) {
         return new TypeTypeObject(this.generic, name);
     }
@@ -87,7 +85,6 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-
     public TypeObject generify(LineInfo lineInfo,TypeObject... args) {
         if (args.length != 1) {
             throw CompilerException.of("Cannot generify object in this manner", lineInfo);
@@ -96,7 +93,6 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-
     public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         assert access == AccessLevel.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
@@ -107,7 +103,6 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (generic != null) {
             if (o == OpSpTypeNode.CALL) {
@@ -122,7 +117,6 @@ public final class TypeTypeObject extends TypeObject {
     }
 
     @Override
-
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         return generic == null ? Optional.empty() : generic.staticAttrType(value, access);
     }

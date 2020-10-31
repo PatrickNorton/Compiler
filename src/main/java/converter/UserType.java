@@ -96,14 +96,12 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
-
     public final Optional<TypeObject> attrType(String value, AccessLevel access) {
         var type = attrTypeWithGenerics(value, access);
         return type.map(this::generifyAttrType);
     }
 
     @Override
-
     public final Optional<TypeObject> staticAttrType(String value, AccessLevel access) {
         var type = staticAttrTypeWithGenerics(value, access);
         return type.map(this::generifyAttrType);
@@ -124,7 +122,6 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     @Override
-
     public final Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (isSuperclass(other)) {
             return Optional.of(Collections.emptyMap());

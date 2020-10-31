@@ -36,7 +36,6 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
-
     public TypeObject[] returnType() {
         var firstOpConverter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(op, info);
@@ -44,7 +43,6 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         var constant = constantReturn();
         if (constant.isPresent()) {
@@ -109,7 +107,6 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     @Override
-
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         throw asException(lineInfo);
     }

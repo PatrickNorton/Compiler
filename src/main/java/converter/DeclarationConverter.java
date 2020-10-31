@@ -15,7 +15,6 @@ public final class DeclarationConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         if (!node.getType().isDecided()) {
             throw CompilerException.of("var not allowed in declarations", node);

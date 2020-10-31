@@ -15,7 +15,6 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);

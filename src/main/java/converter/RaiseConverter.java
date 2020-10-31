@@ -25,7 +25,6 @@ public final class RaiseConverter implements TestConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getFrom().isEmpty()) {

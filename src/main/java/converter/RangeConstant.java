@@ -32,7 +32,6 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
-
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add((byte) ConstantBytes.RANGE.ordinal());
@@ -55,7 +54,6 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
-
     public TypeObject getType() {
         return Builtins.RANGE;
     }

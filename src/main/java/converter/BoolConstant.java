@@ -14,7 +14,6 @@ public final class BoolConstant implements LangConstant {
     }
 
     @Override
-
     public List<Byte> toBytes() {
         return List.of((byte) ConstantBytes.BOOL.ordinal(), (byte) (value ? 1 : 0));
     }

@@ -38,13 +38,11 @@ public final class IsConverter extends OperatorConverter {
     }
 
     @Override
-
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         if (retCount > 1) {
             throw CompilerException.format("'is' only returns 1 value, %d expected", lineInfo, retCount);

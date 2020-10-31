@@ -15,7 +15,6 @@ public final class ImportExportConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         switch (node.getType()) {
             case IMPORT:

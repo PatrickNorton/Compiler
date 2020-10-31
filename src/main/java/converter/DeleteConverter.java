@@ -18,7 +18,6 @@ public final class DeleteConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         var deleted = node.getDeleted();

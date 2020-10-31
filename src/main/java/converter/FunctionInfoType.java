@@ -59,7 +59,6 @@ public final class FunctionInfoType extends TypeObject {
     }
 
     @Override
-
     public String baseName() {
         return name();
     }

@@ -16,7 +16,6 @@ public final class YieldConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);

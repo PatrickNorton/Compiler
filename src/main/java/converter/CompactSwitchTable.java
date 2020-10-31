@@ -30,7 +30,6 @@ public final class CompactSwitchTable implements SwitchTable {
      * @return The list of bytes represented
      */
     @Override
-
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.COMPACT.byteValue());
@@ -43,7 +42,6 @@ public final class CompactSwitchTable implements SwitchTable {
     }
 
     @Override
-
     public String strDisassembly() {
         var value = new StringBuilder();
         for (int i = 0; i < values.size(); i++) {

@@ -30,7 +30,6 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @Override
-
     public TypeObject[] returnType() {
         switch (op) {
             case NULL_COERCE:
@@ -45,7 +44,6 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         switch (op) {
             case NULL_COERCE:
@@ -60,7 +58,6 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @Override
-
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
         if (op == OperatorTypeNode.OPTIONAL) {
             return convertQuestionAs(start);

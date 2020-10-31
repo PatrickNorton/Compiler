@@ -25,13 +25,11 @@ public final class InstanceConverter extends OperatorConverter {
     }
 
     @Override
-
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.BOOL};
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         return convertInner(start, false).getKey();
     }

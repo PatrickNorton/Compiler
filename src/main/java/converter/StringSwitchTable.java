@@ -31,7 +31,6 @@ public final class StringSwitchTable implements SwitchTable {
      * @return The list of bytes represented
      */
     @Override
-
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.STRING.byteValue());
@@ -45,7 +44,6 @@ public final class StringSwitchTable implements SwitchTable {
     }
 
     @Override
-
     public String strDisassembly() {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {

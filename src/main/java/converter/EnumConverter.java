@@ -20,7 +20,6 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));

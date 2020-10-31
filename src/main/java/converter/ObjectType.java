@@ -36,7 +36,6 @@ public final class ObjectType extends TypeObject {
     private static final FunctionInfo STR_INFO = new FunctionInfo(ArgumentInfo.of(), Builtins.STR);
 
     @Override
-
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
@@ -55,13 +54,11 @@ public final class ObjectType extends TypeObject {
     }
 
     @Override
-
     public String baseName() {
         return "object";
     }
 
     @Override
-
     public TypeObject typedefAs(String name) {
         return new ObjectType(name);
     }

@@ -21,7 +21,6 @@ public final class SliceConverter implements TestConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
         if (!node.getStart().isEmpty()) {

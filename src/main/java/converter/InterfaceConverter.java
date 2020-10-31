@@ -26,7 +26,6 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         this.genericOps.clear();
         this.genericAttrs.clear();

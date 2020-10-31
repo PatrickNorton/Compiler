@@ -15,7 +15,6 @@ public final class AssertConverter implements BaseConverter {
     }
 
     @Override
-
     public List<Byte> convert(int start) {
         // TODO: Debug vs release
         var bytes = new ArrayList<>(TestConverter.bytes(start, node.getAssertion(), info, 1));

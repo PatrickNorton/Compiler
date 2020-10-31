@@ -32,7 +32,6 @@ public final class BigSwitchTable implements SwitchTable {
      * @return The list of bytes represented
      */
     @Override
-
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.BIG.byteValue());
@@ -46,7 +45,6 @@ public final class BigSwitchTable implements SwitchTable {
     }
 
     @Override
-
     public String strDisassembly() {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {

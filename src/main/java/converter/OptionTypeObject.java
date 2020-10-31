@@ -42,13 +42,11 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     @Override
-
     public String baseName() {
         return "";
     }
 
     @Override
-
     public TypeObject typedefAs(String name) {
         return new OptionTypeObject(name, this.optionVal);
     }
@@ -130,7 +128,6 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     @Override
-
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         var base = new BaseType(optionVal);
         switch (value) {

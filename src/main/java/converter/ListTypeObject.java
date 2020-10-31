@@ -72,7 +72,6 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
     }
 
     @Override
-
     public String baseName() {
         return "";
     }
@@ -88,7 +87,6 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
     }
 
     @Override
-
     public TypeObject typedefAs(String name) {
         return new ListTypeObject(this, name);
     }
@@ -114,7 +112,6 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
     }
 
     @Override
-
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         if (this.values.size() == 1
                 && this.values.get(0) instanceof TemplateParam
