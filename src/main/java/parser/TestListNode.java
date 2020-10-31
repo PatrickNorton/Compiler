@@ -143,6 +143,7 @@ public class TestListNode implements BaseNode, Iterable<Pair<TestNode, String>> 
         }
 
         @Override
+
         public Pair<TestNode, String> next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
