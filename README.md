@@ -2,7 +2,7 @@
 
 This is a compiler for an as-yet-unnamed language.
 
-## Code examples
+## Syntax examples
 Hello, World!
 ```
 print("Hello, World!")
