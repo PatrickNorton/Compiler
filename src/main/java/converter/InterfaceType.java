@@ -6,6 +6,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -72,7 +73,12 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
 
     @Override
     public List<TypeObject> getSupers() {
-        return info.supers;
+        List<TypeObject> result = new ArrayList<>(info.supers.size());
+        for (var sup : info.supers) {
+            var resultant = generics.isEmpty() ? sup : sup.generifyWith(this, generics);
+            result.add(isConst ? resultant.makeConst() : resultant.makeMut());
+        }
+        return result;
     }
 
     @Override
