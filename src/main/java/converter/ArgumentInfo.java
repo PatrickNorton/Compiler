@@ -290,7 +290,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
     ) {
         var argGenerics = arg.getType().generifyAs(par, passedType);
         if (argGenerics.isEmpty()) {
-            if (OptionTypeObject.superWithOption(arg.getType(), passedType)) {
+            if (OptionTypeObject.needsMakeOption(arg.getType(), passedType)
+                    && OptionTypeObject.superWithOption(arg.getType(), passedType)) {
                 needsMakeOption.add(i);
                 return false;
             }
