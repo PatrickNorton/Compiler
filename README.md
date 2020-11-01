@@ -2,6 +2,24 @@
 
 This is a compiler for an as-yet-unnamed language.
 
+## Features
+
+* Const-correctness: Different attributes for different meanings
+  * No modifier: Immutable reference, immutable variable
+  * `mut`: Mutable reference, mutable variable
+  * `final`: Immutable reference, mutable variable
+  * `mref`: Mutable reference, immutable variable
+* `pubget` access level: Can access from anywhere, but only modify from within
+  the class
+* Python-style list, set, and dict comprehensions, with additional `while` 
+  clause
+* Rust-style `enum`s (called `union` here)
+* Properties &agrave; la Python
+* Generators/coroutines
+* Operator overloading
+* No semicolons, newline is the statement separator
+* 100% null-safe: Options use a `?` and are first-class
+
 ## Syntax examples
 Hello, World!
 ```
