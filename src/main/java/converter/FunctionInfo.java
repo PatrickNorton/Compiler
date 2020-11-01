@@ -173,6 +173,15 @@ public final class FunctionInfo {
     private static TypeObject[] properReturns(@NotNull TypeObject... returns) {
         if (returns.length == 1 && returns[0] instanceof ListTypeObject) {
             return ((ListTypeObject) returns[0]).toArray();
+        } else if (returns.length == 1
+                && returns[0] instanceof OptionTypeObject
+                && ((OptionTypeObject) returns[0]).getOptionVal() instanceof ListTypeObject) {
+            var arr = ((ListTypeObject) ((OptionTypeObject) returns[0]).getOptionVal()).toArray();
+            TypeObject[] result = new TypeObject[arr.length];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = TypeObject.optional(arr[i]);
+            }
+            return result;
         } else {
             return returns;
         }

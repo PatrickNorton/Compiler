@@ -134,7 +134,11 @@ public final class TemplateParam extends NameableType {
     @Override
     public TypeObject generifyWith(TypeObject parent, List<TypeObject> values) {
         if (this.parent.sameBaseType(parent)) {
-            return values.get(index);
+            if (isVararg && !(values.get(index) instanceof ListTypeObject)) {
+                return TypeObject.list(values.get(index));
+            } else {
+                return values.get(index);
+            }
         } else {
             return this;
         }

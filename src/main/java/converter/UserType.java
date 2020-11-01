@@ -222,7 +222,8 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             if (generic instanceof TemplateParam) {
                 var template = (TemplateParam) generic;
                 if (template.getParent().sameBaseType(parent)) {
-                    result.add(values.get(template.getIndex()));
+                    var value = values.get(template.getIndex());
+                    result.add(template.isVararg() ? TypeObject.list(value) : value);
                 } else {
                     result.add(template);
                 }
