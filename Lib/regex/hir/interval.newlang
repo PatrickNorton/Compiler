@@ -4,7 +4,8 @@ class IntervalSet[I[Interval]] {
     list[I] ranges
 
     public operator new(Iterable[I] items = []) {
-        self.ranges = list(items)
+        # FIXME: Type inference for local types
+        # self.ranges = list(items)
     }
 
     public mut method push(I value) {
@@ -50,7 +51,7 @@ class IntervalSet[I[Interval]] {
         mut var a = ita.next()!!
         mut var b = itb.next()!!
         while true {
-            if self.ranges[a].intersect(other.ranges[b])? as ab {
+            if (self.ranges[a] | other.ranges[b])? as ab {
                 self.ranges.push(ab)
             }
             Iterable[int] it
@@ -240,8 +241,8 @@ class IntervalSet[I[Interval]] {
 }
 
 interface Interval[I[Bound]] {
-    mut I upper
-    mut I lower
+    public mut I upper
+    public mut I lower
     public method caseFoldSimple(list[cls] value)
     public operator new(I lower, I upper)
 
