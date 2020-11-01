@@ -23,6 +23,10 @@ public final class FunctionInfoType extends TypeObject {
         return this.equals(other);
     }
 
+    public FunctionInfo getInfo() {
+        return info;
+    }
+
     @NotNull
     @Contract(pure = true)
     @Override

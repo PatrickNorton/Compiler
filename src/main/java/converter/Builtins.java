@@ -5,6 +5,7 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +55,12 @@ public final class Builtins {
 
     public static final InterfaceType ITERABLE = new InterfaceType("Iterable", GenericInfo.of(ITERABLE_PARAM));
 
+    private static final TemplateParam ITERATOR_PARAM = new TemplateParam("K", 0, true);
+
+    public static final InterfaceType ITERATOR = new InterfaceType(
+            "Iterator", GenericInfo.of(ITERATOR_PARAM), List.of(ITERABLE.generify(ITERATOR_PARAM))
+    );
+
     public static final StdTypeObject INT = new StdTypeObject("int");
 
     public static final StdTypeObject STR = new StdTypeObject("str");
@@ -64,7 +71,7 @@ public final class Builtins {
 
     public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT));
 
-    public static final StdTypeObject RANGE = new StdTypeObject("range");
+    public static final StdTypeObject RANGE = new StdTypeObject("range", List.of(ITERABLE.generify(INT)));
 
     public static final StdTypeObject BYTES = new StdTypeObject("bytes", List.of(ITERABLE.generify(INT)));
 
@@ -82,7 +89,13 @@ public final class Builtins {
 
     public static final LangObject INPUT = new LangInstance(INPUT_INFO.toCallable());
 
-    public static final LangObject ITER = new LangInstance(CALLABLE);
+    private static final TemplateParam ITER_PARAM = new TemplateParam("K", 0, true);
+
+    private static final FunctionInfo ITER_INFO = new FunctionInfo(
+            "iter", ArgumentInfo.of(ITERABLE.generify(ITER_PARAM)), ITERATOR.generify(ITER_PARAM).makeMut()
+    );
+
+    public static final LangObject ITER = new LangInstance(ITER_INFO.toCallable());
 
     private static final FunctionInfo REPR_INFO = new FunctionInfo("repr", ArgumentInfo.of(OBJECT), STR);
 
@@ -439,6 +452,14 @@ public final class Builtins {
     }
 
     static {
+        var nextFnInfo = new FunctionInfo("next", ArgumentInfo.of(), TypeObject.optional(ITERATOR_PARAM));
+        var iterInfo = AttributeInfo.method(nextFnInfo);
+
+        ITERATOR.setAttributes(Map.of("next", iterInfo), Collections.emptySet());
+        ITERATOR.seal();
+    }
+
+    static {
         var notImplConstructor = MethodInfo.of();
         NOT_IMPLEMENTED.setOperators(Map.of(OpSpTypeNode.NEW, notImplConstructor));
         NOT_IMPLEMENTED.seal();
@@ -461,6 +482,10 @@ public final class Builtins {
         CONTEXT_PARAM.setParent(CONTEXT);
 
         ITERABLE_PARAM.setParent(ITERABLE);
+
+        ITERATOR_PARAM.setParent(ITERATOR);
+
+        ITER_PARAM.setParent(ITER_INFO.toCallable());
 
         CALLABLE_ARGS.setParent(CALLABLE);
         CALLABLE_RETURN.setParent(CALLABLE);
@@ -529,6 +554,7 @@ public final class Builtins {
             Map.entry("bytes", BYTES),
             Map.entry("enumerate", ENUMERATE),
             Map.entry("NotImplemented", NOT_IMPLEMENTED),
+            Map.entry("Iterator", ITERATOR),
             Map.entry("null", NULL)
     );
 
@@ -545,6 +571,16 @@ public final class Builtins {
         } else {
             return Optional.of(new BuiltinConstant(index));
         }
+    }
+
+    public static Optional<FunctionInfo> functionOf(String name) {
+        var builtin = BUILTIN_MAP.get(name);
+        if (builtin == null) {
+            return Optional.empty();
+        }
+        return builtin instanceof FunctionInfoType
+                ? Optional.of(((FunctionInfoType) builtin).getInfo())
+                : Optional.empty();
     }
 
     private static final LangConstant STR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(STR));
