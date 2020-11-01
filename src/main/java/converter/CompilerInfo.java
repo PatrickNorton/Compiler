@@ -128,7 +128,7 @@ public final class CompilerInfo {
     @NotNull
     public Optional<FunctionInfo> fnInfo(String name) {
         var index = fnIndices.get(name);
-        return index == null ? Optional.empty() : Optional.of(GLOBAL_INFO.getFunction(index).getInfo());
+        return index == null ? Builtins.functionOf(name) : Optional.of(GLOBAL_INFO.getFunction(index).getInfo());
     }
 
     public Optional<Function> getFn(String name) {
