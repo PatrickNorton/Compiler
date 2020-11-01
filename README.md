@@ -44,6 +44,8 @@ For more examples of code, look anywhere in `./Lib/*`, especially
 `./Lib/HelloWorld.newlang`
 
 ## To run
+This will compile & run the contents of `HelloWorld.newlang`.
+
 This assumes you have Java >= 12 and Cargo installed, 
 and has only been tested on MacOS.
 1. Clone this repo and `PatrickNorton/rust_runtime`
@@ -63,6 +65,7 @@ This is by no means a complete list.
 * Some inheritance with function types
 * Exceptions
 * Non-top-level imports/exports
+* Importing whole modules
 * Most of the stdlib
 * Empty list literals in some contexts
 * Generic inference in type constructors
