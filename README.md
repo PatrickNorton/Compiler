@@ -2,6 +2,10 @@
 
 This is a compiler for an as-yet-unnamed language.
 
+## Links
+* [Compiler](https://github.com/PatrickNorton/Compiler/tree/for-colleges)
+* [Runtime](https://github.com/PatrickNorton/rust-runtime/tree/for-colleges)
+
 ## What this repo does
 
 This compiler takes code and transforms it into a bytecode file of my own 
