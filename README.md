@@ -19,6 +19,7 @@ This is a compiler for an as-yet-unnamed language.
 * Operator overloading
 * No semicolons, newline is the statement separator
 * 100% null-safe: Options use a `?` and are first-class
+* Raw operators: `\+(1, 2, 3)` is equivalent to `1 + 2 + 3`
 
 ## Syntax examples
 Hello, World!
@@ -29,9 +30,10 @@ print("Hello, World!")
 Fibonacci function
 ```
 func fibonacci(int number) -> int {
-    mut int a = 0
+    mut int a = 0  # mut means that this variable can change
     mut int b = 1
-    dotimes number {
+    dotimes number {  # Dotimes loop: repeat n times
+        # Destructured assignment: assigns to both simultaneously
         a, b = b, a + b
     }
     return a
@@ -54,7 +56,8 @@ func max(list[int] values) -> int {
 Summing function
 ```
 func sum(Iterable[int] values) -> int {
-    return \+(*values)  # Does not yet compile
+    # Raw operators: applies + to each argument
+    return \+(*values)  # Does not yet compile (iterable expansion)
 }
 ```
 
