@@ -41,10 +41,10 @@ func sum(Iterable[int] values) -> int {
 ```
 
 For more examples of code, look anywhere in `./Lib/*`, especially
-`./Lib/HelloWorld.newlang`
+`./Lib/Sample.newlang`
 
 ## To run
-This will compile & run the contents of `HelloWorld.newlang`.
+This will compile & run the contents of `Sample.newlang`.
 
 This assumes you have Java >= 12 and Cargo installed, 
 and has only been tested on MacOS.
@@ -52,9 +52,9 @@ and has only been tested on MacOS.
 2. `cd /path/to/this/repo`
 3. `cd ./src`
 4. `javac ./main/java/parser/Compiler.java`
-5. `java main.java.parser.Compiler ../Lib/HelloWorld.newlang`
+5. `java main.java.parser.Compiler ../Lib/Sample.newlang`
 6. `cd /path/to/runtime/repo`
-7. `cargo run -- /path/to/this/repo/Lib/__ncache__/HelloWorld.nbyte`
+7. `cargo run -- /path/to/this/repo/Lib/__ncache__/Sample.nbyte`
 
 ## What doesn't work yet
 
