@@ -54,9 +54,9 @@ class IntervalSet[I[Interval]] {
             if (self.ranges[a] | other.ranges[b])? as ab {
                 self.ranges.push(ab)
             }
-            Iterable[int] it
+            Iterator[int] it
             int aorb
-            if self.ranges[a].upper < other.ranges[b].upper {
+            if int(self.ranges[a].upper) < int(other.ranges[b].upper) {
                 it = ita
                 aorb = a
             } else {
