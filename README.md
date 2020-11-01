@@ -2,6 +2,15 @@
 
 This is a compiler for an as-yet-unnamed language.
 
+## What this repo does
+
+This compiler takes code and transforms it into a bytecode file of my own 
+creation.
+Syntax for the bytecode was _vaguely_ based on that of Python and Java, but 
+is mostly my own. 
+The sister repo `PatrickNorton/rust-runtime` implements the execution
+of said bytecode.
+
 ## Features
 
 * Const-correctness: Different attributes for different meanings
@@ -69,7 +78,7 @@ This will compile & run the contents of `Sample.newlang`.
 
 This assumes you have Java >= 12 and Cargo installed, 
 and has only been tested on MacOS.
-1. Clone this repo and `PatrickNorton/rust_runtime`
+1. Clone this repo and `PatrickNorton/rust-runtime`
 2. `cd /path/to/this/repo`
 3. `cd ./src`
 4. `javac ./main/java/parser/Compiler.java`
