@@ -21,38 +21,45 @@ public final class DeleteConverter implements BaseConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
         var deleted = node.getDeleted();
         if (deleted instanceof IndexNode) {
-            var delIndex = (IndexNode) deleted;
-            var varConverter = TestConverter.of(info, delIndex.getVar(), 1);
-            List<TestConverter> indexConverters = new ArrayList<>();
-            for (var index : delIndex.getIndices()) {
-                indexConverters.add(TestConverter.of(info, index, 1));
-            }
-            checkAccess(varConverter, indexConverters);
-            bytes.addAll(varConverter.convert(start + bytes.size()));
-            for (var converter : indexConverters) {
-                bytes.addAll(converter.convert(start + bytes.size()));
-            }
-            if (indexConverters.size() == 1) {
-                bytes.add(Bytecode.DEL_SUBSCRIPT.value);
-            } else {
-                bytes.add(Bytecode.CALL_OP.value);
-                bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.DEL_ATTR.ordinal()));
-                bytes.addAll(Util.shortToBytes((short) indexConverters.size()));
-            }
+            return convertIndex(start, (IndexNode) deleted);
         } else if (deleted instanceof VariableNode) {  // TODO: Make variable inaccessible
-            var delVar = (VariableNode) deleted;
-            var index = info.varIndex(delVar);
-            bytes.add(Bytecode.LOAD_NULL.value);
-            bytes.add(Bytecode.STORE.value);  // Drops value currently stored
-            bytes.addAll(Util.shortToBytes(index));
+            return convertVariable((VariableNode) deleted);
         } else {
             throw CompilerException.of(
                     "'del' statement can only be used on a variable or an indexed statement", node
             );
         }
+    }
+
+    private List<Byte> convertIndex(int start, IndexNode delIndex) {
+        var varConverter = TestConverter.of(info, delIndex.getVar(), 1);
+        List<TestConverter> indexConverters = new ArrayList<>();
+        for (var index : delIndex.getIndices()) {
+            indexConverters.add(TestConverter.of(info, index, 1));
+        }
+        checkAccess(varConverter, indexConverters);
+        List<Byte> bytes = new ArrayList<>(varConverter.convert(start));
+        for (var converter : indexConverters) {
+            bytes.addAll(converter.convert(start + bytes.size()));
+        }
+        if (indexConverters.size() == 1) {
+            bytes.add(Bytecode.DEL_SUBSCRIPT.value);
+        } else {
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.DEL_ATTR.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) indexConverters.size()));
+        }
+        return bytes;
+    }
+
+    private List<Byte> convertVariable(VariableNode delVar) {
+        List<Byte> bytes = new ArrayList<>();
+        var index = info.varIndex(delVar);
+        bytes.add(Bytecode.LOAD_NULL.value);
+        bytes.add(Bytecode.STORE.value);  // Drops value currently stored
+        bytes.addAll(Util.shortToBytes(index));
         return bytes;
     }
 
@@ -73,21 +80,25 @@ public final class DeleteConverter implements BaseConverter {
             }
             var args = tempArgs.toArray(new Argument[0]);
             if (!opInfo.matches(args)) {
-                if (args.length == 1) {
-                    throw CompilerException.format(
-                            "operator del[] on type '%s' does not accept '%s' as an index type",
-                            node, retType.name(), args[0].getType().name()
-                    );
-                } else {
-                    var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
-                    var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
-                    var expectedStr = String.join(", ", nameArr);
-                    throw CompilerException.format(
-                            "operator del[] on type '%s' expected types [%s], got [%s]",
-                            node, argsString, expectedStr
-                    );
-                }
+                throw typeMismatchError(args, retType, opInfo);
             }
+        }
+    }
+
+    private CompilerException typeMismatchError(Argument[] args, TypeObject retType, FunctionInfo opInfo) {
+        if (args.length == 1) {
+            throw CompilerException.format(
+                    "operator del[] on type '%s' does not accept '%s' as an index type",
+                    node, retType.name(), args[0].getType().name()
+            );
+        } else {
+            var argsString = String.join(", ", TypeObject.name(Argument.typesOf(args)));
+            var nameArr = TypeObject.name(Argument.typesOf(opInfo.getArgs().getNormalArgs()));
+            var expectedStr = String.join(", ", nameArr);
+            throw CompilerException.format(
+                    "operator del[] on type '%s' expected types [%s], got [%s]",
+                    node, argsString, expectedStr
+            );
         }
     }
 }

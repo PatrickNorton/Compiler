@@ -55,10 +55,26 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     @Override
     public TypeObject[] returnType() {
         var cases = node.getCases();
+        var types = getUnmergedTypes();
+        TypeObject[] finalTypes = new TypeObject[retCount];
+        for (int i = 0; i < retCount; i++) {
+            TypeObject[] posArray = new TypeObject[cases.length];
+            for (int j = 0; j < cases.length; j++) {
+                posArray[j] = types[j][i];
+            }
+            finalTypes[i] = TypeObject.union(posArray);
+        }
+        return finalTypes;
+    }
+
+    private TypeObject[][] getUnmergedTypes() {
+        var cases = node.getCases();
         var switchRet = TestConverter.returnType(node.getSwitched(), info, 1)[0];
         TypeObject[][] types = new TypeObject[cases.length][retCount];
         for (int i = 0; i < cases.length; i++) {
-            assert cases[i].isArrow();
+            if (!cases[i].isArrow()) {
+                throw CompilerException.of("Switch with returns must be entirely arrows", cases[i]);
+            }
             var hasAs = !cases[i].getAs().isEmpty();
             if (hasAs) {
                 info.addStackFrame();
@@ -76,15 +92,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 info.removeStackFrame();
             }
         }
-        TypeObject[] finalTypes = new TypeObject[retCount];
-        for (int i = 0; i < retCount; i++) {
-            TypeObject[] posArray = new TypeObject[cases.length];
-            for (int j = 0; j < cases.length; j++) {
-                posArray[j] = types[j][i];
-            }
-            finalTypes[i] = TypeObject.union(posArray);
-        }
-        return finalTypes;
+        return types;
     }
 
     private void addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes, TypeObject[] retTypes) {
