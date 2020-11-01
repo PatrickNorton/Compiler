@@ -2,16 +2,19 @@ package main.java.converter;
 
 import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 
 public final class ArgumentInfo implements Iterable<Argument> {
@@ -195,13 +198,34 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
     }
 
-    public Optional<Map<Integer, TypeObject>> generifyArgs(@NotNull FunctionInfo parent, Argument... args) {
+    /**
+     * Computes the generics necessary for the given parameters to call the
+     * function.
+     * <p>
+     *     This returns two things: First, a {@code Map} for use in {@link
+     *     TypeObject#generifyWith(TypeObject, List)}, and a {@code Set}
+     *     containing the argument indices which will require a {@link
+     *     Bytecode#MAKE_OPTION} before passed.
+     * </p>
+     *
+     * @param parent The parent info to generify with (should be the case that
+     *               {@code parent.getArgs() == this}
+     * @param args The arguments passed to the function
+     * @return The values, or {@link Optional#empty()} if {@code
+     *         !this.matches(args)}
+     */
+    public Optional<Pair<Map<Integer, TypeObject>, Set<Integer>>> generifyArgs(
+            @NotNull FunctionInfo parent, Argument... args
+    ) {
         var par = parent.toCallable();
         var newArgs = expandTuples(args);
         if (size() == 0) {
-            return newArgs.length == 0 ? Optional.of(Collections.emptyMap()) : Optional.empty();
+            return newArgs.length == 0
+                    ? Optional.of(Pair.of(Collections.emptyMap(), Collections.emptySet()))
+                    : Optional.empty();
         }
         Map<Integer, TypeObject> result = new HashMap<>();
+        Set<Integer> needsMakeOption = new HashSet<>();
         Map<String, TypeObject> keywordMap = initKeywords(newArgs);
         for (var arg : newArgs) {
             if (!arg.getName().isEmpty()) {
@@ -217,16 +241,16 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 argNo++;
             }
             var passedArg = newArgs[argNo++];
-            var argGenerics = arg.getType().generifyAs(par, passedArg.getType());
-            if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+            var passedType = passedArg.getType();
+            if (update(argNo, par, result, needsMakeOption, arg, passedType)) {
                 return Optional.empty();
             }
         }
         for (var arg : normalArgs) {
             var name = arg.getName();
             if (keywordMap.containsKey(name)) {
-                var argGenerics = arg.getType().generifyAs(par, keywordMap.get(name));
-                if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                var passedType = keywordMap.get(name);
+                if (update(argNo, par, result, needsMakeOption, arg, passedType)) {
                     return Optional.empty();
                 }
             } else {
@@ -240,23 +264,46 @@ public final class ArgumentInfo implements Iterable<Argument> {
                     }
                 }
                 var passedArg = newArgs[argNo++];
-                var argGenerics = arg.getType().generifyAs(par, passedArg.getType());
-                if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                var passedType = passedArg.getType();
+                if (update(argNo, par, result, needsMakeOption, arg, passedType)) {
                     return Optional.empty();
                 }
             }
         }
         for (var arg : keywordArgs) {
             if (keywordMap.containsKey(arg.getName())) {
-                var argGenerics = arg.getType().generifyAs(par, keywordMap.get(arg.getName()));
-                if (argGenerics.isEmpty() || TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result)) {
+                var passedType = keywordMap.get(arg.getName());
+                if (update(argNo, par, result, needsMakeOption, arg, passedType)) {
                     return Optional.empty();
                 }
             } else {
                 return Optional.empty();  // TODO: Default values
             }
         }
-        return argNo + keywordMap.size() == newArgs.length ? Optional.of(result) : Optional.empty();
+        return argNo + keywordMap.size() == newArgs.length
+                ? Optional.of(Pair.of(result, needsMakeOption)) : Optional.empty();
+    }
+
+    public static boolean update(
+            int i, TypeObject par, Map<Integer, TypeObject> result,
+            Set<Integer> needsMakeOption, Argument arg, TypeObject passedType
+    ) {
+        var argGenerics = arg.getType().generifyAs(par, passedType);
+        if (argGenerics.isEmpty()) {
+            if (OptionTypeObject.superWithOption(arg.getType(), passedType)) {
+                needsMakeOption.add(i);
+                return false;
+            }
+            var optionGenerics = arg.getType().generifyAs(par, TypeObject.optional(passedType));
+            if (optionGenerics.isEmpty() || TypeObject.addGenericsToMap(optionGenerics.orElseThrow(), result)) {
+                return true;
+            } else {
+                needsMakeOption.add(i);
+                return false;
+            }
+        } else {
+            return TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result);
+        }
     }
 
     @NotNull
@@ -305,34 +352,38 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var joiner = new StringJoiner(", ", "(", ")");
         if (positionArgs.length > 0) {
             for (var arg : positionArgs) {
-                if (arg.isVararg()) {
-                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
-                } else {
-                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
-                }
+                joiner.add(argStr(arg));
             }
             joiner.add("/");
         }
         if (normalArgs.length > 0) {
             for (var arg : normalArgs) {
-                if (arg.isVararg()) {
-                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
-                } else {
-                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
-                }
+                joiner.add(argStr(arg));
             }
         }
         if (keywordArgs.length > 0) {
             joiner.add("*");
             for (var arg : keywordArgs) {
-                if (arg.isVararg()) {
-                    joiner.add(String.format("*%s %s", arg.getType().name(), arg.getName()));
-                } else {
-                    joiner.add(String.format("%s %s", arg.getType().name(), arg.getName()));
-                }
+                joiner.add(argStr(arg));
             }
         }
         return joiner.toString();
+    }
+
+    private String argStr(Argument arg) {
+        if (arg.getName().isBlank()) {
+            if (arg.isVararg()) {
+                return "*" + arg.getType().name();
+            } else {
+                return arg.getType().name();
+            }
+        } else {
+            if (arg.isVararg()) {
+                return String.format("*%s %s", arg.getType().name(), arg.getName());
+            } else {
+                return String.format("%s %s", arg.getType().name(), arg.getName());
+            }
+        }
     }
 
     private class ArgIterator implements Iterator<Argument> {

@@ -1,11 +1,13 @@
 package main.java.converter;
 
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class FunctionInfo {
     private final String name;
@@ -164,7 +166,7 @@ public final class FunctionInfo {
         }
     }
 
-    public Optional<Map<Integer, TypeObject>> generifyArgs(Argument... args) {
+    public Optional<Pair<Map<Integer, TypeObject>, Set<Integer>>> generifyArgs(Argument... args) {
         return arguments.generifyArgs(this, args);
     }
 
