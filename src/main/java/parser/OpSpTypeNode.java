@@ -65,6 +65,7 @@ public enum OpSpTypeNode {
     MISSING("missing"),
     DEL("del"),
     DEL_ATTR("del[]"),
+    DEL_SLICE("del[:]"),
     STR("str"),
     REPR("repr"),
     BOOL("bool"),
