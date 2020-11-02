@@ -29,8 +29,9 @@ generator func chain(*Iterable[T] values) -> T {
 
 generic T, U
 generator func compress(Iterable[T] data, Iterable[U] selectors) -> T {
-    # FIXME: Comprehensions with multiple variables
-    # yield from (i for T i, U j in zip(data, selectors) if j)
+    for T i, U j in data, selectors {
+        yield i if j
+    }
 }
 
 #|  FIXME: Iterators
