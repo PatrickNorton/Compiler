@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.DeleteStatementNode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.SliceNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +24,12 @@ public final class DeleteConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         var deleted = node.getDeleted();
         if (deleted instanceof IndexNode) {
-            return convertIndex(start, (IndexNode) deleted);
+            var del = (IndexNode) deleted;
+            if (del.getIndices().length == 1 && del.getIndices()[0] instanceof SliceNode) {
+                return convertSlice(start, del);
+            } else {
+                return convertIndex(start, del);
+            }
         } else if (deleted instanceof VariableNode) {  // TODO: Make variable inaccessible
             return convertVariable((VariableNode) deleted);
         } else {
@@ -51,6 +57,30 @@ public final class DeleteConverter implements BaseConverter {
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.DEL_ATTR.ordinal()));
             bytes.addAll(Util.shortToBytes((short) indexConverters.size()));
         }
+        return bytes;
+    }
+
+    private List<Byte> convertSlice(int start, IndexNode delIndex) {
+        assert delIndex.getIndices().length == 1 && delIndex.getIndices()[0] instanceof SliceNode;
+        var varConverter = TestConverter.of(info, delIndex.getVar(), 1);
+        var sliceConverter = new SliceConverter(info, (SliceNode) delIndex.getIndices()[0]);
+        var varType = varConverter.returnType()[0];
+        var sliceInfo = varType.operatorInfo(OpSpTypeNode.DEL_SLICE, info).orElseThrow(
+                () -> CompilerException.format(
+                        "Object of type '%s' has no operator del[:]", delIndex.getVar(), varType.name()
+                )
+        );
+        if (!sliceInfo.matches(new Argument("", Builtins.SLICE))) {
+            throw CompilerException.format(
+                    "Cannot call '%s'.operator del[:] (operator del[:] should always be callable with a slice)",
+                    delIndex.getVar(), varType.name()
+            );
+        }
+        List<Byte> bytes = new ArrayList<>(varConverter.convert(start));
+        bytes.addAll(sliceConverter.convert(start + bytes.size()));
+        bytes.add(Bytecode.CALL_OP.value);
+        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.DEL_SLICE.ordinal()));
+        bytes.addAll(Util.shortToBytes((short) 1));
         return bytes;
     }
 
