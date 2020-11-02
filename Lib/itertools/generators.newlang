@@ -67,36 +67,34 @@ generator func filterNotEqual(T sentinel, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence if i != sentinel)
 }
 
-#|  FIXME: Iterators
 generic T
 generator func firstN(int count, Iterable[T] sequence) -> T {
     var iterator = iter(sequence)
-    try {
-        dotimes count {
-            yield iterator.next()
+    dotimes count {
+        if iterator.next()? as n {
+            yield n
+        } else {
+            break
         }
-    } except StopIteration {}
+    }
 }
-|#
 
 generic T, U
 generator func map(Callable[T, [U]] function, Iterable[T] sequence) -> U {
     yield from (function(i) for T i in sequence)
 }
 
-#|  FIXME: Iterators
 generic T
 generator func pairs(Iterable[T] values) -> T, T {
     var iter = iter(values)
-    try {
-        while true {
-            T v1 = iter.next()
-            T v2 = iter.next()
+    while iter.next()? as v1 {
+        if iter.next()? as v2 {
             yield v1, v2
+        } else {
+            break
         }
-    } except StopIteration {}
+    }
 }
-|#
 
 generic T
 generator func takeWhile(Callable[T, [bool]] predicate, Iterable[T] sequence) -> T {
