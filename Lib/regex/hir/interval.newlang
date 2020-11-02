@@ -1,3 +1,5 @@
+from itertools import pairs
+
 export IntervalSet, Interval
 
 class IntervalSet[I[Interval]] {
@@ -95,13 +97,13 @@ class IntervalSet[I[Interval]] {
             # Basically, the easy cases are when neither range overlaps with
             # each other. If the `b` range is less than our current `a`
             # range, then we can skip it and move on.
-            if other.ranges[b].upper < self.ranges[a].lower {
+            if int(other.ranges[b].upper) < int(self.ranges[a].lower) {
                 b++
                 continue
             }
             # ... similarly for the `a` range. If it's less than the smallest
             # `b` range, then we can add it as-is.
-            if self.ranges[a].upper < other.ranges[b].lower {
+            if int(self.ranges[a].upper) < int(other.ranges[b].lower) {
                 self.ranges.push(self.ranges[a])
                 a++
                 continue
@@ -124,8 +126,8 @@ class IntervalSet[I[Interval]] {
             while b < other.ranges.length and not r.isIntersectionEmpty(other.ranges[b]) {
                 var oldRange = r
                 var diff = r.difference(other.ranges[b])
-                if diff.first? as range1 {
-                    if diff.second? as range2 {
+                if diff.0? as range1 {
+                    if diff.1? as range2 {
                         self.ranges.push(range1)
                         r = range2
                     } else {
@@ -173,9 +175,9 @@ class IntervalSet[I[Interval]] {
 
     public mut method negate() {
         if not self.ranges {
-            var min = I.minValue
-            var max = I.maxValue
-            self.ranges.push(I(min, max))
+            var min = cls.I.minValue
+            var max = cls.I.maxValue
+            self.ranges.push(cls.I(min, max))
             return
         }
 
@@ -187,20 +189,21 @@ class IntervalSet[I[Interval]] {
 
         # We do checked arithmetic below because of the canonical ordering
         # invariant.
-        if self.ranges[0].lower > I.minValue {
-            var upper = self.ranges[0].lower().decrement()
-            self.ranges.push(I(I.minValue, upper))
+        if int(self.ranges[0].lower) > int(cls.I.minValue) {
+            var upper = self.ranges[0].lower.decrement()
+            self.ranges.push(cls.I(cls.I.minValue, upper))
         }
         for var i in [1:drainEnd] {
-            var lower = self.ranges[i - 1].upper().increment()
-            var upper = self.ranges[i].lower().decrement()
-            self.ranges.push(I(lower, upper))
+            var lower = self.ranges[i - 1].upper.increment()
+            var upper = self.ranges[i].lower.decrement()
+            self.ranges.push(cls.I(lower, upper))
         }
-        if self.ranges[drainEnd - 1].upper() < I.maxValue {
-            var lower = self.ranges[drainEnd - 1].upper().increment()
-            self.ranges.push(I(lower, I.maxValue))
+        if int(self.ranges[drainEnd - 1].upper) < int(cls.I.maxValue) {
+            var lower = self.ranges[drainEnd - 1].upper.increment()
+            self.ranges.push(cls.I(lower, cls.I.maxValue))
         }
-        del self.ranges[0:drainEnd]
+        mut var ranges = self.ranges  # FIXME
+        del ranges[0:drainEnd]
     }
 
     private mut method canonicalize() {
@@ -229,11 +232,11 @@ class IntervalSet[I[Interval]] {
 
     # Returns true if and only if this class is in a canonical ordering.
     private method isCanonical() -> bool {
-        for pair in self.ranges.windows(2) {
-            if pair[0] >= pair[1] {
+        for var a, var b in pairs(self.ranges) {
+            if int(a) >= int(b) {
                 return false
             }
-            if pair[0].isContiguous(pair[1]) {
+            if a.isContiguous(b) {
                 return false
             }
         }
@@ -242,6 +245,9 @@ class IntervalSet[I[Interval]] {
 }
 
 interface Interval[I[Bound]] {
+    public static I minValue
+    public static I maxValue
+
     public mut I upper
     public mut I lower
     public method caseFoldSimple(list[cls] value)
