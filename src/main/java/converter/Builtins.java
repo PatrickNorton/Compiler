@@ -307,17 +307,20 @@ public final class Builtins {
 
     static {  // Set list operators
         var listGen = LIST.generify(LIST_PARAM);
-        var listMap = Map.of(
-                OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(ITERABLE.generify(LIST_PARAM))),
-                OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), LIST_PARAM),
-                OpSpTypeNode.SET_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT, LIST_PARAM)),
-                OpSpTypeNode.DEL_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT)),
-                OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), listGen.makeMut()),
-                OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(LIST_PARAM), BOOL),
-                OpSpTypeNode.REVERSED, MethodInfo.of(listGen),
-                OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(listGen), listGen.makeMut()),
-                OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), listGen.makeMut()),
-                OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(LIST_PARAM))
+        var iterGen = ITERABLE.generify(LIST_PARAM);
+        var listMap = Map.ofEntries(
+                Map.entry(OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(iterGen))),
+                Map.entry(OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), LIST_PARAM)),
+                Map.entry(OpSpTypeNode.SET_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT, LIST_PARAM))),
+                Map.entry(OpSpTypeNode.DEL_ATTR, MethodInfo.ofMut(ArgumentInfo.of(INT))),
+                Map.entry(OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), listGen.makeMut())),
+                Map.entry(OpSpTypeNode.SET_SLICE, MethodInfo.ofMut(ArgumentInfo.of(SLICE, iterGen))),
+                Map.entry(OpSpTypeNode.DEL_SLICE, MethodInfo.ofMut(ArgumentInfo.of(SLICE))),
+                Map.entry(OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(LIST_PARAM), BOOL)),
+                Map.entry(OpSpTypeNode.REVERSED, MethodInfo.of(listGen)),
+                Map.entry(OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(listGen), listGen.makeMut())),
+                Map.entry(OpSpTypeNode.MULTIPLY, MethodInfo.of(ArgumentInfo.of(INT), listGen.makeMut())),
+                Map.entry(OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(LIST_PARAM)))
         );
         LIST.setOperators(listMap);
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(LIST_PARAM));
@@ -328,7 +331,7 @@ public final class Builtins {
         var countInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM), INT);
         var clearInfo = new FunctionInfo();
         var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
-        var addAllInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(LIST_PARAM)));
+        var addAllInfo = new FunctionInfo(ArgumentInfo.of(iterGen));
         var indexOfInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM),TypeObject.optional(INT));
         var listAttrs = Map.ofEntries(
                 Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
