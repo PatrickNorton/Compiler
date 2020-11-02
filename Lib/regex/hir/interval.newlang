@@ -1,7 +1,7 @@
 export IntervalSet, Interval
 
 class IntervalSet[I[Interval]] {
-    list[I] ranges
+    final list[I] ranges
 
     public operator new(Iterable[I] items = []) {
         # FIXME: Type inference for local types
@@ -69,7 +69,8 @@ class IntervalSet[I[Interval]] {
                 break
             }
         }
-        del self.ranges[0:drainEnd]
+        mut var ranges = self.ranges  # FIXME: Delete on dotted variable
+        # del ranges[0:drainEnd]  DOUBLE FIXME: operator del[:]
     }
 
     public mut method difference(IntervalSet[I] other) {
