@@ -161,7 +161,7 @@ class IntervalSet[I[Interval]] {
             self.ranges.push(r)
             a++
         }
-        del self.ranges[0:drain_end]
+        del self.ranges[0:drainEnd]
     }
 
     public mut method symmetricDifference(IntervalSet[I] other) {
@@ -196,8 +196,8 @@ class IntervalSet[I[Interval]] {
             var upper = self.ranges[i].lower().decrement()
             self.ranges.push(I(lower, upper))
         }
-        if self.ranges[drain_end - 1].upper() < I.maxValue {
-            var lower = self.ranges[drain_end - 1].upper().increment()
+        if self.ranges[drainEnd - 1].upper() < I.maxValue {
+            var lower = self.ranges[drainEnd - 1].upper().increment()
             self.ranges.push(I(lower, I.maxValue))
         }
         del self.ranges[0:drainEnd]
