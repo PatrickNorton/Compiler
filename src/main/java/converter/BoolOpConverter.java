@@ -154,7 +154,7 @@ public final class BoolOpConverter extends OperatorConverter {
             return Optional.empty();
         }
         var values = boolValues(args);
-        if (values.isPresent()) {
+        if (values.isPresent() && values.orElseThrow().length == 2) {
             var booleans = values.orElseThrow();
             return Optional.of(LangConstant.of(booleans[0] ^ booleans[1]));
         }
