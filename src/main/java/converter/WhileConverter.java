@@ -36,6 +36,9 @@ public final class WhileConverter extends LoopConverter {
         }
         var body = BaseConverter.bytes(start + bytes.size(), node.getBody(), info);
         bytes.addAll(body);
+        if (hasAs) {
+            info.removeStackFrame();
+        }
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addContinue(start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
