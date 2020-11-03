@@ -42,8 +42,9 @@ public final class BoolOpConverter extends OperatorConverter {
                 return boolOrConst();
             case BOOL_XOR:
                 return boolXorConst();
+            default:
+                throw CompilerInternalError.format("Unknown boolean operator: %s", lineInfo, op);
         }
-        return Optional.empty();
     }
 
     @Override
