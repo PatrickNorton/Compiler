@@ -456,9 +456,11 @@ public final class Builtins {
 
     static {
         var nextFnInfo = new FunctionInfo("next", ArgumentInfo.of(), TypeObject.optional(ITERATOR_PARAM));
-        var iterInfo = AttributeInfo.method(nextFnInfo);
+        var nextInfo = AttributeInfo.method(nextFnInfo);
+        var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERATOR_PARAM));
 
-        ITERATOR.setAttributes(Map.of("next", iterInfo), Collections.emptySet());
+        ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
+        ITERATOR.setAttributes(Map.of("next", nextInfo), Collections.emptySet());
         ITERATOR.seal();
     }
 
