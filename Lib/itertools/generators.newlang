@@ -34,7 +34,6 @@ generator func compress(Iterable[T] data, Iterable[U] selectors) -> T {
     }
 }
 
-#|  FIXME: Iterators
 generic T
 generator func dropWhile(Callable[T, [bool]] predicate, Iterable[T] iterable) -> T {
     Iterator[T] iter = iter(iterable)
@@ -46,7 +45,6 @@ generator func dropWhile(Callable[T, [bool]] predicate, Iterable[T] iterable) ->
     }
     yield from iter
 }
-|#
 
 generic T
 generator func filter(Callable[T, [bool]] predicate, Iterable[T] sequence) -> T {
@@ -115,14 +113,13 @@ generator func traverse(T sequence) -> U {
 }
 |#
 
-#|  FIXME: Iterators
 generic T
 generator func withNext(Iterable[T] values) -> T, T {
     var iter = iter(values)
     mut T previous
-    try {
-        previous = iter.next()
-    } except StopIteration {
+    if iter.next()? as p {
+        previous = p
+    } else {
         return
     }
     for T current in iter {
@@ -130,7 +127,6 @@ generator func withNext(Iterable[T] values) -> T, T {
         previous = current
     }
 }
-|#
 
 generic T, U
 generator func zip(Iterable[T] value1, Iterable[T] value2) -> T, U {
