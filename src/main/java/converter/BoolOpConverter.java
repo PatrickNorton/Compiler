@@ -91,7 +91,10 @@ public final class BoolOpConverter extends OperatorConverter {
     private List<Byte> convertBoolNot(int start) {
         assert op == OperatorTypeNode.BOOL_NOT;
         if (args.length > 1) {
-            throw CompilerException.format("'not' operator cannot have multiple operands, got %d", lineInfo, args.length);
+            throw CompilerException.format(
+                    "'not' operator cannot have multiple operands, got %d",
+                    lineInfo, args.length
+            );
         }
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
         bytes.add(Bytecode.BOOL_NOT.value);
