@@ -74,7 +74,7 @@ public final class BoolOpConverter extends OperatorConverter {
         assert op == OperatorTypeNode.BOOL_AND || op == OperatorTypeNode.BOOL_OR;
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.boolConstant())));
         bytes.addAll(TestConverter.bytes(start, args[0].getArgument(), info, 1));
         bytes.add(Bytecode.DUP_TOP.value);
         var bytecode = op == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_FALSE : Bytecode.JUMP_TRUE;

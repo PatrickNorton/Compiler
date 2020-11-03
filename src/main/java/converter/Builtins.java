@@ -591,6 +591,7 @@ public final class Builtins {
     private static final LangConstant STR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(STR));
     private static final LangConstant ITER_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(ITER));
     private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(RANGE));
+    private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(BOOL));
 
     public static LangConstant strConstant() {
         return STR_CONSTANT;
@@ -602,6 +603,10 @@ public final class Builtins {
 
     public static LangConstant rangeConstant() {
         return RANGE_CONSTANT;
+    }
+
+    public static LangConstant boolConstant() {
+        return BOOL_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
