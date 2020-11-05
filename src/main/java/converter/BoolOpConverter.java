@@ -42,8 +42,9 @@ public final class BoolOpConverter extends OperatorConverter {
                 return boolOrConst();
             case BOOL_XOR:
                 return boolXorConst();
+            default:
+                throw CompilerInternalError.format("Unknown boolean operator: %s", lineInfo, op);
         }
-        return Optional.empty();
     }
 
     @Override
@@ -73,7 +74,7 @@ public final class BoolOpConverter extends OperatorConverter {
         assert op == OperatorTypeNode.BOOL_AND || op == OperatorTypeNode.BOOL_OR;
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.boolConstant())));
         bytes.addAll(TestConverter.bytes(start, args[0].getArgument(), info, 1));
         bytes.add(Bytecode.DUP_TOP.value);
         var bytecode = op == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_FALSE : Bytecode.JUMP_TRUE;
@@ -90,7 +91,10 @@ public final class BoolOpConverter extends OperatorConverter {
     private List<Byte> convertBoolNot(int start) {
         assert op == OperatorTypeNode.BOOL_NOT;
         if (args.length > 1) {
-            throw CompilerException.format("'not' operator cannot have multiple operands, got %d", lineInfo, args.length);
+            throw CompilerException.format(
+                    "'not' operator cannot have multiple operands, got %d",
+                    lineInfo, args.length
+            );
         }
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
         bytes.add(Bytecode.BOOL_NOT.value);
@@ -150,7 +154,7 @@ public final class BoolOpConverter extends OperatorConverter {
             return Optional.empty();
         }
         var values = boolValues(args);
-        if (values.isPresent()) {
+        if (values.isPresent() && values.orElseThrow().length == 2) {
             var booleans = values.orElseThrow();
             return Optional.of(LangConstant.of(booleans[0] ^ booleans[1]));
         }

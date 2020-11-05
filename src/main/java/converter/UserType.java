@@ -305,6 +305,9 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     public Optional<TypeObject> staticAttrTypeWithGenerics(String value, AccessLevel access) {
         var attr = info.staticAttributes.get(value);
+        if (attr == null && info.info.getParamMap().containsKey(value)) {
+            return Optional.of(info.info.getParamMap().get(value).getType());
+        }
         return typeFromAttr(attr == null ? null : attr.intoAttrInfo(), access);
     }
 

@@ -96,6 +96,7 @@ public final class GlobalCompilerInfo {
     }
 
     private int singleDefaultPos() {
+        assert !defaultFunctions.isEmpty();
         if (defaultFunctions.size() == 1) {
             return 0;
         }

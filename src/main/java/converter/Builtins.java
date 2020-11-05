@@ -456,9 +456,11 @@ public final class Builtins {
 
     static {
         var nextFnInfo = new FunctionInfo("next", ArgumentInfo.of(), TypeObject.optional(ITERATOR_PARAM));
-        var iterInfo = AttributeInfo.method(nextFnInfo);
+        var nextInfo = AttributeInfo.method(nextFnInfo);
+        var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERATOR_PARAM));
 
-        ITERATOR.setAttributes(Map.of("next", iterInfo), Collections.emptySet());
+        ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
+        ITERATOR.setAttributes(Map.of("next", nextInfo), Collections.emptySet());
         ITERATOR.seal();
     }
 
@@ -589,6 +591,7 @@ public final class Builtins {
     private static final LangConstant STR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(STR));
     private static final LangConstant ITER_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(ITER));
     private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(RANGE));
+    private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(BOOL));
 
     public static LangConstant strConstant() {
         return STR_CONSTANT;
@@ -600,6 +603,10 @@ public final class Builtins {
 
     public static LangConstant rangeConstant() {
         return RANGE_CONSTANT;
+    }
+
+    public static LangConstant boolConstant() {
+        return BOOL_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
