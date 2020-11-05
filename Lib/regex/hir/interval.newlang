@@ -24,15 +24,13 @@ class IntervalSet[I[Interval]] {
     }
 
     public mut method caseFoldSimple() {
-        var len = self.ranges.length
-        try {
-            for var i in [0:len] {
-                var r = self.ranges[i]
+        # try {  FIXME
+            for var r in self.ranges {
                 r.caseFoldSimple(self.ranges)
             }
-        } finally {
+        # } finally {
             self.canonicalize()
-        }
+        # }
     }
 
     public mut method extend(IntervalSet[I] other) {
@@ -129,13 +127,13 @@ class IntervalSet[I[Interval]] {
                 if diff.0? as range1 {
                     if diff.1? as range2 {
                         self.ranges.push(range1)
-                        r = range2
+                        # r = range2  FIXME: 'cls'
                     } else {
-                        r = range1
+                        # r = range1  FIXME: 'cls'
                     }
                 } else {
-                    if diff.second? as range1 {
-                        r = range1
+                    if diff.1? as range1 {
+                        # r = range1  FIXME: 'cls'
                     } else {
                         # We lost the entire range, so move on to the next
                         # without adding this one.
@@ -150,7 +148,7 @@ class IntervalSet[I[Interval]] {
                 # has impacted the current `a` range as much as possible,
                 # so we can quit. We don't bump `b` so that the next `a`
                 # range can apply it.
-                break if other.ranges[b].upper > oldRange.upper
+                break if int(other.ranges[b].upper) > int(oldRange.upper)
                 # Otherwise, the next `b` range might apply to the current
                 # `a` range.
                 b++
@@ -163,7 +161,8 @@ class IntervalSet[I[Interval]] {
             self.ranges.push(r)
             a++
         }
-        del self.ranges[0:drainEnd]
+        mut var ranges = self.ranges  # FIXME
+        del ranges[0:drainEnd]
     }
 
     public mut method symmetricDifference(IntervalSet[I] other) {
@@ -216,12 +215,13 @@ class IntervalSet[I[Interval]] {
         # figure out a way to do it. So just append the canonicalization to
         # the end of this range, and then drain it before we're done.
         var drainEnd = self.ranges.length
-        for oldi in [0:drainEnd] {
+        for var oldi in [0:drainEnd] {
             # If we've added at least one new range, then check if we can
             # merge this range in the previously added range.
             if self.ranges.length > drainEnd {
                 if (self.ranges[-1] & self.ranges[:-1])? as u {
-                    self.ranges[-1] = u
+                    mut var ranges = self.ranges  # FIXME
+                    ranges[-1] = u
                     continue
                 }
             }
