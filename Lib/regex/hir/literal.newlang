@@ -40,7 +40,7 @@ class Literals {
     public method minLen() -> int? {
         mut int? min = null
         for var lit in self.lits {
-            if lit.length > (m ?? (-1)) {
+            if lit.length > (min ?? (-1)) {
                 min = lit.length
             }
         }
@@ -59,7 +59,7 @@ class Literals {
         return any((l.isEmpty() for var l in self.lits))
     }
 
-    public method toEmpty() -> cls {
+    public method toEmpty() -> mut cls {
         mut var lits = Literals()
         lits.limitSize = self.limitSize
         lits.limitClass = self.limitClass
@@ -81,7 +81,12 @@ class Literals {
         var lit0 = self.lits[0]
         mut var len = lit0.length
         for var lit in self.lits[1:] {
-            len = min(len, [0 for var a, var b in reversed(lit), reversed(lit0) while a == b].length)
+            mut int len2 = 0
+            for var a, var b in reversed(lit), reversed(lit0) {
+                break if a != b
+                len2++
+            }
+            len = min(len, len2)
         }
         return self.lits[0][:len]
     }
@@ -101,12 +106,12 @@ class Literals {
         return new
     }
 
-    public method unambiguousPrefixes() -> Literals {
+    public method unambiguousPrefixes() -> mut Literals {
         return self.toEmpty() if not self.lits
         final list[Literal] old = self.lits[:]
         final var new = self.toEmpty()
         while old {
-            var oldPop = old.pop()
+            var oldPop = old.pop()!!
             mref var candidate = Literal(oldPop.value[:], oldPop.cut)
             continue if not candidate
             if new.lits {
@@ -145,10 +150,10 @@ class Literals {
     }
 
     public method unambiguousSuffixes() -> Literals {
-        var lits = cls()
+        final var lits = cls()
         lits.limitSize = self.limitSize
         lits.limitClass = self.limitClass
-        lits.lits = [i.reverse() for var i in self.lits]
+        lits.lits = [reversed(i) for var i in self.lits]
         mut var unamb = lits.unambiguousPrefixes()
         unamb.reverse()
         return unamb
@@ -168,11 +173,11 @@ class Literals {
     }
 
     public mut method unionWith(cls lits) -> bool {
-        if self.numBytes + lits.numBytes > self.limitSize {
+        if self.numBytes() + lits.numBytes() > self.limitSize {
             return false
         }
         if not lits {
-            self.lits.add(Literal())
+            self.lits.add(Literal(bytes(""), false))
         } else {
             self.lits.addAll(lits.lits)
         }
@@ -184,7 +189,7 @@ class Literals {
         mut int sizeAfter
         if not self or not self.anyComplete() {
             sizeAfter = self.numBytes()
-            for var litsLit in lits.literals() {
+            for var litsLit in lits.literals {
                 sizeAfter += litsLit.length
             }
         } else {
@@ -201,20 +206,55 @@ class Literals {
 
         mut var base = self.removeComplete()
         if not base {
-            base = [Literal()]
+            base = [Literal(bytes(""), false)]
         }
-        for var litsLit in lits.literals() {
+        for var litsLit in lits.literals {
             for var selfLit in base {
                 self.lits.push(Literal(selfLit.value + litsLit.value, litsLit.cut))
             }
         }
         return true
     }
+
+    private method numBytes() -> int {
+        return sum((i.length for var i in self.literals))
+    }
+
+    private mut method removeComplete() -> mut list[Literal] {
+        mut list[Literal] base = []
+        var lits = self.lits
+        self.lits = []
+        for var lit in lits {
+            if lit.isCut() {
+                self.lits.add(lit)
+            } else {
+                base.add(lit)
+            }
+        }
+        return base
+    }
 }
 
 const class Literal {
     public bytes value
     bool cut
+
+    public operator new (bytes value, bool cut) {
+        self.value = value
+        self.cut = cut
+    }
+
+    public operator iter -> int {
+        yield from self.value
+    }
+
+    public operator [:] (slice s) -> bytes {
+        return self.value.operator[:](s)
+    }
+
+    public operator reversed -> cls {
+        return cls(self.value[::-1], cut)
+    }
 
     public property int length {
         get {
@@ -225,4 +265,20 @@ const class Literal {
     public method get(int i) -> int? {
         return self.value.get(i)
     }
+}
+
+func suffixes(Hir expr, mut Literals lits) -> {
+    raise NotImplemented()
+}
+
+func sum(Iterable[int] vars) -> int {
+    mut int result = 0
+    for var val in vars {
+        result += val
+    }
+    return result
+}
+
+func min(int a, int b) -> int {
+    return a if a < b else b
 }
