@@ -157,7 +157,14 @@ public final class FunctionCallConverter implements TestConverter {
                 .orElseThrow(() -> argError(node, fnInfo.toCallable().name(), args, fnInfo.getArgs().getNormalArgs()));
         var generics = genPair.getKey();
         if (generics.isEmpty()) {
-            return fnInfo.getReturns();
+            var returns = fnInfo.getReturns();
+            if (returns.length < retCount) {
+                throw CompilerException.format(
+                    "Cannot call function %s with %d returns: only returns %d",
+                        node, fnInfo.getName(), retCount, returns.length
+                );
+            }
+            return returns;
         }
         var cls = fnInfo.toCallable();
         var returns = fnInfo.getReturns();
@@ -213,21 +220,13 @@ public final class FunctionCallConverter implements TestConverter {
 
     private Pair<FunctionInfo, Set<Integer>> ensureTypesMatch(TypeObject callerType) {
         var args = getArgs(node.getParameters());
-        var accessLevel = info.accessLevel(callerType);
-        var operatorInfo = callerType.operatorInfo(OpSpTypeNode.CALL, accessLevel);
-        if (operatorInfo.isEmpty()) {
-            throw CompilerException.format(
-                    "Object of type '%s' has no overloaded 'operator ()'",
-                    node, callerType.name()
-            );
-        } else {
-            var opInfo = operatorInfo.orElseThrow();
-            var opGenerics = opInfo.generifyArgs(args);
-            if (opGenerics.isEmpty()) {
-                throw argError(node, callerType.name(), args, opInfo.getArgs().getNormalArgs());
-            }
-            return Pair.of(opInfo, opGenerics.orElseThrow().getValue());
+        var operatorInfo = callerType.tryOperatorInfo(node, OpSpTypeNode.CALL, info);
+        var opGenerics = operatorInfo.generifyArgs(args);
+        if (opGenerics.isEmpty()) {
+            throw argError(node, callerType.name(), args, operatorInfo.getArgs().getNormalArgs());
         }
+        return Pair.of(operatorInfo, opGenerics.orElseThrow().getValue());
+
     }
 
     private static CompilerException argError(Lined node, String name, Argument[] args, Argument[] expected) {
@@ -285,6 +284,7 @@ public final class FunctionCallConverter implements TestConverter {
             "str", OpSpTypeNode.STR,
             "bool", OpSpTypeNode.BOOL,
             "repr", OpSpTypeNode.REPR,
+            "reversed", OpSpTypeNode.REVERSED,
             "iter", OpSpTypeNode.ITER
     );
 
