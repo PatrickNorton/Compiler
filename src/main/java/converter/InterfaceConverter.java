@@ -48,7 +48,14 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             }
         } else {
             type = (InterfaceType) info.getTypeObj(node.getName().strName());
-            parseStatements(converter);
+            try {
+                info.accessHandler().addCls(type);
+                info.addLocalTypes(type.getGenericInfo().getParamMap());
+                parseStatements(converter);
+            } finally {
+                info.accessHandler().removeCls();
+                info.removeLocalTypes();
+            }
         }
         List<Short> superConstants = new ArrayList<>();
         for (var sup : trueSupers) {

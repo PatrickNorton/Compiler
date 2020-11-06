@@ -126,6 +126,8 @@ public final class TemplateParam extends NameableType {
             return Optional.of(Collections.emptyMap());
         } else if (this.parent.sameBaseType(parent)) {
             return Optional.of(Map.of(index, other));
+        } else if (isSuperclass(other)) {
+            return Optional.of(Collections.emptyMap());
         } else {
             return Optional.empty();
         }
