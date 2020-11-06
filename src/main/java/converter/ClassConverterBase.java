@@ -136,7 +136,15 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
         info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
-        var cls = createClass(type, variants, superConstants, converter);
+        ClassInfo cls;
+        try {
+            info.accessHandler().addCls(type);
+            info.addLocalTypes(type.getGenericInfo().getParamMap());
+            cls = createClass(type, variants, superConstants, converter);
+        } finally {
+            info.accessHandler().removeCls();
+            info.removeLocalTypes();
+        }
         int classIndex = info.addClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);

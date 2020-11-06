@@ -8,6 +8,7 @@ import main.java.parser.NameNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
 import main.java.parser.SpecialOpNameNode;
+import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +50,26 @@ public final class DotConverter implements TestConverter {
             var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
             return Pair.of(converter, postDot.getName());
         }
+    }
+
+    public static Pair<TestConverter, TestNode[]> exceptLastIndex(
+            CompilerInfo info, @NotNull DottedVariableNode node, int retCount
+    ) {
+        var postDots = node.getPostDots();
+        if (!(postDots[postDots.length - 1].getPostDot() instanceof IndexNode)) {
+            throw CompilerTodoError.of(
+                    "DotConverter.exceptLast does not work where the last dot is not an index",
+                    postDots[postDots.length - 1]
+            );
+        }
+        var newPostDots = Arrays.copyOf(postDots, postDots.length);
+        var post = postDots[postDots.length - 1];
+        var postDot = (IndexNode) post.getPostDot();
+        var dot = new DottedVar(post.getLineInfo(), post.getDotPrefix(), (NameNode) postDot.getVar());
+        newPostDots[newPostDots.length - 1] = dot;
+        var newNode = new DottedVariableNode(node.getPreDot(), newPostDots);
+        var converter = TestConverter.of(info, newNode, retCount);
+        return Pair.of(converter, postDot.getIndices());
     }
 
     @NotNull
@@ -129,7 +150,13 @@ public final class DotConverter implements TestConverter {
             return new TypeObject[]{TypeObject.optional(retType)};
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
-            var attrType = result.stripNull().tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            TypeObject attrType;
+            if (caller instanceof SpecialOpNameNode) {
+                var op = ((SpecialOpNameNode) caller).getOperator();
+                attrType = result.stripNull().tryOperatorInfo(postDot, op, info).toCallable();
+            } else {
+                attrType = result.stripNull().tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            }
             var endType = TypeObject.optional(attrType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info)[0]);
             return new TypeObject[]{endType};
         } else {
@@ -240,6 +267,24 @@ public final class DotConverter implements TestConverter {
     }
 
     private void convertMethod(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+        if (postDot.getCaller() instanceof SpecialOpNameNode) {
+            convertOperator(start, bytes, postDot);
+        } else {
+            convertNameMethod(start, bytes, postDot);
+        }
+    }
+
+    private void convertOperator(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+        var op = ((SpecialOpNameNode) postDot.getCaller()).getOperator();
+        for (var value : postDot.getParameters()) {  // TODO: Varargs, merge with FunctionCallNode
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
+        }
+        bytes.add(Bytecode.CALL_OP.value);
+        bytes.addAll(Util.shortToBytes((short) op.ordinal()));
+        bytes.addAll(Util.shortToBytes((short) postDot.getParameters().length));
+    }
+
+    private void convertNameMethod(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
         var name = ((VariableNode) postDot.getCaller()).getName();
         for (var value : postDot.getParameters()) {  // TODO: Varargs, merge with FunctionCallNode
             bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));

@@ -57,7 +57,13 @@ public final class AssignmentConverter implements BaseConverter {
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
             } else if (name instanceof DottedVariableNode) {
-                assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
+                var postDots = ((DottedVariableNode) name).getPostDots();
+                var last = postDots[postDots.length - 1];
+                if (last.getPostDot() instanceof IndexNode) {
+                    assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
+                } else {
+                    assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
+                }
             } else {
                 throw CompilerException.of("Assignment must be to a variable, index, or dotted variable", node);
             }
@@ -138,7 +144,8 @@ public final class AssignmentConverter implements BaseConverter {
 
     private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
                                   @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
-        var valueType = valueConverter.returnType()[0];
+        var valT = valueConverter.returnType();
+        var valueType = valT[0];
         var name = variable.getName();
         checkDef(name, variable);
         var varType = info.getType(name).orElseThrow();
@@ -207,12 +214,7 @@ public final class AssignmentConverter implements BaseConverter {
         var indexConverters = convertIndices(indices);
         checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
         bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
-        for (var indexParam : indices) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
-        }
-        bytes.addAll(valueConverter.convert(start + bytes.size()));
-        storeBytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
-        storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
+        finishIndex(bytes, storeBytes, start, valueConverter, indices);
     }
 
     @NotNull
@@ -263,6 +265,30 @@ public final class AssignmentConverter implements BaseConverter {
         storeBytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
         storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+    }
+
+    private void assignToDotIndex(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+                             @NotNull DottedVariableNode variable, @NotNull TestNode value) {
+        var valueConverter = TestConverter.of(info, value, 1);
+        var pair = DotConverter.exceptLastIndex(info, variable, 1);
+        var varConverter = pair.getKey();
+        var indices = pair.getValue();
+        var indexConverters = convertIndices(indices);
+        checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
+        bytes.addAll(varConverter.convert(start));
+        finishIndex(bytes, storeBytes, start, valueConverter, indices);
+    }
+
+    private void finishIndex(
+            @NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+            TestConverter valueConverter, TestNode[] indices
+    ) {
+        for (var indexParam : indices) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
+        }
+        bytes.addAll(valueConverter.convert(start + bytes.size()));
+        storeBytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
+        storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
     }
 
     private void assignTopToDot(

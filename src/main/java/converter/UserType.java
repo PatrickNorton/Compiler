@@ -47,7 +47,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     }
 
     public final boolean isSubclass(@NotNull TypeObject other) {
-        if (this.equals(other)) {
+        if (this.equals(other) || this.sameBaseType(Builtins.THROWS)) {
             return true;
         } else if (other instanceof UserType && this.sameBaseType(other)) {
             if (!((UserType<?>) other).isConst && isConst) {
