@@ -288,33 +288,43 @@ interface Interval[I[Bound]] {
         assert addLower or addUpper
         mut var ret = (i, i)
         if addLower {
-            var upper = other.lower.decrement()
-            ret = (cls(self.lower, upper), ret.second)
+            var upper = other.lower.decrement() casted cls.I  # FIXME
+            I? lower = self.lower  # DOUBLE FIXME
+            Interval? c = cls(lower, upper)  # FIXME
+            ret = (c, ret.1)
         }
         if addUpper {
-            var lower = other.upper.increment()
-            var r = cls(lower, self.upper)
-            if not ret.first? {
-                ret = (r, ret.second)
+            var lower = other.upper.increment() casted cls.I
+            Interval? r = cls(lower, self.upper)
+            if not ret.0? {
+                ret = (r, ret.1)
             } else {
-                ret = (ret.first, r)
+                ret = (ret.0, r)
             }
         }
         return ret
     }
 
     public method symmetricDifference(cls other) -> tuple[cls?, cls?] {
+        I? selfLower = self.lower  # FIXME x4
+        I? selfUpper = self.upper
+        I? otherLower = other.lower
+        I? otherUpper = other.upper
         cls u
         if (self & other)? as v {
             u = v
         } else {
-            return (cls(self.lower, self.upper), cls(other.lower, other.upper))
+            cls? c0 = cls(selfLower, selfUpper)  # FIXME
+            cls? c1 = cls(otherLower, otherUpper)
+            return (c0, c1)
         }
         cls i
         if (self | other)? as j {
             i = j
         } else {
-            return (cls(self.lower, self.upper), cls(other.lower, other.upper))
+            cls? c0 = cls(selfLower, selfUpper)  # FIXME
+            cls? c1 = cls(otherLower, otherUpper)
+            return (c0, c1)
         }
         return u.difference(i)
     }
