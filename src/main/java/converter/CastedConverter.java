@@ -48,9 +48,17 @@ public final class CastedConverter extends OperatorConverter {
     public List<Byte> convert(int start) {
         if (args.length != 2) {
             throw argsException();
+        } else if (retCount == 0) {
+            CompilerWarning.warn("Cast is useless when not assigned to a value", lineInfo);
+            return TestConverter.bytes(start, args[0].getArgument(), info, 0);
         } else if (retCount != 1) {
             throw retException();
+        } else {
+            return convertNormal(start);
         }
+    }
+
+    private List<Byte> convertNormal(int start) {
         var argConverter = TestConverter.of(info, args[0].getArgument(), 1);
         var typeConverter = TestConverter.of(info, args[1].getArgument(), 1);
         var retType = typeConverter.returnType()[0];
