@@ -52,7 +52,6 @@ public final class CastedConverter extends OperatorConverter {
             throw retException();
         }
         var argConverter = TestConverter.of(info, args[0].getArgument(), 1);
-        List<Byte> bytes = new ArrayList<>(argConverter.convert(start));
         var typeConverter = TestConverter.of(info, args[1].getArgument(), 1);
         var retType = typeConverter.returnType()[0];
         if (!(retType instanceof TypeTypeObject)) {
@@ -65,8 +64,9 @@ public final class CastedConverter extends OperatorConverter {
                     "Useless cast: %s is already a subclass of %s",
                     lineInfo, argType.name(), representedType.name()
             );
-            return bytes;
+            return argConverter.convert(start);
         }
+        List<Byte> bytes = new ArrayList<>(argConverter.convert(start));
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.addAll(typeConverter.convert(start + bytes.size()));
         bytes.add(Bytecode.INSTANCEOF.value);
