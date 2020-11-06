@@ -269,6 +269,7 @@ public final class Builtins {
         // TODO: More char operators
         var charMap = Map.of(
                 OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(CHAR), CHAR),
+                OpSpTypeNode.SUBTRACT, MethodInfo.of(ArgumentInfo.of(CHAR), CHAR),
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(CHAR), BOOL)
         );
         CHAR.setOperators(charMap);
