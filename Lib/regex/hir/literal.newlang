@@ -277,6 +277,91 @@ func suffixes(Hir expr, mut Literals lits) {
 }
 
 func prefixes(Hir expr, mut Literals lits) {
+    switch expr.kind {
+        case HirKind.Literal as l {
+            switch l {
+                case HirLiteral.Unicode as c {
+                    lits.crossAdd(bytes(c))
+                }
+                case HirLiteral.Byte as b {
+                    lits.crossAdd(bytes(b))
+                }
+            }
+        }
+        case HirKind.Class as c {
+            switch c {
+                case HirClass.Unicode as c {
+                    if not lits.addCharCls(c) {
+                        lits.cut()
+                    }
+                }
+                case HirClass.Bytes as c {
+                    if not lits.addByteCls(c) {
+                        lits.cut()
+                    }
+                }
+            }
+        }
+        case HirKind.Group as pair {
+            prefixes(pair.0, lits)
+        }
+        case HirKind.Repetition as x {
+            switch x.kind {
+                case RepetitionKind.ZeroOrOne {
+                    repeatZeroOrOneLiterals(x.hir, lits, prefixes)
+                }
+                case RepetitionKind.ZeroOrMore {
+                    repeatZeroOrMoreLiterals(x.hir, lits, prefixes)
+                }
+                case RepetitionKind.OneOrMore {
+                    repeatOneOrMoreLiterals(x.hir, lits, prefixes)
+                }
+                case RepetitionKind.Range as rng {
+                    switch rng {
+                        case RepetitionRange.Exactly as m {
+                            repeatRangeLiterals(x.hir, m, m, x.greedy, lits, prefixes)
+                        }
+                        case RepetitionRange.AtLeast as m {
+                            repeatRangeLiterals(x.hir, m, null, x.greedy, lits, prefixes)
+                        }
+                        case RepetitionRange.Bounded as pair {
+                            repeatRangeLiterals(x.hir, *pair, x.greedy, lits, prefixes)
+                        }
+                    }
+                }
+            }
+        }
+        case HirKind.Concat as es {
+            if es.length == 1 {
+                prefixes(es[0], lits)
+            } elif es {
+                for var e in es {
+                    if e.kind.Anchor? as a {
+                        if a is Anchor.StartText {
+                            if not lits {
+                                lits.cut()
+                                break
+                            }
+                            lits.add(Literal())
+                            continue
+                        }
+                    }
+                    mut var lits2 = lits.toEmpty()
+                    prefixes(e, lits2)
+                    if not lits.crossProduct(lits2) or not lits2.anyComplete() {
+                        lits.cut()
+                        break
+                    }
+                }
+            }
+        }
+        case HirKind.Alternation as es {
+            alternateLiterals(es, lits, prefixes)
+        }
+        default {
+            lits.cut()
+        }
+    }
     raise NotImplemented()
 }
 
