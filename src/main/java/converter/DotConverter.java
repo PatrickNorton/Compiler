@@ -117,7 +117,15 @@ public final class DotConverter implements TestConverter {
             return new TypeObject[]{result.tryAttrType(postDot, ((VariableNode) postDot).getName(), info)};
         } else if (postDot instanceof FunctionCallNode) {
             var caller = ((FunctionCallNode) postDot).getCaller();
-            var attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            TypeObject attrType;
+            if (caller instanceof SpecialOpNameNode) {
+                var op = ((SpecialOpNameNode) caller).getOperator();
+                attrType = result.tryOperatorInfo(postDot, op, info).toCallable();
+            } else if (caller instanceof VariableNode) {
+                attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            } else {
+                throw CompilerTodoError.of("More complex function-call prefixes not implemented yet", postDot);
+            }
             var opInfo = attrType.tryOperatorInfo(postDot, OpSpTypeNode.CALL, info);
             var retTypes = opInfo.getReturns();
             if (retTypes.length == 0) {
