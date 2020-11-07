@@ -253,11 +253,13 @@ public final class Builtins {
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
         var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
+        var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "join", AttributeInfo.method(joinInfo),
                 "encode", AttributeInfo.method(encodeInfo),
                 "indexOf", AttributeInfo.method(indexInfo),
+                "get", AttributeInfo.method(getInfo),
                 "lastIndexOf", AttributeInfo.method(indexInfo)
         );
         BYTES.setAttributes(bytesAttrs);

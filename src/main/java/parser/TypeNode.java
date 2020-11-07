@@ -154,7 +154,23 @@ public class TypeNode implements TypeLikeNode {
             } else {
                 subclassIsVararg = false;
             }
-            TypeLikeNode subType = parse(tokens, true, subclassIsVararg, true);
+            TypeLikeNode subType;
+            if (tokens.tokenIs(TokenType.DESCRIPTOR)) {
+                var descriptor = DescriptorNode.parse(tokens);
+                if (DescriptorNode.MUT_NODES.contains(descriptor)) {
+                    subType = parse(tokens, true, subclassIsVararg, true);
+                    subType.setMutability(descriptor);
+                } else {
+                    throw tokens.error("Invalid descriptor for type");
+                }
+            } else {
+                subType = parse(tokens, true, subclassIsVararg, true);
+            }
+            if (tokens.tokenIs("|")) {
+                subType = TypeUnionNode.fromType(tokens, subType, true);
+            } else if (tokens.tokenIs("&")) {
+                subType = TypewiseAndNode.fromType(tokens, subType, true);
+            }
             subtypes.add(subType);
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
