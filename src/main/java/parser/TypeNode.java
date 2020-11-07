@@ -166,11 +166,6 @@ public class TypeNode implements TypeLikeNode {
             } else {
                 subType = parse(tokens, true, subclassIsVararg, true);
             }
-            if (tokens.tokenIs("|")) {
-                subType = TypeUnionNode.fromType(tokens, subType, true);
-            } else if (tokens.tokenIs("&")) {
-                subType = TypewiseAndNode.fromType(tokens, subType, true);
-            }
             subtypes.add(subType);
             if (tokens.tokenIs(TokenType.COMMA)) {
                 tokens.nextToken(true);
