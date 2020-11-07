@@ -1,4 +1,4 @@
-from itertools import any
+from itertools import any, all
 
 export canExec, Cache, InstPtr, Result, Fsm
 
@@ -9,7 +9,10 @@ typedef StatePtr as int
 
 var STATE_UNKNOWN = 1 << 31
 var STATE_DEAD = STATE_UNKNOWN + 1
+var STATE_QUIT = STATE_DEAD + 1
 var STATE_START = 1 << 30
+var STATE_MAX = 1 << 29
+var STATE_MATCH = STATE_MAX - 1
 
 func canExec(Program insts) -> bool {
     return insts.dfaSizeLimit == 0 and not any((i.Ranges? or i.Char? for var i in insts))
@@ -90,14 +93,18 @@ class Transitions {
         self.table = []
         self.numByteClasses = numByteClasses
     }
+
+    public method next(StatePtr si, int c) -> StatePtr {
+        return self.table[si + c]
+    }
 }
 
 class Fsm {
     Program prog
     mut StatePtr start
-    int at
+    mut int at
     bool quitAfterMatch
-    StatePtr lastMatchSi
+    mut StatePtr lastMatchSi
     int lastCacheFlush
     mut CacheInner cache
 
@@ -305,12 +312,137 @@ class Fsm {
         return optState
     }
 
+    private mut method execAt(
+        mut set[int] qcur,
+        mut set[int] qnext,
+        bytes text,
+    ) -> Result[int] {
+        assert self.prog.isReverse
+
+        mut var result = Result[int].NoMatch(self.at)
+        mut var prevSi, mut var nextSi = self.start, self.start
+        mut int at = self.at
+        while at < text.length {
+            while nextSi <= STATE_MAX and at < text.length {
+                prevSi = self.nextSi(nextSi, text, at)
+                at++
+                if prevSi > STATE_MAX or at + 2 >= text.length {
+                    prevSi, nextSi = nextSi, prevSi
+                    break
+                }
+                nextSi = self.nextSi(prevSi, text, at)
+                at++
+                break if nextSi > STATE_MAX
+
+                prevSi = self.nextSi(nextSi, text, at)
+                at++
+                if prevSi > STATE_MAX {
+                    prevSi, nextSi = nextSi, prevSi
+                    break
+                }
+                nextSi = self.nextSi(prevSi, text, at)
+                at++
+            }
+            if nextSi & STATE_MATCH > 0 {
+                nextSi &= ~STATE_MATCH
+                result = Result[int].Match(at - 1)
+                return result if self.quitAfterMatch
+
+                self.lastMatchSi = nextSi
+                prevSi = nextSi
+
+                if self.prog.matches.length > 1 {
+                    var state = self.state(nextSi)
+                    return result if all((self.prog[ip].isMatch for var ip in state.instPtrs()))
+                }
+
+                var cur = at
+                while (nextSi & ~STATE_MATCH) == prevSi and at + 2 < text.length {
+                    nextSi = self.nextSi(nextSi & ~STATE_MATCH, text, at)
+                    at++
+                }
+                if at > cur {
+                    result = Result[int].Match(at - 2)
+                }
+            } elif nextSi & STATE_START > 0 {
+                assert self.hasPrefix()
+                nextSi &= ~STATE_START
+                prevSi = nextSi
+                if self.prefixAt(text, at)? as i {
+                    at = i
+                } else {
+                    return Result[int].NoMatch(text.length)
+                }
+            } elif nextSi >= STATE_UNKNOWN {
+                return Result[int].Quit() if nextSi == STATE_QUIT
+                var byte = text[at - 1]
+                prevSi &= STATE_MAX
+                self.at = at
+                if self.nextState(qcur, qnext, prevSi, byte)? as si {
+                    if si == STATE_DEAD {
+                        return result.setNonMatch(at)
+                    } else {
+                        nextSi = si
+                    }
+                } else {
+                    return Result[int].Quit()
+                }
+                assert nextSi != STATE_UNKNOWN
+                if nextSi & STATE_MATCH > 0 {
+                    nextSi &= ~STATE_MATCH
+                    result = Result[int].Match(at - 1)
+                    return result if self.quitAfterMatch
+
+                    self.lastMatchSi = nextSi
+                }
+                prevSi = nextSi
+            } else {
+                prevSi = nextSi
+            }
+        }
+
+        prevSi &= STATE_MAX
+        if self.nextState(qcur, qnext, prev_si, eof())? as si {
+            if si == STATE_DEAD {
+                return result.setNonMatch(text.length)
+            } else {
+                prevSi = si & ~STATE_START
+            }
+        }
+        assert prevSi != STATE_UNKNOWN
+
+        if prevSi & STATE_MATCH > 0 {
+            prevSi &= ~STATE_MATCH
+            self.lastMatchSi = prevSi
+            result = Result.Match(text.length)
+        }
+        return result
+    }
+
+    private method nextSi(StatePtr si, bytes text, int i) -> StatePtr {
+        var b = text[i]
+        var c = self.prog.byteClasses[b]
+        return self.cache.trans.next(si, c)
+    }
+
+    private method prefixAt(bytes text, int at) -> int? {
+        if self.prog.prefixes.find(text[at:])? as s {
+            return at + s.0
+        } else {
+            return null
+        }
+    }
+
     method startPtr(StatePtr si) -> StatePtr {
         if self.hasPrefix() {
             return si | STATE_START
         } else {
             return si
         }
+    }
+
+    private method state(StatePtr si) -> State {
+        return self.cache.compiled.getState(si)!!
     }
 }
 
