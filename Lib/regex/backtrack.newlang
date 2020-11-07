@@ -1,7 +1,7 @@
 from .dfa import InstPtr
 from .exec import ProgramCache
 from .inputs import Input, InputAt
-from .prog import Program
+from .prog import Program, Inst
 from .trait import Slot
 
 export Bounded, Cache, Bits
@@ -12,7 +12,7 @@ var BIT_SIZE = 32
 var MAX_SIZE_BYTES = 256 * (1 << 10) # 256 KB
 
 func shouldExec(int numInsts, int textLen) -> bool {
-    var size = ((num_insts * (text_len + 1) + BIT_SIZE - 1) / BIT_SIZE) * 4
+    var size = ((numInsts * (textLen + 1) + BIT_SIZE - 1) // BIT_SIZE) * 4
     return size <= MAX_SIZE_BYTES
 }
 
@@ -28,7 +28,7 @@ class Bounded {
         Input inputVal,
         list[bool] matches,
         list[Slot] slots,
-        Cache m,
+        mut Cache m,
     ) {
         self.prog = prog
         self.inputVal = inputVal
@@ -57,7 +57,8 @@ class Bounded {
         self.m.visited.clear()
     }
 
-    private mut method exec_(mut InputAt at, int end) -> bool {
+    private mut method exec_(InputAt at_, int end) -> bool {
+        mref var at = at_
         self.clear()
         if self.prog.isAnchoredStart {
             return false if not at.isStart() else self.backtrack(at)
@@ -65,7 +66,7 @@ class Bounded {
         mut var matched = false
         while true {
             if self.prog.prefixes {
-                if self.inputPrefixAt(self.prog.prefixes, at)? as a {
+                if self.inputVal.prefixAt(self.prog.prefixes, at)? as a {
                     at = a
                 } else {
                     break
@@ -83,18 +84,19 @@ class Bounded {
 
     private mut method backtrack(InputAt start) -> bool {
         mut var matched = false
-        self.m.jobs.add(Job.Inst(0, start))
+        final var jobs = self.m.jobs
+        jobs.add(Job.Inst(0, start))
         while jobs {
-            switch jobs.pop() {
+            switch jobs.pop()!! {
                 case Job.Inst as pair {
                     if self.step(pair.first, pair.second) {
                         return true if self.prog.matches.length == 1
-                        matches = true
+                        matched = true
                     }
                 }
                 case Job.SaveRestore as pair {
-                    if pair.first < self.slots.length {
-                        self.slots[pair.first] = pair.second
+                    if pair.0 < self.slots.length {
+                        self.slots[pair.0] = pair.1
                     }
                 }
             }
@@ -116,14 +118,14 @@ class Bounded {
                 }
                 case Inst.Save as inst {
                     if self.slots.get(inst.slot)? as oldSlot {
-                        self.m.jobs.add(Job.SaveRestore((inst.slot, oldPos)))
+                        self.m.jobs.add(Job.SaveRestore((inst.slot, oldSlot)))
                         self.slots[inst.slot] = at.pos
                     }
                     ip = inst.jump
                 }
                 case Inst.Split as inst {
-                    self.m.jobs.push(Job.Inst((inst.goto2, at)))
-                    ip = inst.goto1
+                    self.m.jobs.push(Job.Inst((inst.jump2, at)))
+                    ip = inst.jump1
                 }
                 case Inst.EmptyLook as inst {
                     if self.inputVal.isEmptyMatch(at, inst) {
@@ -163,8 +165,8 @@ class Bounded {
     }
 
     private mut method hasVisited(InstPtr ip, InputAt at) -> bool {
-        var k = ip * (self.inputVal.length + 1) + at.pos()
-        var k1 = k / BIT_SIZE
+        var k = ip * (self.inputVal.length + 1) + at.pos
+        var k1 = k // BIT_SIZE
         var k2 = 1 << (k & BIT_SIZE - 1)
         if self.m.visited[k1] and not k2 {
             self.m.visited[k1] |= k2
