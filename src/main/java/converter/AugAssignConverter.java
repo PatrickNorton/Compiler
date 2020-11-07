@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,13 @@ public final class AugAssignConverter implements BaseConverter {
         if (name instanceof VariableNode) {
             return convertVar(start);
         } else if (name instanceof DottedVariableNode) {
-            return convertDot(start);
+            var postDots = ((DottedVariableNode) name).getPostDots();
+            var last = postDots[postDots.length - 1];
+            if (last.getPostDot() instanceof IndexNode) {
+                return convertDotIndex(start);
+            } else {
+                return convertDot(start);
+            }
         } else {
             throw CompilerTodoError.of(
                     "Augmented assignment to non-variable or dotted variables not supported yet", name
@@ -56,11 +63,11 @@ public final class AugAssignConverter implements BaseConverter {
         assert node.getName() instanceof DottedVariableNode;
         var operator = node.getOperator().operator;
         var trueOp = OpSpTypeNode.translate(operator);
-        var assignedConverter = dotValueConverter();
-        var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var name = (DottedVariableNode) node.getName();
-        var dotName = name.getPostDots()[name.getPostDots().length - 1];
-        var strName = ((VariableNode) dotName.getPostDot()).getName();
+        var pair = DotConverter.exceptLast(info, name, 1);
+        var assignedConverter = pair.getKey();
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
+        var strName = pair.getValue();
         var converterReturn = assignedConverter.returnType()[0];
         var dotType = converterReturn.tryAttrType(node, strName, info);
         var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
@@ -74,18 +81,32 @@ public final class AugAssignConverter implements BaseConverter {
         return bytes;
     }
 
-    @NotNull
-    private TestConverter dotValueConverter() {
-        var value = node.getName();
-        assert value instanceof DottedVariableNode;
-        var dottedVar = (DottedVariableNode) value;
-        if (dottedVar.getPostDots().length == 1) {
-            return TestConverter.of(info, dottedVar.getPreDot(), 1);
-        } else {
-            throw CompilerTodoError.of(
-                    "Augmented assignment does not work with dot chains longer than 1 yet", dottedVar
-            );
+    private List<Byte> convertDotIndex(int start) {
+        assert node.getName() instanceof DottedVariableNode;
+        var operator = node.getOperator().operator;
+        var trueOp = OpSpTypeNode.translate(operator);
+        var name = (DottedVariableNode) node.getName();
+        var pair = DotConverter.exceptLastIndex(info, name, 1);
+        var assignedConverter = pair.getKey();
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
+        var indices = pair.getValue();
+        var converterReturn = assignedConverter.returnType()[0];
+        var attrInfo = converterReturn.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);
+        var dotType = attrInfo.getReturns()[0];
+        var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
+        checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
+        List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
+        bytes.add(Bytecode.DUP_TOP.value);
+        for (var index : indices) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), index, info, 1));
         }
+        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) indices.length));
+        bytes.addAll(valueConverter.convert(start));
+        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
+        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) indices.length));  // FIXME: Duplicate indices
+        return bytes;
     }
 
     private void checkInfo(FunctionInfo fnInfo, TypeObject assignedReturn, TypeObject valueReturn) {
