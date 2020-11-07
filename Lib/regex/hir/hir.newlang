@@ -606,10 +606,16 @@ union GroupKind {
     null NonCapturing
 }
 
-class Repetition {
-    RepetitionKind kind
-    bool greedy
-    Hir hir
+const class Repetition {
+    public RepetitionKind kind
+    public bool greedy
+    public Hir hir
+
+    public operator new(RepetitionKind kind, bool greedy, Hir hir) {
+        self.kind = kind
+        self.greedy = greedy
+        self.hir = hir
+    }
 
     public method isMatchEmpty() -> bool {
         return switch self.kind {
