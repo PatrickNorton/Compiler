@@ -300,8 +300,7 @@ class ByteSet {
     public mut method insert(int b) -> bool {
         assert b in [0:255]
         var new = b not in self
-        var value = self.value  # FIXME
-        value[b] = true
+        self.value[b] = true
         return new
     }
 }
@@ -470,8 +469,7 @@ class StartBytesBuilder {
 
     private mut method addOneByte(int b) {
         if not self.byteSet[b] {
-            var byteSet = self.byteSet # FIXME
-            byteSet[b] = true
+            self.byteSet[b] = true
             self.count += 1
             self.rankSum += freqRank(b)
         }

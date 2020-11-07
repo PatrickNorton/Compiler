@@ -20,8 +20,7 @@ class ByteClasses {
     }
 
     public operator []= (int index, int value) {
-        var val = self.value  # FIXME
-        val[index] = value
+        self.value[index] = value
     }
 
     public method alphabetLen() -> int {
@@ -67,11 +66,10 @@ class ByteClassBuilder {
 
     public method setRange(int start, int end) {
         assert start in [0:256] and end in [start:256]
-        var val = self.value  # FIXME
         if start > 0 {
-            val[start - 1] = true
+            self.value[start - 1] = true
         }
-        val[end] = true
+        self.value[end] = true
     }
 
     public method build() -> ByteClasses {

@@ -220,8 +220,7 @@ class IntervalSet[I[Interval]] {
             # merge this range in the previously added range.
             if self.ranges.length > drainEnd {
                 if (self.ranges[-1] & self.ranges[:-1])? as u {
-                    mut var ranges = self.ranges  # FIXME
-                    # ranges[-1] = u  FIXME: cls
+                    # self.ranges[-1] = u  FIXME: cls
                     continue
                 }
             }

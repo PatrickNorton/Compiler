@@ -406,8 +406,7 @@ class Rep {
     }
 
     mut method setNextState(int fromVal, int byte, int to) {
-        var trans = self.trans  # FIXME
-        trans[fromVal * self.alphabetLen() + self.byteClasses[byte]] = to
+        self.trans[fromVal * self.alphabetLen() + self.byteClasses[byte]] = to
     }
 
     mut method swapStates(int id1, int id2) {
@@ -449,8 +448,7 @@ class Rep {
             var offset = idVal * alphabetLen
             for int i, var next in enumerate(self.trans[offset:offset + alphabetLen]) {
                 if swaps[next] != FAIL_ID {
-                    var trans = self.trans  # FIXME
-                    trans[i + offset] = next
+                    self.trans[i + offset] = next
                 }
             }
         }
@@ -469,8 +467,7 @@ class Rep {
             var offset = idVal * alphaLen
             for int i, var next in enumerate(self.trans[offset:offset + alphaLen]) {
                 if next != DEAD_ID {
-                    var trans = self.trans  # FIXME
-                    trans[offset + i] = next * alphaLen
+                    self.trans[offset + i] = next * alphaLen
                 }
             }
         }
