@@ -1,0 +1,43 @@
+export SparseSet
+
+class SparseSet {
+    list[int] dense
+    list[int] sparse
+
+    public operator new(int size) {
+        self.dense = []
+        self.sparse = [0] * size
+    }
+
+    public property int length {
+        get {
+            return self.dense.length
+        }
+    }
+
+    public operator bool {
+        return bool(self.dense)
+    }
+
+    public property int capacity {
+        get {
+            return self.sparse.length
+        }
+    }
+
+    public mut method insert(int value) {
+        var i = self.length
+        assert i < self.capacity
+        self.dense.push(value)
+        self.sparse[value] = i
+    }
+
+    public operator in (int value) {
+        var i = self.sparse[value]
+        return i < self.dense.length and self.dense[i] == value
+    }
+
+    public mut method clear() {
+        self.dense.clear()
+    }
+}
