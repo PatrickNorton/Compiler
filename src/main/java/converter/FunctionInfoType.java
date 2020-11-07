@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
+import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,34 @@ public final class FunctionInfoType extends TypeObject {
 
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
+        if (other.sameBaseType(Builtins.CALLABLE)) {
+            var generics = other.getGenerics();
+            assert generics.size() == 2;
+            var args = generics.get(0);
+            var rets = generics.get(1);
+            assert args instanceof ListTypeObject && rets instanceof ListTypeObject;
+            var arguments = ((ListTypeObject) args).getValues();
+            var returns = ((ListTypeObject) rets).getValues();
+            var thisArgs = info.getArgs();
+            if (thisArgs.getKeywordArgs().length > 0
+                    || thisArgs.size() != arguments.length
+                    || returns.length > info.getReturns().length) {
+                return false;
+            }
+            for (var pair : Zipper.of(arguments, thisArgs)) {
+                var arg = pair.getKey();
+                var thisArg = pair.getValue();
+                if (!thisArg.getType().isSuperclass(arg)) {
+                    return false;
+                }
+            }
+            for (var pair : Zipper.of(returns, info.getReturns())) {
+                if (!pair.getKey().isSuperclass(pair.getValue())) {
+                    return false;
+                }
+            }
+            return true;
+        }
         return this.equals(other);
     }
 
