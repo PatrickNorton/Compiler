@@ -56,7 +56,7 @@ class Literals {
     }
 
     public method containsEmpty() -> bool {
-        return any((l.isEmpty() for var l in self.lits))
+        return not all(self.lits)
     }
 
     public method toEmpty() -> mut cls {
@@ -71,7 +71,12 @@ class Literals {
         var lit0 = self.lits[0]
         mut var len = lit0.length
         for var lit in self.lits[1:] {
-            len = min(len, [0 for var a, var b in lit, lit0 while a == b].length)
+            int a = 0
+            for var a, var b in lit, lit0 {
+                break if a != b
+                a++
+            }
+            len = min(len, a)
         }
         return self.lits[0][:len]
     }
@@ -125,18 +130,18 @@ class Literals {
                     continue # 2  FIXME: Should be 'continue 2', but that is broken atm
                 }
                 if candidate.length < lit2.length {
-                    if position(candidate, lit2)? as i {
+                    if position(candidate.value, lit2.value)? as i {
                         candidate = Literal(candidate.value, true)
                         var lit3 = Literal(lit2.value[:i], true)
                         old.add(lit3)
-                        new.lits[i] = Literal([], lit2.cut)
+                        new.lits[i] = Literal(bytes(""), lit2.cut)
                     }
                 } else {
-                    if position(lit2, candidate)? as i {
+                    if position(lit2.value, candidate.value)? as i {
                         new.lits[i] = Literal(lit2.value, true)
                         mut var newCandidate = Literal(candidate.value[:i], true)
                         old.add(newCandidate)
-                        candidate = Literal([], candidate.cut)
+                        candidate = Literal(bytes(""), candidate.cut)
                     }
                 }
                 continue #|2|# if not candidate
@@ -253,7 +258,7 @@ const class Literal {
     }
 
     public operator reversed -> cls {
-        return cls(self.value[::-1], cut)
+        return cls(self.value[::-1], self.cut)
     }
 
     public property int length {
@@ -267,8 +272,24 @@ const class Literal {
     }
 }
 
-func suffixes(Hir expr, mut Literals lits) -> {
+func suffixes(Hir expr, mut Literals lits) {
     raise NotImplemented()
+}
+
+func prefixes(Hir expr, mut Literals lits) {
+    raise NotImplemented()
+}
+
+func position(bytes needle, bytes haystack) -> int? {
+    mut int i = 0
+    while haystack.length >= needle.length {
+        if needle == haystack[:needle.length] {
+            return i
+        }
+        i++
+        haystack = haystack[1:]
+    }
+    return null
 }
 
 func sum(Iterable[int] vars) -> int {
