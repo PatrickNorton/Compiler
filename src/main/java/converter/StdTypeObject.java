@@ -53,7 +53,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     public String name() {
         if (generics.isEmpty()) {
             String name = typedefName.isEmpty() ? info.name : typedefName;
-            if (isConst) {
+            if (isConst || info.isConstClass) {
                 return name;
             } else {
                 return String.format("mut %s", name);
@@ -63,7 +63,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
             for (var cls : generics) {
                 valueJoiner.add(cls.name());
             }
-            if (isConst) {
+            if (isConst || info.isConstClass) {
                 return info.name + valueJoiner.toString();
             } else {
                 return String.format("mut %s%s", info.name, valueJoiner);
