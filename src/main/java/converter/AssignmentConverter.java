@@ -151,7 +151,7 @@ public final class AssignmentConverter implements BaseConverter {
         var varType = info.getType(name).orElseThrow();
         if (!varType.isSuperclass(valueType)) {
             if (!OptionTypeObject.needsMakeOption(varType, valueType)) {
-                if (varType.isSuperclass(valueType.makeMut())) {
+                if (varType.makeMut().isSuperclass(valueType)) {
                     throw CompilerException.format("Cannot assign: Value must be 'mut' or 'final'", node);
                 }
                 throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
@@ -256,7 +256,7 @@ public final class AssignmentConverter implements BaseConverter {
                              @NotNull DottedVariableNode variable, @NotNull TestNode value) {
         var pair = DotConverter.exceptLast(info, variable, 1);
         var preDotConverter = pair.getKey();
-        var assignedType = assignType(preDotConverter, pair.getValue(), value);
+        var assignedType = assignType(preDotConverter, pair.getValue(), variable);
         var valueConverter = TestConverter.of(info, value, 1, assignedType);
         var valueType = valueConverter.returnType()[0];
         var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
