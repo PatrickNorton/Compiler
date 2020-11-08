@@ -23,7 +23,7 @@ class Compiler {
     dict[str, int] captureNameIdx
     int numExprs
     mut int sizeLimit_
-    SuffixCache suffixCache
+    final SuffixCache suffixCache
     mut Utf8Sequences? utf8Seqs
     ByteClassSet byteClasses
 
@@ -687,14 +687,14 @@ class CompileClass {
                     holes.add(patch.hole)
                     self.c.fill(lastSplit, patch.entry)
                     lastSplit = Hole.None()
-                    initialEntry ??= patch.entry
+                    # initialEntry ??= patch.entry  FIXME: ??=
                 } else {
-                    initialEntry ??= self.c.insts.length
+                    # initialEntry ??= self.c.insts.length
                     self.c.fillToNext(lastSplit)
                     lastSplit = self.c.pushSplitHole()
                     var patch = self.cUtf8Seq(utf8Seq)
                     holes.push(patch.hole)
-                    lastSplit = self.c.fillSplit(lastSplit, entry, null)
+                    lastSplit = self.c.fillSplit(lastSplit, patch.entry, null)
                 }
             }
         }
@@ -745,10 +745,10 @@ class SuffixCache {
     }
 
     public mut method get(SuffixCacheKey key, InstPtr pc) -> InstPtr? {
-        if key in tbl {
-            return tbl[key]
+        if key in self.tbl {
+            return self.tbl[key]
         } else {
-            tbl[key] = pc
+            self.tbl[key] = pc
             return null
         }
     }
@@ -778,7 +778,7 @@ class SuffixCacheKey {
     }
 
     public operator hash {
-        return hash((self.fromInst, self.start, self.end))
+        return (self.fromInst, self.start, self.end).operator hash()
     }
 }
 
@@ -787,6 +787,10 @@ class ByteClassSet {
 
     public operator new() {
         self.value = [false] * 256
+    }
+
+    public operator []= (int index, bool value) {
+        self.value[index] = value
     }
 
     public mut method setRange(int start, int end) {
@@ -837,4 +841,8 @@ class Unreachable from Throwable {
     public operator new(str value) {
         self.value = value
     }
+}
+
+func isWordByte(int c) -> bool {
+    raise NotImplemented()
 }

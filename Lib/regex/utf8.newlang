@@ -1,4 +1,11 @@
+from itertools import all
+
 export Utf8Sequence, Utf8Range, Utf8Sequences, nextUtf8
+
+var TAG_CONT = 0b1000_0000
+var TAG_TWO = 0b1100_0000
+var TAG_THREE = 0b1110_0000
+var TAG_FOUR = 0b1111_0000
 
 func nextUtf8(bytes text, int i) -> int {
     return i + 1 if not text.get(i)?
@@ -19,6 +26,17 @@ const union Utf8Sequence {
     tuple[Utf8Range, Utf8Range] Two
     tuple[Utf8Range, Utf8Range, Utf8Range] Three
     tuple[Utf8Range, Utf8Range, Utf8Range, Utf8Range] Four
+
+    public property int length {
+        get {
+            return switch self {
+                case Utf8Sequence.One => 1
+                case Utf8Sequence.Two => 2
+                case Utf8Sequence.Three => 3
+                case Utf8Sequence.Four => 4
+            }
+        }
+    }
 
     static method fromEncodedRange(bytes start, bytes end) -> cls {
         assert start.length == end.length
@@ -44,7 +62,7 @@ const union Utf8Sequence {
                     Utf8Range(start[3], end[3])
                 )
             )
-            default => raise ValueError(f"invalid encoded length: {n}")
+            default => raise NotImplemented() # raise ValueError(f"invalid encoded length: {n}")
         }
     }
 
@@ -83,13 +101,16 @@ const union Utf8Sequence {
     public method matches(bytes val) -> bool {
         return false if val.length < self.length
 
-        return all((r.matches(b) for var b, var r in val, self))
+        for var b, var r in val, self {  # FIXME: Use all() & a generator
+            return false if not r.matches(b)
+        }
+        return true
     }
 }
 
 const class Utf8Range {
-    int start
-    int end
+    public int start
+    public int end
 
     public operator new(int start, int end) {
         assert start in [0:256] and end in [0:256]
@@ -106,7 +127,7 @@ class Utf8Sequences {
     final list[ScalarRange] rangeStack
 
     public operator new(char start, char end) {
-        self.rangeStack = [ScalarRange(start, end)]
+        self.rangeStack = [ScalarRange(int(start), int(end))]
     }
 
     public operator iter -> Utf8Sequence {
@@ -119,7 +140,7 @@ class Utf8Sequences {
     }
 
     public mut method push(char start, char end) {
-        self.push(ScalarRange(start, end))
+        self.push(ScalarRange(int(start), int(end)))
     }
 }
 
@@ -134,10 +155,9 @@ class ScalarRange {
 
     method split() -> tuple[cls, cls]? {
         if self.start < 0xE000 and self.end > 0xD7FF {
-           return (
-               ScalarRange(self.start, 0xD7FF),
-               ScalarRange(0xE000, self.end),
-           )
+           var s1 = ScalarRange(self.start, 0xD7FF)
+           var s2 = ScalarRange(0xE000, self.end)
+           return (s1, s2)
         } else {
             return null
         }
@@ -162,7 +182,7 @@ class ScalarRange {
 
 func decodeUtf8(bytes src) -> tuple[char, int]? {
     int b0
-    if src.get(0) as b {
+    if src.get(0)? as b {
         if b <= 0x7f {
             return (char(b), 1)
         } else {
