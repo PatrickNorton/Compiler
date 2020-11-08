@@ -96,13 +96,6 @@ generator func pairs(Iterable[T] values) -> T, T {
 }
 
 generic T
-generator func repeat(T value, int count) -> T {
-    dotimes count {
-        yield value
-    }
-}
-
-generic T
 generator func takeWhile(Callable[T, [bool]] predicate, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence while predicate)
 }
