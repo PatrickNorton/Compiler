@@ -14,7 +14,7 @@ func nextUtf8(bytes text, int i) -> int {
     }
 }
 
-union Utf8Sequence {
+const union Utf8Sequence {
     Utf8Range One
     tuple[Utf8Range, Utf8Range] Two
     tuple[Utf8Range, Utf8Range, Utf8Range] Three

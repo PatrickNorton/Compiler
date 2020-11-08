@@ -6,14 +6,14 @@ export InstChar, InstRanges, InstBytes, EmptyLook, InstPtr
 typedef InstPtr as int
 
 class Program {
-    public list[Inst] insts
+    public mref list[Inst] insts
     public mut list[InstPtr] matches
     public mut list[str?] captures
-    public dict[str, int] captureNameIdx
+    public mref dict[str, int] captureNameIdx
     public mut InstPtr start
-    public bytes byteClasses
+    public mref bytes byteClasses
     public mut bool onlyUtf8
-    public bool isBytes
+    public mut bool isBytes
     public mut bool isDfa
     public mut bool isReverse
     public mut bool isAnchoredStart
