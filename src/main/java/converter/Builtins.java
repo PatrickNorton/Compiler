@@ -5,7 +5,6 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -218,6 +217,7 @@ public final class Builtins {
                 "fromChars", AttributeInfo.method(fromCharsInfo)
         );
         STR.setStaticAttributes(staticStrMap);
+        var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(CHAR));
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT)), STR);
         var startsInfo = new FunctionInfo(ArgumentInfo.of(STR), BOOL);
         var splitInfo = new FunctionInfo(ArgumentInfo.of(STR), LIST.generify(STR));
@@ -226,6 +226,7 @@ public final class Builtins {
         var strAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR)),
+                "get", AttributeInfo.method(getInfo),
                 "join", AttributeInfo.method(joinInfo),
                 "startsWith", AttributeInfo.method(startsInfo),
                 "endsWith", AttributeInfo.method(startsInfo),
@@ -380,7 +381,8 @@ public final class Builtins {
     static {
         var dictContainsInfo = MethodInfo.of(ArgumentInfo.of(DICT_KEY), BOOL);
         var dictGetInfo = MethodInfo.of(ArgumentInfo.of(DICT_KEY), DICT_VAL);
-        var dictDelInfo = MethodInfo.of(ArgumentInfo.of(DICT_KEY));
+        var dictSetInfo = MethodInfo.ofMut(ArgumentInfo.of(DICT_KEY, DICT_VAL));
+        var dictDelInfo = MethodInfo.ofMut(ArgumentInfo.of(DICT_KEY));
         var dictIterInfo = MethodInfo.of(DICT_KEY, Builtins.ITERABLE.generify(DICT_VAL));
         var dictEqInfo = MethodInfo.of(ArgumentInfo.of(DICT), BOOL);
 
@@ -389,6 +391,7 @@ public final class Builtins {
         var dictMap = Map.of(
                 OpSpTypeNode.IN, dictContainsInfo,
                 OpSpTypeNode.GET_ATTR, dictGetInfo,
+                OpSpTypeNode.SET_ATTR, dictSetInfo,
                 OpSpTypeNode.DEL_ATTR, dictDelInfo,
                 OpSpTypeNode.ITER, dictIterInfo,
                 OpSpTypeNode.EQUALS, dictEqInfo
@@ -459,11 +462,13 @@ public final class Builtins {
 
     static {
         var nextFnInfo = new FunctionInfo("next", ArgumentInfo.of(), TypeObject.optional(ITERATOR_PARAM));
+        var peekFnInfo = new FunctionInfo("peek", ArgumentInfo.of(), TypeObject.optional(ITERATOR_PARAM));
         var nextInfo = AttributeInfo.method(nextFnInfo);
+        var peekInfo = AttributeInfo.method(peekFnInfo);
         var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERATOR_PARAM));
 
         ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
-        ITERATOR.setAttributes(Map.of("next", nextInfo), Collections.emptySet());
+        ITERATOR.setAttributes(Map.of("next", nextInfo, "peek", peekInfo), Set.of("next"));
         ITERATOR.seal();
     }
 

@@ -179,7 +179,7 @@ public final class ComprehensionConverter implements TestConverter {
             return info.getType(tvType);
         } else {
             var retType = TestConverter.returnType(node.getLooped().get(0), info, 1)[0];
-            var opRet = retType.tryOperatorReturnType(node.getLineInfo(), OpSpTypeNode.ITER, info)[0];
+            var opRet = retType.tryOperatorReturnType(node.getLooped().get(0), OpSpTypeNode.ITER, info)[0];
             return Builtins.deIterable(opRet)[0];
         }
     }

@@ -46,11 +46,17 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             type = new UnionTypeObject(node.getName().strName(), List.of(trueSupers), generics);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
-            parseIntoObject(converter, type);
+            var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
+            if (!isConst) {
+                checkConstSupers(type, Arrays.asList(trueSupers));
+            }
+            parseIntoObject(converter, type, isConst);
         } else {
             type = (UnionTypeObject) info.getTypeObj(node.strName());
             info.accessHandler().addCls(type);
+            info.addLocalTypes(type.getGenericInfo().getParamMap());
             parseStatements(converter);
+            info.removeLocalTypes();
             info.accessHandler().removeCls();
         }
         if (node.getDescriptors().contains(DescriptorNode.NONFINAL)) {
@@ -107,12 +113,16 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     private int completeType(@NotNull UnionTypeObject obj) {
         var converter = new ConverterHolder(info);
         var supers = convertSupers(info.typesOf(node.getSuperclasses()));
+        var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
+        if (isConst) {
+            checkConstSupers(obj, Arrays.asList(supers));
+        }
         obj.setSupers(Arrays.asList(supers));
         ensureProperInheritance(obj, supers);
         try {
             info.accessHandler().addCls(obj);
             info.addLocalTypes(obj.getGenericInfo().getParamMap());
-            parseIntoObject(converter, obj);
+            parseIntoObject(converter, obj, isConst);
         } finally {
             info.accessHandler().removeCls();
             info.removeLocalTypes();
@@ -120,7 +130,14 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return info.reserveClass(obj);
     }
 
-    private void parseIntoObject(ConverterHolder converter, @NotNull UnionTypeObject obj) {
+    private void parseIntoObject(ConverterHolder converter, @NotNull UnionTypeObject obj, boolean isConst) {
+        info.addLocalTypes(obj.getGenericInfo().getParamMap());
+        if (isConst) {
+            if (!classIsConstant(converter)) {
+                throw CompilerException.format("Cannot make union '%s' const", node, obj.name());
+            }
+            obj.isConstClass();
+        }
         parseStatements(converter);
         converter.attributes().addUnionMethods(variantMethods(obj));
         obj.setOperators(converter.getOperatorInfos());
@@ -206,5 +223,25 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             var arg = new Argument(VARIANT_NAME, val);
             return new FunctionInfo(new ArgumentInfo(arg), type);
         }
+    }
+
+    private void checkConstSupers(UnionTypeObject type, @NotNull Iterable<TypeObject> supers) {
+        for (var cls : supers) {
+            if (cls instanceof UserType<?> && ((UserType<?>) cls).constSemantics()) {
+                throw CompilerException.format(
+                        "Union '%s' inherits from the const class '%s', but is not itself const",
+                        node, type.name(), cls.name()
+                );
+            }
+        }
+    }
+
+    private static boolean classIsConstant(@NotNull ConverterHolder holder) {
+        for (var info : holder.getVars().values()) {
+            if (info.getMutType() != MutableType.STANDARD) {
+                return false;
+            }
+        }
+        return true;
     }
 }
