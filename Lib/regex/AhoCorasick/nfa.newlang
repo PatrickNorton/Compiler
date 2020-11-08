@@ -646,7 +646,7 @@ class QueuedState {
 class QueuedSet {
     final set[int]? value
 
-    public operator new(set[int]? value) {
+    public operator new(mut set[int]? value) {
         self.value = value
     }
 
