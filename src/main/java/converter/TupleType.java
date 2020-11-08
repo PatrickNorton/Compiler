@@ -77,6 +77,8 @@ public final class TupleType extends TypeObject {
             case STR:
             case REPR:
                 return Optional.of(new FunctionInfo(Builtins.STR));
+            case HASH:
+                return Optional.of(new FunctionInfo(Builtins.INT));
             default:
                 return Optional.empty();
         }
