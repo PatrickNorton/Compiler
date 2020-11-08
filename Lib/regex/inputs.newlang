@@ -1,5 +1,5 @@
 from .literal import LiteralSearcher
-from .prog import InstEmptyLook
+from .prog import InstEmptyLook, EmptyLook
 
 export InputAt, Input, CharInput, ByteInput
 
@@ -8,6 +8,13 @@ class InputAt {
     char? c
     int? byte_
     pubget mut int length
+
+    public operator new (int pos, char? c, int? b, int len) {
+        self.pos = pos
+        self.c = c
+        self.byte_ = b
+        self.length = len
+    }
 
     public operator bool {
         return bool(self.length)
@@ -71,10 +78,10 @@ class CharInput from Input {
 
     public method at(int i) -> InputAt {
         if i >= self.length {
-            return InputAt(self.length, Char(null), null, 0)
+            return InputAt(self.length, null, null, 0)
         } else {
             var c = str(self[i:])[0]
-            return InputAt(self.length, Char(c), null, bytes(c).length)
+            return InputAt(self.length, c, null, bytes(c).length)
         }
     }
 
@@ -83,7 +90,7 @@ class CharInput from Input {
     }
 
     public method previousChar(InputAt at) -> char? {
-        return Char(str(self[:at.pos])[-1])
+        return str(self[:at.pos]).get(-1)
     }
 
     public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool {
@@ -104,26 +111,29 @@ class CharInput from Input {
             }
             case EmptyLook.WordBoundary {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                return c1.isWordChar() ^ c2.isWordChar()
+                return isWordChar(c1) xor isWordChar(c2)
             }
             case EmptyLook.NotWordBoundary {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                return not c1.isWordChar() ^ c2.isWordChar()
+                return not isWordChar(c1) xor isWordChar(c2)
             }
             case EmptyLook.WordBoundaryAscii {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                return c1.isWordByte() ^ c2.isWordByte()
+                return isWordByte(c1) xor isWordByte(c2)
             }
             case EmptyLook.NotWordBoundaryAscii {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                return not c1.isWordByte() ^ c2.isWordByte()
+                return not isWordByte(c1) xor isWordByte(c2)
             }
         }
     }
 
     public method prefixAt(LiteralSearcher prefixes, InputAt at) -> InputAt? {
-        var s = prefixes.find(self[at.pos:]).first
-        return self.at(at.pos + s)
+        if prefixes.find(self[at.pos:])? as s {
+            return self.at(at.pos + s.0)
+        } else {
+            return null
+        }
     }
 
     public property int length {
@@ -155,7 +165,7 @@ class ByteInput from Input {
     }
 
     public method at(int i) -> InputAt {
-        if i >= self.len() {
+        if i >= self.length {
             return InputAt(self.length, null, null, 0)
         } else {
             return InputAt(i, null, self[i], 1)
@@ -181,18 +191,18 @@ class ByteInput from Input {
                 return at.pos == self.length or c == '\n'
             }
             case EmptyLook.StartText {
-                return at.pos() == 0
+                return at.pos == 0
             }
             case EmptyLook.EndText {
-                return at.pos() == self.len()
+                return at.pos == self.length
             }
             case EmptyLook.WordBoundary {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                return c1.isWordChar() != c2.isWordChar()
+                return isWordChar(c1) != isWordChar(c2)
             }
             case EmptyLook.NotWordBoundary {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                return c1.isWordChar() == c2.isWordChar()
+                return isWordChar(c1) == isWordChar(c2)
             }
             case EmptyLook.WordBoundaryAscii {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
@@ -202,7 +212,7 @@ class ByteInput from Input {
                     return false if not c1? and not at.isStart()
                     return false if c2? and not at.isEnd()
                 }
-                return c1.isWordByte() != c2.isWordByte()
+                return isWordByte(c1) != isWordByte(c2)
             }
             case EmptyLook.NotWordBoundaryAscii {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
@@ -212,7 +222,7 @@ class ByteInput from Input {
                     return false if not c1? and not at.isStart()
                     return false if c2? and not at.isEnd()
                 }
-                return c1.isWordByte() == c2.isWordByte()
+                return isWordByte(c1) == isWordByte(c2)
             }
         }
     }
@@ -221,7 +231,7 @@ class ByteInput from Input {
         LiteralSearcher prefixes,
         InputAt at,
     ) -> InputAt? {
-        return prefixes.find(self[at.pos:]).map(lambda s => self.at(at.pos + s.0))
+        return prefixes.find(self[at.pos:]).map(lambda tuple[int, int] s => self.at(at.pos + s.0))
     }
 
     public property int length {
@@ -233,4 +243,22 @@ class ByteInput from Input {
     public method asBytes() -> bytes {
         return self.text
     }
+}
+
+func isWordChar(char? c) -> bool {
+    return false if not c?
+    raise NotImplemented()
+}
+
+func isWordByte(char? c) -> bool {
+    return false if not c?
+    raise NotImplemented()
+}
+
+func decodeUtf8(bytes text) -> tuple[char, char]? {
+    raise NotImplemented()
+}
+
+func decodeLastUtf8(bytes text) -> tuple[char, char]? {
+    raise NotImplemented()
 }
