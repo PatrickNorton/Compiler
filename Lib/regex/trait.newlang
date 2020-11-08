@@ -32,7 +32,7 @@ class Locations {
 
     public property int length {
         get {
-            return self.value.length // 2
+            return self.values.length // 2
         }
     }
 
