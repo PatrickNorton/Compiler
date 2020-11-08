@@ -271,6 +271,7 @@ public final class Builtins {
         CHAR.isConstClass();
         // TODO: More char operators
         var charMap = Map.of(
+                OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(INT)),
                 OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(CHAR), CHAR),
                 OpSpTypeNode.SUBTRACT, MethodInfo.of(ArgumentInfo.of(CHAR), CHAR),
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(CHAR), BOOL)
@@ -489,6 +490,8 @@ public final class Builtins {
 
         THROWS.isConstClass();
         THROWS.seal();
+
+        THROWABLE.seal();
     }
 
     static {  // Set interface parents
@@ -533,7 +536,8 @@ public final class Builtins {
             DICT,
             OBJECT,
             NOT_IMPLEMENTED,
-            TUPLE
+            TUPLE,
+            THROWABLE
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
