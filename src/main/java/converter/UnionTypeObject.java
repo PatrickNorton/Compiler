@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -147,6 +148,23 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         }
     }
 
+    public boolean constSemantics() {
+        return info.isConstClass;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UnionTypeObject that = (UnionTypeObject) o;
+        return super.equals(o) && (info.isConstClass || isConst == that.isConst) && info == that.info;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), info, isConst);
+    }
+
     public int variantCount() {
         return info.variants.size();
     }
@@ -181,6 +199,11 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         info.staticAttributes = attributes;
     }
 
+    void isConstClass() {
+        assert !info.isSealed && !info.isConstClass;
+        info.isConstClass = true;
+    }
+
     public void seal() {
         addFulfilledInterfaces();
         info.seal();
@@ -188,6 +211,7 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
 
     protected static final class Info extends UserType.Info<MethodInfo, AttributeInfo> {
         private final List<Pair<String, TypeObject>> variants;
+        private boolean isConstClass;
 
         public Info(String name, List<TypeObject> supers, GenericInfo info, List<Pair<String, TypeObject>> variants) {
             super(name, supers, info);

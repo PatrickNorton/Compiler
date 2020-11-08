@@ -88,7 +88,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
 
     private void checkConstSupers(StdTypeObject type, @NotNull Iterable<TypeObject> supers) {
         for (var cls : supers) {
-            if (cls instanceof StdTypeObject && ((StdTypeObject) cls).constSemantics()) {
+            if (cls instanceof UserType<?> && ((UserType<?>) cls).constSemantics()) {
                 throw CompilerException.format(
                         "Class '%s' inherits from the const class '%s', but is not itself const",
                         node, type.name(), cls.name()

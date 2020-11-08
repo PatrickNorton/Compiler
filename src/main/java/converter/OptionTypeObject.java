@@ -92,6 +92,16 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     @Override
+    public TypeObject makeMut() {
+        return new OptionTypeObject(optionVal.makeMut());
+    }
+
+    @Override
+    public TypeObject makeConst() {
+        return new OptionTypeObject(optionVal.makeConst());
+    }
+
+    @Override
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
         if (other instanceof OptionTypeObject) {
             return optionVal.generifyAs(parent, ((OptionTypeObject) other).optionVal);

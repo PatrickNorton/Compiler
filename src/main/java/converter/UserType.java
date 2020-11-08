@@ -53,7 +53,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             if (!((UserType<?>) other).isConst && isConst) {
                 return false;
             } else if (((UserType<?>) other).generics.isEmpty()) {
-                return ((UserType<?>) other).isConst || !isConst;
+                return constSemantics() || ((UserType<?>) other).isConst || !isConst;
             } else if (generics.isEmpty()) {
                 return false;
             } else {
@@ -125,6 +125,10 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             result.addAll(fulfilledInterfaces());
             info.supers = result;
         }
+    }
+
+    public boolean constSemantics() {
+        return false;
     }
 
     @Override

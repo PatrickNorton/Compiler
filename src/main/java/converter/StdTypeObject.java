@@ -159,7 +159,7 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         info.isConstClass = true;
     }
 
-    boolean constSemantics() {
+    public boolean constSemantics() {
         return info.isConstClass;
     }
 
