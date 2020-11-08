@@ -4,14 +4,14 @@ class Cached[T] {
     private final list[T] stack
 
     public operator new() {
-        self.stack = []
+        # self.stack = []  FIXME: Non-constant types in list
     }
 
     public method get() -> T? {
         if self.stack {
-            return self.stack.pop()
+            # return self.stack.pop()  FIXME: Interior mutability
         } else {
-            return null
+            # return null
         }
     }
 
