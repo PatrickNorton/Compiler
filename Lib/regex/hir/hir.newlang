@@ -602,7 +602,7 @@ class Group {
 
 union GroupKind {
     int CaptureIndex
-    tuple[str, int] NamedCapture
+    tuple[str, int] CaptureName
     null NonCapturing
 }
 

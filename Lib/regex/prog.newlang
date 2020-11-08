@@ -7,18 +7,18 @@ typedef InstPtr as int
 
 class Program {
     public list[Inst] insts
-    public list[InstPtr] matches
-    public list[str?] captures
+    public mut list[InstPtr] matches
+    public mut list[str?] captures
     public dict[str, int] captureNameIdx
-    public InstPtr start
+    public mut InstPtr start
     public bytes byteClasses
-    public bool onlyUtf8
+    public mut bool onlyUtf8
     public bool isBytes
-    public bool isDfa
-    public bool isReverse
-    public bool isAnchoredStart
-    public bool isAnchoredEnd
-    public bool hasUnicodeWordBoundary
+    public mut bool isDfa
+    public mut bool isReverse
+    public mut bool isAnchoredStart
+    public mut bool isAnchoredEnd
+    public mut bool hasUnicodeWordBoundary
     public mut LiteralSearcher prefixes
     public mut int dfaSizeLimit
 
