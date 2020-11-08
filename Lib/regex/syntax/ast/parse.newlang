@@ -1,0 +1,157 @@
+from .ast import Alternation, CaptureName, Concat, Comment, Group, Position
+from .ast import ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind
+
+export AstBuilder
+
+class AstBuilder {
+    mut bool ignoreWhitespace
+    mut int nestLimit
+    mut bool octal
+
+    public operator new() {
+        self.ignoreWhitespace = false
+        self.nextLimit = 250
+        self.octal = false
+    }
+
+    public method build() -> mut Parser {
+        return Parser (
+            Position(0, 1, 1),
+            0,
+            self.nestLimit,
+            self.octal,
+            self.ignoreWhitespace,
+            self.ignoreWhitespace,
+            [],
+            [],
+            [],
+            [],
+            "",
+        )
+    }
+}
+
+class Parser {
+    mut Position pos
+    mut int captureIndex
+    mut int nestLimit
+    mut bool octal
+    bool initialIgnoreWhitespace
+    mut bool ignoreWhitespace
+    final list[Comment] comments
+    final list[GroupState] stackGroup
+    final list[ClassState] stackClass
+    final list[CaptureName] captureNames
+    mut str scratch
+
+    public operator new(
+        mut Position pos,
+        int captureIndex,
+        int nestLimit,
+        bool octal,
+        bool initialIgnoreWhitespace,
+        bool ignoreWhitespace,
+        mut list[Comment] comments,
+        mut list[GroupState] stackGroup,
+        mut list[ClassState] stackClass,
+        mut list[CaptureName] captureNames,
+        str scratch,
+    ) {
+        self.pos = pos
+        self.captureIndex = captureIndex
+        self.nestLimit = nestLimit
+        self.octal = octal
+        self.initialIgnoreWhitespace = initialIgnoreWhitespace
+        self.ignoreWhitespace = ignoreWhitespace
+        self.comments = comments
+        self.stackGroup = stackGroup
+        self.stackClass = stackClass
+        self.captureNames = captureNames
+        self.scratch = scratch
+    }
+}
+
+#|
+
+impl ParserBuilder {
+
+    /// Set the nesting limit for this parser.
+    ///
+    /// The nesting limit controls how deep the abstract syntax tree is allowed
+    /// to be. If the AST exceeds the given limit (e.g., with too many nested
+    /// groups), then an error is returned by the parser.
+    ///
+    /// The purpose of this limit is to act as a heuristic to prevent stack
+    /// overflow for consumers that do structural induction on an `Ast` using
+    /// explicit recursion. While this crate never does this (instead using
+    /// constant stack space and moving the call stack to the heap), other
+    /// crates may.
+    ///
+    /// This limit is not checked until the entire Ast is parsed. Therefore,
+    /// if callers want to put a limit on the amount of heap space used, then
+    /// they should impose a limit on the length, in bytes, of the concrete
+    /// pattern string. In particular, this is viable since this parser
+    /// implementation will limit itself to heap space proportional to the
+    /// lenth of the pattern string.
+    ///
+    /// Note that a nest limit of `0` will return a nest limit error for most
+    /// patterns but not all. For example, a nest limit of `0` permits `a` but
+    /// not `ab`, since `ab` requires a concatenation, which results in a nest
+    /// depth of `1`. In general, a nest limit is not something that manifests
+    /// in an obvious way in the concrete syntax, therefore, it should not be
+    /// used in a granular way.
+    pub fn nest_limit(&mut self, limit: u32) -> &mut ParserBuilder {
+        self.nest_limit = limit;
+        self
+    }
+
+    /// Whether to support octal syntax or not.
+    ///
+    /// Octal syntax is a little-known way of uttering Unicode codepoints in
+    /// a regular expression. For example, `a`, `\x61`, `\u0061` and
+    /// `\141` are all equivalent regular expressions, where the last example
+    /// shows octal syntax.
+    ///
+    /// While supporting octal syntax isn't in and of itself a problem, it does
+    /// make good error messages harder. That is, in PCRE based regex engines,
+    /// syntax like `\0` invokes a backreference, which is explicitly
+    /// unsupported in Rust's regex engine. However, many users expect it to
+    /// be supported. Therefore, when octal support is disabled, the error
+    /// message will explicitly mention that backreferences aren't supported.
+    ///
+    /// Octal syntax is disabled by default.
+    pub fn octal(&mut self, yes: bool) -> &mut ParserBuilder {
+        self.octal = yes;
+        self
+    }
+
+    /// Enable verbose mode in the regular expression.
+    ///
+    /// When enabled, verbose mode permits insigificant whitespace in many
+    /// places in the regular expression, as well as comments. Comments are
+    /// started using `#` and continue until the end of the line.
+    ///
+    /// By default, this is disabled. It may be selectively enabled in the
+    /// regular expression by using the `x` flag regardless of this setting.
+    pub fn ignore_whitespace(&mut self, yes: bool) -> &mut ParserBuilder {
+        self.ignore_whitespace = yes;
+        self
+    }'
+}
+|#
+
+class GSGroup {
+    Concat concat
+    Group group
+    bool ignoreWhitespace
+}
+
+union GroupState {
+    GSGroup Group
+    Alternation Alternation
+}
+
+union ClassState {
+    tuple[ClassSetUnion, ClassBracketed] Open
+    tuple[ClassSetBinaryOpKind, ClassSet] Op
+}

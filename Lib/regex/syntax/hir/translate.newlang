@@ -1,0 +1,98 @@
+export HirBuilder
+
+class HirBuilder {
+    bool allowInvalidUtf8
+    Flags flags
+
+    public operator new {
+        self.allowInvalidUtf8 = false
+        self.flags = Flags()
+    }
+}
+#|
+
+impl TranslatorBuilder {
+    /// Create a new translator builder with a default configuration.
+    pub fn new() -> TranslatorBuilder {
+        TranslatorBuilder {
+            allow_invalid_utf8: false,
+            flags: Flags::default(),
+        }
+    }
+
+    /// Build a translator using the current configuration.
+    pub fn build(&self) -> Translator {
+        Translator {
+            stack: RefCell::new(vec![]),
+            flags: Cell::new(self.flags),
+            allow_invalid_utf8: self.allow_invalid_utf8,
+        }
+    }
+
+    /// When enabled, translation will permit the construction of a regular
+    /// expression that may match invalid UTF-8.
+    ///
+    /// When disabled (the default), the translator is guaranteed to produce
+    /// an expression that will only ever match valid UTF-8 (otherwise, the
+    /// translator will return an error).
+    ///
+    /// Perhaps surprisingly, when invalid UTF-8 isn't allowed, a negated ASCII
+    /// word boundary (uttered as `(?-u:\B)` in the concrete syntax) will cause
+    /// the parser to return an error. Namely, a negated ASCII word boundary
+    /// can result in matching positions that aren't valid UTF-8 boundaries.
+    pub fn allow_invalid_utf8(&mut self, yes: bool) -> &mut TranslatorBuilder {
+        self.allow_invalid_utf8 = yes;
+        self
+    }
+
+    /// Enable or disable the case insensitive flag (`i`) by default.
+    pub fn case_insensitive(&mut self, yes: bool) -> &mut TranslatorBuilder {
+        self.flags.case_insensitive = if yes { Some(true) } else { None };
+        self
+    }
+
+    /// Enable or disable the multi-line matching flag (`m`) by default.
+    pub fn multi_line(&mut self, yes: bool) -> &mut TranslatorBuilder {
+        self.flags.multi_line = if yes { Some(true) } else { None };
+        self
+    }
+
+    /// Enable or disable the "dot matches any character" flag (`s`) by
+    /// default.
+    pub fn dot_matches_new_line(
+        &mut self,
+        yes: bool,
+    ) -> &mut TranslatorBuilder {
+        self.flags.dot_matches_new_line = if yes { Some(true) } else { None };
+        self
+    }
+
+    /// Enable or disable the "swap greed" flag (`U`) by default.
+    pub fn swap_greed(&mut self, yes: bool) -> &mut TranslatorBuilder {
+        self.flags.swap_greed = if yes { Some(true) } else { None };
+        self
+    }
+
+    /// Enable or disable the Unicode flag (`u`) by default.
+    pub fn unicode(&mut self, yes: bool) -> &mut TranslatorBuilder {
+        self.flags.unicode = if yes { None } else { Some(false) };
+        self
+    }
+}
+|#
+
+class Flags {
+    bool? caseInsensitive
+    bool? multiLine
+    bool? dotMatchesNewline
+    bool? swapGreed
+    bool? unicode
+
+    public operator new() {
+        self.caseInsensitive = null
+        self.multiLine = null
+        self.dotMatchesNewline = null
+        self.swapGreed = null
+        self.unicode = null
+    }
+}

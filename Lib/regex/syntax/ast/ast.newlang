@@ -1,0 +1,149 @@
+export Span, Ast
+export Alternation, Comment, Concat, CaptureName, Group, Position
+export ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind
+
+const class Span {
+    public Position start
+    public Position end
+}
+
+union Ast {
+    Span Empty
+    SetFlags Flags
+    Literal literal
+    Span Dot
+    Assertion Assertion
+    Class Class
+    Repetition Repetition
+    Group Group
+    Alternation Alternation
+    Concat Concat
+}
+
+const class Flags {
+    public Span span
+    public list[FlagsItem] items
+}
+
+union LiteralKind {
+    null Verbatim
+    null Punctuation
+    null Octal
+    HexLiteralKind HexFixed
+    HexLiteralKind HexBrace
+    SpecialLiteralKind Special
+}
+
+const class Alternation {
+    public Span span
+    public list[Ast] asts
+}
+
+const class Assertion {
+    Span span
+    AssertionKind kind
+}
+
+enum AssertionKind {
+    START_LINE,
+    END_LINE,
+    START_TEXT,
+    END_TEXT,
+    WORD_BOUNDARY,
+    NOT_WORD_BOUNDARY
+}
+
+const class Comment {
+    public Span span
+    public str comment
+
+    public operator new (Span span, str comment) {
+        self.span = span
+        self.comment = comment
+    }
+}
+
+const class Concat {
+    public Span span
+    public list[Ast] asts
+}
+
+const class CaptureName {
+    public Span span
+    public str name
+    public int index
+}
+
+const class Group {
+    public Span span
+    public GroupKind kind
+    public Ast ast
+}
+
+union GroupKind {
+    int CaptureIndex
+    CaptureName CaptureName
+    Flags NonCapturing
+}
+
+const class Literal {
+    public Span span
+    public LiteralKind kind
+    public char c
+}
+
+const class Position {
+    public int offset
+    public int line
+    public int column
+}
+
+const class SetFlags {
+    public Span span
+    public Flags flags
+}
+
+union Class {
+    ClassUnicode Unicode
+    ClassPerl Perl
+    ClassBracketed Bracketed
+}
+
+union ClassSet {
+    ClassSetItem Item
+    ClassSetBinaryOp BinaryOp
+}
+
+const class ClassSetUnion {
+    public Span span
+    public ClassSetItem items
+}
+
+const class ClassBracketed {
+    public Span span
+    public bool negated
+    public ClassSet kind
+}
+
+enum ClassSetBinaryOpKind {
+    INTERSECTION,
+    DIFFERENCE,
+    SYMMETRIC_DIFFERENCE
+}
+
+const class Repetition {
+    public Span span
+    public RepetitionOp op
+    public bool greedy
+    public Ast ast
+}
+
+class FlagsItem {
+    public Span span
+    public FlagsItemKind kind
+}
+
+class FlagsItemKind {
+    null Negation
+    Flag Flag
+}
