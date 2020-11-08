@@ -138,15 +138,15 @@ class Fsm {
         var emptyFlags, var stateFlags = dfa.startFlagsReverse(text, at)
         if dfa.startState(dfaCache.qcur, emptyFlags, stateFlags)? as r {
             if r == STATE_DEAD {
-                return Result.NoMatch(at)
+                return Result[int].NoMatch(at)
             } else {
-                dfa.start = si
+                dfa.start = r
             }
         } else {
-            return Result.Quit()
+            return Result[int].Quit()
         }
         assert dfa.start != STATE_UNKNOWN
-        return dfa.execAtReverse(cache.qcur, cache.qnext, text)
+        return dfa.execAtReverse(dfaCache.qcur, dfaCache.qnext, text)
     }
 
     public static method forward(
@@ -169,10 +169,10 @@ class Fsm {
             return Result[int].Quit()
         }
         assert dfa.start != STATE_UNKNOWN
-        return dfa.execAt(cache.qcur, cache.qnext, text)
+        return dfa.execAt(dfaCache.qcur, dfaCache.qnext, text)
     }
 
-    method startFlags(bytes text, int at) -> EmptyFlags, StateFlags {
+    private method startFlags(bytes text, int at) -> EmptyFlags, StateFlags {
         final var emptyFlags = EmptyFlags()
         final var stateFlags = StateFlags()
         emptyFlags.start = not at
@@ -182,6 +182,27 @@ class Fsm {
 
         var isWordLast = at > 0 and isAsciiWord(text[at - 1])
         var isWord = at < text.length and isAsciiWord(text[at])
+        if isWordLast {
+            stateFlags.setWord()
+        }
+        if isWord == isWordLast {
+            emptyFlags.notWordBoundary = true
+        } else {
+            emptyFlags.wordBoundary = true
+        }
+        return emptyFlags, stateFlags
+    }
+
+    private method startFlagsReverse(bytes text, int at) -> EmptyFlags, StateFlags {
+        final var emptyFlags = EmptyFlags()
+        final var stateFlags = StateFlags()
+        emptyFlags.start = at == text.length
+        emptyFlags.end = not text
+        emptyFlags.startLine = at == text.length or text[at] == b'\n'[0]
+        emptyFlags.endLine = not text
+
+        var isWordLast = at < text.length and isAsciiWord(text[at])
+        var isWord = at > 0 and isAsciiWord(text[at - 1])
         if isWordLast {
             stateFlags.setWord()
         }
@@ -402,7 +423,7 @@ class Fsm {
         }
 
         prevSi &= STATE_MAX
-        if self.nextState(qcur, qnext, prev_si, eof())? as si {
+        if self.nextState(qcur, qnext, prevSi, eof())? as si {
             if si == STATE_DEAD {
                 return result.setNonMatch(text.length)
             } else {
@@ -414,7 +435,104 @@ class Fsm {
         if prevSi & STATE_MATCH > 0 {
             prevSi &= ~STATE_MATCH
             self.lastMatchSi = prevSi
-            result = Result.Match(text.length)
+            result = Result[int].Match(text.length)
+        }
+        return result
+    }
+
+    private mut method execAtReverse(
+        mut set[int] qcur,
+        mut set[int] qnext,
+        bytes text,
+    ) -> Result[int] {
+        assert self.prog.isReverse
+        mut var result = Result[int].NoMatch(self.at)
+        mut var prevSi = self.start
+        mut var nextSi = self.start
+        mut var at = self.at
+        while at > 0 {
+            while nextSi <= STATE_MAX and at > 0 {
+                at--
+                prevSi = self.nextSi(nextSi, text, at)
+                if prevSi > STATE_MAX or at <= 4 {
+                    prevSi, nextSi = nextSi, prevSi
+                    break
+                }
+                at--
+                nextSi = self.nextSi(prevSi, text, at)
+                if nextSi > STATE_MAX {
+                    break
+                }
+                at--
+                prevSi = self.nextSi(nextSi, text, at)
+                if prevSi > STATE_MAX {
+                    prevSi, nextSi = nextSi, prevSi
+                    break
+                }
+                at--
+                nextSi = self.nextSi(prevSi, text, at)
+            }
+            if nextSi & STATE_MATCH > 0 {
+                nextSi &= ~STATE_MATCH
+                result = Result[int].Match(at + 1)
+                if self.quitAfterMatch {
+                    return result
+                }
+                self.lastMatchSi = nextSi
+                prevSi = nextSi
+                var cur = at
+                while (nextSi & ~STATE_MATCH) == prevSi and at >= 2 {
+                    at--
+                    nextSi = self.nextSi(nextSi & ~STATE_MATCH, text, at)
+                }
+                if at < cur {
+                    result = Result[int].Match(at + 2)
+                }
+            } elif nextSi >= STATE_UNKNOWN {
+                if nextSi == STATE_QUIT {
+                    return Result[int].Quit()
+                }
+                var byte = text[at]
+                prevSi &= STATE_MAX
+                self.at = at
+                if self.nextState(qcur, qnext, prevSi, byte)? as si {
+                    if si == STATE_DEAD {
+                        return result.setNonMatch(at)
+                    } else {
+                        nextSi = si
+                    }
+                } else {
+                    return Result[int].Quit()
+                }
+                assert nextSi != STATE_UNKNOWN
+                if nextSi & STATE_MATCH > 0 {
+                    nextSi &= ~STATE_MATCH
+                    result = Result[int].Match(at + 1)
+                    return result if self.quitAfterMatch
+
+                    self.lastMatchSi = nextSi
+                }
+                prevSi = nextSi
+            } else {
+                prevSi = nextSi
+            }
+        }
+
+        if self.nextState(qcur, qnext, prevSi, eof())? as si {
+            if si == STATE_DEAD {
+                return result.setNonMatch(0)
+            } else {
+                nextSi = si
+            }
+        } else {
+            return Result[int].Quit()
+        }
+
+        assert prevSi != STATE_UNKNOWN
+        if prevSi & STATE_MATCH > 0 {
+            prevSi &= ~STATE_MATCH
+            self.lastMatchSi = prevSi
+            result = Result[int].Match(0)
         }
         return result
     }
@@ -423,6 +541,133 @@ class Fsm {
         var b = text[i]
         var c = self.prog.byteClasses[b]
         return self.cache.trans.next(si, c)
+    }
+
+    private mut method execByte(
+        mut set[int] qcur,
+        mut set[int] qnext,
+        mut int si,
+        int b,
+    ) -> StatePtr? {
+        qcur.clear()
+        for var ip in self.state(si).instPtrs() {
+            qcur.insert(ip)
+        }
+
+        var isWordLast = self.state(si).flags().isWord
+        var isWord = isAsciiWord(b)
+        if self.state(si).flags().hasEmpty() {
+            mut var flags = EmptyFlags()
+            if isEof(b) {
+                flags.end = true
+                flags.endLine = true
+            } elif b == b'\n'[0] {
+                flags.endLine = true
+            }
+            if isWordLast == isWord {
+                flags.notWordBoundary = true
+            } else {
+                flags.wordBoundary = true
+            }
+            qnext.clear()
+            for var ip in qcur {
+                self.followEpsilons(ip, qnext, flags)
+            }
+            qcur, qnext = qnext, qcur
+        }
+
+        mut var emptyFlags = EmptyFlags()
+        mut var stateFlags = StateFlags()
+        emptyFlags.startLine = b == b'\n'[0]
+        if b.isAsciiWord() {
+            stateFlags.setWord()
+        }
+
+        qnext.clear()
+        for var ip in qcur {
+            switch self.prog[ip] {
+                case Inst.Match {
+                    stateFlags.setMatch()
+                    if not self.continuePastFirstMatch() {
+                        break
+                    } elif self.prog.matches.length > 1 and ip not in qnext {
+                        qnext.insert(ip)
+                    }
+                }
+                case Inst.Bytes as inst {
+                    if inst.matches(b) {
+                        self.followEpsilons(
+                            inst.jump,
+                            qnext,
+                            emptyFlags,
+                        )
+                    }
+                }
+            }
+        }
+
+        var cache = isEof(b) and self.prog.matches.length > 1
+        if not cache {
+            qcur, qnext = qnext, qcur
+        }
+
+        mut StatePtr next
+        if self.cachedState(qnext, stateFlags, si)? as n {
+            next = n
+        } else {
+            return null
+        }
+        if (self.start & ~STATE_START) == next {
+            assert not self.state(next).flags().isMatch()
+            next = self.startPtr(next)
+        }
+        if next <= STATE_MAX and self.state(next).flags().isMatch() {
+            next |= STATE_MATCH
+        }
+        assert next != STATE_UNKNOWN
+        if cache {
+            var c = self.byteClass(b)
+            self.cache.trans.setNext(si, c, next)
+        }
+        return next
+    }
+
+    private mut method nextState(
+        mut set[int] qcur,
+        mut set[int] qnext,
+        StatePtr si,
+        int b,
+    ) -> StatePtr? {
+        return STATE_DEAD if si == STATE_DEAD
+
+        var next = self.cache.trans.next(si, self.byteClass(b))
+        if next == STATE_UNKNOWN {
+            return self.execByte(qcur, qnext, si, b)
+        } elif next == STATE_QUIT {
+            return null
+        } elif next == STATE_DEAD {
+            return STATE_DEAD
+        } else {
+            return next
+        }
+    }
+
+    private method byteClass(int b) -> int {
+        if b in [0:256] {
+            return self.u8Class(b)
+        } else {
+            return self.numByteClasses() - 1
+        }
+    }
+
+    private method u8Class(int b) -> int {
+        assert b in [0:256]
+        return self.prog.byteClasses[b]
+    }
+
+    private method numByteClasses() -> int {
+        # We add 1 to account for the special EOF byte.
+        return (self.prog.byteClasses[255] + 1) + 1
     }
 
     private method prefixAt(bytes text, int at) -> int? {
@@ -461,7 +706,9 @@ union Result[T] {
 #     }
 
     public method setNonMatch(int at) -> Result[T] {
-        return Result.NoMatch(at) if self.NoMatch? else self
+        # FIXME? Should be able to refer to 'cls.T' as 'T'
+        # DOUBLE FIXME: This does not work
+        # return Result[cls.T].NoMatch(at) if self.NoMatch? else self
     }
 }
 
@@ -473,13 +720,16 @@ class State {
     }
 
     method flags() -> StateFlags {
-        return StateFlags(self.data[0])
+        final var result = StateFlags()
+        result.value = self.data[0]
+        return result
     }
 
     generator method instPtrs() -> int {
+        return if not self.data[1:]
         mut int base = 0
         mut int index = 1
-        while nread < base.length {
+        while index < self.data.length {
             yield base
             var delta, var nread = readVarInt(self.data[index:])
             base += delta
@@ -488,6 +738,14 @@ class State {
             index += nread
         }
     }
+}
+
+func readVarInt(bytes data) -> int, int {
+    raise NotImplemented()
+}
+
+func writeVarInt(bytes data, int index) {
+    raise NotImplemented()
 }
 
 typedef InstPtr as int
@@ -524,7 +782,7 @@ class StateMap {
     }
 
     public method getState(StatePtr si) -> State? {
-        return self.states.get(si / self.numByteClasses)
+        return self.states.get(si // self.numByteClasses)
     }
 
     public mut method insert(State state, StatePtr si) {
@@ -585,4 +843,12 @@ func isAsciiWord(int s) -> bool {
     static var nine = b"9"[0] + 1
     static var under = b"_"[0]
     return s in [A:Z] or s in [a:z] or s in [zero:nine] or s == under
+}
+
+func eof() -> int {
+    return 256
+}
+
+func isEof(int b) -> bool {
+    return b == 256
 }
