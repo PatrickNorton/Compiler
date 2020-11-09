@@ -1,3 +1,5 @@
+from .hir import Hir, ClassUnicode, ClassBytes
+
 export HirBuilder
 
 class HirBuilder {
@@ -10,7 +12,8 @@ class HirBuilder {
     }
 
     public method build() -> Translator {
-        return Translator([], self.flags, self.allowInvalidUtf8)
+        list[HirFrame] empty = []  # FIXME
+        return Translator(empty, self.flags, self.allowInvalidUtf8)
     }
 }
 #|

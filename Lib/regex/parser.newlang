@@ -1,5 +1,5 @@
-from .hir import Hir
-from .syntax import AstBuilder, HirBuilder
+from .ast import AstBuilder
+from .hir import Hir, HirBuilder
 
 export Parser, ParserBuilder
 
