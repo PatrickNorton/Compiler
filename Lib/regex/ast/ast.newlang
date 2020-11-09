@@ -1,6 +1,6 @@
 export Span, Ast
 export Alternation, Comment, Concat, CaptureName, Group, Position
-export ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind
+export ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind, ClassSetBinaryOp, ClassSetItem
 
 const class Span {
     public Position start
@@ -96,6 +96,12 @@ const class Position {
     public int offset
     public int line
     public int column
+
+    public operator new(int offset, int line, int column) {
+        self.offset = offset
+        self.line = line
+        self.column = column
+    }
 }
 
 const class SetFlags {

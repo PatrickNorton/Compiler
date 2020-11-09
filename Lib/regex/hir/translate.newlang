@@ -1,6 +1,7 @@
+from ..ast import Ast, visit, Visitor
 from .hir import Hir, ClassUnicode, ClassBytes
 
-export HirBuilder
+export HirBuilder, Translator
 
 class HirBuilder {
     bool allowInvalidUtf8
@@ -11,7 +12,7 @@ class HirBuilder {
         self.flags = Flags()
     }
 
-    public method build() -> Translator {
+    public method build() -> mut Translator {
         list[HirFrame] empty = []  # FIXME
         return Translator(empty, self.flags, self.allowInvalidUtf8)
     }
@@ -92,6 +93,26 @@ class Translator {
     private final list[HirFrame] stack
     private final Flags flags
     private bool allowInvalidUtf8
+
+    operator new(mut list[HirFrame] stack, mut Flags flags, bool allowInvalidUtf8) {
+        self.stack = stack
+        self.flags = flags
+        self.allowInvalidUtf8 = allowInvalidUtf8
+    }
+
+    public method translate(str pattern, Ast ast) -> Hir {
+        return visit(ast, TranslatorI(self, pattern))
+    }
+}
+
+class TranslatorI from Visitor[Hir] {
+    Translator trans
+    str pattern
+
+    public operator new(Translator trans, str pattern) {
+        self.trans = trans
+        self.pattern = pattern
+    }
 }
 
 union HirFrame {

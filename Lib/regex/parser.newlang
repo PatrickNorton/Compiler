@@ -1,13 +1,14 @@
 from .ast import AstBuilder
-from .hir import Hir, HirBuilder
+from .ast import Parser as AstParser
+from .hir import Hir, HirBuilder, Translator
 
 export Parser, ParserBuilder
 
 # FIXME: Actually create these types
 # typedef AstBuilder as int
 # typedef HirBuilder as int
-typedef AstParser as int
-typedef HirParser as int
+# typedef AstParser as int
+# typedef HirParser as int
 
 class ParserBuilder {
     private AstBuilder ast
@@ -70,9 +71,9 @@ class ParserBuilder {
 
 class Parser {
     AstParser ast
-    HirParser hir
+    Translator hir
 
-    public operator new(AstParser ast, HirParser hir) {
+    public operator new(AstParser ast, Translator hir) {
         self.ast = ast
         self.hir = hir
     }

@@ -1,7 +1,7 @@
-from .ast import Alternation, CaptureName, Concat, Comment, Group, Position
+from .ast import Ast, Alternation, CaptureName, Concat, Comment, Group, Position
 from .ast import ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind
 
-export AstBuilder
+export AstBuilder, Parser
 
 class AstBuilder {
     mut bool ignoreWhitespace
@@ -10,11 +10,15 @@ class AstBuilder {
 
     public operator new() {
         self.ignoreWhitespace = false
-        self.nextLimit = 250
+        self.nestLimit = 250
         self.octal = false
     }
 
     public method build() -> mut Parser {
+        list[Comment] comments = []  # FIXME
+        list[GroupState] stackGroup = []
+        list[ClassState] stackClass = []
+        list[CaptureName] captureNames = []
         return Parser (
             Position(0, 1, 1),
             0,
@@ -22,10 +26,10 @@ class AstBuilder {
             self.octal,
             self.ignoreWhitespace,
             self.ignoreWhitespace,
-            [],
-            [],
-            [],
-            [],
+            comments,
+            stackGroup,
+            stackClass,
+            captureNames,
             "",
         )
     }
@@ -68,6 +72,76 @@ class Parser {
         self.stackClass = stackClass
         self.captureNames = captureNames
         self.scratch = scratch
+    }
+
+    public method parse(str pattern) -> Ast {
+        return ParserI(self, pattern).parse()
+    }
+}
+
+class ParserI[P] {
+    final P parser
+    str pattern
+
+    public operator new(P parser, str pattern) {
+        self.parser = parser
+        self.pattern = pattern
+    }
+
+    method parse() -> Ast {
+        return self.parseWithComments().ast
+    }
+
+    mut method parseWithComments() -> WithComments {
+        assert not self.offset() as "parser can only be used once"
+        self.parser().reset()
+        mut var concat = Concat(self.span, [])
+        while true {
+            self.bumpSpace()
+            break if self.isEof()
+
+            switch str(self.chr()) {
+                case '(' {concat = self.pushGroup(concat)}
+                case ')' {concat = self.popGroup(concat)}
+                case '|' {concat = self.pushAlternate(concat)}
+                case '[' {
+                    var type = self.parseSetClass()
+                    concat.asts.push(Ast.Class(type))
+                }
+                case '?' {
+                    concat = self.parseUncountedRepetition(
+                        concat,
+                        RepetitionKind.ZERO_OR_ONE,
+                    )
+                }
+                case '*' {
+                    concat = self.parseUncountedRepetition(
+                        concat,
+                        RepetitionKind.ZERO_OR_MORE,
+                    )
+                }
+                case '+' {
+                    concat = self.parseUncountedRepetition(
+                        concat,
+                        RepetitionKind.ONE_OR_MORE,
+                    )
+                }
+                case '{' {
+                    concat = self.parseCountedRepetition(concat)
+                }
+                default {
+                    concat.asts.push(self.parsePrimitive().intoAst())
+                }
+            }
+        }
+        var ast = self.popGroupEnd(concat)
+        NestLimiter(self).check(ast)
+        var result = WithComments(
+            ast,
+            self.parser().comments
+        )
+        self.parser().comments = []
+        return result
     }
 }
 
