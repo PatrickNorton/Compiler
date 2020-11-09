@@ -8,26 +8,14 @@ class HirBuilder {
         self.allowInvalidUtf8 = false
         self.flags = Flags()
     }
+
+    public method build() -> Translator {
+        return Translator([], self.flags, self.allowInvalidUtf8)
+    }
 }
 #|
 
 impl TranslatorBuilder {
-    /// Create a new translator builder with a default configuration.
-    pub fn new() -> TranslatorBuilder {
-        TranslatorBuilder {
-            allow_invalid_utf8: false,
-            flags: Flags::default(),
-        }
-    }
-
-    /// Build a translator using the current configuration.
-    pub fn build(&self) -> Translator {
-        Translator {
-            stack: RefCell::new(vec![]),
-            flags: Cell::new(self.flags),
-            allow_invalid_utf8: self.allow_invalid_utf8,
-        }
-    }
 
     /// When enabled, translation will permit the construction of a regular
     /// expression that may match invalid UTF-8.
@@ -95,4 +83,19 @@ class Flags {
         self.swapGreed = null
         self.unicode = null
     }
+}
+
+class Translator {
+    private final list[HirFrame] stack
+    private final Flags flags
+    private bool allowInvalidUtf8
+}
+
+union HirFrame {
+    Hir Expr
+    ClassUnicode ClassUnicode
+    ClassBytes ClassBytes
+    Flags Group
+    null Concat
+    null Alternation
 }
