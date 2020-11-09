@@ -138,6 +138,33 @@ const class Repetition {
     public Ast ast
 }
 
+const class RepetitionOp {
+    public Span span
+    public RepetitionKind kind
+}
+
+union RepetitionKind {
+    null ZeroOrOne
+    null ZeroOrMore
+    null OneOrMore
+    RepetitionRange Range
+}
+
+union RepetitionRange {
+    int Exactly
+    int AtLeast
+    tuple[int, int] Bounded
+}
+
+enum Flag {
+    CASE_INSENSITIVE,
+    MULTI_LINE,
+    DOT_MATCHES_NEWLINE,
+    SWAP_GREED,
+    UNICODE,
+    INGORE_WHITESPACE
+}
+
 class FlagsItem {
     public Span span
     public FlagsItemKind kind
@@ -146,4 +173,97 @@ class FlagsItem {
 class FlagsItemKind {
     null Negation
     Flag Flag
+}
+
+enum SpecialLiteralKind {
+    BELL,
+    FORM_FEED,
+    TAB,
+    LINE_FEED,
+    CARRIAGE_RETURN,
+    VERTICAL_TAB,
+    SPACE
+}
+
+enum HexLiteralKind {
+    X,
+    UNICODE_SHORT,
+    UNICODE_LONG
+}
+
+const class ClassUnicode {
+    public Span span
+    public bool negated
+    public ClassUnicodeKind kind
+}
+
+union ClassUnicodeKind {
+    char OneLetter
+    str Named
+    tuple[ClassUnicodeOpKind, str, str] NamedValue
+}
+
+enum ClassUnicodeOpKind {
+    EQUAL,
+    COLON,
+    NOT_EQUAL
+}
+
+const class ClassPerl {
+    public Span span
+    public ClassPerlKind kind
+    public bool negated
+}
+
+enum ClassPerlKind {
+    DIGIT,
+    SPACE,
+    WORD
+}
+
+union ClassSetItem {
+    Span Empty
+    Literal Literal
+    ClassSetRange Range
+    ClassAscii Ascii
+    ClassUnicode Unicode
+    ClassPerl Perl
+    ClassBracketed Bracketed
+    ClassSetUnion Union
+}
+
+const class ClassSetRange {
+    public Span span
+    public Literal start
+    public Literal end
+}
+
+const class ClassSetBinaryOp {
+    public Span span
+    public ClassSetBinaryOpKind kind
+    public ClassSet lhs
+    public ClassSet rhs
+}
+
+const class ClassAscii {
+    public Span span
+    public ClassAsciiKind kind
+    public bool negated
+}
+
+enum ClassAsciiKind {
+    ALNUM,
+    ALPHA,
+    ASCII,
+    BLANK,
+    CNTRL,
+    DIGIT,
+    GRAPH,
+    LOWER,
+    PRINT,
+    PUNCT,
+    SPACE,
+    UPPER,
+    WORD,
+    X_DIGIT
 }
