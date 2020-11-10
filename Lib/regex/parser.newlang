@@ -4,12 +4,6 @@ from .hir import Hir, HirBuilder, Translator
 
 export Parser, ParserBuilder
 
-# FIXME: Actually create these types
-# typedef AstBuilder as int
-# typedef HirBuilder as int
-# typedef AstParser as int
-# typedef HirParser as int
-
 class ParserBuilder {
     private AstBuilder ast
     private HirBuilder hir

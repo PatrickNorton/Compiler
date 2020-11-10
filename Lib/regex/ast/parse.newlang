@@ -1,5 +1,5 @@
-from .ast import Ast, Alternation, CaptureName, Concat, Comment, Group, Position
-from .ast import ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind
+from .ast import Ast, Alternation, CaptureName, Concat, Comment, Group, Position, Span, WithComments
+from .ast import ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind, SetFlags
 
 export AstBuilder, Parser
 
@@ -75,7 +75,7 @@ class Parser {
     }
 
     public method parse(str pattern) -> Ast {
-        return ParserI(self, pattern).parse()
+        return ParserI[Parser](self, pattern).parse()
     }
 }
 
@@ -88,14 +88,15 @@ class ParserI[P] {
         self.pattern = pattern
     }
 
-    method parse() -> Ast {
+    mut method parse() -> Ast {
         return self.parseWithComments().ast
     }
 
     mut method parseWithComments() -> WithComments {
         assert not self.offset() as "parser can only be used once"
-        self.parser().reset()
-        mut var concat = Concat(self.span, [])
+        self.parser.reset()
+        list[Ast] asts = []  # FIXME
+        mut var concat = Concat(self.span(), asts)
         while true {
             self.bumpSpace()
             break if self.isEof()
@@ -143,6 +144,79 @@ class ParserI[P] {
         self.parser().comments = []
         return result
     }
+
+    private method span() -> Span {
+        return Span.splat(self.pos())
+    }
+
+    private method chr() -> char {
+        return self.charAt(self.offset())
+    }
+
+    private method pushGroup(mut Concat concat) -> Concat {
+        assert self.chr() == '('[0]
+        switch self.parseGroup() {
+            case Either.Left as s {
+                var ignore = s.flags.flagState(Flag.IGNORE_WHITESPACE)
+                if ignore? as v {
+                    self.parser().ignoreWhitespace = v
+                }
+                concat.asts.push(Ast.Flags(s))
+                return concat
+            }
+            case Either.Right as group {
+                var oldIgnoreWhitespace = self.ignoreWhitespace()
+                var newIgnoreWhitespace = group.flags().flagState(Flag.IGNORE_WHITESPACE)
+                self.parser().stackGroup.push(
+                    GroupState.Group(GSGroup(concat, group, oldIgnoreWhitespace))
+                )
+                self.parser().ignoreWhitespace = newIgnoreWhitespace
+                return Concat(self.span, [])
+            }
+        }
+    }
+
+    public method parseGroup() -> Either[SetFlags, Group] {
+        assert self.chr() == '('[0]
+        var openSpan = self.spanChar()
+        self.bump()
+        self.bumpSpace()
+        if self.isLookaroundPrefix() {
+            raise self.error(
+                Span(openSpan.start, self.span().end),
+                ErrorKind.UnsupportedLookAround,
+            )
+        }
+        var innerSpan = self.span()
+        if self.bumpIf("?P<") {
+            var captureIndex = self.nextCaptureIndex(openSpan)
+            var cap = self.parseCaptureName(captureIndex)
+            return Either.Right(Group(openSpan, GroupKind.CaptureName(cap), Ast.Empty(self.span)))
+        } elif self.bumpIf("?") {
+            if self.isEof() {
+                raise self.error(openSpan, ErrorKind.GroupUnclosed)
+            }
+            var flags = self.parseFlags()
+            var charEnd = self.chr()
+            self.bump()
+            if charEnd == ')'[0] {
+                if not flags.items {
+                    raise self.error(
+                        innerSpan,
+                        ErrorKind.RepetitionMissing,
+                    )
+                }
+                return Either.Right(SetFlags(Span(self.pos(), openSpan), flags))
+            } else {
+                assert charEnd == ':'[0]
+                return Either.Right(Group(openSpan, GroupKind.NonCapturing(captureIndex), Ast.Empty(self.span())))
+            }
+        } else {
+            var captureIndex = self.nextCaptureIndex(openSpan)
+            return Either.Right(Group(openSpan, GroupKind.CaptureIndex(captureIndex), Ast.Empty(self.span())))
+        }
+    }
+
 }
 
 #|
@@ -228,4 +302,9 @@ union GroupState {
 union ClassState {
     tuple[ClassSetUnion, ClassBracketed] Open
     tuple[ClassSetBinaryOpKind, ClassSet] Op
+}
+
+union Either[T, U] {
+    T Left
+    U Right
 }
