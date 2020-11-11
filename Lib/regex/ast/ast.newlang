@@ -2,7 +2,8 @@ export Span, Ast, WithComments, Literal, LiteralKind
 export Alternation, Comment, Concat, CaptureName, Group, Position
 export Class, ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind, ClassSetBinaryOp, ClassSetItem, ClassAscii
 export SetFlags, AstError, ErrorKind, GroupKind, Flags, Flag, ClassAsciiKind, RepetitionKind, RepetitionOp, Repetition
-export RepetitionRange, Assertion, ClassPerl, ClassUnicode
+export RepetitionRange, Assertion, ClassPerl, ClassUnicode, HexLiteralKind, SpecialLiteralKind, AssertionKind
+export ClassUnicodeKind, ClassUnicodeOpKind, ClassPerlKind, FlagsItem, FlagsItemKind
 
 const class Span {
     public Position start
@@ -51,11 +52,21 @@ union Ast {
 const class WithComments {
     public Ast ast
     public list[Comment] comments
+
+    public operator new(Ast ast, list[Comment] comments) {
+        self.ast = ast
+        self.comments = comments
+    }
 }
 
 const class Flags {
     public Span span
     public list[FlagsItem] items
+
+    public operator new(Span span, list[FlagsItem] flags) {
+        self.span = span
+        self.items = flags
+    }
 
     public method flagState(Flag flag) -> bool? {
         mut var negated = false
@@ -103,6 +114,11 @@ const class Alternation {
 const class Assertion {
     Span span
     AssertionKind kind
+
+    public operator new(Span span, AssertionKind kind) {
+        self.span = span
+        self.kind = kind
+    }
 }
 
 enum AssertionKind {
@@ -203,6 +219,10 @@ const class Literal {
         self.span = span
         self.kind = kind
         self.c = c
+    }
+
+    public method withSpan(Span span) -> Literal {
+        return Literal(span, self.kind, self.c)
     }
 }
 
@@ -347,6 +367,11 @@ enum Flag {
 class FlagsItem {
     public Span span
     public FlagsItemKind kind
+
+    public operator new(Span span, FlagsItemKind kind) {
+        self.span = span
+        self.kind = kind
+    }
 }
 
 union FlagsItemKind {
@@ -368,12 +393,29 @@ enum HexLiteralKind {
     X,
     UNICODE_SHORT,
     UNICODE_LONG
+
+    public property int digits {
+        get {
+            return switch self {
+                case HexLiteralKind.X => 1
+                case HexLiteralKind.UNICODE_SHORT => 4
+                case HexLiteralKind.UNICODE_LONG => 8
+                default => raise NotImplemented()
+            }
+        }
+    }
 }
 
 const class ClassUnicode {
     public Span span
     public bool negated
     public ClassUnicodeKind kind
+
+    public operator new(Span span, bool negated, ClassUnicodeKind kind) {
+        self.span = span
+        self.negated = negated
+        self.kind = kind
+    }
 }
 
 union ClassUnicodeKind {
@@ -392,6 +434,12 @@ const class ClassPerl {
     public Span span
     public ClassPerlKind kind
     public bool negated
+
+    public operator new(Span span, ClassPerlKind kind, bool negated) {
+        self.span = span
+        self.kind = kind
+        self.negated = negated
+    }
 }
 
 enum ClassPerlKind {

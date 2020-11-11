@@ -26,5 +26,5 @@ interface Visitor[O] {
 
 generic T
 func visit(Ast ast, Visitor[T] visitor) -> T {
-    return HeapVisitor().visit(ast, visitor)
+    # return HeapVisitor().visit(ast, visitor)
 }

@@ -4,6 +4,8 @@ from .ast import Ast, Alternation, CaptureName, Concat, Comment, Group, Position
 from .ast import ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind, SetFlags, ErrorKind, AstError
 from .ast import Flags, Flag, Class, ClassSetItem, ClassAscii, ClassSetBinaryOp, ClassAsciiKind, Literal, LiteralKind
 from .ast import RepetitionKind, RepetitionOp, Repetition, RepetitionRange, Assertion, ClassPerl, ClassUnicode
+from .ast import HexLiteralKind, SpecialLiteralKind, AssertionKind, ClassUnicodeKind, ClassUnicodeOpKind, ClassPerlKind
+from .ast import FlagsItem, FlagsItemKind
 
 export AstBuilder, Parser
 
@@ -12,6 +14,7 @@ str ASCII_LOWERCASE = 'abcdefghijklmnopqrstuvwxyz'
 str ASCII_UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 str ASCII_LETTERS = ASCII_LOWERCASE + ASCII_UPPERCASE
 str DIGITS = '0123456789'
+str HEX_DIGITS = '0123456789abcdefABCDEF'
 str WHITESPACE = ' \t\r\n\f\v'
 
 class AstBuilder {
@@ -147,12 +150,12 @@ class ParserI {
             }
         }
         var ast = self.popGroupEnd(concat)
-        NestLimiter(self).check(ast)
+        # NestLimiter(self).check(ast)
         var result = WithComments(
             ast,
-            self.parser().comments
+            self.parser.comments[:]
         )
-        self.parser().comments = []
+        self.parser.comments.clear()
         return result
     }
 
@@ -260,12 +263,12 @@ class ParserI {
                 return ast
             }
             case '^' {
-                var ast = Primitive.Assertion(Assertion(self.spanChar(), AssertionKind.StartLine()))
+                var ast = Primitive.Assertion(Assertion(self.spanChar(), AssertionKind.START_LINE))
                 self.bump()
                 return ast
             }
             case '$' {
-                var ast = Primitive.Assertion(Assertion(self.spanChar(), AssertionKind.EndLine()))
+                var ast = Primitive.Assertion(Assertion(self.spanChar(), AssertionKind.END_LINE))
                 self.bump()
                 return ast
             }
@@ -291,40 +294,39 @@ class ParserI {
         } elif c in "89" {
             raise self.error(Span(start, self.spanChar().end), ErrorKind.UnsupportedBackReference())
         } elif c in "xuU" {
-            mut var lit = self.parseHex()
-            lit.span.start = start
-            return Primitive.Literal(lit)
+            var lit = self.parseHex()
+            return Primitive.Literal(lit.withSpan(Span(start, lit.span.end)))
         } elif c in "pP" {
-            mut var c = self.parseUnicodeClass()
-            c.span.start = start
-            return Primitive.Unicode(c)
+            var c = self.parseUnicodeClass()
+            var span = Span(start, c.span.end)
+            return Primitive.Unicode(ClassUnicode(span, c.negated, c.kind))
         } elif c in "dswDSW" {
             mut var c = self.parsePerlClass()
-            c.span.start = start
-            return Primitive.Perl(c)
+            var span = Span(start, c.span.end)
+            return Primitive.Perl(ClassPerl(span, c.kind, c.negated))
         }
 
         self.bump()
         var span = Span(start, self.parser.pos)
         if isMetaCharacter(c) {
-            return Primitive.Literal(Literal(span, LiteralKind.Punctuation, c))
+            return Primitive.Literal(Literal(span, LiteralKind.Punctuation(), c))
         }
-        var special = lambda SpecialLiteralKind kind, char c => Primitive.Literal(
+        var special = lambda SpecialLiteralKind kind, char c -> Primitive => Primitive.Literal(
             Literal(span, LiteralKind.Special(kind), c)
         )
-        switch str(c) {
-            case 'a' => special(SpecialLiteralKind.Bell(), '\x07'[0])
-            case 'f' => special(SpecialLiteralKind.FormFeed(), '\x0C'[0])
-            case 't' => special(SpecialLiteralKind.Tab(), '\t'[0])
-            case 'n' => special(SpecialLiteralKind.LineFeed(), '\n'[0])
-            case 'r' => special(SpecialLiteralKind.CarriageReturn(), '\r'[0])
-            case 'v' => special(SpecialLiteralKind.VerticalTab(), '\x0B'[0])
-            case ' ' => (special(SpecialLiteralKind.Space(), ' ')
-                if self.ignore_whitespace() else raise self.error(span, ErrorKind.EscapeUnrecognized()))
-            case 'A' => Primitive.Assertion(Assertion(span, AssertionKind.StartText()))
-            case 'z' => Primitive.Assertion(Assertion(span, AssertionKind.EndText()))
-            case 'b' => Primitive.Assertion(Assertion(span, AssertionKind.WordBoundary()))
-            case 'B' => Primitive.Assertion(Assertion(span, AssertionKind.NotWordBoundary()))
+        return switch str(c) {
+            case 'a' => special(SpecialLiteralKind.BELL, '\x07'[0])
+            case 'f' => special(SpecialLiteralKind.FORM_FEED, '\x0C'[0])
+            case 't' => special(SpecialLiteralKind.TAB, '\t'[0])
+            case 'n' => special(SpecialLiteralKind.LINE_FEED, '\n'[0])
+            case 'r' => special(SpecialLiteralKind.CARRIAGE_RETURN, '\r'[0])
+            case 'v' => special(SpecialLiteralKind.VERTICAL_TAB, '\x0B'[0])
+            case ' ' => (special(SpecialLiteralKind.SPACE, ' '[0])
+                if self.ignoreWhitespace() else raise self.error(span, ErrorKind.EscapeUnrecognized()))
+            case 'A' => Primitive.Assertion(Assertion(span, AssertionKind.START_TEXT))
+            case 'z' => Primitive.Assertion(Assertion(span, AssertionKind.END_TEXT))
+            case 'b' => Primitive.Assertion(Assertion(span, AssertionKind.WORD_BOUNDARY))
+            case 'B' => Primitive.Assertion(Assertion(span, AssertionKind.NOT_WORD_BOUNDARY))
             default  => raise self.error(span, ErrorKind.EscapeUnrecognized())
         }
     }
@@ -334,13 +336,13 @@ class ParserI {
 
         var hexKind = switch self.chr() {
             case 'x' => HexLiteralKind.X
-            case 'u' => ast.HexLiteralKind.UNICODE_SHORT
-            default => ast.HexLiteralKind.UNICODE_LONG
+            case 'u' => HexLiteralKind.UNICODE_SHORT
+            default => HexLiteralKind.UNICODE_LONG
         }
         if not self.bumpAndBumpSpace() {
             raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
         }
-        if self.char() == '{' {
+        if self.chr() == '{'[0] {
             self.parseHexBrace(hexKind)
         } else {
             self.parseHexDigits(hexKind)
@@ -348,34 +350,34 @@ class ParserI {
     }
 
     private method parseHexDigits(HexLiteralKind kind) -> Literal {
-        final var scratch = StringBuilder()
+        final var scratch = StringBuilder("")
 
         var start = self.parser.pos
-        for i in [0:kind.digits()] {
+        for var i in [0:kind.digits] {
             if i > 0 and not self.bumpAndBumpSpace() {
                 raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
             }
-            if not self.chr() in HEX_DIGITS {
-                raise self.error(self.spanChar(), ErrorKind.EscapeHexInvalidDigit)
+            if self.chr() not in HEX_DIGITS {
+                raise self.error(self.spanChar(), ErrorKind.EscapeHexInvalidDigit())
             }
             scratch.add(self.chr())
         }
         self.bumpAndBumpSpace()
         var end = self.parser.pos
         var hex = str(scratch)
-        return Literal(Span(start, end), LiteralKind.HexFixed(kind), int(hex))
+        return Literal(Span(start, end), LiteralKind.HexFixed(kind), char(int(hex)))
     }
 
     private method parseHexBrace(HexLiteralKind kind) -> Literal {
-        final var scratch = StringBuilder()
+        final var scratch = StringBuilder("")
 
-        var bracePos = self.position.pos
+        var bracePos = self.parser.pos
         var start = self.spanChar().end
         while self.bumpAndBumpSpace() and self.chr() != '}'[0] {
-            if not isHex(self.chr()) {
-                raise self.error(self.span_chr(), ErrorKind.EscapeHexInvalidDigit())
+            if self.chr() not in HEX_DIGITS {
+                raise self.error(self.spanChar(), ErrorKind.EscapeHexInvalidDigit())
             }
-            scratch.push(self.chr())
+            scratch.add(self.chr())
         }
         if self.isEof() {
             raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
@@ -388,8 +390,69 @@ class ParserI {
         if not hex {
             raise self.error(Span(bracePos, self.parser.pos), ErrorKind.EscapeHexEmpty())
         }
-        var chr = char(int(hex, 16))
-        return Literal(Span(start, self.parser.pos), LiteralKind.HexBrace(kind))
+        var chr = char(int(hex))
+        return Literal(Span(start, self.parser.pos), LiteralKind.HexBrace(kind), chr)
+    }
+
+    private method parseUnicodeClass() -> ClassUnicode {
+        assert self.chr() in "pP"
+
+        final var scratch = StringBuilder("")
+
+        var negated = self.chr() == 'P'[0]
+        if not self.bumpAndBumpSpace() {
+            raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
+        }
+        if self.chr() == '{'[0] {
+            var start = self.spanChar().end
+            while self.bumpAndBumpSpace() and self.chr() != '}' {
+                scratch.add(self.chr())
+            }
+            if self.isEof() {
+                raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
+            }
+            assert self.chr() == '}'[0]
+            self.bump()
+
+            var name = str(scratch)
+            if name.indexOf("!=")? as i {
+                var kind = ClassUnicodeKind.NamedValue((ClassUnicodeOpKind.NOT_EQUAL, name[:i], name[i+2:]))
+                return ClassUnicode(Span(start, self.parser.pos), negated, kind)
+            } elif name.indexOf(":")? as i {
+                var kind = ClassUnicodeKind.NamedValue((ClassUnicodeOpKind.COLON, name[:i], name[i+1:]))
+                return ClassUnicode(Span(start, self.parser.pos), negated, kind)
+            } elif name.indexOf("=")? as i {
+                var kind = ClassUnicodeKind.NamedValue((ClassUnicodeOpKind.EQUAL, name[:i], name[i+1:]))
+                return ClassUnicode(Span(start, self.parser.pos), negated, kind)
+            } else {
+                return ClassUnicode(Span(start, self.parser.pos), negated, ClassUnicodeKind.Named(name))
+            }
+        } else {
+            var start = self.parser.pos
+            var c = self.chr()
+            if c == '\\'[0] {
+                raise self.error(self.spanChar(), ErrorKind.UnicodeClassInvalid())
+            }
+            self.bumpAndBumpSpace()
+            var kind = ClassUnicodeKind.OneLetter(c)
+            return ClassUnicode(Span(start, self.parser.pos), negated, kind)
+        }
+    }
+
+    private method parsePerlClass() -> ClassPerl {
+        var c = self.chr()
+        var span = self.spanChar()
+        self.bump()
+        var negated, var kind = *switch c {
+            case 'd' => (false, ClassPerlKind.DIGIT)
+            case 'D' => (true, ClassPerlKind.DIGIT)
+            case 's' => (false, ClassPerlKind.SPACE)
+            case 'S' => (true, ClassPerlKind.SPACE)
+            case 'w' => (false, ClassPerlKind.WORD)
+            case 'W' => (true, ClassPerlKind.WORD)
+            default => raise NotImplemented()
+        }
+        return ClassPerl(span, kind, negated)
     }
 
     private method peek() -> char? {
@@ -399,7 +462,7 @@ class ParserI {
 
 
     private method span() -> Span {
-        return Span.splat(self.pos())
+        return Span(self.parser.pos, self.parser.pos)
     }
 
     private method chr() -> char {
@@ -583,20 +646,25 @@ class ParserI {
     }
 
     private method parseFlags() -> Flags {
-        mut var flags = Flags(self.span(), [])
+        var span = self.span()
+        final list[FlagsItem] items = []
         mut Span? lastWasNegation = null
         while self.chr() != ':'[0] and self.chr() != ')'[0] {
             if self.chr() == '-'[0] {
                 lastWasNegation = self.spanChar()
                 var item = FlagsItem(self.spanChar(), FlagsItemKind.Negation())
-                if flags.addItem(item)? as i {
-                    raise self.error(self.spanChar(), ErrorKind.FlagRepeatedNegation(flags.items[i].span))
+                if items.indexOf(item)? as i {
+                    raise self.error(self.spanChar(), ErrorKind.FlagRepeatedNegation(items[i].span))
+                } else {
+                    items.add(item)
                 }
             } else {
                 lastWasNegation = null
                 var item = FlagsItem(self.spanChar(), FlagsItemKind.Flag(self.parseFlag()))
-                if flags.addItem(item)? as i {
-                    raise self.error(self.spanChar(), ErrorKind.FlagDuplicate(flags.items[i].span))
+                if items.indexOf(item)? as i {
+                    raise self.error(self.spanChar(), ErrorKind.FlagDuplicate(items[i].span))
+                } else {
+                    items.add(item)
                 }
             }
             if not self.bump() {
@@ -606,8 +674,19 @@ class ParserI {
         if lastWasNegation? as span {
             raise self.error(span, ErrorKind.FlagDanglingNegation())
         }
-        flags.span.end = self.pos()
-        return flags
+        return Flags(Span(span.start, self.parser.pos), items)
+    }
+
+    private method parseFlag() -> Flag {
+        return switch str(self.chr()) {
+            case 'i' => Flag.CASE_INSENSITIVE
+            case 'm' => Flag.MULTI_LINE
+            case 's' => Flag.DOT_MATCHES_NEWLINE
+            case 'U' => Flag.SWAP_GREED
+            case 'u' => Flag.UNICODE
+            case 'x' => Flag.IGNORE_WHITESPACE
+            default => raise self.error(self.spanChar(), ErrorKind.FlagUnrecognized())
+        }
     }
 
     public method pushAlternate(Concat concat) -> Concat {
@@ -730,8 +809,7 @@ class ParserI {
         return s, unionSet
     }
 
-
-    private method popClass(ClassSetUnion nestedUnion) -> Either[ClassSetUnion, Class] {
+    private mut method popClass(ClassSetUnion nestedUnion) -> Either[ClassSetUnion, Class] {
         assert self.chr() == ']'[0]
 
         var item = ClassSet.Item(nestedUnion.intoItem())
@@ -744,12 +822,12 @@ class ParserI {
             case ClassState.Open as pair {
                 mut var un, var s = *pair
                 self.bump()
-                s.span = Span(s.span.start, self.parser.pos)
-                s.kind = prevset
+                var span = Span(s.span.start, self.parser.pos)
+                var state = ClassBracketed(span, s.negated, prevset)
                 if not stack {
-                    return Either[ClassSetUnion, Class].Right(Class.Bracketed(s))
+                    return Either[ClassSetUnion, Class].Right(Class.Bracketed(state))
                 } else {
-                    un.add(ClassSetItem.Bracketed(s))
+                    un.add(ClassSetItem.Bracketed(state))
                     return Either[ClassSetUnion, Class].Left(un)
                 }
             }
@@ -820,12 +898,42 @@ class ParserI {
         }
     }
 
+    private mut method popGroupEnd(Concat concat_) -> Ast {
+        var concat = concat_.withSpan(Span(concat_.span.start, self.parser.pos))
+        final var stack = self.parser.stackGroup
+        Ast ast
+        if stack.pop()? as gs {
+            switch gs {
+                case GroupState.Alternation as alt {
+                    var span = Span(alt.span.start, self.parser.pos)
+                    var asts = alt.asts + [concat.intoAst()]
+                    ast = Ast.Alternation(Alternation(span, asts))
+                }
+                case GroupState.Group as gs {
+                    raise self.error(gs.group.span, ErrorKind.GroupUnclosed())
+                }
+            }
+        }
+        if stack.pop()? as gs {
+            switch gs {
+                case GroupState.Alternation {
+                    raise NotImplemented()
+                }
+                case GroupState.Group as g {
+                    raise self.error(g.group.span, ErrorKind.GroupUnclosed())
+                }
+            }
+        } else {
+            return ast
+        }
+    }
+
     private method error(Span span, ErrorKind kind) -> AstError {
         return AstError(span, self.pattern, kind)
     }
 
     private method unclosedClassError() -> AstError {
-        for var state in reversed(self.parser().stackClass) {
+        for var state in reversed(self.parser.stackClass) {
             if state.Open? as p {
                 return self.error(p.0.span, ErrorKind.ClassUnclosed())
             }
@@ -833,75 +941,6 @@ class ParserI {
         raise NotImplemented()
     }
 }
-
-#|
-
-impl ParserBuilder {
-
-    /// Set the nesting limit for this parser.
-    ///
-    /// The nesting limit controls how deep the abstract syntax tree is allowed
-    /// to be. If the AST exceeds the given limit (e.g., with too many nested
-    /// groups), then an error is returned by the parser.
-    ///
-    /// The purpose of this limit is to act as a heuristic to prevent stack
-    /// overflow for consumers that do structural induction on an `Ast` using
-    /// explicit recursion. While this crate never does this (instead using
-    /// constant stack space and moving the call stack to the heap), other
-    /// crates may.
-    ///
-    /// This limit is not checked until the entire Ast is parsed. Therefore,
-    /// if callers want to put a limit on the amount of heap space used, then
-    /// they should impose a limit on the length, in bytes, of the concrete
-    /// pattern string. In particular, this is viable since this parser
-    /// implementation will limit itself to heap space proportional to the
-    /// lenth of the pattern string.
-    ///
-    /// Note that a nest limit of `0` will return a nest limit error for most
-    /// patterns but not all. For example, a nest limit of `0` permits `a` but
-    /// not `ab`, since `ab` requires a concatenation, which results in a nest
-    /// depth of `1`. In general, a nest limit is not something that manifests
-    /// in an obvious way in the concrete syntax, therefore, it should not be
-    /// used in a granular way.
-    pub fn nest_limit(&mut self, limit: u32) -> &mut ParserBuilder {
-        self.nest_limit = limit;
-        self
-    }
-
-    /// Whether to support octal syntax or not.
-    ///
-    /// Octal syntax is a little-known way of uttering Unicode codepoints in
-    /// a regular expression. For example, `a`, `\x61`, `\u0061` and
-    /// `\141` are all equivalent regular expressions, where the last example
-    /// shows octal syntax.
-    ///
-    /// While supporting octal syntax isn't in and of itself a problem, it does
-    /// make good error messages harder. That is, in PCRE based regex engines,
-    /// syntax like `\0` invokes a backreference, which is explicitly
-    /// unsupported in Rust's regex engine. However, many users expect it to
-    /// be supported. Therefore, when octal support is disabled, the error
-    /// message will explicitly mention that backreferences aren't supported.
-    ///
-    /// Octal syntax is disabled by default.
-    pub fn octal(&mut self, yes: bool) -> &mut ParserBuilder {
-        self.octal = yes;
-        self
-    }
-
-    /// Enable verbose mode in the regular expression.
-    ///
-    /// When enabled, verbose mode permits insigificant whitespace in many
-    /// places in the regular expression, as well as comments. Comments are
-    /// started using `#` and continue until the end of the line.
-    ///
-    /// By default, this is disabled. It may be selectively enabled in the
-    /// regular expression by using the `x` flag regardless of this setting.
-    pub fn ignore_whitespace(&mut self, yes: bool) -> &mut ParserBuilder {
-        self.ignore_whitespace = yes;
-        self
-    }'
-}
-|#
 
 class GSGroup {
     Concat concat
@@ -942,4 +981,8 @@ func isCaptureChar(char c, bool first) -> bool {
     return (c == '_'[0]
         or (not first and c in DIGITS or c in ".[]")
         or c in ASCII_LETTERS)
+}
+
+func isMetaCharacter(char c) -> bool {
+    raise NotImplemented()
 }
