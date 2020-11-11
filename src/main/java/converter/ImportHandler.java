@@ -588,21 +588,16 @@ public final class ImportHandler {
         }
     }
 
-    public static void linkAll() {
-        loadDefaultInterfaces();
-        for (var file : ALL_FILES.values()) {
-            file.link();
-        }
-    }
-
-    public static void compileAll() {
+    public static void compileAll(CompilerInfo info) {
         loadDefaultInterfaces();
         while (!toCompile.isEmpty()) {
             var nextCompilationRound = toCompile;
             toCompile = new ArrayList<>();
+            info.link();
             for (var pair : nextCompilationRound) {
                 pair.getKey().link();
             }
+            info.compile();
             for (var pair : nextCompilationRound) {
                 pair.getKey().compile();
             }
