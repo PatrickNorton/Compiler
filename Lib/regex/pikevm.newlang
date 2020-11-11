@@ -2,7 +2,7 @@ from itertools import all
 
 from .exec import ProgramCache
 from .inputs import Input, InputAt
-from .prog import InstPtr, Program
+from .prog import InstPtr, Program, Inst
 from .trait import Slot
 
 export Fsm, Cache
@@ -20,7 +20,7 @@ class Fsm {
 
     public static method exec(
         Program prog,
-        ProgramCache cache,
+        mut ProgramCache cache,
         list[bool] matches,
         list[Slot] slots,
         bool quitAfterMatch,
@@ -28,13 +28,13 @@ class Fsm {
         int start,
         int end,
     ) -> bool {
-        final var vmCache = cache.pikeVM
+        final var vmCache = cache.pikevm
         vmCache.clist.resize(prog.length, prog.captures.length)
         vmCache.nlist.resize(prog.length, prog.captures.length)
         var at = inputVal.at(start)
-        return Fsm(prog, cache.stack, inputVal).exec_(
-            cache.clist,
-            cache.nlist,
+        return Fsm(prog, vmCache.stack, inputVal).exec_(
+            vmCache.clist,
+            vmCache.nlist,
             matches,
             slots,
             quitAfterMatch,
@@ -97,7 +97,7 @@ class Fsm {
             # before the current character. For stepping through the machine,
             # we can to look at the current character, so we advance the
             # input.
-            var atNext = self.inputVal.at(at.nextPos())
+            final var atNext = self.inputVal.at(at.nextPos())
             for int i, var ip in enumerate(clist.codes) {
                 if self.step(
                     nlist,
@@ -124,7 +124,7 @@ class Fsm {
                     break if self.prog.matches.length == 1
                 }
             }
-            break if at.pos() >= end
+            break if at.pos >= end
             at = atNext
             clist, nlist = nlist, clist
             nlist.codes.clear()
@@ -146,7 +146,8 @@ class Fsm {
                 if matchSlot < matches.length {
                     matches[matchSlot] = true
                 }
-                slots[0:threadCaps.length] = threadCaps[:slots.length]
+                # FIXME: Slice assignment
+                # slots[0:threadCaps.length] = threadCaps[:slots.length]
                 return true
             }
             case Inst.Char as inst {
@@ -156,7 +157,7 @@ class Fsm {
                 return false
             }
             case Inst.Ranges as inst {
-                if inst.matches(b) {
+                if inst.matches(at) {
                     self.add(nlist, threadCaps, inst.jump, atNext)
                 }
                 return false
@@ -176,14 +177,14 @@ class Fsm {
     }
 
     mut method add(mut Threads nlist, mut list[int?] threadCaps, int ip, InputAt at) {
-        self.stack.add(FollwEpsilon.IP(ip))
+        self.stack.add(FollowEpsilon.IP(ip))
         for var frame in reversed(self.stack) {
             switch frame {
                 case FollowEpsilon.IP as ip {
                     self.addStep(nlist, threadCaps, ip, at)
                 }
                 case FollowEpsilon.Capture as pair {
-                    threadCaps[pair.first] = pair.second
+                    threadCaps[pair.0] = pair.1
                 }
             }
         }
@@ -203,7 +204,7 @@ class Fsm {
                 case Inst.Save as inst {
                     if inst.slot < threadCaps.length {
                         self.stack.add(FollowEpsilon.Capture((inst.slot, threadCaps[inst.slot])))
-                        threadCaps[inst.slot] = at.pos()
+                        threadCaps[inst.slot] = at.pos
                     }
                     ip = inst.jump
                 }
@@ -212,7 +213,8 @@ class Fsm {
                     ip = inst.jump1
                 }
                 default {
-                    nlist.caps[:threadCaps.length] = threadCaps[:nlist.caps.length]
+                    # FIXME: Slice assignment
+                    # nlist.caps[:threadCaps.length] = threadCaps[:nlist.caps.length]
                     return
                 }
             }
@@ -233,7 +235,7 @@ class Cache {
 }
 
 class Threads {
-    private mut set[int] codes
+    mut set[int] codes
     private mut list[Slot] caps
     private mut int slotsPerThread
 

@@ -42,7 +42,7 @@ class InputAt {
 }
 
 interface Input {
-    public method at(int i) -> InputAt
+    public method at(int i) -> mut InputAt
 
     public method nextChar(InputAt at) -> char?
 
@@ -50,7 +50,7 @@ interface Input {
 
     public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool
 
-    public method prefixAt(LiteralSearcher prefixes, InputAt at) -> InputAt?
+    public method prefixAt(LiteralSearcher prefixes, InputAt at) -> mut InputAt?
 
     public int length
 
@@ -76,7 +76,7 @@ class CharInput from Input {
         return self.value.operator[:](s)
     }
 
-    public method at(int i) -> InputAt {
+    public method at(int i) -> mut InputAt {
         if i >= self.length {
             return InputAt(self.length, null, null, 0)
         } else {
@@ -164,7 +164,7 @@ class ByteInput from Input {
         return self.text.operator[:](s)
     }
 
-    public method at(int i) -> InputAt {
+    public method at(int i) -> mut InputAt {
         if i >= self.length {
             return InputAt(self.length, null, null, 0)
         } else {
@@ -230,7 +230,7 @@ class ByteInput from Input {
     public method prefixAt(
         LiteralSearcher prefixes,
         InputAt at,
-    ) -> InputAt? {
+    ) -> mut InputAt? {
         return prefixes.find(self[at.pos:]).map(lambda tuple[int, int] s => self.at(at.pos + s.0))
     }
 

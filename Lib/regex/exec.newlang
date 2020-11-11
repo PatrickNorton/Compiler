@@ -346,7 +346,7 @@ enum MatchNfaType {
 }
 
 class ProgramCache {
-    public PikeVMCache pikevm
+    public final PikeVMCache pikevm
     public BacktrackCache backtrack
     public DfaCache dfa
     public DfaCache dfaReverse

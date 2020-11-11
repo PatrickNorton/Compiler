@@ -1,11 +1,16 @@
-from string import StringBuilder, DIGITS, ASCII_LOWERCASE, ASCII_UPPERCASE
+from string import StringBuilder
 
 from .unicode import Captures
 
 export expandStr
 
+# FIXME: Import from string
+str ASCII_LOWERCASE = 'abcdefghijklmnopqrstuvwxyz'
+str ASCII_UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+str DIGITS = "0123456789"
+
 func expandStr(Captures caps, str replacement) -> str {
-    final var dst = StringBuilder()
+    final var dst = StringBuilder("")
     mut int index = 0
     static int dollar = b"$"[0]
     while index < replacement.length {
@@ -17,7 +22,7 @@ func expandStr(Captures caps, str replacement) -> str {
         } else {
             break
         }
-        if bytes(repl).get(i)? as b {
+        if bytes(repl).get(index)? as b {
             if b == dollar {
                 dst.push("$")
                 index += 2
@@ -35,10 +40,10 @@ func expandStr(Captures caps, str replacement) -> str {
         }
         repl = repl[capRef.end:]
         switch capRef.cap {
-            case Number as i {
+            case Ref.Number as i {
                 dst.push(caps.get(i)?.operator str() ?? "")
             }
-            case Name as name {
+            case Ref.Named as name {
                 dst.push(caps.name(name)?.operator str() ?? "")
             }
         }
@@ -62,7 +67,7 @@ union Ref {
 
 func findCapRef(str replacement) -> CaptureRef? {
     mut var i = 0
-    let rep = bytes(replacement)
+    var rep = bytes(replacement)
     if rep.length <= 1 or rep[0] != b'$'[0] {
         return null
     }
@@ -73,17 +78,17 @@ func findCapRef(str replacement) -> CaptureRef? {
         i++
     }
     mut var capEnd = i
-    while isValidCapLetter(rep.get(capEnd)) {
+    while isValidCapLetter(rep[capEnd]) {
         capEnd++
     }
-    return null if cap_end == i
+    return null if capEnd == i
 
     # We just verified that the range 0..cap_end is valid ASCII, so it must
     # therefore be valid UTF-8. If we really cared, we could avoid this UTF-8
     # check with either unsafe or by parsing the number straight from &[u8].
-    var cap = rep[i:cap_end].asUtf8()!!
+    var cap = str(rep[i:capEnd])
     if brace {
-        if not rep.get(cap_end)?.operator == (b"}"[0]) ?? false {
+        if not rep.get(capEnd)?.operator == (b"}"[0]) ?? false {
             return null
         }
         capEnd++
