@@ -223,17 +223,21 @@ public final class Builtins {
         var splitInfo = new FunctionInfo(ArgumentInfo.of(STR), LIST.generify(STR));
         var splitLinesInfo = new FunctionInfo(ArgumentInfo.of(), LIST.generify(STR));
         var upperLowerInfo = new FunctionInfo(STR);
-        var strAttrs = Map.of(
-                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR)),
-                "get", AttributeInfo.method(getInfo),
-                "join", AttributeInfo.method(joinInfo),
-                "startsWith", AttributeInfo.method(startsInfo),
-                "endsWith", AttributeInfo.method(startsInfo),
-                "split", AttributeInfo.method(splitInfo),
-                "splitLines", AttributeInfo.method(splitLinesInfo),
-                "upper", AttributeInfo.method(upperLowerInfo),
-                "lower", AttributeInfo.method(upperLowerInfo)
+        var indexInfo = new FunctionInfo(ArgumentInfo.of(STR), TypeObject.optional(INT));
+        var asIntInfo = new FunctionInfo(ArgumentInfo.of(), TypeObject.optional(INT));
+        var strAttrs = Map.ofEntries(
+                Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
+                Map.entry("chars", new AttributeInfo(AccessLevel.PUBLIC, LIST.generify(CHAR))),
+                Map.entry("get", AttributeInfo.method(getInfo)),
+                Map.entry("join", AttributeInfo.method(joinInfo)),
+                Map.entry("startsWith", AttributeInfo.method(startsInfo)),
+                Map.entry("endsWith", AttributeInfo.method(startsInfo)),
+                Map.entry("split", AttributeInfo.method(splitInfo)),
+                Map.entry("splitLines", AttributeInfo.method(splitLinesInfo)),
+                Map.entry("upper", AttributeInfo.method(upperLowerInfo)),
+                Map.entry("lower", AttributeInfo.method(upperLowerInfo)),
+                Map.entry("indexOf", AttributeInfo.method(indexInfo)),
+                Map.entry("asInt", AttributeInfo.method(asIntInfo))
         );
         STR.setAttributes(strAttrs);
         STR.seal();
@@ -537,7 +541,8 @@ public final class Builtins {
             OBJECT,
             NOT_IMPLEMENTED,
             TUPLE,
-            THROWABLE
+            THROWABLE,
+            NULL_TYPE
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -604,6 +609,7 @@ public final class Builtins {
     private static final LangConstant ITER_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(ITER));
     private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(RANGE));
     private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(BOOL));
+    private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
 
     public static LangConstant strConstant() {
         return STR_CONSTANT;
@@ -619,6 +625,10 @@ public final class Builtins {
 
     public static LangConstant boolConstant() {
         return BOOL_CONSTANT;
+    }
+
+    public static LangConstant nullTypeConstant() {
+        return NULL_TYPE_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {

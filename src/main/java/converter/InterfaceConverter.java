@@ -36,7 +36,8 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));
         InterfaceType type;
-        if (!info.hasType(node.getName().strName())) {
+        var hasType = info.hasType(node.getName().strName());
+        if (!hasType) {
             var generics = GenericInfo.parse(info, node.getName().getSubtypes());
             type = new InterfaceType(node.getName().strName(), generics, List.of(trueSupers));
             generics.setParent(type);
@@ -62,7 +63,11 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             superConstants.add(info.constIndex(sup.baseName()));
         }
         converter.checkAttributes();
-        addToInfo(type, "interface", superConstants, converter);
+        if (hasType) {
+            putInInfo(type, "interface", superConstants, converter);
+        } else {
+            addToInfo(type, "interface", superConstants, converter);
+        }
         return Collections.emptyList();
     }
 

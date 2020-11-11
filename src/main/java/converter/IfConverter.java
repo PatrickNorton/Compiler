@@ -103,16 +103,14 @@ public final class IfConverter implements BaseConverter {
     }
 
     private void addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean popAs) {
-        var bodyBytes = BaseConverter.bytes(start + bytes.size() + Bytecode.JUMP.size(), body, info);
-        // Jump index
-        var popAsBytes = popAs ? Bytecode.POP_TOP.value : 0;
-        var jumpTarget = start + bytes.size() + Bytecode.JUMP.size() + bodyBytes.size() + popAsBytes;
         bytes.add(Bytecode.JUMP.value);
-        bytes.addAll(Util.intToBytes(jumpTarget));
+        int jumpIndex = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
         if (popAs) {
             bytes.add(Bytecode.POP_TOP.value);
         }
-        bytes.addAll(bodyBytes);
+        bytes.addAll(BaseConverter.bytes(start + bytes.size(), body, info));
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpIndex);
     }
 
     private List<Byte> addAs(int start, TestNode condition, VariableNode as) {

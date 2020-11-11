@@ -143,6 +143,7 @@ public final class GlobalCompilerInfo {
 
     public int addClass(ClassInfo info) {
         classes.add(info);
+        assert !classMap.containsKey(new BaseType(info.getType()));
         classMap.put(new BaseType(info.getType()), classes.size() - 1);
         return classes.size() - 1;
     }

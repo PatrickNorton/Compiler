@@ -132,7 +132,8 @@ public final class ForConverter extends LoopConverter {
     private TypeObject getIteratorType(int i, TestConverter valueConverter, boolean firstRet) {
         if (node.getVars()[i] instanceof VariableNode) {
             return info.getType(node.getVars()[i].getVariable().getName()).orElseThrow(
-                    () -> CompilerException.format("Variable %s not defined",
+                    () -> CompilerException.format("Variable %s not defined%n" +
+                                    "Help: consider adding 'var' before the variable",
                             node.getVars()[i].getVariable(), node.getVars()[i].getVariable().getName()
                     )
             );
