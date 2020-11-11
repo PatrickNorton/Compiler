@@ -90,6 +90,9 @@ public class IfStatementNode implements FlowStatementNode {
             StatementBodyNode elifBody = StatementBodyNode.parse(tokens);
             elifs.add(new ElifStatementNode(info, elifCondition, elifAs, elifBody));
         }
+        if (tokens.tokenIs(Keyword.ELSE) && tokens.tokenIs(1, Keyword.IF)) {
+            throw tokens.error("'else if' is not legal, use 'elif' instead");
+        }
         StatementBodyNode elseStmt = StatementBodyNode.parseOnToken(tokens, "else");
         return new IfStatementNode(info, test, as, body, elifs.toArray(new ElifStatementNode[0]), elseStmt);
     }
