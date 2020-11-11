@@ -496,7 +496,9 @@ public final class CompilerInfo {
                     "Error in literal conversion: Lists of non-nameable types not complete yet", lineInfo
             );
         }
-        if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
+        if (name.equals("null")) {
+            return Builtins.nullTypeConstant();
+        } else if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
             return Builtins.constantOf(name).orElseThrow(
                     () -> CompilerException.format("Type %s not found", lineInfo, name)
             );
@@ -969,6 +971,9 @@ public final class CompilerInfo {
             var name = pair.getKey();
             var valPair = pair.getValue();
             var obj = valPair.getKey();
+            if (typeMap.containsKey(name)) {
+                throw CompilerException.doubleDef(name, valPair.getValue().getLineInfo(), LineInfo.empty());
+            }
             typeMap.put(name, obj);
         }
     }
