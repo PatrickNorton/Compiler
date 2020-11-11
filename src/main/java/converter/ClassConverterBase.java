@@ -124,7 +124,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         info.checkDefinition(name, node);
         var constant = new ClassConstant(name, info.classIndex(type), type);
         info.addVariable(name, Builtins.TYPE.generify(type), constant, node);
-        var cls = createClass(type, variants, superConstants, converter);
+        var cls = create(type, variants, superConstants, converter);
         info.setClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
@@ -136,20 +136,25 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
         info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
-        ClassInfo cls;
-        try {
-            info.accessHandler().addCls(type);
-            info.addLocalTypes(type.getGenericInfo().getParamMap());
-            cls = createClass(type, variants, superConstants, converter);
-        } finally {
-            info.accessHandler().removeCls();
-            info.removeLocalTypes();
-        }
+        var cls = create(type, variants, superConstants, converter);
         int classIndex = info.addClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
             throw CompilerException.format("Illegal name for %s '%s'", node.getName(), defType, name);
         }
         info.setReservedVar(name, new ClassConstant(name, classIndex, type));
+    }
+
+    private ClassInfo create(
+            UserType<?> type, List<String> variants, List<Short> superConstants, @NotNull ConverterHolder converter
+    ) {
+        try {
+            info.accessHandler().addCls(type);
+            info.addLocalTypes(type.getGenericInfo().getParamMap());
+            return createClass(type, variants, superConstants, converter);
+        } finally {
+            info.accessHandler().removeCls();
+            info.removeLocalTypes();
+        }
     }
 
     protected final void putInInfo(UserType<?> type, String defType,
