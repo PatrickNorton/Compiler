@@ -56,7 +56,7 @@ public final class SliceConverter implements TestConverter {
         if (!Builtins.INT.isSuperclass(retType)) {
             throw CompilerException.format(
                     "Type '%s' is not a superclass of int, cannot be used in a slice",
-                    node, retType
+                    node, retType.name()
             );
         }
     }

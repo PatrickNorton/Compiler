@@ -464,7 +464,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     private CompilerException attrException(LineInfo lineInfo, String value, AccessLevel access) {
         if (access != AccessLevel.PRIVATE && attrType(value, AccessLevel.PRIVATE).isPresent()) {
             return CompilerException.format(
-                    "Cannot get attribute '%s' from type '%s': too-strict of an access level required",
+                    "Cannot get attribute '%s' from type '%s': too strict of an access level required",
                     lineInfo, value, name()
             );
         } else if (makeMut().attrType(value, access).isPresent()) {
@@ -893,7 +893,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                 if (generics[i] == null)
                     return null;
             }
-            return cls.generify(generics);
+            return cls.generify(arg, generics);
         } else {
             return null;
         }
