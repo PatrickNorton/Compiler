@@ -151,8 +151,16 @@ public final class ForConverter extends LoopConverter {
     ) {
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
-        bytes.addAll(converter.convert(start + bytes.size()));
+        bytes.addAll(convertIter(converter, start + bytes.size()));
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 1));
+    }
+
+    private static List<Byte> convertIter(TestConverter converter, int start) {
+        if (converter instanceof IndexConverter && ((IndexConverter) converter).isSlice()) {
+            return ((IndexConverter) converter).convertIterSlice(start);
+        } else {
+            return converter.convert(start);
+        }
     }
 }

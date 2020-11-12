@@ -325,6 +325,7 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), listGen.makeMut())),
                 Map.entry(OpSpTypeNode.SET_SLICE, MethodInfo.ofMut(ArgumentInfo.of(SLICE, iterGen))),
                 Map.entry(OpSpTypeNode.DEL_SLICE, MethodInfo.ofMut(ArgumentInfo.of(SLICE))),
+                Map.entry(OpSpTypeNode.ITER_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), iterGen)),
                 Map.entry(OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(LIST_PARAM), BOOL)),
                 Map.entry(OpSpTypeNode.REVERSED, MethodInfo.of(listGen)),
                 Map.entry(OpSpTypeNode.ADD, MethodInfo.of(ArgumentInfo.of(listGen), listGen.makeMut())),
