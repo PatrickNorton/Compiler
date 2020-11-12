@@ -46,7 +46,7 @@ public final class ReturnConverter implements BaseConverter {
             );
         } else {
             bytes.add(Bytecode.RETURN.value);
-            bytes.addAll(Util.zeroToBytes());
+            bytes.addAll(Util.shortZeroBytes());
         }
     }
 }
