@@ -63,7 +63,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             superConstants.add(info.constIndex(sup.baseName()));
         }
         converter.checkAttributes();
-        if (hasType) {
+        if (hasType && !node.getDescriptors().contains(DescriptorNode.AUTO)) {
             putInInfo(type, "interface", superConstants, converter);
         } else {
             addToInfo(type, "interface", superConstants, converter);
