@@ -26,6 +26,8 @@ public final class SliceConverter implements TestConverter {
     @NotNull
     public List<Byte> convert(int start) {
         List<Byte> bytes = new ArrayList<>();
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.sliceConstant())));
         if (!node.getStart().isEmpty()) {
             checkTypes(node.getStart());
             bytes.addAll(TestConverter.bytes(start, node.getStart(), info, 1));
@@ -47,6 +49,8 @@ public final class SliceConverter implements TestConverter {
             bytes.add(Bytecode.LOAD_NULL.value);
         }
         bytes.add(Bytecode.MAKE_OPTION.value);
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) 3));
 
         return bytes;
     }
