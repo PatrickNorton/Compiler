@@ -674,7 +674,9 @@ public final class CompilerInfo {
     public void removeStackFrame() {
         var vars = variables.remove(variables.size() - 1);
         for (var pair : vars.values()) {
-            varNumbers.remove(pair.getLocation());
+            if (!pair.hasConstValue() && !pair.isStatic()) {
+                varNumbers.remove(pair.getLocation());
+            }
         }
     }
 
