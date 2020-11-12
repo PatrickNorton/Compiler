@@ -35,7 +35,11 @@ public final class IncrementDecrementConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes((short) constIndex));
         bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
         if (node.getVariable() instanceof VariableNode) {
-            short varIndex = info.varIndex((VariableNode) node.getVariable());
+            var variable = (VariableNode) node.getVariable();
+            if (info.variableIsConstant(variable.getName())) {
+                throw CompilerException.of("Cannot increment non-mut variable", node);
+            }
+            short varIndex = info.varIndex(variable);
             bytes.add(Bytecode.STORE.value);
             bytes.addAll(Util.shortToBytes(varIndex));
         } else {
