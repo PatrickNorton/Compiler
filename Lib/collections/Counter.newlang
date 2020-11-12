@@ -4,7 +4,12 @@ export Counter
 
 final class Counter[T] from dict[T, int] {
     private final dict[T, int] values
-    public readonly int length := values.length
+
+    public property int length {
+        get {
+            return self.values.length
+        }
+    }
 
     public operator new (*T items) {
         self.values = {:}
@@ -17,9 +22,9 @@ final class Counter[T] from dict[T, int] {
         }
     }
 
-    public operator new (dict[T, int] items) {
-        self.values = {i: j for var i, var j in items}
-    }
+#     public operator new (dict[T, int] items) {
+#         self.values = {i: j for var i, var j in items}
+#     }
 
     public operator [] (T value) -> int {
         try {
@@ -30,12 +35,31 @@ final class Counter[T] from dict[T, int] {
     }
 
     # Methods that are simply delegated to self.values
-    public mut operator []= = self.values.operator []=
-    public mut operator del[] = self.values.operator del[]
-    public operator iter = self.values.operator iter
-    public operator in = self.values.operator in
-    public operator == = self.values.operator ==
-    public operator bool = self.values.operator bool
+    public mut operator []= (T index, int value) {
+        self.values[index] = value
+    }
+
+    public mut operator del[] (T key) {
+        del self.values[key]
+    }
+
+    public operator iter -> T, int {
+        for T key, int value in self.values {
+            yield key, value
+        }
+    }
+
+    public operator in (T key) -> bool {
+        return key in self.values
+    }
+
+    public operator == (dict[T, int] other) -> bool {
+        return self.values == other
+    }
+
+    public operator bool {
+        return bool(self.values)
+    }
 
     public operator + (cls other) -> cls {
         return {i: self[i] + other[i] for T i in chain(self.keys(), other.keys())}

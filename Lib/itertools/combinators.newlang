@@ -1,4 +1,4 @@
-from interfaces typeget Iterable
+# from interfaces typeget Iterable
 
 export product, repeat
 
@@ -7,17 +7,20 @@ export product, repeat
 generic T, U
 generator func product(Iterable[T] value1, Iterable[U] value2) -> T, U {
     for T value in value1 {
-        yield from (value, i for U i in value2)
+        for U i in value2 {
+            yield value, i
+        }
     }
 }
 
-
+#|  FIXME: Function overloading
 generic T, U, V
 generator func product(Iterable[T] value1, Iterable[U] value2, Iterable[V] value3) -> T, U, V {
     for T value in value1 {
         yield from (value, i, j for U i, V j in product(value2, value3))
     }
 }
+|#
 
 generic T
 generator func repeat(T value, int? times = null) -> T {

@@ -1,0 +1,230 @@
+from itertools import all
+
+export Utf8Sequence, Utf8Range, Utf8Sequences, nextUtf8
+
+var TAG_CONT = 0b1000_0000
+var TAG_TWO = 0b1100_0000
+var TAG_THREE = 0b1110_0000
+var TAG_FOUR = 0b1111_0000
+
+func nextUtf8(bytes text, int i) -> int {
+    return i + 1 if not text.get(i)?
+    var b = text[i]
+    if b <= 0x7F {
+        return i + 1
+    } elif b <= 0b110_11111 {
+        return i + 2
+    } elif b <= 0b1110_1111 {
+        return i + 3
+    } else {
+        return i + 4
+    }
+}
+
+const union Utf8Sequence {
+    Utf8Range One
+    tuple[Utf8Range, Utf8Range] Two
+    tuple[Utf8Range, Utf8Range, Utf8Range] Three
+    tuple[Utf8Range, Utf8Range, Utf8Range, Utf8Range] Four
+
+    public property int length {
+        get {
+            return switch self {
+                case Utf8Sequence.One => 1
+                case Utf8Sequence.Two => 2
+                case Utf8Sequence.Three => 3
+                case Utf8Sequence.Four => 4
+            }
+        }
+    }
+
+    static method fromEncodedRange(bytes start, bytes end) -> cls {
+        assert start.length == end.length
+        return switch start.length {
+            case 2 => Utf8Sequence.Two(
+                (
+                    Utf8Range(start[0], end[0]),
+                    Utf8Range(start[1], end[1]),
+                )
+            )
+            case 3 => Utf8Sequence.Three(
+                (
+                    Utf8Range(start[0], end[0]),
+                    Utf8Range(start[1], end[1]),
+                    Utf8Range(start[2], end[2]),
+                )
+            )
+            case 4 => Utf8Sequence.Four(
+                (
+                    Utf8Range(start[0], end[0]),
+                    Utf8Range(start[1], end[1]),
+                    Utf8Range(start[2], end[2]),
+                    Utf8Range(start[3], end[3])
+                )
+            )
+            default => raise NotImplemented() # raise ValueError(f"invalid encoded length: {n}")
+        }
+    }
+
+    public operator iter -> Utf8Range {
+        switch self {
+            case Utf8Sequence.One as r {
+                yield r
+            }
+            case Utf8Sequence.Two as r {
+                yield r.0
+                yield r.1
+            }
+            case Utf8Sequence.Three as r {
+                yield r.0
+                yield r.1
+                yield r.2
+            }
+            case Utf8Sequence.Four as r {
+                yield r.0
+                yield r.1
+                yield r.2
+                yield r.3
+            }
+        }
+    }
+
+    public method asSlice() -> list[Utf8Range] {
+        return switch self {
+            case Utf8Sequence.One as r => [r]
+            case Utf8Sequence.Two as r => [r.0, r.1]
+            case Utf8Sequence.Three as r => [r.0, r.1, r.2]
+            case Utf8Sequence.Four as r => [r.0, r.1, r.2, r.3]
+        }
+    }
+
+    public method matches(bytes val) -> bool {
+        return false if val.length < self.length
+
+        for var b, var r in val, self {  # FIXME: Use all() & a generator
+            return false if not r.matches(b)
+        }
+        return true
+    }
+}
+
+const class Utf8Range {
+    public int start
+    public int end
+
+    public operator new(int start, int end) {
+        assert start in [0:256] and end in [0:256]
+        self.start = start
+        self.end = end
+    }
+
+    public method matches(int b) -> bool {
+        return b in [self.start:self.end]
+    }
+}
+
+class Utf8Sequences {
+    final list[ScalarRange] rangeStack
+
+    public operator new(char start, char end) {
+        self.rangeStack = [ScalarRange(int(start), int(end))]
+    }
+
+    public operator iter -> Utf8Sequence {
+        raise NotImplemented()
+    }
+
+    public mut method reset(char start, char end) {
+        self.rangeStack.clear()
+        self.push(start, end)
+    }
+
+    public mut method push(char start, char end) {
+        self.push(ScalarRange(int(start), int(end)))
+    }
+}
+
+class ScalarRange {
+    int start
+    int end
+
+    public operator new(int start, int end) {
+        self.start = start
+        self.end = end
+    }
+
+    method split() -> tuple[cls, cls]? {
+        if self.start < 0xE000 and self.end > 0xD7FF {
+           var s1 = ScalarRange(self.start, 0xD7FF)
+           var s2 = ScalarRange(0xE000, self.end)
+           return (s1, s2)
+        } else {
+            return null
+        }
+    }
+
+    method isValid() -> bool {
+        return self.start <= self.end
+    }
+
+    method asAscii() -> Utf8Range? {
+        if self.isAscii() {
+            return Utf8Range(self.start, self.end)
+        } else {
+            return null
+        }
+    }
+
+    method isAscii() -> bool {
+        return self.isValid() and self.end <= 0x7f
+    }
+}
+
+func decodeUtf8(bytes src) -> tuple[char, int]? {
+    int b0
+    if src.get(0)? as b {
+        if b <= 0x7f {
+            return (char(b), 1)
+        } else {
+            b0 = b
+        }
+    } else {
+        return null
+    }
+    if b0 in [0b110_00000:0b111_00000] {
+        return null if src.length < 2
+        var b1 = src[1]
+        return null if 0b11_000000 & b1 != TAG_CONT
+        var cp = (b0 & ~TAG_TWO) << 6 | (b1 & ~TAG_CONT)
+    } elif b0 in [0b1110_0000:0b11110000] {
+        return null if src.length < 3
+        var b1, var b2 = src[1], src[2]
+        return null if 0b11_000000 & b1 != TAG_CONT or 0b11_000000 & b2 != TAG_CONT
+        var cp = ((b0 & ~TAG_THREE) << 12
+            | (b1 & ~TAG_CONT) << 6
+            | (b2 & ~TAG_CONT))
+        if cp in [0x800:0x10000] {
+            return (char(cp), 3)
+        } else {
+            return null
+        }
+    } elif b0 in [0b11110_000:0b11111_00] {
+        return null if src.length < 4
+
+        var b1, var b2, var b3 = src[1], src[2], src[3]
+        return null if 0b11_000000 & b1 != TAG_CONT
+        return null if 0b11_000000 & b2 != TAG_CONT
+        return null if 0b11_000000 & b2 != TAG_CONT
+        var cp = ((b0 & ~TAG_FOUR) << 18
+            | (b1 & ~TAG_CONT) << 12
+            | (b2 & ~TAG_CONT) << 6
+            | (b3 & ~TAG_CONT))
+        if cp in [0x1000:0x110000] {
+            return (char(cp), 4)
+        } else {
+            return null
+        }
+    } else {
+        return null
+    }
+}

@@ -1,13 +1,20 @@
-# Imports: MaybeInst, Utf8Sequences, Hir
+from itertools import all
 
 from .hir import Hir, Class, Literal, Anchor, ClassUnicodeRange, WordBoundary, GroupKind, RepetitionKind
-from .prog import InstPtr, Program, EmptyLook
+from .hir import Repetition, ClassBytesRange, HirKind, HirLiteral, RepetitionRange
+from .prog import InstPtr, Program, EmptyLook, Inst, InstSplit, InstSave, InstEmptyLook, InstChar, InstRanges, InstBytes
+from .utf8 import Utf8Sequences, Utf8Sequence, Utf8Range
 
 export Compiler
 
 class Patch {
     Hole hole
     InstPtr entry
+
+    public operator new (Hole hole, InstPtr entry) {
+        self.hole = hole
+        self.entry = entry
+    }
 }
 
 class Compiler {
@@ -15,9 +22,9 @@ class Compiler {
     mut Program compiled
     dict[str, int] captureNameIdx
     int numExprs
-    mut int sizeLimit
-    SuffixCache suffixCache
-    Utf8Sequences? utf8Seqs
+    mut int sizeLimit_
+    final SuffixCache suffixCache
+    mut Utf8Sequences? utf8Seqs
     ByteClassSet byteClasses
 
     public operator new() {
@@ -25,38 +32,38 @@ class Compiler {
         self.compiled = Program()
         self.captureNameIdx = {:}
         self.numExprs = 0
-        self.sizeLimit = 10 * (1 << 20)
+        self.sizeLimit_ = 10 * (1 << 20)
         self.suffixCache = SuffixCache(1000)
-        self.utf8Seqs = Utf8Sequences('\x00', '\x00')
+        self.utf8Seqs = Utf8Sequences('\x00'[0], '\x00'[0])
         self.byteClasses = ByteClassSet()
     }
 
-    public mut method sizeLimit(int sizeLimit) -> self {
-        self.sizeLimit = sizeLimit
+    public mut method sizeLimit(int sizeLimit) -> mut cls {
+        self.sizeLimit_ = sizeLimit
         return self
     }
 
-    public mut method bytes(bool yes) -> self {
-        self.compiled.bytes = bytes
+    public mut method bytes(bool yes) -> mut cls {
+        self.compiled.isBytes = yes
         return self
     }
 
-    public mut method onlyUtf8(bool yes) -> self {
+    public mut method onlyUtf8(bool yes) -> mut cls {
         self.compiled.onlyUtf8 = yes
         return self
     }
 
-    public mut method dfa(bool yes) -> self {
+    public mut method dfa(bool yes) -> mut cls {
         self.compiled.isDfa = yes
         return self
     }
 
-    public mut method reverse(bool yes) -> self {
-        self.compiled.reverse = yes
+    public mut method reverse(bool yes) -> mut cls {
+        self.compiled.isReverse = yes
         return self
     }
 
-    public mut method compile(list[Hir] exprs) -> Program {
+    public mut method compile(list[Hir] exprs) -> mut Program {
         assert exprs
         if exprs.length == 1 {
             return self.compileOne(exprs[0])
@@ -65,8 +72,8 @@ class Compiler {
         }
     }
 
-    private mut method compileOne(Hir expr) -> Program {
-        mut var dotstarPatch = Patch(Hole.None, 0)
+    private mut method compileOne(Hir expr) -> mut Program {
+        mref var dotstarPatch = Patch(Hole.None(), 0)
         self.compiled.isAnchoredStart = expr.isAnchoredStart()
         self.compiled.isAnchoredEnd = expr.isAnchoredEnd()
         if self.compiled.needsDotstar() {
@@ -86,12 +93,12 @@ class Compiler {
         return self.compileFinish()
     }
 
-    private mut method compileMany(list[Hir] exprs) -> Program {
+    private mut method compileMany(list[Hir] exprs) -> mut Program {
         assert exprs.length > 1
 
         self.compiled.isAnchoredStart = all(e.isAnchoredStart() for var e in exprs)
         self.compiled.isAnchoredEnd = all(e.isAnchoredEnd() for var e in exprs)
-        mut var dotstarPatch = Patch(Hole.None, 0)
+        mref var dotstarPatch = Patch(Hole.None(), 0)
         if self.compiled.needsDotstar() {
             dotstarPatch = self.cDotstar()
             self.compiled.start = dotstarPatch.entry
@@ -100,26 +107,27 @@ class Compiler {
         }
         self.fillToNext(dotstarPatch.hole)
 
-        mut var prevHole = Hole.None
+        mut var prevHole = Hole.None()
         for var i, var expr in enumerate(exprs[:-1]) {
             self.fillToNext(prevHole)
             var split = self.pushSplitHole()
             var patch = self.cCapture(0, expr) ?? self.nextInst()
-            self.fill_to_next(patch.hole)
+            self.fillToNext(patch.hole)
             self.compiled.matches.push(self.insts.length)
-            self.push_compiled(Inst.Match(i))
-            prevHole = self.fillSplit(split, entry, null)
+            self.pushCompiled(Inst.Match(i))
+            prevHole = self.fillSplit(split, patch.entry, null)
         }
+        var i = exprs.length - 1
         var patch = self.cCapture(0, exprs[-1]) ?? self.nextInst()
-        self.fill(prevHole, entry)
-        self.fillToNext(hole)
+        self.fill(prevHole, patch.entry)
+        self.fillToNext(patch.hole)
         self.compiled.matches.push(self.insts.length)
         self.pushCompiled(Inst.Match(i))
         return self.compileFinish()
     }
 
-    private mut method compileFinish() -> Program {
-        self.compiled.insts = [inst.unwrap() for var inst in self.insts]
+    private mut method compileFinish() -> mut Program {
+        self.compiled.insts = [inst.Compiled!! for var inst in self.insts]
         self.compiled.byteClasses = self.byteClasses.byteClasses()
         self.compiled.captureNameIdx = self.captureNameIdx
         return self.compiled
@@ -127,12 +135,12 @@ class Compiler {
 
     private mut method c(Hir expr) -> Patch? {
         self.checkSize()
-        switch expr.kind() {
+        switch expr.kind {
             case HirKind.Empty { return null }
             case HirKind.Literal as l {
                 switch l {
-                    case Literal.Unicode as c { return self.cChar(c) }
-                    case Literal.Byte as b {
+                    case HirLiteral.Unicode as c { return self.cChar(c) }
+                    case HirLiteral.Byte as b {
                         assert self.compiled.usesBytes()
                         return self.cByte(b)
                     }
@@ -143,23 +151,23 @@ class Compiler {
                     case Anchor.StartLine {
                         self.byteClasses.setRange(b"\n", b"\n")
                         self.cEmptyLook(
-                            EmptyLook.EndLine if self.compiled.isReverse else EmptyLook.StartLine
+                            EmptyLook.END_LINE if self.compiled.isReverse else EmptyLook.START_LINE
                         )
                     }
                     case Anchor.EndLine {
                         self.byteClasses.setRange(b"\n", b"\n")
                         self.cEmptyLook(
-                            EmptyLook.StartLine if self.compiled.isReverse else EmptyLook.EndLine
+                            EmptyLook.START_LINE if self.compiled.isReverse else EmptyLook.END_LINE
                         )
                     }
                     case Anchor.StartText {
                         self.cEmptyLook(
-                            EmptyLook.EndLine if self.compiled.isReverse else EmptyLook.StartLine
+                            EmptyLook.END_LINE if self.compiled.isReverse else EmptyLook.START_LINE
                         )
                     }
                     case Anchor.EndText {
                         self.cEmptyLook(
-                            EmptyLook.StartLine if self.compiled.isReverse else EmptyLook.EndLine
+                            EmptyLook.START_LINE if self.compiled.isReverse else EmptyLook.END_LINE
                         )
                     }
                 }
@@ -169,15 +177,15 @@ class Compiler {
                     case WordBoundary.UnicodeNegate {
                         self.compiled.hasUnicodeWordBoundary = true
                         self.byteClasses.setWordBoundary()
-                        return self.cEmptyLook(EmptyLook.NotWordBoundary)
+                        return self.cEmptyLook(EmptyLook.NOT_WORD_BOUNDARY)
                     }
                     case WordBoundary.Ascii {
                         self.byteClasses.setWordBoundary()
-                        return self.cEmptyLook(EmptyLook.WordBoundaryAscii)
+                        return self.cEmptyLook(EmptyLook.WORD_BOUNDARY_ASCII)
                     }
                     case WordBoundary.AsciiNegate {
                         self.byteClasses.setWordBoundary()
-                        return self.cEmptyLook(EmptyLook.NotWordBoundaryAscii)
+                        return self.cEmptyLook(EmptyLook.NOT_WORD_BOUNDARY_ASCII)
                     }
                 }
             }
@@ -193,8 +201,9 @@ class Compiler {
                         return self.cCapture(index * 2, g.hir)
                     }
                     case GroupKind.CaptureName as t {
+                        var index = t.1
                         if index >= self.compiled.captures.length {
-                            var n = t.first
+                            var n = t.0
                             self.compiled.captures.push(n)
                             self.captureNameIdx.insert(n, index)
                         }
@@ -210,7 +219,7 @@ class Compiler {
         }
     }
 
-    private mut method cCapture(int FirstSlot, Hir expr) -> Patch? {
+    private mut method cCapture(int firstSlot, Hir expr) -> Patch? {
         if self.numExprs >= 1 or self.compiled.isDfa {
             return self.c(expr)
         } else {
@@ -219,16 +228,16 @@ class Compiler {
             var patch = self.c(expr) ?? self.nextInst()
             self.fill(hole, patch.entry)
             self.fillToNext(patch.hole)
-            var hole = self.pushHole(InstHole.Save(firstSlot + 1))
-            return Patch(hole, entry)
+            var hole2 = self.pushHole(InstHole.Save(firstSlot + 1))
+            return Patch(hole2, entry)
         }
     }
 
     private mut method cDotstar() -> Patch {
         return self.c(
             Hir.repetition(
-                hir.Repetition(
-                    RepetitionKind.ZeroOrMore,
+                Repetition(
+                    RepetitionKind.ZeroOrMore(),
                     false,
                     Hir.any(not self.compiled.onlyUtf8()),
                 )
@@ -239,9 +248,9 @@ class Compiler {
     private mut method cChar(char c) -> Patch? {
         if self.compiled.usingBytes() {
             if c.isAscii() {
-                var b = bytes(c)
-                var hole = self.pushHole(InstHole.Bytes(b, b))
-                self.byte_classes.set_range(b, b)
+                var b = bytes(c)[0]
+                var hole = self.pushHole(InstHole.Bytes((b, b)))
+                self.byteClasses.setRange(b, b)
                 return Patch(hole, self.insts.length - 1)
             } else {
                 return self.cClass([ClassUnicodeRange(c, c)])
@@ -259,9 +268,9 @@ class Compiler {
         } else {
             var ranges = [(r.start, r.end) for var r in ranges]
             var hole = self.pushHole(
-                InstHole.Char(
-                    ranges[0].0 if ranges.length == 1 and ranges[0].0 == ranges[0].1 else ranges
-                )
+                InstHole.Char(ranges[0].0)
+                    if ranges.length == 1 and ranges[0].0 == ranges[0].1
+                    else InstHole.Ranges(ranges)
             )
             return Patch(hole, self.insts.length - 1)
         }
@@ -276,7 +285,7 @@ class Compiler {
 
         var firstSplitEntry = self.insts.length
         mut list[Hole] holes = []
-        mut var prevHole = Hole.None
+        mut var prevHole = Hole.None()
         for var r in ranges[:-1] {
             self.fillToNext(prevHole)
             var split = self.pushSplitHole()
@@ -294,16 +303,16 @@ class Compiler {
     }
 
     private mut method cEmptyLook(EmptyLook look) -> Patch {
-        var hole = self.pushHole(InstHole.EmptyHook(look))
+        var hole = self.pushHole(InstHole.EmptyLook(look))
         return Patch(hole, self.insts.length - 1)
     }
 
     private mut method cConcat(Iterable[Hir] exprs) -> Patch? {
-        mut var exprs = exprs.into_iter()
+        mut var exprs = iter(exprs)
         Patch patch
         while true {
             if exprs.next()? as n {
-                if self.c(e)? as p {
+                if self.c(n)? as p {
                     patch = p
                     break
                 }
@@ -312,7 +321,7 @@ class Compiler {
             }
         }
         mut var hole = patch.hole
-        for e in exprs {
+        for var e in exprs {
             if self.c(e)? as p {
                 self.fill(hole, p.entry)
                 hole = p.hole
@@ -327,7 +336,7 @@ class Compiler {
         var firstSplitEntry = self.insts.length
 
         mut list[Hole] holes = []
-        mut var prevHole = (Hole.None, false)
+        mut var prevHole = (Hole.None(), false)
         for var e in exprs[:-1] {
             if prevHole.1 {
                 var next = self.insts.length
@@ -338,7 +347,7 @@ class Compiler {
             var split = self.pushSplitHole()
             if self.c(e)? as patch {
                 holes.push(patch.hole)
-                prevHole = (self.fillSplit(split, entry, null), false)
+                prevHole = (self.fillSplit(split, patch.entry, null), false)
             } else {
                 var split1, var split2 = split.dupOne()
                 holes.push(split1)
@@ -350,7 +359,7 @@ class Compiler {
             if prevHole.1 {
                 self.fillSplit(prevHole.0, null, patch.entry)
             } else {
-                self.fill(prevHole.0, entry)
+                self.fill(prevHole.0, patch.entry)
             }
         } else {
             holes.push(prevHole.0)
@@ -360,7 +369,7 @@ class Compiler {
 
     private mut method cRepeat(Repetition rep) -> Patch? {
         return switch rep.kind {
-            case RepetitionKind.ZeroOrOne => self.cRepeatZeroOrone(rep.hir, rep.greedy)
+            case RepetitionKind.ZeroOrOne => self.cRepeatZeroOrOne(rep.hir, rep.greedy)
             case RepetitionKind.ZeroOrMore => self.cRepeatZeroOrMore(rep.hir, rep.greedy)
             case RepetitionKind.OneOrMore => self.cRepeatOneOrMore(rep.hir, rep.greedy)
             case RepetitionKind.Range as r => switch r {
@@ -388,11 +397,11 @@ class Compiler {
         }
         Hole splitHole
         if greedy {
-            splitHole = self.fillSplit(split, patch.entryRep, null)
+            splitHole = self.fillSplit(split, patch.entry, null)
         } else {
-            splitHole = self.fillSplit(split, null, patch.entryRep)
+            splitHole = self.fillSplit(split, null, patch.entry)
         }
-        var holes = [patch.holeRep, splitHole]
+        var holes = [patch.hole, splitHole]
         return Patch(Hole.Many(holes), splitEntry)
     }
 
@@ -408,9 +417,9 @@ class Compiler {
         self.fill(patch.holeRep, splitEntry)
         Hole splitHole
         if greedy {
-            splitHole = self.fillSplit(split, patch.entryRep, null)
+            splitHole = self.fillSplit(split, patch.entry, null)
         } else {
-            splitHole = self.fillSplit(split, null, patch.entryRep)
+            splitHole = self.fillSplit(split, null, patch.entry)
         }
         return Patch(splitHole, splitEntry)
     }
@@ -422,19 +431,19 @@ class Compiler {
         } else {
             return self.popSplitHole()
         }
-        self.fillToNext(holeRep)
+        self.fillToNext(patch.hole)
         var split = self.pushSplitHole()
         Hole splitHole
         if greedy {
-            splitHole = self.fillSplit(split, patch.entryRep, null)
+            splitHole = self.fillSplit(split, patch.entry, null)
         } else {
-            splitHole = self.fillSplit(split, null, patch.entryRep)
+            splitHole = self.fillSplit(split, null, patch.entry)
         }
-        return Patch(splitHole, entryRep)
+        return Patch(splitHole, patch.entry)
     }
 
     private mut method cRepeatRangeMinOrMore(Hir expr, bool greedy, int min) -> Patch? {
-        var patchConcat = self.rConcat([expr] * min) ?? self.nextInst()
+        var patchConcat = self.cConcat([expr] * min) ?? self.nextInst()
         if self.cRepeatZeroOrMore(expr, greedy)? as patchRep {
             self.fill(patchRep.hole, patchConcat.entry)
             return Patch(patchRep.hole, patchConcat.entry)
@@ -453,6 +462,7 @@ class Compiler {
         dotimes max - min {
             self.fillToNext(prevHole)
             Patch patch
+            var split = self.pushSplitHole()
             if self.c(expr)? as p {
                 patch = p
             } else {
@@ -470,7 +480,7 @@ class Compiler {
     }
 
     private method nextInst() -> Patch {
-        return Patch(Hole.None, self.insts.length)
+        return Patch(Hole.None(), self.insts.length)
     }
 
     private mut method fill(Hole hole, InstPtr jump) {
@@ -492,7 +502,7 @@ class Compiler {
         self.fill(hole, next)
     }
 
-    private mut method fillSplit(Hole hole, InstPtr jump1, InstPtr jump2) -> Hole {
+    private mut method fillSplit(Hole hole, InstPtr? jump1, InstPtr? jump2) -> Hole {
         switch hole {
             case Hole.None {
                 return Hole.None()
@@ -510,7 +520,7 @@ class Compiler {
                         self.insts[pc] = self.insts[pc].halfFillSplitJump2(j2)
                         return Hole.One(pc)
                     } else {
-                        raise NotImplemented("at least one of the split holes must be filled")
+                        raise NotImplemented()  # "at least one of the split holes must be filled"
                     }
                 }
             }
@@ -548,8 +558,9 @@ class Compiler {
         return null
     }
 
-    private method check_size() {
-        raise RegexError(Error.CompiledTooBig(self.sizeLimit)) if self.insts.length > self.sizeLimit
+    private method checkSize() {
+        # FIXME: RegexError
+        # raise RegexError(Error.CompiledTooBig(self.sizeLimit_)) if self.insts.length > self.sizeLimit_
     }
 }
 
@@ -558,13 +569,13 @@ union Hole {
     InstPtr One
     list[Hole] Many
 
-    private method dupOne() -> cls, cls {
+    method dupOne() -> cls, cls {
         switch self {
             case Hole.One as pc {
                 return Hole.One(pc), Hole.One(pc)
             }
-            default => {
-                raise NotImplemented
+            default {
+                raise NotImplemented()
             }
         }
     }
@@ -577,8 +588,8 @@ union MaybeInst {
     InstPtr Split1
     InstPtr Split2
 
-    private method fill(InstPtr jump) -> cls {
-        var maybeInst = switch self {
+    public method fill(InstPtr jump) -> cls {
+        return switch self {
             case MaybeInst.Split => MaybeInst.Split1(jump)
             case MaybeInst.Uncompiled as inst => MaybeInst.Compiled(inst.fill(jump))
             case MaybeInst.Split1 as jump1 => MaybeInst.Compiled(
@@ -587,14 +598,13 @@ union MaybeInst {
             case MaybeInst.Split2 as jump2 => MaybeInst.Compiled(
                 Inst.Split(InstSplit(jump, jump2))
             )
-            default => raise Unreachable
+            default => raise Unreachable("")
         }
-        return MaybeInst
     }
 
-    private method fillSplit(InstPtr jump1, InstPtr jump2) -> cls {
+    method fillSplit(InstPtr jump1, InstPtr jump2) -> cls {
         var filled = switch self {
-            case MaybeInst.Split => Inst.Split(InstSplit(goto1, goto2))
+            case MaybeInst.Split => Inst.Split(InstSplit(jump1, jump2))
 
             default => raise Unreachable(
                 f"must be called on Split instruction, instead it was called on: {self}",
@@ -603,7 +613,7 @@ union MaybeInst {
         return MaybeInst.Compiled(filled)
     }
 
-    private method halfFillSplitJump1(InstPtr jump1) -> cls {
+    method halfFillSplitJump1(InstPtr jump1) -> cls {
         var halfFilled = switch self {
             case MaybeInst.Split => jump1
             default => raise Unreachable(
@@ -613,7 +623,7 @@ union MaybeInst {
         return MaybeInst.Split1(halfFilled)
     }
 
-    private method halfFillsplitJump2(InstPtr jump2) {
+    method halfFillSplitJump2(InstPtr jump2) -> cls {
         var halfFilled = switch self {
             case MaybeInst.Split => jump2
             default => raise Unreachable(
@@ -637,16 +647,16 @@ union InstHole {
     int Save
     EmptyLook EmptyLook
     char Char
-    list[Pair[char, char]] Ranges
-    Pair[int, int] Bytes
+    list[tuple[char, char]] Ranges
+    tuple[int, int] Bytes
 
-    private method fill(InstPtr jump) -> Inst {
+    public method fill(InstPtr jump) -> Inst {
         return switch self {
             case InstHole.Save as slot => Inst.Save(InstSave(jump, slot))
             case InstHole.EmptyLook as look => Inst.EmptyLook(InstEmptyLook(jump, look))
             case InstHole.Char as c => Inst.Char(InstChar(jump, c))
             case InstHole.Ranges as ranges => Inst.Ranges(InstRanges(jump, ranges))
-            case InstHole.Bytes as p => Inst.Bytes(InstBytes(jump, p.start, p.end))
+            case InstHole.Bytes as p => Inst.Bytes(InstBytes(jump, *p))
         }
     }
 }
@@ -655,7 +665,7 @@ class CompileClass {
     final Compiler c
     list[ClassUnicodeRange] ranges
 
-    public operator new(Compiler c, list[ClassUnicodeRange] ranges) {
+    public operator new(mut Compiler c, list[ClassUnicodeRange] ranges) {
         self.c = c
         self.ranges = ranges
     }
@@ -670,21 +680,21 @@ class CompileClass {
         for int i, var r in enumerate(self.ranges) {
             var isLastRange = i + 1 == self.ranges.length
             utf8Seqs.reset(r.start, r.end)
-            mut var it = utf8Seqs.peekable()
+            mut var it = iter(utf8Seqs)
             while it.next()? as utf8Seq {
                 if isLastRange and not it.peek()? {
                     var patch = self.cUtf8Seq(utf8Seq)
                     holes.add(patch.hole)
                     self.c.fill(lastSplit, patch.entry)
                     lastSplit = Hole.None()
-                    initialEntry ??= patch.entry
+                    # initialEntry ??= patch.entry  FIXME: ??=
                 } else {
-                    initialEntry ??= self.c.insts.length
+                    # initialEntry ??= self.c.insts.length
                     self.c.fillToNext(lastSplit)
                     lastSplit = self.c.pushSplitHole()
                     var patch = self.cUtf8Seq(utf8Seq)
                     holes.push(patch.hole)
-                    lastSplit = self.c.fillSplit(lastSplit, entry, null)
+                    lastSplit = self.c.fillSplit(lastSplit, patch.entry, null)
                 }
             }
         }
@@ -713,7 +723,7 @@ class CompileClass {
                         byteRange.end,
                     )))
             } else {
-                self.c.push_compiled(Inst.Bytes(InstBytes(
+                self.c.pushCompiled(Inst.Bytes(InstBytes(
                             fromInst,
                             byteRange.start,
                             byteRange.end,
@@ -735,10 +745,10 @@ class SuffixCache {
     }
 
     public mut method get(SuffixCacheKey key, InstPtr pc) -> InstPtr? {
-        if key in tbl {
-            return tbl[key]
+        if key in self.tbl {
+            return self.tbl[key]
         } else {
-            tbl[key] = pc
+            self.tbl[key] = pc
             return null
         }
     }
@@ -768,7 +778,7 @@ class SuffixCacheKey {
     }
 
     public operator hash {
-        return hash((self.fromInst, self.start, self.end))
+        return (self.fromInst, self.start, self.end).operator hash()
     }
 }
 
@@ -777,6 +787,10 @@ class ByteClassSet {
 
     public operator new() {
         self.value = [false] * 256
+    }
+
+    public operator []= (int index, bool value) {
+        self.value[index] = value
     }
 
     public mut method setRange(int start, int end) {
@@ -818,4 +832,17 @@ class ByteClassSet {
         }
         return byteClasses
     }
+}
+
+# FIXME
+class Unreachable from Throwable {
+    private str value
+
+    public operator new(str value) {
+        self.value = value
+    }
+}
+
+func isWordByte(int c) -> bool {
+    raise NotImplemented()
 }

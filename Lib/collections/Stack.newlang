@@ -1,6 +1,4 @@
-from interfaces typeget Iterable
-
-from types import Array
+# from interfaces typeget Iterable
 
 export Stack
 
@@ -8,7 +6,7 @@ export Stack
 int DEFAULT_SIZE = 16
 
 
-final class Stack[T] {
+final class Stack[T] from Iterable[T] {
     private Array[T?] values
     pubget int length
 
@@ -16,7 +14,7 @@ final class Stack[T] {
         self.values = Array(DEFAULT_SIZE, null)
     }
 
-    public operator iter {
+    public operator iter -> T {
         yield from self.values[self.length::-1]
     }
 

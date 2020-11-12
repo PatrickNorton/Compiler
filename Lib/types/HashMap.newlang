@@ -1,13 +1,12 @@
 from collections typeget AbstractDict
 from interfaces typeget Hashable
 
-from .natives import Array
 from numtools import highestOneBit
 from math import max
 
 export HashMap
 
-typedef VarInfo as Tuple[int64, K, V]
+typedef VarInfo as tuple[int, K, V]
 
 int DEFAULT_ARRAY_SIZE = 1 << 4
 dec RESIZE_THRESHOLD = 0.75

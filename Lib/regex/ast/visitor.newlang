@@ -1,0 +1,30 @@
+from .ast import Ast, ClassSetBinaryOp, ClassSetItem
+
+export Visitor, visit
+
+interface Visitor[O] {
+    public method finish() -> O
+
+    public method start() {}
+
+    public mut method visitPre(Ast _ast) {}
+
+    public mut method visitPost(Ast _ast) {}
+
+    public mut method visitAlternationIn() {}
+
+    public mut method visitClassSetItemPre(ClassSetItem _ast) {}
+
+    public mut method visitClassSetItemPost(ClassSetItem _ast) {}
+
+    public mut method visitClassSetBinaryOpPre(ClassSetBinaryOp _ast) {}
+
+    public mut method visitClassSetBinaryOpPost(ClassSetBinaryOp _ast) {}
+
+    public mut method visitClassSetBinaryOpIn(ClassSetBinaryOp _ast) {}
+}
+
+generic T
+func visit(Ast ast, Visitor[T] visitor) -> T {
+    # return HeapVisitor().visit(ast, visitor)
+}
