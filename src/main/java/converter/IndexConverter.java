@@ -55,11 +55,15 @@ public final class IndexConverter implements TestConverter {
 
     public List<Byte> convertIterSlice(int start) {
         assert isSlice();
+        var converter = TestConverter.of(info, node.getVar(), 1);
+        var ret = converter.returnType()[0];
+        var hasIter = ret.operatorInfo(OpSpTypeNode.ITER_SLICE, info).isPresent();
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getVar(), info, 1));
         checkSliceType();
         bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert(start + bytes.size()));
         bytes.add(Bytecode.CALL_OP.value);
-        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.ITER_SLICE.ordinal()));
+        var ordinal = (hasIter ? OpSpTypeNode.ITER_SLICE : OpSpTypeNode.GET_SLICE).ordinal();
+        bytes.addAll(Util.shortToBytes((short) ordinal));
         bytes.addAll(Util.shortToBytes((short) 1));
         return bytes;
     }
