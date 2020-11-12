@@ -1,7 +1,7 @@
 export highestOneBit
 
 func highestOneBit(int i) -> int {
-    int bsCount = 0
+    mut int bsCount = 0
     while i != 0 {
         i >>= 1
         bsCount++
