@@ -287,10 +287,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             convertArrow(start, bytes, stmt, retTypes);
         } else {
             bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
-            bytes.add(Bytecode.JUMP.value);
-            info.loopManager().addBreak(1, start + bytes.size());
-            bytes.addAll(Util.zeroToBytes());
         }
+        bytes.add(Bytecode.JUMP.value);
+        info.loopManager().addBreak(1, start + bytes.size());
+        bytes.addAll(Util.zeroToBytes());
         return defaultVal;
     }
 
