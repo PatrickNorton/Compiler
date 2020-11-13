@@ -19,8 +19,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -646,6 +648,33 @@ public final class CompilerInfo {
      */
     public boolean varDefinedInCurrentFrame(String name) {
         return variables.get(variables.size() - 1).containsKey(name);
+    }
+
+    public Iterable<String> definedNames() {
+        return DefinedIterator::new;
+    }
+
+    private final class DefinedIterator implements Iterator<String> {
+        private int frameNo = variables.size() - 1;
+        private Iterator<String> frameIter = variables.get(frameNo).keySet().iterator();
+
+        @Override
+        public boolean hasNext() {
+            return frameNo > 0 || frameIter.hasNext();
+        }
+
+        @Override
+        public String next() {
+            if (!frameIter.hasNext()) {
+                if (frameNo == 0) {
+                    throw new NoSuchElementException();
+                } else {
+                    frameNo--;
+                    frameIter = variables.get(frameNo).keySet().iterator();
+                }
+            }
+            return frameIter.next();
+        }
     }
 
     /**
