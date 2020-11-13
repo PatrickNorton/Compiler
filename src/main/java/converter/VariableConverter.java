@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.VariableNode;
+import main.java.util.Levenshtein;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -31,9 +32,7 @@ public final class VariableConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        return new TypeObject[]{info.getType(node.getName()).orElseThrow(
-                () -> CompilerException.format("Variable '%s' not defined", node, node.getName())
-        )};
+        return new TypeObject[]{info.getType(node.getName()).orElseThrow(this::nameError)};
     }
 
     @NotNull
@@ -72,7 +71,33 @@ public final class VariableConverter implements TestConverter {
 
     private void checkDef() {
         if (!node.getName().equals("null") && info.varIsUndefined(node.getName())) {
-            throw CompilerException.format("Variable '%s' not defined", node, node.getName());
+            throw nameError();
         }
+    }
+
+    private CompilerException nameError() {
+        var name = node.getName();
+        var closest = closestName(name);
+        if (closest.isPresent()) {
+            return CompilerException.format(
+                    "Variable '%s' not defined.%nDid you mean '%s'?", node, name, closest.orElseThrow()
+            );
+        } else {
+            return CompilerException.format("Variable '%s' not defined", node, name);
+        }
+    }
+
+    private Optional<String> closestName(String name) {
+        String min = null;
+        int dist = Integer.MAX_VALUE;
+        for (var variable : info.definedNames()) {
+            var levDist = Levenshtein.distance(name, variable);
+            if (levDist < dist || min == null) {
+                min = variable;
+                dist = levDist;
+            }
+        }
+        var maxDistance = Math.max(name.length(), 3) / 3;
+        return dist > maxDistance ? Optional.empty() : Optional.ofNullable(min);
     }
 }

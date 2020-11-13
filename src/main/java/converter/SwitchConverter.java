@@ -141,7 +141,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 throw asException(stmt.getAs());
             }
             if (stmt instanceof DefaultStatementNode) {
-                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt);
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 continue;
             }
             var label = stmt.getLabel()[0];
@@ -184,7 +184,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 throw asException(stmt.getAs());
             }
             if (stmt instanceof DefaultStatementNode) {
-                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt);
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 continue;
             }
             var label = stmt.getLabel()[0];
@@ -272,16 +272,22 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    private int getDefaultVal(int start, int defaultVal, List<Byte> bytes, CaseStatementNode stmt) {
+    private int getDefaultVal(int start, int defaultVal, List<Byte> bytes,
+                              CaseStatementNode stmt, TypeObject[] retTypes) {
         if (defaultVal != 0) {
             throw defaultException(stmt);
         }
-        return convertDefault(start, bytes, (DefaultStatementNode) stmt);
+        return convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
     }
 
-    private int convertDefault(int start, @NotNull List<Byte> bytes, @NotNull DefaultStatementNode stmt) {
+    private int convertDefault(int start, @NotNull List<Byte> bytes,
+                               @NotNull DefaultStatementNode stmt, TypeObject[] retTypes) {
         var defaultVal = start + bytes.size();
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+        if (stmt.isArrow()) {
+            convertArrow(start, bytes, stmt, retTypes);
+        } else {
+            bytes.addAll(BaseConverter.bytes(start + bytes.size(), stmt.getBody(), info));
+        }
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addBreak(1, start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
@@ -312,7 +318,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 if (hasAs) {
                     bytes.add(Bytecode.POP_TOP.value);
                 }
-                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt);
+                defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
                 continue;
             }
             var lblConverter = stmt.getLabel()[0];

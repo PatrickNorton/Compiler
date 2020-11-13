@@ -184,18 +184,18 @@ public final class DotConverter implements TestConverter {
     public List<Byte> convert(int start) {
         var preConverter = TestConverter.of(info, node.getPreDot(), 1);
         List<Byte> bytes = new ArrayList<>(preConverter.convert(start));
-        TypeObject previous = preConverter.returnType()[0];
+        TypeObject[] previous = preConverter.returnType();
         for (int i = 0; i < node.getPostDots().length; i++) {
             var dot = node.getPostDots()[i];
             // Here to check the proper return types exist. Does not check the
             // last one b/c non-returning values will cause an error even
             // though they are perfectly valid.
             if (i != node.getPostDots().length - 1) {
-                var result = dotReturnType(previous, dot);
+                var result = dotReturnType(previous[0], dot);
                 if (result.length == 0) {
                     throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
                 }
-                previous = result[0];
+                previous = result;
             }
             switch (dot.getDotPrefix()) {
                 case "":
@@ -211,7 +211,12 @@ public final class DotConverter implements TestConverter {
                     throw new RuntimeException("Unknown value for dot prefix");
             }
         }
-        if (retCount == 0) {  // FIXME: Ensure return counts are correct
+        if (previous.length < retCount) {
+            throw CompilerException.format(
+                    "Cannot convert: %d returns is less than the required %d", node, previous.length, retCount
+            );
+        }
+        for (int i = previous.length; i < retCount; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
