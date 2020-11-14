@@ -7,6 +7,7 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Levenshtein;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +44,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     public abstract boolean sameBaseType(TypeObject other);
     public abstract int baseHash();
     public abstract TypeObject typedefAs(String name);
+
+    public Optional<Iterable<String>> getDefined() {
+        return Optional.empty();
+    }
 
     /**
      * Checks if this is a superclass of another type.
@@ -473,9 +478,17 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                     lineInfo, value, name()
             );
         } else {
-            return CompilerException.format(
-                    "Attribute '%s' does not exist in type '%s'", lineInfo, value, name()
-            );
+            var closest = getDefined().flatMap(x -> Levenshtein.closestName(value, x));
+            if (closest.isPresent()) {
+                return CompilerException.format(
+                        "Attribute '%s' does not exist in type '%s'%nDid you mean '%s'?",
+                        lineInfo, value, name(), closest.orElseThrow()
+                );
+            } else {
+                return CompilerException.format(
+                        "Attribute '%s' does not exist in type '%s'", lineInfo, value, name()
+                );
+            }
         }
     }
 

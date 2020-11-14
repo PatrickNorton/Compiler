@@ -258,6 +258,8 @@ public final class Builtins {
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
         var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
+        var addInfo = new FunctionInfo(ArgumentInfo.of(INT));
+        var addCharInfo = new FunctionInfo(ArgumentInfo.of(INT, STR));
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
@@ -265,6 +267,8 @@ public final class Builtins {
                 "encode", AttributeInfo.method(encodeInfo),
                 "indexOf", AttributeInfo.method(indexInfo),
                 "get", AttributeInfo.method(getInfo),
+                "add", AttributeInfo.mutMethod(addInfo),
+                "addChar", AttributeInfo.method(addCharInfo),
                 "lastIndexOf", AttributeInfo.method(indexInfo)
         );
         BYTES.setAttributes(bytesAttrs);
@@ -343,6 +347,7 @@ public final class Builtins {
         var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
         var addAllInfo = new FunctionInfo(ArgumentInfo.of(iterGen));
         var indexOfInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM),TypeObject.optional(INT));
+        var swapInfo = new FunctionInfo(ArgumentInfo.of(INT, INT));
         var listAttrs = Map.ofEntries(
                 Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
                 Map.entry("get", AttributeInfo.method(getInfo)),
@@ -354,7 +359,8 @@ public final class Builtins {
                 Map.entry("indexOf", AttributeInfo.method(indexOfInfo)),
                 Map.entry("add", AttributeInfo.mutMethod(addInfo)),
                 Map.entry("addAll", AttributeInfo.mutMethod(addAllInfo)),
-                Map.entry("popFirst", AttributeInfo.mutMethod(popFirstInfo))
+                Map.entry("popFirst", AttributeInfo.mutMethod(popFirstInfo)),
+                Map.entry("swap", AttributeInfo.mutMethod(swapInfo))
         );
         LIST.setAttributes(listAttrs);
         LIST.seal();
@@ -375,8 +381,10 @@ public final class Builtins {
                 OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(SET_PARAM))
         );
         SET.setOperators(setMap);
+        var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
         var setAttrs = Map.of(
-                "length", new AttributeInfo(AccessLevel.PUBLIC, INT)
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "add", AttributeInfo.mutMethod(addInfo)
         );
         SET.setAttributes(setAttrs);
         SET.seal();
