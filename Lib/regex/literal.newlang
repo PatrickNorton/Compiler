@@ -166,11 +166,13 @@ union Matcher {
 
         if lits.literals.length == 1 {
             var lit = lits.literals[0].value
+            #|
             if BoyerMooreSearch.shouldUse(lit) {
                 return Matcher.BoyerMoore(BoyerMooreSearch(lit))
             } else {
                 return Matcher.FreqyPacked(FreqyPacked(lit))
             }
+            |#
         }
 
         var pats = lits.literals
@@ -195,7 +197,7 @@ class SingleByteSet {
     private final list[bool] sparse
     final bytes dense
     mut bool complete
-    private mut bool allAscii
+    pubget mut bool allAscii
 
     public operator new {
         self.sparse = [false] * 256
