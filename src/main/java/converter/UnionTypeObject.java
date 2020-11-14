@@ -34,6 +34,10 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         super(other.info, typedefName, other.generics, other.isConst);
     }
 
+    private UnionTypeObject(@NotNull UnionTypeObject other, boolean isConst) {
+        super(other.info, other.typedefName, other.generics, isConst);
+    }
+
     @Override
     public boolean isFinal() {
         return false;
@@ -50,20 +54,34 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
     }
 
     @Override
+    public TypeObject makeMut() {
+        return isConst ? new UnionTypeObject(this, false) : this;
+    }
+
+    @Override
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
         return Pair.of(Collections.emptySet(), Collections.emptySet());
     }
 
     @Override
     public String name() {
-        if (!generics.isEmpty()) {
+        if (generics.isEmpty()) {
+            String name = typedefName.isEmpty() ? info.name : typedefName;
+            if (isConst || info.isConstClass) {
+                return name;
+            } else {
+                return String.format("mut %s", name);
+            }
+        } else {
             var valueJoiner = new StringJoiner(", ", "[", "]");
             for (var cls : generics) {
                 valueJoiner.add(cls.name());
             }
-            return info.name + valueJoiner.toString();
-        } else {
-            return typedefName.isEmpty() ? info.name : typedefName;
+            if (isConst || info.isConstClass) {
+                return info.name + valueJoiner.toString();
+            } else {
+                return String.format("mut %s%s", info.name, valueJoiner);
+            }
         }
     }
 
