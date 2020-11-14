@@ -10,8 +10,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -375,6 +377,11 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
+    @Override
+    public Optional<Iterable<String>> getDefined() {
+        return Optional.of(DefinedIterator::new);
+    }
+
     protected static abstract class Info<O extends IntoMethodInfo, A extends IntoAttrInfo> {
         protected final String name;
         protected List<TypeObject> supers;
@@ -436,6 +443,38 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
             if (staticAttributes == null) {
                 staticAttributes = Collections.emptyMap();
+            }
+        }
+    }
+
+    private final class DefinedIterator implements Iterator<String> {
+        private int superIndex = -1;
+        private Iterator<String> currentIter = info.attributes.keySet().iterator();
+
+        @Override
+        public boolean hasNext() {
+            if (!currentIter.hasNext()) updateIter();
+            return superIndex < info.supers.size();
+        }
+
+        @Override
+        public String next() {
+            if (!currentIter.hasNext()) {
+                updateIter();
+                if (superIndex >= info.supers.size()) {
+                    throw new NoSuchElementException();
+                }
+            }
+            return currentIter.next();
+        }
+
+        private void updateIter() {
+            while (!currentIter.hasNext() && superIndex < info.supers.size() - 1) {
+                superIndex++;
+                currentIter = info.supers.get(superIndex).getDefined().orElse(Collections.emptyList()).iterator();
+            }
+            if (!currentIter.hasNext()) {
+                superIndex++;
             }
         }
     }
