@@ -408,20 +408,29 @@ final class VariableHolder {
 
         @Override
         public boolean hasNext() {
-            return frameNo > 0 || frameIter.hasNext();
+            if (!frameIter.hasNext()) updateIter();
+            return frameNo < variables.size();
         }
 
         @Override
         public String next() {
             if (!frameIter.hasNext()) {
-                if (frameNo == 0) {
+                updateIter();
+                if (frameNo >= variables.size()) {
                     throw new NoSuchElementException();
-                } else {
-                    frameNo--;
-                    frameIter = variables.get(frameNo).keySet().iterator();
                 }
             }
             return frameIter.next();
+        }
+
+        private void updateIter() {
+            while (!frameIter.hasNext() && frameNo < variables.size() - 1) {
+                frameNo++;
+                frameIter = variables.get(frameNo).keySet().iterator();
+            }
+            if (!frameIter.hasNext()) {
+                frameNo++;
+            }
         }
     }
 }
