@@ -97,12 +97,12 @@ class Regex {
             for int i, var m in enumerate(self.findIter(text)) {
                 break if limit > 0 and i >= limit
 
-                new.push(text[lastMatch:m.start])
-                new.push(rep)
+                new.add(text[lastMatch:m.start])
+                new.add(rep)
                 lastMatch = m.end
             }
             return text if not new and not lastMatch
-            new.push(text[lastMatch:])
+            new.add(text[lastMatch:])
             return str(new)
         }
 
@@ -114,12 +114,12 @@ class Regex {
             break if limit > 0 and i >= limit
 
             var m = cap.group(0)
-            new.pushStr(text[lastMatch:m.start])
+            new.add(text[lastMatch:m.start])
             new = StringBuilder(repl.replaceAppend(cap, str(new)))
             lastMatch = m.end
         }
         return text if not new and not lastMatch
-        new.pushStr(text[lastMatch:])
+        new.add(text[lastMatch:])
         return str(new)
     }
 

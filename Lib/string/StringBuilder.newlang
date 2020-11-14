@@ -41,4 +41,9 @@ class StringBuilder {
     public operator str {
         return str.fromChars(self.chars)
     }
+
+    public mut method add(object obj) -> mut cls {
+        self.chars += str(obj).chars
+        return self
+    }
 }

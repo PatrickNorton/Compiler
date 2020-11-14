@@ -232,7 +232,7 @@ class AhoCorasickBuilder {
     }
 
     public mut method premultiply(bool yes) -> mut cls {
-        self.dfaBuilder.preMultiply(yes)
+        self.dfaBuilder.premultiply(yes)
         return self
     }
 }

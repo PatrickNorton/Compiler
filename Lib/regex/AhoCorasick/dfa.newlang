@@ -343,7 +343,7 @@ class Rep {
     PrefilterObj? prefilter
     ByteClasses byteClasses
     final list[int] trans
-    final list[list[tuple[PatternId, PatternLength]]] matches
+    final list[mut list[tuple[PatternId, PatternLength]]] matches
 
     operator new(
         MatchKind matchKind,
@@ -410,7 +410,7 @@ class Rep {
     }
 
     mut method swapStates(int id1, int id2) {
-        assert not self.preMultiplied
+        assert not self.premultiplied
         var o1 = id1 * self.alphabetLen()
         var o2 = id2 * self.alphabetLen()
         for var b in [0:self.alphabetLen()] {
@@ -420,7 +420,7 @@ class Rep {
     }
 
     mut method shuffleMatchStates() {
-        assert not self.preMultiplied
+        assert not self.premultiplied
         return if self.stateCount <= 1
 
         mut var firstNonMatch = self.startId
@@ -508,20 +508,20 @@ class Builder {
             matches,
         )
         for var idVal in [0:nfa.stateLen()] {
-            rep.matches[idVal].extend(nfa.matches(idVal))
+            rep.matches[idVal].addAll(nfa.matches(idVal))
 
             var fail = nfa.failureTransition(idVal)
             nfa.iterAllTransitions(byteClasses, idVal, lambda (int b, mut int next) {
                     if next == FAIL_ID {
                         next = nfaNextStateMemoized(nfa, rep, idVal, fail, b)
                     }
-                    repr.setNextState(idVal, b, next)
+                    rep.setNextState(idVal, b, next)
                 }
             )
         }
         rep.shuffleMatchStates()
         if self.premultiply_ {
-            repr.premultiply()
+            rep.premultiply()
             if byteClasses.isSingleton() {
                 return DFA.Premultiplied(Premultiplied(rep))
             } else {

@@ -22,7 +22,7 @@ class NFA from Automaton {
     pubget PrefilterObj? prefilter
     pubget bool anchored
     pubget ByteClasses byteClasses
-    private mut list[State] states
+    private mut list[mut State] states
 
     public operator new(
         MatchKind matchKind,
@@ -65,6 +65,10 @@ class NFA from Automaton {
     }
 
     method state(int idVal) -> State {
+        return self.states[idVal]
+    }
+
+    mut method stateMut(int idVal) -> mut State {
         return self.states[idVal]
     }
 
@@ -129,7 +133,7 @@ class NFA from Automaton {
     }
 
     private mut method copyMatches(int src, int dst) {
-        self.states[src].matches.extend(self.states[dst].matches)
+        self.states[src].matches.addAll(self.states[dst].matches)
     }
 
     private mut method copyEmptyMatches(int dst) {
@@ -141,7 +145,7 @@ class NFA from Automaton {
         var trans = Transitions.Dense(Dense(val))
         var idVal = self.states.length
         list[int] val2 = []
-        self.states.push(State(trans, DEAD_ID if self.anchored else self.startId), depth, val2)
+        self.states.add(State(trans, DEAD_ID if self.anchored else self.startId), depth, val2)
         return idVal
     }
 
@@ -150,7 +154,7 @@ class NFA from Automaton {
         var trans = Transitions.Sparse(empty)
         var idVal = self.states.length
         list[int] val = []
-        self.states.push(State(trans, DEAD_ID if self.anchored else self.startId), depth, val)
+        self.states.add(State(trans, DEAD_ID if self.anchored else self.startId), depth, val)
     }
 
     public method startState() -> int {
@@ -181,13 +185,13 @@ class NFA from Automaton {
 }
 
 class State {
-    Transitions trans
+    final Transitions trans
     mut int fail
     final list[tuple[PatternId, PatternLength]] matches
     mut int depth
 
     public operator new(
-        Transitions trans,
+        mut Transitions trans,
         int fail,
     ) {
         self.trans = trans
@@ -204,7 +208,7 @@ class State {
     }
 
     private mut method addMatch(PatternId i, PatternLength len) {
-        self.matches.push((i, len))
+        self.matches.add((i, len))
     }
 
     public method isMatch() -> bool {
@@ -258,6 +262,43 @@ union Transitions {
                 return dense[inputVal]
             }
         }
+    }
+
+    method iterAll(ByteClasses classes, Callable[int, int, []] f) {
+        if classes.isSingleton() {
+            switch self {
+                case Transitions.Sparse as sparse {
+                    sparseIter(sparse, f)
+                }
+                case Transitions.Dense as dense {
+                    for var b in [0:256] {
+                        f(b, dense[b])
+                    }
+                }
+            }
+        } else {
+            switch self {
+                case Transitions.Sparse as sparse {
+                    mut int? lastClass = null
+                    sparseIter(sparse, lambda int b, int next {
+                        var type = classes[b]
+                        if lastClass != type {
+                            lastClass = type
+                            f(b, next)
+                        }
+                    })
+                }
+                case Transitions.Dense as dense {
+                    for var b in classes.representatives() {
+                        f(b, dense[b])
+                    }
+                }
+            }
+        }
+    }
+
+    mut method setNextState(int inputVal, int next) {
+        raise NotImplemented()
     }
 }
 
@@ -343,10 +384,9 @@ class Compiler {
         }
         self.closeStartStateLoop()
         self.nfa.setByteClasses(self.byteClasses.build())
-        if not self.builder.anchored {
+        if not self.builder.anchored_ {
             self.nfa.setPrefilter(self.prefilter.build())
         }
-        self.calculateSize()
         return self.nfa
     }
 
@@ -382,7 +422,7 @@ class Compiler {
                 # building a DFA. They would technically be useful for the
                 # NFA, but it would require a second pass over the patterns.
                 self.byteClasses.setRange(b, b)
-                if self.builder.asciiCaseInsensitive {
+                if self.builder.asciiCaseInsensitive_ {
                     var b2 = oppositeAsciiCase(b)
                     self.byteClasses.setRange(b2, b2)
                 }
@@ -399,10 +439,10 @@ class Compiler {
                     prev = next
                 } else {
                     self.addState(depth + 1)
-                    self.nfa.state(prev).setNextState(b, next)
-                    if self.builder.asciiCaseInsensitive {
+                    self.nfa.stateMut(prev).setNextState(b, next)
+                    if self.builder.asciiCaseInsensitive_ {
                         var b2 = oppositeAsciiCase(b)
-                        self.nfa.state(prev).setNextState(b2, next)
+                        self.nfa.stateMut(prev).setNextState(b2, next)
                     }
                     prev = next
                 }
@@ -410,9 +450,9 @@ class Compiler {
 
             # Once the pattern has been added, log the match in the final
             # state that it reached.
-            self.nfa.state(prev).addMatch(pati, pat.length)
+            self.nfa.stateMut(prev).addMatch(pati, pat.length)
             # ... and hand it to the prefilter builder, if applicable.
-            if self.builder.prefilter {
+            if self.builder.prefilter_ {
                 self.prefilter.add(pat)
             }
         }
@@ -438,7 +478,7 @@ class Compiler {
             for var pair in self.nfa.iterTransitionsMut(idVal) {
                 var b, var next = *pair
                 if next not in seen {
-                    queue.pushBack(next)
+                    queue.add(next)
                     seen.insert(next)
                 }
 
@@ -577,7 +617,7 @@ class Compiler {
     }
 
     private method queuedSet() -> mut QueuedSet {
-        if self.builder.asciiCaseInsensitive {
+        if self.builder.asciiCaseInsensitive_ {
             return QueuedSet.active()
         } else {
             return QueuedSet.inert()
@@ -589,12 +629,31 @@ class Compiler {
         var start = self.nfa.start()
         for var b in [0:256] {
             if start.nextState(b) == FAIL_ID {
-                start.setNextState(b, startId)
+                # start.setNextState(b, startId)
             }
         }
     }
 
-    method addState(int depth) {
+    method closeStartStateLoop() {
+        if self.builder.anchored_ or (self.matchKind().isLeftmost and self.nfa.start().isMatch()) {
+            var startId = self.nfa.startId
+            var start = self.nfa.start()
+            for var b in [0:256] {
+                if start.nextState(b) == startId {
+                    # start.set_next_state(b, dead_id());
+                }
+            }
+        }
+    }
+
+    mut method addDeadStateLoop() {
+        var dead = self.nfa.state(DEAD_ID)
+        for var b in [0:256] {
+            # dead.setNextState(b, DEAD_ID)
+        }
+    }
+
+    mut method addState(int depth) {
         if depth < self.builder.denseDepth_ {
             self.nfa.addDenseState(depth)
         } else {
@@ -660,9 +719,9 @@ class QueuedSet {
         return cls(i)
     }
 
-    method insert(int stateId) {
+    mut method insert(int stateId) {
         if self.value? {
-            self.value!!.insert(stateId)
+            self.value!!.add(stateId)
         }
     }
 
@@ -677,4 +736,8 @@ class QueuedSet {
 
 func max(int i, int j) -> int {
     return i if i > j else j
+}
+
+func sparseIter(list[tuple[int, int]] sparse, Callable[int, int, []] f) {
+    raise NotImplemented()
 }

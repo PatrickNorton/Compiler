@@ -74,7 +74,7 @@ enum ForceAlgorithm {
 class Builder {
     Config config
     mut bool inert
-    Patterns patterns
+    final Patterns patterns
 
     public operator new(Config config = Config()) {
         self.config = config

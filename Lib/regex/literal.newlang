@@ -6,7 +6,7 @@ from .hir import Literal, Literals
 export LiteralSearcher
 
 class LiteralSearcher {
-    private bool complete
+    public bool complete
     public FreqyPacked lcp
     public FreqyPacked lcs
     private Matcher matcher
@@ -194,7 +194,7 @@ union Matcher {
 class SingleByteSet {
     private final list[bool] sparse
     final bytes dense
-    private mut bool complete
+    mut bool complete
     private mut bool allAscii
 
     public operator new {

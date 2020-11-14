@@ -216,7 +216,7 @@ interface Automaton {
                 return m
             }
         }
-        self.standardFindAt(prestate, haystack, at, stateId)
+        self.standardFindAt(prestate, haystack, at, int(stateId))
     }
 
     public method findAtNoState(
@@ -225,14 +225,14 @@ interface Automaton {
         int at,
     ) -> Match? {
         switch self.matchKind() {
-            case MatchKind.Standard {
+            case MatchKind.STANDARD {
                 mut var state = self.startState()
                 return self.earliestFindAt(prestate, haystack, at, IntRef(state))
             }
-            case MatchKind.LeftmostFirst {
+            case MatchKind.LEFTMOST_FIRST {
                 return self.leftmostFindAtNoState(prestate, haystack, at)
             }
-            case MatchKind.LeftmostLongest {
+            case MatchKind.LEFTMOST_LONGEST {
                 return self.leftmostFindAtNoState(prestate, haystack, at)
             }
         }

@@ -36,7 +36,7 @@ class RegexBuilder {
 
     public operator new(str pattern) {
         self.options = RegexOptions()
-        self.options.pats.append(pattern)
+        self.options.pats.add(pattern)
     }
 
     public method build() -> Exec {

@@ -136,14 +136,14 @@ const class ExecReadOnly {
         if self.ac? {
             return MatchType.Literal(MatchLiteralType.AHO_CORASICK)
         }
-        if self.nfa.prefixes.complete() {
+        if self.nfa.prefixes.complete {
             if self.nfa.isAnchoredStart {
                 return MatchType.Literal(MatchLiteralType.ANCHORED_START)
             } else {
                 return MatchType.Literal(MatchLiteralType.UNANCHORED)
             }
         }
-        if self.suffixes.complete() {
+        if self.suffixes.complete {
             if self.nfa.isAnchoredEnd {
                 return MatchType.Literal(MatchLiteralType.ANCHORED_END)
             } else {
@@ -238,7 +238,7 @@ class ExecBuilder {
                 .build())
             var expr = parser.parse(pat)
             isBytes = isBytes or not expr.isAlwaysUtf8()
-            exprs.push(expr)
+            exprs.add(expr)
         }
 
         return Parsed(exprs, prefixes ?? Literals(), suffixes ?? Literals(), isBytes)
@@ -255,7 +255,7 @@ class ExecBuilder {
         var parsed = self.parse()
         mut var nfa = (Compiler()
             .sizeLimit(self.options.sizeLimit)
-            .bytes(self.bytes or parsed.bytes)
+            .bytes(self.isBytes or parsed.bytes)
             .onlyUtf8(self.utf8Only)
             .compile(parsed.exprs))
         mut var dfa = (Compiler()
@@ -375,7 +375,7 @@ func alternationLiterals(Hir expr) -> list[bytes]? {
             case HirKind.Literal as x {
                 switch x {
                     case Literal.Unicode as c {
-                        lit.addUtf8(c)
+                        lit.addChar(c, "UTF-8")
                     }
                     case Literal.Byte as b {
                         lit.add(b)
@@ -388,7 +388,7 @@ func alternationLiterals(Hir expr) -> list[bytes]? {
                         case HirKind.Literal as x {
                             switch x {
                                 case Literal.Unicode as c {
-                                    lit.addUtf8(c)
+                                    lit.addChar(c, "UTF-8")
                                 }
                                 case Literal.Byte as b {
                                     lit.add(b)
@@ -1007,7 +1007,7 @@ class ExecNoSync {
         if self.ro.nfa.usesBytes() {
             Bounded.exec(
                 self.ro.nfa,
-                self.cache.value(),
+                self.cache,
                 matches,
                 slots,
                 ByteInput(text, self.ro.nfa.onlyUtf8),
@@ -1017,7 +1017,7 @@ class ExecNoSync {
         } else {
             Bounded.exec(
                 self.ro.nfa,
-                self.cache.value(),
+                self.cache,
                 matches,
                 slots,
                 CharInput(text),

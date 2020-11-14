@@ -88,7 +88,7 @@ class Builder {
     mut bool asciiCaseInsensitive_
     mut StartBytesBuilder startBytes
     mut RareBytesBuilder rareBytes
-    PackedBuilder? packed
+    final PackedBuilder? packed
 
     public operator new(MatchKind kind) -> Builder {
         self.count = 0
@@ -172,7 +172,7 @@ class Packed from Prefilter {
 
 class RareBytesBuilder {
     mut bool asciiCaseInsensitive_
-    ByteSet rareSet
+    final ByteSet rareSet
     mut RareByteOffsets byteOffsets
     mut bool available
     int count

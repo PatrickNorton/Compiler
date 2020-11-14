@@ -60,7 +60,7 @@ class RabinKarp {
             var idVal, var pat = *pair
             var hashVal = self.hash(pat.bytes()[:self.hashLen])
             var bucket = hashVal % NUM_BUCKETS
-            self.buckets[bucket].add((hashVal, idVal))
+            # self.buckets[bucket].add((hashVal, idVal))  FIXME: Mutable inner types
         }
     }
 
