@@ -129,7 +129,7 @@ public final class DotConverter implements TestConverter {
             var opInfo = attrType.tryOperatorInfo(postDot, OpSpTypeNode.CALL, info);
             var retTypes = opInfo.getReturns();
             if (retTypes.length == 0) {
-                throw CompilerException.of("Function does not return a value", dot);
+                return new TypeObject[0];
             }
             var params = ((FunctionCallNode) postDot).getParameters();
             return FunctionCallConverter.generifyReturns(opInfo, info, params, postDot, -1);
@@ -196,6 +196,8 @@ public final class DotConverter implements TestConverter {
                     throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
                 }
                 previous = result;
+            } else {
+                previous = dotReturnType(previous[0], dot);
             }
             switch (dot.getDotPrefix()) {
                 case "":
