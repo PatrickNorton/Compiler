@@ -159,7 +159,73 @@ class ParserI {
         return result
     }
 
-    private method parseUncountedRepetition(
+    private method isEof() -> bool {
+        return self.offset() == self.pattern.length
+    }
+
+    private mut method bump() -> bool {
+        return false if self.isEof()
+
+        var pos = self.parser.pos
+        mut var line = pos.line
+        mut var column = pos.column
+        mut var offset = pos.offset
+        if self.chr() == '\n'[0] {
+            line++
+            column = 1
+        } else {
+            column++
+        }
+        offset++
+        self.parser.pos = Position(offset, line, column)
+        return bool(self.pattern[self.offset():])
+    }
+
+    private method bumpIf(str prefix) -> bool {
+        if self.pattern[self.offset():].startsWith(prefix) {
+            dotimes prefix.length {
+                self.bump()
+            }
+            return true
+        } else {
+            return false
+        }
+    }
+
+    private mut method bumpAndBumpSpace() -> bool {
+        return false if not self.bump()
+
+        self.bumpSpace()
+        return not self.isEof()
+    }
+
+    private method bumpSpace() {
+        return if not self.ignoreWhitespace()
+
+        while not self.isEof() {
+            if self.chr() in WHITESPACE {
+                self.bump()
+            } elif self.chr() == '#'[0] {
+                var start = self.pos()
+                final var commentText = StringBuilder()
+                self.bump()
+                while not self.isEof() {
+                    var c = self.chr()
+                    self.bump()
+                    break if c == '\n'[0]
+
+                    commentText.add(c)
+                }
+                var comment = Comment(Span(start, self.pos()), commentText)
+
+                self.parser().comments.add(comment)
+            } else {
+                break
+            }
+        }
+    }
+
+    private mut method parseUncountedRepetition(
         Concat concat,
         RepetitionKind kind,
     ) -> Concat {
@@ -181,7 +247,7 @@ class ParserI {
         return Concat(concat.span, newAsts)
     }
 
-    private method parseCountedRepetition(Concat concat) -> Concat {
+    private mut method parseCountedRepetition(Concat concat) -> Concat {
         assert self.chr() == '{'[0]
         var start = self.parser.pos
         if not concat.asts {
@@ -230,7 +296,7 @@ class ParserI {
         return Concat(concat.span, newAsts)
     }
 
-    private method parseDecimal() -> int {
+    private mut method parseDecimal() -> int {
         mut var scratch = StringBuilder("")
 
         while not self.isEof() and self.chr() in WHITESPACE {
@@ -238,7 +304,7 @@ class ParserI {
         }
         var start = self.parser.pos
         while not self.isEof() and self.chr() in DIGITS {
-            scratch.push(self.chr())
+            scratch.add(self.chr())
             self.bumpAndBumpSpace()
         }
         var span = Span(start, self.parser.pos)
@@ -252,7 +318,7 @@ class ParserI {
         return int(digits)
     }
 
-    private method parsePrimitive() -> Primitive {
+    private mut method parsePrimitive() -> Primitive {
         switch str(self.chr()) {
             case '\\' {
                 return self.parseEscape()
@@ -280,7 +346,7 @@ class ParserI {
         }
     }
 
-    private method parseEscape() -> Primitive {
+    private mut method parseEscape() -> Primitive {
         assert self.chr() == '\\'[0]
         var start = self.parser.pos
         if not self.bump() {
@@ -322,7 +388,7 @@ class ParserI {
             case 'r' => special(SpecialLiteralKind.CARRIAGE_RETURN, '\r'[0])
             case 'v' => special(SpecialLiteralKind.VERTICAL_TAB, '\x0B'[0])
             case ' ' => (special(SpecialLiteralKind.SPACE, ' '[0])
-                if self.ignoreWhitespace() else raise self.error(span, ErrorKind.EscapeUnrecognized()))
+                if self.parser.ignoreWhitespace else raise self.error(span, ErrorKind.EscapeUnrecognized()))
             case 'A' => Primitive.Assertion(Assertion(span, AssertionKind.START_TEXT))
             case 'z' => Primitive.Assertion(Assertion(span, AssertionKind.END_TEXT))
             case 'b' => Primitive.Assertion(Assertion(span, AssertionKind.WORD_BOUNDARY))
@@ -331,7 +397,7 @@ class ParserI {
         }
     }
 
-    private method parseHex() -> Literal {
+    private mut method parseHex() -> Literal {
         assert self.chr() in "xuU"
 
         var hexKind = switch self.chr() {
@@ -368,7 +434,7 @@ class ParserI {
         return Literal(Span(start, end), LiteralKind.HexFixed(kind), char(int(hex)))
     }
 
-    private method parseHexBrace(HexLiteralKind kind) -> Literal {
+    private mut method parseHexBrace(HexLiteralKind kind) -> Literal {
         final var scratch = StringBuilder("")
 
         var bracePos = self.parser.pos
@@ -460,6 +526,26 @@ class ParserI {
         return self.pattern[self.offset() + 1]
     }
 
+    private method peekSpace() -> char? {
+        return self.peek() if not self.parser.ignoreWhitespace
+        return null if self.isEof()
+
+        mut var start = self.offset() + 1
+        mut bool inComment = false
+        for int i, var c in enumerate(self.pattern[start:]) {
+            if c in WHITESPACE {
+                continue
+            } elif not inComment and c == '#'[0] {
+                inComment = true
+            } elif inComment and c == '\n'[0] {
+                inComment = false
+            } else {
+                start += i
+                break
+            }
+        }
+        return self.pattern[start]
+    }
 
     private method span() -> Span {
         return Span(self.parser.pos, self.parser.pos)
@@ -504,15 +590,14 @@ class ParserI {
                 if ignore? as v {
                     self.parser.ignoreWhitespace = v
                 }
-                concat.asts.push(Ast.Flags(s))
-                return concat
+                return Concat(concat.span, concat.asts + [Ast.Flags(s)])
             }
             case Either.Right as group {
                 var oldIgnoreWhitespace = self.parser.ignoreWhitespace
                 var newIgnoreWhitespace = group.flags.flatMap(
                     lambda Flags x -> bool? => x.flagState(Flag.IGNORE_WHITESPACE)
                 ) ?? oldIgnoreWhitespace
-                self.parser.stackGroup.push(
+                self.parser.stackGroup.add(
                     GroupState.Group(GSGroup(concat, group, oldIgnoreWhitespace))
                 )
                 self.parser.ignoreWhitespace = newIgnoreWhitespace
@@ -689,7 +774,7 @@ class ParserI {
         }
     }
 
-    public method pushAlternate(Concat concat) -> Concat {
+    public mut method pushAlternate(Concat concat) -> Concat {
         assert self.chr() == '|'[0]
         var conc = concat.withSpan(Span(concat.span.start, self.parser.pos))
         self.pushOrAddAlternation(concat)
@@ -708,6 +793,30 @@ class ParserI {
         }
     }
 
+    private method parseSetClassRange() -> ClassSetItem {
+        var prim1 = self.parseSetClassItem()
+        self.bumpSpace()
+        if self.isEof() {
+            raise self.unclosedClassError()
+        }
+        if self.chr() != '-'[0] or self.peekSpace() in '-]' {
+            return prim1.intoClassSetItem(self)
+        }
+        if not self.bumpAndBumpSpace() {
+            raise self.unclosedClassError()
+        }
+        var prim2 = self.parseSetClassItem()
+        var r = ClassSetRange(
+            Span(prim1.span.start, prim2.span.end),
+            prim1.intoClassLiteral(self),
+            prim2.intoClassLiteral(self)
+        )
+        if not r.isValid() {
+            raise self.error(r.span, ErrorKind.ClassRangeInvalid())
+        }
+        return ClassSetItem.Range(r)
+    }
+
     private mut method parseSetClass() -> Class {
         assert self.chr() == '['[0]
         list[ClassSetItem] items = []
@@ -721,7 +830,7 @@ class ParserI {
                 case '[' {
                     if self.parser.stackClass {
                         if self.maybeParseAsciiClass()? as c {
-                            classUnion.add(ClassSetItem.Ascii(c))
+                            classUnion = ClassSetUnion(classUnion.span, classUnion.items + [ClassSetItem.Ascii(c)])
                         }
                     }
                     classUnion = self.pushClassOpen(classUnion)
@@ -740,39 +849,49 @@ class ParserI {
                     if self.peek() == '&'[0] {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.INTERSECTION, classUnion)
                     } else {
-                        classUnion.push(self.parseSetClassRange())
+                        classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
                 case '-' {
                     if self.peek() == '-'[0] {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.DIFFERENCE, classUnion)
                     } else {
-                        classUnion.push(self.parseSetClassRange())
+                        classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
                 case '~' {
                     if self.peek() == '~'[0] {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.SYMMETRIC_DIFFERENCE, classUnion)
                     } else {
-                        classUnion.push(self.parseSetClassRange())
+                        classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
                 default {
-                    classUnion.push(self.parseSetClassRange())
+                    classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                 }
             }
         }
     }
 
-    private method pushClassOpen(ClassSetUnion parentUnion) -> ClassSetUnion {
+    private mut method pushClassOpen(ClassSetUnion parentUnion) -> ClassSetUnion {
         assert self.chr() == '['[0]
 
         var nestedSet, var nestedUnion = self.parseSetClassOpen()
-        self.parser.stackClass.add(ClassState.Open(parentUnion, nestedSet))
+        self.parser.stackClass.add(ClassState.Open((parentUnion, nestedSet)))
         return nestedUnion
     }
 
-    private method parseSetClassOpen() -> ClassBracketed, ClassSetUnion {
+    private method parseSetClassItem() -> Primitive {
+        if self.chr() == '\\'[0] {
+            return self.parseEscape()
+        } else {
+            var x = Primitive.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), self.chr()))
+            self.bump()
+            return x
+        }
+    }
+
+    private mut method parseSetClassOpen() -> ClassBracketed, ClassSetUnion {
         assert self.chr() == '['[0]
         var start = self.parser.pos
         if not self.bumpAndBumpSpace() {
@@ -789,20 +908,20 @@ class ParserI {
             negated = true
         }
 
-        list[ClassSetItem] items = []  # FIXME
-        mut var unionSet = ClassSetUnion(self.span(), items)
+        final list[ClassSetItem] items = []  # FIXME
         while self.chr() == '-'[0] {
-            unionSet.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), '-'[0])))
+            items.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), '-'[0])))
             if not self.bumpAndBumpSpace() {
                 raise self.error(Span(start, self.parser.pos), ErrorKind.ClassUnclosed())
             }
         }
-        if not unionSet.items and self.chr() == ']'[0] {
-            unionSet.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), ']'[0])))
+        if not items and self.chr() == ']'[0] {
+            items.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), ']'[0])))
             if not self.bumpAndBumpSpace() {
                 raise self.error(Span(start, self.parser.pos), ErrorKind.ClassUnclosed())
             }
         }
+        mut var unionSet = ClassSetUnion(self.span(), items)
         list[ClassSetItem] items_ = []  # FIXME
         var kind = ClassSet.unionSet(ClassSetUnion(Span(unionSet.span.start, unionSet.span.start), items_))
         var s = ClassBracketed(Span(start, self.parser.pos), negated, kind)
@@ -878,7 +997,7 @@ class ParserI {
     ) -> ClassSetUnion {
         var item = ClassSet.Item(nextUnion.intoItem())
         var newLhs = self.popClassOp(item)
-        self.parser.stackClass.add(ClassState.Op(nextKind, newLhs))
+        self.parser.stackClass.add(ClassState.Op((nextKind, newLhs)))
         list[ClassSetItem] items = []
         return ClassSetUnion(self.span(), items)
     }

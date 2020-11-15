@@ -11,7 +11,7 @@ class IntervalSet[I[Interval]] {
     }
 
     public mut method push(I value) {
-        self.ranges.push(value)
+        self.ranges.add(value)
         self.canonicalize()
     }
 
@@ -34,7 +34,7 @@ class IntervalSet[I[Interval]] {
     }
 
     public mut method extend(IntervalSet[I] other) {
-        self.ranges.extend(other)
+        self.ranges.addAll(other)
         self.canonicalize()
     }
 
@@ -52,7 +52,7 @@ class IntervalSet[I[Interval]] {
         mut var b = itb.next()!!
         while true {
             if (self.ranges[a] | other.ranges[b])? as ab {
-                self.ranges.push(ab)
+                self.ranges.add(ab)
             }
             Iterator[int] it
             int aorb
@@ -102,7 +102,7 @@ class IntervalSet[I[Interval]] {
             # ... similarly for the `a` range. If it's less than the smallest
             # `b` range, then we can add it as-is.
             if int(self.ranges[a].upper) < int(other.ranges[b].lower) {
-                self.ranges.push(self.ranges[a])
+                self.ranges.add(self.ranges[a])
                 a++
                 continue
             }
@@ -126,7 +126,7 @@ class IntervalSet[I[Interval]] {
                 var diff = r.difference(other.ranges[b])
                 if diff.0? as range1 {
                     if diff.1? as range2 {
-                        self.ranges.push(range1)
+                        self.ranges.add(range1)
                         # r = range2  FIXME: 'cls'
                     } else {
                         # r = range1  FIXME: 'cls'
@@ -153,12 +153,12 @@ class IntervalSet[I[Interval]] {
                 # `a` range.
                 b++
             }
-            self.ranges.push(r)
+            self.ranges.add(r)
             a++
         }
         while a < drainEnd {
             var r = self.ranges[a]
-            self.ranges.push(r)
+            self.ranges.add(r)
             a++
         }
         mut var ranges = self.ranges  # FIXME
@@ -176,7 +176,7 @@ class IntervalSet[I[Interval]] {
         if not self.ranges {
             var min = cls.I.minValue
             var max = cls.I.maxValue
-            self.ranges.push(cls.I(min, max))
+            self.ranges.add(cls.I(min, max))
             return
         }
 
@@ -190,16 +190,16 @@ class IntervalSet[I[Interval]] {
         # invariant.
         if int(self.ranges[0].lower) > int(cls.I.minValue) {
             var upper = self.ranges[0].lower.decrement()
-            self.ranges.push(cls.I(cls.I.minValue, upper))
+            # self.ranges.add(cls.I(cls.I.minValue, upper))
         }
         for var i in [1:drainEnd] {
             var lower = self.ranges[i - 1].upper.increment()
             var upper = self.ranges[i].lower.decrement()
-            self.ranges.push(cls.I(lower, upper))
+            # self.ranges.add(cls.I(lower, upper))
         }
         if int(self.ranges[drainEnd - 1].upper) < int(cls.I.maxValue) {
             var lower = self.ranges[drainEnd - 1].upper.increment()
-            self.ranges.push(cls.I(lower, cls.I.maxValue))
+            # self.ranges.add(cls.I(lower, cls.I.maxValue))
         }
         mut var ranges = self.ranges  # FIXME
         del ranges[0:drainEnd]
@@ -208,7 +208,7 @@ class IntervalSet[I[Interval]] {
     private mut method canonicalize() {
         return if self.isCanonical()
 
-        self.ranges.sort()
+        # self.ranges.sort()
         assert self.ranges
 
         # Is there a way to do this in-place with constant memory? I couldn't
@@ -224,7 +224,7 @@ class IntervalSet[I[Interval]] {
                     continue
                 }
             }
-            self.ranges.push(self.ranges[oldi])
+            self.ranges.add(self.ranges[oldi])
         }
         mut var ranges = self.ranges
         del ranges[0:drainEnd]

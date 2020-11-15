@@ -10,7 +10,7 @@ class Hir {
     pubget HirKind kind
     HirInfo info
 
-    private operator new(HirKind kind, HirInfo info) {
+    private operator new(mut HirKind kind, HirInfo info) {
         self.kind = kind
         self.info = info
     }

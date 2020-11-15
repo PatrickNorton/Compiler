@@ -29,9 +29,9 @@ class NFA from Automaton {
         int startId,
         int maxPatternLen,
         int patternCount,
-        PrefilterObj? prefilter,
+        mut PrefilterObj? prefilter,
         bool anchored,
-        ByteClasses byteClasses,
+        mut ByteClasses byteClasses,
         mut list[State] states,
     ) {
         self.matchKind = matchKind

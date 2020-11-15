@@ -353,6 +353,14 @@ union RepetitionRange {
     int Exactly
     int AtLeast
     tuple[int, int] Bounded
+
+    public method isValid() -> bool {
+        if self.Bounded? as pair {
+            return pair.0 <= pair.1
+        } else {
+            return true
+        }
+    }
 }
 
 enum Flag {
