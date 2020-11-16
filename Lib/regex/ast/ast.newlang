@@ -3,7 +3,7 @@ export Alternation, Comment, Concat, CaptureName, Group, Position
 export Class, ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind, ClassSetBinaryOp, ClassSetItem, ClassAscii
 export SetFlags, AstError, ErrorKind, GroupKind, Flags, Flag, ClassAsciiKind, RepetitionKind, RepetitionOp, Repetition
 export RepetitionRange, Assertion, ClassPerl, ClassUnicode, HexLiteralKind, SpecialLiteralKind, AssertionKind
-export ClassUnicodeKind, ClassUnicodeOpKind, ClassPerlKind, FlagsItem, FlagsItemKind
+export ClassUnicodeKind, ClassUnicodeOpKind, ClassPerlKind, FlagsItem, FlagsItemKind, ClassSetRange
 
 const class Span {
     public Position start
@@ -112,8 +112,8 @@ const class Alternation {
 }
 
 const class Assertion {
-    Span span
-    AssertionKind kind
+    public Span span
+    public AssertionKind kind
 
     public operator new(Span span, AssertionKind kind) {
         self.span = span
@@ -151,6 +151,10 @@ const class Concat {
 
     public method withSpan(Span s) -> Concat {
         return Concat(s, self.asts)
+    }
+
+    public method withAst(Ast ast) -> Concat {
+        return Concat(self.span, self.asts + [ast])
     }
 
     public method intoAst() -> Ast {
@@ -486,6 +490,16 @@ const class ClassSetRange {
     public Span span
     public Literal start
     public Literal end
+
+    public operator new(Span span, Literal start, Literal end) {
+        self.span = span
+        self.start = start
+        self.end = end
+    }
+
+    public method isValid() -> bool {
+        return int(self.start.c) <= int(self.end.c)
+    }
 }
 
 const class ClassSetBinaryOp {
