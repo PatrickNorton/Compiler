@@ -41,7 +41,11 @@ public final class PropertyConverter {
         if (argInfo.size() > 0 && !argInfo.matches(new Argument("", type))) {
             throw CompilerException.format("Invalid argument info for setter", node.getSetArgs());
         }
-        properties.put(name, new AttributeInfo(accessLevel, type));
+        if (node.getSet().isEmpty()) {
+            properties.put(name, new AttributeInfo(accessLevel, type));
+        } else {
+            properties.put(name, new AttributeInfo(accessLevel, MutableType.MUT, type));
+        }
         // TODO: If setter is empty
         propertyInfos.put(name, new PropertyInfo(node.getGet(), node.getSet(), argInfo, node.getLineInfo()));
     }

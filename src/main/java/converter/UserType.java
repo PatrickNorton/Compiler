@@ -328,7 +328,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                     ? Optional.of(attr.getType().makeConst()) : Optional.empty();
         } else if (attr.getAccessLevel() == AccessLevel.PUBGET) {
             return Optional.of(AccessLevel.canAccess(AccessLevel.PRIVATE, access)
-                    ? attr.getType() : attr.getType().makeConst());
+                    ? attr.getType().makeMut() : attr.getType().makeConst());
         } else if (AccessLevel.canAccess(attr.getAccessLevel(), access)) {
             if (attr.getMutType().isConstType()) {
                 return Optional.of(attr.getType().makeConst());
