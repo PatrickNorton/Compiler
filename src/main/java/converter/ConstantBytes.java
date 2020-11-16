@@ -16,4 +16,5 @@ public enum ConstantBytes {
     RANGE,
     TUPLE,
     OPTION_TYPE,
+    CHAR,
 }

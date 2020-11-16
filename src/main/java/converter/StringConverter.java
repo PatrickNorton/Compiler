@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public final class StringConverter implements ConstantConverter {
     private final CompilerInfo info;
@@ -20,9 +21,27 @@ public final class StringConverter implements ConstantConverter {
         this.retCount = retCount;
     }
 
+    private enum StringType {
+        STR,
+        BYTES,
+        CHAR,
+        ;
+
+        public static StringType fromPrefixes(Set<StringPrefix> prefixes) {
+            if (prefixes.contains(StringPrefix.BYTES)) {
+                return BYTES;
+            } else if (prefixes.contains(StringPrefix.CHAR)) {
+                return CHAR;
+            } else {
+                return STR;
+            }
+        }
+    }
+
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        assert !node.getPrefixes().contains(StringPrefix.FORMATTED);
         if (retCount == 0) {
             CompilerWarning.warn("String-like literal unused", node);
             return Collections.emptyList();
@@ -40,25 +59,38 @@ public final class StringConverter implements ConstantConverter {
     @NotNull
     @Override
     public LangConstant constant() {
-        if (isBytes()) {
-            var contents = node.getContents().getBytes(StandardCharsets.UTF_8);
-            List<Byte> bytes = new ArrayList<>(contents.length);
-            for (var b : contents) {
-                bytes.add(b);
-            }
-            return new BytesConstant(bytes);
-        } else {
-            return LangConstant.of(node);
+        switch (StringType.fromPrefixes(node.getPrefixes())) {
+            case STR:
+                return LangConstant.of(node);
+            case BYTES:
+                var contents = node.getContents().getBytes(StandardCharsets.UTF_8);
+                List<Byte> bytes = new ArrayList<>(contents.length);
+                for (var b : contents) {
+                    bytes.add(b);
+                }
+                return new BytesConstant(bytes);
+            case CHAR:
+                if (node.getContents().length() != 1) {
+                    throw CompilerException.of("Char literals must have a length of 1", node);
+                }
+                return new CharConstant(node.getContents().charAt(0));
+            default:
+                throw new UnsupportedOperationException();
         }
     }
 
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        return new TypeObject[] {isBytes() ? Builtins.BYTES : Builtins.STR};
-    }
-
-    private boolean isBytes() {
-        return node.getPrefixes().contains(StringPrefix.BYTES);
+        switch (StringType.fromPrefixes(node.getPrefixes())) {
+            case STR:
+                return new TypeObject[] {Builtins.STR};
+            case BYTES:
+                return new TypeObject[] {Builtins.BYTES};
+            case CHAR:
+                return new TypeObject[] {Builtins.CHAR};
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 }

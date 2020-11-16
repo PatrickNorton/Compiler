@@ -21,7 +21,7 @@ public final class VariantConverter implements TestConverter {
     public TypeObject[] returnType() {
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
         var retType = unionConverter.returnType()[0].getGenerics().get(0);
-        return new TypeObject[] {retType};
+        return new TypeObject[] {retType.makeMut()};
     }
 
     @NotNull
