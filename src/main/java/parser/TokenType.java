@@ -85,7 +85,7 @@ public enum TokenType {
     /**
      * String literals of all sorts.
      */
-    STRING("^([refb]*([\"'])(.|\\R)*?(?<!\\\\)(\\\\{2})*\\2)"),
+    STRING("^([refbc]*([\"'])(.|\\R)*?(?<!\\\\)(\\\\{2})*\\2)"),
     /**
      * Numbers in all bases and decimals.
      */
