@@ -9,10 +9,10 @@ export Fsm, Cache
 
 class Fsm {
     Program prog
-    list[FollowEpsilon] stack
+    final list[FollowEpsilon] stack
     Input inputVal
 
-    private operator new(Program prog, list[FollowEpsilon] stack, Input inputVal) {
+    private operator new(Program prog, mut list[FollowEpsilon] stack, Input inputVal) {
         self.prog = prog
         self.stack = stack
         self.inputVal = inputVal
@@ -157,7 +157,7 @@ class Fsm {
                 return false
             }
             case Inst.Ranges as inst {
-                if inst.matches(at) {
+                if inst.matches(at.chr()!!) {
                     self.add(nlist, threadCaps, inst.jump, atNext)
                 }
                 return false
@@ -246,7 +246,6 @@ class Threads {
     }
 
     public mut method resize(int numInsts, int ncaps) {
-        return if numInsts == self.codes.capacity()
         self.slotsPerThread = ncaps * 2
         self.codes = {}
         self.caps = [null] * (self.slotsPerThread * numInsts)

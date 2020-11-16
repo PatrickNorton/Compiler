@@ -15,7 +15,7 @@ class Cached[T] {
         }
     }
 
-    public method put(T value) {
-        self.stack.push(value)
+    public mut method put(T value) {
+        self.stack.add(value)
     }
 }

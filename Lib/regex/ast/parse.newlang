@@ -18,8 +18,8 @@ str HEX_DIGITS = '0123456789abcdefABCDEF'
 str WHITESPACE = ' \t\r\n\f\v'
 
 class AstBuilder {
-    mut bool ignoreWhitespace
-    mut int nestLimit
+    public mut bool ignoreWhitespace
+    public mut int nestLimit
     mut bool octal
 
     public operator new() {
@@ -46,6 +46,10 @@ class AstBuilder {
             captureNames,
             "",
         )
+    }
+
+    public mut method setOctal(bool yes) {
+        self.octal = yes
     }
 }
 

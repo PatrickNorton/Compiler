@@ -3,7 +3,7 @@ from itertools import any, all
 export canExec, Cache, InstPtr, Result, Fsm
 
 from .exec import ProgramCache
-from .prog import Program, Inst
+from .prog import Program, Inst, EmptyLook
 
 typedef StatePtr as int
 
@@ -53,24 +53,23 @@ class Cache {
         )
         self.qcur = {}
         self.qnext = {}
-        self.inner.resetSize()
     }
 }
 
 class CacheInner {
-    StateMap compiled
-    Transitions trans
+    final StateMap compiled
+    final Transitions trans
     list[StatePtr] startStates
-    list[InstPtr] stack
+    final list[InstPtr] stack
     int flushCount
     int size
     mut bytes instsScratchSpace
 
     public operator new(
-        StateMap compiled,
-        Transitions trans,
+        mut StateMap compiled,
+        mut Transitions trans,
         list[StatePtr] startStates,
-        list[InstPtr] stack,
+        mut list[InstPtr] stack,
         int flushCount,
         int size,
         mut bytes instsScratchSpace,
@@ -86,7 +85,7 @@ class CacheInner {
 }
 
 class Transitions {
-    list[StatePtr] table
+    final list[StatePtr] table
     int numByteClasses
 
     public operator new(int numByteClasses) {
@@ -94,8 +93,23 @@ class Transitions {
         self.numByteClasses = numByteClasses
     }
 
+    method numStates() -> int {
+        return self.table.length // self.numByteClasses
+    }
+
     public method next(StatePtr si, int c) -> StatePtr {
         return self.table[si + c]
+    }
+
+    public mut method setNext(StatePtr si, int c, StatePtr next) {
+        self.table[si + c] = next
+    }
+
+    mut method add() -> StatePtr? {
+        var si = self.table.length
+        return null if si > STATE_MAX
+        self.table.addAll([STATE_UNKNOWN] * self.numByteClasses)
+        return si
     }
 }
 
@@ -172,6 +186,22 @@ class Fsm {
         return dfa.execAt(dfaCache.qcur, dfaCache.qnext, text)
     }
 
+    private mut method addState(State state) -> StatePtr? {
+        if self.cache.trans.add()? as si {
+            if self.prog.hasUnicodeWordBoundary {
+                for var b in [128:256] {
+                    var c = self.byteClass(b)
+                    self.cache.trans.setNext(si, c, STATE_QUIT)
+                }
+            }
+            self.cache.compiled.insert(state, si)
+            assert self.cache.compiled.length == self.cache.trans.numStates()
+            return si
+        } else {
+            return null
+        }
+    }
+
     private method startFlags(bytes text, int at) -> EmptyFlags, StateFlags {
         final var emptyFlags = EmptyFlags()
         final var stateFlags = StateFlags()
@@ -183,7 +213,7 @@ class Fsm {
         var isWordLast = at > 0 and isAsciiWord(text[at - 1])
         var isWord = at < text.length and isAsciiWord(text[at])
         if isWordLast {
-            stateFlags.setWord()
+            stateFlags.isWord = true
         }
         if isWord == isWordLast {
             emptyFlags.notWordBoundary = true
@@ -204,7 +234,7 @@ class Fsm {
         var isWordLast = at < text.length and isAsciiWord(text[at])
         var isWord = at > 0 and isAsciiWord(text[at - 1])
         if isWordLast {
-            stateFlags.setWord()
+            stateFlags.isWord = true
         }
         if isWord == isWordLast {
             emptyFlags.notWordBoundary = true
@@ -291,7 +321,6 @@ class Fsm {
 
         mut var insts = bytes("")
         self.cache.instsScratchSpace = bytes("")
-        insts.clear()
         # Reserve 1 byte for flags.
         insts.add(0)
 
@@ -308,7 +337,7 @@ class Fsm {
                     pushInstPtr(insts, prev, ip)
                 }
                 case Inst.EmptyLook {
-                    stateFlags.setEmpty()
+                    stateFlags.hasEmpty = true
                     pushInstPtr(insts, prev, ip)
                 }
                 case Inst.Match {
@@ -322,7 +351,7 @@ class Fsm {
         # dead state and no amount of additional input can transition out
         # of this state.
         mref State? optState
-        if insts.length == 1 and not stateFlags.isMatch() {
+        if insts.length == 1 and not stateFlags.isMatch {
             optState = null
         } else {
             var f = stateFlags.value
@@ -551,12 +580,12 @@ class Fsm {
     ) -> StatePtr? {
         qcur.clear()
         for var ip in self.state(si).instPtrs() {
-            qcur.insert(ip)
+            qcur.add(ip)
         }
 
         var isWordLast = self.state(si).flags().isWord
         var isWord = isAsciiWord(b)
-        if self.state(si).flags().hasEmpty() {
+        if self.state(si).flags().hasEmpty {
             mut var flags = EmptyFlags()
             if isEof(b) {
                 flags.end = true
@@ -579,19 +608,19 @@ class Fsm {
         mut var emptyFlags = EmptyFlags()
         mut var stateFlags = StateFlags()
         emptyFlags.startLine = b == b'\n'[0]
-        if b.isAsciiWord() {
-            stateFlags.setWord()
-        }
+        # if b.isAsciiWord() {
+        #     stateFlags.setWord()
+        # }
 
         qnext.clear()
         for var ip in qcur {
             switch self.prog[ip] {
                 case Inst.Match {
-                    stateFlags.setMatch()
+                    stateFlags.isMatch = true
                     if not self.continuePastFirstMatch() {
                         break
                     } elif self.prog.matches.length > 1 and ip not in qnext {
-                        qnext.insert(ip)
+                        qnext.add(ip)
                     }
                 }
                 case Inst.Bytes as inst {
@@ -618,16 +647,16 @@ class Fsm {
             return null
         }
         if (self.start & ~STATE_START) == next {
-            assert not self.state(next).flags().isMatch()
+            assert not self.state(next).flags().isMatch
             next = self.startPtr(next)
         }
-        if next <= STATE_MAX and self.state(next).flags().isMatch() {
+        if next <= STATE_MAX and self.state(next).flags().isMatch {
             next |= STATE_MATCH
         }
         assert next != STATE_UNKNOWN
         if cache {
             var c = self.byteClass(b)
-            self.cache.trans.setNext(si, c, next)
+            # self.cache.trans.setNext(si, c, next)
         }
         return next
     }
@@ -688,6 +717,90 @@ class Fsm {
 
     private method state(StatePtr si) -> State {
         return self.cache.compiled.getState(si)!!
+    }
+
+    private method hasPrefix() -> bool {
+        return not self.prog.isReverse and self.prog.prefixes and not self.prog.isAnchoredStart
+    }
+
+    private method continuePastFirstMatch() -> bool {
+        self.prog.isReverse or self.prog.matches.length > 1
+    }
+
+    private mut method followEpsilons(
+        InstPtr ip,
+        mut set[int] q,
+        EmptyFlags flags,
+    ) {
+        self.cache.stack.add(ip)
+        while self.cache.stack.pop()? as ip {
+            while true {
+                break if ip in q
+                q.add(ip)
+                switch self.prog[ip] {
+                    case Inst.Match {
+                        break 2
+                    }
+                    case Inst.Bytes {
+                        break 2
+                    }
+                    case Inst.EmptyLook as inst {
+                        switch inst.look {
+                            case EmptyLook.START_LINE {
+                                if flags.startLine {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.END_LINE {
+                                if flags.endLine {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.START_TEXT {
+                                if flags.start {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.END_TEXT {
+                                if flags.end {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.WORD_BOUNDARY_ASCII {
+                                if flags.wordBoundary {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.NOT_WORD_BOUNDARY_ASCII {
+                                if flags.notWordBoundary {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.WORD_BOUNDARY {
+                                if flags.wordBoundary {
+                                    ip = inst.jump
+                                }
+                            }
+                            case EmptyLook.NOT_WORD_BOUNDARY {
+                                if flags.notWordBoundary {
+                                    ip = inst.jump
+                                }
+                            }
+                            default {
+                                break 3
+                            }
+                        }
+                    }
+                    case Inst.Save as inst {
+                        ip = inst.jump
+                    }
+                    case Inst.Split as inst {
+                        self.cache.stack.add(inst.jump2)
+                        ip = inst.jump1
+                    }
+                }
+            }
+        }
     }
 }
 

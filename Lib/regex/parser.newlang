@@ -5,8 +5,8 @@ from .hir import Hir, HirBuilder, Translator
 export Parser, ParserBuilder
 
 class ParserBuilder {
-    private AstBuilder ast
-    private HirBuilder hir
+    private final AstBuilder ast
+    private final HirBuilder hir
 
     public operator new() {
         self.ast = AstBuilder()
@@ -18,12 +18,12 @@ class ParserBuilder {
     }
 
     public mut method nestLimit(int limit) -> mut cls {
-        self.ast.nestLimit(limit)
+        self.ast.nestLimit = limit
         return self
     }
 
     public mut method octal(bool yes) -> mut cls {
-        self.ast.octal(yes)
+        self.ast.setOctal(yes)
         return self
     }
 
@@ -33,7 +33,7 @@ class ParserBuilder {
     }
 
     public mut method ignoreWhitespace(bool yes) -> mut cls {
-        self.ast.ignoreWhitespace(yes)
+        self.ast.ignoreWhitespace = yes
         return self
     }
 

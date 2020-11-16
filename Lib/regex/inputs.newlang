@@ -95,33 +95,33 @@ class CharInput from Input {
 
     public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool {
         switch empty.look {
-            case EmptyLook.StartLine {
+            case EmptyLook.START_LINE {
                 var c = self.previousChar(at)
                 return not at.pos or c == c"\n"
             }
-            case EmptyLook.EndLine {
+            case EmptyLook.END_LINE {
                 var c = self.nextChar(at)
                 return at.pos == self.length or c == c"\n"
             }
-            case EmptyLook.StartText {
+            case EmptyLook.START_TEXT {
                 return at.pos == 0
             }
-            case EmptyLook.EndText {
+            case EmptyLook.END_TEXT {
                 return at.pos == self.length
             }
-            case EmptyLook.WordBoundary {
+            case EmptyLook.WORD_BOUNDARY {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return isWordChar(c1) xor isWordChar(c2)
             }
-            case EmptyLook.NotWordBoundary {
+            case EmptyLook.NOT_WORD_BOUNDARY {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return not isWordChar(c1) xor isWordChar(c2)
             }
-            case EmptyLook.WordBoundaryAscii {
+            case EmptyLook.WORD_BOUNDARY_ASCII {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return isWordByte(c1) xor isWordByte(c2)
             }
-            case EmptyLook.NotWordBoundaryAscii {
+            case EmptyLook.NOT_WORD_BOUNDARY_ASCII {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return not isWordByte(c1) xor isWordByte(c2)
             }
@@ -182,29 +182,29 @@ class ByteInput from Input {
 
     public method isEmptyMatch(InputAt at, InstEmptyLook empty) -> bool {
         switch empty.look {
-            case EmptyLook.StartLine {
+            case EmptyLook.START_LINE {
                 var c = self.previousChar(at)
                 return not at.pos or c == c'\n'
             }
-            case EmptyLook.EndLine {
+            case EmptyLook.END_LINE {
                 var c = self.nextChar(at)
                 return at.pos == self.length or c == c'\n'
             }
-            case EmptyLook.StartText {
+            case EmptyLook.START_TEXT {
                 return at.pos == 0
             }
-            case EmptyLook.EndText {
+            case EmptyLook.END_TEXT {
                 return at.pos == self.length
             }
-            case EmptyLook.WordBoundary {
+            case EmptyLook.WORD_BOUNDARY {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return isWordChar(c1) != isWordChar(c2)
             }
-            case EmptyLook.NotWordBoundary {
+            case EmptyLook.NOT_WORD_BOUNDARY {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return isWordChar(c1) == isWordChar(c2)
             }
-            case EmptyLook.WordBoundaryAscii {
+            case EmptyLook.WORD_BOUNDARY_ASCII {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 if self.onlyUtf8 {
                     # If we must match UTF-8, then we can't match word
@@ -214,9 +214,9 @@ class ByteInput from Input {
                 }
                 return isWordByte(c1) != isWordByte(c2)
             }
-            case EmptyLook.NotWordBoundaryAscii {
+            case EmptyLook.NOT_WORD_BOUNDARY_ASCII {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
-                if self.only_utf8 {
+                if self.onlyUtf8 {
                     # If we must match UTF-8, then we can't match word
                     # boundaries at invalid UTF-8.
                     return false if not c1? and not at.isStart()

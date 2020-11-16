@@ -16,7 +16,7 @@ func expandStr(Captures caps, str replacement) -> str {
     while index < replacement.length {
         mut var repl = replacement[index:]
         if bytes(repl).indexOf(dollar)? as i {
-            dst.push(repl[:i])
+            dst.add(repl[:i])
             index += i
             repl = repl[i:]
         } else {
@@ -24,7 +24,7 @@ func expandStr(Captures caps, str replacement) -> str {
         }
         if bytes(repl).get(index)? as b {
             if b == dollar {
-                dst.push("$")
+                dst.add("$")
                 index += 2
                 continue
             }
@@ -34,17 +34,17 @@ func expandStr(Captures caps, str replacement) -> str {
         if findCapRef(repl)? as c {
             capRef = c
         } else {
-            dst.push("$")
+            dst.add("$")
             index++
             continue
         }
         repl = repl[capRef.end:]
         switch capRef.cap {
             case Ref.Number as i {
-                dst.push(caps.get(i)?.operator str() ?? "")
+                dst.add(caps.get(i)?.operator str() ?? "")
             }
             case Ref.Named as name {
-                dst.push(caps.name(name)?.operator str() ?? "")
+                dst.add(caps.name(name)?.operator str() ?? "")
             }
         }
     }

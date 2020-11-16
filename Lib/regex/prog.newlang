@@ -48,6 +48,12 @@ class Program {
         yield from self.insts
     }
 
+    public property int length {
+        get {
+            return self.insts.length
+        }
+    }
+
     public method skip(int pc) -> int {
         mut int pc2 = pc
         while true {

@@ -4,17 +4,41 @@ from .hir import Hir, ClassUnicode, ClassBytes
 export HirBuilder, Translator
 
 class HirBuilder {
-    bool allowInvalidUtf8
+    mut bool allowInvalidUtf8_
     Flags flags
 
     public operator new {
-        self.allowInvalidUtf8 = false
+        self.allowInvalidUtf8_ = false
         self.flags = Flags()
     }
 
     public method build() -> mut Translator {
         list[HirFrame] empty = []  # FIXME
-        return Translator(empty, self.flags, self.allowInvalidUtf8)
+        return Translator(empty, self.flags, self.allowInvalidUtf8_)
+    }
+
+    public mut method allowInvalidUtf8(bool yes) {
+        self.allowInvalidUtf8_ = yes
+    }
+
+    public method swapGreed(bool yes) {
+        self.flags.swapGreed = yes
+    }
+
+    public method multiLine(bool yes) {
+        self.flags.multiLine = yes
+    }
+
+    public method dotMatchesNewline(bool yes) {
+        self.flags.dotMatchesNewline = yes
+    }
+
+    public method caseInsensitive(bool yes) {
+        self.flags.caseInsensitive = yes
+    }
+
+    public method unicode(bool yes) {
+        self.flags.unicode = yes
     }
 }
 #|
