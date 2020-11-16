@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
+import main.java.util.StringEscape;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -73,7 +74,7 @@ public final class StringConstant implements LangConstant {
     @Contract(pure = true)
     @Override
     public String name(IndexedSet<LangConstant> constants) {
-        return '"' + value + '"';
+        return '"' + StringEscape.unescape(value) + '"';
     }
 
     @Override

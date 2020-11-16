@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
+import main.java.util.StringEscape;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public final class CharConstant implements LangConstant {
         if (value == '\'') {
             return "c\"'\"";
         } else {
-            return String.format("c'%c'", value);
+            return String.format("c'%s'", StringEscape.escaped(value));
         }
     }
 
