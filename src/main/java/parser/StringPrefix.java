@@ -21,12 +21,14 @@ public enum StringPrefix {
     RAW('r'),
     REGEX('e'),
     BYTES('b'),
+    CHAR('c')
     ;
 
     public final char value;
 
     private static final Map<Character, StringPrefix> values;
-    private static final Set<StringPrefix> INVALID_TOGETHER = Collections.unmodifiableSet(EnumSet.of(REGEX, BYTES));
+    private static final Set<StringPrefix> INVALID_TOGETHER =
+            Collections.unmodifiableSet(EnumSet.of(REGEX, BYTES, CHAR));
 
     @Contract(pure = true)
     StringPrefix(char c) {
@@ -58,15 +60,19 @@ public enum StringPrefix {
     @NotNull
     public static EnumSet<StringPrefix> getPrefixes(@NotNull String chars) {
         EnumSet<StringPrefix> prefixes = EnumSet.noneOf(StringPrefix.class);
+        boolean hasUnique = false;
         for (char c : chars.toCharArray()) {
             StringPrefix prefix = getPrefix(c);
             if (prefixes.contains(prefix)) {
                 throw new ParserException("Invalid prefix combination " + chars);
+            } else if (INVALID_TOGETHER.contains(prefix)) {
+                if (hasUnique) {
+                    throw new ParserException("Invalid prefix combination " + chars);
+                } else {
+                    hasUnique = true;
+                }
             }
             prefixes.add(prefix);
-        }
-        if (prefixes.containsAll(INVALID_TOGETHER)) {
-            throw new ParserException("Invalid prefix combination " + chars);
         }
         return prefixes;
     }
