@@ -62,9 +62,9 @@ public final class Builtins {
 
     public static final StdTypeObject INT = new StdTypeObject("int");
 
-    public static final StdTypeObject STR = new StdTypeObject("str");
-
     public static final StdTypeObject CHAR = new StdTypeObject("char");
+
+    public static final StdTypeObject STR = new StdTypeObject("str", List.of(ITERABLE.generify(CHAR)));
 
     public static final StdTypeObject DECIMAL = new StdTypeObject("dec");
 
