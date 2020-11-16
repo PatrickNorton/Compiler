@@ -102,5 +102,5 @@ func findCapRef(str replacement) -> CaptureRef? {
 
 func isValidCapLetter(int b) -> bool {
     var c = char(b)
-    return c in DIGITS or c in ASCII_LOWERCASE or c in ASCII_UPPERCASE or c == '_'[0]
+    return c in DIGITS or c in ASCII_LOWERCASE or c in ASCII_UPPERCASE or c == c'_'
 }

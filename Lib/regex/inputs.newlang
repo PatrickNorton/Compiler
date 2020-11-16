@@ -97,11 +97,11 @@ class CharInput from Input {
         switch empty.look {
             case EmptyLook.StartLine {
                 var c = self.previousChar(at)
-                return not at.pos or c == "\n"[0]
+                return not at.pos or c == c"\n"
             }
             case EmptyLook.EndLine {
                 var c = self.nextChar(at)
-                return at.pos == self.length or c == "\n"[0]
+                return at.pos == self.length or c == c"\n"
             }
             case EmptyLook.StartText {
                 return at.pos == 0
@@ -184,11 +184,11 @@ class ByteInput from Input {
         switch empty.look {
             case EmptyLook.StartLine {
                 var c = self.previousChar(at)
-                return not at.pos or c == '\n'[0]
+                return not at.pos or c == c'\n'
             }
             case EmptyLook.EndLine {
                 var c = self.nextChar(at)
-                return at.pos == self.length or c == '\n'
+                return at.pos == self.length or c == c'\n'
             }
             case EmptyLook.StartText {
                 return at.pos == 0

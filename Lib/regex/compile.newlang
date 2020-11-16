@@ -34,7 +34,7 @@ class Compiler {
         self.numExprs = 0
         self.sizeLimit_ = 10 * (1 << 20)
         self.suffixCache = SuffixCache(1000)
-        self.utf8Seqs = Utf8Sequences('\x00'[0], '\x00'[0])
+        self.utf8Seqs = Utf8Sequences(c'\x00', c'\x00')
         self.byteClasses = ByteClassSet()
     }
 

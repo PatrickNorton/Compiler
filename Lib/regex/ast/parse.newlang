@@ -170,7 +170,7 @@ class ParserI {
         mut var line = pos.line
         mut var column = pos.column
         mut var offset = pos.offset
-        if self.chr() == '\n'[0] {
+        if self.chr() == c'\n' {
             line++
             column = 1
         } else {
@@ -205,14 +205,14 @@ class ParserI {
         while not self.isEof() {
             if self.chr() in WHITESPACE {
                 self.bump()
-            } elif self.chr() == '#'[0] {
+            } elif self.chr() == c'#' {
                 var start = self.pos()
                 final var commentText = StringBuilder()
                 self.bump()
                 while not self.isEof() {
                     var c = self.chr()
                     self.bump()
-                    break if c == '\n'[0]
+                    break if c == c'\n'
 
                     commentText.add(c)
                 }
@@ -237,7 +237,7 @@ class ParserI {
             raise self.error(self.span(), ErrorKind.RepetitionMissing())
         }
         mut var greedy = true
-        if self.bump() and self.chr() == '?'[0] {
+        if self.bump() and self.chr() == c'?' {
             greedy = false
             self.bump()
         }
@@ -248,7 +248,7 @@ class ParserI {
     }
 
     private mut method parseCountedRepetition(Concat concat) -> Concat {
-        assert self.chr() == '{'[0]
+        assert self.chr() == c'{'
         var start = self.parser.pos
         if not concat.asts {
             raise self.error(self.span(), ErrorKind.RepetitionMissing())
@@ -265,23 +265,23 @@ class ParserI {
         if self.isEof() {
             raise self.error(Span(start, self.parser.pos), ErrorKind.RepetitionCountUnclosed())
         }
-        if self.chr() == ','[0] {
+        if self.chr() == c',' {
             if not self.bumpAndBumpSpace() {
                 raise self.error(Span(start, self.parser.pos), ErrorKind.RepetitionCountUnclosed())
             }
-            if self.chr() != '}'[0] {
+            if self.chr() != c'}' {
                 var countEnd = self.parseDecimal()
                 repRange = RepetitionRange.Bounded((countStart, countEnd))
             } else {
                 repRange = RepetitionRange.AtLeast(countStart)
             }
         }
-        if self.isEof() or self.chr() != '}'[0] {
+        if self.isEof() or self.chr() != c'}' {
             raise self.error(Span(start, self.parser.pos), ErrorKind.RepetitionCountUnclosed())
         }
 
         mut var greedy = true
-        if self.bumpAndBumpSpace() and self.chr() == '?'[0] {
+        if self.bumpAndBumpSpace() and self.chr() == c'?' {
             greedy = false
             self.bump()
         }
@@ -347,7 +347,7 @@ class ParserI {
     }
 
     private mut method parseEscape() -> Primitive {
-        assert self.chr() == '\\'[0]
+        assert self.chr() == c'\\'
         var start = self.parser.pos
         if not self.bump() {
             raise self.error(Span(start, self.parser.pos), ErrorKind.EscapeUnexpectedEof())
@@ -381,13 +381,13 @@ class ParserI {
             Literal(span, LiteralKind.Special(kind), c)
         )
         return switch str(c) {
-            case 'a' => special(SpecialLiteralKind.BELL, '\x07'[0])
-            case 'f' => special(SpecialLiteralKind.FORM_FEED, '\x0C'[0])
-            case 't' => special(SpecialLiteralKind.TAB, '\t'[0])
-            case 'n' => special(SpecialLiteralKind.LINE_FEED, '\n'[0])
-            case 'r' => special(SpecialLiteralKind.CARRIAGE_RETURN, '\r'[0])
-            case 'v' => special(SpecialLiteralKind.VERTICAL_TAB, '\x0B'[0])
-            case ' ' => (special(SpecialLiteralKind.SPACE, ' '[0])
+            case 'a' => special(SpecialLiteralKind.BELL, c'\x07')
+            case 'f' => special(SpecialLiteralKind.FORM_FEED, c'\x0C')
+            case 't' => special(SpecialLiteralKind.TAB, c'\t')
+            case 'n' => special(SpecialLiteralKind.LINE_FEED, c'\n')
+            case 'r' => special(SpecialLiteralKind.CARRIAGE_RETURN, c'\r')
+            case 'v' => special(SpecialLiteralKind.VERTICAL_TAB, c'\x0B')
+            case ' ' => (special(SpecialLiteralKind.SPACE, c' ')
                 if self.parser.ignoreWhitespace else raise self.error(span, ErrorKind.EscapeUnrecognized()))
             case 'A' => Primitive.Assertion(Assertion(span, AssertionKind.START_TEXT))
             case 'z' => Primitive.Assertion(Assertion(span, AssertionKind.END_TEXT))
@@ -408,7 +408,7 @@ class ParserI {
         if not self.bumpAndBumpSpace() {
             raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
         }
-        if self.chr() == '{'[0] {
+        if self.chr() == c'{' {
             self.parseHexBrace(hexKind)
         } else {
             self.parseHexDigits(hexKind)
@@ -439,7 +439,7 @@ class ParserI {
 
         var bracePos = self.parser.pos
         var start = self.spanChar().end
-        while self.bumpAndBumpSpace() and self.chr() != '}'[0] {
+        while self.bumpAndBumpSpace() and self.chr() != c'}' {
             if self.chr() not in HEX_DIGITS {
                 raise self.error(self.spanChar(), ErrorKind.EscapeHexInvalidDigit())
             }
@@ -450,7 +450,7 @@ class ParserI {
         }
         var end = self.parser.pos
         var hex = str(scratch)
-        assert self.chr() == '}'[0]
+        assert self.chr() == c'}'
         self.bumpAndBumpSpace()
 
         if not hex {
@@ -465,19 +465,19 @@ class ParserI {
 
         final var scratch = StringBuilder("")
 
-        var negated = self.chr() == 'P'[0]
+        var negated = self.chr() == c'P'
         if not self.bumpAndBumpSpace() {
             raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
         }
-        if self.chr() == '{'[0] {
+        if self.chr() == c'{' {
             var start = self.spanChar().end
-            while self.bumpAndBumpSpace() and self.chr() != '}' {
+            while self.bumpAndBumpSpace() and self.chr() != c'}' {
                 scratch.add(self.chr())
             }
             if self.isEof() {
                 raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
             }
-            assert self.chr() == '}'[0]
+            assert self.chr() == c'}'
             self.bump()
 
             var name = str(scratch)
@@ -496,7 +496,7 @@ class ParserI {
         } else {
             var start = self.parser.pos
             var c = self.chr()
-            if c == '\\'[0] {
+            if c == c'\\' {
                 raise self.error(self.spanChar(), ErrorKind.UnicodeClassInvalid())
             }
             self.bumpAndBumpSpace()
@@ -535,9 +535,9 @@ class ParserI {
         for int i, var c in enumerate(self.pattern[start:]) {
             if c in WHITESPACE {
                 continue
-            } elif not inComment and c == '#'[0] {
+            } elif not inComment and c == c'#' {
                 inComment = true
-            } elif inComment and c == '\n'[0] {
+            } elif inComment and c == c'\n' {
                 inComment = false
             } else {
                 start += i
@@ -583,7 +583,7 @@ class ParserI {
     }
 
     private mut method pushGroup(mut Concat concat) -> Concat {
-        assert self.chr() == '('[0]
+        assert self.chr() == c'('
         switch self.parseGroup() {
             case Either.Left as s {
                 var ignore = s.flags.flagState(Flag.IGNORE_WHITESPACE)
@@ -609,7 +609,7 @@ class ParserI {
 
     private mut method popGroup(Concat groupConcat_) -> Concat {
         mut var groupConcat = groupConcat_
-        assert self.chr() == ')'[0]
+        assert self.chr() == c')'
         final var stack = self.parser.stackGroup
         mut Concat concat
         mut Group group
@@ -663,7 +663,7 @@ class ParserI {
         }
         var start = self.parser.pos
         while true {
-            break if self.chr() == '>'[0]
+            break if self.chr() == c'>'
             if not isCaptureChar(self.chr(), self.parser.pos == start) {
                 raise self.error(
                     self.spanChar(),
@@ -676,7 +676,7 @@ class ParserI {
         if self.isEof() {
             raise self.error(self.span(), ErrorKind.GroupNameUnexpectedEof())
         }
-        assert self.chr() == '>'[0]
+        assert self.chr() == c'>'
         self.bump()
         var name = self.pattern[start.offset:end.offset]
         if not name {
@@ -688,7 +688,7 @@ class ParserI {
     }
 
     public mut method parseGroup() -> Either[SetFlags, Group] {
-        assert self.chr() == '('[0]
+        assert self.chr() == c'('
         var openSpan = self.spanChar()
         self.bump()
         self.bumpSpace()
@@ -710,7 +710,7 @@ class ParserI {
             var flags = self.parseFlags()
             var charEnd = self.chr()
             self.bump()
-            if charEnd == ')'[0] {
+            if charEnd == c')' {
                 if not flags.items {
                     raise self.error(
                         innerSpan,
@@ -719,7 +719,7 @@ class ParserI {
                 }
                 return Either[SetFlags, Group].Left(SetFlags(Span(self.parser.pos, openSpan.end), flags))
             } else {
-                assert charEnd == ':'[0]
+                assert charEnd == c':'
                 var group = Group(openSpan, GroupKind.NonCapturing(flags), Ast.Empty(self.span()))
                 return Either[SetFlags, Group].Right(group)
             }
@@ -734,8 +734,8 @@ class ParserI {
         var span = self.span()
         final list[FlagsItem] items = []
         mut Span? lastWasNegation = null
-        while self.chr() != ':'[0] and self.chr() != ')'[0] {
-            if self.chr() == '-'[0] {
+        while self.chr() != c':' and self.chr() != c')' {
+            if self.chr() == c'-' {
                 lastWasNegation = self.spanChar()
                 var item = FlagsItem(self.spanChar(), FlagsItemKind.Negation())
                 if items.indexOf(item)? as i {
@@ -775,7 +775,7 @@ class ParserI {
     }
 
     public mut method pushAlternate(Concat concat) -> Concat {
-        assert self.chr() == '|'[0]
+        assert self.chr() == c'|'
         var conc = concat.withSpan(Span(concat.span.start, self.parser.pos))
         self.pushOrAddAlternation(concat)
         self.bump()
@@ -799,7 +799,7 @@ class ParserI {
         if self.isEof() {
             raise self.unclosedClassError()
         }
-        if self.chr() != '-'[0] or self.peekSpace() in '-]' {
+        if self.chr() != c'-' or self.peekSpace() in '-]' {
             return prim1.intoClassSetItem(self)
         }
         if not self.bumpAndBumpSpace() {
@@ -818,7 +818,7 @@ class ParserI {
     }
 
     private mut method parseSetClass() -> Class {
-        assert self.chr() == '['[0]
+        assert self.chr() == c'['
         list[ClassSetItem] items = []
         mut var classUnion = ClassSetUnion(self.span(), items)
         while true {
@@ -846,21 +846,21 @@ class ParserI {
                     }
                 }
                 case '&' {
-                    if self.peek() == '&'[0] {
+                    if self.peek() == c'&' {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.INTERSECTION, classUnion)
                     } else {
                         classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
                 case '-' {
-                    if self.peek() == '-'[0] {
+                    if self.peek() == c'-' {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.DIFFERENCE, classUnion)
                     } else {
                         classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
                 case '~' {
-                    if self.peek() == '~'[0] {
+                    if self.peek() == c'~' {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.SYMMETRIC_DIFFERENCE, classUnion)
                     } else {
                         classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
@@ -874,7 +874,7 @@ class ParserI {
     }
 
     private mut method pushClassOpen(ClassSetUnion parentUnion) -> ClassSetUnion {
-        assert self.chr() == '['[0]
+        assert self.chr() == c'['
 
         var nestedSet, var nestedUnion = self.parseSetClassOpen()
         self.parser.stackClass.add(ClassState.Open((parentUnion, nestedSet)))
@@ -882,7 +882,7 @@ class ParserI {
     }
 
     private method parseSetClassItem() -> Primitive {
-        if self.chr() == '\\'[0] {
+        if self.chr() == c'\\' {
             return self.parseEscape()
         } else {
             var x = Primitive.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), self.chr()))
@@ -892,14 +892,14 @@ class ParserI {
     }
 
     private mut method parseSetClassOpen() -> ClassBracketed, ClassSetUnion {
-        assert self.chr() == '['[0]
+        assert self.chr() == c'['
         var start = self.parser.pos
         if not self.bumpAndBumpSpace() {
             raise self.error(Span(start, self.parser.pos), ErrorKind.ClassUnclosed())
         }
 
         bool negated
-        if self.chr() != '^'[0] {
+        if self.chr() != c'^' {
             negated = false
         } else {
             if not self.bumpAndBumpSpace() {
@@ -909,14 +909,14 @@ class ParserI {
         }
 
         final list[ClassSetItem] items = []  # FIXME
-        while self.chr() == '-'[0] {
-            items.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), '-'[0])))
+        while self.chr() == c'-' {
+            items.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), c'-')))
             if not self.bumpAndBumpSpace() {
                 raise self.error(Span(start, self.parser.pos), ErrorKind.ClassUnclosed())
             }
         }
-        if not items and self.chr() == ']'[0] {
-            items.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), ']'[0])))
+        if not items and self.chr() == c']' {
+            items.add(ClassSetItem.Literal(Literal(self.spanChar(), LiteralKind.Verbatim(), c']')))
             if not self.bumpAndBumpSpace() {
                 raise self.error(Span(start, self.parser.pos), ErrorKind.ClassUnclosed())
             }
@@ -929,7 +929,7 @@ class ParserI {
     }
 
     private mut method popClass(ClassSetUnion nestedUnion) -> Either[ClassSetUnion, Class] {
-        assert self.chr() == ']'[0]
+        assert self.chr() == c']'
 
         var item = ClassSet.Item(nestedUnion.intoItem())
         var prevset = self.popClassOp(item)
@@ -954,10 +954,10 @@ class ParserI {
     }
 
     private mut method maybeParseAsciiClass() -> ClassAscii? {
-        assert self.chr() == '['[0]
+        assert self.chr() == c'['
         var start = self.parser.pos
         mut var negated = false
-        if not self.bump() or self.chr() != ':'[0] {
+        if not self.bump() or self.chr() != c':' {
             self.parser.pos = start
             return null
         }
@@ -965,7 +965,7 @@ class ParserI {
             self.parser.pos = start
             return null
         }
-        if self.chr() == '^'[0] {
+        if self.chr() == c'^' {
             negated = true
             if not self.bump() {
                 self.parser.pos = start
@@ -973,7 +973,7 @@ class ParserI {
             }
         }
         var nameStart = self.offset()
-        while self.chr() != ':'[0] and self.bump() {}
+        while self.chr() != c':' and self.bump() {}
         if self.isEof() {
             self.parser.pos = start
             return null
@@ -1097,7 +1097,7 @@ union Primitive {
 }
 
 func isCaptureChar(char c, bool first) -> bool {
-    return (c == '_'[0]
+    return (c == c'_'
         or (not first and c in DIGITS or c in ".[]")
         or c in ASCII_LETTERS)
 }
