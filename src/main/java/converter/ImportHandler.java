@@ -422,7 +422,7 @@ public final class ImportHandler {
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
         } else {
-            f = new CompilerInfo(Parser.parse(path.toFile()));
+            f = new CompilerInfo(Parser.parse(path.toFile()), info.globalInfo());
             ALL_FILES.put(path, f);
             toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
         }
