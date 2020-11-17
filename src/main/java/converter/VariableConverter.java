@@ -77,7 +77,7 @@ public final class VariableConverter implements TestConverter {
 
     private CompilerException nameError() {
         var name = node.getName();
-        var closest = closestName(name);
+        var closest = Levenshtein.closestName(name, info.definedNames());
         if (closest.isPresent()) {
             return CompilerException.format(
                     "Variable '%s' not defined.%nDid you mean '%s'?", node, name, closest.orElseThrow()
@@ -85,19 +85,5 @@ public final class VariableConverter implements TestConverter {
         } else {
             return CompilerException.format("Variable '%s' not defined", node, name);
         }
-    }
-
-    private Optional<String> closestName(String name) {
-        String min = null;
-        int dist = Integer.MAX_VALUE;
-        for (var variable : info.definedNames()) {
-            var levDist = Levenshtein.distance(name, variable);
-            if (levDist < dist || min == null) {
-                min = variable;
-                dist = levDist;
-            }
-        }
-        var maxDistance = Math.max(name.length(), 3) / 3;
-        return dist > maxDistance ? Optional.empty() : Optional.ofNullable(min);
     }
 }
