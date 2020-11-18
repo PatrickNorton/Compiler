@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Objects;
 
 public final class CharConstant implements LangConstant {
-    private final char value;
+    private final int value;
 
-    public CharConstant(char value) {
+    public CharConstant(int value) {
         this.value = value;
     }
 
@@ -21,7 +21,7 @@ public final class CharConstant implements LangConstant {
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Character.BYTES);
         bytes.add((byte) ConstantBytes.CHAR.ordinal());
-        bytes.addAll(Util.shortToBytes((short) value));
+        bytes.addAll(Util.intToBytes(value));
         return bytes;
     }
 
