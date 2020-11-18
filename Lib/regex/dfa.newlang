@@ -670,14 +670,11 @@ class Fsm {
         return STATE_DEAD if si == STATE_DEAD
 
         var next = self.cache.trans.next(si, self.byteClass(b))
-        if next == STATE_UNKNOWN {
-            return self.execByte(qcur, qnext, si, b)
-        } elif next == STATE_QUIT {
-            return null
-        } elif next == STATE_DEAD {
-            return STATE_DEAD
-        } else {
-            return next
+        return switch next {
+            case STATE_UNKNOWN => self.execByte(qcur, qnext, si, b)
+            case STATE_QUIT => null
+            case STATE_DEAD => STATE_DEAD
+            default => next
         }
     }
 
