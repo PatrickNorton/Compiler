@@ -69,8 +69,8 @@ class IntervalSet[I[Interval]] {
                 break
             }
         }
-        mut var ranges = self.ranges  # FIXME: Delete on dotted variable
-        # del ranges[0:drainEnd]  DOUBLE FIXME: operator del[:]
+        final var ranges = self.ranges  # FIXME: Delete on dotted variable
+        del ranges[0:drainEnd]
     }
 
     public mut method difference(IntervalSet[I] other) {
