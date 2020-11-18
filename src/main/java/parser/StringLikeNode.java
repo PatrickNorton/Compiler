@@ -122,7 +122,7 @@ public abstract class StringLikeNode implements AtomicNode, PostDottableNode {
                     i += 5;
                     break;
                 case 'U':
-                    sb.append((char) Integer.parseInt(str.substring(i + 1, i + 9), 16));
+                    sb.append(Character.toChars(Integer.parseInt(str.substring(i + 1, i + 9), 16)));
                     i += 9;
                     break;
                 default:

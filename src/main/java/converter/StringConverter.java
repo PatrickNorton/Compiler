@@ -70,10 +70,10 @@ public final class StringConverter implements ConstantConverter {
                 }
                 return new BytesConstant(bytes);
             case CHAR:
-                if (node.getContents().length() != 1) {
+                if (node.getContents().codePointCount(0, node.getContents().length()) != 1) {
                     throw CompilerException.of("Char literals must have a length of 1", node);
                 }
-                return new CharConstant(node.getContents().charAt(0));
+                return new CharConstant(node.getContents().codePointAt(0));
             default:
                 throw new UnsupportedOperationException();
         }

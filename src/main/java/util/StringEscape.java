@@ -1,14 +1,25 @@
 package main.java.util;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public final class StringEscape {
     private StringEscape() {}
 
     public static String unescape(String value) {
-        var sb = new StringBuilder(value.length());
-        for (int i = 0; i < value.length(); i++) {
-            sb.append(escaped(value.charAt(i)));
+        return value.codePoints().mapToObj(StringEscape::escaped).collect(Collectors.joining());
+    }
+
+    public static String escaped(int i) {
+        if (Character.isBmpCodePoint(i)) {
+            return escaped((char) i);
+        } else {
+            if (Character.isLetterOrDigit(i)) {
+                return new String(Character.toChars(i));
+            } else {
+                return String.format("\\U%08X", i);
+            }
         }
-        return sb.toString();
     }
 
     public static String escaped(char c) {
@@ -34,7 +45,38 @@ public final class StringEscape {
             case '\013':
                 return "\\v";
             default:
-                return Character.toString(c);
+                if (PRINTABLE_CLASSES.contains((byte) Character.getType(c))) {
+                    return Character.toString(c);
+                } else if (c < 0x100) {
+                    return String.format("\\x%02X", (int) c);
+                } else {
+                    return String.format("\\u%04X", (int) c);
+                }
         }
     }
+
+    private static final Set<Byte> PRINTABLE_CLASSES = Set.of(
+            Character.UPPERCASE_LETTER,
+            Character.LOWERCASE_LETTER,
+            Character.TITLECASE_LETTER,
+            Character.MODIFIER_LETTER,
+            Character.OTHER_LETTER,
+            Character.NON_SPACING_MARK,
+            Character.ENCLOSING_MARK,
+            Character.DECIMAL_DIGIT_NUMBER,
+            Character.LETTER_NUMBER,
+            Character.OTHER_NUMBER,
+            Character.SPACE_SEPARATOR,
+            Character.DASH_PUNCTUATION,
+            Character.START_PUNCTUATION,
+            Character.END_PUNCTUATION,
+            Character.CONNECTOR_PUNCTUATION,
+            Character.OTHER_PUNCTUATION,
+            Character.MATH_SYMBOL,
+            Character.CURRENCY_SYMBOL,
+            Character.MODIFIER_SYMBOL,
+            Character.OTHER_SYMBOL,
+            Character.INITIAL_QUOTE_PUNCTUATION,
+            Character.FINAL_QUOTE_PUNCTUATION
+    );
 }
