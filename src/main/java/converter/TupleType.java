@@ -9,8 +9,10 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -31,6 +33,11 @@ public final class TupleType extends TypeObject {
     private TupleType(String typedefName, TypeObject... generics) {
         this.generics = List.of(generics);
         this.typedefName = typedefName;
+    }
+
+    @Override
+    public Optional<Iterable<String>> getDefined() {
+        return Optional.of(TupleIterator::new);
     }
 
     @Contract(pure = true)
@@ -167,5 +174,20 @@ public final class TupleType extends TypeObject {
     @NotNull
     public TypeObject typedefAs(String name) {
         return new TupleType(name, generics.toArray(new TypeObject[0]));
+    }
+
+    private final class TupleIterator implements Iterator<String> {
+        private int i = 0;
+
+        @Override
+        public boolean hasNext() {
+            return i < generics.size();
+        }
+
+        @Override
+        public String next() {
+            if (i >= generics.size()) throw new NoSuchElementException();
+            return Integer.toString(i++);
+        }
     }
 }

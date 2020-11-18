@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
+import main.java.util.StringEscape;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,7 +61,7 @@ public final class BytesConstant implements LangConstant {
     public String name(IndexedSet<LangConstant> constants) {
         StringBuilder result = new StringBuilder();
         for (var b : value) {
-            result.append((char) b.byteValue());
+            result.append(StringEscape.escaped((char) b.byteValue()));
         }
         return "b\"" + result + '"';
     }

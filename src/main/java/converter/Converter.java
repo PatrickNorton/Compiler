@@ -44,7 +44,7 @@ public final class Converter {
             );
         }
         destFile = file.getParentFile();
-        var info = new CompilerInfo(node).link();
+        var info = new CompilerInfo(node, new GlobalCompilerInfo()).link();
         ImportHandler.compileAll(info);
         info.writeToFile(file);
     }
