@@ -14,7 +14,7 @@ public final class StringEscape {
         if (Character.isBmpCodePoint(i)) {
             return escaped((char) i);
         } else {
-            if (Character.isLetterOrDigit(i)) {
+            if (PRINTABLE_CLASSES.contains((byte) Character.getType(i))) {
                 return new String(Character.toChars(i));
             } else {
                 return String.format("\\U%08X", i);
