@@ -294,7 +294,7 @@ class Hir {
         } else {
             mut var clsBytes = ClassBytes.empty()
             clsBytes.add(ClassUnicodeRange(c"\0", c"\x09"))
-            clsBytes.add(ClassUnicodeRange("\x0b"[0], "\u10ffff"[0]))
+            clsBytes.add(ClassUnicodeRange(c"\x0b", c"\U0010ffff"))
             return Hir.type(Class.Bytes(clsBytes))
         }
     }
@@ -306,7 +306,7 @@ class Hir {
             return Hir.type(Class.Bytes(clsBytes))
         } else {
             mut var clsBytes = ClassUnicode.empty()
-            clsBytes.add(ClassUnicodeRange(c"\0", "\u10ffff"[0]))
+            clsBytes.add(ClassUnicodeRange(c"\0", c"\U0010ffff"))
             return Hir.type(Class.Unicode(clsBytes))
         }
     }
