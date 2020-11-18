@@ -69,8 +69,7 @@ class IntervalSet[I[Interval]] {
                 break
             }
         }
-        final var ranges = self.ranges  # FIXME: Delete on dotted variable
-        del ranges[0:drainEnd]
+        del self.ranges[0:drainEnd]
     }
 
     public mut method difference(IntervalSet[I] other) {
@@ -161,8 +160,7 @@ class IntervalSet[I[Interval]] {
             self.ranges.add(r)
             a++
         }
-        mut var ranges = self.ranges  # FIXME
-        del ranges[0:drainEnd]
+        del self.ranges[0:drainEnd]
     }
 
     public mut method symmetricDifference(IntervalSet[I] other) {
@@ -201,8 +199,7 @@ class IntervalSet[I[Interval]] {
             var lower = self.ranges[drainEnd - 1].upper.increment()
             # self.ranges.add(cls.I(lower, cls.I.maxValue))
         }
-        mut var ranges = self.ranges  # FIXME
-        del ranges[0:drainEnd]
+        del self.ranges[0:drainEnd]
     }
 
     private mut method canonicalize() {
@@ -226,8 +223,7 @@ class IntervalSet[I[Interval]] {
             }
             self.ranges.add(self.ranges[oldi])
         }
-        mut var ranges = self.ranges
-        del ranges[0:drainEnd]
+        del self.ranges[0:drainEnd]
     }
 
     # Returns true if and only if this class is in a canonical ordering.
