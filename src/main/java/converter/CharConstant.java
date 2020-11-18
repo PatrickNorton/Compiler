@@ -19,7 +19,7 @@ public final class CharConstant implements LangConstant {
     @Override
     @NotNull
     public List<Byte> toBytes() {
-        List<Byte> bytes = new ArrayList<>(1 + Character.BYTES);
+        List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
         bytes.add((byte) ConstantBytes.CHAR.ordinal());
         bytes.addAll(Util.intToBytes(value));
         return bytes;
