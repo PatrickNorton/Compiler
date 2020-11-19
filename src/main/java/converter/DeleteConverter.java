@@ -1,9 +1,11 @@
 package main.java.converter;
 
 import main.java.parser.DeleteStatementNode;
+import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
+import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,9 +25,12 @@ public final class DeleteConverter implements BaseConverter {
     @NotNull
     public List<Byte> convert(int start) {
         var deleted = node.getDeleted();
-        if (deleted instanceof IndexNode) {
+        if (deleted instanceof DottedVariableNode) {
+            var del = (DottedVariableNode) deleted;
+            return convertDot(start, del);
+        } else if (deleted instanceof IndexNode) {
             var del = (IndexNode) deleted;
-            if (del.getIndices().length == 1 && del.getIndices()[0] instanceof SliceNode) {
+            if (IndexConverter.isSlice(del.getIndices())) {
                 return convertSlice(start, del);
             } else {
                 return convertIndex(start, del);
@@ -41,8 +46,12 @@ public final class DeleteConverter implements BaseConverter {
 
     private List<Byte> convertIndex(int start, IndexNode delIndex) {
         var varConverter = TestConverter.of(info, delIndex.getVar(), 1);
+        return convertIndex(start, varConverter, delIndex.getIndices());
+    }
+
+    private List<Byte> convertIndex(int start, TestConverter varConverter, TestNode[] indices) {
         List<TestConverter> indexConverters = new ArrayList<>();
-        for (var index : delIndex.getIndices()) {
+        for (var index : indices) {
             indexConverters.add(TestConverter.of(info, index, 1));
         }
         checkAccess(varConverter, indexConverters);
@@ -61,19 +70,23 @@ public final class DeleteConverter implements BaseConverter {
     }
 
     private List<Byte> convertSlice(int start, IndexNode delIndex) {
-        assert delIndex.getIndices().length == 1 && delIndex.getIndices()[0] instanceof SliceNode;
+        assert IndexConverter.isSlice(delIndex.getIndices());
         var varConverter = TestConverter.of(info, delIndex.getVar(), 1);
-        var sliceConverter = new SliceConverter(info, (SliceNode) delIndex.getIndices()[0]);
+        return convertSlice(start, varConverter, (SliceNode) delIndex.getIndices()[0]);
+    }
+
+    private List<Byte> convertSlice(int start, TestConverter varConverter, SliceNode slice) {
+        var sliceConverter = new SliceConverter(info, slice);
         var varType = varConverter.returnType()[0];
         var sliceInfo = varType.operatorInfo(OpSpTypeNode.DEL_SLICE, info).orElseThrow(
                 () -> CompilerException.format(
-                        "Object of type '%s' has no operator del[:]", delIndex.getVar(), varType.name()
+                        "Object of type '%s' has no operator del[:]", node, varType.name()
                 )
         );
         if (!sliceInfo.matches(new Argument("", Builtins.SLICE))) {
             throw CompilerException.format(
                     "Cannot call '%s'.operator del[:] (operator del[:] should always be callable with a slice)",
-                    delIndex.getVar(), varType.name()
+                    node, varType.name()
             );
         }
         List<Byte> bytes = new ArrayList<>(varConverter.convert(start));
@@ -91,6 +104,24 @@ public final class DeleteConverter implements BaseConverter {
         bytes.add(Bytecode.STORE.value);  // Drops value currently stored
         bytes.addAll(Util.shortToBytes(index));
         return bytes;
+    }
+
+    private List<Byte> convertDot(int start, DottedVariableNode dottedVar) {
+        var dots = dottedVar.getPostDots();
+        if (!(dots[dots.length - 1].getPostDot() instanceof IndexNode)) {
+            throw CompilerException.of("Cannot delete non-index from dotted variable", node);
+        } else {
+            return convertDotIndex(start, dottedVar);
+        }
+    }
+
+    private List<Byte> convertDotIndex(int start, DottedVariableNode dottedVar) {
+        var pair = DotConverter.exceptLastIndex(info, dottedVar, 1);
+        if (IndexConverter.isSlice(pair.getValue())) {
+            return convertSlice(start, pair.getKey(), (SliceNode) pair.getValue()[0]);
+        } else {
+            return convertIndex(start, pair.getKey(), pair.getValue());
+        }
     }
 
     private void checkAccess(@NotNull TestConverter value, List<TestConverter> indices) {

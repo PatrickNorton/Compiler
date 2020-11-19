@@ -140,7 +140,8 @@ public final class DotConverter implements TestConverter {
             var index = (IndexNode) postDot;
             var variable = new DottedVar(dot.getLineInfo(), dot.getDotPrefix(),  (NameNode) index.getVar());
             var attrType = normalDotReturnType(result, variable)[0];
-            var operator = index.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
+            var operator = IndexConverter.isSlice(index.getIndices())
+                    ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
             return new TypeObject[]{attrType.tryOperatorReturnType(node, operator, info)[0]};
         } else {
             throw CompilerInternalError.of("Unimplemented post-dot type", dot);
@@ -314,7 +315,7 @@ public final class DotConverter implements TestConverter {
         var preIndex = (NameNode) postDot.getVar();
         convertPostDot(start, bytes, preIndex);
         var indices = postDot.getIndices();
-        if (indices[0] instanceof SliceNode) {
+        if (IndexConverter.isSlice(indices)) {
             assert indices.length == 1;
             var slice = (SliceNode) indices[0];
             bytes.addAll(new SliceConverter(info, slice).convert(start + bytes.size()));
