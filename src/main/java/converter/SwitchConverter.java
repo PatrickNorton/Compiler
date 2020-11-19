@@ -516,11 +516,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     private static CompilerException defaultException(Lined stmt) {
-        throw CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
+        return CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
     }
 
     private static CompilerException asException(Lined as) {
-        throw CompilerException.of(
+        return CompilerException.of(
                 "'as' clauses in a switch are only allowed when the switched value is a union", as
         );
     }
