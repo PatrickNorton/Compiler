@@ -144,21 +144,25 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 defaultVal = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 continue;
             }
-            var label = stmt.getLabel()[0];
-            var lblConverter = TestConverter.of(info, stmt.getLabel()[0], 1);
-            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
-            BigInteger value;
-            if (constant instanceof IntConstant) {
-                value = BigInteger.valueOf(((IntConstant) constant).getValue());
-            } else if (constant instanceof BigintConstant) {
-                value = ((BigintConstant) constant).getValue();
-            } else {
-                throw literalException("int", label);
+            if (stmt.getLabel().length == 0) {
+                throw emptyLabelException(stmt);
             }
-            if (jumps.containsKey(value)) {
-                throw CompilerException.format("Cannot define number %d twice in switch statement", node, value);
-            } else {
-                jumps.put(value, start + bytes.size());
+            for (var label : stmt.getLabel()) {
+                var lblConverter = TestConverter.of(info, label, 1);
+                var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
+                BigInteger value;
+                if (constant instanceof IntConstant) {
+                    value = BigInteger.valueOf(((IntConstant) constant).getValue());
+                } else if (constant instanceof BigintConstant) {
+                    value = ((BigintConstant) constant).getValue();
+                } else {
+                    throw literalException("int", label);
+                }
+                if (jumps.containsKey(value)) {
+                    throw CompilerException.format("Cannot define number %d twice in switch statement", node, value);
+                } else {
+                    jumps.put(value, start + bytes.size());
+                }
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
@@ -187,18 +191,24 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 defaultVal = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 continue;
             }
-            var label = stmt.getLabel()[0];
-            var lblConverter = TestConverter.of(info, label, 1);
-            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
-            if (constant instanceof StringConstant) {
-                var value = ((StringConstant) constant).getValue();
-                if (jumps.containsKey(value)) {
-                    throw CompilerException.format("Cannot define str \"%s\" twice in switch statement", node, value);
+            if (stmt.getLabel().length == 0) {
+                throw emptyLabelException(stmt);
+            }
+            for (var label : stmt.getLabel()) {
+                var lblConverter = TestConverter.of(info, label, 1);
+                var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
+                if (constant instanceof StringConstant) {
+                    var value = ((StringConstant) constant).getValue();
+                    if (jumps.containsKey(value)) {
+                        throw CompilerException.format(
+                                "Cannot define str \"%s\" twice in switch statement", node, value
+                         );
+                    } else {
+                        jumps.put(value, start + bytes.size());
+                    }
                 } else {
-                    jumps.put(value, start + bytes.size());
+                    throw literalException("string", label);
                 }
-            } else {
-                throw literalException("string", label);
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
@@ -321,21 +331,27 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
                 continue;
             }
-            var lblConverter = stmt.getLabel()[0];
-            var lblNo = labelToVariantNo(lblConverter, union);
-            usedVariants.add(lblNo);
-            jumps.put(lblNo, start + bytes.size());
-            if (!stmt.getAs().isEmpty()) {
-                var as = stmt.getAs();
-                bytes.add(Bytecode.GET_VARIANT.value);
-                bytes.addAll(Util.shortToBytes((short) lblNo));
-                bytes.add(Bytecode.UNWRAP_OPTION.value);
-                info.addStackFrame();
-                info.addVariable(as.getName(), labelToType(lblConverter, union), as);
-                bytes.add(Bytecode.STORE.value);
-                bytes.addAll(Util.shortToBytes(info.varIndex(as)));
-            } else if (hasAs) {
-                bytes.add(Bytecode.POP_TOP.value);
+            if (stmt.getLabel().length == 0) {
+                throw emptyLabelException(stmt);
+            } else if (stmt.getLabel().length > 1 && !stmt.getAs().isEmpty()) {
+                throw CompilerException.of("Cannot use 'as' clause with more than one label", stmt);
+            }
+            for (var label : stmt.getLabel()) {
+                var lblNo = labelToVariantNo(label, union);
+                usedVariants.add(lblNo);
+                jumps.put(lblNo, start + bytes.size());
+                if (!stmt.getAs().isEmpty()) {
+                    var as = stmt.getAs();
+                    bytes.add(Bytecode.GET_VARIANT.value);
+                    bytes.addAll(Util.shortToBytes((short) lblNo));
+                    bytes.add(Bytecode.UNWRAP_OPTION.value);
+                    info.addStackFrame();
+                    info.addVariable(as.getName(), labelToType(label, union), as);
+                    bytes.add(Bytecode.STORE.value);
+                    bytes.addAll(Util.shortToBytes(info.varIndex(as)));
+                } else if (hasAs) {
+                    bytes.add(Bytecode.POP_TOP.value);
+                }
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
@@ -505,5 +521,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         throw CompilerException.of(
                 "'as' clauses in a switch are only allowed when the switched value is a union", as
         );
+    }
+
+    private static CompilerException emptyLabelException(Lined stmt) {
+        return CompilerException.format("Case statements must have at least one label", stmt);
     }
 }
