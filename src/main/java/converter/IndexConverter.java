@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
+import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public final class IndexConverter implements TestConverter {
         if (type != null) {
             return new TypeObject[]{Builtins.TYPE.generify(type)};
         }
-        var operator = node.getIndices()[0] instanceof SliceNode ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
+        var operator = isSlice() ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
         return TestConverter.returnType(node.getVar(), info, 1)[0].tryOperatorReturnType(node, operator, info);
     }
 
@@ -80,6 +81,10 @@ public final class IndexConverter implements TestConverter {
     }
 
     public boolean isSlice() {
-        return node.getIndices().length == 1 && node.getIndices()[0] instanceof SliceNode;
+        return isSlice(node.getIndices());
+    }
+
+    public static boolean isSlice(TestNode[] indices) {
+        return indices.length == 1 && indices[0] instanceof SliceNode;
     }
 }

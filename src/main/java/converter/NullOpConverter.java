@@ -95,12 +95,13 @@ public final class NullOpConverter extends OperatorConverter {
         assert op == OperatorTypeNode.NOT_NULL;
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        if (converter.returnType()[0].equals(Builtins.NULL_TYPE)) {
+        var retType = converter.returnType()[0];
+        if (retType.equals(Builtins.NULL_TYPE)) {
             throw CompilerException.of(
                     "Cannot use !! operator on variable on variable with type null",
                     args[0]
             );
-        } else if (converter.returnType()[0] instanceof OptionTypeObject) {
+        } else if (retType instanceof OptionTypeObject) {
             bytes.add(Bytecode.DUP_TOP.value);
             bytes.add(Bytecode.JUMP_NN.value);
             int jumpPos = bytes.size();
@@ -153,7 +154,7 @@ public final class NullOpConverter extends OperatorConverter {
         var retType = TestConverter.returnType(args[0].getArgument(), info, 1)[0];
         if (retType.equals(Builtins.NULL_TYPE)) {
              // Doesn't particularly matter what, it'll fail later (Maybe return Builtins.THROWS once implemented?)
-            return new TypeObject[] {retType};
+            return new TypeObject[] {Builtins.THROWS};
         } else {
             return new TypeObject[] {retType.stripNull()};
         }
