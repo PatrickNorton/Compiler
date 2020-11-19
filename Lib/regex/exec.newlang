@@ -448,14 +448,7 @@ class ExecNoSync {
         return switch self.ro.matchType {
             case MatchType.Literal as ty => self.findLiterals(ty, text, start)?.1
 
-            case MatchType.Dfa => switch self.shortestDfa(text, start) {
-                case Result.Match as end => end
-                case Result.NoMatch => null
-                case Result.Quit => self.shortestNfa(text, start)
-            }
-
-            # FIXME: Merge this with above
-            case  MatchType.DfaMany => switch self.shortestDfa(text, start) {
+            case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
                 case Result.Match as end => end
                 case Result.NoMatch => null
                 case Result.Quit => self.shortestNfa(text, start)
@@ -493,14 +486,7 @@ class ExecNoSync {
         return switch self.ro.matchType {
             case MatchType.Literal as ty => self.findLiterals(ty, text, start)?
 
-            case MatchType.Dfa => switch self.shortestDfa(text, start) {
-                case Result.Match => true
-                case Result.NoMatch => false
-                case Result.Quit => self.matchNfa(text, start)
-            }
-
-            # FIXME: Merge this with above
-            case MatchType.DfaMany => switch self.shortestDfa(text, start) {
+            case MatchType.Dfa, MatchType.DfaMany => switch self.shortestDfa(text, start) {
                 case Result.Match => true
                 case Result.NoMatch => false
                 case Result.Quit => self.matchNfa(text, start)
