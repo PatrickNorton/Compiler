@@ -331,16 +331,17 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
                 continue;
             }
+            var stmtHasAs = !stmt.getAs().isEmpty();
             if (stmt.getLabel().length == 0) {
                 throw emptyLabelException(stmt);
-            } else if (stmt.getLabel().length > 1 && !stmt.getAs().isEmpty()) {
+            } else if (stmt.getLabel().length > 1 && stmtHasAs) {
                 throw CompilerException.of("Cannot use 'as' clause with more than one label", stmt);
             }
             for (var label : stmt.getLabel()) {
                 var lblNo = labelToVariantNo(label, union);
                 usedVariants.add(lblNo);
                 jumps.put(lblNo, start + bytes.size());
-                if (!stmt.getAs().isEmpty()) {
+                if (stmtHasAs) {  // Will work b/c there must only be one label if there is an 'as' clause
                     var as = stmt.getAs();
                     bytes.add(Bytecode.GET_VARIANT.value);
                     bytes.addAll(Util.shortToBytes((short) lblNo));
@@ -349,9 +350,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     info.addVariable(as.getName(), labelToType(label, union), as);
                     bytes.add(Bytecode.STORE.value);
                     bytes.addAll(Util.shortToBytes(info.varIndex(as)));
-                } else if (hasAs) {
-                    bytes.add(Bytecode.POP_TOP.value);
                 }
+            }
+            if (hasAs && !stmtHasAs) {
+                bytes.add(Bytecode.POP_TOP.value);
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
