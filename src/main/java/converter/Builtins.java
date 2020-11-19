@@ -224,6 +224,7 @@ public final class Builtins {
         var splitLinesInfo = new FunctionInfo(ArgumentInfo.of(), LIST.generify(STR));
         var upperLowerInfo = new FunctionInfo(STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(STR), TypeObject.optional(INT));
+        var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), BYTES);
         var asIntInfo = new FunctionInfo(ArgumentInfo.of(), TypeObject.optional(INT));
         var strAttrs = Map.ofEntries(
                 Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
@@ -237,6 +238,7 @@ public final class Builtins {
                 Map.entry("upper", AttributeInfo.method(upperLowerInfo)),
                 Map.entry("lower", AttributeInfo.method(upperLowerInfo)),
                 Map.entry("indexOf", AttributeInfo.method(indexInfo)),
+                Map.entry("encode", AttributeInfo.method(encodeInfo)),
                 Map.entry("asInt", AttributeInfo.method(asIntInfo))
         );
         STR.setAttributes(strAttrs);
