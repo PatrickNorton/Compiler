@@ -135,7 +135,7 @@ public abstract class OperatorConverter implements TestConverter {
         if (consts[0] instanceof StringConstant) {
             return StrArithmetic.computeConst(op, consts);
         } else {
-            return allInts(info, args).flatMap(values -> IntArithmetic.computeConst(op, values));
+            return allInts(consts).flatMap(values -> IntArithmetic.computeConst(op, values));
         }
     }
 
@@ -152,14 +152,10 @@ public abstract class OperatorConverter implements TestConverter {
         return Optional.of(result);
     }
 
-    private static Optional<BigInteger[]> allInts(CompilerInfo info, ArgumentNode[] args) {
+    private static Optional<BigInteger[]> allInts(LangConstant[] args) {
         BigInteger[] result = new BigInteger[args.length];
         for (int i = 0; i < args.length; i++) {
-            var constant = TestConverter.constantReturn(args[i].getArgument(), info, 1);
-            if (constant.isEmpty()) {
-                return Optional.empty();
-            }
-            var constVal = constant.orElseThrow();
+            var constVal = args[i];
             if (constVal instanceof IntConstant) {
                 result[i] = BigInteger.valueOf(((IntConstant) constVal).getValue());
             } else if (constVal instanceof BigintConstant) {
