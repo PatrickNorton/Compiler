@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private final SwitchStatementNode node;
-    private final int retCount;  // TODO: Make switch expressions work
+    private final int retCount;
 
     public SwitchConverter(CompilerInfo info, SwitchStatementNode node, int retCount) {
         super(info, false);
