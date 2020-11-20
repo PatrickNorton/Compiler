@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public final class ClassInfo {
     private final UserType<?> type;
@@ -165,13 +164,6 @@ public final class ClassInfo {
             bytes.addAll(pair.getValue().getKey());
             bytes.addAll(Util.intToBytes(pair.getValue().getValue().size()));
             bytes.addAll(pair.getValue().getValue());
-        }
-    }
-
-    private static void addSet(@NotNull List<Byte> bytes, @NotNull Set<String> set) {
-        bytes.addAll(Util.intToBytes(set.size()));
-        for (var str : set) {
-            bytes.addAll(StringConstant.strBytes(str));
         }
     }
 
