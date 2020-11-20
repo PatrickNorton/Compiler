@@ -22,6 +22,11 @@ public enum TableBytes {
      * 2: {@link StringSwitchTable}
      */
     STRING,
+
+    /**
+     * 3: {@link CharSwitchTable}
+     */
+    CHAR,
     ;
 
     public byte byteValue() {
