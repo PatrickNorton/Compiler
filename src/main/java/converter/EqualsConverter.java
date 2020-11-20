@@ -8,6 +8,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,12 +76,18 @@ public final class EqualsConverter extends OperatorConverter {
                 lineInfo, equalsType ? "==" : "!=", equalsType
         );
         // Have to get side-effects
-        var conv = TestConverter.bytes(start, args[0].getArgument(), info, 1);
+        var conv = sideEffects(start);
         List<Byte> bytes = new ArrayList<>(conv);
         bytes.add(Bytecode.POP_TOP.value);
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(equalsType))));
         return bytes;
+    }
+
+    private List<Byte> sideEffects(int start) {
+        assert args.length == 0 || args.length == 1;
+        return args.length == 0 ? Collections.emptyList()
+                : TestConverter.bytes(start, args[0].getArgument(), info, 1);
     }
 
     private List<Byte> convert2(int start) {
