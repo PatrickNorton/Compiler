@@ -420,7 +420,7 @@ class ParserI {
     private mut method parseHex() -> Literal {
         assert self.chr() in "xuU"
 
-        var hexKind = switch self.chr() {
+        var hexKind = switch str(self.chr()) {
             case 'x' => HexLiteralKind.X
             case 'u' => HexLiteralKind.UNICODE_SHORT
             default => HexLiteralKind.UNICODE_LONG
@@ -529,7 +529,7 @@ class ParserI {
         var c = self.chr()
         var span = self.spanChar()
         self.bump()
-        var negated, var kind = *switch c {
+        var negated, var kind = *switch str(c) {
             case 'd' => (false, ClassPerlKind.DIGIT)
             case 'D' => (true, ClassPerlKind.DIGIT)
             case 's' => (false, ClassPerlKind.SPACE)
