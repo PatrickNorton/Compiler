@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DecrementNode;
+import main.java.parser.DottedVariableNode;
 import main.java.parser.IncDecNode;
 import main.java.parser.IncrementNode;
 import main.java.parser.VariableNode;
@@ -23,28 +24,74 @@ public final class IncrementDecrementConverter implements BaseConverter {
     public final List<Byte> convert(int start) {
         boolean isDecrement = node instanceof DecrementNode;
         assert isDecrement ^ node instanceof IncrementNode;
+        if (node.getVariable() instanceof VariableNode) {
+            return convertVariable(start, isDecrement);
+        } else if (node.getVariable() instanceof DottedVariableNode) {
+            return convertDot(start, isDecrement);
+        } else {
+            throw CompilerInternalError.format("Non-variable %s not yet implemented", node, incName(isDecrement));
+        }
+    }
+
+    private List<Byte> convertVariable(int start, boolean isDecrement) {
+        assert node.getVariable() instanceof VariableNode;
         var converter = TestConverter.of(info, node.getVariable(), 1);
         if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
-            throw CompilerException.format(
-                    "TypeError: Object of type %s cannot be %s",
-                    node.getLineInfo(), converter.returnType()[0].name(), isDecrement ? "decremented" : "incremented");
+            throw typeError(converter.returnType()[0], isDecrement);
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.LOAD_CONST.value);
         int constIndex = info.addConstant(LangConstant.of(1));
         bytes.addAll(Util.shortToBytes((short) constIndex));
         bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
-        if (node.getVariable() instanceof VariableNode) {
-            var variable = (VariableNode) node.getVariable();
-            if (info.variableIsConstant(variable.getName())) {
-                throw CompilerException.of("Cannot increment non-mut variable", node);
-            }
-            short varIndex = info.varIndex(variable);
-            bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes(varIndex));
-        } else {
-            throw CompilerInternalError.of("Non-variable in/decrement not yet implemented", node);
+        var variable = (VariableNode) node.getVariable();
+        if (info.variableIsConstant(variable.getName())) {
+            throw CompilerException.format("Cannot %s non-mut variable", node, incName(isDecrement));
         }
+        short varIndex = info.varIndex(variable);
+        bytes.add(Bytecode.STORE.value);
+        bytes.addAll(Util.shortToBytes(varIndex));
         return bytes;
+    }
+
+    private List<Byte> convertDot(int start, boolean isDecrement) {
+        assert node.getVariable() instanceof DottedVariableNode;
+        var dot = (DottedVariableNode) node.getVariable();
+        if (dot.getPostDots()[dot.getPostDots().length - 1].getPostDot() instanceof VariableNode) {
+            var pair = DotConverter.exceptLast(info, dot, 1);
+            var converter = pair.getKey();
+            var name = pair.getValue();
+            var retType = converter.returnType()[0];
+            var attrInfo = retType.tryAttrType(node, name, info);
+            if (!Builtins.INT.isSuperclass(attrInfo)) {
+                throw typeError(attrInfo, isDecrement);
+            }
+            if (!retType.canSetAttr(name, info)) {
+                throw CompilerException.format("Cannot %s non-mut attribute", node, incName(isDecrement));
+            }
+            List<Byte> bytes = new ArrayList<>(converter.convert(start));
+            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.add(Bytecode.LOAD_DOT.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
+            bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
+            bytes.add(Bytecode.STORE_ATTR.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
+            return bytes;
+        } else {
+            throw CompilerTodoError.format("Cannot convert index %s yet", node, incName(isDecrement));
+        }
+    }
+
+    private CompilerException typeError(TypeObject retType, boolean isDecrement) {
+        return CompilerException.format(
+                    "TypeError: Object of type %s cannot be %sed",
+                    node.getLineInfo(), retType.name(), incName(isDecrement)
+        );
+    }
+
+    private static String incName(boolean isDecrement) {
+        return isDecrement ? "decrement" : "increment";
     }
 }

@@ -184,16 +184,9 @@ public final class FunctionCallConverter implements TestConverter {
     private TypeObject[] escapedOpReturn() {
         assert node.getCaller() instanceof EscapedOperatorNode;
         var escapedOp = (EscapedOperatorNode) node.getCaller();
-        switch (escapedOp.getOperator().operator) {
-            case IS:
-            case IS_NOT:
-                return new TypeObject[] {Builtins.BOOL};
-            default:
-                throw CompilerTodoError.format(
-                        "Return type for %s not implemented yet",
-                        node, escapedOp.getOperator().operator
-                );
-        }
+        var op = escapedOp.getOperator().operator;
+        var converter = OperatorConverter.ofComponents(info, op, node.getParameters(), node, retCount);
+        return converter.returnType();
     }
 
     @NotNull

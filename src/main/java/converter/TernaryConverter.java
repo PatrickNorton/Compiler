@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class TernaryConverter implements TestConverter {
     private final TernaryNode node;
@@ -16,6 +17,16 @@ public final class TernaryConverter implements TestConverter {
         this.node = node;
         this.info = info;
         this.retCount = retCount;
+    }
+
+    @Override
+    public Optional<LangConstant> constantReturn() {
+        var cond = TestConverter.constantReturn(node.getStatement(), info ,1);
+        if (cond.isPresent() && cond.orElseThrow().boolValue().isPresent()) {
+            var bool = cond.orElseThrow().boolValue().orElseThrow();
+            return TestConverter.constantReturn(bool ? node.getIfTrue() : node.getIfFalse(), info, retCount);
+        }
+        return Optional.empty();
     }
 
     @NotNull

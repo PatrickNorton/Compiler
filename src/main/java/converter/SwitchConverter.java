@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private final SwitchStatementNode node;
-    private final int retCount;  // TODO: Make switch expressions work
+    private final int retCount;
 
     public SwitchConverter(CompilerInfo info, SwitchStatementNode node, int retCount) {
         super(info, false);
@@ -39,6 +39,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             return convertTbl(start);
         } else if (Builtins.STR.isSuperclass(retType)) {
             return convertStr(start);
+        } else if (Builtins.CHAR.isSuperclass(retType)) {
+            return convertChar(start);
         } else if (retType instanceof UnionTypeObject) {
             return convertUnion(start, (UnionTypeObject) retType);
         }
@@ -221,6 +223,52 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return bytes;
     }
 
+    private List<Byte> convertChar(int start) {
+        Map<Integer, Integer> jumps = new HashMap<>();  // int not char b/c Java Unicode sucks
+        int defaultVal = 0;
+        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var bytes = tblHeader(start);
+        int tblPos = bytes.size();
+        bytes.addAll(Util.shortZeroBytes());
+        for (var stmt : node.getCases()) {
+            if (!stmt.getAs().isEmpty()) {
+                throw asException(stmt.getAs());
+            }
+            if (stmt instanceof DefaultStatementNode) {
+                defaultVal = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
+                continue;
+            }
+            if (stmt.getLabel().length == 0) {
+                throw emptyLabelException(stmt);
+            }
+            for (var label : stmt.getLabel()) {
+                var lblConverter = TestConverter.of(info, label, 1);
+                var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("char", label));
+                if (constant instanceof CharConstant) {
+                    var value = ((CharConstant) constant).getValue();
+                    if (jumps.containsKey(value)) {
+                        throw CompilerException.format(
+                                "Cannot define char %s twice in switch statement",
+                                node, ((CharConstant) constant).name()
+                         );
+                    } else {
+                        jumps.put(value, start + bytes.size());
+                    }
+                } else {
+                    throw literalException("char", label);
+                }
+            }
+            convertBody(start, bytes, stmt, retTypes);
+            bytes.add(Bytecode.JUMP.value);
+            info.loopManager().addBreak(1, start + bytes.size());
+            bytes.addAll(Util.zeroToBytes());
+        }
+        var switchTable = charTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
+        int tblIndex = info.addSwitchTable(switchTable);
+        Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
+        return bytes;
+    }
+
     @NotNull
     private List<Byte> tblHeader(int start) {
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
@@ -245,6 +293,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             return new CompactSwitchTable(table, defaultVal);
         }
+    }
+
+    private SwitchTable charTbl(Map<Integer, Integer> jumps, int defaultVal) {
+        return new CharSwitchTable(jumps, defaultVal);
     }
 
     @Contract(value = "_, _ -> new", pure = true)
@@ -331,16 +383,17 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 defaultVal = convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
                 continue;
             }
+            var stmtHasAs = !stmt.getAs().isEmpty();
             if (stmt.getLabel().length == 0) {
                 throw emptyLabelException(stmt);
-            } else if (stmt.getLabel().length > 1 && !stmt.getAs().isEmpty()) {
+            } else if (stmt.getLabel().length > 1 && stmtHasAs) {
                 throw CompilerException.of("Cannot use 'as' clause with more than one label", stmt);
             }
             for (var label : stmt.getLabel()) {
                 var lblNo = labelToVariantNo(label, union);
                 usedVariants.add(lblNo);
                 jumps.put(lblNo, start + bytes.size());
-                if (!stmt.getAs().isEmpty()) {
+                if (stmtHasAs) {  // Will work b/c there must only be one label if there is an 'as' clause
                     var as = stmt.getAs();
                     bytes.add(Bytecode.GET_VARIANT.value);
                     bytes.addAll(Util.shortToBytes((short) lblNo));
@@ -349,9 +402,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     info.addVariable(as.getName(), labelToType(label, union), as);
                     bytes.add(Bytecode.STORE.value);
                     bytes.addAll(Util.shortToBytes(info.varIndex(as)));
-                } else if (hasAs) {
-                    bytes.add(Bytecode.POP_TOP.value);
                 }
+            }
+            if (hasAs && !stmtHasAs) {
+                bytes.add(Bytecode.POP_TOP.value);
             }
             convertBody(start, bytes, stmt, retTypes);
             bytes.add(Bytecode.JUMP.value);
@@ -514,11 +568,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     private static CompilerException defaultException(Lined stmt) {
-        throw CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
+        return CompilerException.of("Cannot have more than one 'default' statement in a switch", stmt);
     }
 
     private static CompilerException asException(Lined as) {
-        throw CompilerException.of(
+        return CompilerException.of(
                 "'as' clauses in a switch are only allowed when the switched value is a union", as
         );
     }

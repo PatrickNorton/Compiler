@@ -39,11 +39,19 @@ public final class CharConstant implements LangConstant {
     @Override
     @NotNull
     public String name(IndexedSet<LangConstant> constants) {
+        return name();
+    }
+
+    public String name() {
         if (value == '\'') {
             return "c\"'\"";
         } else {
             return String.format("c'%s'", StringEscape.escaped(value));
         }
+    }
+
+    public int getValue() {
+        return value;
     }
 
     @Override
