@@ -208,7 +208,7 @@ func decodeUtf8(bytes src) -> tuple[char, int]? {
         } else {
             return null
         }
-    } elif b0 in [0b11110_000:0b11111_00] {
+    } elif b0 in [0b11110_000:0b11110_111] {
         return null if src.length < 4
 
         var b1, var b2, var b3 = src[1], src[2], src[3]
