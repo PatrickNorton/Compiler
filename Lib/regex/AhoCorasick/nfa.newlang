@@ -72,15 +72,12 @@ class NFA from Automaton {
         return self.states[idVal]
     }
 
-    method setState(int idVal, State s) {
+    mut method setState(int idVal, State s) {
         self.states[idVal] = s
     }
 
-    method setFail(int idVal, int fail) {
-        # FIXME: Should be using stateMut when it becomes possible
-        mut var newState = self.state(idVal).clone()
-        newState.fail = fail
-        self.setState(idVal, newState)
+    mut method setFail(int idVal, int fail) {
+        self.stateMut(idVal).fail = fail
     }
 
     method start() -> State {
