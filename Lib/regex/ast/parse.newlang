@@ -127,33 +127,33 @@ class ParserI {
             self.bumpSpace()
             break if self.isEof()
 
-            switch str(self.chr()) {
-                case '(' {concat = self.pushGroup(concat)}
-                case ')' {concat = self.popGroup(concat)}
-                case '|' {concat = self.pushAlternate(concat)}
-                case '[' {
+            switch self.chr() {
+                case c'(' {concat = self.pushGroup(concat)}
+                case c')' {concat = self.popGroup(concat)}
+                case c'|' {concat = self.pushAlternate(concat)}
+                case c'[' {
                     var type = self.parseSetClass()
                     concat = concat.withAst(Ast.Class(type))
                 }
-                case '?' {
+                case c'?' {
                     concat = self.parseUncountedRepetition(
                         concat,
                         RepetitionKind.ZeroOrOne(),
                     )
                 }
-                case '*' {
+                case c'*' {
                     concat = self.parseUncountedRepetition(
                         concat,
                         RepetitionKind.ZeroOrMore(),
                     )
                 }
-                case '+' {
+                case c'+' {
                     concat = self.parseUncountedRepetition(
                         concat,
                         RepetitionKind.OneOrMore(),
                     )
                 }
-                case '{' {
+                case c'{' {
                     concat = self.parseCountedRepetition(concat)
                 }
                 default {
@@ -339,21 +339,21 @@ class ParserI {
     }
 
     private mut method parsePrimitive() -> Primitive {
-        switch str(self.chr()) {
-            case '\\' {
+        switch self.chr() {
+            case c'\\' {
                 return self.parseEscape()
             }
-            case '.' {
+            case c'.' {
                 var ast = Primitive.Dot(self.spanChar())
                 self.bump()
                 return ast
             }
-            case '^' {
+            case c'^' {
                 var ast = Primitive.Assertion(Assertion(self.spanChar(), AssertionKind.START_LINE))
                 self.bump()
                 return ast
             }
-            case '$' {
+            case c'$' {
                 var ast = Primitive.Assertion(Assertion(self.spanChar(), AssertionKind.END_LINE))
                 self.bump()
                 return ast
@@ -400,19 +400,19 @@ class ParserI {
         var special = lambda SpecialLiteralKind kind, char c -> Primitive => Primitive.Literal(
             Literal(span, LiteralKind.Special(kind), c)
         )
-        return switch str(c) {
-            case 'a' => special(SpecialLiteralKind.BELL, c'\x07')
-            case 'f' => special(SpecialLiteralKind.FORM_FEED, c'\x0C')
-            case 't' => special(SpecialLiteralKind.TAB, c'\t')
-            case 'n' => special(SpecialLiteralKind.LINE_FEED, c'\n')
-            case 'r' => special(SpecialLiteralKind.CARRIAGE_RETURN, c'\r')
-            case 'v' => special(SpecialLiteralKind.VERTICAL_TAB, c'\x0B')
-            case ' ' => (special(SpecialLiteralKind.SPACE, c' ')
+        return switch c {
+            case c'a' => special(SpecialLiteralKind.BELL, c'\x07')
+            case c'f' => special(SpecialLiteralKind.FORM_FEED, c'\x0C')
+            case c't' => special(SpecialLiteralKind.TAB, c'\t')
+            case c'n' => special(SpecialLiteralKind.LINE_FEED, c'\n')
+            case c'r' => special(SpecialLiteralKind.CARRIAGE_RETURN, c'\r')
+            case c'v' => special(SpecialLiteralKind.VERTICAL_TAB, c'\x0B')
+            case c' ' => (special(SpecialLiteralKind.SPACE, c' ')
                 if self.parser.ignoreWhitespace else raise self.error(span, ErrorKind.EscapeUnrecognized()))
-            case 'A' => Primitive.Assertion(Assertion(span, AssertionKind.START_TEXT))
-            case 'z' => Primitive.Assertion(Assertion(span, AssertionKind.END_TEXT))
-            case 'b' => Primitive.Assertion(Assertion(span, AssertionKind.WORD_BOUNDARY))
-            case 'B' => Primitive.Assertion(Assertion(span, AssertionKind.NOT_WORD_BOUNDARY))
+            case c'A' => Primitive.Assertion(Assertion(span, AssertionKind.START_TEXT))
+            case c'z' => Primitive.Assertion(Assertion(span, AssertionKind.END_TEXT))
+            case c'b' => Primitive.Assertion(Assertion(span, AssertionKind.WORD_BOUNDARY))
+            case c'B' => Primitive.Assertion(Assertion(span, AssertionKind.NOT_WORD_BOUNDARY))
             default  => raise self.error(span, ErrorKind.EscapeUnrecognized())
         }
     }
@@ -420,9 +420,9 @@ class ParserI {
     private mut method parseHex() -> Literal {
         assert self.chr() in "xuU"
 
-        var hexKind = switch str(self.chr()) {
-            case 'x' => HexLiteralKind.X
-            case 'u' => HexLiteralKind.UNICODE_SHORT
+        var hexKind = switch self.chr() {
+            case c'x' => HexLiteralKind.X
+            case c'u' => HexLiteralKind.UNICODE_SHORT
             default => HexLiteralKind.UNICODE_LONG
         }
         if not self.bumpAndBumpSpace() {
@@ -529,13 +529,13 @@ class ParserI {
         var c = self.chr()
         var span = self.spanChar()
         self.bump()
-        var negated, var kind = *switch str(c) {
-            case 'd' => (false, ClassPerlKind.DIGIT)
-            case 'D' => (true, ClassPerlKind.DIGIT)
-            case 's' => (false, ClassPerlKind.SPACE)
-            case 'S' => (true, ClassPerlKind.SPACE)
-            case 'w' => (false, ClassPerlKind.WORD)
-            case 'W' => (true, ClassPerlKind.WORD)
+        var negated, var kind = *switch c {
+            case c'd' => (false, ClassPerlKind.DIGIT)
+            case c'D' => (true, ClassPerlKind.DIGIT)
+            case c's' => (false, ClassPerlKind.SPACE)
+            case c'S' => (true, ClassPerlKind.SPACE)
+            case c'w' => (false, ClassPerlKind.WORD)
+            case c'W' => (true, ClassPerlKind.WORD)
             default => raise NotImplemented()
         }
         return ClassPerl(span, kind, negated)
@@ -787,13 +787,13 @@ class ParserI {
     }
 
     private method parseFlag() -> Flag {
-        return switch str(self.chr()) {
-            case 'i' => Flag.CASE_INSENSITIVE
-            case 'm' => Flag.MULTI_LINE
-            case 's' => Flag.DOT_MATCHES_NEWLINE
-            case 'U' => Flag.SWAP_GREED
-            case 'u' => Flag.UNICODE
-            case 'x' => Flag.IGNORE_WHITESPACE
+        return switch self.chr() {
+            case c'i' => Flag.CASE_INSENSITIVE
+            case c'm' => Flag.MULTI_LINE
+            case c's' => Flag.DOT_MATCHES_NEWLINE
+            case c'U' => Flag.SWAP_GREED
+            case c'u' => Flag.UNICODE
+            case c'x' => Flag.IGNORE_WHITESPACE
             default => raise self.error(self.spanChar(), ErrorKind.FlagUnrecognized())
         }
     }
@@ -850,8 +850,8 @@ class ParserI {
             if self.isEof() {
                 raise self.unclosedClassError()
             }
-            switch str(self.chr()) {
-                case '[' {
+            switch self.chr() {
+                case c'[' {
                     if self.parser.stackClass {
                         if self.maybeParseAsciiClass()? as c {
                             classUnion = ClassSetUnion(classUnion.span, classUnion.items + [ClassSetItem.Ascii(c)])
@@ -859,7 +859,7 @@ class ParserI {
                     }
                     classUnion = self.pushClassOpen(classUnion)
                 }
-                case ']' {
+                case c']' {
                     switch self.popClass(classUnion) {
                         case Either.Left as nestedUnion {
                             classUnion = nestedUnion
@@ -869,21 +869,21 @@ class ParserI {
                         }
                     }
                 }
-                case '&' {
+                case c'&' {
                     if self.peek() == c'&' {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.INTERSECTION, classUnion)
                     } else {
                         classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
-                case '-' {
+                case c'-' {
                     if self.peek() == c'-' {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.DIFFERENCE, classUnion)
                     } else {
                         classUnion = ClassSetUnion(classUnion.span, classUnion.items + [self.parseSetClassRange()])
                     }
                 }
-                case '~' {
+                case c'~' {
                     if self.peek() == c'~' {
                         classUnion = self.pushClassOp(ClassSetBinaryOpKind.SYMMETRIC_DIFFERENCE, classUnion)
                     } else {
