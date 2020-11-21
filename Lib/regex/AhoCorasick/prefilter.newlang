@@ -60,7 +60,7 @@ class PrefilterState {
     }
 
     mut method updateSkippedBytes(int skipped) {
-        self.skips += 1
+        self.skips++
         self.skipped += skipped
     }
 
@@ -84,7 +84,7 @@ class PrefilterState {
 }
 
 class Builder {
-    int count
+    mut int count
     mut bool asciiCaseInsensitive_
     mut StartBytesBuilder startBytes
     mut RareBytesBuilder rareBytes
@@ -137,7 +137,7 @@ class Builder {
     }
 
     public mut method add(bytes b) {
-        self.count += 1
+        self.count++
         self.startBytes.add(b)
         self.rareBytes.add(b)
         if self.packed? as pbuilder {
@@ -175,7 +175,7 @@ class RareBytesBuilder {
     final ByteSet rareSet
     mut RareByteOffsets byteOffsets
     mut bool available
-    int count
+    mut int count
     int rankSum
 
     public operator new() {
@@ -271,7 +271,7 @@ class RareBytesBuilder {
 
     private mut method addOneRareByte(int byte) {
         if self.rareSet.insert(byte) {
-            self.count += 1
+            self.count++
             self.rankSum += freqRank(byte)
         }
     }
@@ -425,7 +425,7 @@ func memchr3(int b1, int b2, int b3, bytes b) -> int? {
 class StartBytesBuilder {
     mut bool asciiCaseInsensitive_
     list[bool] byteSet
-    int count
+    mut int count
     int rankSum
 
     public operator new() {
@@ -470,7 +470,7 @@ class StartBytesBuilder {
     private mut method addOneByte(int b) {
         if not self.byteSet[b] {
             self.byteSet[b] = true
-            self.count += 1
+            self.count++
             self.rankSum += freqRank(b)
         }
     }

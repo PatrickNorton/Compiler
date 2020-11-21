@@ -124,11 +124,11 @@ final class IntRef {
     }
 
     public mut method inc() {
-        self.value += 1
+        self.value++
     }
 
     public mut method dec() {
-        self.value -= 1
+        self.value--
     }
 
     public mut method set(int value) {
