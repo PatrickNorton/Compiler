@@ -47,6 +47,8 @@ public final class InConverter extends OperatorConverter {
             return bytesConst(arg0, (BytesConstant) arg1);
         } else if (arg1 instanceof RangeConstant) {
             return rangeConst(arg0, (RangeConstant) arg1);
+        } else if (arg1 instanceof StringConstant) {
+            return stringConst(arg0, (StringConstant) arg1);
         } else {
             return Optional.empty();  // TODO: String
         }
@@ -160,6 +162,16 @@ public final class InConverter extends OperatorConverter {
                     return Optional.of(LangConstant.of(true));
                 }
             }
+        }
+    }
+
+    private Optional<LangConstant> stringConst(LangConstant arg0, StringConstant arg1) {
+        if (arg0 instanceof CharConstant) {
+            var chr = ((CharConstant) arg0).getValue();
+            var charSeq = new String(Character.toChars(chr));
+            return Optional.of(LangConstant.of(arg1.getValue().contains(charSeq)));
+        } else {
+            return Optional.empty();
         }
     }
 

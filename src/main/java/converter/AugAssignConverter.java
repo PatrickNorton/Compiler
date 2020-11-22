@@ -4,6 +4,7 @@ import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +34,8 @@ public final class AugAssignConverter implements BaseConverter {
             } else {
                 return convertDot(start);
             }
+        } else if (name instanceof IndexNode) {
+            return convertIndex(start);
         } else {
             throw CompilerTodoError.of(
                     "Augmented assignment to non-variable or dotted variables not supported yet", name
@@ -83,13 +86,24 @@ public final class AugAssignConverter implements BaseConverter {
 
     private List<Byte> convertDotIndex(int start) {
         assert node.getName() instanceof DottedVariableNode;
-        var operator = node.getOperator().operator;
-        var trueOp = OpSpTypeNode.translate(operator);
         var name = (DottedVariableNode) node.getName();
         var pair = DotConverter.exceptLastIndex(info, name, 1);
         var assignedConverter = pair.getKey();
-        var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var indices = pair.getValue();
+        return convertIndex(start, assignedConverter, indices);
+    }
+
+    private List<Byte> convertIndex(int start) {
+        assert node.getName() instanceof IndexNode;
+        var index = (IndexNode) node.getName();
+        var assignedConverter = TestConverter.of(info, index.getVar(), 1);
+        return convertIndex(start, assignedConverter, index.getIndices());
+    }
+
+    private List<Byte> convertIndex(int start, TestConverter assignedConverter, TestNode[] indices) {
+        var operator = node.getOperator().operator;
+        var trueOp = OpSpTypeNode.translate(operator);
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var converterReturn = assignedConverter.returnType()[0];
         var attrInfo = converterReturn.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);
         var dotType = attrInfo.getReturns()[0];

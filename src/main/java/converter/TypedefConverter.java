@@ -23,7 +23,7 @@ public final class TypedefConverter implements BaseConverter {
         var type = info.getType(node.getType()).typedefAs(node.getName().strName());
         info.addType(type);
         info.checkDefinition(type.name(), node);
-        info.addVariable(type.name(), type, node);
+        info.addVariable(type.name(), type, info.typeConstant(node, type), node);
         return Collections.emptyList();
     }
 }

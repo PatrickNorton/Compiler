@@ -263,8 +263,7 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.addAll(OptionTypeObject.maybeWrapBytes(valueConverter.convert(start + bytes.size()), needsMakeOption));
         storeBytes.add(0, Bytecode.STORE_ATTR.value);
-        var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
-        storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+        storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(pair.getValue()))));
     }
 
     private void assignToDotIndex(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
