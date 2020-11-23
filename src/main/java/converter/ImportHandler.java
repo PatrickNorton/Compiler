@@ -182,22 +182,18 @@ public final class ImportHandler {
      * @param linker The linker from which to set exports
      */
     public void setFromLinker(@NotNull Linker linker) {
-        var exports = linker.getExports();
         var globals = linker.getGlobals();
         var constants = linker.getConstants();
-        for (var entry : exports.entrySet()) {
-            var exportName = entry.getValue().getKey();
-            var exportType = globals.get(entry.getKey());
-            if (exportType == null) {
-                var lineInfo = entry.getValue().getValue();
-                throw CompilerException.of("Undefined name for export: " + exportName, lineInfo);
+        for (var entry : globals.entrySet()) {
+            var name = entry.getKey();
+            var type = entry.getValue();
+            if (exports.containsKey(name)) {
+                exports.put(name, type);
+                exportConstants.put(name, OptionalUint.ofNullable(constants.get(name)));
             }
-            assert exports.containsKey(exportName);
-            this.exports.put(exportName, exportType);
-            this.exportConstants.put(exportName, OptionalUint.ofNullable(constants.get(exportName)));
         }
         for (var exportName : this.exports.keySet()) {
-            if (!exportConstants.containsKey(exportName)) {
+            if (exportConstants.get(exportName) == null) {
                 exportConstants.put(exportName, OptionalUint.ofNullable(constants.get(exportName)));
             }
         }
