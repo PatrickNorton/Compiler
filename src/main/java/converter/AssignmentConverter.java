@@ -6,6 +6,7 @@ import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.SliceNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -211,10 +212,15 @@ public final class AssignmentConverter implements BaseConverter {
                                @NotNull IndexNode variable, @NotNull TestConverter valueConverter) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
-        var indexConverters = convertIndices(indices);
-        checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
-        bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
-        finishIndex(bytes, storeBytes, start, valueConverter, indices);
+        if (IndexConverter.isSlice(indices)) {
+            checkSlice(varConverter.returnType()[0], valueConverter.returnType()[0]);
+            finishSlice(bytes, storeBytes, start, valueConverter, (SliceNode) indices[0]);
+        } else {
+            var indexConverters = convertIndices(indices);
+            checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
+            bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
+            finishIndex(bytes, storeBytes, start, valueConverter, indices);
+        }
     }
 
     @NotNull
@@ -252,6 +258,26 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
+    private void checkSlice(TypeObject varType, TypeObject setType) {
+        var ops = varType.operatorInfo(OpSpTypeNode.SET_SLICE, info).orElseThrow(
+                () -> CompilerException.format(
+                        "Cannot assign variable to slice (object of type '%s' has no operator [:]=)",
+                    node, varType.name()
+                )
+        );
+        var args = new Argument[] {new Argument("", Builtins.SLICE), new Argument("", setType)};
+        if (ops.generifyArgs(args).isEmpty()) {
+            var nameArr = TypeObject.name(new TypeObject[] {});
+            var argTypes = Argument.typesOf(ops.getArgs().getNormalArgs());
+            var argsString = String.join(", ", TypeObject.name(argTypes));
+            throw CompilerException.format(
+                    "Cannot assign variable to index: '%s'.operator [:]= does not match the given types%n" +
+                            "Arguments received: %s%nArguments expected: %s",
+                    node, varType.name(), String.join(", ", nameArr), argsString
+            );
+        }
+    }
+
     private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
                              @NotNull DottedVariableNode variable, @NotNull TestNode value) {
         var pair = DotConverter.exceptLast(info, variable, 1);
@@ -272,10 +298,15 @@ public final class AssignmentConverter implements BaseConverter {
         var pair = DotConverter.exceptLastIndex(info, variable, 1);
         var varConverter = pair.getKey();
         var indices = pair.getValue();
-        var indexConverters = convertIndices(indices);
-        checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
-        bytes.addAll(varConverter.convert(start));
-        finishIndex(bytes, storeBytes, start, valueConverter, indices);
+        if (IndexConverter.isSlice(indices)) {
+            checkSlice(varConverter.returnType()[0], valueConverter.returnType()[0]);
+            finishSlice(bytes, storeBytes, start, valueConverter, (SliceNode) indices[0]);
+        } else {
+            var indexConverters = convertIndices(indices);
+            checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
+            bytes.addAll(varConverter.convert(start));
+            finishIndex(bytes, storeBytes, start, valueConverter, indices);
+        }
     }
 
     private void finishIndex(
@@ -288,6 +319,17 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.addAll(valueConverter.convert(start + bytes.size()));
         storeBytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
         storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
+    }
+
+    private void finishSlice(
+            @NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+            TestConverter valueConverter, SliceNode index
+    ) {
+        bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
+        bytes.addAll(valueConverter.convert(start + bytes.size()));
+        storeBytes.add(0, Bytecode.CALL_OP.value);
+        storeBytes.addAll(1, Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
+        storeBytes.addAll(3, Util.shortToBytes((short) 2));
     }
 
     private void assignTopToDot(
