@@ -7,7 +7,7 @@ export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipLongest
 
 # With thanks to Python for all the ideas <3
 
-#|  FIXME: Iterators
+#|  FIXME: Default parameters
 generic T
 generator func accumulate(Iterable[T] value, /, Callable[T, T, [T]] function = \+, *, T? initial = null) -> T {
     Iterator[T] iter = iter(value)
@@ -135,7 +135,7 @@ generator func zip(Iterable[T] value1, Iterable[T] value2) -> T, U {
     }
 }
 
-#|  FIXME: Iterators
+#|  FIXME: Default parameters
 generic T
 generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
     final Array[Iterator[T]] iterators = Array(values.length, *apply(iter, values))
