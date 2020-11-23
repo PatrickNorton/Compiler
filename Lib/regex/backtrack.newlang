@@ -8,8 +8,8 @@ export Bounded, Cache, Bits
 
 typedef Bits as int
 
-var BIT_SIZE = 32
-var MAX_SIZE_BYTES = 256 * (1 << 10) # 256 KB
+int BIT_SIZE = 32
+int MAX_SIZE_BYTES = 256 * (1 << 10) # 256 KB
 
 func shouldExec(int numInsts, int textLen) -> bool {
     var size = ((numInsts * (textLen + 1) + BIT_SIZE - 1) // BIT_SIZE) * 4

@@ -2,10 +2,10 @@ from itertools import all
 
 export Utf8Sequence, Utf8Range, Utf8Sequences, nextUtf8
 
-var TAG_CONT = 0b1000_0000
-var TAG_TWO = 0b1100_0000
-var TAG_THREE = 0b1110_0000
-var TAG_FOUR = 0b1111_0000
+int TAG_CONT = 0b1000_0000
+int TAG_TWO = 0b1100_0000
+int TAG_THREE = 0b1110_0000
+int TAG_FOUR = 0b1111_0000
 
 func nextUtf8(bytes text, int i) -> int {
     return i + 1 if not text.get(i)?

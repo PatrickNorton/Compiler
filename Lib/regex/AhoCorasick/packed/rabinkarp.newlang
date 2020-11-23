@@ -6,7 +6,7 @@ export RabinKarp
 
 typedef Hash as int
 
-var NUM_BUCKETS = 64
+int NUM_BUCKETS = 64
 
 class RabinKarp {
     # The order of patterns in each bucket is significant. Namely, they are

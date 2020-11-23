@@ -1,13 +1,8 @@
-from string import StringBuilder
+from string import StringBuilder, ASCII_LOWERCASE, ASCII_UPPERCASE, DIGITS
 
 from .unicode import Captures
 
 export expandStr
-
-# FIXME: Import from string
-str ASCII_LOWERCASE = 'abcdefghijklmnopqrstuvwxyz'
-str ASCII_UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-str DIGITS = "0123456789"
 
 func expandStr(Captures caps, str replacement) -> str {
     final var dst = StringBuilder("")

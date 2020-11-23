@@ -6,8 +6,8 @@ from .prefilter import Prefilter, PrefilterState, next, Candidate
 
 export Automaton
 
-var FAIL_ID = 0
-var DEAD_ID = 1
+int FAIL_ID = 0
+int DEAD_ID = 1
 
 interface Automaton {
     public method matchKind() -> MatchKind

@@ -7,12 +7,12 @@ from .prog import Program, Inst, EmptyLook
 
 typedef StatePtr as int
 
-var STATE_UNKNOWN = 1 << 31
-var STATE_DEAD = STATE_UNKNOWN + 1
-var STATE_QUIT = STATE_DEAD + 1
-var STATE_START = 1 << 30
-var STATE_MAX = 1 << 29
-var STATE_MATCH = STATE_MAX - 1
+int STATE_UNKNOWN = 1 << 31
+int STATE_DEAD = STATE_UNKNOWN + 1
+int STATE_QUIT = STATE_DEAD + 1
+int STATE_START = 1 << 30
+int STATE_MAX = 1 << 29
+int STATE_MATCH = STATE_MAX - 1
 
 func canExec(Program insts) -> bool {
     return insts.dfaSizeLimit == 0 and not any((i.Ranges? or i.Char? for var i in insts))

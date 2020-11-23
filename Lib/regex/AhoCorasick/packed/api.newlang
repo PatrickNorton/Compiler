@@ -7,7 +7,7 @@ from ..match import Match
 
 export Config, PackedMatch, Builder, ForceAlgorithm, Searcher
 
-var PATTERN_LIMIT = 128
+int PATTERN_LIMIT = 128
 
 enum PackedMatch {
     LEFTMOST_FIRST,
