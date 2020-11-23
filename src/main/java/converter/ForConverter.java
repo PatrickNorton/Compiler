@@ -27,7 +27,11 @@ public final class ForConverter extends LoopConverter {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
         if (iterLen > varLen) {
-            throw CompilerException.of("For-loops may not have more iterables than variables", node);
+            throw CompilerException.format(
+                    "For-loops may not have more iterables than variables%n"
+                            + "(got %d iterables, %d variables",
+                    node, iterLen, varLen
+            );
         } else if (iterLen == 1) {
             return convertSingleIter(start);
         } else {
