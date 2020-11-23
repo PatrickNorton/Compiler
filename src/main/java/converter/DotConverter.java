@@ -34,8 +34,8 @@ public final class DotConverter implements TestConverter {
     ) {
         var postDots = node.getPostDots();
         if (!(postDots[postDots.length - 1].getPostDot() instanceof VariableNode)) {
-            throw CompilerTodoError.of(
-                    "DotConverter.exceptLast does not work where the last dot is an index or function call",
+            throw CompilerInternalError.of(
+                    "DotConverter.exceptLast does not work where the last dot is not plain",
                     postDots[postDots.length - 1]
             );
         }
@@ -57,8 +57,8 @@ public final class DotConverter implements TestConverter {
     ) {
         var postDots = node.getPostDots();
         if (!(postDots[postDots.length - 1].getPostDot() instanceof IndexNode)) {
-            throw CompilerTodoError.of(
-                    "DotConverter.exceptLast does not work where the last dot is not an index",
+            throw CompilerInternalError.of(
+                    "DotConverter.exceptLastIndex does not work where the last dot is not an index",
                     postDots[postDots.length - 1]
             );
         }
