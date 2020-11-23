@@ -146,8 +146,7 @@ class Fsm {
                 if matchSlot < matches.length {
                     matches[matchSlot] = true
                 }
-                # FIXME: Slice assignment
-                # slots[0:threadCaps.length] = threadCaps[:slots.length]
+                slots[0:threadCaps.length] = threadCaps[:slots.length]
                 return true
             }
             case Inst.Char as inst {
@@ -213,8 +212,7 @@ class Fsm {
                     ip = inst.jump1
                 }
                 default {
-                    # FIXME: Slice assignment
-                    # nlist.caps[:threadCaps.length] = threadCaps[:nlist.caps.length]
+                    nlist.caps[:threadCaps.length] = threadCaps[:nlist.caps.length]
                     return
                 }
             }
@@ -236,7 +234,7 @@ class Cache {
 
 class Threads {
     mut set[int] codes
-    private mut list[Slot] caps
+    mut list[Slot] caps
     private mut int slotsPerThread
 
     public operator new() {
