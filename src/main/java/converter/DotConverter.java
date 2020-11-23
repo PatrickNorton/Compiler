@@ -311,7 +311,6 @@ public final class DotConverter implements TestConverter {
     }
 
     private void convertIndex(int start, @NotNull List<Byte> bytes, @NotNull IndexNode postDot) {
-        // FIXME: Check types
         var preIndex = (NameNode) postDot.getVar();
         convertPostDot(start, bytes, preIndex);
         var indices = postDot.getIndices();
