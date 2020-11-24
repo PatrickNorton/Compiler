@@ -80,8 +80,9 @@ public final class FunctionCallConverter implements TestConverter {
             List<Byte> bytes, int start, ArgumentNode[] params,
             @NotNull int[] argPositions, Set<Integer> needsMakeOption
     ) {
-        var argc = params.length;
-        for (var value : params) {
+        int argc = 0;
+        for (int i = 0; i < params.length; i++) {
+            var value = params[i];
             var converter = TestConverter.of(info, value.getArgument(), 1);
             bytes.addAll(converter.convert(start + bytes.size()));
             if (value.isVararg()) {
@@ -93,9 +94,16 @@ public final class FunctionCallConverter implements TestConverter {
                     );
                 }
                 bytes.add(Bytecode.UNPACK_TUPLE.value);
-                argc += ((TupleType) retType).getGenerics().size() - 1;
-            } else if (needsMakeOption.contains(argc)) {
-                // FIXME: Option-making + tuples is bad
+                var genCount = ((TupleType) retType).getGenerics().size();
+                for (int j = 0; j < genCount; j++) {
+                    if (needsMakeOption.contains(i + argc + j)) {
+                        addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                        bytes.add(Bytecode.MAKE_OPTION.value);
+                        addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                    }
+                }
+                argc += genCount - 1;
+            } else if (needsMakeOption.contains(i + argc)) {
                 bytes.add(Bytecode.MAKE_OPTION.value);
             }
         }
