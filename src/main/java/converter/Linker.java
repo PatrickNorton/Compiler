@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.BaseClassNode;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.ContextDefinitionNode;
+import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
@@ -91,6 +92,7 @@ public final class Linker {
         }
         var importedTypes = info.importHandler().importedTypes();
         info.addPredeclaredTypes(importedTypes);
+        info.addStackFrame();  // Needed for variable-declaration constant-folding
         // Filters out auto interfaces, which are registered earlier
         var importHandler = info.importHandler();
         for (var stmt : node) {
@@ -114,8 +116,12 @@ public final class Linker {
                 var tdNode = (TypedefStatementNode) stmt;
                 var constant = info.typeConstant(tdNode, info.getType(tdNode.getType()));
                 constants.put(tdNode.getName().strName(), (int) info.constIndex(constant));
+            } else if (stmt instanceof DeclaredAssignmentNode) {
+                var decl = (DeclaredAssignmentNode) stmt;
+                linkDeclaration(decl);
             }
         }
+        info.removeStackFrame();
         info.addGlobals(globals, constants);
         return this;
     }
@@ -168,6 +174,27 @@ public final class Linker {
             return Builtins.TYPE.generify(predeclaredType);
         } else {
             throw CompilerInternalError.format("Unknown definition %s", stmt, name.getClass());
+        }
+    }
+
+    private void linkDeclaration(DeclaredAssignmentNode decl) {
+        if (decl.getNames().length > 1) {
+            throw CompilerTodoError.of("Top-level declared assignments with multiple values", decl);
+        }
+        var dottedVar = decl.getTypes()[0];
+        var value = decl.getValues().get(0);
+        if (!dottedVar.getType().isDecided()) {
+            throw CompilerException.of("'var' is illegal in top-level declaration", decl);
+        }
+        var name = dottedVar.getVariable().getName();
+        var type = info.getType(dottedVar.getType());
+        globals.put(name, type);
+        var constant = TestConverter.constantReturn(value, info, 1);
+        if (constant.isPresent()) {
+            constants.put(name, (int) info.constIndex(constant.orElseThrow()));
+            info.addVariable(name, type, constant.orElseThrow(), decl);
+        } else {
+            info.addVariable(name, type, decl);
         }
     }
 

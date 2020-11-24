@@ -17,4 +17,5 @@ public enum ConstantBytes {
     TUPLE,
     OPTION_TYPE,
     CHAR,
+    ASCII,
 }

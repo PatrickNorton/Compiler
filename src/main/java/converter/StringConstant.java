@@ -39,7 +39,7 @@ public final class StringConstant implements LangConstant {
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(value.length() + Integer.BYTES + 1);  // Guess capacity
-        bytes.add((byte) ConstantBytes.STR.ordinal());
+        bytes.add((byte) (isAscii(value) ? ConstantBytes.ASCII : ConstantBytes.STR).ordinal());
         bytes.addAll(strBytes(value));
         return bytes;
     }
@@ -80,5 +80,14 @@ public final class StringConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(!value.isEmpty());
+    }
+
+    private static boolean isAscii(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) > 0x7f) {
+                return false;
+            }
+        }
+        return true;
     }
 }
