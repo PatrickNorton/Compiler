@@ -23,7 +23,7 @@ public final class OptionTypeConstant implements LangConstant {
     @Override
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>(1 + Integer.BYTES);
-        bytes.add((byte) ConstantBytes.CLASS.ordinal());
+        bytes.add((byte) ConstantBytes.OPTION_TYPE.ordinal());
         bytes.addAll(Util.intToBytes(constantIndex));
         return bytes;
     }
