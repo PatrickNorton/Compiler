@@ -110,16 +110,21 @@ public final class AugAssignConverter implements BaseConverter {
         var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
         List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
         for (var index : indices) {
             bytes.addAll(TestConverter.bytes(start + bytes.size(), index, info, 1));
+        }
+        if (indices.length == 1) {
+            bytes.add(Bytecode.DUP_TOP_2.value);
+        } else {
+            bytes.add(Bytecode.DUP_TOP_N.value);
+            bytes.addAll(Util.shortToBytes((short) (indices.length + 1)));
         }
         bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
         bytes.addAll(Util.shortToBytes((short) indices.length));
         bytes.addAll(valueConverter.convert(start));
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
         bytes.add(Bytecode.STORE_SUBSCRIPT.value);
-        bytes.addAll(Util.shortToBytes((short) indices.length));  // FIXME: Duplicate indices
+        bytes.addAll(Util.shortToBytes((short) indices.length));
         return bytes;
     }
 
