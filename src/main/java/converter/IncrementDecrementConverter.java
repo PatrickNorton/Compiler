@@ -4,6 +4,8 @@ import main.java.parser.DecrementNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IncDecNode;
 import main.java.parser.IncrementNode;
+import main.java.parser.IndexNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +30,8 @@ public final class IncrementDecrementConverter implements BaseConverter {
             return convertVariable(start, isDecrement);
         } else if (node.getVariable() instanceof DottedVariableNode) {
             return convertDot(start, isDecrement);
+        } else if (node.getVariable() instanceof IndexNode) {
+            return convertIndex(start, isDecrement);
         } else {
             throw CompilerInternalError.format("Non-variable %s not yet implemented", node, incName(isDecrement));
         }
@@ -84,11 +88,34 @@ public final class IncrementDecrementConverter implements BaseConverter {
         }
     }
 
+    private List<Byte> convertIndex(int start, boolean isDecrement) {
+        assert node.getVariable() instanceof IndexNode;
+        var index = (IndexNode) node.getVariable();
+        var converter = TestConverter.of(info, index.getVar(), 1);
+        var indices = index.getIndices();
+        checkIndex(converter.returnType()[0], isDecrement);
+        var bytes = IndexConverter.convertDuplicate(start, converter, indices, info);
+        bytes.addAll(Util.intToBytes((short) indices.length));
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
+        bytes.add(Bytecode.PLUS.value);
+        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) (indices.length + 1)));
+        return bytes;
+    }
+
     private CompilerException typeError(TypeObject retType, boolean isDecrement) {
         return CompilerException.format(
                     "TypeError: Object of type %s cannot be %sed",
                     node.getLineInfo(), retType.name(), incName(isDecrement)
         );
+    }
+
+    private void checkIndex(TypeObject indexType, boolean isDecrement) {
+        if (indexType.operatorInfo(OpSpTypeNode.GET_ATTR, info).isEmpty()
+                || indexType.operatorInfo(OpSpTypeNode.SET_ATTR, info).isEmpty()) {
+            throw typeError(indexType, isDecrement);
+        }
     }
 
     private static String incName(boolean isDecrement) {

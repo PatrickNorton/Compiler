@@ -87,4 +87,19 @@ public final class IndexConverter implements TestConverter {
     public static boolean isSlice(TestNode[] indices) {
         return indices.length == 1 && indices[0] instanceof SliceNode;
     }
+
+    static List<Byte> convertDuplicate(int start, TestConverter converter, TestNode[] indices, CompilerInfo info) {
+        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        for (var param : indices) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), param, info, 1));
+        }
+        if (indices.length == 1) {
+            bytes.add(Bytecode.DUP_TOP_2.value);
+        } else {
+            bytes.add(Bytecode.DUP_TOP_N.value);
+            bytes.addAll(Util.shortToBytes((short) (indices.length + 1)));
+        }
+        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+        return bytes;
+    }
 }

@@ -112,6 +112,9 @@ public enum Bytecode {
     // Misc.
     MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
     GET_TYPE(0x71),
+    // Dups, part 2 (maybe realign?)
+    DUP_TOP_2(0x78),
+    DUP_TOP_N(0x79, Type.ARGC),
     ;
 
     private enum Type {
