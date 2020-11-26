@@ -186,20 +186,11 @@ public final class DotConverter implements TestConverter {
         var preConverter = TestConverter.of(info, node.getPreDot(), 1);
         List<Byte> bytes = new ArrayList<>(preConverter.convert(start));
         TypeObject[] previous = preConverter.returnType();
-        for (int i = 0; i < node.getPostDots().length; i++) {
-            var dot = node.getPostDots()[i];
-            // Here to check the proper return types exist. Does not check the
-            // last one b/c non-returning values will cause an error even
-            // though they are perfectly valid.
-            if (i != node.getPostDots().length - 1) {
-                var result = dotReturnType(previous[0], dot);
-                if (result.length == 0) {
-                    throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
-                }
-                previous = result;
-            } else {
-                previous = dotReturnType(previous[0], dot);
+        for (var dot : node.getPostDots()) {
+            if (previous.length == 0) {
+                throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
             }
+            previous = dotReturnType(previous[0], dot);
             switch (dot.getDotPrefix()) {
                 case "":
                     convertNormal(start, bytes, dot);
