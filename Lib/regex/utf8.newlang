@@ -89,15 +89,6 @@ const union Utf8Sequence {
         }
     }
 
-    public method asSlice() -> list[Utf8Range] {
-        return switch self {
-            case Utf8Sequence.One as r => [r]
-            case Utf8Sequence.Two as r => [r.0, r.1]
-            case Utf8Sequence.Three as r => [r.0, r.1, r.2]
-            case Utf8Sequence.Four as r => [r.0, r.1, r.2, r.3]
-        }
-    }
-
     public method matches(bytes val) -> bool {
         return false if val.length < self.length
 
