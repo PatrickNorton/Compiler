@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.StringNode;
 import main.java.parser.StringPrefix;
+import main.java.util.StringEscape;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,7 @@ public final class StringConverter implements ConstantConverter {
         STR,
         BYTES,
         CHAR,
+        BYTE,
         ;
 
         public static StringType fromPrefixes(Set<StringPrefix> prefixes) {
@@ -32,6 +34,8 @@ public final class StringConverter implements ConstantConverter {
                 return BYTES;
             } else if (prefixes.contains(StringPrefix.CHAR)) {
                 return CHAR;
+            } else if (prefixes.contains(StringPrefix.BYTE)) {
+                return BYTE;
             } else {
                 return STR;
             }
@@ -70,12 +74,26 @@ public final class StringConverter implements ConstantConverter {
                 }
                 return new BytesConstant(bytes);
             case CHAR:
-                if (node.getContents().codePointCount(0, node.getContents().length()) != 1) {
-                    throw CompilerException.of("Char literals must have a length of 1", node);
-                }
+                checkLen("Char");
                 return new CharConstant(node.getContents().codePointAt(0));
+            case BYTE:
+                checkLen("Byte");
+                var cp = node.getContents().codePointAt(0);
+                if (cp >= 0 && cp < 0x80) {
+                    return new IntConstant(cp);
+                } else {
+                    throw CompilerException.format(
+                            "Byte literals only support ASCII values, not '%s'", node, StringEscape.escaped(cp)
+                    );
+                }
             default:
                 throw new UnsupportedOperationException();
+        }
+    }
+
+    private void checkLen(String litType) {
+        if (node.getContents().codePointCount(0, node.getContents().length()) != 1) {
+            throw CompilerException.format("%s literals must have a length of 1", node, litType);
         }
     }
 
@@ -89,6 +107,8 @@ public final class StringConverter implements ConstantConverter {
                 return new TypeObject[] {Builtins.BYTES};
             case CHAR:
                 return new TypeObject[] {Builtins.CHAR};
+            case BYTE:
+                return new TypeObject[] {Builtins.INT};
             default:
                 throw new UnsupportedOperationException();
         }

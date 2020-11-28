@@ -210,7 +210,7 @@ public final class DotConverter implements TestConverter {
                     "Cannot convert: %d returns is less than the required %d", node, previous.length, retCount
             );
         }
-        for (int i = previous.length; i < retCount; i++) {
+        for (int i = retCount; i < previous.length; i++) {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
