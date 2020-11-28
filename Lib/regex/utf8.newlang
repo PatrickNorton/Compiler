@@ -205,7 +205,7 @@ func decodeUtf8(bytes src) -> tuple[char, int]? {
         var b1, var b2, var b3 = src[1], src[2], src[3]
         return null if 0b11_000000 & b1 != TAG_CONT
         return null if 0b11_000000 & b2 != TAG_CONT
-        return null if 0b11_000000 & b2 != TAG_CONT
+        return null if 0b11_000000 & b3 != TAG_CONT
         var cp = ((b0 & ~TAG_FOUR) << 18
             | (b1 & ~TAG_CONT) << 12
             | (b2 & ~TAG_CONT) << 6
