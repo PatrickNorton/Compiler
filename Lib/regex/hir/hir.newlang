@@ -549,18 +549,14 @@ class ClassBytesRange from Interval {
     }
 
     public method caseFoldSimple(mut list[ClassBytesRange] ranges) {
-        static var a = b'a'[0]
-        static var z = b'z'[0]
-        if not ClassBytesRange(a, z).isIntersectionEmpty(self) {
-            var lower = max(self.start, a)
-            var upper = min(self.end, z)
+        if not ClassBytesRange(y'a', y'z').isIntersectionEmpty(self) {
+            var lower = max(self.start, y'a')
+            var upper = min(self.end, y'z')
             ranges.add(ClassBytesRange(lower - 32, upper - 32))
         }
-        static var A = b'A'[0]
-        static var Z = b'Z'[0]
-        if not ClassBytesRange(A, Z).isIntersectionEmpty(self) {
-            var lower = max(self.start, A)
-            var upper = min(self.end, Z)
+        if not ClassBytesRange(y'A', y'Z').isIntersectionEmpty(self) {
+            var lower = max(self.start, y'A')
+            var upper = min(self.end, y'Z')
             ranges.add(ClassBytesRange(lower + 32, upper + 32))
         }
     }

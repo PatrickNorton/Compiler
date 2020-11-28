@@ -207,7 +207,7 @@ class Fsm {
         final var stateFlags = StateFlags()
         emptyFlags.start = not at
         emptyFlags.end = not text
-        emptyFlags.startLine = not at or text[at - 1] == b'\n'[0]
+        emptyFlags.startLine = not at or text[at - 1] == y'\n'
         emptyFlags.endLine = not text
 
         var isWordLast = at > 0 and isAsciiWord(text[at - 1])
@@ -228,7 +228,7 @@ class Fsm {
         final var stateFlags = StateFlags()
         emptyFlags.start = at == text.length
         emptyFlags.end = not text
-        emptyFlags.startLine = at == text.length or text[at] == b'\n'[0]
+        emptyFlags.startLine = at == text.length or text[at] == y'\n'
         emptyFlags.endLine = not text
 
         var isWordLast = at < text.length and isAsciiWord(text[at])
@@ -590,7 +590,7 @@ class Fsm {
             if isEof(b) {
                 flags.end = true
                 flags.endLine = true
-            } elif b == b'\n'[0] {
+            } elif b == y'\n' {
                 flags.endLine = true
             }
             if isWordLast == isWord {
@@ -607,7 +607,7 @@ class Fsm {
 
         mut var emptyFlags = EmptyFlags()
         mut var stateFlags = StateFlags()
-        emptyFlags.startLine = b == b'\n'[0]
+        emptyFlags.startLine = b == y'\n'
         # if b.isAsciiWord() {
         #     stateFlags.setWord()
         # }
