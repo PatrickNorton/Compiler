@@ -523,7 +523,7 @@ class ClassBytesRange from Interval {
     private mut int end
 
     public operator new(int start, int end) {
-        assert start in [0:255] and end in [0:255]
+        assert start in [0:256] and end in [0:256]
         self.start = start
         self.end = end
     }
@@ -533,7 +533,7 @@ class ClassBytesRange from Interval {
             return self.start
         }
         set (int value) {
-            assert value in [0:255]
+            assert value in [0:256]
             self.start = value
         }
     }
@@ -543,7 +543,7 @@ class ClassBytesRange from Interval {
             return self.end
         }
         set (int value) {
-            assert value in [0:255]
+            assert value in [0:256]
             self.end = value
         }
     }

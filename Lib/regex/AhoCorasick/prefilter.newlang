@@ -293,12 +293,12 @@ class ByteSet {
     }
 
     public operator repr {
-        var contained = {i for var i in [0:255] if i in self}
+        var contained = {i for var i in [0:256] if i in self}
         return f"ByteSet({contained})"
     }
 
     public mut method insert(int b) -> bool {
-        assert b in [0:255]
+        assert b in [0:256]
         var new = b not in self
         self.value[b] = true
         return new
@@ -322,7 +322,7 @@ const class RareByteOffset {
     int max
 
     public operator new(int max = 0) {
-        assert max in [0:255]
+        assert max in [0:256]
         self.max = max
     }
 }
