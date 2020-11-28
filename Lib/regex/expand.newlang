@@ -7,10 +7,9 @@ export expandStr
 func expandStr(Captures caps, str replacement) -> str {
     final var dst = StringBuilder("")
     mut int index = 0
-    static int dollar = y"$"
     while index < replacement.length {
         mut var repl = replacement[index:]
-        if bytes(repl).indexOf(dollar)? as i {
+        if bytes(repl).indexOf(y"$")? as i {
             dst.add(repl[:i])
             index += i
             repl = repl[i:]
@@ -18,7 +17,7 @@ func expandStr(Captures caps, str replacement) -> str {
             break
         }
         if bytes(repl).get(index)? as b {
-            if b == dollar {
+            if b == y"$" {
                 dst.add("$")
                 index += 2
                 continue
