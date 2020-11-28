@@ -63,9 +63,8 @@ union Ref {
 func findCapRef(str replacement) -> CaptureRef? {
     mut var i = 0
     var rep = bytes(replacement)
-    if rep.length <= 1 or rep[0] != y'$' {
-        return null
-    }
+    return null if rep.length <= 1 or rep[0] != y'$'
+
     mut bool brace = false
     i++
     if rep[i] == y'{' {
@@ -78,14 +77,9 @@ func findCapRef(str replacement) -> CaptureRef? {
     }
     return null if capEnd == i
 
-    # We just verified that the range 0..cap_end is valid ASCII, so it must
-    # therefore be valid UTF-8. If we really cared, we could avoid this UTF-8
-    # check with either unsafe or by parsing the number straight from &[u8].
     var cap = str(rep[i:capEnd])
     if brace {
-        if not rep.get(capEnd)?.operator == (y"}") ?? false {
-            return null
-        }
+        return null if not rep.get(capEnd)?.operator == (y"}") ?? false
         capEnd++
     }
     if cap.asInt()? as i {
