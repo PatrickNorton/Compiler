@@ -262,7 +262,7 @@ class ReplacerStr {
     }
 
     public mut method noExpansion() -> str? {
-        if bytes(self).indexOf(b"$"[0])? {
+        if bytes(self).indexOf(y"$")? {
             return null
         } else {
             return self.val

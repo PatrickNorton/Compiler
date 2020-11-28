@@ -942,17 +942,8 @@ class StateFlags {
 }
 
 func isAsciiWord(int s) -> bool {
-    if s not in [0:256] {
-        return false
-    }
-    static var A = b"A"[0]
-    static var Z = b"Z"[0] + 1
-    static var a = b"a"[0]
-    static var z = b"z"[0] + 1
-    static var zero = b"0"[0]
-    static var nine = b"9"[0] + 1
-    static var under = b"_"[0]
-    return s in [A:Z] or s in [a:z] or s in [zero:nine] or s == under
+    return false if s not in [0:256]
+    return s in [y"A":y"Z"+1] or s in [y"a":y"z"+1] or s in [y"0":y"9"+1] or s == y"_"
 }
 
 func eof() -> int {
