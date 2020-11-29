@@ -113,7 +113,7 @@ public final class FunctionCallConverter implements TestConverter {
             var dist2 = (short) (params.length - pair.getValue() - 1);
             addSwap(bytes, dist1, dist2);
         }
-        return argc;
+        return argc + params.length;
     }
 
     private void addSwap(List<Byte> bytes, short dist1, short dist2) {
