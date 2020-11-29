@@ -207,6 +207,7 @@ final class VariableHolder {
             var map = variables.get(i);
             if (map.containsKey(name)) {
                 map.put(name, varInfo);
+                return;
             }
         }
     }
