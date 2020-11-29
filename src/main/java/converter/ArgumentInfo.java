@@ -147,15 +147,11 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
         for (int i = 0; i < normalArgs.length; i++) {
             var name = normalArgs[i].getName();
-            if (kwPositions.containsKey(name)) {
-                kwPositions.put(name, i + positionArgs.length);
-            }
+            kwPositions.replace(name,  i + positionArgs.length);
         }
         for (int i = 0; i < keywordArgs.length; i++) {
             var name = keywordArgs[i].getName();
-            if (kwPositions.containsKey(name)) {
-                kwPositions.put(name, i + normalArgs.length + positionArgs.length);
-            }
+            kwPositions.replace(name, i + normalArgs.length + positionArgs.length);
         }
         int[] result = new int[args.length];
         int nonKwPos = 0;
