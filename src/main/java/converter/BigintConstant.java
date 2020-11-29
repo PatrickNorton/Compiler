@@ -64,7 +64,7 @@ public final class BigintConstant implements LangConstant {
     private List<Byte> bigintBytes() {
         var byteArray = value.toByteArray();
         var addedBytes = Integer.BYTES - byteArray.length % Integer.BYTES;
-        List<Byte> bytes = new ArrayList<>(byteArray.length);
+        List<Byte> bytes = new ArrayList<>(byteArray.length + addedBytes);
         for (int i = 0; i < addedBytes; i++) {
             bytes.add((byte) 0);
         }
