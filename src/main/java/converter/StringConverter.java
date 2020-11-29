@@ -65,14 +65,10 @@ public final class StringConverter implements ConstantConverter {
     public LangConstant constant() {
         switch (StringType.fromPrefixes(node.getPrefixes())) {
             case STR:
-                return LangConstant.of(node);
+                return LangConstant.of(node.getContents());
             case BYTES:
-                var contents = node.getContents().getBytes(StandardCharsets.UTF_8);
-                List<Byte> bytes = new ArrayList<>(contents.length);
-                for (var b : contents) {
-                    bytes.add(b);
-                }
-                return new BytesConstant(bytes);
+                var contents = Util.toByteList(node.getContents().getBytes(StandardCharsets.UTF_8));
+                return new BytesConstant(contents);
             case CHAR:
                 checkLen("Char");
                 return new CharConstant(node.getContents().codePointAt(0));

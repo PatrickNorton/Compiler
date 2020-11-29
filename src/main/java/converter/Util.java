@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -153,6 +154,14 @@ public final class Util {
         var bytes = new byte[values.size()];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = values.get(i);
+        }
+        return bytes;
+    }
+
+    static List<Byte> toByteList(@NotNull byte[] values) {
+        List<Byte> bytes = new ArrayList<>(values.length);
+        for (var value : values) {
+            bytes.add(value);
         }
         return bytes;
     }

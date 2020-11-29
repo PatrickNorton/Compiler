@@ -166,7 +166,7 @@ public final class GlobalCompilerInfo {
     }
 
     public List<ClassInfo> getClasses() {
-        assert !classes.contains(null);
+        assert !classes.contains(null) : String.format("Class no. %d is null", classes.indexOf(null));
         return classes;
     }
 
