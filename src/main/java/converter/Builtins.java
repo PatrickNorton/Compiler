@@ -407,6 +407,7 @@ public final class Builtins {
         var dictGetMInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), TypeObject.optional(DICT_VAL));
         var dictClearInfo = new FunctionInfo();
         var dictDefaultInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY, DICT_VAL), DICT_VAL);
+        var dictReplaceInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY, DICT_VAL), TypeObject.optional(DICT_VAL));
 
         var dictMap = Map.of(
                 OpSpTypeNode.IN, dictContainsInfo,
@@ -421,7 +422,8 @@ public final class Builtins {
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "get", AttributeInfo.method(dictGetMInfo),
                 "clear", AttributeInfo.mutMethod(dictClearInfo),
-                "setDefault", AttributeInfo.mutMethod(dictDefaultInfo)
+                "setDefault", AttributeInfo.mutMethod(dictDefaultInfo),
+                "replace", AttributeInfo.mutMethod(dictReplaceInfo)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
