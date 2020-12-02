@@ -82,7 +82,6 @@ public final class CastedConverter extends OperatorConverter {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.LOAD_CONST.value);
-        // FIXME: Better message
         var message = String.format("Cannot cast to type %s", representedType.name());
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
         bytes.add(Bytecode.THROW_QUICK.value);
