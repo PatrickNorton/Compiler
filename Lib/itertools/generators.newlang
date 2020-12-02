@@ -144,9 +144,9 @@ generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
         final Array[T] next = Array(values.length, defaultVal)
         for int i, var j in enumerate(iterators) {
             if hasNext[i] {
-                try {
-                    next[i] = j.next
-                } except StopIteration {
+                if j.next()? as n {
+                    next[i] = n
+                } else {
                     hasNext[i] = false
                 }
             }

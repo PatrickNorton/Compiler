@@ -46,9 +46,9 @@ class LinkedList[T] from AbstractList[T] {
             var current = endNode
             var iterator = iter(values)
             dotimes (stop - start) % step {
-                try {
-                    current.this = iterator.next()
-                } except StopIteration {
+                if iterator.next()? as n {
+                    current.this = n
+                } else {
                     break
                 }
                 dotimes step {
@@ -59,9 +59,9 @@ class LinkedList[T] from AbstractList[T] {
             var current = startNode
             var iterator = iter(values)
             dotimes (start - stop) % step {
-                try {
-                    current.this = iterator.next()
-                } except StopIteration {
+                if iterator.next()? as n {
+                    current.this = n
+                } else {
                     break
                 }
                 dotimes step {
