@@ -63,6 +63,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(node.getName().strName())));
         for (var name : node.getNames()) {
+            bytes.add(Bytecode.DUP_TOP.value);
             if (name instanceof VariableNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
                     throw CompilerException.of(
@@ -93,7 +94,6 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                         "Node of type %s not a known EnumKeywordNode", name, name.getClass()
                 );
             }
-            bytes.add(Bytecode.DUP_TOP.value);
             bytes.add(Bytecode.STORE_ATTR.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(new StringConstant(name.getVariable().getName()))));
         }
