@@ -716,6 +716,15 @@ public final class CompilerInfo {
     }
 
     /**
+     * Removes a variable from the frame.
+     *
+     * @param name The name of the variable
+     */
+    public void removeVariable(String name) {
+        varHolder.removeVariable(name);
+    }
+
+    /**
      * Get the {@link LineInfo} for the declaration of a variable.
      * <p>
      *     This requires that the variable is defined, or it will throw a
