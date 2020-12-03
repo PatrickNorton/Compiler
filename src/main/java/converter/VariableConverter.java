@@ -56,6 +56,7 @@ public final class VariableConverter implements TestConverter {
             List<Byte> bytes = new ArrayList<>(bytecode.size());
             bytes.add(bytecode.value);
             short index = info.staticVarIndex(node);
+            assert index != -1;
             bytes.addAll(Util.shortToBytes(index));
             return bytes;
         } else {
@@ -64,6 +65,7 @@ public final class VariableConverter implements TestConverter {
             List<Byte> bytes = new ArrayList<>(bytecode.size());
             bytes.add(bytecode.value);
             short index = isConst ? info.constIndex(name) : info.varIndex(node);
+            assert index != -1;
             bytes.addAll(Util.shortToBytes(index));
             return bytes;
         }
