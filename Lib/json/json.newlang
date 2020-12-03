@@ -12,7 +12,7 @@ union JsonObject {
 
 func parse(Path file) -> JsonObject? {
     with open(file) as File f {
-        mut var info = ParseContext(f)
+        mut var info = Parser(f)
         return parseAny(info)
     }
 }
@@ -62,21 +62,21 @@ class Parser {
 }
 
 func parseAny(mut Parser parser) -> JsonObject {
-    return switch str(parser[0]) {
-        case "{" => parseDict(parser)
-        case "[" => parseInt(parser)
-        case '"' => parseStr(parser)
-        case 't', 'f' => parseBool(parser)
-        case 'n' => parseNull(parser)
+    return switch parser[0] {
+        case c"{" => parseDict(parser)
+        case c"[" => parseInt(parser)
+        case c'"' => parseStr(parser)
+        case c't', c'f' => parseBool(parser)
+        case c'n' => parseNull(parser)
         default => parseNumber(parser)
     }
 }
 
 func parseBool(mut Parser parser) -> JsonObject {
-    if info[:4] == "true" {
+    if parser[:4] == "true" {
         parser.move(4)
         return JsonObject.Bool(true)
-    } elif info[:5] == "false" {
+    } elif parser[:5] == "false" {
         parser.move(5)
         return JsonObject.Bool(false)
     } else {
@@ -85,7 +85,7 @@ func parseBool(mut Parser parser) -> JsonObject {
 }
 
 func parseNull(mut Parser parser) -> JsonObject {
-    if info[:4] == "null" {
+    if parser[:4] == "null" {
         return JsonObject.Null()
     } else {
         return null
@@ -98,12 +98,12 @@ func parseStr(mut Parser parser) -> JsonObject {
     final var sb = StringBuilder()
     while true {
         char c = parser[0]
-        switch str(c) {
-            case '"' {
+        switch c {
+            case c'"' {
                 parser.move(1)
                 return JsonObject.Str(str(sb))
             }
-            case "\\" {
+            case c"\\" {
                 parser.move(1)
                 sb.append(parseBackslash(parser))
             }
@@ -115,40 +115,40 @@ func parseStr(mut Parser parser) -> JsonObject {
 }
 
 func parseBackslash(mut Parser parser) -> str {
-    switch str(parser[0]) {
-        case '"' {
+    switch parser[0] {
+        case c'"' {
             parser.move(1)
             return '"'
         }
-        case "\\" {
+        case c"\\" {
             parser.move(1)
             return "\\"
         }
-        case "/" {
+        case c"/" {
             parser.move(1)
             return "/"
         }
-        case "b" {
+        case c"b" {
             parser.move(1)
             return "\b"
         }
-        case "f" {
+        case c"f" {
             parser.move(1)
             return "\f"
         }
-        case "n" {
+        case c"n" {
             parser.move(1)
             return "\n"
         }
-        case "r" {
+        case c"r" {
             parser.move(1)
             return "\r"
         }
-        case "t" {
+        case c"t" {
             parser.move(1)
             return "\t"
         }
-        case "u" {
+        case c"u" {
             parser.move(1)
             char c
             try {
