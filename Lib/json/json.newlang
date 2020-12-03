@@ -73,7 +73,7 @@ func parseAny(mut Parser parser) -> JsonObject {
 }
 
 func parseBool(mut Parser parser) -> JsonObject {
-    if info[:4] == "false" {
+    if info[:4] == "true" {
         parser.move(4)
         return JsonObject.Bool(true)
     } elif info[:5] == "false" {
