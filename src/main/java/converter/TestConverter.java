@@ -60,7 +60,8 @@ public interface TestConverter extends BaseConverter {
     @NotNull
     static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
                                        int retCount, TypeObject endType) {
-        var converter = of(info, node, retCount);
+        var converter = endType instanceof OptionTypeObject
+                ? of(info, node, retCount) : of(info, node, retCount, endType);
         return bytesMaybeOption(converter, start, endType);
     }
 

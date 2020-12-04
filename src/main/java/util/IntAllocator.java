@@ -8,9 +8,9 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class IntAllocator extends AbstractCollection<Integer> implements Collection<Integer> {
+public final class IntAllocator extends AbstractCollection<Integer> implements Collection<Integer> {
     private int max;
-    private SortedSet<Integer> removed;
+    private final SortedSet<Integer> removed;
 
     public IntAllocator() {
         max = 0;

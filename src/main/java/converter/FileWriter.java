@@ -105,6 +105,7 @@ public final class FileWriter {
         for (var constant : constants) {
             System.out.printf("%d: %s%n", constants.indexOf(constant), constant.name(constants));
         }
+        System.out.println();
         var functions = info.getFunctions();
         for (var function : functions) {
             System.out.printf("%s:%n", function.getName());

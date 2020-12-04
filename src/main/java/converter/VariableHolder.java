@@ -97,6 +97,20 @@ final class VariableHolder {
          variables.get(variables.size() - 1).put(name, info);
     }
 
+    public void removeVariable(String name) {
+        for (int i = variables.size() - 1; i >= 0; i--) {
+            var frame = variables.get(i);
+            if (frame.containsKey(name)) {
+                var value = frame.remove(name);
+                if (value.getLocation() != -1) {
+                    varNumbers.remove(value.getLocation());
+                }
+                return;
+            }
+        }
+        throw CompilerException.format("Variable %s not defined", LineInfo.empty(), name);
+    }
+
     /**
      * Adds a type to the map.
      *

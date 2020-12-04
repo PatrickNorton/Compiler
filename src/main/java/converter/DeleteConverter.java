@@ -35,7 +35,7 @@ public final class DeleteConverter implements BaseConverter {
             } else {
                 return convertIndex(start, del);
             }
-        } else if (deleted instanceof VariableNode) {  // TODO: Make variable inaccessible
+        } else if (deleted instanceof VariableNode) {
             return convertVariable((VariableNode) deleted);
         } else {
             throw CompilerException.of(
@@ -99,10 +99,14 @@ public final class DeleteConverter implements BaseConverter {
 
     private List<Byte> convertVariable(VariableNode delVar) {
         List<Byte> bytes = new ArrayList<>();
+        var name = delVar.getName();
         var index = info.varIndex(delVar);
         bytes.add(Bytecode.LOAD_NULL.value);
         bytes.add(Bytecode.STORE.value);  // Drops value currently stored
         bytes.addAll(Util.shortToBytes(index));
+        if (info.varDefinedInCurrentFrame(name)) {  // TODO: Drop non-top-frame variable properly
+            info.removeVariable(name);
+        }
         return bytes;
     }
 
