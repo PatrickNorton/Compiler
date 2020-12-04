@@ -1,9 +1,9 @@
 from itertools import any, all
 
-export canExec, Cache, InstPtr, Result, Fsm
-
 from .exec import ProgramCache
 from .prog import Program, Inst, EmptyLook
+
+export canExec, Cache, InstPtr, Result, Fsm
 
 typedef StatePtr as int
 
