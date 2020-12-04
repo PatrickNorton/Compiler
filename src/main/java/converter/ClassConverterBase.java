@@ -245,7 +245,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 }
             }
             for (var op : contract.getValue()) {
-                if (type.operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {
+                if (type.makeMut().operatorInfo(op, AccessLevel.PUBLIC).isEmpty()) {  // FIXME: Mutability
                     throw CompilerException.format(
                             "Missing impl for %s (defined by interface %s)",
                             node, op, sup.name()
