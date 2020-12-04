@@ -117,7 +117,7 @@ public final class TypeTypeObject extends TypeObject {
     public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, AccessLevel access) {
         if (generic != null) {
             if (o == OpSpTypeNode.CALL) {
-                var opInfo = generic.operatorInfo(OpSpTypeNode.NEW, access);
+                var opInfo = generic.makeMut().operatorInfo(OpSpTypeNode.NEW, access);
                 return opInfo.map(functionInfo -> new FunctionInfo(functionInfo.getArgs(), generic.makeMut()));
             } else {
                 return Optional.empty();
