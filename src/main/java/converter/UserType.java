@@ -286,7 +286,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 }
             }
         }
-        assert Arrays.stream(result).noneMatch(Objects::isNull);
+        assert !Arrays.asList(result).contains(null);
         return result;
     }
 
