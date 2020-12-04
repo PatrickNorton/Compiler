@@ -550,7 +550,7 @@ class ExecNoSync {
         bytes text,
         int start,
     ) -> tuple[int, int]? {
-        var slots = locs.asSlots()
+        final var slots = locs.asSlots()
         for int i in [0:slots.length] {
             # FIXME: Type inference for nulls
             Slot n = null

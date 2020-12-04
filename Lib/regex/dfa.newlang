@@ -59,7 +59,7 @@ class Cache {
 class CacheInner {
     final StateMap compiled
     final Transitions trans
-    list[StatePtr] startStates
+    final list[StatePtr] startStates
     final list[InstPtr] stack
     int flushCount
     int size
@@ -68,7 +68,7 @@ class CacheInner {
     public operator new(
         mut StateMap compiled,
         mut Transitions trans,
-        list[StatePtr] startStates,
+        mut list[StatePtr] startStates,
         mut list[InstPtr] stack,
         int flushCount,
         int size,

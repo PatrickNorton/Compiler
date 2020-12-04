@@ -58,13 +58,13 @@ class ByteClasses {
 }
 
 class ByteClassBuilder {
-    list[bool] value
+    final list[bool] value
 
     public operator new() {
         self.value = [false] * 256
     }
 
-    public method setRange(int start, int end) {
+    public mut method setRange(int start, int end) {
         assert start in [0:256] and end in [start:256]
         if start > 0 {
             self.value[start - 1] = true

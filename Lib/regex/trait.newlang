@@ -3,9 +3,9 @@ export Slot, Locations
 typedef Slot as int?
 
 class Locations {
-    list[Slot] values
+    final list[Slot] values
 
-    public operator new(list[Slot] values) {
+    public operator new(mut list[Slot] values) {
         self.values = values
     }
 
@@ -36,7 +36,7 @@ class Locations {
         }
     }
 
-    public method asSlots() -> list[Slot] {
+    public mut method asSlots() -> mut list[Slot] {
         return self.values
     }
 }

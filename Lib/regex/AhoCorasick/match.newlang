@@ -11,7 +11,7 @@ const class Match {
         }
     }
 
-    private operator new(int pattern, int len, int end) {
+    public operator new(int pattern, int len, int end) {
         self.pattern = pattern
         self.len = len
         self.end = end

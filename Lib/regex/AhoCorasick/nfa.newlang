@@ -348,7 +348,7 @@ class Compiler {
     private Builder builder
     private mut PrefilterBuilder prefilter
     private final NFA nfa
-    private ByteClassBuilder byteClasses
+    private final ByteClassBuilder byteClasses
 
     operator new(Builder builder) {
         self.builder = builder

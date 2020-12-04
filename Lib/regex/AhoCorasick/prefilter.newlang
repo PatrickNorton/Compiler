@@ -424,7 +424,7 @@ func memchr3(int b1, int b2, int b3, bytes b) -> int? {
 
 class StartBytesBuilder {
     mut bool asciiCaseInsensitive_
-    list[bool] byteSet
+    final list[bool] byteSet
     mut int count
     int rankSum
 

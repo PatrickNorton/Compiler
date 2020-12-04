@@ -20,7 +20,7 @@ class Patch {
 class Compiler {
     final list[MaybeInst] insts
     mut Program compiled
-    dict[str, int] captureNameIdx
+    final dict[str, int] captureNameIdx
     int numExprs
     mut int sizeLimit_
     final SuffixCache suffixCache
@@ -789,7 +789,7 @@ class ByteClassSet {
         self.value = [false] * 256
     }
 
-    public operator []= (int index, bool value) {
+    public mut operator []= (int index, bool value) {
         self.value[index] = value
     }
 

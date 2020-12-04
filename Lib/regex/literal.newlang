@@ -216,8 +216,7 @@ class SingleByteSet {
                         sset.allAscii = false
                     }
                     sset.dense.add(b)
-                    var sparse = sset.sparse  # FIXME
-                    sparse[b] = true
+                    sset.sparse[b] = true
                 }
             }
         }
@@ -234,8 +233,7 @@ class SingleByteSet {
                         sset.allAscii = false
                     }
                     sset.dense.add(b)
-                    var sparse = sset.sparse  # FIXME
-                    sparse[b] = true
+                    sset.sparse[b] = true
                 }
             }
         }

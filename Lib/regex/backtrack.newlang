@@ -19,15 +19,15 @@ func shouldExec(int numInsts, int textLen) -> bool {
 class Bounded {
     private Program prog
     private Input inputVal
-    private list[bool] matches
-    private list[Slot] slots
+    private final list[bool] matches
+    private final list[Slot] slots
     private final Cache m
 
     private operator new(
         Program prog,
         Input inputVal,
-        list[bool] matches,
-        list[Slot] slots,
+        mut list[bool] matches,
+        mut list[Slot] slots,
         mut Cache m,
     ) {
         self.prog = prog
