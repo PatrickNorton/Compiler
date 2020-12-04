@@ -238,17 +238,10 @@ public final class AssignmentConverter implements BaseConverter {
             indexTypes.add(new Argument("", index.returnType()[0]));
         }
         indexTypes.add(new Argument("", setType));
-        var opInfo = varType.operatorInfo(OpSpTypeNode.SET_ATTR, info.accessLevel(varType));
-        if (opInfo.isEmpty()) {
-            throw CompilerException.format(
-                    "Cannot assign variable to index (object of type '%s' has no operator []=)",
-                    node, varType.name()
-            );
-        }
-        var ops = opInfo.orElseThrow();
-        if (ops.generifyArgs(indexTypes.toArray(new Argument[0])).isEmpty()) {
+        var opInfo = varType.tryOperatorInfo(node, OpSpTypeNode.SET_ATTR, info);
+        if (opInfo.generifyArgs(indexTypes.toArray(new Argument[0])).isEmpty()) {
             var nameArr = TypeObject.name(Argument.typesOf(indexTypes.toArray(new Argument[0])));
-            var argTypes = Argument.typesOf(opInfo.orElseThrow().getArgs().getNormalArgs());
+            var argTypes = Argument.typesOf(opInfo.getArgs().getNormalArgs());
             var argsString = String.join(", ", TypeObject.name(argTypes));
             throw CompilerException.format(
                     "Cannot assign variable to index: '%s'.operator []= does not match the given types%n" +
@@ -259,15 +252,10 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private void checkSlice(TypeObject varType, TypeObject setType) {
-        var ops = varType.operatorInfo(OpSpTypeNode.SET_SLICE, info).orElseThrow(
-                () -> CompilerException.format(
-                        "Cannot assign variable to slice (object of type '%s' has no operator [:]=)",
-                    node, varType.name()
-                )
-        );
+        var ops = varType.tryOperatorInfo(node, OpSpTypeNode.SET_SLICE, info);
         var args = new Argument[] {new Argument("", Builtins.SLICE), new Argument("", setType)};
         if (ops.generifyArgs(args).isEmpty()) {
-            var nameArr = TypeObject.name(new TypeObject[] {});
+            var nameArr = TypeObject.name(Builtins.SLICE);
             var argTypes = Argument.typesOf(ops.getArgs().getNormalArgs());
             var argsString = String.join(", ", TypeObject.name(argTypes));
             throw CompilerException.format(
