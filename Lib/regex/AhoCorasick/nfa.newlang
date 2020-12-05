@@ -52,7 +52,7 @@ class NFA from Automaton {
         return self.states[idVal].matches
     }
 
-    public method iterAllTransitions(ByteClasses byteClasses, int idVal, Callable[[int, int]] f) {
+    public method iterAllTransitions(ByteClasses byteClasses, int idVal, Callable[int, int, []] f) {
         self.states[idVal].trans.iterAll(byteClasses, f)
     }
 
@@ -92,7 +92,7 @@ class NFA from Automaton {
         self.byteClasses = classes
     }
 
-    mut method setPrefilter(mut PrefilterObj filter) {
+    mut method setPrefilter(mut PrefilterObj? filter) {
         self.prefilter = filter
     }
 
@@ -141,8 +141,8 @@ class NFA from Automaton {
         list[int] val = []
         var trans = Transitions.Dense(Dense(val))
         var idVal = self.states.length
-        list[int] val2 = []
-        self.states.add(State(trans, DEAD_ID if self.anchored else self.startId), depth, val2)
+        final list[tuple[PatternId, PatternLength]] val2 = []
+        self.states.add(State(trans, DEAD_ID if self.anchored else self.startId, val2, depth))
         return idVal
     }
 
@@ -150,8 +150,8 @@ class NFA from Automaton {
         list[tuple[int, int]] empty = []  # FIXME
         var trans = Transitions.Sparse(empty)
         var idVal = self.states.length
-        list[int] val = []
-        self.states.add(State(trans, DEAD_ID if self.anchored else self.startId), depth, val)
+        final list[tuple[PatternId, PatternLength]] val = []
+        self.states.add(State(trans, DEAD_ID if self.anchored else self.startId, val, depth))
     }
 
     public method startState() -> int {
@@ -190,18 +190,17 @@ class State {
     public operator new(
         mut Transitions trans,
         int fail,
+        mut list[tuple[PatternId, PatternLength]] matches,
+        mut int depth,
     ) {
         self.trans = trans
         self.fail = fail
-        self.matches = []
-        self.depth = 0
+        self.matches = matches
+        self.depth = depth
     }
 
     public method clone() -> mut cls {
-        mut var new = State(self.trans, self.fail)
-        new.matches.addAll(self.matches[:])
-        new.depth = self.depth
-        return new
+        return State(self.trans, self.fail, self.matches[:], self.depth)
     }
 
     private mut method addMatch(PatternId i, PatternLength len) {

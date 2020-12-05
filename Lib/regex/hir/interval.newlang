@@ -52,7 +52,7 @@ class IntervalSet[I[Interval]] {
         mut var b = itb.next()!!
         while true {
             if (self.ranges[a] | other.ranges[b])? as ab {
-                self.ranges.add(ab)
+                self.ranges.add(ab casted cls.I)
             }
             Iterator[int] it
             int aorb
@@ -125,7 +125,7 @@ class IntervalSet[I[Interval]] {
                 var diff = r.difference(other.ranges[b])
                 if diff.0? as range1 {
                     if diff.1? as range2 {
-                        self.ranges.add(range1)
+                        self.ranges.add(range1 casted cls.I)
                         # r = range2  FIXME: 'cls'
                     } else {
                         # r = range1  FIXME: 'cls'

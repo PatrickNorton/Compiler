@@ -131,7 +131,7 @@ class Utf8Sequences {
     }
 
     public mut method push(char start, char end) {
-        self.push(ScalarRange(int(start), int(end)))
+        self.rangeStack.add(ScalarRange(int(start), int(end)))
     }
 }
 

@@ -1027,7 +1027,7 @@ class ParserI {
                 return ClassSet.BinaryOp(ClassSetBinaryOp(span, kind, lhs, rhs))
             }
             case ClassState.Open as state {
-                stack.add(state)
+                stack.add(ClassState.Open(state))
                 return rhs
             }
         }

@@ -149,13 +149,13 @@ class Compiler {
             case HirKind.Anchor as a {
                 switch a {
                     case Anchor.START_LINE {
-                        self.byteClasses.setRange(b"\n", b"\n")
+                        self.byteClasses.setRange(y"\n", y"\n")
                         self.cEmptyLook(
                             EmptyLook.END_LINE if self.compiled.isReverse else EmptyLook.START_LINE
                         )
                     }
                     case Anchor.END_LINE {
-                        self.byteClasses.setRange(b"\n", b"\n")
+                        self.byteClasses.setRange(y"\n", y"\n")
                         self.cEmptyLook(
                             EmptyLook.START_LINE if self.compiled.isReverse else EmptyLook.END_LINE
                         )
