@@ -78,11 +78,7 @@ public final class DeleteConverter implements BaseConverter {
     private List<Byte> convertSlice(int start, TestConverter varConverter, SliceNode slice) {
         var sliceConverter = new SliceConverter(info, slice);
         var varType = varConverter.returnType()[0];
-        var sliceInfo = varType.operatorInfo(OpSpTypeNode.DEL_SLICE, info).orElseThrow(
-                () -> CompilerException.format(
-                        "Object of type '%s' has no operator del[:]", node, varType.name()
-                )
-        );
+        var sliceInfo = varType.tryOperatorInfo(node, OpSpTypeNode.DEL_SLICE, info);
         if (!sliceInfo.matches(new Argument("", Builtins.SLICE))) {
             throw CompilerException.format(
                     "Cannot call '%s'.operator del[:] (operator del[:] should always be callable with a slice)",

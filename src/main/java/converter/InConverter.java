@@ -50,7 +50,7 @@ public final class InConverter extends OperatorConverter {
         } else if (arg1 instanceof StringConstant) {
             return stringConst(arg0, (StringConstant) arg1);
         } else {
-            return Optional.empty();  // TODO: String
+            return Optional.empty();
         }
     }
 
