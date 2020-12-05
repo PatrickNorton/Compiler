@@ -190,16 +190,17 @@ public final class DotConverter implements TestConverter {
             if (previous.length == 0) {
                 throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
             }
-            previous = dotReturnType(previous[0], dot);
+            var prev = previous[0];
+            previous = dotReturnType(prev, dot);
             switch (dot.getDotPrefix()) {
                 case "":
-                    convertNormal(start, bytes, dot);
+                    convertNormal(prev, start, bytes, dot);
                     break;
                 case "?":
-                    convertNullDot(start, bytes, dot);
+                    convertNullDot(prev, start, bytes, dot);
                     break;
                 case "!!":
-                    convertNotNullDot(start, bytes, dot);
+                    convertNotNullDot(prev, start, bytes, dot);
                     break;
                 default:
                     throw new RuntimeException("Unknown value for dot prefix");
@@ -216,13 +217,13 @@ public final class DotConverter implements TestConverter {
         return bytes;
     }
 
-    private void convertNormal(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
+    private void convertNormal(TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().isEmpty();
         var postDot = dot.getPostDot();
-        convertPostDot(start, bytes, postDot);
+        convertPostDot(previous, start, bytes, postDot);
     }
 
-    private void convertNullDot(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
+    private void convertNullDot(TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().equals("?");  // TODO: Optimizations & warnings for non-null types
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
@@ -230,12 +231,12 @@ public final class DotConverter implements TestConverter {
         int jumpPos = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.UNWRAP_OPTION.value);
-        convertPostDot(start, bytes, postDot);
+        convertPostDot(previous.stripNull(), start, bytes, postDot);
         bytes.add(Bytecode.MAKE_OPTION.value);
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
     }
 
-    private void convertNotNullDot(int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
+    private void convertNotNullDot(TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot) {
         assert dot.getDotPrefix().equals("!!");  // TODO: Optimizations & warnings for non-null types
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
@@ -252,58 +253,68 @@ public final class DotConverter implements TestConverter {
         bytes.addAll(Util.shortToBytes((short) 1));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
         bytes.add(Bytecode.UNWRAP_OPTION.value);
-        convertPostDot(start, bytes, postDot);
+        convertPostDot(previous.stripNull(), start, bytes, postDot);
     }
 
-    private void convertPostDot(int start, @NotNull List<Byte> bytes, @NotNull NameNode postDot) {
+    private void convertPostDot(TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull NameNode postDot) {
         if (postDot instanceof VariableNode) {
             bytes.add(Bytecode.LOAD_DOT.value);
             var name = LangConstant.of(((VariableNode) postDot).getName());
             bytes.addAll(Util.shortToBytes(info.constIndex(name)));
         } else if (postDot instanceof FunctionCallNode) {
-            convertMethod(start, bytes, (FunctionCallNode) postDot);
+            convertMethod(previous, start, bytes, (FunctionCallNode) postDot);
         } else if (postDot instanceof SpecialOpNameNode) {
             var op = ((SpecialOpNameNode) postDot).getOperator();
             bytes.add(Bytecode.LOAD_OP.value);
             bytes.addAll(Util.shortToBytes((short) op.ordinal()));
         } else if (postDot instanceof IndexNode) {
-            convertIndex(start, bytes, (IndexNode) postDot);
+            convertIndex(previous, start, bytes, (IndexNode) postDot);
         } else {
             throw CompilerInternalError.of("This kind of post-dot not yet supported", postDot);
         }
     }
 
-    private void convertMethod(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+    private void convertMethod(
+            TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot
+    ) {
         if (postDot.getCaller() instanceof SpecialOpNameNode) {
-            convertOperator(start, bytes, postDot);
+            convertOperator(previous, start, bytes, postDot);
         } else {
-            convertNameMethod(start, bytes, postDot);
+            convertNameMethod(previous, start, bytes, postDot);
         }
     }
 
-    private void convertOperator(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+    private void convertOperator(
+            TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot
+    ) {
         var op = ((SpecialOpNameNode) postDot.getCaller()).getOperator();
-        for (var value : postDot.getParameters()) {  // TODO: Varargs, merge with FunctionCallNode
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
-        }
+        var type = previous.tryOperatorInfo(postDot, op, info);
+        var pair = FunctionCallConverter.convertArgs(
+                info, postDot, start + bytes.size(), type.toCallable(), postDot.getParameters()
+        );
+        bytes.addAll(pair.getKey());
         bytes.add(Bytecode.CALL_OP.value);
         bytes.addAll(Util.shortToBytes((short) op.ordinal()));
-        bytes.addAll(Util.shortToBytes((short) postDot.getParameters().length));
+        bytes.addAll(Util.shortToBytes(pair.getValue().shortValue()));
     }
 
-    private void convertNameMethod(int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot) {
+    private void convertNameMethod(
+            TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot
+    ) {
         var name = ((VariableNode) postDot.getCaller()).getName();
-        for (var value : postDot.getParameters()) {  // TODO: Varargs, merge with FunctionCallNode
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), value.getArgument(), info, 1));
-        }
+        var type = previous.tryAttrType(postDot, name, info);
+        var pair = FunctionCallConverter.convertArgs(
+                info, postDot, start + bytes.size(), type, postDot.getParameters()
+        );
+        bytes.addAll(pair.getKey());
         bytes.add(Bytecode.CALL_METHOD.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
-        bytes.addAll(Util.shortToBytes((short) postDot.getParameters().length));
+        bytes.addAll(Util.shortToBytes(pair.getValue().shortValue()));
     }
 
-    private void convertIndex(int start, @NotNull List<Byte> bytes, @NotNull IndexNode postDot) {
+    private void convertIndex(TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull IndexNode postDot) {
         var preIndex = (NameNode) postDot.getVar();
-        convertPostDot(start, bytes, preIndex);
+        convertPostDot(previous, start, bytes, preIndex);
         var indices = postDot.getIndices();
         if (IndexConverter.isSlice(indices)) {
             assert indices.length == 1;

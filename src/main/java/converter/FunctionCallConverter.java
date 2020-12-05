@@ -73,11 +73,11 @@ public final class FunctionCallConverter implements TestConverter {
     private int convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo, Set<Integer> needsMakeOption) {
         var params = node.getParameters();
         var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
-        return convertInnerArgs(bytes, start, params, argPositions, needsMakeOption);
+        return convertInnerArgs(info, bytes, start, params, argPositions, needsMakeOption);
     }
 
-    private int convertInnerArgs(
-            List<Byte> bytes, int start, ArgumentNode[] params,
+    private static int convertInnerArgs(
+            CompilerInfo info, List<Byte> bytes, int start, ArgumentNode[] params,
             @NotNull int[] argPositions, Set<Integer> needsMakeOption
     ) {
         int argc = 0;
@@ -116,7 +116,7 @@ public final class FunctionCallConverter implements TestConverter {
         return argc + params.length;
     }
 
-    private void addSwap(List<Byte> bytes, short dist1, short dist2) {
+    private static void addSwap(List<Byte> bytes, short dist1, short dist2) {
         assert dist1 != dist2;
         var d1 = (short) Math.min(dist1, dist2);
         var d2 = (short) Math.max(dist1, dist2);
@@ -220,14 +220,19 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     private Pair<FunctionInfo, Set<Integer>> ensureTypesMatch(TypeObject callerType) {
-        var args = getArgs(node.getParameters());
-        var operatorInfo = callerType.tryOperatorInfo(node, OpSpTypeNode.CALL, info);
+        return ensureTypesMatch(info, node, callerType, node.getParameters());
+    }
+
+    private static Pair<FunctionInfo, Set<Integer>> ensureTypesMatch(
+            CompilerInfo info, Lined lineInfo, TypeObject callerType, ArgumentNode... arguments
+    ) {
+        var args = getArgs(info, arguments);
+        var operatorInfo = callerType.tryOperatorInfo(lineInfo, OpSpTypeNode.CALL, info);
         var opGenerics = operatorInfo.generifyArgs(args);
         if (opGenerics.isEmpty()) {
-            throw argError(node, callerType.name(), args, operatorInfo.getArgs().getNormalArgs());
+            throw argError(lineInfo, callerType.name(), args, operatorInfo.getArgs().getNormalArgs());
         }
         return Pair.of(operatorInfo, opGenerics.orElseThrow().getValue());
-
     }
 
     private static CompilerException argError(Lined node, String name, Argument[] args, Argument[] expected) {
@@ -326,6 +331,18 @@ public final class FunctionCallConverter implements TestConverter {
         return bytes;
     }
 
+    public static Pair<List<Byte>, Integer> convertArgs(
+            CompilerInfo info, Lined node, int start, TypeObject caller, ArgumentNode[] args
+    ) {
+        var pair = ensureTypesMatch(info, node, caller, args);
+        var fnInfo = pair.getKey();
+        var swaps = pair.getValue();
+        var argPositions = fnInfo.getArgs().argPositions(getArgs(info, args));
+        List<Byte> bytes = new ArrayList<>();
+        var argc = convertInnerArgs(info, bytes, start, args, argPositions, swaps);
+        return Pair.of(bytes, argc);
+    }
+
     /**
      * Calculates the sequence of swaps in order to make {@code values} be in
      * strictly ascending order.
@@ -338,7 +355,7 @@ public final class FunctionCallConverter implements TestConverter {
      * @return The pairs of values to swap
      */
     @NotNull
-    private List<Pair<Integer, Integer>> swapsToOrder(@NotNull int... values) {
+    private static List<Pair<Integer, Integer>> swapsToOrder(@NotNull int... values) {
         List<Pair<Integer, Integer>> swaps = new ArrayList<>();
         int[] currentState = values.clone();
         for (int i = 0; i < values.length; i++) {

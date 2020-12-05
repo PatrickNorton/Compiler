@@ -261,7 +261,7 @@ public final class Builtins {
         var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var addInfo = new FunctionInfo(ArgumentInfo.of(INT));
-        var addCharInfo = new FunctionInfo(ArgumentInfo.of(INT, STR));
+        var addCharInfo = new FunctionInfo(ArgumentInfo.of(CHAR, STR));
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
@@ -383,7 +383,7 @@ public final class Builtins {
                 OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(SET_PARAM))
         );
         SET.setOperators(setMap);
-        var addInfo = new FunctionInfo(ArgumentInfo.of(LIST_PARAM));
+        var addInfo = new FunctionInfo(ArgumentInfo.of(SET_PARAM));
         var clearInfo = new FunctionInfo();
         var setAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
