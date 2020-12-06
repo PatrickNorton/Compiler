@@ -227,7 +227,10 @@ public final class DotConverter implements TestConverter {
     private TypeObject[] convertNullDot(
             TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot
     ) {
-        assert dot.getDotPrefix().equals("?");  // TODO: Optimizations & warnings for non-null types
+        assert dot.getDotPrefix().equals("?");  // TODO: Optimizations for non-null types
+        if (!(previous instanceof OptionTypeObject)) {
+            CompilerWarning.warnf("Using ? operator on non-optional type %s", dot, previous.name());
+        }
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.JUMP_NULL.value);
@@ -243,7 +246,10 @@ public final class DotConverter implements TestConverter {
     private TypeObject[] convertNotNullDot(
             TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot
     ) {
-        assert dot.getDotPrefix().equals("!!");  // TODO: Optimizations & warnings for non-null types
+        assert dot.getDotPrefix().equals("!!");  // TODO: Optimizations for non-null types
+        if (!(previous instanceof OptionTypeObject)) {
+            CompilerWarning.warnf("Using !! operator on non-optional type %s", dot, previous.name());
+        }
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
         bytes.add(Bytecode.JUMP_NN.value);
