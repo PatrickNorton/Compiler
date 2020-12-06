@@ -566,7 +566,6 @@ public final class Builtins {
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
             Map.entry("print", PRINT),
-            Map.entry("callable", CALLABLE),
             Map.entry("int", INT),
             Map.entry("str", STR),
             Map.entry("char", CHAR),
