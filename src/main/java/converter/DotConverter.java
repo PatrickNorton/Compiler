@@ -81,7 +81,7 @@ public final class DotConverter implements TestConverter {
             if (result.length == 0) {  // Check that the previous one returned a value
                 throw CompilerException.of(
                         "Dot does not return a value, expected at least 1",
-                        node.getPostDots()[i - 1]
+                        i == 0 ? node.getPreDot() : node.getPostDots()[i - 1]
                 );
             }
             result = dotReturnType(result[0], dot);
