@@ -778,7 +778,7 @@ class SuffixCacheKey {
     }
 
     public operator hash {
-        return (self.fromInst, self.start, self.end).operator hash()
+        return hash((self.fromInst, self.start, self.end))
     }
 }
 
