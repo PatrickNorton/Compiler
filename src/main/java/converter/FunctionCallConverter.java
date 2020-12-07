@@ -78,7 +78,7 @@ public final class FunctionCallConverter implements TestConverter {
 
     private static int convertInnerArgs(
             CompilerInfo info, List<Byte> bytes, int start, ArgumentNode[] params,
-            @NotNull int[] argPositions, Set<Integer> needsMakeOption
+            int[] argPositions, Set<Integer> needsMakeOption
     ) {
         int argc = 0;
         for (int i = 0; i < params.length; i++) {
@@ -355,7 +355,7 @@ public final class FunctionCallConverter implements TestConverter {
      * @return The pairs of values to swap
      */
     @NotNull
-    private static List<Pair<Integer, Integer>> swapsToOrder(@NotNull int... values) {
+    private static List<Pair<Integer, Integer>> swapsToOrder(int... values) {
         List<Pair<Integer, Integer>> swaps = new ArrayList<>();
         int[] currentState = values.clone();
         for (int i = 0; i < values.length; i++) {
@@ -369,7 +369,7 @@ public final class FunctionCallConverter implements TestConverter {
         return swaps;
     }
 
-    private static void arrSwap(@NotNull int[] values, int a, int b) {
+    private static void arrSwap(int[] values, int a, int b) {
         int temp = values[a];
         values[a] = values[b];
         values[b] = temp;
