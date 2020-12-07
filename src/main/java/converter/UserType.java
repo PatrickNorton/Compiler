@@ -430,7 +430,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
 
         public final void seal() {
-            assert !isSealed;
+            assert !isSealed : String.format("Class %s sealed twice", name);
             isSealed = true;
             if (operators == null) {
                 operators = Collections.emptyMap();
