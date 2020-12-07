@@ -54,6 +54,11 @@ public final class IntAllocator extends AbstractCollection<Integer> implements C
 
     @Override
     public boolean add(Integer integer) {
+        if (integer < 0) {
+            throw new IllegalArgumentException(
+                    String.format("IntAllocator does not work with negative numbers (got %d)", integer)
+            );
+        }
         if (max == integer) {
             max++;
             return true;
