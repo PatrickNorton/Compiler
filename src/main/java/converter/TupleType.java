@@ -45,7 +45,7 @@ public final class TupleType extends TypeObject {
     @UnmodifiableView
     @Override
     public List<TypeObject> getGenerics() {
-        return Collections.unmodifiableList(generics);
+        return generics;
     }
 
     @Override
