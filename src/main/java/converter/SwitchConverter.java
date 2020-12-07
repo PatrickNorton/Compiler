@@ -520,7 +520,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    private boolean incompleteReturn() {  // TODO: Unions with all cases covered
+    private boolean incompleteReturn() {
         if (retCount > 0) {
             for (var stmt : node.getCases()) {
                 if (stmt instanceof DefaultStatementNode) {
