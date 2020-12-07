@@ -291,7 +291,8 @@ public final class FunctionCallConverter implements TestConverter {
             "bool", OpSpTypeNode.BOOL,
             "repr", OpSpTypeNode.REPR,
             "reversed", OpSpTypeNode.REVERSED,
-            "iter", OpSpTypeNode.ITER
+            "iter", OpSpTypeNode.ITER,
+            "hash", OpSpTypeNode.HASH
     );
 
     @NotNull

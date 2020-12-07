@@ -50,6 +50,12 @@ public final class Builtins {
             "Callable", GenericInfo.of(CALLABLE_ARGS, CALLABLE_RETURN), CALLABLE_MAP
     );
 
+    private static final Map<OpSpTypeNode, MethodInfo> HASHABLE_MAP = Map.of(
+            OpSpTypeNode.HASH, MethodInfo.of(ArgumentInfo.of(), Builtins.INT)
+    );
+
+    public static final InterfaceType HASHABLE = new InterfaceType("Hashable", GenericInfo.empty(), HASHABLE_MAP);
+
     private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
     public static final InterfaceType ITERABLE = new InterfaceType("Iterable", GenericInfo.of(ITERABLE_PARAM));
@@ -137,6 +143,10 @@ public final class Builtins {
     public static final FunctionInfo ID_INFO = new FunctionInfo("id", ArgumentInfo.of(Builtins.OBJECT), INT);
 
     public static final LangObject ID = new LangInstance(ID_INFO.toCallable());
+
+    public static final FunctionInfo HASH_INFO = new FunctionInfo("hash", ArgumentInfo.of(OBJECT), INT);
+
+    public static final LangObject HASH = new LangInstance(HASH_INFO.toCallable());
 
     private static final TemplateParam ARRAY_PARAM = new TemplateParam("T", 0, OBJECT);
 
@@ -561,7 +571,8 @@ public final class Builtins {
             NOT_IMPLEMENTED,
             TUPLE,
             THROWABLE,
-            NULL_TYPE
+            NULL_TYPE,
+            HASH
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -595,6 +606,8 @@ public final class Builtins {
             Map.entry("enumerate", ENUMERATE),
             Map.entry("NotImplemented", NOT_IMPLEMENTED),
             Map.entry("Iterator", ITERATOR),
+            Map.entry("hash", HASH),
+            Map.entry("Hashable", HASHABLE),
             Map.entry("null", NULL)
     );
 
