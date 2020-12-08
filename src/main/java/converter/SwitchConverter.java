@@ -418,10 +418,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         if (!hasDefault) {
             var missingUnion = incompleteUnion(union, usedVariants);
             if (missingUnion.isPresent()) {
-                var missingVariants = String.join(", ", missingUnion.orElseThrow());
+                var missing = missingUnion.orElseThrow();
+                var missingVariants = String.join(", ", missing);
                 throw CompilerException.format(
-                        "Cannot get return type of switch: Missing union variants %s",
-                        node, missingVariants
+                        "Cannot get return type of switch: Missing union variant%s %s",
+                        node, missing.length == 1 ? "" : "s", missingVariants
                 );
             }
         }
@@ -520,7 +521,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    private boolean incompleteReturn() {  // TODO: Unions with all cases covered
+    private boolean incompleteReturn() {
         if (retCount > 0) {
             for (var stmt : node.getCases()) {
                 if (stmt instanceof DefaultStatementNode) {

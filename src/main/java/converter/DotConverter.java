@@ -81,7 +81,7 @@ public final class DotConverter implements TestConverter {
             if (result.length == 0) {  // Check that the previous one returned a value
                 throw CompilerException.of(
                         "Dot does not return a value, expected at least 1",
-                        node.getPostDots()[i - 1]
+                        i == 0 ? node.getPreDot() : node.getPostDots()[i - 1]
                 );
             }
             result = dotReturnType(result[0], dot);
@@ -227,28 +227,38 @@ public final class DotConverter implements TestConverter {
     private TypeObject[] convertNullDot(
             TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot
     ) {
-        assert dot.getDotPrefix().equals("?");  // TODO: Optimizations for non-null types
-        if (!(previous instanceof OptionTypeObject)) {
-            CompilerWarning.warnf("Using ? operator on non-optional type %s", dot, previous.name());
-        }
+        assert dot.getDotPrefix().equals("?");
         var postDot = dot.getPostDot();
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.JUMP_NULL.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.UNWRAP_OPTION.value);
-        var result = convertPostDot(previous.stripNull(), start, bytes, postDot);
-        bytes.add(Bytecode.MAKE_OPTION.value);
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-        return result;
+        if (!(previous instanceof OptionTypeObject)) {
+            CompilerWarning.warnf("Using ?. operator on non-optional type %s", dot, previous.name());
+            if (previous.sameBaseType(Builtins.NULL_TYPE)) {
+                bytes.add(Bytecode.POP_TOP.value);
+                bytes.add(Bytecode.LOAD_NULL.value);
+                return new TypeObject[]{Builtins.NULL_TYPE};
+            } else {
+                return convertPostDot(previous.stripNull(), start, bytes, postDot);
+            }
+        } else {
+            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.add(Bytecode.JUMP_NULL.value);
+            int jumpPos = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.UNWRAP_OPTION.value);
+            var result = convertPostDot(previous.stripNull(), start, bytes, postDot);
+            bytes.add(Bytecode.MAKE_OPTION.value);
+            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+            return new TypeObject[]{TypeObject.optional(result[0])};
+        }
     }
 
     private TypeObject[] convertNotNullDot(
             TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot
     ) {
-        assert dot.getDotPrefix().equals("!!");  // TODO: Optimizations for non-null types
-        if (!(previous instanceof OptionTypeObject)) {
-            CompilerWarning.warnf("Using !! operator on non-optional type %s", dot, previous.name());
+        assert dot.getDotPrefix().equals("!!");
+        if (previous.sameBaseType(Builtins.NULL_TYPE)) {
+            throw CompilerException.format("Cannot use !! operator on null type", dot);
+        } else if (!(previous instanceof OptionTypeObject)) {
+            throw CompilerException.format("Cannot use !! operator on non-optional type", dot);
         }
         var postDot = dot.getPostDot();
         bytes.add(Bytecode.DUP_TOP.value);
