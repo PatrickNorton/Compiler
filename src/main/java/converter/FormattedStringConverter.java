@@ -72,7 +72,7 @@ public final class FormattedStringConverter implements TestConverter {
         assert format.size() > 0;
         var fStr = format.getSpecifier();
         if (fStr.length() != 1) {
-            throw CompilerTodoError.of("Non-trivial f-string specifiers", arg);
+            throw CompilerTodoError.of("Non-trivial f-string specifiers (not !s and !r)", arg);
         }
         switch (fStr.charAt(0)) {
             case 's':
