@@ -131,7 +131,13 @@ public final class IsConverter extends OperatorConverter {
     @Override
     @NotNull
     protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
-        assert operands.length == 2;
+        if (operands.length != 2) {
+            throw CompilerException.format(
+                    "'is' comparison with 'as' clause may only have 2 parameters, not %d%n" +
+                            "(only statements of the form 'x is not null' are allowed)",
+                    lineInfo, operands.length
+            );
+        }
         if (isType) {
             throw asException(lineInfo);
         }
