@@ -323,7 +323,9 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToDot(
             @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        assert variable.getPostDots().length == 1 : "Deeper-than-1-dot assignment not implemented";
+        if (variable.getPostDots().length != 1) {
+            throw CompilerTodoError.of("Deeper-than-1-dot assignment", node);
+        }
         var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
         var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
