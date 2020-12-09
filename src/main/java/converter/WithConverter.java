@@ -19,8 +19,15 @@ public final class WithConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        assert node.getManaged().size() == 1;
-        assert node.getVars().length == 1;
+        if (node.getManaged().size() != 1) {
+            throw CompilerTodoError.format(
+                    "With statements with more than one managed value (got %d)", node, node.getManaged().size()
+            );
+        } else if (node.getVars().length != 1) {
+            throw CompilerTodoError.format(
+                    "With statements with more than one managed value (got %d)", node, node.getVars().length
+            );
+        }
         info.addStackFrame();
         var contextConverter = TestConverter.of(info, node.getManaged().get(0), 1);
         var variable = node.getVars()[0];
