@@ -374,7 +374,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         List<Integer> usedVariants = new ArrayList<>();
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
-                assert defaultVal == 0;
+                if (defaultVal != 0) {
+                    throw defaultException(stmt);
+                }
                 assert stmt.getAs().isEmpty();
                 hasDefault = true;
                 if (hasAs) {
