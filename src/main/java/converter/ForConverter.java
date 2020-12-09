@@ -29,7 +29,7 @@ public final class ForConverter extends LoopConverter {
         if (iterLen > varLen) {
             throw CompilerException.format(
                     "For-loops may not have more iterables than variables%n"
-                            + "(got %d iterables, %d variables",
+                            + "(got %d iterables, %d variables)",
                     node, iterLen, varLen
             );
         } else if (iterLen == 1) {
