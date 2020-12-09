@@ -71,7 +71,9 @@ public final class FormattedStringConverter implements TestConverter {
                                    @NotNull FormattedStringNode.FormatInfo format) {
         assert format.size() > 0;
         var fStr = format.getSpecifier();
-        assert fStr.length() == 1 : "More complex f-string specifiers are not yet implemented";
+        if (fStr.length() != 1) {
+            throw CompilerTodoError.of("Non-trivial f-string specifiers", arg);
+        }
         switch (fStr.charAt(0)) {
             case 's':
                 convertToStr(arg, start, bytes);
