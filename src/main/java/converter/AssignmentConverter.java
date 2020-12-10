@@ -323,10 +323,11 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToDot(
             @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        if (variable.getPostDots().length != 1) {
-            throw CompilerTodoError.of("Deeper-than-1-dot assignment", node);
+        if (!(variable.getPostDots()[0].getPostDot() instanceof VariableNode)) {
+            throw CompilerTodoError.of("Assignment to non-dot", node);
         }
-        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
+        var pair = DotConverter.exceptLast(info, variable, 1);
+        var preDotConverter = pair.getKey();
         var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.add(Bytecode.SWAP_2.value);
@@ -334,8 +335,8 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.add(Bytecode.MAKE_OPTION.value);
         }
         bytes.add(0, Bytecode.STORE_ATTR.value);
-        var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
-        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+        var nameAssigned = pair.getValue();
+        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned))));
     }
 
     @NotNull
