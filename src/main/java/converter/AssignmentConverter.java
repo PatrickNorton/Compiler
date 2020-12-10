@@ -323,7 +323,7 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToDot(
             @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        if (!(variable.getPostDots()[0].getPostDot() instanceof VariableNode)) {
+        if (!(variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode)) {
             throw CompilerTodoError.of("Assignment to non-dot", node);
         }
         var pair = DotConverter.exceptLast(info, variable, 1);
