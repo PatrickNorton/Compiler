@@ -348,6 +348,7 @@ public final class AssignmentConverter implements BaseConverter {
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
         assert variable.getLast().getPostDot() instanceof VariableNode;
+        var last = (VariableNode) variable.getLast().getPostDot();
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
@@ -355,22 +356,20 @@ public final class AssignmentConverter implements BaseConverter {
                     && OptionTypeObject.superWithOption(dotType, valueType)) {
                 return true;
             }
-            var nameAssigned = (VariableNode) variable.getLast().getPostDot();
             throw CompilerException.format(
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
-                    node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()
+                    node, preDotType.name(), last.getName(), dotType.name(), valueType.name()
             );
         } else {
-            var postDot = (VariableNode) variable.getLast().getPostDot();
-            if (!preDotType.canSetAttr(postDot.getName(), info) && !isConstructorException(preDotType, variable)) {
-                if (preDotType.makeMut().canSetAttr(postDot.getName(), info)) {
+            if (!preDotType.canSetAttr(last.getName(), info) && !isConstructorException(preDotType, variable)) {
+                if (preDotType.makeMut().canSetAttr(last.getName(), info)) {
                     throw CompilerException.of(
                             "Cannot assign to value that is not 'mut' or 'final'", node
                     );
                 } else {
                     throw CompilerException.format(
                             "Cannot assign: '%s'.%s does not support assignment",
-                            node, preDotType.name(), postDot.getName()
+                            node, preDotType.name(), last.getName()
                     );
                 }
             }
