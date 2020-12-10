@@ -56,6 +56,10 @@ public class DottedVariableNode implements NameNode {
         return preDot.isEmpty();
     }
 
+    public DottedVar getLast() {
+        return newPostDots[newPostDots.length - 1];
+    }
+
     /**
      * Parse a new DottedVariableNode from a list of tokens, which can only can
      * consist of names, not indices or fn-calls.
