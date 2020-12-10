@@ -58,8 +58,7 @@ public final class AssignmentConverter implements BaseConverter {
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
             } else if (name instanceof DottedVariableNode) {
-                var postDots = ((DottedVariableNode) name).getPostDots();
-                var last = postDots[postDots.length - 1];
+                var last = ((DottedVariableNode) name).getLast();
                 if (last.getPostDot() instanceof IndexNode) {
                     assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
                 } else {
@@ -323,7 +322,7 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToDot(
             @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        if (!(variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode)) {
+        if (!(variable.getLast().getPostDot() instanceof VariableNode)) {
             throw CompilerTodoError.of("Assignment to non-dot", node);
         }
         var pair = DotConverter.exceptLast(info, variable, 1);
@@ -348,7 +347,7 @@ public final class AssignmentConverter implements BaseConverter {
     private boolean checkAssign(
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        assert variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode;
+        assert variable.getLast().getPostDot() instanceof VariableNode;
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
@@ -356,15 +355,13 @@ public final class AssignmentConverter implements BaseConverter {
                     && OptionTypeObject.superWithOption(dotType, valueType)) {
                 return true;
             }
-            var postDots = variable.getPostDots();
-            var nameAssigned = (VariableNode) postDots[postDots.length - 1].getPostDot();
+            var nameAssigned = (VariableNode) variable.getLast().getPostDot();
             throw CompilerException.format(
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
                     node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()
             );
         } else {
-            var postDots = variable.getPostDots();
-            var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
+            var postDot = (VariableNode) variable.getLast().getPostDot();
             if (!preDotType.canSetAttr(postDot.getName(), info) && !isConstructorException(preDotType, variable)) {
                 if (preDotType.makeMut().canSetAttr(postDot.getName(), info)) {
                     throw CompilerException.of(

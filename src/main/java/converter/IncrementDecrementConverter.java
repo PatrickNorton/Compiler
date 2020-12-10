@@ -62,7 +62,7 @@ public final class IncrementDecrementConverter implements BaseConverter {
     private List<Byte> convertDot(int start, boolean isDecrement) {
         assert node.getVariable() instanceof DottedVariableNode;
         var dot = (DottedVariableNode) node.getVariable();
-        var last = dot.getPostDots()[dot.getPostDots().length - 1].getPostDot();
+        var last = dot.getLast().getPostDot();
         if (last instanceof VariableNode) {
             return convertDotVar(start, dot, isDecrement);
         } else if (last instanceof IndexNode) {
