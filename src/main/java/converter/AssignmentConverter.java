@@ -257,13 +257,7 @@ public final class AssignmentConverter implements BaseConverter {
         var opInfo = varType.tryOperatorInfo(node, OpSpTypeNode.SET_ATTR, info);
         if (opInfo.generifyArgs(indexTypes.toArray(new Argument[0])).isEmpty()) {
             var nameArr = TypeObject.name(Argument.typesOf(indexTypes.toArray(new Argument[0])));
-            var argTypes = Argument.typesOf(opInfo.getArgs().getNormalArgs());
-            var argsString = String.join(", ", TypeObject.name(argTypes));
-            throw CompilerException.format(
-                    "Cannot assign variable to index: '%s'.operator []= does not match the given types%n" +
-                            "Arguments received: %s%nArguments expected: %s",
-                    node, varType.name(), String.join(", ", nameArr), argsString
-            );
+            throw indexErr(false, varType, nameArr, opInfo);
         }
     }
 
@@ -272,14 +266,18 @@ public final class AssignmentConverter implements BaseConverter {
         var args = new Argument[] {new Argument("", Builtins.SLICE), new Argument("", setType)};
         if (ops.generifyArgs(args).isEmpty()) {
             var nameArr = TypeObject.name(Builtins.SLICE);
-            var argTypes = Argument.typesOf(ops.getArgs().getNormalArgs());
-            var argsString = String.join(", ", TypeObject.name(argTypes));
-            throw CompilerException.format(
-                    "Cannot assign variable to index: '%s'.operator [:]= does not match the given types%n" +
-                            "Arguments received: %s%nArguments expected: %s",
-                    node, varType.name(), String.join(", ", nameArr), argsString
-            );
+            throw indexErr(true, varType, nameArr, ops);
         }
+    }
+
+    private CompilerException indexErr(boolean isSlice, TypeObject varType, String[] nameArr, FunctionInfo ops) {
+        var argTypes = Argument.typesOf(ops.getArgs().getNormalArgs());
+        var argsString = String.join(", ", TypeObject.name(argTypes));
+        throw CompilerException.format(
+                "Cannot assign variable to index: '%s'.operator [%s]= does not match the given types%n" +
+                        "Arguments received: %s%nArguments expected: %s",
+                node, varType.name(), isSlice ? ":" : "", String.join(", ", nameArr), argsString
+        );
     }
 
     private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
