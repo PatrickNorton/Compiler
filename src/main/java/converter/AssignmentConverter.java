@@ -186,15 +186,26 @@ public final class AssignmentConverter implements BaseConverter {
     private void topToIndex(
             List<Byte> bytes, int start, TestConverter preDot, TestNode[] indices, TypeObject valueType
     ) {
-        var indexConverters = convertIndices(indices);
-        checkTypes(preDot.returnType()[0], indexConverters, valueType);
-        bytes.addAll(preDot.convert(start + bytes.size()));
-        for (var indexParam : indexConverters) {
-            bytes.addAll(indexParam.convert(start + bytes.size()));
+        if (IndexConverter.isSlice(indices)) {
+            var index = (SliceNode) indices[0];
+            checkSlice(valueType, preDot.returnType()[0]);
+            bytes.addAll(preDot.convert(start + bytes.size()));
+            bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
+            bytes.add(Bytecode.SWAP_3.value);
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 2));
+        } else {
+            var indexConverters = convertIndices(indices);
+            checkTypes(preDot.returnType()[0], indexConverters, valueType);
+            bytes.addAll(preDot.convert(start + bytes.size()));
+            for (var indexParam : indexConverters) {
+                bytes.addAll(indexParam.convert(start + bytes.size()));
+            }
+            bringToTop(bytes, indices.length + 1);
+            bytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
+            bytes.addAll(1, Util.shortToBytes((short) indices.length));
         }
-        bringToTop(bytes, indices.length + 1);
-        bytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
-        bytes.addAll(1, Util.shortToBytes((short) indices.length));
     }
 
     private static void bringToTop(List<Byte> bytes, int distFromTop) {
