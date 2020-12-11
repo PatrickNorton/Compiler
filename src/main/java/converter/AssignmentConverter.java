@@ -329,8 +329,8 @@ public final class AssignmentConverter implements BaseConverter {
             @NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
             TestConverter valueConverter, SliceNode index
     ) {
-        bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
         bytes.addAll(valueConverter.convert(start + bytes.size()));
+        bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
         storeBytes.add(0, Bytecode.CALL_OP.value);
         storeBytes.addAll(1, Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
         storeBytes.addAll(3, Util.shortToBytes((short) 2));
