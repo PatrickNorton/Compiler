@@ -180,9 +180,15 @@ public final class AssignmentConverter implements BaseConverter {
     ) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
+        topToIndex(bytes, start, varConverter, indices, valueType);
+    }
+
+    private void topToIndex(
+            List<Byte> bytes, int start, TestConverter preDot, TestNode[] indices, TypeObject valueType
+    ) {
         var indexConverters = convertIndices(indices);
-        checkTypes(varConverter.returnType()[0], indexConverters, valueType);
-        bytes.addAll(varConverter.convert(start + bytes.size()));
+        checkTypes(preDot.returnType()[0], indexConverters, valueType);
+        bytes.addAll(preDot.convert(start + bytes.size()));
         for (var indexParam : indexConverters) {
             bytes.addAll(indexParam.convert(start + bytes.size()));
         }
@@ -322,9 +328,19 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToDot(
             @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        if (!(variable.getLast().getPostDot() instanceof VariableNode)) {
-            throw CompilerTodoError.of("Assignment to non-dot", node);
+        var last = variable.getLast().getPostDot();
+        if (last instanceof IndexNode) {
+            assignTopToDotIndex(bytes, start, variable, valueType);
+        } else if (last instanceof VariableNode) {
+            assignTopToNormalDot(bytes, start, variable, valueType);
+        } else {
+            throw CompilerException.of("Cannot assign", variable);
         }
+    }
+
+    private void assignTopToNormalDot(
+            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
         var pair = DotConverter.exceptLast(info, variable, 1);
         var preDotConverter = pair.getKey();
         var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
@@ -336,6 +352,13 @@ public final class AssignmentConverter implements BaseConverter {
         bytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = pair.getValue();
         bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned))));
+    }
+
+    private void assignTopToDotIndex(
+            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        var pair = DotConverter.exceptLastIndex(info, variable, 1);
+        topToIndex(bytes, start, pair.getKey(), pair.getValue(), valueType);
     }
 
     @NotNull
