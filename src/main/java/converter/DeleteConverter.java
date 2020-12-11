@@ -107,8 +107,7 @@ public final class DeleteConverter implements BaseConverter {
     }
 
     private List<Byte> convertDot(int start, DottedVariableNode dottedVar) {
-        var dots = dottedVar.getPostDots();
-        if (!(dots[dots.length - 1].getPostDot() instanceof IndexNode)) {
+        if (!(dottedVar.getLast().getPostDot() instanceof IndexNode)) {
             throw CompilerException.of("Cannot delete non-index from dotted variable", node);
         } else {
             return convertDotIndex(start, dottedVar);

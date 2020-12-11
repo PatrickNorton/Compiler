@@ -301,7 +301,12 @@ public final class FunctionCallConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         if (BUILTINS_TO_OPERATORS.containsKey(strName)) {
             var params = node.getParameters();
-            assert params.length == 1;  // No operator needs more than self
+            if (params.length != 1) {  // No operator needs more than self
+                var builtin = Builtins.BUILTIN_MAP.get(strName).getType();
+                var fnInfo = builtin.operatorInfo(OpSpTypeNode.CALL, AccessLevel.PUBLIC).orElseThrow();
+                var expected = fnInfo.getArgs().getNormalArgs();
+                throw argError(node, builtin.name(), getArgs(params), expected);
+            }
             bytes.addAll(TestConverter.bytes(start + bytes.size(), params[0].getArgument(), info, 1));
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) BUILTINS_TO_OPERATORS.get(strName).ordinal()));
@@ -309,7 +314,11 @@ public final class FunctionCallConverter implements TestConverter {
             return bytes;
         } else if (strName.equals("type")) {
             var params = node.getParameters();
-            assert params.length == 1;
+            if (params.length != 1) {
+                throw CompilerException.format(
+                        "'type' can only be called with 1 argument, not %d", node, params.length
+                );
+            }
             var converter = TestConverter.of(info, params[0].getArgument(), 1);
             bytes.addAll(converter.convert(start + bytes.size()));
             bytes.add(Bytecode.GET_TYPE.value);
@@ -317,7 +326,6 @@ public final class FunctionCallConverter implements TestConverter {
         } else {
             throw new RuntimeException();
         }
-
     }
 
     @NotNull

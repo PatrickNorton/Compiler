@@ -27,8 +27,7 @@ public final class AugAssignConverter implements BaseConverter {
         if (name instanceof VariableNode) {
             return convertVar(start);
         } else if (name instanceof DottedVariableNode) {
-            var postDots = ((DottedVariableNode) name).getPostDots();
-            var last = postDots[postDots.length - 1];
+            var last = ((DottedVariableNode) name).getLast();
             if (last.getPostDot() instanceof IndexNode) {
                 return convertDotIndex(start);
             } else {

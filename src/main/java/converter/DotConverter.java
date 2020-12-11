@@ -32,22 +32,22 @@ public final class DotConverter implements TestConverter {
     public static Pair<TestConverter, String> exceptLast(
             CompilerInfo info, @NotNull DottedVariableNode node, int retCount
     ) {
+        var last = node.getLast();
         var postDots = node.getPostDots();
-        if (!(postDots[postDots.length - 1].getPostDot() instanceof VariableNode)) {
+        if (!(last.getPostDot() instanceof VariableNode)) {
             throw CompilerInternalError.of(
-                    "DotConverter.exceptLast does not work where the last dot is not plain",
-                    postDots[postDots.length - 1]
+                    "DotConverter.exceptLast does not work where the last dot is not plain", last
             );
         }
         if (postDots.length == 1) {
             var converter = TestConverter.of(info, node.getPreDot(), retCount);
-            var postDot = (VariableNode) postDots[0].getPostDot();
+            var postDot = (VariableNode) last.getPostDot();
             return Pair.of(converter, postDot.getName());
         } else {
             var newPostDots = Arrays.copyOf(postDots, postDots.length - 1);
             var newNode = new DottedVariableNode(node.getPreDot(), newPostDots);
             var converter = TestConverter.of(info, newNode, retCount);
-            var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
+            var postDot = (VariableNode) last.getPostDot();
             return Pair.of(converter, postDot.getName());
         }
     }
@@ -55,17 +55,16 @@ public final class DotConverter implements TestConverter {
     public static Pair<TestConverter, TestNode[]> exceptLastIndex(
             CompilerInfo info, @NotNull DottedVariableNode node, int retCount
     ) {
+        var last = node.getLast();
         var postDots = node.getPostDots();
-        if (!(postDots[postDots.length - 1].getPostDot() instanceof IndexNode)) {
+        if (!(last.getPostDot() instanceof IndexNode)) {
             throw CompilerInternalError.of(
-                    "DotConverter.exceptLastIndex does not work where the last dot is not an index",
-                    postDots[postDots.length - 1]
+                    "DotConverter.exceptLastIndex does not work where the last dot is not an index", last
             );
         }
         var newPostDots = Arrays.copyOf(postDots, postDots.length);
-        var post = postDots[postDots.length - 1];
-        var postDot = (IndexNode) post.getPostDot();
-        var dot = new DottedVar(post.getLineInfo(), post.getDotPrefix(), (NameNode) postDot.getVar());
+        var postDot = (IndexNode) last.getPostDot();
+        var dot = new DottedVar(last.getLineInfo(), last.getDotPrefix(), (NameNode) postDot.getVar());
         newPostDots[newPostDots.length - 1] = dot;
         var newNode = new DottedVariableNode(node.getPreDot(), newPostDots);
         var converter = TestConverter.of(info, newNode, retCount);
@@ -89,7 +88,7 @@ public final class DotConverter implements TestConverter {
         if (retCount > result.length) {
             throw CompilerException.format(
                     "Expected at least %d returns, but only got %d",
-                    node.getPostDots()[node.getPostDots().length - 1], retCount, result.length
+                    node.getLast(), retCount, result.length
             );
         }
         return Arrays.copyOf(result, retCount);

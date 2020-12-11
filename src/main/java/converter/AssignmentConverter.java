@@ -58,8 +58,7 @@ public final class AssignmentConverter implements BaseConverter {
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
             } else if (name instanceof DottedVariableNode) {
-                var postDots = ((DottedVariableNode) name).getPostDots();
-                var last = postDots[postDots.length - 1];
+                var last = ((DottedVariableNode) name).getLast();
                 if (last.getPostDot() instanceof IndexNode) {
                     assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
                 } else {
@@ -181,15 +180,32 @@ public final class AssignmentConverter implements BaseConverter {
     ) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
-        var indexConverters = convertIndices(indices);
-        checkTypes(varConverter.returnType()[0], indexConverters, valueType);
-        bytes.addAll(varConverter.convert(start + bytes.size()));
-        for (var indexParam : indexConverters) {
-            bytes.addAll(indexParam.convert(start + bytes.size()));
+        topToIndex(bytes, start, varConverter, indices, valueType);
+    }
+
+    private void topToIndex(
+            List<Byte> bytes, int start, TestConverter preDot, TestNode[] indices, TypeObject valueType
+    ) {
+        if (IndexConverter.isSlice(indices)) {
+            var index = (SliceNode) indices[0];
+            checkSlice(valueType, preDot.returnType()[0]);
+            bytes.addAll(preDot.convert(start + bytes.size()));
+            bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
+            bytes.add(Bytecode.SWAP_3.value);
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 2));
+        } else {
+            var indexConverters = convertIndices(indices);
+            checkTypes(preDot.returnType()[0], indexConverters, valueType);
+            bytes.addAll(preDot.convert(start + bytes.size()));
+            for (var indexParam : indexConverters) {
+                bytes.addAll(indexParam.convert(start + bytes.size()));
+            }
+            bringToTop(bytes, indices.length + 1);
+            bytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
+            bytes.addAll(1, Util.shortToBytes((short) indices.length));
         }
-        bringToTop(bytes, indices.length + 1);
-        bytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
-        bytes.addAll(1, Util.shortToBytes((short) indices.length));
     }
 
     private static void bringToTop(List<Byte> bytes, int distFromTop) {
@@ -313,8 +329,8 @@ public final class AssignmentConverter implements BaseConverter {
             @NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
             TestConverter valueConverter, SliceNode index
     ) {
-        bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
         bytes.addAll(valueConverter.convert(start + bytes.size()));
+        bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
         storeBytes.add(0, Bytecode.CALL_OP.value);
         storeBytes.addAll(1, Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
         storeBytes.addAll(3, Util.shortToBytes((short) 2));
@@ -323,8 +339,21 @@ public final class AssignmentConverter implements BaseConverter {
     private void assignTopToDot(
             @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        assert variable.getPostDots().length == 1 : "Deeper-than-1-dot assignment not implemented";
-        var preDotConverter = TestConverter.of(info, variable.getPreDot(), 1);
+        var last = variable.getLast().getPostDot();
+        if (last instanceof IndexNode) {
+            assignTopToDotIndex(bytes, start, variable, valueType);
+        } else if (last instanceof VariableNode) {
+            assignTopToNormalDot(bytes, start, variable, valueType);
+        } else {
+            throw CompilerException.of("Cannot assign", variable);
+        }
+    }
+
+    private void assignTopToNormalDot(
+            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        var pair = DotConverter.exceptLast(info, variable, 1);
+        var preDotConverter = pair.getKey();
         var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.add(Bytecode.SWAP_2.value);
@@ -332,8 +361,15 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.add(Bytecode.MAKE_OPTION.value);
         }
         bytes.add(0, Bytecode.STORE_ATTR.value);
-        var nameAssigned = (VariableNode) variable.getPostDots()[0].getPostDot();
-        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned.getName()))));
+        var nameAssigned = pair.getValue();
+        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned))));
+    }
+
+    private void assignTopToDotIndex(
+            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+    ) {
+        var pair = DotConverter.exceptLastIndex(info, variable, 1);
+        topToIndex(bytes, start, pair.getKey(), pair.getValue(), valueType);
     }
 
     @NotNull
@@ -345,7 +381,8 @@ public final class AssignmentConverter implements BaseConverter {
     private boolean checkAssign(
             @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
-        assert variable.getPostDots()[variable.getPostDots().length - 1].getPostDot() instanceof VariableNode;
+        assert variable.getLast().getPostDot() instanceof VariableNode;
+        var last = (VariableNode) variable.getLast().getPostDot();
         var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
         if (!dotType.isSuperclass(valueType)) {
@@ -353,24 +390,20 @@ public final class AssignmentConverter implements BaseConverter {
                     && OptionTypeObject.superWithOption(dotType, valueType)) {
                 return true;
             }
-            var postDots = variable.getPostDots();
-            var nameAssigned = (VariableNode) postDots[postDots.length - 1].getPostDot();
             throw CompilerException.format(
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
-                    node, preDotType.name(), nameAssigned.getName(), dotType.name(), valueType.name()
+                    node, preDotType.name(), last.getName(), dotType.name(), valueType.name()
             );
         } else {
-            var postDots = variable.getPostDots();
-            var postDot = (VariableNode) postDots[postDots.length - 1].getPostDot();
-            if (!preDotType.canSetAttr(postDot.getName(), info) && !isConstructorException(preDotType, variable)) {
-                if (preDotType.makeMut().canSetAttr(postDot.getName(), info)) {
+            if (!preDotType.canSetAttr(last.getName(), info) && !isConstructorException(preDotType, variable)) {
+                if (preDotType.makeMut().canSetAttr(last.getName(), info)) {
                     throw CompilerException.of(
                             "Cannot assign to value that is not 'mut' or 'final'", node
                     );
                 } else {
                     throw CompilerException.format(
                             "Cannot assign: '%s'.%s does not support assignment",
-                            node, preDotType.name(), postDot.getName()
+                            node, preDotType.name(), last.getName()
                     );
                 }
             }
