@@ -34,8 +34,8 @@ class Parser {
         return self.currentLine[self.index + index]
     }
 
-    public operator [:] (Slice slice) -> str {
-        return self.currentLine[self.index:].operator[:](slice)
+    public operator [:] (slice indices) -> str {
+        return self.currentLine[self.index:].operator[:](indices)
     }
 
     public method isEnd() -> bool {
@@ -154,7 +154,7 @@ func parseBackslash(mut Parser parser) -> str {
             try {
                 c = char(int(parser[:4]))
             } except ValueError {
-                raise JsonError("Invalid value after \\u in quote")
+                raise JsonError(r"Invalid value after \u in quote")
             }
             return str(c)
         }
