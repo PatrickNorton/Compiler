@@ -86,7 +86,7 @@ public final class LiteralConverter implements TestConverter {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
         var literalCls = literalType.type.makeMut();
         if (literalType == LiteralType.TUPLE) {
-            return new TypeObject[]{literalCls.generify(tupleReturnTypes(node.getBuilders()))};
+            return new TypeObject[]{literalCls.generify(tupleReturnTypes())};
         } else if (node.getBuilders().length == 0) {
             if (expected == null) {
                 throw CompilerException.format("Cannot deduce type of %s literal", node, literalType.name);
@@ -131,7 +131,7 @@ public final class LiteralConverter implements TestConverter {
         if (literalType == LiteralType.TUPLE) {
             var builders = node.getBuilders();
             var isSplats = node.getIsSplats();
-            var retTypes = tupleReturnTypes(node.getBuilders());
+            var retTypes = tupleReturnTypes();
             for (int i = 0; i < retTypes.length; i++) {
                 builderLen += convertInner(bytes, start, builders[i], isSplats[i], retTypes[i]);
             }
@@ -217,14 +217,29 @@ public final class LiteralConverter implements TestConverter {
     }
 
     @NotNull
-    private TypeObject[] tupleReturnTypes(@NotNull TestNode[] args) {
+    private TypeObject[] tupleReturnTypes() {
+        var args = node.getBuilders();
+        var splats = node.getIsSplats();
         if (expected != null) {
             return expected[0].getGenerics().toArray(new TypeObject[0]);
         }
-        var result = new TypeObject[args.length];
+        List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
-            result[i] = TestConverter.returnType(args[i], info, 1)[0];
+            var value = TestConverter.returnType(args[i], info, 1)[0];
+            if (splats[i].isEmpty()) {
+                result.add(value);
+            } else if (splats[i].equals("*")) {
+                if (value instanceof TupleType) {
+                    result.addAll(value.getGenerics());
+                } else if (value.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                    throw CompilerException.of("Cannot unpack iterable in tuple literal", args[i]);
+                } else {
+                    throw CompilerException.format("Can only unpack iterable or tuple, not %s", args[i], value);
+                }
+            } else {
+                throw CompilerException.format("Invalid splat '%s'", args[i], splats[i]);
+            }
         }
-        return result;
+        return result.toArray(new TypeObject[0]);
     }
 }
