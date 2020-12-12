@@ -129,12 +129,14 @@ public final class LiteralConverter implements TestConverter {
         }
         short builderLen = (short) node.getBuilders().length;
         if (literalType == LiteralType.TUPLE) {
+            short additional = 0;
             var builders = node.getBuilders();
             var isSplats = node.getIsSplats();
             var retTypes = tupleReturnTypes();
             for (int i = 0; i < retTypes.length; i++) {
-                builderLen += convertInner(bytes, start, builders[i], isSplats[i], retTypes[i]);
+                additional += convertInner(bytes, start, builders[i], isSplats[i], retTypes[i + additional]);
             }
+            builderLen += additional;
         } else {
             var retType = returnTypes(node.getBuilders(), node.getIsSplats());
             for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
