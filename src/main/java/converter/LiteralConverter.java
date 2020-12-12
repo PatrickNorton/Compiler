@@ -161,10 +161,7 @@ public final class LiteralConverter implements TestConverter {
             } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
                 throw CompilerTodoError.of("Unpacking iterables in literals", value);
             } else {
-                throw CompilerException.format(
-                        "Cannot unpack type '%s': Unpacking is only valid on tuples or iterables",
-                        value, convRet.name()
-                );
+                throw splatException(value, convRet);
             }
         } else {
             throw CompilerException.format("Invalid splat '%s'", value, splat);
@@ -206,10 +203,7 @@ public final class LiteralConverter implements TestConverter {
                 } else if (Builtins.ITERABLE.isSuperclass(retType)) {
                     result.add(Builtins.deIterable(retType)[0]);
                 } else {
-                    throw CompilerException.format(
-                            "* is only valid with tuples or iterables, not '%s'",
-                            args[i], retType
-                    );
+                    throw splatException(args[i], retType);
                 }
             }
         }
@@ -234,12 +228,19 @@ public final class LiteralConverter implements TestConverter {
                 } else if (value.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
                     throw CompilerException.of("Cannot unpack iterable in tuple literal", args[i]);
                 } else {
-                    throw CompilerException.format("Can only unpack iterable or tuple, not %s", args[i], value);
+                    throw splatException(args[i], value);
                 }
             } else {
                 throw CompilerException.format("Invalid splat '%s'", args[i], splats[i]);
             }
         }
         return result.toArray(new TypeObject[0]);
+    }
+
+    private static CompilerException splatException(Lined info, TypeObject type) {
+        return CompilerException.format(
+                "Cannot unpack type '%s': Unpacking is only valid on tuples or iterables",
+                        info, type.name()
+        );
     }
 }
