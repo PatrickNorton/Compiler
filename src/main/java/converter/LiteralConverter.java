@@ -220,20 +220,22 @@ public final class LiteralConverter implements TestConverter {
             return expected[0].getGenerics().toArray(new TypeObject[0]);
         }
         List<TypeObject> result = new ArrayList<>(args.length);
-        for (int i = 0; i < args.length; i++) {
-            var value = TestConverter.returnType(args[i], info, 1)[0];
-            if (splats[i].isEmpty()) {
+        for (var pair : Zipper.of(args, splats)) {
+            var arg = pair.getKey();
+            var splat = pair.getValue();
+            var value = TestConverter.returnType(arg, info, 1)[0];
+            if (splat.isEmpty()) {
                 result.add(value);
-            } else if (splats[i].equals("*")) {
+            } else if (splat.equals("*")) {
                 if (value instanceof TupleType) {
                     result.addAll(value.getGenerics());
                 } else if (value.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                    throw CompilerException.of("Cannot unpack iterable in tuple literal", args[i]);
+                    throw CompilerException.of("Cannot unpack iterable in tuple literal", arg);
                 } else {
-                    throw splatException(args[i], value);
+                    throw splatException(arg, value);
                 }
             } else {
-                throw CompilerException.format("Invalid splat '%s'", args[i], splats[i]);
+                throw CompilerException.format("Invalid splat '%s'", arg, splat);
             }
         }
         return result.toArray(new TypeObject[0]);
