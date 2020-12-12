@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.Lined;
 import main.java.parser.LiteralNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.util.Pair;
 import main.java.util.Zipper;
@@ -157,8 +158,13 @@ public final class LiteralConverter implements TestConverter {
             if (convRet instanceof TupleType) {
                 bytes.add(Bytecode.UNPACK_TUPLE.value);
                 return (short) (convRet.getGenerics().size() - 1);
+            } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                throw CompilerTodoError.of("Unpacking iterables in literals", value);
             } else {
-                throw CompilerException.of("Splats not implemented yet", value);
+                throw CompilerException.format(
+                        "Cannot unpack type '%s': Unpacking is only valid on tuples or iterables",
+                        value, convRet.name()
+                );
             }
         } else {
             throw CompilerException.format("Invalid splat '%s'", value, splat);
