@@ -136,30 +136,31 @@ public final class LiteralConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
             CompilerWarning.warnf("Unnecessary %s creation", node, literalType.name);
+            List<Byte> bytes = new ArrayList<>();
             for (var value : node.getBuilders()) {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), value, info));
             }
+            return bytes;
         } else if (node.getBuilders().length == 0) {
-            convertEmpty(bytes, literalType);
+            return convertEmpty(literalType);
         } else {
-            convertSingle(bytes, start, literalType);
+            return convertSingle(start, literalType);
         }
-        return bytes;
     }
 
-    private void convertSingle(List<Byte> bytes, int start, LiteralType literalType) {
+    private List<Byte> convertSingle(int start, LiteralType literalType) {
         if (retCount > 1) {
             throw CompilerException.format("Literal returns 1 value, expected %d", node, retCount);
         }
+        List<Byte> bytes = new ArrayList<>();
         var constant = constantReturn();
         if (constant.isPresent()) {
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
-            return;
+            return bytes;
         }
         short builderLen = (short) node.getBuilders().length;
         if (literalType == LiteralType.TUPLE) {
@@ -181,6 +182,7 @@ public final class LiteralConverter implements TestConverter {
         }
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortToBytes(builderLen));
+        return bytes;
     }
 
     private short convertInner(List<Byte> bytes, int start, TestNode value, String splat, TypeObject retType) {
@@ -213,11 +215,12 @@ public final class LiteralConverter implements TestConverter {
         }
     }
 
-    private void convertEmpty(List<Byte> bytes, LiteralType literalType) {
+    private List<Byte> convertEmpty(LiteralType literalType) {
+        List<Byte> bytes = new ArrayList<>();
         if (literalType == LiteralType.TUPLE) {
             bytes.add(Bytecode.PACK_TUPLE.value);
             bytes.addAll(Util.shortZeroBytes());
-            return;
+            return bytes;
         }
         if (expected == null) {
             throw CompilerException.format("Cannot deduce type of %s literal", node, literalType.name);
@@ -229,6 +232,7 @@ public final class LiteralConverter implements TestConverter {
         bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortZeroBytes());
+        return bytes;
     }
 
     @NotNull
