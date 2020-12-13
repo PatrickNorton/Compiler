@@ -255,7 +255,7 @@ class ParserI {
         }
         var span = ast.span.withEnd(self.parser.pos)
         var op = RepetitionOp(Span(opStart, self.parser.pos), kind)
-        var newAsts = concat.asts[:-1] + [Ast.Repetition(Repetition(span, op, greedy, ast))]
+        var newAsts = [*concat.asts[:-1], Ast.Repetition(Repetition(span, op, greedy, ast))]
         return Concat(concat.span, newAsts)
     }
 
@@ -304,7 +304,7 @@ class ParserI {
         }
         var repOp = RepetitionOp(opSpan, RepetitionKind.Range(repRange))
         var rep = Repetition(ast.span.withEnd(self.parser.pos), repOp, greedy, ast)
-        var newAsts = concat.asts[:-1] + [Ast.Repetition(rep)]
+        var newAsts = [*concat.asts[:-1], Ast.Repetition(rep)]
         return Concat(concat.span, newAsts)
     }
 
