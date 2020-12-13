@@ -32,6 +32,40 @@ public final class LiteralConverter implements TestConverter {
         this.expected = null;
     }
 
+    public Optional<Integer> knownLength() {
+        assert LiteralType.fromBrace(node.getBraceType(), node) != LiteralType.TUPLE;
+        int count = 0;
+        for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
+            var value = pair.getKey();
+            var splat = pair.getValue();
+            if (splat.isEmpty()) {
+                count++;
+            } else if (splat.equals("*")) {
+                var converter = TestConverter.of(info, value, 1);
+                var retType = converter.returnType()[0];
+                if (retType instanceof TupleType) {
+                    count += retType.getGenerics().size();
+                } else if (retType.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                    if (converter instanceof LiteralConverter) {
+                        var val = ((LiteralConverter) converter).knownLength();
+                        if (val.isPresent()) {
+                            count += val.orElseThrow();
+                        } else {
+                            return Optional.empty();
+                        }
+                    } else {
+                        return Optional.empty();
+                    }
+                } else {
+                    throw splatException(value, retType);
+                }
+            } else {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(count);
+    }
+
     @Override
     public Optional<LangConstant> constantReturn() {
         if (LiteralType.fromBrace(node.getBraceType(), node) != LiteralType.TUPLE) {
@@ -156,11 +190,20 @@ public final class LiteralConverter implements TestConverter {
         } else if (splat.equals("*")) {
             var converter = TestConverter.of(info, value, 1);
             var convRet = converter.returnType()[0];
-            bytes.addAll(TestConverter.bytesMaybeOption(converter, start + bytes.size(), retType));
+            bytes.addAll(converter.convert(start + bytes.size()));
             if (convRet instanceof TupleType) {
                 bytes.add(Bytecode.UNPACK_TUPLE.value);
                 return (short) (convRet.getGenerics().size() - 1);
             } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                if (converter instanceof LiteralConverter) {
+                    var len = ((LiteralConverter) converter).knownLength();
+                    if (len.isPresent()) {
+                        var knownLen = len.orElseThrow();
+                        bytes.add(Bytecode.UNPACK_ITERABLE.value);
+                        bytes.add(Bytecode.POP_TOP.value);  // UNPACK_ITERABLE leaves length on top
+                        return (short) (knownLen.shortValue() - 1);
+                    }
+                }
                 throw CompilerTodoError.of("Unpacking iterables in literals", value);
             } else {
                 throw splatException(value, convRet);

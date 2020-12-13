@@ -115,6 +115,9 @@ public enum Bytecode {
     // Dups, part 2 (maybe realign?)
     DUP_TOP_2(0x78),
     DUP_TOP_N(0x79, Type.ARGC),
+    UNPACK_ITERABLE(0x7A),
+    PACK_ITERABLE(0x7B),
+    SWAP_DYN(0x7C),
     ;
 
     private enum Type {

@@ -668,9 +668,13 @@ public final class Builtins {
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
-        assert val.sameBaseType(Builtins.ITERABLE);
-        var generics = val.getGenerics().get(0);
-        assert generics instanceof ListTypeObject;
-        return ((ListTypeObject) generics).getValues();
+        if (val.sameBaseType(Builtins.ITERABLE)) {
+            var generics = val.getGenerics().get(0);
+            assert generics instanceof ListTypeObject;
+            return ((ListTypeObject) generics).getValues();
+        } else {
+            assert Builtins.ITERABLE.isSuperclass(val);
+            return val.operatorReturnType(OpSpTypeNode.ITER, AccessLevel.PUBLIC).orElseThrow();
+        }
     }
 }

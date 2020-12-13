@@ -782,7 +782,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @return A type that is a superclass of all of them
      */
     static TypeObject union(@NotNull List<TypeObject> values) {
-        assert values.size() != 0;
+        assert values.size() != 0 : "Empty union";
         return union(new HashSet<>(values));
     }
 
