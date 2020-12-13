@@ -653,28 +653,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return tryAttrType(node.getLineInfo(), value, info.accessLevel(this));
     }
 
-    /**
-     * Attempts to get the {@link #attrType(String, AccessLevel)) attribute
-     * type} of a type, or throws an error with a descriptive message on
-     * failure.
-     * <p>
-     *     This method will throw a {@link CompilerException} iff this.{@link
-     *     #attrType(String, AccessLevel) attrType(value, access)} would return
-     *     {@link Optional#empty()}.
-     * </p>
-     *
-     * @param node The object containing the {@link LineInfo} to use in an error
-     * @param value The name of the accessed attribute
-     * @param level The access level for the type
-     * @return The information representing the operator
-     * @see #attrType(String, AccessLevel)
-     * @see #tryAttrType(LineInfo, String, AccessLevel)
-     */
-    @NotNull
-    public final TypeObject tryAttrType(@NotNull Lined node, String value, @NotNull AccessLevel level) {
-        return tryAttrType(node.getLineInfo(), value, level);
-    }
-
     public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
         return attrType(value, access);
     }
