@@ -9,8 +9,10 @@ import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public final class LiteralConverter implements TestConverter {
     private final LiteralNode node;
@@ -32,40 +34,6 @@ public final class LiteralConverter implements TestConverter {
         this.expected = null;
     }
 
-    public Optional<Integer> knownLength() {
-        assert LiteralType.fromBrace(node.getBraceType(), node) != LiteralType.TUPLE;
-        int count = 0;
-        for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
-            var value = pair.getKey();
-            var splat = pair.getValue();
-            if (splat.isEmpty()) {
-                count++;
-            } else if (splat.equals("*")) {
-                var converter = TestConverter.of(info, value, 1);
-                var retType = converter.returnType()[0];
-                if (retType instanceof TupleType) {
-                    count += retType.getGenerics().size();
-                } else if (retType.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                    if (converter instanceof LiteralConverter) {
-                        var val = ((LiteralConverter) converter).knownLength();
-                        if (val.isPresent()) {
-                            count += val.orElseThrow();
-                        } else {
-                            return Optional.empty();
-                        }
-                    } else {
-                        return Optional.empty();
-                    }
-                } else {
-                    throw splatException(value, retType);
-                }
-            } else {
-                return Optional.empty();
-            }
-        }
-        return Optional.of(count);
-    }
-
     @Override
     public Optional<LangConstant> constantReturn() {
         if (LiteralType.fromBrace(node.getBraceType(), node) != LiteralType.TUPLE) {
@@ -85,19 +53,28 @@ public final class LiteralConverter implements TestConverter {
     }
 
     private enum LiteralType {
-        LIST(Builtins.LIST, "list", Bytecode.LIST_CREATE),
-        SET(Builtins.SET, "set", Bytecode.SET_CREATE),
+        LIST(Builtins.LIST, "list", Bytecode.LIST_CREATE, Bytecode.LIST_DYN),
+        SET(Builtins.SET, "set", Bytecode.SET_CREATE, Bytecode.SET_DYN),
         TUPLE(Builtins.TUPLE, "tuple", Bytecode.PACK_TUPLE),
         ;
 
         TypeObject type;
         String name;
         Bytecode bytecode;
+        Bytecode dynCode;
 
         LiteralType(TypeObject type, String name, Bytecode bytecode) {
             this.type = type;
             this.name = name;
             this.bytecode = bytecode;
+            this.dynCode = null;
+        }
+
+        LiteralType(TypeObject type, String name, Bytecode bytecode, Bytecode dynCode) {
+            this.type = type;
+            this.name = name;
+            this.bytecode = bytecode;
+            this.dynCode = dynCode;
         }
 
         static LiteralType fromBrace(@NotNull String brace, Lined lineInfo) {
@@ -162,32 +139,60 @@ public final class LiteralConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
             return bytes;
         }
-        short builderLen = (short) node.getBuilders().length;
+        Set<Integer> unknowns = new HashSet<>();
+        short additional = 0;
+        TypeObject retType;
         if (literalType == LiteralType.TUPLE) {
-            short additional = 0;
+            retType = null;
             var builders = node.getBuilders();
             var isSplats = node.getIsSplats();
             var retTypes = tupleReturnTypes();
             for (int i = 0; i < retTypes.length; i++) {
-                additional += convertInner(bytes, start, builders[i], isSplats[i], retTypes[i + additional]);
+                additional += convertInner(
+                        bytes, start, builders[i], isSplats[i], retTypes[i + additional], unknowns, i
+                );
             }
-            builderLen += additional;
         } else {
-            var retType = returnTypes(node.getBuilders(), node.getIsSplats());
-            for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
-                builderLen += convertInner(bytes, start, pair.getKey(), pair.getValue(), retType);
+            retType = returnTypes(node.getBuilders(), node.getIsSplats());
+            var builders = node.getBuilders();
+            var isSplats = node.getIsSplats();
+            for (int i = 0; i < builders.length; i++) {
+                additional += convertInner(
+                        bytes, start, builders[i], isSplats[i], retType, unknowns, i
+                );
+            }
+        }
+        var builderLen = node.getBuilders().length + additional - unknowns.size();
+        if (unknowns.isEmpty()) {
+            if (retType != null) {
+                bytes.add(Bytecode.LOAD_CONST.value);
+                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+            }
+            bytes.add(literalType.bytecode.value);
+            bytes.addAll(Util.shortToBytes((short) builderLen));
+        } else {
+            if (literalType == LiteralType.TUPLE) {
+                int index = unknowns.iterator().next();
+                throw CompilerException.of("Cannot unpack iterables in tuple literal", node.getBuilders()[index]);
             }
             bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(builderLen))));
+            bytes.add(Bytecode.PLUS.value);
+            bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+            bytes.add(literalType.dynCode.value);
         }
-        bytes.add(literalType.bytecode.value);
-        bytes.addAll(Util.shortToBytes(builderLen));
         return bytes;
     }
 
-    private short convertInner(List<Byte> bytes, int start, TestNode value, String splat, TypeObject retType) {
+    private short convertInner(
+            List<Byte> bytes, int start, TestNode value, String splat, TypeObject retType, Set<Integer> unknowns, int i
+    ) {
         if (splat.isEmpty()) {
             bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
+            if (!unknowns.isEmpty()) {
+                bytes.add(Bytecode.SWAP_2.value);  // Keep unknown length on top
+            }
             return 0;
         } else if (splat.equals("*")) {
             var converter = TestConverter.of(info, value, 1);
@@ -195,18 +200,19 @@ public final class LiteralConverter implements TestConverter {
             bytes.addAll(converter.convert(start + bytes.size()));
             if (convRet instanceof TupleType) {
                 bytes.add(Bytecode.UNPACK_TUPLE.value);
+                if (!unknowns.isEmpty()) {
+                    throw CompilerTodoError.of("Tuple unpacking after dynamic unpack", value);
+                }
                 return (short) (convRet.getGenerics().size() - 1);
             } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                if (converter instanceof LiteralConverter) {
-                    var len = ((LiteralConverter) converter).knownLength();
-                    if (len.isPresent()) {
-                        var knownLen = len.orElseThrow();
-                        bytes.add(Bytecode.UNPACK_ITERABLE.value);
-                        bytes.add(Bytecode.POP_TOP.value);  // UNPACK_ITERABLE leaves length on top
-                        return (short) (knownLen.shortValue() - 1);
-                    }
+                bytes.add(Bytecode.UNPACK_ITERABLE.value);
+                if (!unknowns.isEmpty()) {
+                    bytes.add(Bytecode.DUP_TOP.value);
+                    bytes.add(Bytecode.SWAP_DYN.value);
+                    bytes.add(Bytecode.PLUS.value);
                 }
-                throw CompilerTodoError.of("Unpacking iterables in literals", value);
+                unknowns.add(i);
+                return 0;
             } else {
                 throw splatException(value, convRet);
             }

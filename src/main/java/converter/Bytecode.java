@@ -98,6 +98,9 @@ public enum Bytecode {
     DOTIMES(0x57, Type.LOCATION),
     FOR_PARALLEL(0x58, Type.LOCATION, Type.ARGC),
     MAKE_SLICE(0x59),
+    LIST_DYN(0x5A),
+    SET_DYN(0x5B),
+    DICT_DYN(0x5C),
     // Statics
     DO_STATIC(0x60, Type.LOCATION),
     STORE_STATIC(0x61, Type.VARIABLE),

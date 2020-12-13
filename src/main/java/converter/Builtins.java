@@ -674,7 +674,7 @@ public final class Builtins {
             return ((ListTypeObject) generics).getValues();
         } else {
             assert Builtins.ITERABLE.isSuperclass(val);
-            return val.operatorReturnType(OpSpTypeNode.ITER, AccessLevel.PUBLIC).orElseThrow();
+            return deIterable(val.operatorReturnType(OpSpTypeNode.ITER, AccessLevel.PUBLIC).orElseThrow()[0]);
         }
     }
 }
