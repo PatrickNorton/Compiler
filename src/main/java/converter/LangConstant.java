@@ -37,13 +37,7 @@ public interface LangConstant extends LangObject {
         var value = node.getValue();
         // If the value is an integer, e.g. 6
         if (value.scale() == 0 || value.stripTrailingZeros().scale() == 0) {
-            var bigInt = value.toBigIntegerExact();
-            // If the integer is small enough to fit into an int, do so
-            if (Util.fitsInInt(bigInt)) {
-                return new IntConstant(bigInt.intValueExact());
-            } else {
-                return new BigintConstant(bigInt);
-            }
+            return of(value.toBigIntegerExact());
         } else {
             return new DecimalConstant(value);
         }

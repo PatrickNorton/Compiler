@@ -40,7 +40,7 @@ public final class BigintConstant implements LangConstant {
         var biBytes = bigintBytes();
         bytes.add((byte) ConstantBytes.BIGINT.ordinal());
         bytes.addAll(Util.intToBytes(biBytes.size() / Integer.BYTES));
-        bytes.addAll(bigintBytes());
+        bytes.addAll(biBytes);
         return bytes;
     }
 

@@ -178,23 +178,29 @@ public final class Linker {
     }
 
     private void linkDeclaration(DeclaredAssignmentNode decl) {
-        if (decl.getNames().length > 1) {
-            throw CompilerTodoError.of("Top-level declared assignments with multiple values", decl);
+        if (decl.getValues().size() == 1 && decl.getTypes().length > 1) {
+            throw CompilerTodoError.of("Multiple returns in top-level declared assignment", decl);
+        } else if (decl.getValues().size() != decl.getTypes().length) {
+            throw CompilerException.of("Number of variables does not match number of values", decl);
         }
-        var dottedVar = decl.getTypes()[0];
-        var value = decl.getValues().get(0);
-        if (!dottedVar.getType().isDecided()) {
-            throw CompilerException.of("'var' is illegal in top-level declaration", decl);
-        }
-        var name = dottedVar.getVariable().getName();
-        var type = info.getType(dottedVar.getType());
-        globals.put(name, type);
-        var constant = TestConverter.constantReturn(value, info, 1);
-        if (constant.isPresent()) {
-            constants.put(name, (int) info.constIndex(constant.orElseThrow()));
-            info.addVariable(name, type, constant.orElseThrow(), decl);
-        } else {
-            info.addVariable(name, type, decl);
+        for (int i = 0; i < decl.getTypes().length; i++) {
+            var dottedVar = decl.getTypes()[i];
+            var value = decl.getValues().get(i);
+            if (!dottedVar.getType().isDecided()) {
+                throw CompilerException.of("'var' is illegal in top-level declaration", decl);
+            } else if (!decl.getValues().getVararg(i).isEmpty()) {
+                throw CompilerTodoError.of("Varargs in top-level declared assignment", decl);
+            }
+            var name = dottedVar.getVariable().getName();
+            var type = info.getType(dottedVar.getType());
+            globals.put(name, type);
+            var constant = TestConverter.constantReturn(value, info, 1);
+            if (constant.isPresent()) {
+                constants.put(name, (int) info.constIndex(constant.orElseThrow()));
+                info.addVariable(name, type, constant.orElseThrow(), decl);
+            } else {
+                info.addVariable(name, type, decl);
+            }
         }
     }
 

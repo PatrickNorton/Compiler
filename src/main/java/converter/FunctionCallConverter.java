@@ -88,10 +88,14 @@ public final class FunctionCallConverter implements TestConverter {
             if (value.isVararg()) {
                 var retType = converter.returnType()[0];
                 if (!(retType instanceof TupleType)) {
-                    throw CompilerException.format(
-                            "Illegal parameter expansion: Value must be a tuple, instead '%s'",
-                            value, retType.name()
-                    );
+                    if (retType.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                        throw CompilerTodoError.of("Unpacking iterables in function calls", value);
+                    } else {
+                        throw CompilerException.format(
+                                "Illegal parameter expansion: Value must be a tuple, instead '%s'",
+                                value, retType.name()
+                        );
+                    }
                 }
                 bytes.add(Bytecode.UNPACK_TUPLE.value);
                 var genCount = ((TupleType) retType).getGenerics().size();

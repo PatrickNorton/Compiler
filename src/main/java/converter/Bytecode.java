@@ -98,6 +98,9 @@ public enum Bytecode {
     DOTIMES(0x57, Type.LOCATION),
     FOR_PARALLEL(0x58, Type.LOCATION, Type.ARGC),
     MAKE_SLICE(0x59),
+    LIST_DYN(0x5A),
+    SET_DYN(0x5B),
+    DICT_DYN(0x5C),
     // Statics
     DO_STATIC(0x60, Type.LOCATION),
     STORE_STATIC(0x61, Type.VARIABLE),
@@ -115,6 +118,9 @@ public enum Bytecode {
     // Dups, part 2 (maybe realign?)
     DUP_TOP_2(0x78),
     DUP_TOP_N(0x79, Type.ARGC),
+    UNPACK_ITERABLE(0x7A),
+    PACK_ITERABLE(0x7B),
+    SWAP_DYN(0x7C),
     ;
 
     private enum Type {
