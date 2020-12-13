@@ -105,7 +105,7 @@ public final class LiteralConverter implements TestConverter {
             var generics = expected[0].getGenerics();
             return new TypeObject[] {literalCls.generify(node, generics.toArray(new TypeObject[0]))};
         } else {
-            var generics = returnTypes(node.getBuilders(), node.getIsSplats());
+            var generics = returnTypes();
             return new TypeObject[]{literalCls.generify(generics).makeMut()};
         }
     }
@@ -153,7 +153,7 @@ public final class LiteralConverter implements TestConverter {
                 );
             }
         } else {
-            retType = returnTypes(node.getBuilders(), node.getIsSplats());
+            retType = returnTypes();
             var builders = node.getBuilders();
             var isSplats = node.getIsSplats();
             for (int i = 0; i < builders.length; i++) {
@@ -231,7 +231,7 @@ public final class LiteralConverter implements TestConverter {
         }
         var generics = expected[0].getGenerics();
         literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
-        var genericType = returnTypes(node.getBuilders(), node.getIsSplats());
+        var genericType = returnTypes();
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
         bytes.add(literalType.bytecode.value);
@@ -240,7 +240,9 @@ public final class LiteralConverter implements TestConverter {
     }
 
     @NotNull
-    private TypeObject returnTypes(@NotNull TestNode[] args, String[] varargs) {
+    private TypeObject returnTypes() {
+        var args = node.getBuilders();
+        var varargs = node.getIsSplats();
         if (expected != null) {
             return TypeObject.union(expected[0].getGenerics());
         }
