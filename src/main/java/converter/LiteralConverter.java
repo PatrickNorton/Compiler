@@ -157,9 +157,7 @@ public final class LiteralConverter implements TestConverter {
             var builders = node.getBuilders();
             var isSplats = node.getIsSplats();
             for (int i = 0; i < builders.length; i++) {
-                additional += convertInner(
-                        bytes, start, builders[i], isSplats[i], retType, unknowns, i
-                );
+                additional += convertInner(bytes, start, builders[i], isSplats[i], retType, unknowns, i);
             }
         }
         var builderLen = node.getBuilders().length + additional - unknowns.size();
