@@ -161,6 +161,7 @@ public final class LiteralConverter implements TestConverter {
             }
         }
         var builderLen = node.getBuilders().length + additional - unknowns.size();
+        assert builderLen >= 0;
         if (unknowns.isEmpty()) {
             if (retType != null) {
                 bytes.add(Bytecode.LOAD_CONST.value);
@@ -173,9 +174,11 @@ public final class LiteralConverter implements TestConverter {
                 int index = unknowns.iterator().next();
                 throw CompilerException.of("Cannot unpack iterables in tuple literal", node.getBuilders()[index]);
             }
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(builderLen))));
-            bytes.add(Bytecode.PLUS.value);
+            if (builderLen != 0) {
+                bytes.add(Bytecode.LOAD_CONST.value);
+                bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(builderLen))));
+                bytes.add(Bytecode.PLUS.value);
+            }
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
             bytes.add(literalType.dynCode.value);
