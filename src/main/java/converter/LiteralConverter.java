@@ -141,11 +141,11 @@ public final class LiteralConverter implements TestConverter {
         }
         Set<Integer> unknowns = new HashSet<>();
         short additional = 0;
+        var builders = node.getBuilders();
+        var isSplats = node.getIsSplats();
         TypeObject retType;
         if (literalType == LiteralType.TUPLE) {
             retType = null;
-            var builders = node.getBuilders();
-            var isSplats = node.getIsSplats();
             var retTypes = tupleReturnTypes();
             for (int i = 0; i < retTypes.length; i++) {
                 additional += convertInner(
@@ -154,14 +154,12 @@ public final class LiteralConverter implements TestConverter {
             }
         } else {
             retType = returnTypes();
-            var builders = node.getBuilders();
-            var isSplats = node.getIsSplats();
             for (int i = 0; i < builders.length; i++) {
                 additional += convertInner(bytes, start, builders[i], isSplats[i], retType, unknowns, i);
             }
         }
         var builderLen = node.getBuilders().length + additional - unknowns.size();
-        assert builderLen >= 0;
+        assert builderLen >= 0 : "Should not have a negative number of builders";
         if (unknowns.isEmpty()) {
             if (retType != null) {
                 bytes.add(Bytecode.LOAD_CONST.value);
