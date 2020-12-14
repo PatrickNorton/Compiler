@@ -199,6 +199,7 @@ public final class LiteralConverter implements TestConverter {
                 var convRet = converter.returnType()[0];
                 bytes.addAll(converter.convert(start + bytes.size()));
                 if (convRet instanceof TupleType) {
+                    // TODO: Unpack tuple literals
                     bytes.add(Bytecode.UNPACK_TUPLE.value);
                     if (!unknowns.isEmpty()) {
                         throw CompilerTodoError.of("Tuple unpacking after dynamic unpack", value);
