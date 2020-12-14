@@ -165,7 +165,7 @@ public final class LiteralConverter implements TestConverter {
         if (unknowns.isEmpty()) {
             if (retType != null) {
                 bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+                bytes.addAll(Util.shortToBytes(typeConst(retType)));
             }
             bytes.add(literalType.bytecode.value);
             bytes.addAll(Util.shortToBytes((short) builderLen));
@@ -180,7 +180,7 @@ public final class LiteralConverter implements TestConverter {
                 bytes.add(Bytecode.PLUS.value);
             }
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+            bytes.addAll(Util.shortToBytes(typeConst(retType)));
             bytes.add(literalType.dynCode.value);
         }
         return bytes;
@@ -239,7 +239,7 @@ public final class LiteralConverter implements TestConverter {
         literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
         var genericType = returnTypes();
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
+        bytes.addAll(Util.shortToBytes(typeConst(genericType)));
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortZeroBytes());
         return bytes;
@@ -309,6 +309,10 @@ public final class LiteralConverter implements TestConverter {
             }
         }
         return result.toArray(new TypeObject[0]);
+    }
+
+    private short typeConst(TypeObject value) {
+        return info.constIndex(info.typeConstant(node, value));
     }
 
     private static CompilerException splatException(Lined info, TypeObject type) {
