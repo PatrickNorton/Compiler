@@ -189,6 +189,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
         }
         if (isStatic) {
+            assert fillPos != -1;
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
         }
         return bytes;
