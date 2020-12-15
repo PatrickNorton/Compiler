@@ -22,44 +22,6 @@ class TextWrapper {
     int? maxLines
     str placeholder
 
-    static var unicodeWhitespaceTrans = {ord(x): ord(' ') for var x in WHITESPACE}
-    static Regex wordsepRe
-    static Regex wordsepSimpleRe
-
-    static {
-        # This funky little regex is just the trick for splitting
-        # text up into word-wrappable chunks.  E.g.
-        #   "Hello there -- you goof-ball, use the -b option!"
-        # splits into
-        #   Hello/ /there/ /--/ /you/ /goof-/ball,/ /use/ /the/ /-b/ /option!
-        # (after stripping out empty strings).
-        var wordPunct = r'[\w!"\'&.,?]'
-        var letter = r'[^\d\W]'
-        var vwhitespace = r'[%s]' % re.escape(_whitespace)
-        var nowhitespace = '[^' + whitespace[1:]
-        wordsepRe = ref'(?x)
-            ( # any whitespace
-              {whitespace}+
-            | # em-dash between words
-              (?<={wordPunct} -{2,} (?=\w)
-            | # word, possibly hyphenated
-              {nowhitespace}+? (?:
-                # hyphenated word
-                  -(?: (?<={letter}{2}-) | (?<={letter}-{letter}-))
-                  (?= {letter} -? {letter})
-                | # end of word
-                  (?={whitespace}|\Z)
-                | # em-dash
-                  (?<={wordPunct}) (?=-{2,}\w)
-                )
-            )'
-        # This less funky little regex just split on recognized spaces. E.g.
-        #   "Hello there -- you goof-ball, use the -b option!"
-        # splits into
-        #   Hello/ /there/ /--/ /you/ /goof-ball,/ /use/ /the/ /-b/ /option!/
-        wordsepSimpleRe = ref'({whitespace}+)'
-    }
-
     # XXX this is not locale- or charset-aware -- string.lowercase
     # is US-ASCII only (and therefore English-only)
     static var sentence_end_re = ref'(?x)[a-z]    # lowercase letter
@@ -101,13 +63,45 @@ class TextWrapper {
             newText = newText.expandTabs(self.tabsize)
         }
         if self.replaceWhitespace {
-            newText = newText.translate(self.unicodeWhitespaceTrans)
+            static var unicodeWhitespaceTrans = {ord(x): ord(' ') for var x in WHITESPACE}
+            newText = newText.translate(unicodeWhitespaceTrans)
         }
         return text
     }
 
     private method split(str text) -> list[str] {
-        var chunks = (self.wordsepRe if self.breakOnHyphens else self.wordsepSimpleRe).split(text)
+        # This funky little regex is just the trick for splitting
+        # text up into word-wrappable chunks.  E.g.
+        #   "Hello there -- you goof-ball, use the -b option!"
+        # splits into
+        #   Hello/ /there/ /--/ /you/ /goof-/ball,/ /use/ /the/ /-b/ /option!
+        # (after stripping out empty strings).
+        static var wordPunct = r'[\w!"\'&.,?]'
+        static var letter = r'[^\d\W]'
+        static var vwhitespace = fr'[{re.escape(whitespace)}]'
+        static var nowhitespace = '[^' + whitespace[1:]
+        static var wordsepRe = ref'(?x)
+            ( # any whitespace
+              {whitespace}+
+            | # em-dash between words
+              (?<={wordPunct} -{2,} (?=\w)
+            | # word, possibly hyphenated
+              {nowhitespace}+? (?:
+                # hyphenated word
+                  -(?: (?<={letter}{2}-) | (?<={letter}-{letter}-))
+                  (?= {letter} -? {letter})
+                | # end of word
+                  (?={whitespace}|\Z)
+                | # em-dash
+                  (?<={wordPunct}) (?=-{2,}\w)
+                )
+            )'
+        # This less funky little regex just split on recognized spaces. E.g.
+        #   "Hello there -- you goof-ball, use the -b option!"
+        # splits into
+        #   Hello/ /there/ /--/ /you/ /goof-ball,/ /use/ /the/ /-b/ /option!/
+        static var wordsepSimpleRe = ref'({whitespace}+)'
+        var chunks = (wordsepRe if self.breakOnHyphens else wordsepSimpleRe).split(text)
         return [c for c in chunks if c]
     }
 
