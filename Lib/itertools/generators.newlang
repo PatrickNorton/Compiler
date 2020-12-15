@@ -3,7 +3,7 @@
 from .functions import any
 
 export accumulate, chain, compress, dropWhile, filter, filterEqual, filterFalse,
-export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipLongest
+export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipCount, zipLongest
 
 # With thanks to Python for all the ideas <3
 
@@ -129,9 +129,18 @@ generator func withNext(Iterable[T] values) -> T, T {
 }
 
 generic T, U
-generator func zip(Iterable[T] value1, Iterable[T] value2) -> T, U {
+generator func zip(Iterable[T] value1, Iterable[U] value2) -> T, U {
     for var i, var j in value1, value2 {
         yield i, j
+    }
+}
+
+generic T, U
+generator func zipCount(Iterable[T] value1, Iterable[T] value2) -> int, T, U {
+    mut int count = 0
+    for var i, var j in value1, value2 {
+        yield count, i, j
+        count++
     }
 }
 
