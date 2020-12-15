@@ -50,11 +50,11 @@ public final class StrArithmetic {
             }
         }
         if (Util.fitsInInt(mul)) {
-            long count = mul.intValueExact();
-            if ((value.length() * count) > Integer.MAX_VALUE) {
+            int count = mul.intValueExact();
+            if (value.length() * (long) count > Integer.MAX_VALUE) {
                 return Optional.empty();
             }
-            return Optional.of(LangConstant.of(value.repeat((int) count)));
+            return Optional.of(LangConstant.of(value.repeat(count)));
         } else {
             return Optional.empty();
         }
