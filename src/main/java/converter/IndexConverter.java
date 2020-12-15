@@ -113,7 +113,7 @@ public final class IndexConverter implements TestConverter {
         var maybeIndex = indexConstant();
         if (maybeIndex.isPresent()) {
             var index = maybeIndex.orElseThrow();
-            if (Util.fitsInInt(index) && index.intValueExact() < value.codePointCount(0, value.length())) {
+            if (Util.fitsInInt(index)) {
                 var result = value.codePoints().skip(index.intValueExact()).findFirst();
                 if (result.isPresent()) {
                     return Optional.of(new CharConstant(result.orElseThrow()));
