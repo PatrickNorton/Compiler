@@ -41,7 +41,6 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
 
     @NotNull
     private List<Byte> convertMultiple(int start) {
-        // FIXME: Tuple expansion
         var types = node.getTypes();
         var values = node.getValues();
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
