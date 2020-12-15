@@ -40,13 +40,28 @@ public final class LiteralConverter implements TestConverter {
             return Optional.empty();
         }
         List<Pair<Short, TypeObject>> values = new ArrayList<>(node.getBuilders().length);
-        for (var builder : node.getBuilders()) {
+        for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
+            var builder = pair.getKey();
+            var splat = pair.getValue();
             var constant = TestConverter.constantReturn(builder, info, 1);
             if (constant.isEmpty()) {
                 return Optional.empty();
             } else {
                 var value = constant.orElseThrow();
-                values.add(Pair.of(info.addConstant(value), value.getType()));
+                switch (splat) {
+                    case "":
+                        values.add(Pair.of(info.addConstant(value), value.getType()));
+                        break;
+                    case "*":
+                        if (value instanceof TupleConstant) {
+                            values.addAll(((TupleConstant) value).getValues());
+                        } else {
+                            return Optional.empty();
+                        }
+                        break;
+                    default:
+                        return Optional.empty();
+                }
             }
         }
         return Optional.of(new TupleConstant(values));
