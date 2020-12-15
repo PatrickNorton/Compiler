@@ -173,6 +173,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         boolean isConst = mutability.isConstRef();
         // Iterate backward b/c variables are in reversed order on the stack
         // B/c this is *declared* assignment, we know this to be side-effect free, so this is safe
+        // We probably don't even *need* to build up the stack here, but I'm slightly wary that might
+        // actually cause order-of-execution issues
         for (int i = types.length - 1; i >= 0; i--) {
             var assigned = types[i];
             var valueType = valueTypes[i];
@@ -188,6 +190,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
         }
         if (isStatic) {
+            assert fillPos != -1;
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
         }
         return bytes;

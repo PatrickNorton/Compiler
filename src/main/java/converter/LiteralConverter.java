@@ -40,13 +40,28 @@ public final class LiteralConverter implements TestConverter {
             return Optional.empty();
         }
         List<Pair<Short, TypeObject>> values = new ArrayList<>(node.getBuilders().length);
-        for (var builder : node.getBuilders()) {
+        for (var pair : Zipper.of(node.getBuilders(), node.getIsSplats())) {
+            var builder = pair.getKey();
+            var splat = pair.getValue();
             var constant = TestConverter.constantReturn(builder, info, 1);
             if (constant.isEmpty()) {
                 return Optional.empty();
             } else {
                 var value = constant.orElseThrow();
-                values.add(Pair.of(info.addConstant(value), value.getType()));
+                switch (splat) {
+                    case "":
+                        values.add(Pair.of(info.addConstant(value), value.getType()));
+                        break;
+                    case "*":
+                        if (value instanceof TupleConstant) {
+                            values.addAll(((TupleConstant) value).getValues());
+                        } else {
+                            return Optional.empty();
+                        }
+                        break;
+                    default:
+                        return Optional.empty();
+                }
             }
         }
         return Optional.of(new TupleConstant(values));
@@ -105,7 +120,7 @@ public final class LiteralConverter implements TestConverter {
             var generics = expected[0].getGenerics();
             return new TypeObject[] {literalCls.generify(node, generics.toArray(new TypeObject[0]))};
         } else {
-            var generics = returnTypes(node.getBuilders(), node.getIsSplats());
+            var generics = returnTypes();
             return new TypeObject[]{literalCls.generify(generics).makeMut()};
         }
     }
@@ -141,11 +156,11 @@ public final class LiteralConverter implements TestConverter {
         }
         Set<Integer> unknowns = new HashSet<>();
         short additional = 0;
+        var builders = node.getBuilders();
+        var isSplats = node.getIsSplats();
         TypeObject retType;
         if (literalType == LiteralType.TUPLE) {
             retType = null;
-            var builders = node.getBuilders();
-            var isSplats = node.getIsSplats();
             var retTypes = tupleReturnTypes();
             for (int i = 0; i < retTypes.length; i++) {
                 additional += convertInner(
@@ -153,20 +168,17 @@ public final class LiteralConverter implements TestConverter {
                 );
             }
         } else {
-            retType = returnTypes(node.getBuilders(), node.getIsSplats());
-            var builders = node.getBuilders();
-            var isSplats = node.getIsSplats();
+            retType = returnTypes();
             for (int i = 0; i < builders.length; i++) {
-                additional += convertInner(
-                        bytes, start, builders[i], isSplats[i], retType, unknowns, i
-                );
+                additional += convertInner(bytes, start, builders[i], isSplats[i], retType, unknowns, i);
             }
         }
         var builderLen = node.getBuilders().length + additional - unknowns.size();
+        assert builderLen >= 0 : "Should not have a negative number of builders";
         if (unknowns.isEmpty()) {
             if (retType != null) {
                 bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+                bytes.addAll(Util.shortToBytes(typeConst(retType)));
             }
             bytes.add(literalType.bytecode.value);
             bytes.addAll(Util.shortToBytes((short) builderLen));
@@ -175,11 +187,13 @@ public final class LiteralConverter implements TestConverter {
                 int index = unknowns.iterator().next();
                 throw CompilerException.of("Cannot unpack iterables in tuple literal", node.getBuilders()[index]);
             }
+            if (builderLen != 0) {
+                bytes.add(Bytecode.LOAD_CONST.value);
+                bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(builderLen))));
+                bytes.add(Bytecode.PLUS.value);
+            }
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(builderLen))));
-            bytes.add(Bytecode.PLUS.value);
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, retType))));
+            bytes.addAll(Util.shortToBytes(typeConst(retType)));
             bytes.add(literalType.dynCode.value);
         }
         return bytes;
@@ -188,36 +202,40 @@ public final class LiteralConverter implements TestConverter {
     private short convertInner(
             List<Byte> bytes, int start, TestNode value, String splat, TypeObject retType, Set<Integer> unknowns, int i
     ) {
-        if (splat.isEmpty()) {
-            bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
-            if (!unknowns.isEmpty()) {
-                bytes.add(Bytecode.SWAP_2.value);  // Keep unknown length on top
-            }
-            return 0;
-        } else if (splat.equals("*")) {
-            var converter = TestConverter.of(info, value, 1);
-            var convRet = converter.returnType()[0];
-            bytes.addAll(converter.convert(start + bytes.size()));
-            if (convRet instanceof TupleType) {
-                bytes.add(Bytecode.UNPACK_TUPLE.value);
+        switch (splat) {
+            case "":
+                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), value, info, 1, retType));
                 if (!unknowns.isEmpty()) {
-                    throw CompilerTodoError.of("Tuple unpacking after dynamic unpack", value);
+                    bytes.add(Bytecode.SWAP_2.value);  // Keep unknown length on top
                 }
-                return (short) (convRet.getGenerics().size() - 1);
-            } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                bytes.add(Bytecode.UNPACK_ITERABLE.value);
-                if (!unknowns.isEmpty()) {
-                    bytes.add(Bytecode.DUP_TOP.value);
-                    bytes.add(Bytecode.SWAP_DYN.value);
-                    bytes.add(Bytecode.PLUS.value);
-                }
-                unknowns.add(i);
                 return 0;
-            } else {
-                throw splatException(value, convRet);
-            }
-        } else {
-            throw CompilerException.format("Invalid splat '%s'", value, splat);
+            case "*":
+                var converter = TestConverter.of(info, value, 1);
+                var convRet = converter.returnType()[0];
+                bytes.addAll(converter.convert(start + bytes.size()));
+                if (convRet instanceof TupleType) {
+                    // TODO: Unpack tuple literals
+                    bytes.add(Bytecode.UNPACK_TUPLE.value);
+                    if (!unknowns.isEmpty()) {
+                        throw CompilerTodoError.of("Tuple unpacking after dynamic unpack", value);
+                    }
+                    return (short) (convRet.getGenerics().size() - 1);
+                } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                    bytes.add(Bytecode.UNPACK_ITERABLE.value);
+                    if (!unknowns.isEmpty()) {
+                        bytes.add(Bytecode.DUP_TOP.value);
+                        bytes.add(Bytecode.SWAP_DYN.value);
+                        bytes.add(Bytecode.PLUS.value);
+                    }
+                    unknowns.add(i);
+                    return 0;
+                } else {
+                    throw splatException(value, convRet);
+                }
+            case "**":
+                throw dictSplatException(value);
+            default:
+                throw unknownSplatError(value, splat);
         }
     }
 
@@ -233,33 +251,41 @@ public final class LiteralConverter implements TestConverter {
         }
         var generics = expected[0].getGenerics();
         literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
-        var genericType = returnTypes(node.getBuilders(), node.getIsSplats());
+        var genericType = returnTypes();
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType))));
+        bytes.addAll(Util.shortToBytes(typeConst(genericType)));
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortZeroBytes());
         return bytes;
     }
 
     @NotNull
-    private TypeObject returnTypes(@NotNull TestNode[] args, String[] varargs) {
+    private TypeObject returnTypes() {
+        var args = node.getBuilders();
+        var varargs = node.getIsSplats();
         if (expected != null) {
             return TypeObject.union(expected[0].getGenerics());
         }
         List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
-            if (varargs[i].isEmpty()) {
-                result.add(TestConverter.returnType(args[i], info, 1)[0]);
-            } else {
-                assert varargs[i].equals("*");
-                var retType = TestConverter.returnType(args[i], info, 1)[0];
-                if (retType instanceof TupleType) {
-                    result.addAll(retType.getGenerics());
-                } else if (Builtins.ITERABLE.isSuperclass(retType)) {
-                    result.add(Builtins.deIterable(retType)[0]);
-                } else {
-                    throw splatException(args[i], retType);
-                }
+            switch (varargs[i]) {
+                case "":
+                    result.add(TestConverter.returnType(args[i], info, 1)[0]);
+                    break;
+                case "*":
+                    var retType = TestConverter.returnType(args[i], info, 1)[0];
+                    if (retType instanceof TupleType) {
+                        result.addAll(retType.getGenerics());
+                    } else if (Builtins.ITERABLE.isSuperclass(retType)) {
+                        result.add(Builtins.deIterable(retType)[0]);
+                    } else {
+                        throw splatException(args[i], retType);
+                    }
+                    break;
+                case "**":
+                    throw dictSplatException(args[i]);
+                default:
+                    throw unknownSplatError(args[i], varargs[i]);
             }
         }
         return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
@@ -277,21 +303,30 @@ public final class LiteralConverter implements TestConverter {
             var arg = pair.getKey();
             var splat = pair.getValue();
             var value = TestConverter.returnType(arg, info, 1)[0];
-            if (splat.isEmpty()) {
-                result.add(value);
-            } else if (splat.equals("*")) {
-                if (value instanceof TupleType) {
-                    result.addAll(value.getGenerics());
-                } else if (value.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                    throw CompilerException.of("Cannot unpack iterable in tuple literal", arg);
-                } else {
-                    throw splatException(arg, value);
-                }
-            } else {
-                throw CompilerException.format("Invalid splat '%s'", arg, splat);
+            switch (splat) {
+                case "":
+                    result.add(value);
+                    break;
+                case "*":
+                    if (value instanceof TupleType) {
+                        result.addAll(value.getGenerics());
+                    } else if (value.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+                        throw CompilerException.of("Cannot unpack iterable in tuple literal", arg);
+                    } else {
+                        throw splatException(arg, value);
+                    }
+                    break;
+                case "**":
+                    throw dictSplatException(arg);
+                default:
+                    throw unknownSplatError(arg, splat);
             }
         }
         return result.toArray(new TypeObject[0]);
+    }
+
+    private short typeConst(TypeObject value) {
+        return info.constIndex(info.typeConstant(node, value));
     }
 
     private static CompilerException splatException(Lined info, TypeObject type) {
@@ -299,5 +334,15 @@ public final class LiteralConverter implements TestConverter {
                 "Cannot unpack type '%s': Unpacking is only valid on tuples or iterables",
                         info, type.name()
         );
+    }
+
+    private static CompilerException dictSplatException(Lined info) {
+        return CompilerException.of(
+                "Dictionary unpacking with '**' is only allowed in dict literals", info
+        );
+    }
+
+    private static CompilerInternalError unknownSplatError(Lined info, String splat) {
+        return CompilerInternalError.format("Unknown splat type '%s'", info, splat);
     }
 }

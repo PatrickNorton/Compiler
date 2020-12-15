@@ -6,8 +6,10 @@ import main.java.parser.SliceNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class IndexConverter implements TestConverter {
     private final IndexNode node;
@@ -18,6 +20,28 @@ public final class IndexConverter implements TestConverter {
         this.info = info;
         this.node = node;
         this.retCount = retCount;
+    }
+
+    @Override
+    public Optional<LangConstant> constantReturn() {
+        if (node.getIndices().length > 1) {
+            // No constant-foldable type has more than 1 index value yet
+            return Optional.empty();
+        }
+        var preDotConst = TestConverter.constantReturn(node.getVar(), info, 1);
+        if (preDotConst.isEmpty()) {
+            return Optional.empty();
+        }
+        var preDot = preDotConst.orElseThrow();
+        if (preDot instanceof StringConstant) {
+            return stringConstant(((StringConstant) preDot).getValue());
+        } else if (preDot instanceof RangeConstant) {
+            return rangeConstant((RangeConstant) preDot);
+        } else if (preDot instanceof BytesConstant) {
+            return bytesConstant(((BytesConstant) preDot).getValue());
+        } else {
+            return Optional.empty();
+        }
     }
 
     @NotNull
@@ -78,6 +102,66 @@ public final class IndexConverter implements TestConverter {
                     node, retType.name()
             );
         }
+    }
+
+    private Optional<BigInteger> indexConstant() {
+        assert node.getIndices().length == 1;
+        return TestConverter.constantReturn(node.getIndices()[0], info, 1).flatMap(IntArithmetic::convertConst);
+    }
+
+    private Optional<Integer> intIndexConstant() {
+        assert node.getIndices().length == 1;
+        return TestConverter.constantReturn(node.getIndices()[0], info, 1).flatMap(IntArithmetic::convertToInt);
+    }
+
+    private Optional<LangConstant> stringConstant(String value) {
+        var maybeIndex = intIndexConstant();
+        if (maybeIndex.isPresent()) {
+            var index = maybeIndex.orElseThrow();
+            var result = value.codePoints().skip(index).findFirst();
+            if (result.isPresent()) {
+                return Optional.of(new CharConstant(result.orElseThrow()));
+            } else {
+                return Optional.empty();
+
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<LangConstant> rangeConstant(RangeConstant value) {
+        var maybeIndex = indexConstant();
+        if (maybeIndex.isPresent()) {
+            var index = maybeIndex.orElseThrow();
+            if (value.getStart().isPresent()) {
+                var start = value.getStart().orElseThrow();
+                var step = value.getStep().orElse(BigInteger.ONE);
+                var result = start.add(index.multiply(step));
+                if (value.getStop().isEmpty() || inRange(result, value.getStop().orElseThrow(), step)) {
+                    return Optional.of(LangConstant.of(result));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static boolean inRange(BigInteger value, BigInteger stop, BigInteger step) {
+        if (step.signum() > 0) {
+            return value.compareTo(stop) < 0;
+        } else {
+            return value.compareTo(stop) > 0;
+        }
+    }
+
+    private Optional<LangConstant> bytesConstant(List<Byte> value) {
+        var maybeIndex = intIndexConstant();
+        if (maybeIndex.isPresent()) {
+            var index = maybeIndex.orElseThrow();
+            if (index < value.size()) {
+                return Optional.of(LangConstant.of(value.get(index)));
+            }
+        }
+        return Optional.empty();
     }
 
     public boolean isSlice() {

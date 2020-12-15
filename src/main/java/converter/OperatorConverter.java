@@ -155,11 +155,9 @@ public abstract class OperatorConverter implements TestConverter {
     private static Optional<BigInteger[]> allInts(LangConstant[] args) {
         BigInteger[] result = new BigInteger[args.length];
         for (int i = 0; i < args.length; i++) {
-            var constVal = args[i];
-            if (constVal instanceof IntConstant) {
-                result[i] = BigInteger.valueOf(((IntConstant) constVal).getValue());
-            } else if (constVal instanceof BigintConstant) {
-                result[i] = ((BigintConstant) constVal).getValue();
+            var constVal = IntArithmetic.convertConst(args[i]);
+            if (constVal.isPresent()) {
+                result[i] = constVal.orElseThrow();
             } else {
                 return Optional.empty();
             }

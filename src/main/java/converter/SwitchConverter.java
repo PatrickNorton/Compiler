@@ -152,14 +152,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             for (var label : stmt.getLabel()) {
                 var lblConverter = TestConverter.of(info, label, 1);
                 var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
-                BigInteger value;
-                if (constant instanceof IntConstant) {
-                    value = BigInteger.valueOf(((IntConstant) constant).getValue());
-                } else if (constant instanceof BigintConstant) {
-                    value = ((BigintConstant) constant).getValue();
-                } else {
-                    throw literalException("int", label);
-                }
+                var value = IntArithmetic.convertConst(constant).orElseThrow(() -> literalException("int", label));
                 if (jumps.containsKey(value)) {
                     throw CompilerException.format("Cannot define number %d twice in switch statement", node, value);
                 } else {

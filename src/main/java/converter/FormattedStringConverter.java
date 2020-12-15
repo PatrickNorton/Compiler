@@ -40,7 +40,7 @@ public final class FormattedStringConverter implements TestConverter {
         if (tests.length == 0) {
             CompilerWarning.warn("F-string with no formatted arguments", node);
         }
-        for (int i = 0; i < node.getStrings().length; i++) {
+        for (int i = 0; i < strings.length; i++) {
             bytes.add(Bytecode.LOAD_CONST.value);
             var constValue = LangConstant.of(strings[i]);
             bytes.addAll(Util.shortToBytes(info.constIndex(constValue)));

@@ -42,21 +42,19 @@ public final class StrArithmetic {
         String value = ((StringConstant) consts[0]).getValue();
         BigInteger mul = BigInteger.ONE;
         for (int i = 1; i < consts.length; i++) {
-            var constant = consts[i];
-            if (constant instanceof BigintConstant) {
-                mul = mul.multiply(((BigintConstant) constant).getValue());
-            } else if (constant instanceof IntConstant) {
-                mul = mul.multiply(BigInteger.valueOf(((IntConstant) constant).getValue()));
+            var constant = IntArithmetic.convertConst(consts[i]);
+            if (constant.isPresent()) {
+                mul = mul.multiply(constant.orElseThrow());
             } else {
                 return Optional.empty();
             }
         }
         if (Util.fitsInInt(mul)) {
-            long count = mul.intValueExact();
-            if ((value.length() * count) > Integer.MAX_VALUE) {
+            int count = mul.intValueExact();
+            if (value.length() * (long) count > Integer.MAX_VALUE) {
                 return Optional.empty();
             }
-            return Optional.of(LangConstant.of(value.repeat((int) count)));
+            return Optional.of(LangConstant.of(value.repeat(count)));
         } else {
             return Optional.empty();
         }

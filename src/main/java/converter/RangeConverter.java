@@ -107,16 +107,6 @@ public final class RangeConverter implements TestConverter {
     }
 
     private Optional<BigInteger> retVal(TestNode value) {
-        return TestConverter.constantReturn(value, info, 1).flatMap(RangeConverter::fromConstant);
-    }
-
-    private static Optional<BigInteger> fromConstant(LangConstant value) {
-        if (value instanceof BigintConstant) {
-            return Optional.of(((BigintConstant) value).getValue());
-        } else if (value instanceof IntConstant) {
-            return Optional.of(BigInteger.valueOf(((IntConstant) value).getValue()));
-        } else {
-            return Optional.empty();
-        }
+        return TestConverter.constantReturn(value, info, 1).flatMap(IntArithmetic::convertConst);
     }
 }

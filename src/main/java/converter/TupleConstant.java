@@ -17,6 +17,10 @@ public final class TupleConstant implements LangConstant {
         this.values = values;
     }
 
+    public List<Pair<Short, TypeObject>> getValues() {
+        return values;
+    }
+
     @Override
     @NotNull
     public List<Byte> toBytes() {
