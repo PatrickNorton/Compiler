@@ -110,14 +110,11 @@ public final class InConverter extends OperatorConverter {
     }
 
     private Optional<LangConstant> rangeConst(LangConstant arg0, RangeConstant arg1) {
-        BigInteger value;
-        if (arg0 instanceof IntConstant) {
-            value = BigInteger.valueOf(((IntConstant) arg0).getValue());
-        } else if (arg0 instanceof BigintConstant) {
-            value = ((BigintConstant) arg0).getValue();
-        } else {
+        var maybeVal = IntArithmetic.convertConst(arg0);
+        if (maybeVal.isEmpty()) {
             return Optional.empty();
         }
+        BigInteger value = maybeVal.orElseThrow();
         var mStart = arg1.getStart();
         var mStop = arg1.getStop();
         var step = arg1.getStep().orElse(BigInteger.ONE);

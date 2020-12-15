@@ -106,20 +106,24 @@ public final class IndexConverter implements TestConverter {
 
     private Optional<BigInteger> indexConstant() {
         assert node.getIndices().length == 1;
-        return TestConverter.constantReturn(node.getIndices()[0], info, 1).flatMap(IndexConverter::convertConst);
+        return TestConverter.constantReturn(node.getIndices()[0], info, 1).flatMap(IntArithmetic::convertConst);
+    }
+
+    private Optional<Integer> intIndexConstant() {
+        assert node.getIndices().length == 1;
+        return TestConverter.constantReturn(node.getIndices()[0], info, 1).flatMap(IntArithmetic::convertToInt);
     }
 
     private Optional<LangConstant> stringConstant(String value) {
-        var maybeIndex = indexConstant();
+        var maybeIndex = intIndexConstant();
         if (maybeIndex.isPresent()) {
             var index = maybeIndex.orElseThrow();
-            if (Util.fitsInInt(index)) {
-                var result = value.codePoints().skip(index.intValueExact()).findFirst();
-                if (result.isPresent()) {
-                    return Optional.of(new CharConstant(result.orElseThrow()));
-                } else {
-                    return Optional.empty();
-                }
+            var result = value.codePoints().skip(index).findFirst();
+            if (result.isPresent()) {
+                return Optional.of(new CharConstant(result.orElseThrow()));
+            } else {
+                return Optional.empty();
+
             }
         }
         return Optional.empty();
@@ -150,11 +154,11 @@ public final class IndexConverter implements TestConverter {
     }
 
     private Optional<LangConstant> bytesConstant(List<Byte> value) {
-        var maybeIndex = indexConstant();
+        var maybeIndex = intIndexConstant();
         if (maybeIndex.isPresent()) {
             var index = maybeIndex.orElseThrow();
-            if (Util.fitsInInt(index) && index.intValueExact() < value.size()) {
-                return Optional.of(LangConstant.of(value.get(index.intValueExact())));
+            if (index < value.size()) {
+                return Optional.of(LangConstant.of(value.get(index)));
             }
         }
         return Optional.empty();
@@ -181,15 +185,5 @@ public final class IndexConverter implements TestConverter {
         }
         bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
         return bytes;
-    }
-
-    private static Optional<BigInteger> convertConst(LangConstant constant) {
-        if (constant instanceof BigintConstant) {
-            return Optional.of(((BigintConstant) constant).getValue());
-        } else if (constant instanceof IntConstant) {
-            return Optional.of(BigInteger.valueOf(((IntConstant) constant).getValue()));
-        } else {
-            return Optional.empty();
-        }
     }
 }
