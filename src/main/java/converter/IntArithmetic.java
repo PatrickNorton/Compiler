@@ -18,6 +18,8 @@ public final class IntArithmetic {
             return Optional.of(BigInteger.valueOf(((IntConstant) value).getValue()));
         } else if (value instanceof BigintConstant) {
             return Optional.of(((BigintConstant) value).getValue());
+        } else if (value instanceof BoolConstant) {
+            return Optional.of(((BoolConstant) value).getValue() ? BigInteger.ONE : BigInteger.ZERO);
         } else {
             return Optional.empty();
         }
@@ -33,6 +35,8 @@ public final class IntArithmetic {
             } else {
                 return Optional.empty();
             }
+        } else if (value instanceof BoolConstant) {
+            return Optional.of(((BoolConstant) value).getValue() ? 1 : 0);
         } else {
             return Optional.empty();
         }
