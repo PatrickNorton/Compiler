@@ -86,6 +86,22 @@ func firstIndex(Callable[T, [Any]] predicate, Iterable[T] values) -> int? {
 }
 
 
+#|  FIXME: Generic lists
+generic T
+func flatten(Iterable[T?] values) -> list[T]? {
+    list[T] result = []
+    for var value in values {
+        if value? as v {
+            result.add(v)
+        } else {
+            return null
+        }
+    }
+    return result
+}
+|#
+
+
 generic T
 func last(Callable[T, [Any]] predicate, Iterable[T] values, T fallback) -> T {
     mut T lastSoFar = fallback
@@ -108,4 +124,3 @@ func lastIndex(Callable[T, [Any]] predicate, Iterable[T] values) -> int? {
     }
     return lastSoFar
 }
-
