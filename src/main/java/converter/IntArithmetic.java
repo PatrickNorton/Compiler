@@ -13,35 +13,6 @@ import java.util.Optional;
 public final class IntArithmetic {
     private IntArithmetic() {}
 
-    public static Optional<BigInteger> convertConst(LangConstant value) {
-        if (value instanceof IntConstant) {
-            return Optional.of(BigInteger.valueOf(((IntConstant) value).getValue()));
-        } else if (value instanceof BigintConstant) {
-            return Optional.of(((BigintConstant) value).getValue());
-        } else if (value instanceof BoolConstant) {
-            return Optional.of(((BoolConstant) value).getValue() ? BigInteger.ONE : BigInteger.ZERO);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    public static Optional<Integer> convertToInt(LangConstant value) {
-        if (value instanceof IntConstant) {
-            return Optional.of(((IntConstant) value).getValue());
-        } else if (value instanceof BigintConstant) {
-            var intVal = ((BigintConstant) value).getValue();
-            if (Util.fitsInInt(intVal)) {
-                return Optional.of(intVal.intValueExact());
-            } else {
-                return Optional.empty();
-            }
-        } else if (value instanceof BoolConstant) {
-            return Optional.of(((BoolConstant) value).getValue() ? 1 : 0);
-        } else {
-            return Optional.empty();
-        }
-    }
-
     public static Optional<LangConstant> computeConst(OperatorTypeNode op, BigInteger[] values) {
         switch (op) {
             case ADD:
@@ -110,6 +81,35 @@ public final class IntArithmetic {
                 return Optional.of(LangConstant.of(le(values)));
             default:
                 return Optional.empty();
+        }
+    }
+
+    public static Optional<BigInteger> convertConst(LangConstant value) {
+        if (value instanceof IntConstant) {
+            return Optional.of(BigInteger.valueOf(((IntConstant) value).getValue()));
+        } else if (value instanceof BigintConstant) {
+            return Optional.of(((BigintConstant) value).getValue());
+        } else if (value instanceof BoolConstant) {
+            return Optional.of(((BoolConstant) value).getValue() ? BigInteger.ONE : BigInteger.ZERO);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<Integer> convertToInt(LangConstant value) {
+        if (value instanceof IntConstant) {
+            return Optional.of(((IntConstant) value).getValue());
+        } else if (value instanceof BigintConstant) {
+            var intVal = ((BigintConstant) value).getValue();
+            if (Util.fitsInInt(intVal)) {
+                return Optional.of(intVal.intValueExact());
+            } else {
+                return Optional.empty();
+            }
+        } else if (value instanceof BoolConstant) {
+            return Optional.of(((BoolConstant) value).getValue() ? 1 : 0);
+        } else {
+            return Optional.empty();
         }
     }
 
