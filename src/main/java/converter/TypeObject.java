@@ -268,7 +268,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      *     This method returns {@link Optional#empty()} if either the attribute
      *     is not defined for the type or the access level given is not strict
      *     enough. For a method that unwraps the value and gives custom error
-     *     messages, see {@link #tryAttrType(Lined, String, AccessLevel)}. If
+     *     messages, see {@link #tryAttrType(LineInfo, String, AccessLevel)}. If
      *     attempting to assign to the attribute, use {@link
      *     #canSetAttr(String, AccessLevel)} to check validity.
      * </p>
@@ -276,7 +276,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param value The name of the attribute to access
      * @param access The access level with which to access the code
      * @return The type of the attribute
-     * @see #tryAttrType(Lined, String, AccessLevel)
+     * @see #tryAttrType(LineInfo, String, AccessLevel)
      * @see #canSetAttr(String, AccessLevel)
      */
     @NotNull
@@ -455,7 +455,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * @param access The level of access granted
      * @return The information representing the operator
      * @see #attrType(String, AccessLevel)
-     * @see #tryAttrType(Lined, String, AccessLevel)
+     * @see #tryAttrType(LineInfo, String, AccessLevel)
      * @implNote This is not {@code final} because {@link TypeTypeObject} has a
      *           better version for itself
      */
