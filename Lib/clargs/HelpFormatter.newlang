@@ -134,7 +134,7 @@ class HelpFormatter {
             var textWidth = self.width - self.currentIndent
             if prefix.length + usage.length > self.textWidth {
                 # break usage into wrappable parts
-                var partRegexp = re'\(.*?\)+(?=\s|$)|\[.*?\]+(?=\s|$)|\S+'
+                static var partRegexp = re'\(.*?\)+(?=\s|$)|\[.*?\]+(?=\s|$)|\S+'
 
                 var optUsage = format(optionals, groups)
                 var posUsage = format(positionals, groups)
