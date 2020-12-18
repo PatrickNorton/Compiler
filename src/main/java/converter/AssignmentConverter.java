@@ -9,6 +9,7 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Levenshtein;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -168,7 +169,15 @@ public final class AssignmentConverter implements BaseConverter {
 
     private void checkDef(String name, VariableNode variable) {
         if (info.varIsUndefined(name)) {
-            throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
+            var closest = Levenshtein.closestName(name, info.definedNames());
+            if (closest.isPresent()) {
+                throw CompilerException.format(
+                        "Attempted to assign to undefined name %s%n" +
+                        "Help: Did you mean %s?", variable, name, closest.orElseThrow()
+                );
+            } else {
+                throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
+            }
         }
         if (info.variableIsConstant(name)) {
             throw CompilerException.format("Cannot assign to const variable %s", variable, name);
