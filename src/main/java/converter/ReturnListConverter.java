@@ -158,12 +158,12 @@ public final class ReturnListConverter implements BaseConverter {
     }
 
     @NotNull
-    private static CompilerException typeError(
+    private CompilerException typeError(
             Lined lined, int index, @NotNull TypeObject retType, @NotNull TypeObject fnRet
     ) {
         return CompilerException.format(
-                "Value returned in position %d, of type '%s', is not a subclass of the required return '%s'",
-                lined, index, retType.name(), fnRet.name()
+                "Value %sed in position %d, of type '%s', is not a subclass of the required return '%s'",
+                lined, returnName(), index, retType.name(), fnRet.name()
         );
     }
 }
