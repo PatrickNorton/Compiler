@@ -3,7 +3,9 @@ package main.java.converter;
 import main.java.parser.ForStatementNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
+import main.java.parser.VarLikeNode;
 import main.java.parser.VariableNode;
+import main.java.util.Levenshtein;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -134,12 +136,10 @@ public final class ForConverter extends LoopConverter {
     }
 
     private TypeObject getIteratorType(int i, TestConverter valueConverter, boolean firstRet) {
-        if (node.getVars()[i] instanceof VariableNode) {
-            return info.getType(node.getVars()[i].getVariable().getName()).orElseThrow(
-                    () -> CompilerException.format("Variable %s not defined%n" +
-                                    "Help: consider adding 'var' before the variable",
-                            node.getVars()[i].getVariable(), node.getVars()[i].getVariable().getName()
-                    )
+        var variable = node.getVars()[i];
+        if (variable instanceof VariableNode) {
+            return info.getType(variable.getVariable().getName()).orElseThrow(
+                    () -> variableException(variable, info.definedNames())
             );
         }
         var iteratorType = node.getVars()[i].getType();
@@ -165,6 +165,24 @@ public final class ForConverter extends LoopConverter {
             return ((IndexConverter) converter).convertIterSlice(start);
         } else {
             return converter.convert(start);
+        }
+    }
+
+    private static CompilerException variableException(VarLikeNode variable, Iterable<String> names) {
+        var name = variable.getVariable().getName();
+        var closest = Levenshtein.closestName(name, names);
+        if (closest.isPresent()) {
+            return CompilerException.format(
+                    "Variable %s not defined. Did you mean %s?%n" +
+                            "Help: If not, consider adding 'var' before the variable",
+                    variable, name, closest.orElseThrow()
+            );
+        } else {
+            return  CompilerException.format(
+                    "Variable %s not defined%n" +
+                            "Help: consider adding 'var' before the variable",
+                    variable, name
+            );
         }
     }
 }
