@@ -70,22 +70,20 @@ public final class ReturnListConverter implements BaseConverter {
 
     private List<Byte> convertSingle(int start) {
         assert values.size() == 1;
-        var retInfo = info.getFnReturns();
-        var fnReturns = retInfo.currentFnReturns();
-        var converter = TestConverter.of(info, values.get(0), fnReturns.length);
+        var converter = TestConverter.of(info, values.get(0), retTypes.length);
         var retTypes = converter.returnType();
         checkSingleReturn(retTypes);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        for (int i = fnReturns.length - 1; i >= 0; i--) {
-            if (OptionTypeObject.needsMakeOption(retTypes[i], fnReturns[i])) {
-                int distFromTop = fnReturns.length - i - 1;
+        for (int i = retTypes.length - 1; i >= 0; i--) {
+            if (OptionTypeObject.needsMakeOption(retTypes[i], retTypes[i])) {
+                int distFromTop = retTypes.length - i - 1;
                 addSwap(bytes, distFromTop);
                 bytes.add(Bytecode.MAKE_OPTION.value);
                 addSwap(bytes, distFromTop);
             }
         }
         bytes.add(value.value);
-        bytes.addAll(Util.shortToBytes((short) fnReturns.length));
+        bytes.addAll(Util.shortToBytes((short) retTypes.length));
         return bytes;
     }
 
