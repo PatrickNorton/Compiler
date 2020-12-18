@@ -54,7 +54,7 @@ public final class IntAllocator extends AbstractCollection<Integer> implements C
     }
 
     public boolean contains(int value) {
-        return value < max && !removed.contains(value);
+        return value < max && value >= 0 && !removed.contains(value);
     }
 
     @Override
