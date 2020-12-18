@@ -53,16 +53,16 @@ public final class ReturnListConverter implements BaseConverter {
             case "*":
                 var retType = TestConverter.returnType(stmt, info, 1)[0];
                 if (retType.sameBaseType(Builtins.TUPLE)) {
-                    throw CompilerTodoError.of("Cannot convert return with varargs yet", stmt);
+                    throw CompilerTodoError.format("Cannot convert %s with varargs yet", stmt, returnName());
                 } else if (Builtins.ITERABLE.isSuperclass(retType)) {
-                    throw CompilerException.of("Cannot unpack iterable in return statement", stmt);
+                    throw CompilerException.format("Cannot unpack iterable in %s statement", stmt, returnName());
                 } else {
                     throw CompilerException.format(
-                            "Can only unpack tuples in return statement, not '%s'", stmt, retType.name()
+                            "Can only unpack tuples in %s statement, not '%s'", stmt, returnName(), retType.name()
                     );
                 }
             case "**":
-                throw CompilerException.of("Cannot unpack dictionaries in return statement", stmt);
+                throw CompilerException.format("Cannot unpack dictionaries in %s statement", stmt, returnName());
             default:
                 throw CompilerInternalError.format("Unknown splat type '%s'", stmt, vararg);
         }
@@ -106,8 +106,8 @@ public final class ReturnListConverter implements BaseConverter {
     private void checkReturnTypes() {
         assert !values.isEmpty();
         if (retTypes.length != values.size()) {
-            throw CompilerException.format("Incorrect number of values returned: expected %d, got %d",
-                    values.get(0), retTypes.length, values.size());
+            throw CompilerException.format("Incorrect number of values %sed: expected %d, got %d",
+                    values.get(0), returnName(), retTypes.length, values.size());
         }
         for (int i = 0; i < retTypes.length; i++) {
             var retType = TestConverter.returnType(values.get(i), info, 1)[0];
@@ -123,8 +123,8 @@ public final class ReturnListConverter implements BaseConverter {
         var fnReturns = retInfo.currentFnReturns();
         if (returns.length < fnReturns.length) {
             throw CompilerException.format(
-                    "Value given does not return enough values: expected at least %d, got %d",
-                    values.get(0), fnReturns.length, returns.length
+                    "Value given does not %s enough values: expected at least %d, got %d",
+                    values.get(0), returnName(), fnReturns.length, returns.length
             );
         }
         for (int i = 0; i < fnReturns.length; i++) {
@@ -133,6 +133,19 @@ public final class ReturnListConverter implements BaseConverter {
             if (badType(fnRet, retType)) {
                 throw typeError(values.get(0), i, retType, fnRet);
             }
+        }
+    }
+
+    private String returnName() {
+        switch (value) {
+            case RETURN:
+                return "return";
+            case YIELD:
+                return "yield";
+            default:
+                throw CompilerInternalError.format(
+                        "Unknown bytecode value for ReturnListConverter: %s", values, value
+                );
         }
     }
 
