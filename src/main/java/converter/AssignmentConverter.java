@@ -287,7 +287,7 @@ public final class AssignmentConverter implements BaseConverter {
         var assignedType = assignType(preDotConverter, pair.getValue(), variable);
         var valueConverter = TestConverter.of(info, value, 1, assignedType);
         var valueType = valueConverter.returnType()[0];
-        var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
+        var needsMakeOption = checkAssign(preDotConverter, pair.getValue(), valueType, variable);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.addAll(OptionTypeObject.maybeWrapBytes(valueConverter.convert(start + bytes.size()), needsMakeOption));
         storeBytes.add(0, Bytecode.STORE_ATTR.value);
@@ -352,7 +352,7 @@ public final class AssignmentConverter implements BaseConverter {
     ) {
         var pair = DotConverter.exceptLast(info, variable, 1);
         var preDotConverter = pair.getKey();
-        var needsMakeOption = checkAssign(preDotConverter, variable, valueType);
+        var needsMakeOption = checkAssign(preDotConverter, pair.getValue(), valueType, variable);
         bytes.addAll(preDotConverter.convert(start + bytes.size()));
         bytes.add(Bytecode.SWAP_2.value);
         if (needsMakeOption) {
@@ -377,12 +377,11 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private boolean checkAssign(
-            @NotNull TestConverter preDotConverter, @NotNull DottedVariableNode variable, TypeObject valueType
+            @NotNull TestConverter preDotConverter, @NotNull String name,
+            TypeObject valueType, DottedVariableNode value
     ) {
-        assert variable.getLast().getPostDot() instanceof VariableNode;
-        var last = (VariableNode) variable.getLast().getPostDot();
-        var dotType = TestConverter.returnType(variable, info, 1)[0];
         var preDotType = preDotConverter.returnType()[0];
+        var dotType = preDotType.tryAttrType(node, name, info);
         if (!dotType.isSuperclass(valueType)) {
             if (OptionTypeObject.needsMakeOption(dotType, valueType)
                     && OptionTypeObject.superWithOption(dotType, valueType)) {
@@ -390,18 +389,18 @@ public final class AssignmentConverter implements BaseConverter {
             }
             throw CompilerException.format(
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
-                    node, preDotType.name(), last.getName(), dotType.name(), valueType.name()
+                    node, preDotType.name(), name, dotType.name(), valueType.name()
             );
         } else {
-            if (!preDotType.canSetAttr(last.getName(), info) && !isConstructorException(preDotType, variable)) {
-                if (preDotType.makeMut().canSetAttr(last.getName(), info)) {
+            if (!preDotType.canSetAttr(name, info) && !isConstructorException(preDotType, value)) {
+                if (preDotType.makeMut().canSetAttr(name, info)) {
                     throw CompilerException.of(
                             "Cannot assign to value that is not 'mut' or 'final'", node
                     );
                 } else {
                     throw CompilerException.format(
                             "Cannot assign: '%s'.%s does not support assignment",
-                            node, preDotType.name(), last.getName()
+                            node, preDotType.name(), name
                     );
                 }
             }
