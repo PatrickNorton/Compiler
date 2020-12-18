@@ -5,6 +5,11 @@ import java.util.Optional;
 /**
  * The class for computing the Levenshtein distance between two strings.
  *
+ * <p>
+ *     The Levenshtein distance is the minimum number of single-character edits
+ *     required to transform a string into another. A single-character edit is
+ *     defined as an insertion, deletion, or substitution.
+ * </p>
  * @author Patrick Norton
  */
 public final class Levenshtein {
@@ -48,6 +53,20 @@ public final class Levenshtein {
         return dCol[tLast + 1];
     }
 
+    /**
+     * Finds the closest match to the given value from an {@link Iterable} of
+     * candidates.
+     *
+     * <p>
+     *     This institutes a threshold for returning a match: It will only
+     *     return if the Levenshtein distance is more than one-third of the
+     *     length of the original {@link String}. This is to prevent reporting
+     *     values that are unlikely to be a typo.
+     * </p>
+     * @param name The name to compare values to
+     * @param candidates The candidates to search
+     * @return The closest candidate, if within the threshold
+     */
     public static Optional<String> closestName(String name, Iterable<String> candidates) {
         String min = null;
         int dist = Integer.MAX_VALUE;
