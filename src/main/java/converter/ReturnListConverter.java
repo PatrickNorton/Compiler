@@ -84,7 +84,7 @@ public final class ReturnListConverter implements BaseConverter {
                 addSwap(bytes, distFromTop);
             }
         }
-        bytes.add(Bytecode.RETURN.value);
+        bytes.add(value.value);
         bytes.addAll(Util.shortToBytes((short) fnReturns.length));
         return bytes;
     }
