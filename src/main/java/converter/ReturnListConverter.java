@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.Lined;
 import main.java.parser.TestListNode;
+import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,15 +38,34 @@ public final class ReturnListConverter implements BaseConverter {
             bytes.addAll(TestConverter.bytesMaybeOption(start, values.get(0), info, 1, retTypes[0]));
         } else if (!values.isEmpty()) {
             for (var ret : values) {
-                if (!ret.getValue().isEmpty()) {
-                    throw CompilerTodoError.format("Cannot convert return with varargs yet", ret.getKey());
-                }
-                bytes.addAll(TestConverter.bytes(start, ret.getKey(), info, 1));
+                bytes.addAll(convertInner(start, ret.getKey(), ret.getValue()));
             }
         }
         bytes.add(value.value);
         bytes.addAll(Util.shortToBytes((short) retTypes.length));
         return bytes;
+    }
+
+    private List<Byte> convertInner(int start, TestNode stmt, String vararg) {
+        switch (vararg) {
+            case "":
+                return TestConverter.bytes(start, stmt, info, 1);
+            case "*":
+                var retType = TestConverter.returnType(stmt, info, 1)[0];
+                if (retType.sameBaseType(Builtins.TUPLE)) {
+                    throw CompilerTodoError.of("Cannot convert return with varargs yet", stmt);
+                } else if (Builtins.ITERABLE.isSuperclass(retType)) {
+                    throw CompilerException.of("Cannot unpack iterable in return statement", stmt);
+                } else {
+                    throw CompilerException.format(
+                            "Can only unpack tuples in return statement, not '%s'", stmt, retType.name()
+                    );
+                }
+            case "**":
+                throw CompilerException.of("Cannot unpack dictionaries in return statement", stmt);
+            default:
+                throw CompilerInternalError.format("Unknown splat type '%s'", stmt, vararg);
+        }
     }
 
     private List<Byte> convertSingle(int start) {
