@@ -8,6 +8,22 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * An allocator of positive integers.
+ *
+ * <p>
+ *     This functions similarly to how a {@link java.util.Set}<{@link Integer}>
+ *     would, but is more optimized for contiguous sets of values. In
+ *     particular, this is written using a maximum value and a set containing
+ *     all the values <i>not</i> contained in it. This means that storing all
+ *     numbers between {@code 0} and {@code n}, for any given {@code n} will
+ *     result in no heap allocations, and for each missing number below n will
+ *     increase the size of the set by 1.
+ * </p>
+ *
+ * @author Patrick Norton
+ * @see java.util.Set
+ */
 public final class IntAllocator extends AbstractCollection<Integer> implements Collection<Integer> {
     private int max;
     private final SortedSet<Integer> removed;
