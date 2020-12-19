@@ -1,8 +1,10 @@
 package main.java.converter;
 
 import main.java.parser.BaseClassNode;
+import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.ImportExportNode;
+import main.java.parser.IndependentNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
@@ -117,33 +119,13 @@ public final class ImportHandler {
                 }
             } else if (stmt instanceof InterfaceDefinitionNode) {
                 var cls = (InterfaceDefinitionNode) stmt;
-                var strName = cls.getName().strName();
-                if (types.containsKey(strName)) {
-                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                }
-                var generics = GenericInfo.parseNoTypes(cls.getName().getSubtypes());
-                var type = new InterfaceType(strName, generics);
-                generics.setParent(type);
-                types.put(strName, Pair.of(type, cls));
-                lineInfos.put(strName, cls.getLineInfo());
-                definedInFile.add(type);
+                var type = (InterfaceType) registerClass(types, lineInfos, definedInFile, stmt);
                 if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
                     ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));
                     hasAuto = Optional.of(cls);
                 }
             } else if (stmt instanceof BaseClassNode) {
-                var cls = (BaseClassNode) stmt;
-                var strName = cls.getName().strName();
-                if (types.containsKey(strName)) {
-                    throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
-                }
-                var generics = GenericInfo.parseNoTypes(cls.getName().getSubtypes());
-                var type = stmt instanceof UnionDefinitionNode
-                        ? new UnionTypeObject(strName, generics) : new StdTypeObject(strName, generics);
-                generics.setParent(type);
-                types.put(strName, Pair.of(type, cls));
-                lineInfos.put(strName, cls.getLineInfo());
-                definedInFile.add(type);
+                registerClass(types, lineInfos, definedInFile, stmt);
             } else if (stmt instanceof TypedefStatementNode) {
                 typedefs.push((TypedefStatementNode) stmt);
             }
@@ -167,6 +149,36 @@ public final class ImportHandler {
         }
         info.accessHandler().setDefinedInFile(definedInFile);
     }
+
+    private UserType<?> registerClass(
+            Map<String, Pair<TypeObject, Lined>> types,
+            Map<String, LineInfo> lineInfos,
+            Set<TypeObject> definedInFile,
+            IndependentNode stmt
+    ) {
+        var cls = (BaseClassNode) stmt;
+        var strName = cls.getName().strName();
+        if (types.containsKey(strName)) {
+            throw CompilerException.doubleDef(strName, stmt.getLineInfo(), lineInfos.get(strName));
+        }
+        var generics = GenericInfo.parseNoTypes(cls.getName().getSubtypes());
+        UserType<?> type;
+        if (stmt instanceof ClassDefinitionNode) {
+            type = new StdTypeObject(strName, generics);
+        } else if (stmt instanceof UnionDefinitionNode) {
+            type = new UnionTypeObject(strName, generics);
+        } else if (stmt instanceof InterfaceDefinitionNode) {
+            type = new InterfaceType(strName, generics);
+        } else {
+            throw CompilerInternalError.format("Unknown class type %s", stmt, stmt.getClass());
+        }
+        generics.setParent(type);
+        types.put(strName, Pair.of(type, cls));
+        lineInfos.put(strName, cls.getLineInfo());
+        definedInFile.add(type);
+        return type;
+    }
+
 
     /**
      * Takes the already-linked {@link Linker linker} for this file and uses it

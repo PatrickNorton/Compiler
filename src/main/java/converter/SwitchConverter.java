@@ -7,6 +7,7 @@ import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.StringEscape;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -196,7 +197,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     var value = ((StringConstant) constant).getValue();
                     if (jumps.containsKey(value)) {
                         throw CompilerException.format(
-                                "Cannot define str \"%s\" twice in switch statement", node, value
+                                "Cannot define str \"%s\" twice in switch statement",
+                                node, StringEscape.unescape(value)
                          );
                     } else {
                         jumps.put(value, start + bytes.size());

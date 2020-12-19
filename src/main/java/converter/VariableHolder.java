@@ -108,7 +108,7 @@ final class VariableHolder {
                 return;
             }
         }
-        throw CompilerException.format("Variable %s not defined", LineInfo.empty(), name);
+        throw CompilerInternalError.format("Variable %s not defined", LineInfo.empty(), name);
     }
 
     /**

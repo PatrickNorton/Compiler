@@ -79,6 +79,25 @@ public class CompilerInternalError extends RuntimeException {
      * </p>
      *
      * @param message The message to be formatted
+     * @param node The {@link LineInfo} to get line information from
+     * @param values The formatting args
+     * @return The exception
+     * @see #of(String, LineInfo)
+     * @see String#format(String, Object...)
+     */
+    @NotNull
+    public static CompilerInternalError format(String message, LineInfo node, Object... values) {
+        return of(String.format(message, values), node);
+    }
+
+    /**
+     * Create a CompilerInternalError with a formatted error message.
+     * <p>
+     *     Equivalent to {@code CompilerInternalError.of(String.format(message,
+     *     values), node)}.
+     * </p>
+     *
+     * @param message The message to be formatted
      * @param node The {@link Lined} object to get a {@link LineInfo} from
      * @param values The formatting args
      * @return The exception

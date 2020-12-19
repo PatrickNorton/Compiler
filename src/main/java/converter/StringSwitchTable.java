@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.util.StringEscape;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public final class StringSwitchTable implements SwitchTable {
     public String strDisassembly() {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {
-            value.append(String.format("\"%s\": %d%n", pair.getKey(), pair.getValue()));
+            value.append(String.format("\"%s\": %d%n", StringEscape.unescape(pair.getKey()), pair.getValue()));
         }
         value.append(String.format("default: %d%n", defaultVal));
         return value.toString();
