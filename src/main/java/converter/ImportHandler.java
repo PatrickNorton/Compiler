@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.BaseClassNode;
 import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
+import main.java.parser.EnumDefinitionNode;
 import main.java.parser.ImportExportNode;
 import main.java.parser.IndependentNode;
 import main.java.parser.InterfaceDefinitionNode;
@@ -163,7 +164,7 @@ public final class ImportHandler {
         }
         var generics = GenericInfo.parseNoTypes(cls.getName().getSubtypes());
         UserType<?> type;
-        if (stmt instanceof ClassDefinitionNode) {
+        if (stmt instanceof ClassDefinitionNode || stmt instanceof EnumDefinitionNode) {
             type = new StdTypeObject(strName, generics);
         } else if (stmt instanceof UnionDefinitionNode) {
             type = new UnionTypeObject(strName, generics);
