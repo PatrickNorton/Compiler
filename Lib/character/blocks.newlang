@@ -1,0 +1,50 @@
+export UnicodeBlock
+
+# (Will be) Accurate as of Unicode 13: see https://www.unicode.org/Public/UNIDATA/Blocks.txt
+enum UnicodeBlock {
+    BASIC_LATIN("Basic Latin", 0x0000, 0x007F),
+    LATIN_1_SUPPLEMENT("Latin-1 Supplement", 0x0080, 0x00FF),
+    LATIN_EXTENDED_A("Latin Extended-A", 0x0100, 0x017F),
+    LATIN_EXTENDED_B("Latin Extended-B", 0x0180, 0x024F),
+    IPA_EXTENSIONS("IPA Extensions", 0x0250, 0x02AF),
+    SPACING_MODIFIER_LETTERS("Spacing Modifier Letters", 0x02B0, 0x02FF),
+    COMBINING_DIACRITICAL_MARKS("Combining Diacritical Marks", 0x0300, 0x036F),
+    GREEK("Greek and Coptic", 0x0370, 0x03FF),
+    CRYLLIC("Cryllic", 0x0400, 0x04FF),
+    CRYLLIC_SUPPLEMENT("Cryllic Supplement", 0x0500, 0x052F)
+    ARMENIAN("Armenian", 0x0530, 0x058F),
+    HEBREW("Hebrew", 0x0590, 0x05FF),
+    ARABIC("Arabic", 0x0600, 0x06FF),
+    SYRIAC("Syriac", 0x0700, 0x074F),
+    ARABIC_SUPPLEMENT("Arabic Supplement", 0x0750, 0x077F),
+    THAANA("Thaana", 0x0780, 0x07BF),
+    NKO("NKo", 0x07C0, 0x07FF),
+    SAMARITAN("Samaritan", 0x0800, 0x083F),
+    MANDAIC("Mandaic", 0x0840, 0x085F),
+    SYRIAC_SUPPLEMENT("Syriac Supplement", 0x0860, 0x086F),
+    # Unallocated: 0x0870..0x089F
+    ARABIC_EXTENDED_A("Arabic Extended-A", 0x08A0, 0x08FF),
+    DEVANAGARI("Devanagari", 0x0900, 0x097F),
+    BENGALI("Bengali", 0x0980, 0x09FF),
+    GURMUKHI("Gurmukhi", 0x0A00, 0x0A7F),
+    GUJARATI("Gujarati", 0x0A80, 0x0A8F),
+    ORIYA("Oriya", 0x0B00, 0x0B7F),
+    TAMIL("Tamil", 0x0B80, 0x0BFF),
+    TELUGU("Telugu", 0x0C00, 0x0C7F),
+    KANNADA("Kannada", 0x0C80, 0x0CFF),
+    MALAYALAM("Malayalam", 0x0D00, 0x0D7F),
+    THAI("THAI", 0x0E00, 0x0E7F),
+    LAO("LAO", 0x0E80, 0x0EFF),
+    TIBETAN("TIBETAN", 0x0F00, 0x0FFF)
+
+
+    private str idName
+    private int first
+    private int last
+
+    operator new(str idName, int first, int last) {
+        self.idName = idName
+        self.first = first
+        self.last = last
+    }
+}
