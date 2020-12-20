@@ -107,7 +107,8 @@ enum UnicodeBlock {
     SUPPLEMENTAL_PUNCTUATION("Supplemental Punctuation", 0x2E00, 0x2E7F),
     CJK_RADICALS_SUPPLEMENT("CJK Radicals Supplement", 0x2E80, 0x2EFF),
     KANGXI_RADICALS("Kangxi Radicals", 0x2F00, 0x2FDF),
-    IDEOGRAPHIC_DESCRIPTION_CHARACTERS("Ideographic Description Characters", 0x2FE0, 0x2FFF),
+    # Unallocated: 0x2FE0..0x2FEF
+    IDEOGRAPHIC_DESCRIPTION_CHARACTERS("Ideographic Description Characters", 0x2FF0, 0x2FFF),
     CJK_SYMBOLS_AND_PUNCTUATION("CJK Symbols and Punctuation", 0x3000, 0x303F),
     HIRAGANA("Hiragana", 0x3040, 0x309F),
     KATAKANA("Katakana", 0x30A0, 0x30FF),
@@ -134,7 +135,7 @@ enum UnicodeBlock {
     COMMON_INDIC_NUMBER_FORMS("Common Indic Number Forms", 0xA830, 0xA83F),
     PHAGS_PA("Phags-pa", 0xA840, 0xA87F),
     SAURASHTRA("Saurashtra", 0xA880, 0xA8DF),
-    DEVANGARI_EXTENDED("Devangari Extended", 0xA8E0, 0xA8FF),
+    DEVANAGARI_EXTENDED("Devanagari Extended", 0xA8E0, 0xA8FF),
     KAYAH_LI("Kayak Li", 0xA900, 0xA92F),
     REJANG("Rejang", 0xA930, 0xA95F),
     HANGUL_JAMO_EXTENDED_A("Hangul Jamo Extended-A", 0xA960, 0xA97F),
