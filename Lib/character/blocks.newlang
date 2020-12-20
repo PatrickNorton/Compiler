@@ -270,6 +270,49 @@ enum UnicodeBlock {
     # Unallocated: 0x11F00..0x11FB0
     LISU_SUPPLEMENT("Lisu Supplement", 0x11FB0, 0x11FBF),
     TAMIL_SUPPLEMENT("Tamil Supplement", 0x11FC0, 0x11FFF),
+    CUNEIFORM("Cuneiform", 0x12000, 0x123FF),
+    CUNEIFORM_NUMBERS_AND_PUNCTUATION("Cuneiform Numbers and Punctuation", 0x12400, 0x1247F),
+    EARLY_DYNASTIC_CUNEIFORM("Early Dynastic Cuneiform", 0x12480, 0x1254F),
+    # Unallocated: 0x12550..0x12FFF
+    EGYPTIAN_HIEROGLYPHS("Egyptian Hieroglyphs", 0x13000, 0x1342F),
+    EGYPTIAN_HIEROGLYPH_FORMAT_CONTROLS("Egyptian Hieroglyph Format Controls", 0x13430, 0x1343F),
+    # Unallocated: 0x13440..0x143FF
+    ANATOLIAN_HIEROGLYPHS("Anatolian Hieroglyphs", 0x14400, 0x1467F),
+    # Unallocated: 0x14680..0x167FF
+    BAMUM_SUPPLEMENT("Bamum Supplement", 0x16800, 0x16A3F),
+    MRO("Mro", 0x16840, 0x16A6F),
+    BASSA_VAH("Bassa Vah", 0x16AD0, 0x16AFF),
+    PAHAWH_HMONG("Pahawh Hmong", 0x16B00, 0x16B8F),
+    # Unallocated: 0x16B90..0x16E3F
+    MEDEFAIDRIN("Medefaidrin", 0x16E40, 0x16E9F),
+    # Unallocated: 0x16EA0..0x16EFF
+    MIAO("Miao", 0x16F00, 0x16F9F),
+    # Unallocated: 0x16FA0..0x16FDF
+    IDEOGRAPHIC_SYMBOLS_AND_PUNCTUATION("Ideographic Symbols and Punctuation", 0x16FE0, 0x16FFF),
+    TANGUT("Tangut", 0x17000, 0x187FF),
+    TANGUT_COMPONENTS("Tangut Components", 0x18800, 0x18AFF),
+    KHITAN_SMALL_SCRIPT("Khitan Small Script", 0x18B00, 0x18CFF),
+    TANGUT_SUPPLEMENT("Tangut Supplement", 0x18D00, 0x18D8F),
+    # Unallocated: 0x18D90..0x1AFFF
+    KANA_SUPPLEMENT("Kana Supplement", 0x1B000, 0x1B0FF),
+    KANA_EXTENDED_A("Kana Extended-A", 0x1B100, 0x1B12F),
+    SMALL_KANA_EXTENSION("Small Kana Extension", 0x1B130, 0x1B16F),
+    NUSHU("Nushu", 0x1B170, 0x1B2FF),
+    # Unallocated: 0x1B300..0x1BBFF
+    DUPLOYAN("Duployan", 0x1BC00, 0x1BC9F),
+    SHORTHAND_FORMAT_CONTROLS("Shorthand Format Controls", 0x1BCA0, 0x1BCAF),
+    # Unallocated: 0x1BCD0..0x1CFFF
+    BYZANTINE_MUSICAL_SYMBOLS("Byzantine Musical Symbols", 0x1D000, 0x1D0FF),
+    MUSICAL_SYMBOLS("Musical Symbols", 0x1D100, 0x1D1FF),
+    ANCIENT_GREEK_MUSICAL_NOTATION("Ancient Greek Musical Notation", 0x1D200, 0x1D24F),
+    # Unallocated: 0x1D250..0x1D2DF
+    MAYAN_NUMERALS("Mayan Numerals", 0x1D2E0, 0x1D2FF),
+    TAI_XUAN_JING_SYMBOLS("Tai Xuan Jing Symbols", 0x1D300, 0x1D35F),
+    COUNTING_ROD_NUMERALS("Counting Rod Numerals", 0x1D360, 0x1D37F),
+    # Unallocated: 0x1D380..0x1D3FF
+    MATHEMATICAL_ALPHANUMERIC_SYMBOLS("Mathematical Alphanumeric Symbols", 0x1D400, 0x1D7FF),
+    SUTTON_SIGNWRITING("Sutton SignWriting", 0x1D800, 0x1DAAF),
+    # Unallocated: 0x1DAB0..0x1DFFF
 
     private str idName
     private int first
