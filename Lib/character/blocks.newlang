@@ -148,6 +148,23 @@ enum UnicodeBlock {
     LATIN_EXTENDED_E("Latin Extended-E", 0xAB30, 0xAB6F),
     CHEROKEE_SUPPLEMENT("Cherokee Supplement", 0xAB70, 0xABBF),
     MEETEI_MEYEK("Meetei Mayek", 0xABC0, 0xABFF),
+    HANGUL_SYLLABLES("Hangul Syllables", 0xAC00, 0xD7AF),
+    HANGUL_JAMO_EXTENDED_B("Hangul Jamo Extended-B", 0xD7B0, 0xD7FF),
+    HIGH_SURROGATES("High Surrogates", 0xD800, 0xD7BF),
+    HIGH_PRIVATE_USE_SURROGATES("High Private Use Surrogates", 0xD7C0, 0xDBFF),
+    LOW_SURROGATES("Low Surrogates", 0xDC00, 0xDFFF),
+    PRIVATE_USE_AREA("Private Use Area", 0xE000, 0xF8FF),
+    CJK_COMPATIBILITY_IDEOGRAPHS("CJK Compatibility Ideographs", 0xF900, 0xFAFF),
+    ALPHABETIC_PRESENTATION_FORMS("Alphabetic Presentation Forms", 0xFB00, 0xFB4F),
+    ARABIC_PRESENTATION_FORMS_A("Arabic Presentation Forms-A", 0xFB50, 0xFDFF),
+    VARIATION_SELECTORS("Variation Selectors", 0xFE00, 0xFE0F),
+    VERTICAL_FORMS("Vertical Forms", 0xFE10, 0xFE1F),
+    COMBINING_HALF_MARKS("Combining Half Marks", 0xFE20, 0xFE2F),
+    CJK_COMPATIBILITY_FORMS("CJK Compatibility Forms", 0xFE30, 0xFE4F),
+    SMALL_FORM_VARIANTS("Small Form Variants", 0xFE50, 0xFE6F),
+    ARABIC_PRESENTATION_FORMS_B("Arabic Presentation Forms-B", 0xFE70, 0xFEFF),
+    HALFWIDTH_AND_FULLWIDTH_FORMS("Halfwidth and Fullwidth Forms", 0xFF00, 0xFFEF),
+    SPECIALS("Specials", 0xFFF0, 0xFFFF),
 
     private str idName
     private int first
