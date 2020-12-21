@@ -1,6 +1,6 @@
 export UnicodeBlock
 
-# (Will be) Accurate as of Unicode 13: see https://www.unicode.org/Public/UNIDATA/Blocks.txt
+# Accurate as of Unicode 13: see https://www.unicode.org/Public/UNIDATA/Blocks.txt
 enum UnicodeBlock {
     BASIC_LATIN("Basic Latin", 0x0000, 0x007F),
     LATIN_1_SUPPLEMENT("Latin-1 Supplement", 0x0080, 0x00FF),
@@ -313,6 +313,54 @@ enum UnicodeBlock {
     MATHEMATICAL_ALPHANUMERIC_SYMBOLS("Mathematical Alphanumeric Symbols", 0x1D400, 0x1D7FF),
     SUTTON_SIGNWRITING("Sutton SignWriting", 0x1D800, 0x1DAAF),
     # Unallocated: 0x1DAB0..0x1DFFF
+    GLAGOLITIC_SUPPLEMMENT("Glagolitic Supplement", 0x1E000, 0x1E02F),
+    # Unallocated: 0x1E030..0x1E0FF
+    NYIAKENG_PUACHUE_HMONG("Nyiakeng Puachue Hmong", 0x1E100, 0x1E14F),
+    # Unallocated: 0x1E150..0x1E2BF
+    WANCHO("Wancho", 0x1E2C0, 0x1E2FF),
+    # Unallocated: 0x1E300..0x1E7FF
+    MENDE_KIKAKUI("Mende Kikakui", 0x1E800, 0x1E8DF),
+    # Unallocated: 0x1E8E0..0x1E8FF
+    ADLAM("Adlam", 0x1E900, 0x1E95F),
+    # Unallocated: 0x1E960..0x1EC6F
+    INDIC_SIYAQ_NUMBERS("Indic Siyaq Numbers", 0x1EC70, 0x1ECBF),
+    # Unallocated: 0x1ECC0..0x1ECFF
+    OTTOMAN_SIYAQ_NUMBERS("Ottoman Siyaq Numbers", 0x1ED00, 0x1ED4F),
+    # Unallocated: 0x1ED50..0x1EDFF
+    ARABIC_MATHEMATICAL_ALPHABETIC_SYMBOLS("Arabic Mathematical Alphabetic Symbols", 0x1EE00, 0x1EEFF),
+    # Unallocated: 0x1EF00..0x1EFFF
+    MAHJONG_TILES("Mahjong Tiles", 0x1F000, 0x1F02F),
+    DOMINO_TILES("Domino Tiles", 0x1F030, 0x1F09F),
+    PLAYING_CARDS("Playing Cards", 0x1F0A0, 0x1F0FF),
+    ENCLOSED_ALPHANUMERIC_SUPPLEMENT("Enclosed Alphanumeric Supplement", 0x1F100, 0x1F1FF),
+    ENCLOSED_IDEOGRAPHIC_SUPPLEMENT("Enclosed Ideographic Supplement", 0x1F200, 0x1F2FF),
+    MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS("Miscellaneous Symbols and Pictographs", 0x1F300, 0x1F5FF),
+    EMOTICONS("Emoticons", 0x1F600, 0x1F64F),
+    ORNAMENTAL_DINGBATS("Ornamental Dingbats", 0x1F650, 0x1F67F),
+    TRANSPORT_AND_MAP_SYMBOLS("Transport and Map Symbols", 0x1F680, 0x1F6FF),
+    ALCHEMICAL_SYMBOLS("Alchemical Symbols", 0x1F700, 0x1F77F),
+    GEOMETRIC_SHAPES_EXTENDED("Geometric Shapes Extended", 0x1F780, 0x1F7FF),
+    SUPPLEMENTAL_ARROWS_C("Supplemental Arrows-C", 0x1F800, 0x1F8FF),
+    SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS("Supplemental Symbols and Pictographs", 0x1F900, 0x1F9FF),
+    CHESS_SYMBOLS("Chess Symbols", 0x1FA00, 0x1FA6F),
+    SYMBOLS_AND_PICTOGRAPHS_EXTENDED_A("Symbols and Pictographs Extended-A", 0x1FA70, 0x1FAFF),
+    SYMBOLS_FOR_LEGACY_COMPUTING("Symbols for Legacy Computing", 0x1FB00, 0x1FBFF),
+    # Unallocated: 0x1FC00..0x1FFFF
+    CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B("CJK Unified Ideographs Extension B", 0x20000, 0x2A6DF),
+    CJK_UNIFIED_IDEOGRAPHS_EXTENSION_C("CJK Unified Ideographs Extension C", 0x2A700, 0x2B73F),
+    CJK_UNIFIED_IDEOGRAPHS_EXTENSION_D("CJK Unified Ideographs Extension D", 0x2B740, 0x2B81F),
+    CJK_UNIFIED_IDEOGRAPHS_EXTENSION_E("CJK Unified Ideographs Extension E", 0x2B820, 0x2CEAF),
+    CJK_UNIFIED_IDEOGRAPHS_EXTENSION_F("CJK Unified Ideographs Extension F", 0x2CEB0, 0x2EBEF),
+    # Unallocated: 0x2EBF0..0x2F7FF
+    CJK_COMPATABILITY_IDEOGRAPHS_SUPPLEMENT("CJK Compatibility Ideographs Supplement", 0x2F800, 0x2FA1F),
+    # Unallocated: 0x2FA20..0x2FFFF
+    CJK_UNIFIED_IDEOGRAPHS_EXTENSION_G("CJK Unified Ideographs Extension F", 0x30000, 0x3134F),
+    # Unallocated: 0x31350..0xDFFFF
+    TAGS("Tags", 0xE0000, 0xE007F),
+    VARIATION_SELECTORS_SUPPLEMENT("Variation Selectors Supplement", 0xE0100, 0xE01EF),
+    # Unallocated: 0xE01F0..0xEFFFF
+    SUPPLEMENTARY_PRIVATE_USE_AREA_A("Supplementary Private Use Area-A", 0xF0000, 0xFFFFF),
+    SUPPLEMENTARY_PRIVATE_USE_AREA_B("Supplementary Private Use Area-B", 0x100000, 0x10FFFF),
 
     private str idName
     private int first
