@@ -384,6 +384,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (stmt.getLabel().length == 0) {
                 throw emptyLabelException(stmt);
             } else if (stmt.getLabel().length > 1 && stmtHasAs) {
+                // TODO? As clause with multiple labels of same type
                 throw CompilerException.of("Cannot use 'as' clause with more than one label", stmt);
             }
             for (var label : stmt.getLabel()) {
