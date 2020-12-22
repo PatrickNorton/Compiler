@@ -187,7 +187,7 @@ enum UnicodeBlock {
     OSMANYA("Osmanya", 0x10480, 0x104AF),
     OSAGE("Osage", 0x104B0, 0x104FF),
     ELBASAN("Elbasan", 0x10500, 0x1052F),
-    CAUCASIAN_ALBANIAN("Caucasiann Albanian", 0x10530, 0x1056F),
+    CAUCASIAN_ALBANIAN("Caucasian Albanian", 0x10530, 0x1056F),
     # Unallocated: 0x10570..0x105FF
     LINEAR_A("Linear A", 0x10600, 0x1077F),
     # Unallocated: 0x10780..0x107FF
@@ -313,7 +313,7 @@ enum UnicodeBlock {
     MATHEMATICAL_ALPHANUMERIC_SYMBOLS("Mathematical Alphanumeric Symbols", 0x1D400, 0x1D7FF),
     SUTTON_SIGNWRITING("Sutton SignWriting", 0x1D800, 0x1DAAF),
     # Unallocated: 0x1DAB0..0x1DFFF
-    GLAGOLITIC_SUPPLEMMENT("Glagolitic Supplement", 0x1E000, 0x1E02F),
+    GLAGOLITIC_SUPPLEMENT("Glagolitic Supplement", 0x1E000, 0x1E02F),
     # Unallocated: 0x1E030..0x1E0FF
     NYIAKENG_PUACHUE_HMONG("Nyiakeng Puachue Hmong", 0x1E100, 0x1E14F),
     # Unallocated: 0x1E150..0x1E2BF
