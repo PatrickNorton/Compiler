@@ -371,4 +371,12 @@ enum UnicodeBlock {
         self.first = first
         self.last = last
     }
+
+    public static method of(char c) -> cls? {
+        for var block in UnicodeBlock {
+            if block.start <= int(c) {
+                return block if block.end >= int(c) else null
+            }
+        }
+    }
 }
