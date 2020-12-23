@@ -180,7 +180,7 @@ public final class LiteralConverter implements TestConverter {
             List<Byte> bytes, LiteralType literalType, Set<Integer> unknowns, short additional, TypeObject retType
     ) {
         var builderLen = node.getBuilders().length + additional - unknowns.size();
-        assert builderLen >= 0 : "Should not have a negative number of builders";
+        assert builderLen >= 0 : String.format("Should not have a negative number of builders (%d)", builderLen);
         if (unknowns.isEmpty()) {
             if (retType != null) {
                 bytes.add(Bytecode.LOAD_CONST.value);
