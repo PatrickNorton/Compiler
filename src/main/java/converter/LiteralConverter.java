@@ -158,21 +158,27 @@ public final class LiteralConverter implements TestConverter {
         short additional = 0;
         var builders = node.getBuilders();
         var isSplats = node.getIsSplats();
-        TypeObject retType;
         if (literalType == LiteralType.TUPLE) {
-            retType = null;
             var retTypes = tupleReturnTypes();
             for (int i = 0; i < retTypes.length; i++) {
                 additional += convertInner(
                         bytes, start, builders[i], isSplats[i], retTypes[i + additional], unknowns, i
                 );
             }
+            completeLiteral(bytes, literalType, unknowns, additional, null);
         } else {
-            retType = returnTypes();
+            var retType = returnTypes();
             for (int i = 0; i < builders.length; i++) {
                 additional += convertInner(bytes, start, builders[i], isSplats[i], retType, unknowns, i);
             }
+            completeLiteral(bytes, literalType, unknowns, additional, retType);
         }
+        return bytes;
+    }
+
+    private void completeLiteral(
+            List<Byte> bytes, LiteralType literalType, Set<Integer> unknowns, short additional, TypeObject retType
+    ) {
         var builderLen = node.getBuilders().length + additional - unknowns.size();
         assert builderLen >= 0 : "Should not have a negative number of builders";
         if (unknowns.isEmpty()) {
@@ -196,7 +202,6 @@ public final class LiteralConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes(typeConst(retType)));
             bytes.add(literalType.dynCode.value);
         }
-        return bytes;
     }
 
     private short convertInner(
