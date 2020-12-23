@@ -17,7 +17,7 @@ public final class StringEscape {
      * @param value The value to replace with escape codes
      * @return The unescaped value
      */
-    public static String unescape(String value) {
+    public static String escape(String value) {
         return value.codePoints().mapToObj(StringEscape::escaped).collect(Collectors.joining());
     }
 

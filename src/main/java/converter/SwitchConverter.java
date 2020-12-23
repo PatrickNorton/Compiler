@@ -198,7 +198,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     if (jumps.containsKey(value)) {
                         throw CompilerException.format(
                                 "Cannot define str \"%s\" twice in switch statement",
-                                node, StringEscape.unescape(value)
+                                node, StringEscape.escape(value)
                          );
                     } else {
                         jumps.put(value, start + bytes.size());
