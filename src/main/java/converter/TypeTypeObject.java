@@ -104,7 +104,6 @@ public final class TypeTypeObject extends TypeObject {
     @Override
     @NotNull
     public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
-        assert access == AccessLevel.PUBLIC : "Should never have private access to 'type'";
         if (o == OpSpTypeNode.CALL) {
             return Optional.of(new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()});
         } else {
