@@ -105,7 +105,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var values = node.getValues();
         var converter = TestConverter.of(info, values.get(i), 1);
         var retType = converter.returnType()[0];
-        int argC = checkTuple(converter.returnType()[0], values.get(i));
+        int argC = checkTuple(retType, values.get(i));
         var valueTypes = retType.getGenerics();
         assert argC == valueTypes.size();
         bytes.addAll(converter.convert(start + bytes.size()));
