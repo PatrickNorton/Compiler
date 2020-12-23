@@ -46,7 +46,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             return convertUnion(start, (UnionTypeObject) retType);
         }
         var switched = converter.convert(start);
-        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         List<Byte> bytes = new ArrayList<>(switched);
         for (var caseStatement : node.getCases()) {
             addCase(caseStatement, start, bytes, retTypes);
@@ -135,7 +135,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private List<Byte> convertTbl(int start) {
         Map<BigInteger, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
-        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         List<Byte> bytes = tblHeader(start);
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
@@ -175,7 +175,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private List<Byte> convertStr(int start) {
         Map<String, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
-        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         var bytes = tblHeader(start);
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
@@ -221,7 +221,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private List<Byte> convertChar(int start) {
         Map<Integer, Integer> jumps = new HashMap<>();  // int not char b/c Java Unicode sucks
         int defaultVal = 0;
-        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         var bytes = tblHeader(start);
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
@@ -356,7 +356,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         Map<Integer, Integer> jumps = new HashMap<>();
         boolean hasAs = anyHasAs();
         int defaultVal = 0;
-        var retTypes = retCount == 0 ? new TypeObject[0]: returnType();
+        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
         if (hasAs) {
             bytes.add(Bytecode.DUP_TOP.value);
