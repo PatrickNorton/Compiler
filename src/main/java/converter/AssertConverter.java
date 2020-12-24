@@ -20,7 +20,7 @@ public final class AssertConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         // TODO: Debug vs release
         var bytes = new ArrayList<>(TestConverter.bytes(start, node.getAssertion(), info, 1));
-        bytes.add(Bytecode.JUMP_FALSE.value);
+        bytes.add(Bytecode.JUMP_TRUE.value);
         int jumpLoc = bytes.size();
         bytes.addAll(Util.intToBytes(0));
         bytes.addAll(convertMessage(start + bytes.size()));
