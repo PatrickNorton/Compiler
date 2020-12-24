@@ -35,6 +35,10 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
             var isConstMethod = !methodInfo.isMut();
+            var genericInfo = methodInfo.getInfo().getGenerics();
+            if (!genericInfo.isEmpty()) {
+                info.addLocalTypes(genericInfo.getParamMap());
+            }
             info.addStackFrame();
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
             info.addVariable("cls", Builtins.TYPE.generify(type), true, node);
@@ -60,6 +64,9 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 retInfo.popFnReturns();
                 result.put(pair.getKey(), bytes);
                 info.removeStackFrame();
+                if (!genericInfo.isEmpty()) {
+                    info.removeLocalTypes();
+                }
             } finally {
                 handler.removePrivateAccess(type);
                 handler.removeCls();

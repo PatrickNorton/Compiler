@@ -1,10 +1,13 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.TypeLikeNode;
+import main.java.parser.TypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -144,5 +147,25 @@ public final class TemplateParam extends NameableType {
         } else {
             return this;
         }
+    }
+
+    public static Map<String, TemplateParam> parseGenerics(CompilerInfo info, TypeLikeNode... generics) {
+        Map<String, TemplateParam> result = new HashMap<>();
+        for (int i = 0; i < generics.length; i++) {
+            var generic = generics[i];
+            if (generic instanceof TypeNode) {
+                if (generic.getSubtypes().length == 0) {
+                    result.put(generic.strName(), new TemplateParam(generic.strName(), i, Builtins.OBJECT));
+                } else {
+                    var bounds = TypeObject.union(info.typesOf(generic.getSubtypes()));
+                    result.put(generic.strName(), new TemplateParam(generic.strName(), i, bounds));
+                }
+            } else {
+                throw CompilerException.of(
+                        "Function template params may not contain unions or intersections", generic
+                );
+            }
+        }
+        return result;
     }
 }
