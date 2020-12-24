@@ -67,6 +67,40 @@ class HeapVisitor {
             }
         }
     }
+
+    private mut method induct(Ast ast, Visitor visitor) -> Frame? {
+        switch ast {
+            case Ast.Class as x {
+                if x.Bracketed? as b {
+                    self.visitClass(x, visitor)
+                }
+                return null
+            }
+            case Ast.Repetition as x {
+                return Frame.Repetition(x)
+            }
+            case Ast.Group as x {
+                return Frame.Group(x)
+            }
+            case Ast.Concat as x {
+                if not x.asts {
+                    return null
+                } else {
+                    return Frame.Concat(x.asts[0], x.asts[1:])
+                }
+            }
+            case Ast.Alternation as x {
+                if not x.asts {
+                    return null
+                } else {
+                    return Frame.Alternation(x.asts[0], x.asts[1:])
+                }
+            }
+            default {
+                return null
+            }
+        }
+    }
 }
 
 union Frame {
