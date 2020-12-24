@@ -272,6 +272,5 @@ union ClassInduct {
 
 generic T
 func visit(Ast ast, Visitor[T] visitor) -> T {
-    raise NotImplemented()
-    # return HeapVisitor().visit(ast, visitor)
+    return HeapVisitor().visit(ast, visitor)
 }
