@@ -74,7 +74,7 @@ public final class StringConstant implements LangConstant {
     @Contract(pure = true)
     @Override
     public String name(IndexedSet<LangConstant> constants) {
-        return '"' + StringEscape.unescape(value) + '"';
+        return '"' + StringEscape.escape(value) + '"';
     }
 
     @Override

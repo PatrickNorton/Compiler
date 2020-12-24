@@ -403,8 +403,13 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
         @NotNull
         public final Optional<TypeObject[]> operatorReturnTypeWithGenerics(OpSpTypeNode o, AccessLevel access) {
-            if (operators.containsKey(o)) {  // TODO: Bounds-check
-                return Optional.of(operators.get(o).intoMethodInfo().getReturns());
+            if (operators.containsKey(o)) {
+                var op = operators.get(o).intoMethodInfo();
+                if (AccessLevel.canAccess(op.getAccessLevel(), access)) {
+                    return Optional.of(op.getReturns());
+                } else {
+                    return Optional.empty();
+                }
             }
             for (var sup : supers) {
                 var opRet = sup.operatorReturnType(o, access);

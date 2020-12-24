@@ -85,7 +85,11 @@ public final class TupleType extends TypeObject {
             case REPR:
                 return Optional.of(new FunctionInfo(Builtins.STR));
             case HASH:
-                return Optional.of(new FunctionInfo(Builtins.INT));
+                if (isHashable()) {
+                    return Optional.of(new FunctionInfo(Builtins.INT));
+                } else {
+                    return Optional.empty();
+                }
             default:
                 return Optional.empty();
         }
@@ -174,6 +178,15 @@ public final class TupleType extends TypeObject {
     @NotNull
     public TypeObject typedefAs(String name) {
         return new TupleType(name, generics.toArray(new TypeObject[0]));
+    }
+
+    private boolean isHashable() {
+        for (var generic : generics) {
+            if (generic.operatorInfo(OpSpTypeNode.HASH, AccessLevel.PUBLIC).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private final class TupleIterator implements Iterator<String> {
