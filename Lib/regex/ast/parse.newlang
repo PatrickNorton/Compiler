@@ -1048,6 +1048,8 @@ class ParserI {
                     raise self.error(gs.group.span, ErrorKind.GroupUnclosed())
                 }
             }
+        } else {
+            ast = concat.intoAst()
         }
         if stack.pop()? as gs {
             switch gs {

@@ -1,4 +1,4 @@
-from .ast import Ast, ClassSetBinaryOp, ClassSetItem
+from .ast import Ast, ClassSetBinaryOp, ClassSetItem, ClassSet, Repetition, Group
 
 export Visitor, visit
 
@@ -24,7 +24,32 @@ interface Visitor[O] {
     public mut method visitClassSetBinaryOpIn(ClassSetBinaryOp _ast) {}
 }
 
+class HeapVisitor {
+    list[tuple[Ast, Frame]] stack
+    list[tuple[ClassInduct, ClassFrame]] stackClass
+}
+
+union Frame {
+    Repetition Repetition
+    Group Group
+    tuple[Ast, list[Ast]] Concat
+    tuple[Ast, list[Ast]] Alternation
+}
+
+union ClassFrame {
+    tuple[ClassSetItem, list[ClassSetItem]] Union
+    ClassSetBinaryOp Binary
+    tuple[ClassSetBinaryOp, ClassSet, ClassSet] BinaryLHS
+    tuple[ClassSetBinaryOp, ClassSet] BinaryRHS
+}
+
+union ClassInduct {
+    ClassSetItem Item
+    ClassSetBinaryOp BinaryOp
+}
+
 generic T
 func visit(Ast ast, Visitor[T] visitor) -> T {
+    raise NotImplemented()
     # return HeapVisitor().visit(ast, visitor)
 }
