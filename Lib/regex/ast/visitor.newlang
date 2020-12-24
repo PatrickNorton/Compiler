@@ -25,8 +25,48 @@ interface Visitor[O] {
 }
 
 class HeapVisitor {
-    list[tuple[Ast, Frame]] stack
-    list[tuple[ClassInduct, ClassFrame]] stackClass
+    final list[tuple[Ast, Frame]] stack
+    final list[tuple[ClassInduct, ClassFrame]] stackClass
+
+    public operator new {
+        self.stack = []
+        self.stackClass = []
+    }
+
+    generic O
+    public mut method visit(mut Ast ast, mut Visitor[O] visitor) -> O {
+        self.stack.clear()
+        self.stackClass.clear()
+
+        visitor.start()
+        while true {
+            visitor.visitPre(ast)
+            if self.induct(ast, visitor)? as x {
+                var child = x.child
+                self.stack.append((ast, x))
+                ast = child
+                continue
+            }
+            visitor.visitPost(ast)
+
+            while true {
+                if self.stack.pop()? as pair {
+                    var postAst, var frame = *pair
+                    if f.pop(frame)? as x {
+                        if x.Alternation? {
+                            visitor.visitAlternationIn()
+                        }
+                        ast = x.child
+                        self.stack.append((postAst, x))
+                        break
+                    }
+                } else {
+                    return visitor.finish()
+                }
+                visitor.visitPost(postAst)
+            }
+        }
+    }
 }
 
 union Frame {
