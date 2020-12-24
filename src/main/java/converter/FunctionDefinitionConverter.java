@@ -2,7 +2,6 @@ package main.java.converter;
 
 import main.java.parser.DescriptorNode;
 import main.java.parser.FunctionDefinitionNode;
-import main.java.parser.TypeNode;
 import main.java.parser.TypedArgumentNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
@@ -68,7 +67,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     private void convertUndefined(String name) {
         var generics = getGenerics();
-        info.addLocalTypes(new HashMap<>(generics));
         var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(retTypes)} : retTypes;
@@ -168,24 +166,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     @NotNull
     private Map<String, TemplateParam> getGenerics() {
-        var generics = node.getGenerics();
-        Map<String, TemplateParam> result = new HashMap<>();
-        for (int i = 0; i < generics.length; i++) {
-            var generic = generics[i];
-            if (generic instanceof TypeNode) {
-                if (generic.getSubtypes().length == 0) {
-                    result.put(generic.strName(), new TemplateParam(generic.strName(), i, Builtins.OBJECT));
-                } else {
-                    var bounds = TypeObject.union(info.typesOf(generic.getSubtypes()));
-                    result.put(generic.strName(), new TemplateParam(generic.strName(), i, bounds));
-                }
-            } else {
-                throw CompilerException.of(
-                        "Function template params may not contain unions or intersections", generic
-                );
-            }
-        }
-        return result;
+        return TemplateParam.parseGenerics(info, node.getGenerics());
     }
 
     private void checkGen() {

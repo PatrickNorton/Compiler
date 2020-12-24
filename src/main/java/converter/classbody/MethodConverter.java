@@ -6,6 +6,7 @@ import main.java.converter.Builtins;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
+import main.java.converter.GenericInfo;
 import main.java.converter.TypeObject;
 import main.java.parser.DescriptorNode;
 import main.java.parser.GenericFunctionNode;
@@ -29,14 +30,17 @@ public final class MethodConverter {
     }
 
     public void parse(@NotNull MethodDefinitionNode node) {
+        var generics = GenericInfo.parse(info, node.getGenerics());
+        info.addLocalTypes(generics.getParamMap());
         var name = methodName(node);
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGen = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGen ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
-        var fnInfo = new FunctionInfo(name, isGen, args, trueRet);
+        var fnInfo = new FunctionInfo(name, isGen, generics, args, trueRet);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
+        info.removeLocalTypes();
         if (isGen && returns.length == 0) {
             throw generatorError(node);
         }
