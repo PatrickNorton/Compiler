@@ -59,6 +59,11 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
     }
 
     @Override
+    public TypeObject makeConst() {
+        return isConst ? this : new UnionTypeObject(this, true);
+    }
+
+    @Override
     public Pair<Set<String>, Set<OpSpTypeNode>> contract() {
         return Pair.of(Collections.emptySet(), Collections.emptySet());
     }
