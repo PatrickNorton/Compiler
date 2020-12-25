@@ -41,6 +41,7 @@ public final class MethodConverter {
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = node.getDescriptors().contains(DescriptorNode.MUT);
         info.removeLocalTypes();
+        generics.setParent(fnInfo.toCallable());
         if (isGen && returns.length == 0) {
             throw generatorError(node);
         }
