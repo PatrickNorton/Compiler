@@ -114,9 +114,9 @@ class Flags {
 }
 
 class Translator {
-    private final list[HirFrame] stack
-    private final Flags flags
-    private bool allowInvalidUtf8
+    final list[HirFrame] stack
+    final Flags flags
+    bool allowInvalidUtf8
 
     operator new(mut list[HirFrame] stack, mut Flags flags, bool allowInvalidUtf8) {
         self.stack = stack
@@ -130,12 +130,21 @@ class Translator {
 }
 
 class TranslatorI from Visitor[Hir] {
-    Translator trans
+    final Translator trans
     str pattern
 
-    public operator new(Translator trans, str pattern) {
+    public operator new(mut Translator trans, str pattern) {
         self.trans = trans
         self.pattern = pattern
+    }
+
+    mut method pop() -> HirFrame? {
+        return self.trans.stack.pop()
+    }
+
+    public mut method finish() -> Hir {
+        assert self.trans.stack.length == 1 as f"Stack length should be 1, instead {self.trans.stack.length}"
+        return self.pop()!!.unwrapExpr()
     }
 }
 
@@ -146,4 +155,12 @@ union HirFrame {
     Flags Group
     null Concat
     null Alternation
+
+    method unwrapExpr() -> Hir {
+        if self.Expr? as expr {
+            return expr
+        } else {
+            raise ValueError(f"Tried to unwrap expr from HirFrame, got: {self !r}")
+        }
+    }
 }

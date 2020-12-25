@@ -3,7 +3,7 @@ from .ast import Ast, ClassSetBinaryOp, ClassSetItem, ClassSet, Repetition, Grou
 export Visitor, visit
 
 interface Visitor[O] {
-    public method finish() -> O
+    public mut method finish() -> O
 
     public method start() {}
 
