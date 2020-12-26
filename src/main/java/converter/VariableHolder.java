@@ -424,14 +424,14 @@ final class VariableHolder {
         @Override
         public boolean hasNext() {
             if (!frameIter.hasNext()) updateIter();
-            return frameNo < variables.size();
+            return frameNo >= 0;
         }
 
         @Override
         public String next() {
             if (!frameIter.hasNext()) {
                 updateIter();
-                if (frameNo >= variables.size()) {
+                if (frameNo < 0) {
                     throw new NoSuchElementException();
                 }
             }
@@ -439,12 +439,12 @@ final class VariableHolder {
         }
 
         private void updateIter() {
-            while (!frameIter.hasNext() && frameNo < variables.size() - 1) {
-                frameNo++;
+            while (!frameIter.hasNext() && frameNo > 0) {
+                frameNo--;
                 frameIter = variables.get(frameNo).keySet().iterator();
             }
             if (!frameIter.hasNext()) {
-                frameNo++;
+                frameNo--;
             }
         }
     }
