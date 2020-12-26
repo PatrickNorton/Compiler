@@ -136,20 +136,7 @@ public final class FunctionCallConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        if (node.getCaller() instanceof VariableNode) {
-            var name = node.getVariable().getName();
-            if (info.varIsUndefined(name)) {
-                throw CompilerException.format("Undefined variable '%s'", node, name);
-            }
-            var cls = info.classOf(name);
-            if (cls.isPresent()) {  // If the variable is a class, calling it will always return an instance
-                return new TypeObject[]{cls.orElseThrow().makeMut()};
-            }
-            var fn = info.fnInfo(name);
-            if (fn.isPresent()) {
-                return generifyReturns(fn.orElseThrow());
-            }
-        } else if (node.getCaller() instanceof EscapedOperatorNode) {
+        if (node.getCaller() instanceof EscapedOperatorNode) {
             return escapedOpReturn();
         }
         var retType = TestConverter.returnType(node.getCaller(), info, retCount)[0];
