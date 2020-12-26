@@ -167,6 +167,7 @@ public final class Builtins {
     public static final InterfaceType THROWABLE = new InterfaceType("Throwable", GenericInfo.empty());
 
     public static final StdTypeObject NOT_IMPLEMENTED = new StdTypeObject("NotImplemented", List.of(THROWABLE));
+    public static final StdTypeObject VALUE_ERROR = new StdTypeObject("ValueError", List.of(THROWABLE));
 
     public static final LangConstant NULL = new NullConstant();
 
@@ -234,7 +235,7 @@ public final class Builtins {
         var splitLinesInfo = new FunctionInfo(ArgumentInfo.of(), LIST.generify(STR));
         var upperLowerInfo = new FunctionInfo(STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(STR), TypeObject.optional(INT));
-        var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), BYTES);
+        var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), BYTES.makeMut());
         var asIntInfo = new FunctionInfo(ArgumentInfo.of(), TypeObject.optional(INT));
         var strAttrs = Map.ofEntries(
                 Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
@@ -273,6 +274,7 @@ public final class Builtins {
         var addInfo = new FunctionInfo(ArgumentInfo.of(INT));
         var addCharInfo = new FunctionInfo(ArgumentInfo.of(CHAR, STR));
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
+        var startsInfo = new FunctionInfo(ArgumentInfo.of(BYTES), BOOL);
         var bytesAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "join", AttributeInfo.method(joinInfo),
@@ -281,6 +283,8 @@ public final class Builtins {
                 "get", AttributeInfo.method(getInfo),
                 "add", AttributeInfo.mutMethod(addInfo),
                 "addChar", AttributeInfo.method(addCharInfo),
+                "startsWith", AttributeInfo.method(startsInfo),
+                "endsWith", AttributeInfo.method(startsInfo),
                 "lastIndexOf", AttributeInfo.method(indexInfo)
         );
         BYTES.setAttributes(bytesAttrs);
@@ -510,6 +514,10 @@ public final class Builtins {
         var notImplConstructor = MethodInfo.of();
         NOT_IMPLEMENTED.setOperators(Map.of(OpSpTypeNode.NEW, notImplConstructor));
         NOT_IMPLEMENTED.seal();
+
+        var valueErrConstructor = MethodInfo.of(ArgumentInfo.of(STR));
+        VALUE_ERROR.setOperators(Map.of(OpSpTypeNode.NEW, valueErrConstructor));
+        VALUE_ERROR.seal();
     }
 
     static {  // null is const
@@ -572,7 +580,8 @@ public final class Builtins {
             TUPLE,
             THROWABLE,
             NULL_TYPE,
-            HASH
+            HASH,
+            VALUE_ERROR
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -605,6 +614,7 @@ public final class Builtins {
             Map.entry("bytes", BYTES),
             Map.entry("enumerate", ENUMERATE),
             Map.entry("NotImplemented", NOT_IMPLEMENTED),
+            Map.entry("ValueError", VALUE_ERROR),
             Map.entry("Iterator", ITERATOR),
             Map.entry("hash", HASH),
             Map.entry("Hashable", HASHABLE),
