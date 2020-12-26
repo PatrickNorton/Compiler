@@ -108,7 +108,8 @@ public final class ReturnListConverter implements BaseConverter {
                     values.get(0), returnName(), retTypes.length, values.size());
         }
         for (int i = 0; i < retTypes.length; i++) {
-            var retType = TestConverter.returnType(values.get(i), info, 1)[0];
+            var converter = TestConverter.of(info, values.get(i), 1, retTypes[i]);
+            var retType = converter.returnType()[0];
             if (badType(retTypes[i], retType)) {
                 throw typeError(values.get(i), i, retType, retTypes[i]);
             }
