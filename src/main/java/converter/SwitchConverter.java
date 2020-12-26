@@ -34,7 +34,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
         if (!(retType instanceof UnionTypeObject) && incompleteReturn()) {
-            throw CompilerException.format("Cannot get return from switch: Not all cases covered", node);
+            throw CompilerException.format("Cannot get return from switch: Missing 'default' statement", node);
         }
         if (Builtins.INT.isSuperclass(retType)) {
             return convertTbl(start);

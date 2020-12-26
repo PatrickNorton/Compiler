@@ -36,7 +36,7 @@ public final class AssertConverter implements BaseConverter {
         if (node.getAs().isEmpty()) {
             List<Byte> bytes = new ArrayList<>();
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(""))));
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of("Assertion failed"))));
             return bytes;
         } else {
             var converter = TestConverter.of(info, node.getAs(), 1);

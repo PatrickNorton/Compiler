@@ -404,7 +404,7 @@ public final class AssignmentConverter implements BaseConverter {
             if (!preDotType.canSetAttr(name, info) && !isConstructorException(preDotType, value)) {
                 if (preDotType.makeMut().canSetAttr(name, info)) {
                     throw CompilerException.of(
-                            "Cannot assign to value that is not 'mut' or 'final'", node
+                            "Cannot assign to value that is not 'mut' or 'mref'", node
                     );
                 } else {
                     throw CompilerException.format(

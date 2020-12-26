@@ -299,9 +299,6 @@ public final class LiteralConverter implements TestConverter {
     private TypeObject[] tupleReturnTypes() {
         var args = node.getBuilders();
         var splats = node.getIsSplats();
-        if (expected != null) {
-            return expected[0].getGenerics().toArray(new TypeObject[0]);
-        }
         List<TypeObject> result = new ArrayList<>(args.length);
         for (var pair : Zipper.of(args, splats)) {
             var arg = pair.getKey();
