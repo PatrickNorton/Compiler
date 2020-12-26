@@ -10,6 +10,12 @@ class IntervalSet[I[Interval]] {
         # self.ranges = list(items)
     }
 
+    public property list[I] intervals {
+        get {
+            return self.ranges
+        }
+    }
+
     public mut method push(I value) {
         self.ranges.add(value)
         self.canonicalize()

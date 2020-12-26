@@ -101,7 +101,7 @@ class Hir {
         return Hir(HirKind.Anchor(anchor), info)
     }
 
-    public static method word_boundary(WordBoundary wordBoundary) -> Hir {
+    public static method wordBoundary(WordBoundary wordBoundary) -> Hir {
         final var info = HirInfo()
         info.isAlwaysUtf8 = true
         info.isAllAssertions = true
@@ -412,6 +412,12 @@ class ClassUnicode {
         self.value = IntervalSet[ClassUnicodeRange](value)
     }
 
+    public property list[ClassUnicodeRange] ranges {
+        get {
+            return self.value.intervals
+        }
+    }
+
     public static method empty() -> mut cls {
         list[ClassUnicodeRange] value = []  # FIXME
         return ClassUnicode(value)
@@ -433,6 +439,14 @@ class ClassUnicode {
 
     public mut method caseFoldSimple() {
         self.value.caseFoldSimple()
+    }
+
+    public mut method negate() {
+        self.value.negate()
+    }
+
+    public mut method unionWith(ClassUnicode other) {
+        self.value.extend(other.value)
     }
 }
 
@@ -515,6 +529,14 @@ class ClassBytes {
 
     public method isAllAscii() -> bool {
         return self.value and self.value[-1].upper < 0x7f
+    }
+
+    public mut method negate() {
+        self.value.negate()
+    }
+
+    public mut method caseFoldSimple() {
+        self.value.caseFoldSimple()
     }
 }
 

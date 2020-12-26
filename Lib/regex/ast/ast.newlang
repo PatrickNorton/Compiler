@@ -228,6 +228,15 @@ const class Literal {
     public method withSpan(Span span) -> Literal {
         return Literal(span, self.kind, self.c)
     }
+
+    public method byteVal() -> int? {
+        var shortHex = LiteralKind.HexFixed(HexLiteralKind.X)
+        if int(self.c) <= 255 and self.kind == shortHex {
+            return int(self.c)
+        } else {
+            return null
+        }
+    }
 }
 
 const class Position {
