@@ -240,11 +240,11 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
 
     protected void checkContract(UserType<?> type, @NotNull List<TypeObject> supers) {
         for (var sup : supers) {
-            if (!(sup instanceof UserType<?>)) continue;
+            if (sup.sameBaseType(type) || !(sup instanceof UserType<?>)) continue;
 
             var contract = ((UserType<?>) sup).contract();
             for (var attr : contract.getKey()) {
-                if (type.attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
+                if (type.makeMut().attrType(attr, AccessLevel.PUBLIC).isEmpty()) {
                     throw CompilerException.format(
                             "Missing impl for method '%s' (defined by interface %s)",
                             node, attr, sup.name()
