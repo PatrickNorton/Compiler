@@ -43,7 +43,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             try {
                 info.accessHandler().addCls(type);
                 info.accessHandler().addSuper(superType(type));
-                info.addLocalTypes(type.getGenericInfo().getParamMap());
+                info.addLocalTypes(type, type.getGenericInfo().getParamMap());
                 parseStatements(converter);
             } finally {
                 info.accessHandler().removeCls();
@@ -128,7 +128,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         try {
             info.accessHandler().addCls(obj);
             info.accessHandler().addSuper(superType(obj));
-            info.addLocalTypes(obj.getGenericInfo().getParamMap());
+            info.addLocalTypes(obj, obj.getGenericInfo().getParamMap());
             parseInner(converter, obj, isConst);
         } finally {
             info.accessHandler().removeCls();

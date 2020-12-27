@@ -114,7 +114,10 @@ public final class Linker {
                 }
             } else if (stmt instanceof TypedefStatementNode) {
                 var tdNode = (TypedefStatementNode) stmt;
-                var constant = info.typeConstant(tdNode, info.getType(tdNode.getType()));
+                var type = info.getType(tdNode.getType());
+                var constant = TypeLoader.typeConstant(tdNode.getLineInfo(), type, info).orElseThrow(
+                        () -> CompilerException.of("Cannot get constant for local types", tdNode)
+                );
                 constants.put(tdNode.getName().strName(), (int) info.constIndex(constant));
             } else if (stmt instanceof DeclaredAssignmentNode) {
                 var decl = (DeclaredAssignmentNode) stmt;

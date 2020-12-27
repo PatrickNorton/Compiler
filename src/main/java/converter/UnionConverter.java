@@ -54,7 +54,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         } else {
             type = (UnionTypeObject) info.getTypeObj(node.strName());
             info.accessHandler().addCls(type);
-            info.addLocalTypes(type.getGenericInfo().getParamMap());
+            info.addLocalTypes(type, type.getGenericInfo().getParamMap());
             parseStatements(converter);
             info.removeLocalTypes();
             info.accessHandler().removeCls();
@@ -121,7 +121,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         ensureProperInheritance(obj, supers);
         try {
             info.accessHandler().addCls(obj);
-            info.addLocalTypes(obj.getGenericInfo().getParamMap());
+            info.addLocalTypes(obj, obj.getGenericInfo().getParamMap());
             parseIntoObject(converter, obj, isConst);
         } finally {
             info.accessHandler().removeCls();
@@ -131,7 +131,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull UnionTypeObject obj, boolean isConst) {
-        info.addLocalTypes(obj.getGenericInfo().getParamMap());
+        info.addLocalTypes(obj, obj.getGenericInfo().getParamMap());
         if (isConst) {
             if (!classIsConstant(converter)) {
                 throw CompilerException.format("Cannot make union '%s' const", node, obj.name());

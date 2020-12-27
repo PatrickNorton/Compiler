@@ -51,7 +51,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
             type = (InterfaceType) info.getTypeObj(node.getName().strName());
             try {
                 info.accessHandler().addCls(type);
-                info.addLocalTypes(type.getGenericInfo().getParamMap());
+                info.addLocalTypes(type, type.getGenericInfo().getParamMap());
                 parseStatements(converter);
             } finally {
                 info.accessHandler().removeCls();
@@ -85,7 +85,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         obj.getGenericInfo().setParent(obj);
         try {
             info.accessHandler().addCls(obj);
-            info.addLocalTypes(obj.getGenericInfo().getParamMap());
+            info.addLocalTypes(obj, obj.getGenericInfo().getParamMap());
             parseIntoObject(converter, obj);
         } finally {
             info.accessHandler().removeCls();

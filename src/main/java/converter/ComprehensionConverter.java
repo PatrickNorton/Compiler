@@ -96,8 +96,7 @@ public final class ComprehensionConverter implements TestConverter {
         assert retCount == 1 || retCount == 0;
         List<Byte> bytes = new ArrayList<>();
         if (braceType.createCode != null) {
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(info.typeConstant(node, genericType()))));
+            bytes.addAll(new TypeLoader(node.getLineInfo(), genericType(), info).convert(start));
             bytes.add(braceType.createCode.value);
             bytes.addAll(Util.shortToBytes((short) 0));
         }

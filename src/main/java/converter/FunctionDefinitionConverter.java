@@ -53,7 +53,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         info.addVariable(name, fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
         checkGen();
-        info.addLocalTypes(generics);
+        info.addLocalTypes(fnInfo.toCallable(), generics);
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGen, trueRet);
         addArgs();
@@ -81,7 +81,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         info.addVariable(name, fnInfo.toCallable(), constVal, node);
         info.addStackFrame();
         checkGen();
-        info.addLocalTypes(new HashMap<>(generics));
+        info.addLocalTypes(fnInfo.toCallable(), new HashMap<>(generics));
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
         addArgs();
@@ -112,7 +112,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             return innerHeader(GenericInfo.empty());
         } else {
             var generics = GenericInfo.parse(info, node.getGenerics());
-            info.addLocalTypes(generics.getParamMap());
+            info.addLocalTypes(null, generics.getParamMap());
             var result = innerHeader(generics);
             info.removeLocalTypes();
             for (var generic : generics) {

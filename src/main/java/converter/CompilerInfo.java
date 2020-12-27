@@ -349,52 +349,8 @@ public final class CompilerInfo {
         return varHolder.classOf(str);
     }
 
-    /**
-     * Gets the constant representing a type.
-     * <p>
-     *     This is still pretty finicky; in particular there is not support yet
-     *     for "complex" types (those with generics, list types, etc.).
-     * </p>
-     *
-     * @param lineInfo The line information to use in case of an exception
-     * @param type The type from which to retrieve a constant
-     * @return The constant for the type
-     */
-    @NotNull
-    public LangConstant typeConstant(Lined lineInfo, @NotNull TypeObject type) {
-        if (type instanceof OptionTypeObject) {
-            return optionConstant(lineInfo, (OptionTypeObject) type);
-        }
-        var name = type.baseName();
-        if (name.isEmpty()) {
-            throw CompilerInternalError.of(
-                    "Error in literal conversion: Lists of non-nameable types not complete yet", lineInfo
-            );
-        }
-        if (name.equals("null")) {
-            return Builtins.nullTypeConstant();
-        } else if (Builtins.BUILTIN_MAP.containsKey(name) && Builtins.BUILTIN_MAP.get(name) instanceof TypeObject) {
-            return Builtins.constantOf(name).orElseThrow(
-                    () -> CompilerException.format("Type %s not found", lineInfo, name)
-            );
-        } else {
-            var constants = globalInfo.getConstants();
-            for (int i = 0; i < constants.size(); i++) {
-                var constant = constants.get(i);
-                var constType = constant.getType();
-                if (constType instanceof TypeTypeObject &&
-                        ((TypeTypeObject) constType).representedType().sameBaseType(type)) {
-                    return constant;
-                }
-            }
-            throw CompilerException.format("Type %s not found", lineInfo, name);
-        }
-    }
-
-    private LangConstant optionConstant(Lined lineInfo, OptionTypeObject type) {
-        var interiorType = type.getOptionVal();
-        var typeConst = typeConstant(lineInfo, interiorType);
-        return new OptionTypeConstant(interiorType.name(), constIndex(typeConst), interiorType);
+    public Optional<TypeObject> localParent(TypeObject typ) {
+        return varHolder.localParent(typ);
     }
 
     /**
@@ -460,20 +416,20 @@ public final class CompilerInfo {
      * @see #removeLocalTypes()
      * @see VariableHolder#addLocalTypes
      */
-    public void addLocalTypes(Map<String, TypeObject> values) {
-        varHolder.addLocalTypes(values);
+    public void addLocalTypes(TypeObject parent, Map<String, TypeObject> values) {
+        varHolder.addLocalTypes(parent, values);
     }
 
     /**
      * Removes a frame of local types from the stack.
      * <p>
      *     This method is meant to be used in conjunction with {@link
-     *     #addLocalTypes(Map)}. Calls to this method should have a
+     *     #addLocalTypes(TypeObject, Map)}. Calls to this method should have a
      *     corresponding call to the other.
      * </p>
      *
      * @see #removeStackFrame()
-     * @see #addLocalTypes(Map)
+     * @see #addLocalTypes(TypeObject, Map)
      * @see VariableHolder#removeLocalTypes
      */
     public void removeLocalTypes() {
