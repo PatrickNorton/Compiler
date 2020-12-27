@@ -33,6 +33,10 @@ public final class TypeLoader implements TestConverter {
             bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
             return bytes;
         } else {
+            assert value instanceof TemplateParam;
+            return new TypeLoader(lineInfo, ((TemplateParam) value).getBound(), info).convert(start);
+            /*
+            Commented out until better type inference can come around
             var parent = info.localParent(value).orElseThrow(
                     () -> CompilerException.format("Unknown type '%s'", lineInfo, value.name())
             );
@@ -40,6 +44,7 @@ public final class TypeLoader implements TestConverter {
             bytes.add(Bytecode.LOAD_DOT.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(value.baseName()))));
             return bytes;
+             */
         }
     }
 
