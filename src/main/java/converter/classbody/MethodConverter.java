@@ -31,7 +31,7 @@ public final class MethodConverter {
 
     public void parse(@NotNull MethodDefinitionNode node) {
         var generics = GenericInfo.parse(info, node.getGenerics());
-        info.addLocalTypes(generics.getParamMap());
+        info.addLocalTypes(null, generics.getParamMap());
         var name = methodName(node);
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());

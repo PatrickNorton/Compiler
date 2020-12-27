@@ -37,7 +37,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             var isConstMethod = !methodInfo.isMut();
             var genericInfo = methodInfo.getInfo().getGenerics();
             if (!genericInfo.isEmpty()) {
-                info.addLocalTypes(genericInfo.getParamMap());
+                info.addLocalTypes(type, genericInfo.getParamMap());
             }
             info.addStackFrame();
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
@@ -156,7 +156,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     ) {
         try {
             info.accessHandler().addCls(type);
-            info.addLocalTypes(type.getGenericInfo().getParamMap());
+            info.addLocalTypes(type, type.getGenericInfo().getParamMap());
             return createClass(type, variants, superConstants, converter);
         } finally {
             info.accessHandler().removeCls();
@@ -233,7 +233,11 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     protected List<Short> getSuperConstants(UserType<?> type) {
         List<Short> superConstants = new ArrayList<>(node.getSuperclasses().length);
         for (var sup : Zipper.of(node.getSuperclasses(), type.getSupers())) {
-            superConstants.add(info.constIndex(info.typeConstant(sup.getKey(), sup.getValue())));
+            var constant = TypeLoader.typeConstant(sup.getKey().getLineInfo(), sup.getValue(), info);
+            superConstants.add(info.constIndex(constant.orElseThrow(
+                            () -> CompilerException.of("Cannot yet serialize local types", sup.getKey())
+                    )
+            ));
         }
         return superConstants;
     }

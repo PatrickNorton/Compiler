@@ -137,7 +137,7 @@ public final class LiteralConverter implements TestConverter {
             }
             return bytes;
         } else if (node.getBuilders().length == 0) {
-            return convertEmpty(literalType);
+            return convertEmpty(start, literalType);
         } else {
             return convertSingle(start, literalType);
         }
@@ -165,26 +165,26 @@ public final class LiteralConverter implements TestConverter {
                         bytes, start, builders[i], isSplats[i], retTypes[i + additional], unknowns, i
                 );
             }
-            completeLiteral(bytes, literalType, unknowns, additional, null);
+            completeLiteral(start, bytes, literalType, unknowns, additional, null);
         } else {
             var retType = returnTypes();
             for (int i = 0; i < builders.length; i++) {
                 additional += convertInner(bytes, start, builders[i], isSplats[i], retType, unknowns, i);
             }
-            completeLiteral(bytes, literalType, unknowns, additional, retType);
+            completeLiteral(start, bytes, literalType, unknowns, additional, retType);
         }
         return bytes;
     }
 
     private void completeLiteral(
-            List<Byte> bytes, LiteralType literalType, Set<Integer> unknowns, short additional, TypeObject retType
+            int start, List<Byte> bytes, LiteralType literalType,
+            Set<Integer> unknowns, short additional, TypeObject retType
     ) {
         var builderLen = node.getBuilders().length + additional - unknowns.size();
         assert builderLen >= 0 : String.format("Should not have a negative number of builders (%d)", builderLen);
         if (unknowns.isEmpty()) {
             if (retType != null) {
-                bytes.add(Bytecode.LOAD_CONST.value);
-                bytes.addAll(Util.shortToBytes(typeConst(retType)));
+                bytes.addAll(new TypeLoader(node.getLineInfo(), retType, info).convert(start + bytes.size()));
             }
             bytes.add(literalType.bytecode.value);
             bytes.addAll(Util.shortToBytes((short) builderLen));
@@ -198,8 +198,7 @@ public final class LiteralConverter implements TestConverter {
                 bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(builderLen))));
                 bytes.add(Bytecode.PLUS.value);
             }
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(typeConst(retType)));
+            bytes.addAll(new TypeLoader(node.getLineInfo(), retType, info).convert(start + bytes.size()));
             bytes.add(literalType.dynCode.value);
         }
     }
@@ -243,7 +242,7 @@ public final class LiteralConverter implements TestConverter {
         }
     }
 
-    private List<Byte> convertEmpty(LiteralType literalType) {
+    private List<Byte> convertEmpty(int start, LiteralType literalType) {
         List<Byte> bytes = new ArrayList<>();
         if (literalType == LiteralType.TUPLE) {
             bytes.add(Bytecode.PACK_TUPLE.value);
@@ -255,9 +254,7 @@ public final class LiteralConverter implements TestConverter {
         }
         var generics = expected[0].getGenerics();
         literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
-        var genericType = returnTypes();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(typeConst(genericType)));
+        bytes.addAll(new TypeLoader(node.getLineInfo(), returnTypes(), info).convert(start));
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortZeroBytes());
         return bytes;
@@ -324,10 +321,6 @@ public final class LiteralConverter implements TestConverter {
             }
         }
         return result.toArray(new TypeObject[0]);
-    }
-
-    private short typeConst(TypeObject value) {
-        return info.constIndex(info.typeConstant(node, value));
     }
 
     private static CompilerException splatException(Lined info, TypeObject type) {

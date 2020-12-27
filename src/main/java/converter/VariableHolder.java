@@ -25,7 +25,7 @@ final class VariableHolder {
 
     private final List<Map<String, VariableInfo>> variables = new ArrayList<>();
     private final Map<String, TypeObject> typeMap = new HashMap<>();
-    private final List<Map<String, TypeObject>> localTypes = new ArrayList<>();
+    private final List<LocalTypeFrame> localTypes = new ArrayList<>();
     private final IntAllocator varNumbers = new IntAllocator();
 
     public VariableHolder(GlobalCompilerInfo globalInfo) {
@@ -170,20 +170,20 @@ final class VariableHolder {
      * @see #addStackFrame()
      * @see #removeLocalTypes()
      */
-    public void addLocalTypes(Map<String, TypeObject> values) {
-        localTypes.add(values);
+    public void addLocalTypes(TypeObject parent, Map<String, TypeObject> values) {
+        localTypes.add(new LocalTypeFrame(parent, values));
     }
 
     /**
      * Removes a frame of local types from the stack.
      * <p>
      *     This method is meant to be used in conjunction with {@link
-     *     #addLocalTypes(Map)}. Calls to this method should have a
+     *     #addLocalTypes(TypeObject, Map)}. Calls to this method should have a
      *     corresponding call to the other.
      * </p>
      *
      * @see #removeStackFrame()
-     * @see #addLocalTypes(Map)
+     * @see #addLocalTypes(TypeObject, Map)
      */
     public void removeLocalTypes() {
         localTypes.remove(localTypes.size() - 1);
@@ -329,8 +329,9 @@ final class VariableHolder {
         var value = typeMap.get(type.strName());
         if (value == null) {
             for (var localType : localTypes) {
-                if (localType.containsKey(type.strName())) {
-                    return localType.get(type.strName());
+                var children = localType.getChildren();
+                if (children.containsKey(type.strName())) {
+                    return children.get(type.strName());
                 }
             }
             var builtin = Builtins.BUILTIN_MAP.get(type.strName());
@@ -347,6 +348,16 @@ final class VariableHolder {
             var endType = type.getSubtypes().length == 0 ? value : value.generify(type, typesOf(type.getSubtypes()));
             return wrap(endType, node);
         }
+    }
+
+    public Optional<TypeObject> localParent(TypeObject typ) {
+        for (int i = localTypes.size() - 1; i >= 0; i--) {
+            var frame = localTypes.get(i);
+            if (frame.getChildren().containsKey(typ.baseName())) {
+                return Optional.of(frame.getParentType());
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -446,6 +457,24 @@ final class VariableHolder {
             if (!frameIter.hasNext()) {
                 frameNo--;
             }
+        }
+    }
+
+    private static final class LocalTypeFrame {
+        private final TypeObject parentType;
+        private final Map<String, TypeObject> children;
+
+        public LocalTypeFrame(TypeObject parentType, Map<String, TypeObject> children) {
+            this.parentType = parentType;
+            this.children = children;
+        }
+
+        public TypeObject getParentType() {
+            return parentType;
+        }
+
+        public Map<String, TypeObject> getChildren() {
+            return children;
         }
     }
 }
