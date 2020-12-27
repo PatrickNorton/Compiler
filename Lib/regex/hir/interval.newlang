@@ -6,9 +6,7 @@ class IntervalSet[I[Interval]] {
     final list[I] ranges
 
     public operator new(Iterable[I] items = []) {
-        # FIXME: Type inference for local types
-        # self.ranges = list(items)
-        raise NotImplemented()
+        self.ranges = [i for var i in items]
     }
 
     public property list[I] intervals {
