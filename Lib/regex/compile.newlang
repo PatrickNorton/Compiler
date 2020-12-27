@@ -135,6 +135,7 @@ class Compiler {
 
     private mut method c(Hir expr) -> Patch? {
         self.checkSize()
+        print(expr.kind)
         switch expr.kind {
             case HirKind.Empty { return null }
             case HirKind.Literal as l {
@@ -143,6 +144,28 @@ class Compiler {
                     case HirLiteral.Byte as b {
                         assert self.compiled.usesBytes()
                         return self.cByte(b)
+                    }
+                    default => raise NotImplemented()
+                }
+            }
+            case HirKind.Class as c {
+                switch c {
+                    case Class.Unicode as typ {
+                        return self.cClass(typ.ranges)
+                    }
+                    case Class.Bytes as typ {
+                        if self.compiled.usesBytes() {
+                            raise NotImplemented()
+                            # return self.cClassBytes(typ.ranges())
+                        } else {
+                            assert typ.isAllAscii()
+                            final list[ClassUnicodeRange] charRanges = []
+                            for var r in typ {
+                                var s, var e = char(r.lower), char(r.upper)
+                                charRanges.add(ClassUnicodeRange(s, e))
+                            }
+                            return self.cClass(charRanges)
+                        }
                     }
                 }
             }
@@ -170,6 +193,7 @@ class Compiler {
                             EmptyLook.START_LINE if self.compiled.isReverse else EmptyLook.END_LINE
                         )
                     }
+                    default => raise NotImplemented()
                 }
             }
             case HirKind.WordBoundary as w {
@@ -187,6 +211,7 @@ class Compiler {
                         self.byteClasses.setWordBoundary()
                         return self.cEmptyLook(EmptyLook.NOT_WORD_BOUNDARY_ASCII)
                     }
+                    default => raise NotImplemented()
                 }
             }
             case HirKind.Group as g {
@@ -209,13 +234,18 @@ class Compiler {
                         }
                         return self.cCapture(index * 2, g.hir)
                     }
+                    default => raise NotImplemented()
                 }
             }
             case HirKind.Concat as es {
                 return self.cConcat(reversed(es) if self.compiled.isReverse else es)
             }
-            case HirKind.Alternation as es => self.cAlternate(es)
-            case HirKind.Repetition as rep => self.cRepeat(rep)
+            case HirKind.Alternation as es {
+                return self.cAlternate(es)
+            }
+            case HirKind.Repetition as rep {
+                self.cRepeat(rep)
+            }
         }
     }
 
