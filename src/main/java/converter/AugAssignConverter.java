@@ -76,6 +76,8 @@ public final class AugAssignConverter implements BaseConverter {
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
         List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
         bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.LOAD_DOT.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(strName))));
         bytes.addAll(valueConverter.convert(start));
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
         bytes.add(Bytecode.STORE_ATTR.value);
