@@ -135,7 +135,6 @@ class Compiler {
 
     private mut method c(Hir expr) -> Patch? {
         self.checkSize()
-        print(expr.kind)
         switch expr.kind {
             case HirKind.Empty { return null }
             case HirKind.Literal as l {
