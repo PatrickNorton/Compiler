@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.AugAssignTypeNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
@@ -23,6 +24,9 @@ public final class AugAssignConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        if (node.getOperator() == AugAssignTypeNode.NULL_COERCE) {
+            return convertNullCoerce(start);
+        }
         var name = node.getName();
         if (name instanceof VariableNode) {
             return convertVar(start);
@@ -116,6 +120,47 @@ public final class AugAssignConverter implements BaseConverter {
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
         bytes.add(Bytecode.STORE_SUBSCRIPT.value);
         bytes.addAll(Util.shortToBytes((short) indices.length));
+        return bytes;
+    }
+
+    private List<Byte> convertNullCoerce(int start) {
+        if (!(node.getName() instanceof VariableNode)) {
+            throw CompilerTodoError.of("??= for non-variables", node);
+        }
+        var variable = (VariableNode) node.getName();
+        if (info.variableIsImmutable(variable.getName())) {
+            throw CompilerException.of("Cannot assign to immutable variable", node);
+        }
+        var assignedConverter = TestConverter.of(info, variable, 1);
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
+        var valueType = assignedConverter.returnType()[0];
+        if (!(valueType instanceof OptionTypeObject)) {
+            throw CompilerException.format("??= only works on an optional variable, not '%s'", node, valueType);
+        }
+        var innerType = ((OptionTypeObject) valueType).getOptionVal();
+        var variableType = valueConverter.returnType()[0];
+        boolean needsMakeOption;
+        if (valueType.isSuperclass(variableType)) {
+            needsMakeOption = false;
+        } else if (innerType.isSuperclass(variableType)) {
+            needsMakeOption = true;
+        } else {
+            throw CompilerException.format(
+                    "Cannot assign: Expected instance of '%s', got '%s'",
+                    node, innerType.name(), variableType.name()
+            );
+        }
+        List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
+        bytes.add(Bytecode.JUMP_NN.value);
+        int jumpLoc = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(valueConverter.convert(start));
+        if (needsMakeOption) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
+        bytes.add(Bytecode.STORE.value);
+        bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
         return bytes;
     }
 

@@ -637,6 +637,16 @@ public final class CompilerInfo {
     }
 
     /**
+     * Checks if a variable is immutable.
+     *
+     * @param name The name of the variable to check
+     * @return If the variable is immutable
+     */
+    public boolean variableIsImmutable(String name) {
+        return varHolder.varInfo(name).map(VariableInfo::isConst).orElse(true);
+    }
+
+    /**
      * Checks if a variable is static.
      *
      * @param name The name of the variable to check
