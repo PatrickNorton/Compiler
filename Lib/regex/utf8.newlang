@@ -172,7 +172,7 @@ class ScalarRange {
 }
 
 func decodeUtf8(bytes src) -> tuple[char, int]? {
-    int b0
+    mref int b0
     if src.get(0)? as b {
         if b <= 0x7f {
             return (char(b), 1)

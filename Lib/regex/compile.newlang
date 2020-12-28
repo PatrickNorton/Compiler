@@ -338,7 +338,7 @@ class Compiler {
 
     private mut method cConcat(Iterable[Hir] exprs) -> Patch? {
         mut var exprs = iter(exprs)
-        Patch patch
+        mref Patch patch
         while true {
             if exprs.next()? as n {
                 if self.c(n)? as p {
@@ -418,13 +418,13 @@ class Compiler {
     private mut method cRepeatZeroOrOne(Hir expr, bool greedy) -> Patch? {
         var splitEntry = self.insts.length
         var split = self.pushSplitHole()
-        Patch patch
+        mref Patch patch
         if self.c(expr)? as p {
             patch = p
         } else {
             return self.popSplitHole()
         }
-        Hole splitHole
+        mref Hole splitHole
         if greedy {
             splitHole = self.fillSplit(split, patch.entry, null)
         } else {
@@ -437,14 +437,14 @@ class Compiler {
     private mut method cRepeatZeroOrMore(Hir expr, bool greedy) -> Patch? {
         var splitEntry = self.insts.length
         var split = self.pushSplitHole()
-        Patch patch
+        mref Patch patch
         if self.c(expr)? as p {
             patch = p
         } else {
             return self.popSplitHole()
         }
         self.fill(patch.hole, splitEntry)
-        Hole splitHole
+        mref Hole splitHole
         if greedy {
             splitHole = self.fillSplit(split, patch.entry, null)
         } else {
@@ -454,7 +454,7 @@ class Compiler {
     }
 
     private mut method cRepeatOneOrMore(Hir expr, bool greedy) -> Patch? {
-        Patch patch
+        mref Patch patch
         if self.c(expr)? as p {
             patch = p
         } else {
@@ -462,7 +462,7 @@ class Compiler {
         }
         self.fillToNext(patch.hole)
         var split = self.pushSplitHole()
-        Hole splitHole
+        mref Hole splitHole
         if greedy {
             splitHole = self.fillSplit(split, patch.entry, null)
         } else {
@@ -490,7 +490,7 @@ class Compiler {
         mref var prevHole = patchConcat.hole
         dotimes max - min {
             self.fillToNext(prevHole)
-            Patch patch
+            mref Patch patch
             var split = self.pushSplitHole()
             if self.c(expr)? as p {
                 patch = p

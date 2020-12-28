@@ -488,15 +488,13 @@ class ClassUnicodeRange from Interval {
                     continue if int(cp) < int(next)
                 }
 
-                Iterable[char] it
-                if simpleFold(cp)? as i {
-                    it = i
+                if simpleFold(cp)? as it {
+                    for var cpFolded in it {
+                        ranges.add(ClassUnicodeRange(cpFolded, cpFolded))
+                    }
                 } else {
                     nextSimpleCp = cp
                     continue
-                }
-                for var cpFolded in it {
-                    ranges.add(ClassUnicodeRange(cpFolded, cpFolded))
                 }
             }
         }

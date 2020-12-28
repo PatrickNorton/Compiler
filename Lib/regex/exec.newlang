@@ -361,7 +361,7 @@ class ProgramCache {
 
 func alternationLiterals(Hir expr) -> list[bytes]? {
     return null if not expr.isAlternationLiteral
-    list[Hir] alts
+    mref list[Hir] alts
     if expr.kind.Alternation? as _alts {
         alts = _alts
     } else {
@@ -816,7 +816,7 @@ class ExecNoSync {
     }
 
     private method findDfaReverseSuffix(bytes text, int start) -> Result[tuple[int, int]] {
-        int matchStart
+        mref int matchStart
         if self.execDfaReverseSuffix(text, start)? as m {
             if m.Match? as p {
                 matchStart = p.0

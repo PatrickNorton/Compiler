@@ -59,8 +59,8 @@ class IntervalSet[I[Interval]] {
             if (self.ranges[a] | other.ranges[b])? as ab {
                 self.ranges.add(ab casted cls.I)
             }
-            Iterator[int] it
-            int aorb
+            mref Iterator[int] it
+            mref int aorb
             if int(self.ranges[a].upper) < int(other.ranges[b].upper) {
                 it = ita
                 aorb = a
@@ -310,7 +310,7 @@ interface Interval[I[Bound]] {
         I? selfUpper = self.upper
         I? otherLower = other.lower
         I? otherUpper = other.upper
-        cls u
+        mref cls u
         if (self & other)? as v {
             u = v
         } else {
@@ -318,7 +318,7 @@ interface Interval[I[Bound]] {
             cls? c1 = cls(otherLower, otherUpper)
             return (c0, c1)
         }
-        cls i
+        mref cls i
         if (self | other)? as j {
             i = j
         } else {

@@ -88,19 +88,17 @@ class Builder {
         mut var patterns = self.patterns.clone()
         patterns.setMatchKind(self.config.kind)
         var rabinKarp = RabinKarp(patterns)
-        SearchKind searchKind
-        int minimumLen
+        mref SearchKind searchKind
+        mut int minimumLen
         if self.config.force? as f {
             switch f {
                 case ForceAlgorithm.TEDDY {
-                    Teddy teddy
-                    if self.buildTeddy(patterns)? as t {
-                        teddy = t
+                    if self.buildTeddy(patterns)? as teddy {
+                        minimumLen = teddy.minimumLen()
+                        searchKind = SearchKind.Teddy(teddy)
                     } else {
                         return null
                     }
-                    minimumLen = teddy.minimumLen()
-                    searchKind = SearchKind.Teddy(teddy)
                 }
                 case ForceAlgorithm.RABIN_KARP {
                     minimumLen = 0
@@ -108,14 +106,12 @@ class Builder {
                 }
             }
         } else {
-            Teddy teddy
-            if self.buildTeddy(patterns)? as t {
-                teddy = t
+            if self.buildTeddy(patterns)? as teddy {
+                minimumLen = teddy.minimumLen()
+                searchKind = SearchKind.Teddy(teddy)
             } else {
                 return null
             }
-            minimumLen = teddy.minimumLen()
-            searchKind = SearchKind.Teddy(teddy)
         }
         return Searcher(self.config.clone(), patterns, rabinKarp, searchKind, minimumLen)
     }

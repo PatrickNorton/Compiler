@@ -328,7 +328,7 @@ class TranslatorI from Visitor[Hir] {
 
     private method hirPerlUnicodeClass(ClassPerl astClass) -> ClassUnicode {
         assert self.flags.unicode
-        final ClassUnicode result
+        mut ClassUnicode result
         try {
             result = switch astClass.kind {
                 case ClassPerlKind.DIGIT => perlDigit()

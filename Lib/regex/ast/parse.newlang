@@ -914,7 +914,7 @@ class ParserI {
             raise self.error(Span(start, self.parser.pos), ErrorKind.ClassUnclosed())
         }
 
-        bool negated
+        mref bool negated
         if self.chr() != c'^' {
             negated = false
         } else {
@@ -1036,7 +1036,7 @@ class ParserI {
     private mut method popGroupEnd(Concat concat_) -> Ast {
         var concat = concat_.withSpan(Span(concat_.span.start, self.parser.pos))
         final var stack = self.parser.stackGroup
-        Ast ast
+        mref Ast ast
         if stack.pop()? as gs {
             switch gs {
                 case GroupState.Alternation as alt {

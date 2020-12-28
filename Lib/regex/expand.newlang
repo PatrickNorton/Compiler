@@ -24,7 +24,7 @@ func expandStr(Captures caps, str replacement) -> str {
             }
         }
         assert repl
-        CaptureRef capRef
+        mref CaptureRef capRef
         if findCapRef(repl)? as c {
             capRef = c
         } else {
