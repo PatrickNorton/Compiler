@@ -64,7 +64,7 @@ public final class TryConverter implements BaseConverter {
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump1);
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
         bytes.add(Bytecode.END_TRY.value);
-        bytes.addAll(Util.intToBytes(node.getExcepted().length));
+        bytes.addAll(Util.shortToBytes((short) node.getExcepted().length));
         return bytes;
     }
 }
