@@ -128,7 +128,7 @@ public final class AugAssignConverter implements BaseConverter {
             throw CompilerTodoError.of("??= for non-variables", node);
         }
         var variable = (VariableNode) node.getName();
-        if (info.variableIsConstant(variable.getName())) {
+        if (info.variableIsImmutable(variable.getName())) {
             throw CompilerException.of("Cannot assign to immutable variable", node);
         }
         var assignedConverter = TestConverter.of(info, variable, 1);

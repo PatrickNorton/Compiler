@@ -179,7 +179,7 @@ public final class AssignmentConverter implements BaseConverter {
                 throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
             }
         }
-        if (info.variableIsConstant(name)) {
+        if (info.variableIsImmutable(name)) {
             throw CompilerException.format("Cannot assign to const variable %s", variable, name);
         }
     }
