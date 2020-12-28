@@ -716,9 +716,9 @@ class CompileClass {
                     holes.add(patch.hole)
                     self.c.fill(lastSplit, patch.entry)
                     lastSplit = Hole.None()
-                    # initialEntry ??= patch.entry  FIXME: ??=
+                    initialEntry ??= patch.entry
                 } else {
-                    # initialEntry ??= self.c.insts.length
+                    initialEntry ??= self.c.insts.length
                     self.c.fillToNext(lastSplit)
                     lastSplit = self.c.pushSplitHole()
                     var patch = self.cUtf8Seq(utf8Seq)
