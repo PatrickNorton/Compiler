@@ -149,6 +149,16 @@ public final class TemplateParam extends NameableType {
         }
     }
 
+    @Override
+    public Optional<Iterable<String>> getDefined() {
+        return bound.getDefined();
+    }
+
+    @Override
+    public Optional<Iterable<String>> staticDefined() {
+        return bound.staticDefined();
+    }
+
     public static Map<String, TemplateParam> parseGenerics(CompilerInfo info, TypeLikeNode... generics) {
         Map<String, TemplateParam> result = new HashMap<>();
         for (int i = 0; i < generics.length; i++) {
