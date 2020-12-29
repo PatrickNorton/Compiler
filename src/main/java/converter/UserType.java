@@ -382,6 +382,11 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return Optional.of(DefinedIterator::new);
     }
 
+    @Override
+    public Optional<Iterable<String>> staticDefined() {
+        return Optional.of(StaticIterator::new);
+    }
+
     protected static abstract class Info<O extends IntoMethodInfo, A extends IntoAttrInfo> {
         protected final String name;
         protected List<TypeObject> supers;
@@ -477,6 +482,38 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             while (!currentIter.hasNext() && superIndex < info.supers.size() - 1) {
                 superIndex++;
                 currentIter = info.supers.get(superIndex).getDefined().orElse(Collections.emptyList()).iterator();
+            }
+            if (!currentIter.hasNext()) {
+                superIndex++;
+            }
+        }
+    }
+
+    private final class StaticIterator implements Iterator<String> {
+        private int superIndex = -1;
+        private Iterator<String> currentIter = info.staticAttributes.keySet().iterator();
+
+        @Override
+        public boolean hasNext() {
+            if (!currentIter.hasNext()) updateIter();
+            return superIndex < info.supers.size();
+        }
+
+        @Override
+        public String next() {
+            if (!currentIter.hasNext()) {
+                updateIter();
+                if (superIndex >= info.supers.size()) {
+                    throw new NoSuchElementException();
+                }
+            }
+            return currentIter.next();
+        }
+
+        private void updateIter() {
+            while (!currentIter.hasNext() && superIndex < info.supers.size() - 1) {
+                superIndex++;
+                currentIter = info.supers.get(superIndex).staticDefined().orElse(Collections.emptyList()).iterator();
             }
             if (!currentIter.hasNext()) {
                 superIndex++;
