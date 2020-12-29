@@ -164,6 +164,11 @@ public final class OptionTypeObject extends TypeObject {
         }
     }
 
+    @Override
+    public Optional<Iterable<String>> getDefined() {
+        return Optional.of(List.of("map", "flatMap"));
+    }
+
     private static FunctionInfo getMap(BaseType type) {
         var param = new TemplateParam("T", 0, Builtins.OBJECT);
         var innerFn = new FunctionInfo(ArgumentInfo.of(type.getValue()), param).toCallable();
