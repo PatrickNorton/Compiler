@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
+import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -70,8 +71,17 @@ public final class InConverter extends OperatorConverter {
         if (constant.isPresent()) {
             return loadConstant(info, constant.orElseThrow());
         }
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), args[1].getArgument(), info, 1));
+        var containedConverter = TestConverter.of(info, args[0].getArgument(), 1);
+        var containerConverter = TestConverter.of(info, args[1].getArgument(), 1);
+        var opInfo = containerConverter.returnType()[0].tryOperatorInfo(lineInfo, OpSpTypeNode.IN, info);
+        if (!opInfo.matches(new Argument("", containedConverter.returnType()[0]))) {
+            throw CompilerException.format(
+                    "Cannot call operator 'in' on type '%s'",
+                    lineInfo, containerConverter.returnType()[0]
+            );
+        }
+        List<Byte> bytes = new ArrayList<>(containedConverter.convert(start));
+        bytes.addAll(containerConverter.convert(start + bytes.size()));
         bytes.add(Bytecode.SWAP_2.value);
         bytes.add(Bytecode.CONTAINS.value);
         if (retCount == 0) {
