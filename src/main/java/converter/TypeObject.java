@@ -13,15 +13,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -677,28 +673,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return operatorInfo(o, access);
     }
 
-    /**
-     * Returns an iterator over all the superclasses of {@code this}, and all
-     * their superclasses, etc...
-     * <p>
-     *     This currently assumes the type is an instance of {@link UserType},
-     *     though this is probably no longer necessary and should be removed.
-     * </p>
-     * <p>
-     *     Despite the "recursive" in the name, this is clever enough to not
-     *     blow the stack in the event of deeply nested types &#8212 though it
-     *     is not yet clever enough to recognise recursion and may well hang
-     *     if it encounters it.
-     * </p>
-     *
-     * @return An iterator over all the superclasses of {@code this}
-     */
-    @Contract(pure = true)
-    @NotNull
-    public final Iterable<TypeObject> recursiveSupers() {
-        return () -> new RecursiveSuperIterator((UserType<?>) this);
-    }
-
     @Override
     public int compareTo(@NotNull TypeObject o) {
         return this.hashCode() - o.hashCode();
@@ -821,7 +795,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         var userB = (UserType<?>) b;
         Set<TypeObject> aSupers = new HashSet<>();
         Set<TypeObject> bSupers = new HashSet<>();
-        for (var pair : Zipper.of(new RecursiveSuperIterator(userA), new RecursiveSuperIterator(userB))) {
+        for (var pair : Zipper.of(userA.recursiveSupers(), userB.recursiveSupers())) {
             if (bSupers.contains(pair.getKey())) {
                 return pair.getKey();
             } else if (aSupers.contains(pair.getValue())) {
@@ -832,46 +806,6 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
             }
         }
         return Builtins.OBJECT;
-    }
-
-    private static final class RecursiveSuperIterator implements Iterator<TypeObject>, Iterable<TypeObject> {
-        private final Deque<Iterator<TypeObject>> iterators;
-
-        public RecursiveSuperIterator(@NotNull UserType<?> val) {
-            this.iterators = new ArrayDeque<>();
-            iterators.addLast(val.getSupers().iterator());
-        }
-
-        @NotNull
-        @Override
-        public Iterator<TypeObject> iterator() {
-            return this;
-        }
-
-        public boolean hasNext() {
-            while (!iterators.isEmpty() && !iterators.peek().hasNext()) {
-                iterators.pop();
-            }
-            return !iterators.isEmpty();
-        }
-
-        @Override
-        public TypeObject next() {
-            while (!iterators.isEmpty() && !iterators.peek().hasNext()) {
-                iterators.pop();
-            }
-            if (iterators.isEmpty()) {
-                throw new NoSuchElementException();
-            } else {
-                var value = iterators.peek().next();
-                List<TypeObject> supers = value instanceof UserType<?>
-                        ? ((UserType<?>) value).getSupers() : Collections.emptyList();
-                if (!supers.isEmpty()) {
-                    iterators.addLast(supers.iterator());
-                }
-                return value;
-            }
-        }
     }
 
     @NotNull

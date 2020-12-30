@@ -3,11 +3,14 @@ package main.java.converter;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import main.java.util.Zipper;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -141,7 +144,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         } else if (sameBaseType(other)) {
             return makeMatch(parent, generics, other.getGenerics());
         } else if (other instanceof UserType<?>) {
-            for (var sup : other.recursiveSupers()) {
+            for (var sup : ((UserType<?>) other).recursiveSupers()) {
                 if (sameBaseType(sup)) {
                     var supGenerics = this.getGenerics();
                     var objGenerics = sup.getGenerics();
@@ -202,6 +205,28 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     public List<TypeObject> getGenerics() {
         return generics;
+    }
+
+    /**
+     * Returns an iterator over all the superclasses of {@code this}, and all
+     * their superclasses, etc...
+     * <p>
+     *     This currently assumes the type is an instance of {@link UserType},
+     *     though this is probably no longer necessary and should be removed.
+     * </p>
+     * <p>
+     *     Despite the "recursive" in the name, this is clever enough to not
+     *     blow the stack in the event of deeply nested types &#8212 though it
+     *     is not yet clever enough to recognise recursion and may well hang
+     *     if it encounters it.
+     * </p>
+     *
+     * @return An iterator over all the superclasses of {@code this}
+     */
+    @Contract(pure = true)
+    @NotNull
+    public final Iterable<TypeObject> recursiveSupers() {
+        return () -> new RecursiveSuperIterator(this);
     }
 
     /**
@@ -517,6 +542,40 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
             if (!currentIter.hasNext()) {
                 superIndex++;
+            }
+        }
+    }
+
+    private static final class RecursiveSuperIterator implements Iterator<TypeObject> {
+        private final Deque<Iterator<TypeObject>> iterators;
+
+        public RecursiveSuperIterator(@NotNull UserType<?> val) {
+            this.iterators = new ArrayDeque<>();
+            iterators.addLast(val.getSupers().iterator());
+        }
+
+        public boolean hasNext() {
+            while (!iterators.isEmpty() && !iterators.peek().hasNext()) {
+                iterators.pop();
+            }
+            return !iterators.isEmpty();
+        }
+
+        @Override
+        public TypeObject next() {
+            while (!iterators.isEmpty() && !iterators.peek().hasNext()) {
+                iterators.pop();
+            }
+            if (iterators.isEmpty()) {
+                throw new NoSuchElementException();
+            } else {
+                var value = iterators.peek().next();
+                List<TypeObject> supers = value instanceof UserType<?>
+                        ? ((UserType<?>) value).getSupers() : Collections.emptyList();
+                if (!supers.isEmpty()) {
+                    iterators.addLast(supers.iterator());
+                }
+                return value;
             }
         }
     }
