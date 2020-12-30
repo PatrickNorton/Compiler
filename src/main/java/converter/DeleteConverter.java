@@ -100,8 +100,9 @@ public final class DeleteConverter implements BaseConverter {
         bytes.add(Bytecode.LOAD_NULL.value);
         bytes.add(Bytecode.STORE.value);  // Drops value currently stored
         bytes.addAll(Util.shortToBytes(index));
-        if (info.varDefinedInCurrentFrame(name)) {  // TODO: Drop non-top-frame variable properly
-            info.removeVariable(name);
+        var varHolder = info.varHolder();
+        if (varHolder.varDefinedInCurrentFrame(name)) {  // TODO: Drop non-top-frame variable properly
+            varHolder.removeVariable(name);
         }
         return bytes;
     }
