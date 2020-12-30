@@ -49,6 +49,10 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         return Optional.empty();
     }
 
+    public Optional<Iterable<String>> staticDefined() {
+        return Optional.empty();
+    }
+
     /**
      * Checks if this is a superclass of another type.
      * <p>
@@ -529,9 +533,17 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                     lineInfo, value, name()
             );
         } else {
-            return CompilerException.format(
-                    "Static attribute '%s' does not exist in type '%s'", lineInfo, value, name()
-            );
+            var closest = staticDefined().flatMap(x -> Levenshtein.closestName(value, x));
+            if (closest.isPresent()) {
+                return CompilerException.format(
+                        "Static attribute '%s' does not exist in type '%s'%nDid you mean '%s'?",
+                        lineInfo, value, name(), closest.orElseThrow()
+                );
+            } else {
+                return CompilerException.format(
+                        "Static attribute '%s' does not exist in type '%s'", lineInfo, value, name()
+                );
+            }
         }
     }
 

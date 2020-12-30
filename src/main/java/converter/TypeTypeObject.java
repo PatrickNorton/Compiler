@@ -140,4 +140,9 @@ public final class TypeTypeObject extends TypeObject {
             return generic.tryStaticAttrType(lineInfo, value, access);
         }
     }
+
+    @Override
+    public Optional<Iterable<String>> getDefined() {
+        return generic == null ? Optional.empty() : generic.staticDefined();
+    }
 }
