@@ -632,8 +632,7 @@ public final class CompilerInfo {
      * @return If the variable is constant
      */
     public boolean variableIsConstant(String name) {
-        var info = varHolder.varInfo(name);
-        return info.map(VariableInfo::hasConstValue).orElseGet(() -> Builtins.BUILTIN_MAP.containsKey(name));
+        return varHolder.varInfo(name).map(VariableInfo::hasConstValue).orElse(true);
     }
 
     /**
