@@ -30,8 +30,8 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     @NotNull
-    protected final <U> Map<U, List<Byte>> convert(UserType<?> type, @NotNull Map<U, RawMethod> functions) {
-        Map<U, List<Byte>> result = new HashMap<>();
+    protected final <U> Map<U, Method> convert(UserType<?> type, @NotNull Map<U, RawMethod> functions) {
+        Map<U, Method> result = new HashMap<>();
         for (var pair : functions.entrySet()) {
             var methodInfo = pair.getValue();
             var isConstMethod = !methodInfo.isMut();
@@ -62,7 +62,8 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 }
                 var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
                 retInfo.popFnReturns();
-                result.put(pair.getKey(), bytes);
+                var mInfo = new MethodInfo(methodInfo.getAccessLevel(), methodInfo.isMut(), methodInfo.getInfo());
+                result.put(pair.getKey(), new Method(mInfo, bytes));
                 info.removeStackFrame();
                 if (!genericInfo.isEmpty()) {
                     info.removeLocalTypes();
