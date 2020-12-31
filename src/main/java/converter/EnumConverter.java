@@ -1,7 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
-import main.java.converter.classbody.Method;
+import main.java.converter.classbody.RawMethod;
 import main.java.parser.DescriptorNode;
 import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionCallNode;
@@ -55,7 +55,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     }
 
     @NotNull
-    private List<Byte> getInitBytes(int start, Method newOperatorInfo) {
+    private List<Byte> getInitBytes(int start, RawMethod newOperatorInfo) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(Bytecode.DO_STATIC.value);
         int doStaticPos = bytes.size();
@@ -132,8 +132,8 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         obj.seal();
     }
 
-    private Method defaultNew() {
+    private RawMethod defaultNew() {
         var fnInfo = new FunctionInfo("", ArgumentInfo.of());
-        return new Method(AccessLevel.PRIVATE, fnInfo, new StatementBodyNode(), node.getLineInfo());
+        return new RawMethod(AccessLevel.PRIVATE, fnInfo, new StatementBodyNode(), node.getLineInfo());
     }
 }

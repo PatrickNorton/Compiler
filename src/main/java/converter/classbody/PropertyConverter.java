@@ -55,12 +55,12 @@ public final class PropertyConverter {
     }
 
     @NotNull
-    public Map<String, Method> getGetters() {
-        Map<String, Method> result = new HashMap<>();
+    public Map<String, RawMethod> getGetters() {
+        Map<String, RawMethod> result = new HashMap<>();
         for (var pair : propertyInfos.entrySet()) {
             var property = properties.get(pair.getKey());
             var fnInfo = new FunctionInfo(property.getType());
-            var mInfo = new Method(property.getAccessLevel(), fnInfo,
+            var mInfo = new RawMethod(property.getAccessLevel(), fnInfo,
                     pair.getValue().getGetter(), pair.getValue().getLineInfo());
             result.put(pair.getKey(), mInfo);
         }
@@ -68,12 +68,12 @@ public final class PropertyConverter {
     }
 
     @NotNull
-    public Map<String, Method> getSetters() {
-        Map<String, Method> result = new HashMap<>();
+    public Map<String, RawMethod> getSetters() {
+        Map<String, RawMethod> result = new HashMap<>();
         for (var pair : propertyInfos.entrySet()) {
             var property = properties.get(pair.getKey());
             var fnInfo = new FunctionInfo(pair.getValue().getSetterArgs());
-            var mInfo = new Method(property.getAccessLevel(), true, fnInfo,
+            var mInfo = new RawMethod(property.getAccessLevel(), true, fnInfo,
                     pair.getValue().getSetter(), pair.getValue().getLineInfo());
             result.put(pair.getKey(), mInfo);
         }

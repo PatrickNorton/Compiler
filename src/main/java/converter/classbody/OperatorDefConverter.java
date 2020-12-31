@@ -26,9 +26,9 @@ import java.util.Set;
 public final class OperatorDefConverter {
     private final CompilerInfo info;
     private final Map<OpSpTypeNode, MethodInfo> operatorInfos;
-    private final Map<OpSpTypeNode, Method> operators;
+    private final Map<OpSpTypeNode, RawMethod> operators;
     private final Map<OpSpTypeNode, MethodInfo> staticOperatorInfos;
-    private final Map<OpSpTypeNode, Method> staticOperators;
+    private final Map<OpSpTypeNode, RawMethod> staticOperators;
 
     public OperatorDefConverter(CompilerInfo info) {
         this.operatorInfos = new HashMap<>();
@@ -56,7 +56,7 @@ public final class OperatorDefConverter {
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
         opInfos.put(op, mInfo);
-        ops.put(op, new Method(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
+        ops.put(op, new RawMethod(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
     }
 
     public void parse(@NotNull GenericOperatorNode node) {
@@ -74,7 +74,7 @@ public final class OperatorDefConverter {
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
         operatorInfos.put(op, mInfo);
-        operators.put(op, new Method(accessLevel, isMut, fnInfo,
+        operators.put(op, new RawMethod(accessLevel, isMut, fnInfo,
                 StatementBodyNode.empty(), node.getLineInfo()));
     }
 
@@ -82,7 +82,7 @@ public final class OperatorDefConverter {
         return operatorInfos;
     }
 
-    public Map<OpSpTypeNode, Method> getOperators() {
+    public Map<OpSpTypeNode, RawMethod> getOperators() {
         return operators;
     }
 
@@ -90,7 +90,7 @@ public final class OperatorDefConverter {
         return staticOperatorInfos;
     }
 
-    public Map<OpSpTypeNode, Method> getStaticOperators() {
+    public Map<OpSpTypeNode, RawMethod> getStaticOperators() {
         return staticOperators;
     }
 
