@@ -403,7 +403,7 @@ class TranslatorI from Visitor[Hir] {
             if int(c) > 0x7F {
                 raise self.error(span, ErrorKind.UnicodeNotAllowed)
             }
-            if int(c) not in ASCII_LETTERS {
+            if c not in ASCII_LETTERS {
                 return self.hirFromChar(span, c)
             }
             mut var typ = ClassBytes([ClassBytesRange(int(c), int(c))])

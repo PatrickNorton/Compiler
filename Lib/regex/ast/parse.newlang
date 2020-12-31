@@ -815,8 +815,13 @@ class ParserI {
         if self.isEof() {
             raise self.unclosedClassError()
         }
-        if self.chr() != c'-' or self.peekSpace() in '-]' {
+        if self.chr() != c'-' {
             return prim1.intoClassSetItem(self)
+        }
+        if self.peekSpace()? as s {
+            if s in '-]' {
+                return prim1.intoClassSetItem(self)
+            }
         }
         if not self.bumpAndBumpSpace() {
             raise self.unclosedClassError()
