@@ -75,9 +75,12 @@ public final class InConverter extends OperatorConverter {
         var containerConverter = TestConverter.of(info, args[1].getArgument(), 1);
         var opInfo = containerConverter.returnType()[0].tryOperatorInfo(lineInfo, OpSpTypeNode.IN, info);
         if (!opInfo.matches(new Argument("", containedConverter.returnType()[0]))) {
+            var args = opInfo.getArgs().getNormalArgs();
+            var argTypes = String.join(", ", TypeObject.name(Argument.typesOf(args)));
             throw CompilerException.format(
-                    "Cannot call operator 'in' on type '%s'",
-                    lineInfo, containerConverter.returnType()[0]
+                    "Cannot call operator 'in' on type '%s':%n" +
+                            "Arguments received: %s%nArguments expected: %s",
+                    lineInfo, containerConverter.returnType()[0].name(), argTypes
             );
         }
         List<Byte> bytes = new ArrayList<>(containedConverter.convert(start));
