@@ -23,9 +23,9 @@ public final class AssertConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP_TRUE.value);
         int jumpLoc = bytes.size();
         bytes.addAll(Util.intToBytes(0));
-        bytes.addAll(convertMessage(start + bytes.size()));
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.strConstant())));
+        bytes.addAll(convertMessage(start + bytes.size()));
         bytes.add(Bytecode.THROW_QUICK.value);
         bytes.addAll(Util.shortZeroBytes());
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
