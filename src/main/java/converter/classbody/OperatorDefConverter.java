@@ -155,6 +155,6 @@ public final class OperatorDefConverter {
     }
 
     static {
-        ALWAYS_GENERATOR = EnumSet.of(OpSpTypeNode.ITER, OpSpTypeNode.ITER_SLICE);
+        ALWAYS_GENERATOR = EnumSet.of(OpSpTypeNode.ITER, OpSpTypeNode.ITER_SLICE, OpSpTypeNode.REVERSED);
     }
 }
