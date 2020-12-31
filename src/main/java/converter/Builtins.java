@@ -220,6 +220,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_ATTR, MethodInfo.of(ArgumentInfo.of(INT), CHAR),
                 OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), STR),
                 OpSpTypeNode.ITER, MethodInfo.of(Builtins.ITERABLE.generify(CHAR)),
+                OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(CHAR), BOOL),
                 OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))
         );
         STR.setOperators(strMap);
@@ -265,6 +266,7 @@ public final class Builtins {
                 OpSpTypeNode.GET_SLICE, MethodInfo.of(ArgumentInfo.of(SLICE), BYTES.makeMut()),
                 OpSpTypeNode.SET_ATTR, MethodInfo.of(ArgumentInfo.of(INT, INT)),
                 OpSpTypeNode.ITER, MethodInfo.of(ITERABLE.generify(INT)),
+                OpSpTypeNode.IN, MethodInfo.of(ArgumentInfo.of(INT), BOOL),
                 OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))
         );
         BYTES.setOperators(bytesMap);
