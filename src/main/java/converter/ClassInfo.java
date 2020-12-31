@@ -13,20 +13,20 @@ public final class ClassInfo {
     private final List<Short> superConstants;
     private final Map<String, Short> variables;
     private final Map<String, Short> staticVariables;
-    private final Map<OpSpTypeNode, List<Byte>> operatorDefs;
-    private final Map<OpSpTypeNode, List<Byte>> staticOperators;
-    private final Map<String, List<Byte>> methodDefs;
-    private final Map<String, List<Byte>> staticMethods;
-    private final Map<String, Pair<List<Byte>, List<Byte>>> properties;
-    private final Map<String, Pair<List<Byte>, List<Byte>>> staticProperties;
+    private final Map<OpSpTypeNode, Method> operatorDefs;
+    private final Map<OpSpTypeNode, Method> staticOperators;
+    private final Map<String, Method> methodDefs;
+    private final Map<String, Method> staticMethods;
+    private final Map<String, Pair<Method, Method>> properties;
+    private final Map<String, Pair<Method, Method>> staticProperties;
     private final List<String> variants;
 
     private ClassInfo(UserType<?> type, List<Short> superConstants,
                       Map<String, Short> variables, Map<String, Short> staticVariables,
-                      Map<OpSpTypeNode, List<Byte>> operatorDefs, Map<OpSpTypeNode, List<Byte>> staticOperators,
-                      Map<String, List<Byte>> methodDefs, Map<String, List<Byte>> staticMethods,
-                      Map<String, Pair<List<Byte>, List<Byte>>> properties,
-                      Map<String, Pair<List<Byte>, List<Byte>>> staticProperties,
+                      Map<OpSpTypeNode, Method> operatorDefs, Map<OpSpTypeNode, Method> staticOperators,
+                      Map<String, Method> methodDefs, Map<String, Method> staticMethods,
+                      Map<String, Pair<Method, Method>> properties,
+                      Map<String, Pair<Method, Method>> staticProperties,
                       List<String> variants) {
         this.type = type;
         this.superConstants = superConstants;
@@ -45,19 +45,19 @@ public final class ClassInfo {
         return type;
     }
 
-    public Map<OpSpTypeNode, List<Byte>> getOperatorDefs() {
+    public Map<OpSpTypeNode, Method> getOperatorDefs() {
         return operatorDefs;
     }
 
-    public Map<String, List<Byte>> getMethodDefs() {
+    public Map<String, Method> getMethodDefs() {
         return methodDefs;
     }
 
-    public Map<String, List<Byte>> getStaticMethods() {
+    public Map<String, Method> getStaticMethods() {
         return staticMethods;
     }
 
-    public Map<String, Pair<List<Byte>, List<Byte>>> getProperties() {
+    public Map<String, Pair<Method, Method>> getProperties() {
         return properties;
     }
 
@@ -138,32 +138,36 @@ public final class ClassInfo {
         }
     }
 
-    private static void addOperators(@NotNull List<Byte> bytes, @NotNull Map<OpSpTypeNode, List<Byte>> byteMap) {
+    private static void addOperators(@NotNull List<Byte> bytes, @NotNull Map<OpSpTypeNode, Method> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
             bytes.add((byte) pair.getKey().ordinal());
-            bytes.addAll(Util.intToBytes(pair.getValue().size()));
-            bytes.addAll(pair.getValue());
+            bytes.add((byte) (pair.getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
+            bytes.addAll(Util.intToBytes(pair.getValue().getBytes().size()));
+            bytes.addAll(pair.getValue().getBytes());
         }
     }
 
-    private static void addMethods(@NotNull List<Byte> bytes, @NotNull Map<String, List<Byte>> byteMap) {
+    private static void addMethods(@NotNull List<Byte> bytes, @NotNull Map<String, Method> byteMap) {
         bytes.addAll(Util.intToBytes(byteMap.size()));
         for (var pair : byteMap.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
-            bytes.addAll(Util.intToBytes(pair.getValue().size()));
-            bytes.addAll(pair.getValue());
+            bytes.add((byte) (pair.getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
+            bytes.addAll(Util.intToBytes(pair.getValue().getBytes().size()));
+            bytes.addAll(pair.getValue().getBytes());
         }
     }
 
-    private static void addProperties(@NotNull List<Byte> bytes, @NotNull Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+    private static void addProperties(@NotNull List<Byte> bytes, @NotNull Map<String, Pair<Method, Method>> properties) {
         bytes.addAll(Util.intToBytes(properties.size()));
         for (var pair : properties.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
-            bytes.addAll(Util.intToBytes(pair.getValue().getKey().size()));
-            bytes.addAll(pair.getValue().getKey());
-            bytes.addAll(Util.intToBytes(pair.getValue().getValue().size()));
-            bytes.addAll(pair.getValue().getValue());
+            bytes.add((byte) (pair.getValue().getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
+            bytes.addAll(Util.intToBytes(pair.getValue().getKey().getBytes().size()));
+            bytes.addAll(pair.getValue().getKey().getBytes());
+            bytes.add((byte) (pair.getValue().getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
+            bytes.addAll(Util.intToBytes(pair.getValue().getValue().getBytes().size()));
+            bytes.addAll(pair.getValue().getValue().getBytes());
         }
     }
 
@@ -172,12 +176,12 @@ public final class ClassInfo {
         private List<Short> superConstants;
         private Map<String, Short> variables;
         private Map<String, Short> staticVariables;
-        private Map<OpSpTypeNode, List<Byte>> operatorDefs;
-        private Map<OpSpTypeNode, List<Byte>> staticOperators;
-        private Map<String, List<Byte>> methodDefs;
-        private Map<String, List<Byte>> staticMethods;
-        private Map<String, Pair<List<Byte>, List<Byte>>> properties;
-        private Map<String, Pair<List<Byte>, List<Byte>>> staticProperties;
+        private Map<OpSpTypeNode, Method> operatorDefs;
+        private Map<OpSpTypeNode, Method> staticOperators;
+        private Map<String, Method> methodDefs;
+        private Map<String, Method> staticMethods;
+        private Map<String, Pair<Method, Method>> properties;
+        private Map<String, Pair<Method, Method>> staticProperties;
         private List<String> variants;
 
         public Factory setType(UserType<?> type) {
@@ -204,37 +208,37 @@ public final class ClassInfo {
             return this;
         }
 
-        public Factory setOperatorDefs(Map<OpSpTypeNode, List<Byte>> operatorDefs) {
+        public Factory setOperatorDefs(Map<OpSpTypeNode, Method> operatorDefs) {
             assert this.operatorDefs == null;
             this.operatorDefs = operatorDefs;
             return this;
         }
 
-        public Factory setStaticOperators(Map<OpSpTypeNode, List<Byte>> staticOperators) {
+        public Factory setStaticOperators(Map<OpSpTypeNode, Method> staticOperators) {
             assert this.staticOperators == null;
             this.staticOperators = staticOperators;
             return this;
         }
 
-        public Factory setMethodDefs(Map<String, List<Byte>> methodDefs) {
+        public Factory setMethodDefs(Map<String, Method> methodDefs) {
             assert this.methodDefs == null;
             this.methodDefs = methodDefs;
             return this;
         }
 
-        public Factory setStaticMethods(Map<String, List<Byte>> staticMethods) {
+        public Factory setStaticMethods(Map<String, Method> staticMethods) {
             assert this.staticMethods == null;
             this.staticMethods = staticMethods;
             return this;
         }
 
-        public Factory setProperties(Map<String, Pair<List<Byte>, List<Byte>>> properties) {
+        public Factory setProperties(Map<String, Pair<Method, Method>> properties) {
             assert this.properties == null;
             this.properties = properties;
             return this;
         }
 
-        public Factory setStaticProperties(Map<String, Pair<List<Byte>, List<Byte>>> staticProperties) {
+        public Factory setStaticProperties(Map<String, Pair<Method, Method>> staticProperties) {
             assert this.staticProperties == null;
             this.staticProperties = staticProperties;
             return this;

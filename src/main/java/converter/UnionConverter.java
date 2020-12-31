@@ -1,7 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
-import main.java.converter.classbody.Method;
+import main.java.converter.classbody.RawMethod;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescribableNode;
@@ -199,8 +199,8 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     private static final String VARIANT_NAME = "val";
 
     @NotNull
-    private Map<String, Method> variantMethods(UnionTypeObject selfType) {
-        Map<String, Method> result = new HashMap<>(variants.size());
+    private Map<String, RawMethod> variantMethods(UnionTypeObject selfType) {
+        Map<String, RawMethod> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
             var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType);
             var selfVar = new VariableNode(LineInfo.empty(), selfType.name());
@@ -210,7 +210,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             var list = new TestListNode(stmt);
             var retStmt = new ReturnStatementNode(node.getLineInfo(), list, TestNode.empty());
             var body = new StatementBodyNode(LineInfo.empty(), retStmt);
-            result.put(pair.getKey(), new Method(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
+            result.put(pair.getKey(), new RawMethod(AccessLevel.PUBLIC, fnInfo, body, node.getLineInfo()));
         }
         return result;
     }

@@ -324,6 +324,10 @@ public final class CompilerInfo {
         return loopManager;
     }
 
+    public VariableHolder varHolder() {
+        return varHolder;
+    }
+
     /**
      * Get the compiler's type from a {@link TypeLikeNode}.
      *
@@ -468,23 +472,6 @@ public final class CompilerInfo {
         return varHolder.varInfo(name).isEmpty() && !Builtins.BUILTIN_MAP.containsKey(name);
     }
 
-    /**
-     * Checks whether the given name is defined in the current variable frame.
-     * <p>
-     *     The main purpose of this method is checking for double-definition
-     *     errors, not whether or not the variable is accessible (for that, see
-     *     {@link #varIsUndefined(String)}).
-     * </p>
-     *
-     * @param name The name of the variable to check
-     * @return If the variable is defined in the current frame
-     * @see #varIsUndefined(String)
-     * @see VariableHolder#varDefinedInCurrentFrame
-     */
-    public boolean varDefinedInCurrentFrame(String name) {
-        return varHolder.varDefinedInCurrentFrame(name);
-    }
-
     public Iterable<String> definedNames() {
         return varHolder.definedNames();
     }
@@ -497,8 +484,9 @@ public final class CompilerInfo {
      * @param info The info to use if there is an error
      */
     public void checkDefinition(String name, Lined info) {
-        if (varDefinedInCurrentFrame(name)) {
-            throw CompilerException.doubleDef(name, declarationInfo(name), info.getLineInfo());
+        if (varHolder.varDefinedInCurrentFrame(name)) {
+            var declInfo = varHolder.varInfo(name).orElseThrow().getDeclarationInfo();;
+            throw CompilerException.doubleDef(name, declInfo, info.getLineInfo());
         }
     }
 
@@ -632,8 +620,7 @@ public final class CompilerInfo {
      * @return If the variable is constant
      */
     public boolean variableIsConstant(String name) {
-        var info = varHolder.varInfo(name);
-        return info.map(VariableInfo::hasConstValue).orElseGet(() -> Builtins.BUILTIN_MAP.containsKey(name));
+        return varHolder.varInfo(name).map(VariableInfo::hasConstValue).orElse(true);
     }
 
     /**
@@ -679,29 +666,6 @@ public final class CompilerInfo {
         return varHolder.varInfo(node.getName()).orElseThrow(
                 () -> CompilerException.format("Unknown variable '%s'", node, node.getName())
         ).getStaticLocation();
-    }
-
-    /**
-     * Removes a variable from the frame.
-     *
-     * @param name The name of the variable
-     */
-    public void removeVariable(String name) {
-        varHolder.removeVariable(name);
-    }
-
-    /**
-     * Get the {@link LineInfo} for the declaration of a variable.
-     * <p>
-     *     This requires that the variable is defined, or it will throw a
-     *     {@link NullPointerException}.
-     * </p>
-     * @param name The name to check for
-     * @return The {@link LineInfo} for the declaration
-     */
-    @NotNull
-    public LineInfo declarationInfo(String name) {
-        return varHolder.varInfo(name).orElseThrow().getDeclarationInfo();
     }
 
     /**

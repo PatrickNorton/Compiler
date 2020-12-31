@@ -53,11 +53,11 @@ public final class ConverterHolder {
         return attrs.staticVarsWithInts();
     }
 
-    public Map<String, Method> getColons() {
+    public Map<String, RawMethod> getColons() {
         return attrs.getColons();
     }
 
-    public Map<String, Method> getStaticColons() {
+    public Map<String, RawMethod> getStaticColons() {
         return attrs.getStaticColons();
     }
 
@@ -70,11 +70,11 @@ public final class ConverterHolder {
         return methods;
     }
 
-    public Map<String, Method> getMethods() {
+    public Map<String, RawMethod> getMethods() {
         return methods.getMethods();
     }
 
-    public Map<String, Method> getStaticMethods() {
+    public Map<String, RawMethod> getStaticMethods() {
         return methods.getStaticMethods();
     }
 
@@ -88,7 +88,7 @@ public final class ConverterHolder {
         return ops.getOperatorInfos();
     }
 
-    public Map<OpSpTypeNode, Method> getOperators() {
+    public Map<OpSpTypeNode, RawMethod> getOperators() {
         return ops.getOperators();
     }
 
@@ -96,7 +96,7 @@ public final class ConverterHolder {
         return ops.getStaticOperatorInfos();
     }
 
-    public Map<OpSpTypeNode, Method> getStaticOperators() {
+    public Map<OpSpTypeNode, RawMethod> getStaticOperators() {
         return ops.getStaticOperators();
     }
 
@@ -110,27 +110,27 @@ public final class ConverterHolder {
         }
 
     @NotNull
-    public Map<String, Method> allGetters() {
-        Map<String, Method> result = new HashMap<>(props.getGetters());
+    public Map<String, RawMethod> allGetters() {
+        Map<String, RawMethod> result = new HashMap<>(props.getGetters());
         result.putAll(attrs.getColons());
         return result;
     }
 
     @NotNull
-    public Map<String, Method> getSetters() {
+    public Map<String, RawMethod> getSetters() {
         return props.getSetters();
     }
 
-    public Map<String, Method> staticGetters() {
+    public Map<String, RawMethod> staticGetters() {
         return attrs.getStaticColons();
     }
 
     @NotNull
-    public Map<String, Method> staticSetters() {
-        Map<String, Method> result = new HashMap<>(attrs.getStaticColons().size());
+    public Map<String, RawMethod> staticSetters() {
+        Map<String, RawMethod> result = new HashMap<>(attrs.getStaticColons().size());
         for (var pair : attrs.getStaticColons().entrySet()) {
             var mInfo = pair.getValue();
-            var newMethodInfo = new Method(
+            var newMethodInfo = new RawMethod(
                     mInfo.getAccessLevel(),
                     mInfo.isMut(),
                     mInfo.getInfo(),
@@ -181,8 +181,8 @@ public final class ConverterHolder {
     @NotNull
     private Map<String, AttributeInfo> mergeAttrs(
             Map<String, AttributeInfo> attrs,
-            @NotNull Map<String, Method> colons,
-            @NotNull Map<String, Method> methods,
+            @NotNull Map<String, RawMethod> colons,
+            @NotNull Map<String, RawMethod> methods,
             Map<String, AttributeInfo> properties
     ) {
         var finalAttrs = new HashMap<>(attrs);
@@ -194,7 +194,7 @@ public final class ConverterHolder {
 
     private static void addInfos(
             Map<String, AttributeInfo> finalAttrs,
-            @NotNull Set<Map.Entry<String, Method>> entrySet
+            @NotNull Set<Map.Entry<String, RawMethod>> entrySet
     ) {
         for (var pair : entrySet) {
             var methodInfo = pair.getValue();

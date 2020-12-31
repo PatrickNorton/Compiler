@@ -109,6 +109,12 @@ public final class ForConverter extends LoopConverter {
             }
             info.checkDefinition(iteratedName, typedVar);
             info.addVariable(iteratedName, iteratorType, typedVar.getVariable());
+        } else {
+            assert typedVar instanceof VariableNode;
+            var name = ((VariableNode) typedVar).getName();
+            if (info.variableIsImmutable(name)) {
+                throw CompilerException.format("Cannot assign to immutable variable '%s'", node, name);
+            }
         }
         bytes.add(Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(info.varIndex(variable)));

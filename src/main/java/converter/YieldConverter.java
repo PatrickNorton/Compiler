@@ -26,7 +26,11 @@ public final class YieldConverter implements BaseConverter {
         } else if (node.isFrom()) {
             convertFrom(start, bytes);
         } else {
-            var fnReturns = info.getFnReturns().currentFnReturns();
+            var retInfo = info.getFnReturns();
+            if (!retInfo.isGenerator()) {
+                throw noGeneratorError();
+            }
+            var fnReturns = retInfo.currentFnReturns();
             var converter = new ReturnListConverter(node.getYielded(), info, fnReturns, Bytecode.YIELD);
             bytes.addAll(converter.convert(start + bytes.size()));
         }

@@ -26,8 +26,8 @@ import java.util.Map;
 public final class AttributeConverter {
     private final Map<String, AttributeInfo> vars;
     private final Map<String, AttributeInfo> staticVars;
-    private final Map<String, Method> colons;
-    private final Map<String, Method> staticColons;
+    private final Map<String, RawMethod> colons;
+    private final Map<String, RawMethod> staticColons;
     private final CompilerInfo info;
 
     public AttributeConverter(CompilerInfo info) {
@@ -89,11 +89,11 @@ public final class AttributeConverter {
         return result;
     }
 
-    public Map<String, Method> getColons() {
+    public Map<String, RawMethod> getColons() {
         return colons;
     }
 
-    public Map<String, Method> getStaticColons() {
+    public Map<String, RawMethod> getStaticColons() {
         return staticColons;
     }
 
@@ -107,7 +107,7 @@ public final class AttributeConverter {
         }
     }
 
-    public void addUnionMethods(@NotNull Map<String, Method> variantMethods) {
+    public void addUnionMethods(@NotNull Map<String, RawMethod> variantMethods) {
         for (var pair : variantMethods.entrySet()) {
             checkVars(pair.getKey(), pair.getValue(), staticVars);
             checkVars(pair.getKey(), pair.getValue(), staticColons);
@@ -146,7 +146,7 @@ public final class AttributeConverter {
         checkVars(strName, node, isStatic ? staticVars : vars);
         var retType = TestConverter.returnType(node.getValues().get(0), info, 1)[0];
         var fnInfo = new FunctionInfo(retType);
-        (isStatic ? staticColons : colons).put(strName, new Method(accessLevel, isMut, fnInfo, body, lineInfo));
+        (isStatic ? staticColons : colons).put(strName, new RawMethod(accessLevel, isMut, fnInfo, body, lineInfo));
     }
 
     private static void checkVars(String strName, Lined name, @NotNull Map<String, ? extends Lined> vars) {
