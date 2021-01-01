@@ -236,11 +236,12 @@ public final class ArgumentInfo implements Iterable<Argument> {
             while (!newArgs[argNo].getName().isEmpty()) {
                 argNo++;
             }
-            var passedArg = newArgs[argNo++];
+            var passedArg = newArgs[argNo];
             var passedType = passedArg.getType();
             if (update(argNo, par, result, needsMakeOption, arg, passedType)) {
                 return Optional.empty();
             }
+            argNo++;
         }
         for (var arg : normalArgs) {
             var name = arg.getName();
@@ -259,11 +260,12 @@ public final class ArgumentInfo implements Iterable<Argument> {
                         return Optional.empty();
                     }
                 }
-                var passedArg = newArgs[argNo++];
+                var passedArg = newArgs[argNo];
                 var passedType = passedArg.getType();
                 if (update(argNo, par, result, needsMakeOption, arg, passedType)) {
                     return Optional.empty();
                 }
+                argNo++;
             }
         }
         for (var arg : keywordArgs) {

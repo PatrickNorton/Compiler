@@ -101,9 +101,13 @@ public final class FunctionCallConverter implements TestConverter {
                 var genCount = ((TupleType) retType).getGenerics().size();
                 for (int j = 0; j < genCount; j++) {
                     if (needsMakeOption.contains(i + argc + j)) {
-                        addSwap(bytes, (short) 0, (short) (genCount - j - 1));
-                        bytes.add(Bytecode.MAKE_OPTION.value);
-                        addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                        if (genCount - j - 1 != 0) {
+                            addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                            bytes.add(Bytecode.MAKE_OPTION.value);
+                            addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                        } else {
+                            bytes.add(Bytecode.MAKE_OPTION.value);
+                        }
                     }
                 }
                 argc += genCount - 1;
