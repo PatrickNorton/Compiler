@@ -250,6 +250,7 @@ public final class Builtins {
                 Map.entry("upper", AttributeInfo.method(upperLowerInfo)),
                 Map.entry("lower", AttributeInfo.method(upperLowerInfo)),
                 Map.entry("indexOf", AttributeInfo.method(indexInfo)),
+                Map.entry("lastIndexOf", AttributeInfo.method(indexInfo)),
                 Map.entry("encode", AttributeInfo.method(encodeInfo)),
                 Map.entry("asInt", AttributeInfo.method(asIntInfo))
         );
