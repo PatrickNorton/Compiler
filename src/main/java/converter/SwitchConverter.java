@@ -15,9 +15,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private final SwitchStatementNode node;
@@ -366,7 +368,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         int tblPos = bytes.size();
         bytes.addAll(Util.shortZeroBytes());
         boolean hasDefault = false;
-        List<Integer> usedVariants = new ArrayList<>();
+        Set<Integer> usedVariants = new HashSet<>();
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
                 if (defaultVal != 0) {
@@ -389,6 +391,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             for (var label : stmt.getLabel()) {
                 var lblNo = labelToVariantNo(label, union);
+                if (usedVariants.contains(lblNo)) {
+                    var name = union.variantName(lblNo).orElseThrow();
+                    throw CompilerException.format(
+                            "Variant %s defined twice in switch statement", stmt, name
+                    );
+                }
                 usedVariants.add(lblNo);
                 jumps.put(lblNo, start + bytes.size());
                 if (stmtHasAs) {  // Will work b/c there must only be one label if there is an 'as' clause
@@ -506,7 +514,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         throw CompilerException.of("Switch on a union must have properly-formed variants", label);
     }
 
-    private Optional<String[]> incompleteUnion(UnionTypeObject obj, List<Integer> variants) {
+    private Optional<String[]> incompleteUnion(UnionTypeObject obj, Set<Integer> variants) {
         List<Boolean> containsVariant = new ArrayList<>(Collections.nCopies(obj.variantCount(), false));
         for (var variantNo : variants) {
             containsVariant.set(variantNo, true);
