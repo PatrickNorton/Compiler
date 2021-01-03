@@ -401,10 +401,12 @@ public final class Builtins {
         );
         SET.setOperators(setMap);
         var addInfo = new FunctionInfo(ArgumentInfo.of(SET_PARAM));
+        var addAllInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(SET_PARAM)));
         var clearInfo = new FunctionInfo();
         var setAttrs = Map.of(
                 "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
                 "add", AttributeInfo.mutMethod(addInfo),
+                "addAll", AttributeInfo.mutMethod(addAllInfo),
                 "clear", AttributeInfo.mutMethod(clearInfo)
         );
         SET.setAttributes(setAttrs);
@@ -425,6 +427,7 @@ public final class Builtins {
         var dictClearInfo = new FunctionInfo();
         var dictDefaultInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY, DICT_VAL), DICT_VAL);
         var dictReplaceInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY, DICT_VAL), TypeObject.optional(DICT_VAL));
+        var dictRemoveInfo = new FunctionInfo(ArgumentInfo.of(DICT_KEY), TypeObject.optional(DICT_VAL));
 
         var dictMap = Map.of(
                 OpSpTypeNode.IN, dictContainsInfo,
@@ -440,7 +443,8 @@ public final class Builtins {
                 "get", AttributeInfo.method(dictGetMInfo),
                 "clear", AttributeInfo.mutMethod(dictClearInfo),
                 "setDefault", AttributeInfo.mutMethod(dictDefaultInfo),
-                "replace", AttributeInfo.mutMethod(dictReplaceInfo)
+                "replace", AttributeInfo.mutMethod(dictReplaceInfo),
+                "remove", AttributeInfo.mutMethod(dictRemoveInfo)
         );
         DICT.setAttributes(dictAttrs);
         DICT.seal();
