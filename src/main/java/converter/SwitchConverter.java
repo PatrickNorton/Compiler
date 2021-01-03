@@ -413,7 +413,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 info.removeStackFrame();
             }
         }
-        if (!hasDefault) {
+        if (!hasDefault && retCount > 0) {
             var missingUnion = incompleteUnion(union, usedVariants);
             if (missingUnion.isPresent()) {
                 var missing = missingUnion.orElseThrow();
@@ -422,6 +422,15 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                         "Cannot get return type of switch: Missing union variant%s %s",
                         node, missing.length == 1 ? "" : "s", missingVariants
                 );
+            }
+        } else if (hasDefault) {
+            if (incompleteUnion(union, usedVariants).isEmpty()) {
+                var defaultInfo = defaultStmt().orElseThrow(
+                        () -> CompilerInternalError.of(
+                                "defaultVal is true but no default statement was found", node
+                        )
+                );
+                CompilerWarning.warn("Default statement in switch with all variants covered", defaultInfo);
             }
         }
         var switchTable = smallTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
@@ -499,23 +508,19 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     private Optional<String[]> incompleteUnion(UnionTypeObject obj, List<Integer> variants) {
         List<Boolean> containsVariant = new ArrayList<>(Collections.nCopies(obj.variantCount(), false));
-        if (retCount > 0) {
-            for (var variantNo : variants) {
-                containsVariant.set(variantNo, true);
-            }
-            if (!containsVariant.contains(false)) {
-                return Optional.empty();
-            } else {
-                List<String> result = new ArrayList<>();
-                for (int i = 0; i < containsVariant.size(); i++) {
-                    if (!containsVariant.get(i)) {
-                        result.add(obj.variantName(i).orElseThrow());
-                    }
-                }
-                return Optional.of(result.toArray(new String[0]));
-            }
-        } else {
+        for (var variantNo : variants) {
+            containsVariant.set(variantNo, true);
+        }
+        if (!containsVariant.contains(false)) {
             return Optional.empty();
+        } else {
+            List<String> result = new ArrayList<>();
+            for (int i = 0; i < containsVariant.size(); i++) {
+                if (!containsVariant.get(i)) {
+                    result.add(obj.variantName(i).orElseThrow());
+                }
+            }
+            return Optional.of(result.toArray(new String[0]));
         }
     }
 
@@ -556,6 +561,15 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 bytes.addAll(Util.shortZeroBytes());
                 bytes.addAll(Util.shortToBytes((short) distFromTop));
         }
+    }
+
+    private Optional<Lined> defaultStmt() {
+        for (var stmt : node.getCases()) {
+            if (stmt instanceof DefaultStatementNode) {
+                return Optional.of(stmt);
+            }
+        }
+        return Optional.empty();
     }
 
     @NotNull
