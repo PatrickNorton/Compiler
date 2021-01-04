@@ -658,7 +658,6 @@ public final class Builtins {
     private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(RANGE));
     private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(BOOL));
     private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
-    private static final LangConstant SLICE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(SLICE));
 
     public static LangConstant strConstant() {
         return STR_CONSTANT;
@@ -678,10 +677,6 @@ public final class Builtins {
 
     public static LangConstant nullTypeConstant() {
         return NULL_TYPE_CONSTANT;
-    }
-
-    public static LangConstant sliceConstant() {
-        return SLICE_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
