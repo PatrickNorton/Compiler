@@ -331,7 +331,7 @@ final class VariableHolder {
             for (var localType : localTypes) {
                 var children = localType.getChildren();
                 if (children.containsKey(type.strName())) {
-                    return children.get(type.strName());
+                    return wrap(children.get(type.strName()), node);
                 }
             }
             var builtin = Builtins.BUILTIN_MAP.get(type.strName());
