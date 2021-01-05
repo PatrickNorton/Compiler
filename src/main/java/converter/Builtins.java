@@ -66,13 +66,13 @@ public final class Builtins {
             "Iterator", GenericInfo.of(ITERATOR_PARAM), List.of(ITERABLE.generify(ITERATOR_PARAM))
     );
 
-    public static final StdTypeObject INT = new StdTypeObject("int");
+    public static final StdTypeObject INT = new StdTypeObject("int", List.of(HASHABLE));
 
-    public static final StdTypeObject CHAR = new StdTypeObject("char");
+    public static final StdTypeObject CHAR = new StdTypeObject("char", List.of(HASHABLE));
 
-    public static final StdTypeObject STR = new StdTypeObject("str", List.of(ITERABLE.generify(CHAR)));
+    public static final StdTypeObject STR = new StdTypeObject("str", List.of(ITERABLE.generify(CHAR), HASHABLE));
 
-    public static final StdTypeObject DECIMAL = new StdTypeObject("dec");
+    public static final StdTypeObject DECIMAL = new StdTypeObject("dec", List.of(HASHABLE));
 
     public static final StdTypeObject BOOL = new StdTypeObject("bool", List.of(INT));
 
@@ -126,7 +126,7 @@ public final class Builtins {
             "set", List.of(ITERABLE.generify(SET_PARAM)), GenericInfo.of(SET_PARAM)
     );
 
-    private static final TemplateParam DICT_KEY = new TemplateParam("K", 0, OBJECT);
+    private static final TemplateParam DICT_KEY = new TemplateParam("K", 0, HASHABLE);
 
     private static final TemplateParam DICT_VAL = new TemplateParam("V", 1, OBJECT);
 
@@ -174,7 +174,7 @@ public final class Builtins {
     public static final StdTypeObject NULL_TYPE = NullConstant.TYPE;
 
     public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
-            CONTEXT, CALLABLE, ITERABLE
+            CONTEXT, CALLABLE, HASHABLE, ITERABLE
     );
 
     static {  // Set int operators
