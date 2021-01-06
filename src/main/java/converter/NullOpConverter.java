@@ -153,7 +153,7 @@ public final class NullOpConverter extends OperatorConverter {
     private TypeObject[] notNullReturn() {
         var retType = TestConverter.returnType(args[0].getArgument(), info, 1)[0];
         if (retType.equals(Builtins.NULL_TYPE)) {
-             // Doesn't particularly matter what, it'll fail later (Maybe return Builtins.THROWS once implemented?)
+             // Doesn't particularly matter what, it'll fail later
             return new TypeObject[] {Builtins.THROWS};
         } else {
             return new TypeObject[] {retType.stripNull()};
