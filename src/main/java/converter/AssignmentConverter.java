@@ -68,7 +68,7 @@ public final class AssignmentConverter implements BaseConverter {
             } else if (name instanceof DottedVariableNode) {
                 var last = ((DottedVariableNode) name).getLast();
                 if (last.getPostDot() instanceof IndexNode) {
-                    assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
+                    assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, valueConverter);
                 } else {
                     assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
                 }
@@ -311,8 +311,7 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private void assignToDotIndex(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
-                             @NotNull DottedVariableNode variable, @NotNull TestNode value) {
-        var valueConverter = TestConverter.of(info, value, 1);
+                             @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
         var pair = DotConverter.exceptLastIndex(info, variable, 1);
         var varConverter = pair.getKey();
         var indices = pair.getValue();
