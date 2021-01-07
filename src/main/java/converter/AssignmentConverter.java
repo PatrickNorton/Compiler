@@ -60,7 +60,7 @@ public final class AssignmentConverter implements BaseConverter {
                 if (varType.isPresent()) {
                     valConverter = TestConverter.of(info, value, 1, varType.orElseThrow());
                 } else {
-                    valConverter = valueConverter;
+                    valConverter = valueConverter;  // Will fail at assignment stage, so doesn't really matter
                 }
                 assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valConverter);
             } else if (name instanceof IndexNode) {
