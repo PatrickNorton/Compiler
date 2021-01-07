@@ -406,18 +406,16 @@ public final class AssignmentConverter implements BaseConverter {
                     "Cannot assign: '%s'.%s has type of '%s', which is not a superclass of '%s'",
                     node, preDotType.name(), name, dotType.name(), valueType.name()
             );
-        } else {
-            if (!preDotType.canSetAttr(name, info) && !isConstructorException(preDotType, value)) {
-                if (preDotType.makeMut().canSetAttr(name, info)) {
-                    throw CompilerException.of(
-                            "Cannot assign to value that is not 'mut' or 'mref'", node
-                    );
-                } else {
-                    throw CompilerException.format(
-                            "Cannot assign: '%s'.%s does not support assignment",
-                            node, preDotType.name(), name
-                    );
-                }
+        } else if (!preDotType.canSetAttr(name, info) && !isConstructorException(preDotType, value)) {
+            if (preDotType.makeMut().canSetAttr(name, info)) {
+                throw CompilerException.of(
+                        "Cannot assign to value that is not 'mut' or 'mref'", node
+                );
+            } else {
+                throw CompilerException.format(
+                        "Cannot assign: '%s'.%s does not support assignment",
+                        node, preDotType.name(), name
+                );
             }
         }
         return false;
