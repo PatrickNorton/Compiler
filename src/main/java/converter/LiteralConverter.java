@@ -298,8 +298,7 @@ public final class LiteralConverter implements TestConverter {
             if (args.length == 0) {
                 return expectedVal;
             } else {
-                var givenType = TypeObject.union(result);
-                return convertExpected(givenType, expectedVal);
+                return convertExpected(TypeObject.union(result), expectedVal);
             }
         }
     }
