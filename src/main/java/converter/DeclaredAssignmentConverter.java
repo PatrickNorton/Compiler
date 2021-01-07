@@ -93,7 +93,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             addConstant(valueType, assignedType, assignedName, needsMakeOption, constant);
         } else {
             bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
-            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
+            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst, assigned);
         }
     }
 
@@ -121,7 +121,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             if (needsMakeOption) {
                 bytes.add(Bytecode.MAKE_OPTION.value);
             }
-            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
+            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst, assigned);
         }
         return argC - 1;
     }
@@ -192,7 +192,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             if (needsMakeOption) {
                 bytes.add(Bytecode.MAKE_OPTION.value);
             }
-            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst);
+            finishAssignment(bytes, isStatic, assignedType, assignedName, isConst, assigned);
         }
         if (isStatic) {
             assert fillPos != -1;
@@ -232,13 +232,23 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     }
 
     private void finishAssignment(
-            @NotNull List<Byte> bytes, boolean isStatic, TypeObject assignedType, String assignedName, boolean isConst
+            @NotNull List<Byte> bytes, boolean isStatic, TypeObject assignedType,
+            String assignedName, boolean isConst, Lined lineInfo
     ) {
         info.checkDefinition(assignedName, node);
+        if (isStatic && !isConst) {
+            throw mutStaticException(lineInfo);
+        }
         var index = isStatic
-                ? info.addStaticVar(assignedName, assignedType, isConst, node)
+                ? info.addStaticVar(assignedName, assignedType, true, node)
                 : info.addVariable(assignedName, assignedType, isConst, node);
         bytes.add(isStatic ? Bytecode.STORE_STATIC.value : Bytecode.STORE.value);
         bytes.addAll(Util.shortToBytes(index));
+    }
+
+    private CompilerException mutStaticException(Lined lineInfo) {
+        return CompilerException.of(
+                "Local static variable may not be 'mut' or 'mref'", lineInfo
+        );
     }
 }
