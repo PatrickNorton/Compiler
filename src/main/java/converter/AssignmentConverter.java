@@ -55,7 +55,14 @@ public final class AssignmentConverter implements BaseConverter {
             var value = values.get(i);
             var valueConverter = TestConverter.of(info, value, 1);
             if (name instanceof VariableNode) {
-                assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valueConverter);
+                TestConverter valConverter;
+                var varType = info.getType(((VariableNode) name).getName());
+                if (varType.isPresent()) {
+                    valConverter = TestConverter.of(info, value, 1, varType.orElseThrow());
+                } else {
+                    valConverter = valueConverter;
+                }
+                assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valConverter);
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
             } else if (name instanceof DottedVariableNode) {

@@ -264,8 +264,11 @@ public final class LiteralConverter implements TestConverter {
     private TypeObject returnTypes() {
         var args = node.getBuilders();
         var varargs = node.getIsSplats();
-        if (expected != null) {
-            return TypeObject.union(expected[0].getGenerics());
+        TypeObject expectedVal;
+        if (expected != null && expectedTypeWorks()) {
+            expectedVal = TypeObject.union(expected[0].getGenerics());
+        } else {
+            expectedVal = null;
         }
         List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
@@ -289,11 +292,40 @@ public final class LiteralConverter implements TestConverter {
                     throw unknownSplatError(args[i], varargs[i]);
             }
         }
-        return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
+        if (expectedVal == null) {
+            return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
+        } else {
+            if (args.length == 0) {
+                return expectedVal;
+            } else {
+                var givenType = TypeObject.union(result);
+                return convertExpected(givenType, expectedVal);
+            }
+        }
+    }
+
+    private boolean expectedTypeWorks() {
+        assert expected != null;
+        return LiteralType.fromBrace(node.getBraceType(), node).type.sameBaseType(expected[0]);
     }
 
     @NotNull
     private TypeObject[] tupleReturnTypes() {
+        var originals = originalReturnTypes();
+        if (expected != null && expectedTypeWorks()) {
+            var generics = expected[0].getGenerics();
+            if (generics.size() == originals.size()) {
+                for (int i = 0; i < originals.size(); i++) {
+                    var given = originals.get(i);
+                    var expected = generics.get(i);
+                    originals.set(i, convertExpected(given, expected));
+                }
+            }
+        }
+        return originals.toArray(new TypeObject[0]);
+    }
+
+    private List<TypeObject> originalReturnTypes() {
         var args = node.getBuilders();
         var splats = node.getIsSplats();
         List<TypeObject> result = new ArrayList<>(args.length);
@@ -320,7 +352,17 @@ public final class LiteralConverter implements TestConverter {
                     throw unknownSplatError(arg, splat);
             }
         }
-        return result.toArray(new TypeObject[0]);
+        return result;
+    }
+
+    private TypeObject convertExpected(TypeObject given, TypeObject expected) {
+        if (expected.isSuperclass(given)) {
+            return expected;
+        } else if (OptionTypeObject.needsAndSuper(expected, given)) {
+            return expected;
+        } else {
+            return given;
+        }
     }
 
     private static CompilerException splatException(Lined info, TypeObject type) {

@@ -132,6 +132,10 @@ public final class OptionTypeObject extends TypeObject {
         return result;
     }
 
+    public static boolean needsAndSuper(TypeObject maybeOption, TypeObject other) {
+        return needsMakeOption(maybeOption, other) && superWithOption(maybeOption, other);
+    }
+
     public static boolean needsMakeOption(TypeObject maybeOption, TypeObject other) {
         if (maybeOption instanceof OptionTypeObject) {
             var option = (OptionTypeObject) maybeOption;
