@@ -219,7 +219,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
 
     private boolean checkTypes(@NotNull TypeObject assignedType, @NotNull TypeObject valueType) {
         if (!assignedType.isSuperclass(valueType)) {
-            if (OptionTypeObject.needsMakeOption(assignedType, valueType)) {
+            if (OptionTypeObject.needsAndSuper(assignedType, valueType)) {
                 return true;
             } else {
                 throw CompilerException.format(
