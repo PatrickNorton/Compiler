@@ -398,8 +398,7 @@ public final class AssignmentConverter implements BaseConverter {
         var preDotType = preDotConverter.returnType()[0];
         var dotType = preDotType.tryAttrType(node, name, info);
         if (!dotType.isSuperclass(valueType)) {
-            if (OptionTypeObject.needsMakeOption(dotType, valueType)
-                    && OptionTypeObject.superWithOption(dotType, valueType)) {
+            if (OptionTypeObject.needsAndSuper(dotType, valueType)) {
                 return true;
             }
             throw CompilerException.format(

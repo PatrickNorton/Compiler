@@ -73,8 +73,7 @@ public final class YieldConverter implements BaseConverter {
             var fnReturn = expected[i];
             var retType = gotten[i];
             if (!expected[i].isSuperclass(gotten[i])) {
-                if (!OptionTypeObject.needsMakeOption(fnReturn, retType)
-                        || !OptionTypeObject.superWithOption(fnReturn, retType)) {
+                if (!OptionTypeObject.needsAndSuper(fnReturn, retType)) {
                     throw CompilerException.format(
                             "Type mismatch: in position %d, function expected" +
                                     " a superclass of type '%s' to be yielded, got type '%s'",
