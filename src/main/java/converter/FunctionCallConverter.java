@@ -352,7 +352,8 @@ public final class FunctionCallConverter implements TestConverter {
      * strictly ascending order.
      * <p>
      *     This assumes that {@code values} contains all ints from {@code 0} to
-     *     {@code values.length - 1}.
+     *     {@code values.length - 1}; i.e. {@code list(sorted(values)) ==
+     *     list([0:values.length])}.
      * </p>
      *
      * @param values The values to figure out how to sort
