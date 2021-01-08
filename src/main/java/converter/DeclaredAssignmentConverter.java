@@ -106,12 +106,12 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var converter = TestConverter.of(info, values.get(i), 1);
         var retType = converter.returnType()[0];
         int argC = checkTuple(retType, values.get(i));
-        var valueTypes = retType.getGenerics();
-        assert argC == valueTypes.size();
+        var valueTypes = expandZeroTuple(converter);
+        assert argC == valueTypes.length;
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.UNPACK_TUPLE.value);
         for (int j = argC - 1; j >= 0; j--) {
-            var valueType = valueTypes.get(j);
+            var valueType = valueTypes[j];
             var assigned = types[i - tupleCount + j];
             var rawType = assigned.getType();
             var assignedType = getAssigned(valueType, rawType, mutability);
