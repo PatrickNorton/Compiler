@@ -709,9 +709,11 @@ class CompileClass {
         for int i, var r in enumerate(self.ranges) {
             var isLastRange = i + 1 == self.ranges.length
             utf8Seqs.reset(r.start, r.end)
-            mut var it = iter(utf8Seqs)
-            while it.next()? as utf8Seq {
-                if isLastRange and not it.peek()? {
+            final var it = iter(utf8Seqs)
+            mref var next = it.next()
+            while next? as utf8Seq {
+                next = it.next()
+                if isLastRange and not next? {
                     var patch = self.cUtf8Seq(utf8Seq)
                     holes.add(patch.hole)
                     self.c.fill(lastSplit, patch.entry)
