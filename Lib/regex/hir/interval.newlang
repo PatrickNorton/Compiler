@@ -289,8 +289,7 @@ interface Interval[I[Bound]] {
         mut var ret = (i, i)
         if addLower {
             var upper = other.lower.decrement() casted cls.I  # FIXME
-            I? lower = self.lower  # DOUBLE FIXME
-            Interval? c = cls(lower, upper)  # FIXME
+            Interval? c = cls(self.lower, upper)  # FIXME
             ret = (c, ret.1)
         }
         if addUpper {
@@ -314,16 +313,16 @@ interface Interval[I[Bound]] {
         if (self & other)? as v {
             u = v
         } else {
-            cls? c0 = cls(selfLower, selfUpper)  # FIXME
-            cls? c1 = cls(otherLower, otherUpper)
+            cls? c0 = cls(self.lower, self.upper)
+            cls? c1 = cls(other.lower, other.upper)
             return (c0, c1)
         }
         mref cls i
         if (self | other)? as j {
             i = j
         } else {
-            cls? c0 = cls(selfLower, selfUpper)  # FIXME
-            cls? c1 = cls(otherLower, otherUpper)
+            cls? c0 = cls(self.lower, self.upper)
+            cls? c1 = cls(other.lower, other.upper)
             return (c0, c1)
         }
         return u.difference(i)

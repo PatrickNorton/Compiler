@@ -829,6 +829,10 @@ class State {
         self.data = data
     }
 
+    public operator hash {
+        return hash(self.data)
+    }
+
     method flags() -> StateFlags {
         final var result = StateFlags()
         result.value = self.data[0]

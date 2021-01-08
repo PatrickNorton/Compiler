@@ -766,27 +766,6 @@ class CompileClass {
     }
 }
 
-class SuffixCache {
-    final dict[SuffixCacheKey, InstPtr] tbl
-
-    public operator new(int size) {
-        self.tbl = {:}
-    }
-
-    public mut method get(SuffixCacheKey key, InstPtr pc) -> InstPtr? {
-        if key in self.tbl {
-            return self.tbl[key]
-        } else {
-            self.tbl[key] = pc
-            return null
-        }
-    }
-
-    public mut method clear() {
-        self.tbl.clear()
-    }
-}
-
 class SuffixCacheKey {
     InstPtr fromInst
     int start
@@ -808,6 +787,27 @@ class SuffixCacheKey {
 
     public operator hash {
         return hash((self.fromInst, self.start, self.end))
+    }
+}
+
+class SuffixCache {
+    final dict[SuffixCacheKey, InstPtr] tbl
+
+    public operator new(int size) {
+        self.tbl = {:}
+    }
+
+    public mut method get(SuffixCacheKey key, InstPtr pc) -> InstPtr? {
+        if key in self.tbl {
+            return self.tbl[key]
+        } else {
+            self.tbl[key] = pc
+            return null
+        }
+    }
+
+    public mut method clear() {
+        self.tbl.clear()
     }
 }
 
