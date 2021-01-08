@@ -3,7 +3,7 @@ from itertools import all
 export AbstractSet
 
 interface AbstractSet[T] from set[T] {
-    operator + (Set[T] other) -> cls {
+    operator + (set[T] other) -> cls {
         return {*self, *other}
     }
 
@@ -33,12 +33,6 @@ interface AbstractSet[T] from set[T] {
     }
 
     public method pop() -> T {
-        try {
-            var v = iter(self).next()
-        } except StopIteration {
-            raise ValueError("Cannot pop() from empty set")
-        }
-        del self[v]
-        return v
+        return iter(self).next() ?? raise ValueError("Cannot pop() from empty set")
     }
 }

@@ -1,6 +1,7 @@
 # NOTE: Native is commented out till it gets implemented as a descriptor
-export Array
+# export Array
 
+#|
 final native class Array[T] {
     pubget int length
 
@@ -14,3 +15,4 @@ final native class Array[T] {
 
     public operator iter -> T {}
 }
+|#

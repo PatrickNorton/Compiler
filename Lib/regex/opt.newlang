@@ -88,10 +88,10 @@ func optCharset(list[char] chars) -> str {
     mut str carat = ""
     mut str dash = ""
     for var chr in chars {
-        switch str(chr) {
-            case "]" {bracket = "]"}
-            case "^" {carat = "^"}
-            case "-" {dash = "-"}
+        switch chr {
+            case c"]" {bracket = "]"}
+            case c"^" {carat = "^"}
+            case c"-" {dash = "-"}
             default {charTbl.add(chr)}
         }
     }

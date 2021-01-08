@@ -1,19 +1,24 @@
-from types import ArrayList
+export StringBuilder
 
 class StringBuilder {
     private list[char] chars
-    pubget int length := chars.length
 
-    public operator new (*, int length) {
-        self.chars = ArrayList.size(length)
+    public property int length {
+        get {
+            return self.chars.length
+        }
     }
 
-    public operator new (*Any objects) {
-        self.chars = [*str(i) for var i in objects]
+#     public operator new (*, int length) {
+#         self.chars = []
+#     }
+
+    public operator new (*object objects) {
+        # self.chars = [*str(i) for var i in objects]
     }
 
-    public operator + (Any object) -> self {
-        self.chars += str(object)
+    public operator + (object obj) -> cls {
+        self.chars += str(obj).chars
         return self
     }
 
@@ -34,6 +39,11 @@ class StringBuilder {
     }
 
     public operator str {
-        return str(*self.chars)
+        return str.fromChars(self.chars)
+    }
+
+    public mut method add(object obj) -> mut cls {
+        self.chars += str(obj).chars
+        return self
     }
 }

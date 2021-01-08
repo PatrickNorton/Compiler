@@ -169,7 +169,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         assert values.size() == 1;
         var value = node.getValues().get(0);
         var valueConverter = TestConverter.of(info, value, types.length);
-        var valueTypes = valueConverter.returnType();
+        var valueTypes = expandZeroTuple(valueConverter);
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         List<Byte> bytes = new ArrayList<>();
         int fillPos = addStatic(bytes, isStatic);
@@ -250,5 +250,19 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         return CompilerException.of(
                 "Local static variable may not be 'mut' or 'mref'", lineInfo
         );
+    }
+
+    private TypeObject[] expandZeroTuple(TestConverter valueConverter) {
+        var valT = valueConverter.returnType();
+        if (node.getValues().getVararg(0).isEmpty()) {
+            return valT;
+        } else if (valT[0] instanceof TupleType) {
+            return valT[0].getGenerics().toArray(new TypeObject[0]);
+        } else {
+            throw CompilerException.format(
+                    "Vararg used on non-tuple argument (returned type '%s')",
+                    node.getValues().get(0), valT[0].name()
+            );
+        }
     }
 }

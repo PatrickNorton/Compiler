@@ -9,9 +9,14 @@ dec RESIZE_THRESHOLD = 1.5
 
 
 class OrderedDict[K, V] from AbstractDict[K, V] {
-    private mut list[Tuple[int, K, V]?] items
+    private mut list[tuple[int, K, V]?] items
     private mut dict[K, int] values
-    public readonly int length := self.values.length
+
+    public property int length {
+        get {
+            return self.values.length
+        }
+    }
 
     public operator new (*tuple[K, V] values) {
         self.items = list(values)

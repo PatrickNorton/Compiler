@@ -1,7 +1,8 @@
-from collections import Pair
+from string import StringBuilder
 
 from .builder import RegexBuilder
 from .exec import Exec
+from .expand import expandStr
 from .Match import Match
 from .trait import Locations
 
@@ -18,18 +19,18 @@ class Regex {
         return self.isMatchAt(text, 0)
     }
 
-    public method find(str text) -> Match {
+    public method isMatchAt(str text, int start) -> bool {
+        return self.shortestMatchAt(text, start)?
+    }
+
+    public method find(str text) -> Match? {
         return self.findAt(text, 0)
     }
 
     public generator method findIter(str text) -> Match {
-        var value = self.value.searcherStr().findIter(text)
-        while true {
-            if value.next()? as n {
-                yield Match(value.text(), n.start, n.end)
-            } else {
-                return
-            }
+        var value = self.value.searcherStr().findIter(bytes(text))
+        for var n in value {
+            yield Match(text, *n)
         }
     }
 
@@ -44,7 +45,7 @@ class Regex {
 
     public generator method capturesIter(str text) -> Captures {
         for var locs in self.value.searcherStr().capturesIter(text) {
-            yield Captures(text, locs, self.value.searcherStr().regex().captureNameIdx())
+            yield Captures(text, locs, self.value.searcherStr().captureNameIdx())
         }
     }
 
@@ -59,8 +60,8 @@ class Regex {
     }
 
     public generator method splitN(str text, int limit) -> str {
-        final var splits = self.split(text)
         mut int n = 0
+        mut var last = 0
         for var m in self.findIter(text) {
             n++
             break if n >= limit
@@ -72,14 +73,14 @@ class Regex {
     }
 
     public method replace(str text, str replacement) -> str {
-        return self.replacen(text, 1, rep)
+        return self.replacen(text, 1, replacement)
     }
 
     public method replaceAll(str text, str replacement) -> str {
-        return self.replacen(text, 0, rep)
+        return self.replacen(text, 0, replacement)
     }
 
-    public method replacen(str text, int count, str replacement) -> str {
+    public method replacen(str text, int limit, str replacement) -> str {
         # If we know that the replacement doesn't have any capture expansions,
         # then we can fast path. The fast path can make a tremendous
         # difference:
@@ -89,19 +90,19 @@ class Regex {
         #   2) We don't need to look up all of the capture groups and do
         #      replacements inside the replacement string. We just push it
         #      at each match and be done with it.
-        if rep.noExpansion()? as rep {
+        mut var repl = ReplacerStr(replacement)
+        if repl.noExpansion()? as rep {
             mut var new = StringBuilder(text.length)
             mut var lastMatch = 0
-            for var i, var m in enumerate(self.findIter(text)) {
-                isFirst = false
+            for int i, var m in enumerate(self.findIter(text)) {
                 break if limit > 0 and i >= limit
 
-                new.push(text[last_match:m.start])
-                new.push(rep)
+                new.add(text[lastMatch:m.start])
+                new.add(rep)
                 lastMatch = m.end
             }
             return text if not new and not lastMatch
-            new.push(text[last_match:])
+            new.add(text[lastMatch:])
             return str(new)
         }
 
@@ -112,14 +113,14 @@ class Regex {
         for var i, var cap in enumerate(self.capturesIter(text)) {
             break if limit > 0 and i >= limit
 
-            var m = cap[0]
-            new.pushStr(text[last_match:m.start])
-            rep.replaceAppend(cap, new)
+            var m = cap.group(0)
+            new.add(text[lastMatch:m.start])
+            new = StringBuilder(repl.replaceAppend(cap, str(new)))
             lastMatch = m.end
         }
         return text if not new and not lastMatch
-        new.pushStr(text[last_match:])
-        return new
+        new.add(text[lastMatch:])
+        return str(new)
     }
 
     # Advanced/lower-level search methods
@@ -133,7 +134,7 @@ class Regex {
 
     public method findAt(str text, int start) -> Match? {
         if self.value.searcherStr().findAt(text, start)? as x {
-            return Match(x.first, x.second)
+            return Match(text, *x)
         } else {
             return null
         }
@@ -144,8 +145,8 @@ class Regex {
     }
 
     public method capturesReadAt(mut CaptureLocations locs, str text, int start) -> Match? {
-        if self.value.searcherStr().capturesReadAt(text, start)? as x {
-            return Match(x.first, x.second)
+        if self.value.searcherStr().capturesReadAt(locs.value, bytes(text), start)? as x {
+            return Match(text, *x)
         } else {
             return null
         }
@@ -154,7 +155,8 @@ class Regex {
     # Auxiliary methods
 
     public operator str {
-        self.value.regexStrings()[0]
+        # FIXME: Parse this properly
+        return (self.value.regexStrings())[0]
     }
 
     public generator method captureNames() -> str? {
@@ -165,7 +167,7 @@ class Regex {
         return self.value.captureNames().length
     }
 
-    public method captureLocations() -> CaptureLocations {
+    public method captureLocations() -> mut CaptureLocations {
         return CaptureLocations(self.value.searcherStr().locations())
     }
 }
@@ -177,7 +179,7 @@ class CaptureLocations {
         self.value = value
     }
 
-    public operator [] (int i) -> Pair[int, int] {
+    public operator [] (int i) -> tuple[int, int]? {
         return self.value.pos(i)
     }
 
@@ -202,7 +204,7 @@ class Captures {
     public operator iter -> Match? {
         for var loc in self.locs {
             if loc? as l {
-                yield Match(self.text, l.start, l.end)
+                yield Match(self.text, *l)
             } else {
                 yield null
             }
@@ -210,17 +212,18 @@ class Captures {
     }
 
     # Note: these were originally both operator [], but due to overloading issues, are no longer so
+    # Note 2: IndexError is still not implemented, but should be soon
     public method group(int i) -> Match {
-        return self.get(i) ?? raise IndexError(f"No group at index {i}")
+        return self.get(i)!! # ?? raise IndexError(f"No group at index {i}")
     }
 
     public method namedGroup(str name) -> Match {
-        return self.name(name) ?? raise IndexError(f"No group named '{name}'")
+        return self.name(name)!! # ?? raise IndexError(f"No group named '{name}'")
     }
 
     public method get(int i) -> Match? {
         if self.locs.pos(i)? as p {
-            return Match(self.text, p.start, p.end)
+            return Match(self.text, *p)
         } else {
             return null
         }
@@ -236,5 +239,33 @@ class Captures {
 
     public method expand(str replacement) -> str {
         return expandStr(self, replacement)
+    }
+}
+
+interface Replacer {
+    public mut method replaceAppend(Captures caps, str dst) -> str
+
+    public mut method noExpansion() -> str? {
+        return null
+    }
+}
+
+class ReplacerStr {
+    private str val
+
+    public operator new(str val) {
+        self.val = val
+    }
+
+    public mut method replaceAppend(Captures caps, str dst) -> str {
+        return dst + caps.expand(self.val)
+    }
+
+    public mut method noExpansion() -> str? {
+        if bytes(self).indexOf(y"$")? {
+            return null
+        } else {
+            return self.val
+        }
     }
 }

@@ -1,12 +1,16 @@
+from ..ast import Span
+
 export RegexBuildError, ErrorKind
 
-class RegexBuildError {
+class RegexBuildError from Throwable {
     private ErrorKind kind
     private str pattern
+    private Span span
 
-    public operator new(ErrorKind kind, str pattern) {
+    public operator new(ErrorKind kind, str pattern, Span span) {
         self.kind = kind
         self.pattern = pattern
+        self.span = span
     }
 }
 
@@ -42,5 +46,5 @@ enum ErrorKind {
     # This enum may grow additional variants, so this makes sure clients
     # don't count on exhaustive matching. (Otherwise, adding a new variant
     # could break existing code.)
-    __Nonexhaustive,
+    __Nonexhaustive
 }

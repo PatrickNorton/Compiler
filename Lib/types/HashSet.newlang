@@ -2,7 +2,6 @@ from interfaces typeget Hashable
 
 from collections import AbstractSet
 from numtools import highestOneBit
-from .natives import Array
 
 export HashSet
 

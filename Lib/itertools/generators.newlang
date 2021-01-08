@@ -1,15 +1,15 @@
-from interfaces typeget Boolable, Iterable, Callable, Iterator
+# from interfaces typeget Boolable, Iterable, Callable, Iterator
 
 from .functions import any
-from types import Array
 
 export accumulate, chain, compress, dropWhile, filter, filterEqual, filterFalse,
-export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipLongest
+export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipCount, zipLongest
 
 # With thanks to Python for all the ideas <3
 
+#|  FIXME: Default parameters
 generic T
-generator func accumulate(Iterable[T] value, /, Callable[T, T, T] function = \+, *, T? initial = null) -> T {
+generator func accumulate(Iterable[T] value, /, Callable[T, T, [T]] function = \+, *, T? initial = null) -> T {
     Iterator[T] iter = iter(value)
     T total = initial ?? iter.next()
     yield total
@@ -18,19 +18,24 @@ generator func accumulate(Iterable[T] value, /, Callable[T, T, T] function = \+,
         yield total
     }
 }
+|#
 
 generic T
 generator func chain(*Iterable[T] values) -> T {
-    yield from (*i for var i in values)
+    for var i in values {
+        yield from i
+    }
 }
 
 generic T, U
 generator func compress(Iterable[T] data, Iterable[U] selectors) -> T {
-    yield from (i for T i, U j in zip(data, selectors) if j)
+    for T i, U j in data, selectors {
+        yield i if j
+    }
 }
 
 generic T
-generator func dropWhile(Callable[T, bool] predicate, Iterable[T] iterable) -> T {
+generator func dropWhile(Callable[T, [bool]] predicate, Iterable[T] iterable) -> T {
     Iterator[T] iter = iter(iterable)
     for T i in iter {
         if not predicate(i) {
@@ -42,7 +47,7 @@ generator func dropWhile(Callable[T, bool] predicate, Iterable[T] iterable) -> T
 }
 
 generic T
-generator func filter(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
+generator func filter(Callable[T, [bool]] predicate, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence if predicate(i))
 }
 
@@ -52,7 +57,7 @@ generator func filterEqual(T sentinel, Iterable[T] sequence) -> T {
 }
 
 generic T
-generator func filterFalse(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
+generator func filterFalse(Callable[T, [bool]] predicate, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence if not predicate(i))
 }
 
@@ -64,32 +69,34 @@ generator func filterNotEqual(T sentinel, Iterable[T] sequence) -> T {
 generic T
 generator func firstN(int count, Iterable[T] sequence) -> T {
     var iterator = iter(sequence)
-    try {
-        dotimes count {
-            yield iterator.next()
+    dotimes count {
+        if iterator.next()? as n {
+            yield n
+        } else {
+            break
         }
-    } except StopIteration {}
+    }
 }
 
 generic T, U
-generator func map(Callable[T, U] function, Iterable[T] sequence) -> U {
+generator func map(Callable[T, [U]] function, Iterable[T] sequence) -> U {
     yield from (function(i) for T i in sequence)
 }
 
 generic T
 generator func pairs(Iterable[T] values) -> T, T {
     var iter = iter(values)
-    try {
-        while true {
-            T v1 = iter.next()
-            T v2 = iter.next()
+    while iter.next()? as v1 {
+        if iter.next()? as v2 {
             yield v1, v2
+        } else {
+            break
         }
-    } except StopIteration {}
+    }
 }
 
 generic T
-generator func takeWhile(Callable[T, bool] predicate, Iterable[T] sequence) -> T {
+generator func takeWhile(Callable[T, [bool]] predicate, Iterable[T] sequence) -> T {
     yield from (i for T i in sequence while predicate)
 }
 
@@ -110,9 +117,9 @@ generic T
 generator func withNext(Iterable[T] values) -> T, T {
     var iter = iter(values)
     mut T previous
-    try {
-        previous = iter.next()
-    } except StopIteration {
+    if iter.next()? as p {
+        previous = p
+    } else {
         return
     }
     for T current in iter {
@@ -122,20 +129,22 @@ generator func withNext(Iterable[T] values) -> T, T {
 }
 
 generic T, U
-generator func zip(Iterable[T] value1, Iterable[T] values2) -> T, U {
-    var iter1 = iter(value1)
-    var iter2 = iter(value2)
-    while true {
-        try {
-            T next1 = iter1.next()
-            U next2 = iter2.next()
-            yield next1, next2
-        } except StopIteration {
-            return
-        }
+generator func zip(Iterable[T] value1, Iterable[U] value2) -> T, U {
+    for var i, var j in value1, value2 {
+        yield i, j
     }
 }
 
+generic T, U
+generator func zipCount(Iterable[T] value1, Iterable[T] value2) -> int, T, U {
+    mut int count = 0
+    for var i, var j in value1, value2 {
+        yield count, i, j
+        count++
+    }
+}
+
+#|  FIXME: Default parameters
 generic T
 generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
     final Array[Iterator[T]] iterators = Array(values.length, *apply(iter, values))
@@ -144,9 +153,9 @@ generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
         final Array[T] next = Array(values.length, defaultVal)
         for int i, var j in enumerate(iterators) {
             if hasNext[i] {
-                try {
-                    next[i] = j.next
-                } except StopIteration {
+                if j.next()? as n {
+                    next[i] = n
+                } else {
                     hasNext[i] = false
                 }
             }
@@ -154,3 +163,4 @@ generator func zipLongest(*Iterable[T] values, T defaultVal = null) -> T {
         yield *next
     }
 }
+|#

@@ -1,2 +1,6 @@
-from .unicode export Regex, CaptureLocations, Captures
-from .Match export Match
+# from .unicode export Regex, CaptureLocations, Captures
+# from .Match export Match
+
+from .unicode import Regex
+
+var x = Regex("a.")

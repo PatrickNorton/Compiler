@@ -3,7 +3,6 @@ import random
 from interfaces typeget Iterable, Comparable
 
 from collections import Deque
-from types import Array
 
 export bogoSort, heapSort, mergeSort, quickSort
 

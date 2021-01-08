@@ -124,7 +124,14 @@ public final class LambdaConverter implements TestConverter {
                     var expectedArgs = (ListTypeObject) generics.get(0);
                     result[i] = new Argument(
                             arg.getName().getName(), expectedArgs.get(i),
-                        arg.getVararg(), arg.getLineInfo()
+                            arg.getVararg(), arg.getLineInfo()
+                    );
+                } else if (expected instanceof FunctionInfoType) {
+                    // FIXME: This is still pretty broken
+                    var expectedArgs = ((FunctionInfoType) expected).getInfo().getArgs();
+                    result[i] = new Argument(
+                            arg.getName().getName(), expectedArgs.get(i).getType(),
+                            arg.getVararg(), arg.getLineInfo()
                     );
                 } else {
                     throw CompilerTodoError.of("Cannot deduce lambda types from non-Callable", arg);
