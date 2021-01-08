@@ -106,12 +106,12 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var converter = TestConverter.of(info, values.get(i), 1);
         var retType = converter.returnType()[0];
         int argC = checkTuple(retType, values.get(i));
-        var valueTypes = retType.getGenerics();
-        assert argC == valueTypes.size();
+        var valueTypes = expandZeroTuple(converter);
+        assert argC == valueTypes.length;
         bytes.addAll(converter.convert(start + bytes.size()));
         bytes.add(Bytecode.UNPACK_TUPLE.value);
         for (int j = argC - 1; j >= 0; j--) {
-            var valueType = valueTypes.get(j);
+            var valueType = valueTypes[j];
             var assigned = types[i - tupleCount + j];
             var rawType = assigned.getType();
             var assignedType = getAssigned(valueType, rawType, mutability);
@@ -250,5 +250,19 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         return CompilerException.of(
                 "Local static variable may not be 'mut' or 'mref'", lineInfo
         );
+    }
+
+    private TypeObject[] expandZeroTuple(TestConverter valueConverter) {
+        var valT = valueConverter.returnType();
+        if (node.getValues().getVararg(0).isEmpty()) {
+            return valT;
+        } else if (valT[0] instanceof TupleType) {
+            return valT[0].getGenerics().toArray(new TypeObject[0]);
+        } else {
+            throw CompilerException.format(
+                    "Vararg used on non-tuple argument (returned type '%s')",
+                    node.getValues().get(0), valT[0].name()
+            );
+        }
     }
 }
