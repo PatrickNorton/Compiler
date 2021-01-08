@@ -86,6 +86,29 @@ const union Utf8Sequence {
         }
     }
 
+    public operator reversed -> Utf8Range {
+        switch self {
+            case Utf8Sequence.One as r {
+                yield r
+            }
+            case Utf8Sequence.Two as r {
+                yield r.1
+                yield r.0
+            }
+            case Utf8Sequence.Three as r {
+                yield r.2
+                yield r.1
+                yield r.0
+            }
+            case Utf8Sequence.Four as r {
+                yield r.3
+                yield r.2
+                yield r.1
+                yield r.0
+            }
+        }
+    }
+
     public method matches(bytes val) -> bool {
         return false if val.length < self.length
 
@@ -215,7 +238,7 @@ class ScalarRange {
     }
 
     method encode() -> bytes, bytes {
-        return str(self.start).encode("UTF-8"), str(self.end).encode("UTF-8")
+        return str(char(self.start)).encode("UTF-8"), str(char(self.end)).encode("UTF-8")
     }
 }
 
