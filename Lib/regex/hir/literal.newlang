@@ -325,8 +325,8 @@ const class Literal {
         return self.value.operator[:](s)
     }
 
-    public operator reversed -> cls {
-        return cls(self.value[::-1], self.cut)
+    public operator reversed -> int {
+        yield from cls(self.value[::-1], self.cut)
     }
 
     public property int length {
