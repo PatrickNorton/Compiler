@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 
 public interface LangConstant extends LangObject {
     @NotNull
@@ -23,6 +24,10 @@ public interface LangConstant extends LangObject {
 
     default OptionalBool boolValue() {
         return OptionalBool.empty();
+    }
+
+    default Optional<String> strValue() {
+        return Optional.empty();
     }
 
     @NotNull
