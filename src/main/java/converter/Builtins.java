@@ -278,6 +278,7 @@ public final class Builtins {
         var addCharInfo = new FunctionInfo(ArgumentInfo.of(CHAR, STR));
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var startsInfo = new FunctionInfo(ArgumentInfo.of(BYTES), BOOL);
+        var hexInfo = new FunctionInfo(STR);
         var bytesAttrs = Map.ofEntries(
                 Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
                 Map.entry("join", AttributeInfo.method(joinInfo)),
@@ -288,7 +289,8 @@ public final class Builtins {
                 Map.entry("addChar", AttributeInfo.method(addCharInfo)),
                 Map.entry("startsWith", AttributeInfo.method(startsInfo)),
                 Map.entry("endsWith", AttributeInfo.method(startsInfo)),
-                Map.entry("lastIndexOf", AttributeInfo.method(indexInfo))
+                Map.entry("lastIndexOf", AttributeInfo.method(indexInfo)),
+                Map.entry("hex", AttributeInfo.method(hexInfo))
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();
