@@ -33,6 +33,8 @@ public final class FunctionCallConverter implements TestConverter {
             var op = ((EscapedOperatorNode) node.getCaller()).getOperator().operator;
             var conv = OperatorConverter.ofComponents(info, op, node.getParameters(), node, retCount);
             return conv.constantReturn();
+        } else if (isDeterminedFunction(node.getCaller())) {
+            return determinedFunctionConstant();
         } else {
             return Optional.empty();
         }
@@ -277,6 +279,38 @@ public final class FunctionCallConverter implements TestConverter {
             return convertBuiltin(start, strName);
         } else {
             return convertCallFn(start, strName, fnInfo, needsMakeOption);
+        }
+    }
+
+    private Optional<LangConstant> determinedFunctionConstant() {
+        assert isDeterminedFunction(node.getCaller());
+        assert node.getCaller() instanceof VariableNode;
+        if (node.getParameters().length != 1 || !node.getParameters()[0].getVararg().isEmpty()) {
+            return Optional.empty();
+        }
+        var strName = ((VariableNode) node.getCaller()).getName();
+        var op = BUILTINS_TO_OPERATORS.get(strName);
+        if (op != null) {
+            var arg = node.getParameters()[0].getArgument();
+            var constantReturn = TestConverter.constantReturn(arg, info, 1);
+            if (constantReturn.isPresent()) {
+                return constantOp(op, constantReturn.orElseThrow());
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<LangConstant> constantOp(OpSpTypeNode op, LangConstant constant) {
+        switch (op) {
+            case STR:
+                return constant.strValue().map(LangConstant::of);
+            case BOOL:
+                return constant.boolValue().mapValues(Builtins.TRUE, Builtins.FALSE);
+            default:
+                return Optional.empty();
         }
     }
 
