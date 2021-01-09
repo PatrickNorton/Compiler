@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class BoolConstant implements LangConstant {
     private final boolean value;
@@ -35,6 +36,11 @@ public final class BoolConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(value);
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of(value ? "true" : "false");
     }
 
     @Override

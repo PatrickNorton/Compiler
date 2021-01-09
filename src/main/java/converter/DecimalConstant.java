@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class DecimalConstant implements LangConstant {
     private final BigDecimal value;
@@ -53,6 +54,11 @@ public final class DecimalConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(value.signum() != 0);
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of(value.toString());
     }
 
     @NotNull

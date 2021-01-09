@@ -33,6 +33,17 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
+    public Optional<String> strValue() {
+        var startStr = start == null ? "" : start.toString();
+        var stopStr = stop == null ? "" : stop.toString();
+        if (step == null || step.equals(BigInteger.ONE)) {
+            return Optional.of(String.format("[%s:%s]", startStr, stopStr));
+        } else {
+            return Optional.of(String.format("[%s:%s:%s]", startStr, stopStr, step.toString()));
+        }
+    }
+
+    @Override
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();

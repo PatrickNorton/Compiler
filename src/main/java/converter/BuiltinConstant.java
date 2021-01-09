@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class BuiltinConstant implements LangConstant {
     private final int builtinIndex;
@@ -45,6 +46,15 @@ public final class BuiltinConstant implements LangConstant {
     @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {
+        return name();
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of(name());
+    }
+
+    private String name() {
         var result = Builtins.TRUE_BUILTINS.get(builtinIndex);
         if (result == Builtins.NULL_TYPE) {
             return "type(null)";

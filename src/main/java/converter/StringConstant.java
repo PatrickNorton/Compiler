@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class StringConstant implements LangConstant {
     private final String value;
@@ -29,6 +30,11 @@ public final class StringConstant implements LangConstant {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of(value);
     }
 
     public String getValue() {
