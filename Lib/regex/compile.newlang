@@ -144,7 +144,6 @@ class Compiler {
                         assert self.compiled.usesBytes()
                         return self.cByte(b)
                     }
-                    default => raise NotImplemented()
                 }
             }
             case HirKind.Class as c {
@@ -233,7 +232,6 @@ class Compiler {
                         }
                         return self.cCapture(index * 2, g.hir)
                     }
-                    default => raise NotImplemented()
                 }
             }
             case HirKind.Concat as es {

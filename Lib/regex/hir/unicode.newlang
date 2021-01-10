@@ -150,9 +150,6 @@ func unicodeType(ClassQuery query) -> ClassUnicode {
                 }
             }
         }
-        default {
-            raise UnicodeError.PropertyNotFound()
-        }
     }
 }
 

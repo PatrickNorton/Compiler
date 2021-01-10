@@ -195,7 +195,6 @@ class HeapVisitor {
                 default => null
             }
             case ClassInduct.BinaryOp as op => ClassFrame.BinaryLHS((op, op.lhs, op.rhs))
-            default => null
         }
     }
 
