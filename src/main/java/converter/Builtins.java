@@ -278,17 +278,19 @@ public final class Builtins {
         var addCharInfo = new FunctionInfo(ArgumentInfo.of(CHAR, STR));
         var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var startsInfo = new FunctionInfo(ArgumentInfo.of(BYTES), BOOL);
-        var bytesAttrs = Map.of(
-                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
-                "join", AttributeInfo.method(joinInfo),
-                "encode", AttributeInfo.method(encodeInfo),
-                "indexOf", AttributeInfo.method(indexInfo),
-                "get", AttributeInfo.method(getInfo),
-                "add", AttributeInfo.mutMethod(addInfo),
-                "addChar", AttributeInfo.method(addCharInfo),
-                "startsWith", AttributeInfo.method(startsInfo),
-                "endsWith", AttributeInfo.method(startsInfo),
-                "lastIndexOf", AttributeInfo.method(indexInfo)
+        var hexInfo = new FunctionInfo(STR);
+        var bytesAttrs = Map.ofEntries(
+                Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
+                Map.entry("join", AttributeInfo.method(joinInfo)),
+                Map.entry("encode", AttributeInfo.method(encodeInfo)),
+                Map.entry("indexOf", AttributeInfo.method(indexInfo)),
+                Map.entry("get", AttributeInfo.method(getInfo)),
+                Map.entry("add", AttributeInfo.mutMethod(addInfo)),
+                Map.entry("addChar", AttributeInfo.method(addCharInfo)),
+                Map.entry("startsWith", AttributeInfo.method(startsInfo)),
+                Map.entry("endsWith", AttributeInfo.method(startsInfo)),
+                Map.entry("lastIndexOf", AttributeInfo.method(indexInfo)),
+                Map.entry("hex", AttributeInfo.method(hexInfo))
         );
         BYTES.setAttributes(bytesAttrs);
         BYTES.seal();

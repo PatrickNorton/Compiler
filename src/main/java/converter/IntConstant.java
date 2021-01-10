@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class IntConstant implements LangConstant {
     private final int value;
@@ -55,5 +56,10 @@ public final class IntConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(value != 0);
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of(String.valueOf(value));
     }
 }

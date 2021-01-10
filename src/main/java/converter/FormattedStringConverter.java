@@ -41,15 +41,30 @@ public final class FormattedStringConverter implements TestConverter {
             CompilerWarning.warn("F-string with no formatted arguments", node);
         }
         for (int i = 0; i < strings.length; i++) {
-            bytes.add(Bytecode.LOAD_CONST.value);
-            var constValue = LangConstant.of(strings[i]);
-            bytes.addAll(Util.shortToBytes(info.constIndex(constValue)));
-            if (i != 0) {
-                bytes.add(Bytecode.PLUS.value);
-            }
             if (i < tests.length) {
-                convertArgument(tests[i], start, bytes, node.getFormats()[i]);
-                bytes.add(Bytecode.PLUS.value);
+                var converter = TestConverter.of(info, tests[i], retCount);
+                var strValue = converter.constantReturn().flatMap(LangConstant::strValue);
+                if (strValue.isPresent()) {
+                    var string = strings[i] + strValue.orElseThrow();
+                    bytes.add(Bytecode.LOAD_CONST.value);
+                    bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(string))));
+                } else {
+                    bytes.add(Bytecode.LOAD_CONST.value);
+                    var constValue = LangConstant.of(strings[i]);
+                    bytes.addAll(Util.shortToBytes(info.constIndex(constValue)));
+                    if (i != 0) {
+                        bytes.add(Bytecode.PLUS.value);
+                    }
+                    convertArgument(tests[i], start, bytes, node.getFormats()[i]);
+                    bytes.add(Bytecode.PLUS.value);
+                }
+            } else {
+                bytes.add(Bytecode.LOAD_CONST.value);
+                var constValue = LangConstant.of(strings[i]);
+                bytes.addAll(Util.shortToBytes(info.constIndex(constValue)));
+                if (i != 0) {
+                    bytes.add(Bytecode.PLUS.value);
+                }
             }
         }
         if (retCount == 0) {

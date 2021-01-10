@@ -5,6 +5,7 @@ import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class NullConstant implements LangConstant {
     public static final StdTypeObject TYPE = new StdTypeObject("null");
@@ -29,5 +30,10 @@ public final class NullConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(false);
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of("null");
     }
 }
