@@ -322,6 +322,12 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(RANGE), BOOL)
         );
         RANGE.setOperators(rangeMap);
+        var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
+        var rangeAttrs = Map.of(
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "get", AttributeInfo.method(getInfo)
+        );
+        RANGE.setAttributes(rangeAttrs);
         RANGE.seal();
     }
 
