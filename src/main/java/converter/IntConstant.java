@@ -62,4 +62,9 @@ public final class IntConstant implements LangConstant {
     public Optional<String> strValue() {
         return Optional.of(String.valueOf(value));
     }
+
+    @Override
+    public Optional<String> reprValue() {
+        return Optional.of(String.valueOf(value));
+    }
 }

@@ -52,6 +52,11 @@ public final class ClassConstant implements LangConstant {
     }
 
     @Override
+    public Optional<String> reprValue() {
+        return Optional.of(type.name());
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

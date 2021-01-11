@@ -309,6 +309,14 @@ public final class FunctionCallConverter implements TestConverter {
                 return constant.strValue().map(LangConstant::of);
             case BOOL:
                 return constant.boolValue().mapValues(Builtins.TRUE, Builtins.FALSE);
+            case REPR:
+                return constant.reprValue().map(LangConstant::of);
+            case INT:
+                if (constant instanceof IntConstant || constant instanceof BigintConstant) {
+                    return Optional.of(constant);
+                } else {
+                    return Optional.empty();
+                }
             default:
                 return Optional.empty();
         }

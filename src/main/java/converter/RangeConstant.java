@@ -44,6 +44,11 @@ public final class RangeConstant implements LangConstant {
     }
 
     @Override
+    public Optional<String> reprValue() {
+        return strValue();
+    }
+
+    @Override
     @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();

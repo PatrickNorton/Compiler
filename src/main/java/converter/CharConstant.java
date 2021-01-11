@@ -37,6 +37,11 @@ public final class CharConstant implements LangConstant {
     }
 
     @Override
+    public Optional<String> reprValue() {
+        return Optional.of(name());
+    }
+
+    @Override
     @NotNull
     public TypeObject getType() {
         return Builtins.CHAR;

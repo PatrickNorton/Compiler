@@ -61,6 +61,11 @@ public final class DecimalConstant implements LangConstant {
         return Optional.of(value.toString());
     }
 
+    @Override
+    public Optional<String> reprValue() {
+        return Optional.of(value.toString());
+    }
+
     @NotNull
     @Override
     public String name(IndexedSet<LangConstant> constants) {

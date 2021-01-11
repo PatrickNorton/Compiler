@@ -36,4 +36,9 @@ public final class NullConstant implements LangConstant {
     public Optional<String> strValue() {
         return Optional.of("null");
     }
+
+    @Override
+    public Optional<String> reprValue() {
+        return Optional.of("null");
+    }
 }
