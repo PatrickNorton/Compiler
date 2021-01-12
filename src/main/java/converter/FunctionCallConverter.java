@@ -306,9 +306,17 @@ public final class FunctionCallConverter implements TestConverter {
     private Optional<LangConstant> constantOp(OpSpTypeNode op, LangConstant constant) {
         switch (op) {
             case STR:
-                return constant.strValue().map(LangConstant::of);
+                if (constant instanceof StringConstant) {
+                    return Optional.of(constant);
+                } else {
+                    return constant.strValue().map(LangConstant::of);
+                }
             case BOOL:
-                return constant.boolValue().mapValues(Builtins.TRUE, Builtins.FALSE);
+                if (constant instanceof BoolConstant) {
+                    return Optional.of(constant);
+                } else {
+                    return constant.boolValue().mapValues(Builtins.TRUE, Builtins.FALSE);
+                }
             case REPR:
                 return constant.reprValue().map(LangConstant::of);
             case INT:
