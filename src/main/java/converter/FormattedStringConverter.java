@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class FormattedStringConverter implements TestConverter {
     private final FormattedStringNode node;
@@ -42,9 +43,8 @@ public final class FormattedStringConverter implements TestConverter {
         }
         for (int i = 0; i < strings.length; i++) {
             if (i < tests.length) {
-                var converter = TestConverter.of(info, tests[i], retCount);
                 var format = node.getFormats()[i];
-                var strValue = converter.constantReturn().flatMap(LangConstant::strValue);
+                var strValue = argConstant(tests[i], format);
                 if (format.size() > 0 && strValue.isPresent()) {
                     var string = strings[i] + strValue.orElseThrow();
                     bytes.add(Bytecode.LOAD_CONST.value);
@@ -72,6 +72,27 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.add(Bytecode.POP_TOP.value);
         }
         return bytes;
+    }
+
+    private Optional<String> argConstant(TestNode arg, FormattedStringNode.FormatInfo format) {
+        if (format.size() > 0) {
+            var fStr = format.getSpecifier();
+            if (fStr.length() != 1) {
+                return Optional.empty();
+            }
+            var converter = TestConverter.of(info, arg, retCount);
+            switch (fStr.charAt(0)) {
+                case 's':
+                    return converter.constantReturn().flatMap(LangConstant::strValue);
+                case 'r':
+                    return converter.constantReturn().flatMap(LangConstant::reprValue);
+                default:
+                    return Optional.empty();
+            }
+        } else {
+            var converter = TestConverter.of(info, arg, retCount);
+            return converter.constantReturn().flatMap(LangConstant::strValue);
+        }
     }
 
     private void convertArgument(TestNode arg, int start, List<Byte> bytes,
