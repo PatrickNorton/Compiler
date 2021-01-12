@@ -43,8 +43,9 @@ public final class FormattedStringConverter implements TestConverter {
         for (int i = 0; i < strings.length; i++) {
             if (i < tests.length) {
                 var converter = TestConverter.of(info, tests[i], retCount);
+                var format = node.getFormats()[i];
                 var strValue = converter.constantReturn().flatMap(LangConstant::strValue);
-                if (strValue.isPresent()) {
+                if (format.size() > 0 && strValue.isPresent()) {
                     var string = strings[i] + strValue.orElseThrow();
                     bytes.add(Bytecode.LOAD_CONST.value);
                     bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(string))));
