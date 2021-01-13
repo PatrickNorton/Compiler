@@ -56,7 +56,7 @@ public final class FormattedStringConverter implements TestConverter {
                     if (i != 0) {
                         bytes.add(Bytecode.PLUS.value);
                     }
-                    convertArgument(tests[i], start, bytes, node.getFormats()[i]);
+                    convertArgument(tests[i], start, bytes, format);
                     bytes.add(Bytecode.PLUS.value);
                 }
             } else {
