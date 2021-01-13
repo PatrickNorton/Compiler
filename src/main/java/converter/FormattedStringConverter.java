@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.FormattedStringNode;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
@@ -86,12 +87,52 @@ public final class FormattedStringConverter implements TestConverter {
                     return converter.constantReturn().flatMap(LangConstant::strValue);
                 case 'r':
                     return converter.constantReturn().flatMap(LangConstant::reprValue);
+                case 'd':
+                    return decimalConstant(converter);
+                case 'x':
+                    return baseConstant(converter, 16);
+                case 'o':
+                    return baseConstant(converter, 8);
+                case 'b':
+                    return baseConstant(converter, 2);
                 default:
                     return Optional.empty();
             }
         } else {
             var converter = TestConverter.of(info, arg, retCount);
             return converter.constantReturn().flatMap(LangConstant::strValue);
+        }
+    }
+
+    private Optional<String> decimalConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof IntConstant || value instanceof BigintConstant) {
+                return value.strValue();
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> baseConstant(TestConverter converter, int base) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof IntConstant) {
+                var intVal = ((IntConstant) value).getValue();
+                return Optional.of(Integer.toString(intVal, base));
+            } else if (value instanceof BigintConstant) {
+                var intVal = ((BigintConstant) value).getValue();
+                return Optional.of(intVal.toString(base));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -118,6 +159,18 @@ public final class FormattedStringConverter implements TestConverter {
             case 'r':
                 convertToRepr(arg, start, bytes);
                 break;
+            case 'd':
+                convertToInt(arg, start, bytes);
+                break;
+            case 'x':
+                convertToBase(arg, 16, start, bytes);
+                break;
+            case 'o':
+                convertToBase(arg, 8, start, bytes);
+                break;
+            case 'b':
+                convertToBase(arg, 2, start, bytes);
+                break;
             default:
                 throw CompilerException.format("Invalid format argument %c", node, fStr.charAt(0));
         }
@@ -139,5 +192,36 @@ public final class FormattedStringConverter implements TestConverter {
         bytes.add(Bytecode.CALL_OP.value);
         bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.REPR.ordinal()));
         bytes.addAll(Util.shortToBytes((short) 0));
+    }
+
+    private void convertToInt(TestNode arg, int start, List<Byte> bytes) {
+        var converter = TestConverter.of(info, arg, 1);
+        var retType = converter.returnType()[0];
+        bytes.addAll(converter.convert(start + bytes.size()));
+        makeInt(retType, arg, bytes);
+        bytes.add(Bytecode.CALL_OP.value);
+        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
+        bytes.addAll(Util.shortToBytes((short) 0));
+    }
+
+    private void convertToBase(TestNode arg, int base, int start, List<Byte> bytes) {
+        if (base == 10) {
+            convertToInt(arg, start, bytes);
+            return;
+        }
+        var converter = TestConverter.of(info, arg, 1);
+        var retType = converter.returnType()[0];
+        bytes.addAll(converter.convert(start + bytes.size()));
+        makeInt(retType, arg, bytes);
+        throw CompilerTodoError.format("Non-10 base conversion (base %d) in f-string", arg, base);
+    }
+
+    private void makeInt(TypeObject retType, Lined arg, List<Byte> bytes) {
+        if (!Builtins.INT.isSuperclass(retType)) {
+            retType.tryOperatorInfo(arg, OpSpTypeNode.INT, info);
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.INT.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 0));
+        }
     }
 }
