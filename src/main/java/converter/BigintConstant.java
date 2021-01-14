@@ -90,4 +90,9 @@ public final class BigintConstant implements LangConstant {
     public Optional<String> strValue() {
         return Optional.of(value.toString());
     }
+
+    @Override
+    public Optional<String> reprValue() {
+        return Optional.of(value.toString());
+    }
 }

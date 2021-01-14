@@ -30,6 +30,10 @@ public interface LangConstant extends LangObject {
         return Optional.empty();
     }
 
+    default Optional<String> reprValue() {
+        return Optional.empty();
+    }
+
     @NotNull
     @Contract(value = "_ -> new", pure = true)
     static LangConstant of(String value) {

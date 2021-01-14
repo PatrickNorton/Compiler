@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class OptionTypeConstant implements LangConstant {
     private final String genericName;
@@ -43,6 +44,16 @@ public final class OptionTypeConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(true);
+    }
+
+    @Override
+    public Optional<String> strValue() {
+        return Optional.of(genericType.name() + '?');
+    }
+
+    @Override
+    public Optional<String> reprValue() {
+        return Optional.of(genericType.name() + '?');
     }
 
     @Override

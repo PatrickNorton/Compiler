@@ -271,6 +271,11 @@ public final class Builtins {
                 OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))
         );
         BYTES.setOperators(bytesMap);
+        var fromHexInfo = new FunctionInfo(ArgumentInfo.of(STR), BYTES);
+        var staticBytesAttrs = Map.of(
+                "fromHex", AttributeInfo.method(fromHexInfo)
+        );
+        BYTES.setStaticAttributes(staticBytesAttrs);
         var joinInfo = new FunctionInfo(ArgumentInfo.of(ITERABLE.generify(OBJECT), BYTES));
         var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
@@ -322,6 +327,12 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(RANGE), BOOL)
         );
         RANGE.setOperators(rangeMap);
+        var getInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
+        var rangeAttrs = Map.of(
+                "length", new AttributeInfo(AccessLevel.PUBLIC, INT),
+                "get", AttributeInfo.method(getInfo)
+        );
+        RANGE.setAttributes(rangeAttrs);
         RANGE.seal();
     }
 

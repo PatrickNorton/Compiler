@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class BytesConstant implements LangConstant {
     private final List<Byte> value;
@@ -53,6 +54,21 @@ public final class BytesConstant implements LangConstant {
     @Override
     public OptionalBool boolValue() {
         return OptionalBool.of(!value.isEmpty());
+    }
+
+    @Override
+    public Optional<String> reprValue() {
+        StringBuilder result = new StringBuilder(value.size());
+        for (var b : value) {
+            // Since Java doesn't have unsigned bytes, ASCII characters are >= 0 and non-ASCII characters are < 0
+            if (b >= 0) {
+                result.append(b);
+            } else {
+                var proper = Byte.toUnsignedInt(b);
+                result.append("\\x").append(Integer.toHexString(proper));
+            }
+        }
+        return Optional.of(result.toString());
     }
 
     @NotNull

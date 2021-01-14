@@ -11,6 +11,7 @@ import main.java.converter.TypeObject;
 import main.java.parser.DescriptorNode;
 import main.java.parser.GenericOperatorNode;
 import main.java.parser.LineInfo;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorDefinitionNode;
 import main.java.parser.StatementBodyNode;
@@ -49,9 +50,7 @@ public final class OperatorDefConverter {
         boolean isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         var opInfos = isStatic ? staticOperatorInfos : operatorInfos;
         var ops = isStatic ? staticOperators : operators;
-        if (opInfos.containsKey(op)) {
-            throw CompilerException.doubleDef(op, node, ops.get(op));
-        }
+        checkOps(node, op, fnInfo);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
@@ -67,15 +66,21 @@ public final class OperatorDefConverter {
         var isGenerator = ALWAYS_GENERATOR.contains(op);
         var retValues = validateReturns(lineInfo, isGenerator, op, returns);
         FunctionInfo fnInfo = new FunctionInfo("", isGenerator, args, retValues);
-        if (operatorInfos.containsKey(op)) {
-            throw CompilerException.doubleDef(op, node, operators.get(op));
-        }
+        checkOps(node, op, fnInfo);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
         operatorInfos.put(op, mInfo);
         operators.put(op, new RawMethod(accessLevel, isMut, fnInfo,
                 StatementBodyNode.empty(), node.getLineInfo()));
+    }
+
+    private void checkOps(@NotNull Lined node, OpSpTypeNode op, FunctionInfo fnInfo) {
+        if (operatorInfos.containsKey(op)) {
+            throw CompilerException.doubleDef(op, node, operators.get(op));
+        } else if (EMPTY_ARGS.contains(op) && fnInfo.getArgs().size() != 0) {
+            throw emptyArgsError(op, node);
+        }
     }
 
     public Map<OpSpTypeNode, MethodInfo> getOperatorInfos() {
@@ -119,8 +124,13 @@ public final class OperatorDefConverter {
         }
     }
 
+    private static CompilerException emptyArgsError(OpSpTypeNode operator, Lined lineInfo) {
+        return CompilerException.format("Operator %s requires an empty argument list", lineInfo, operator.toString());
+    }
+
     private static final Map<OpSpTypeNode, TypeObject> DEFAULT_RETURNS;
     private static final Map<OpSpTypeNode, Integer> MANDATORY_RETURNS;
+    private static final Set<OpSpTypeNode> EMPTY_ARGS;
     private static final Set<OpSpTypeNode> ALWAYS_GENERATOR;
 
     static {
@@ -152,6 +162,19 @@ public final class OperatorDefConverter {
         temp.put(OpSpTypeNode.GET_SLICE, 1);
 
         MANDATORY_RETURNS = Collections.unmodifiableMap(temp);
+    }
+
+    static {
+        var temp = EnumSet.of(
+                OpSpTypeNode.INT,
+                OpSpTypeNode.STR,
+                OpSpTypeNode.BOOL,
+                OpSpTypeNode.REPR,
+                OpSpTypeNode.HASH,
+                OpSpTypeNode.ITER,
+                OpSpTypeNode.REVERSED
+        );
+        EMPTY_ARGS = Collections.unmodifiableSet(temp);
     }
 
     static {

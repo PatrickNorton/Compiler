@@ -37,6 +37,11 @@ public final class StringConstant implements LangConstant {
         return Optional.of(value);
     }
 
+    @Override
+    public Optional<String> reprValue() {
+        return Optional.of('"' + StringEscape.escape(value) + '"');
+    }
+
     public String getValue() {
         return value;
     }
