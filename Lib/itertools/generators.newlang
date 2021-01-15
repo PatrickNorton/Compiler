@@ -67,6 +67,15 @@ generator func filterNotEqual(T sentinel, Iterable[T] sequence) -> T {
 }
 
 generic T
+generator func filterNull(Iterable[T?] values) -> T {
+    for T? i in values {
+        if i? as j {
+            yield j
+        }
+    }
+}
+
+generic T
 generator func firstN(int count, Iterable[T] sequence) -> T {
     var iterator = iter(sequence)
     dotimes count {
