@@ -20,12 +20,6 @@ public final class Method implements Lined {
         this.bytes = bytes;
     }
 
-    public Method(MethodInfo info, List<Byte> bytes) {
-        this.lineInfo = LineInfo.empty();
-        this.info = info;
-        this.bytes = bytes;
-    }
-
     @Override
     public LineInfo getLineInfo() {
         return lineInfo;

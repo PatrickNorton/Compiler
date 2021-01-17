@@ -63,7 +63,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
                 retInfo.popFnReturns();
                 var mInfo = new MethodInfo(methodInfo.getAccessLevel(), methodInfo.isMut(), methodInfo.getInfo());
-                result.put(pair.getKey(), new Method(mInfo, bytes));
+                result.put(pair.getKey(), new Method(methodInfo, mInfo, bytes));
                 info.removeStackFrame();
                 if (!genericInfo.isEmpty()) {
                     info.removeLocalTypes();
