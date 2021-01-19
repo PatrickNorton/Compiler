@@ -213,7 +213,11 @@ public final class FormattedStringConverter implements TestConverter {
         var retType = converter.returnType()[0];
         bytes.addAll(converter.convert(start + bytes.size()));
         makeInt(retType, arg, bytes);
-        throw CompilerTodoError.format("Non-10 base conversion (base %d) in f-string", arg, base);
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(base))));
+        bytes.add(Bytecode.CALL_METHOD.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex("strBase")));
+        bytes.addAll(Util.shortToBytes((short) 1));
     }
 
     private void makeInt(TypeObject retType, Lined arg, List<Byte> bytes) {
