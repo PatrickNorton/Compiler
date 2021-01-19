@@ -206,8 +206,14 @@ public final class Builtins {
                 Map.entry(OpSpTypeNode.NEW, MethodInfo.of(ArgumentInfo.of(OBJECT))),
                 Map.entry(OpSpTypeNode.UNARY_MINUS, intUopInfo)
         );
-
         INT.setOperators(intMap);
+        var strBaseInfo = new FunctionInfo(ArgumentInfo.of(INT), STR);
+        var divRemInfo = new FunctionInfo(ArgumentInfo.of(INT), TUPLE.generify(INT, INT));
+        var intAttrs = Map.of(
+                "strBase", AttributeInfo.method(strBaseInfo),
+                "divRem", AttributeInfo.method(divRemInfo)
+        );
+        INT.setAttributes(intAttrs);
         INT.seal();
     }
 
