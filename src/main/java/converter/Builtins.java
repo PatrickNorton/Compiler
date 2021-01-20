@@ -243,6 +243,7 @@ public final class Builtins {
         var upperLowerInfo = new FunctionInfo(STR);
         var indexInfo = new FunctionInfo(ArgumentInfo.of(STR), TypeObject.optional(INT));
         var encodeInfo = new FunctionInfo(ArgumentInfo.of(STR), BYTES.makeMut());
+        var intBaseInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(INT));
         var asIntInfo = new FunctionInfo(ArgumentInfo.of(), TypeObject.optional(INT));
         var strAttrs = Map.ofEntries(
                 Map.entry("length", new AttributeInfo(AccessLevel.PUBLIC, INT)),
@@ -258,6 +259,7 @@ public final class Builtins {
                 Map.entry("indexOf", AttributeInfo.method(indexInfo)),
                 Map.entry("lastIndexOf", AttributeInfo.method(indexInfo)),
                 Map.entry("encode", AttributeInfo.method(encodeInfo)),
+                Map.entry("intBase", AttributeInfo.method(intBaseInfo)),
                 Map.entry("asInt", AttributeInfo.method(asIntInfo))
         );
         STR.setAttributes(strAttrs);
@@ -317,6 +319,12 @@ public final class Builtins {
                 OpSpTypeNode.EQUALS, MethodInfo.of(ArgumentInfo.of(CHAR), BOOL)
         );
         CHAR.setOperators(charMap);
+        var upperLowerInfo = new FunctionInfo(CHAR);
+        var charAttrs = Map.of(
+                "upper", AttributeInfo.method(upperLowerInfo),
+                "lower", AttributeInfo.method(upperLowerInfo)
+        );
+        CHAR.setAttributes(charAttrs);
         var fromIntInfo = new FunctionInfo(ArgumentInfo.of(INT), TypeObject.optional(CHAR));
         var staticCharAttrs = Map.of(
                 "fromInt", AttributeInfo.method(fromIntInfo)
