@@ -1,4 +1,4 @@
-from string import StringBuilder, ASCII_LETTERS, ASCII_LOWERCASE, DIGITS, HEX_DIGITS, WHITESPACE
+from string import StringBuilder, ASCII_LETTERS, ASCII_LOWERCASE, DIGITS, HEX_DIGITS, UPPER_HEX_DIGITS, WHITESPACE
 
 from .ast import Ast, Alternation, CaptureName, Concat, Comment, Group, Position, Span, WithComments, GroupKind
 from .ast import ClassSet, ClassSetUnion, ClassBracketed, ClassSetBinaryOpKind, SetFlags, ErrorKind, AstError
@@ -435,7 +435,7 @@ class ParserI {
             if i > 0 and not self.bumpAndBumpSpace() {
                 raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
             }
-            if self.chr() not in HEX_DIGITS {
+            if self.chr() not in HEX_DIGITS and self.chr() not in UPPER_HEX_DIGITS {
                 raise self.error(self.spanChar(), ErrorKind.EscapeHexInvalidDigit())
             }
             scratch.add(self.chr())
@@ -443,7 +443,7 @@ class ParserI {
         self.bumpAndBumpSpace()
         var end = self.parser.pos
         var hex = str(scratch)
-        return Literal(Span(start, end), LiteralKind.HexFixed(kind), char(int(hex)))
+        return Literal(Span(start, end), LiteralKind.HexFixed(kind), char(hex.intBase(16)!!))
     }
 
     private mut method parseHexBrace(HexLiteralKind kind) -> Literal {
@@ -452,7 +452,7 @@ class ParserI {
         var bracePos = self.parser.pos
         var start = self.spanChar().end
         while self.bumpAndBumpSpace() and self.chr() != c'}' {
-            if self.chr() not in HEX_DIGITS {
+            if self.chr() not in HEX_DIGITS and self.chr() not in UPPER_HEX_DIGITS {
                 raise self.error(self.spanChar(), ErrorKind.EscapeHexInvalidDigit())
             }
             scratch.add(self.chr())
@@ -468,7 +468,7 @@ class ParserI {
         if not hex {
             raise self.error(Span(bracePos, self.parser.pos), ErrorKind.EscapeHexEmpty())
         }
-        var chr = char(int(hex))
+        var chr = char(hex.intBase(16)!!)
         return Literal(Span(start, self.parser.pos), LiteralKind.HexBrace(kind), chr)
     }
 
