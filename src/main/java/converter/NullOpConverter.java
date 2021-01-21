@@ -102,20 +102,7 @@ public final class NullOpConverter extends OperatorConverter {
                     args[0]
             );
         } else if (retType instanceof OptionTypeObject) {
-            bytes.add(Bytecode.DUP_TOP.value);
-            bytes.add(Bytecode.JUMP_NN.value);
-            int jumpPos = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-            bytes.add(Bytecode.POP_TOP.value);
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.strConstant())));  // TODO: Get errors
-            bytes.add(Bytecode.LOAD_CONST.value);
-            var message = String.format("Value %s asserted non-null, was null", args[0]);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
-            bytes.add(Bytecode.THROW_QUICK.value);
-            bytes.addAll(Util.shortToBytes((short) 1));
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-            bytes.add(Bytecode.UNWRAP_OPTION.value);
+            bytes.addAll(unwrapOption(info, args[0].toString(), start + bytes.size()));
         } else {
             CompilerWarning.warn("Used !! operator on non-optional value",
                     args[0].getLineInfo());
@@ -179,6 +166,26 @@ public final class NullOpConverter extends OperatorConverter {
         List<Byte> bytes = unwrapSecond(start, converter);
         bytes.add(Bytecode.IS_SOME.value);
         return Pair.of(bytes, resultType);
+    }
+
+    @NotNull
+    public static List<Byte> unwrapOption(CompilerInfo info, String value, int start) {
+        List<Byte> bytes = new ArrayList<>();
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.JUMP_NN.value);
+        int jumpPos = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.add(Bytecode.POP_TOP.value);
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.nullErrorConstant())));
+        bytes.add(Bytecode.LOAD_CONST.value);
+        var message = String.format("Value %s asserted non-null, was null", value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
+        bytes.add(Bytecode.THROW_QUICK.value);
+        bytes.addAll(Util.shortToBytes((short) 1));
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        bytes.add(Bytecode.UNWRAP_OPTION.value);
+        return bytes;
     }
 
     @NotNull
