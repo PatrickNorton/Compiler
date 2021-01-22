@@ -15,6 +15,7 @@ public final class FunctionInfo {
     private final ArgumentInfo arguments;
     private final TypeObject[] returns;
     private final GenericInfo generics;
+    private boolean isDeprecated = false;
 
     public FunctionInfo(TypeObject... returns) {
         this("", ArgumentInfo.of(), returns);
@@ -72,6 +73,14 @@ public final class FunctionInfo {
 
     public GenericInfo getGenerics() {
         return generics;
+    }
+
+    public boolean isDeprecated() {
+        return isDeprecated;
+    }
+
+    public void setDeprecated(boolean deprecated) {
+        isDeprecated = deprecated;
     }
 
     @NotNull

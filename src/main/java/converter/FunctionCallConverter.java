@@ -377,6 +377,9 @@ public final class FunctionCallConverter implements TestConverter {
     private List<Byte> convertCallFn(int start, String strName, FunctionInfo fnInfo, Set<Integer> needsMakeOption) {
         var fnIndex = info.fnIndex(strName);
         assert fnIndex != -1;
+        if (info.fnInfo(strName).orElseThrow().isDeprecated()) {
+            CompilerWarning.warnf("Function '%s' is deprecated", node, strName);
+        }
         List<Byte> bytes = new ArrayList<>();
         convertArgs(bytes, start, fnInfo, needsMakeOption);
         bytes.add(Bytecode.CALL_FN.value);

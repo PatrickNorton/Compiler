@@ -27,14 +27,25 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @Override
     @Unmodifiable
     public List<Byte> convert(int start) {
+        convertInner();
+        return Collections.emptyList();
+    }
+
+    public List<Byte> convertDeprecated() {
+        var fn = convertInner();
+        fn.getInfo().setDeprecated(true);
+        return Collections.emptyList();
+    }
+
+    private Function convertInner() {
         var name = node.getName().getName();
         var predefined = info.getFn(name);
         if (predefined.isPresent()) {
             convertPredefined(predefined.orElseThrow(), name);
+            return predefined.orElseThrow();
         } else {
-            convertUndefined(name);
+            return convertUndefined(name);
         }
-        return Collections.emptyList();
     }
 
     private void convertPredefined(Function fn, String name) {
@@ -62,14 +73,15 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         fn.setMax(maxSize);
     }
 
-    private void convertUndefined(String name) {
+    private Function convertUndefined(String name) {
         var generics = getGenerics();
         var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
         List<Byte> bytes = new ArrayList<>();
-        var index = info.addFunction(new Function(node, fnInfo, bytes));
+        var fn = new Function(node, fnInfo, bytes);
+        var index = info.addFunction(fn);
         for (var generic : generics.values()) {
             generic.setParent(fnInfo.toCallable());
         }
@@ -83,6 +95,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         convertBody(bytes, isGenerator, retTypes);
         varHolder.removeLocalTypes();
         varHolder.removeStackFrame();
+        return fn;
     }
 
     private void convertBody(List<Byte> bytes, boolean isGenerator, TypeObject... retTypes) {

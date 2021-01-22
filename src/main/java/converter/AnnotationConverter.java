@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.AnnotatableNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.FunctionCallNode;
+import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.NameNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -61,8 +62,12 @@ public final class AnnotationConverter implements BaseConverter {
                 CompilerWarning.warn("Test mode is always turned off for now", name);
                 return convertIfTest(start, true);
             case "deprecated":
-                CompilerWarning.warn("Deprecation notices not yet implemented", name);
-                return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                if (node instanceof FunctionDefinitionNode) {
+                    return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertDeprecated();
+                } else {
+                    CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getName());
         }
