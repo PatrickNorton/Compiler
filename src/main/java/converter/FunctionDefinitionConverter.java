@@ -50,19 +50,16 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var isGen = fnInfo.isGenerator();
         var trueRet = isGen ? Builtins.deIterable(fnRets[0]) : fnRets;
         info.checkDefinition(name, node);
-        info.addVariable(name, fnInfo.toCallable(), constVal, node);
-        info.addStackFrame();
+        var varHolder = info.varHolder();
+        varHolder.addVariable(name, fnInfo.toCallable(), constVal, node);
+        varHolder.addStackFrame();
         checkGen();
-        info.addLocalTypes(fnInfo.toCallable(), generics);
-        var retInfo = info.getFnReturns();
-        retInfo.addFunctionReturns(isGen, trueRet);
-        addArgs();
-        for (var statement : node.getBody()) {
-            bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));
-        }
-        info.removeLocalTypes();
-        info.removeStackFrame();
-        retInfo.popFnReturns();
+        varHolder.addLocalTypes(fnInfo.toCallable(), generics);
+        convertBody(bytes, isGen, trueRet);
+        varHolder.removeLocalTypes();
+        varHolder.removeStackFrame();
+        var maxSize = varHolder.resetMax();
+        fn.setMax(maxSize);
     }
 
     private void convertUndefined(String name) {
@@ -78,18 +75,23 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
         var constVal = new FunctionConstant(name, index);
         info.checkDefinition(name, node);
-        info.addVariable(name, fnInfo.toCallable(), constVal, node);
-        info.addStackFrame();
+        var varHolder = info.varHolder();
+        varHolder.addVariable(name, fnInfo.toCallable(), constVal, node);
+        varHolder.addStackFrame();
         checkGen();
-        info.addLocalTypes(fnInfo.toCallable(), new HashMap<>(generics));
+        varHolder.addLocalTypes(fnInfo.toCallable(), new HashMap<>(generics));
+        convertBody(bytes, isGenerator, retTypes);
+        varHolder.removeLocalTypes();
+        varHolder.removeStackFrame();
+    }
+
+    private void convertBody(List<Byte> bytes, boolean isGenerator, TypeObject... retTypes) {
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
         addArgs();
         for (var statement : node.getBody()) {
             bytes.addAll(BaseConverter.bytes(bytes.size(), statement, info));
         }
-        info.removeLocalTypes();
-        info.removeStackFrame();
         retInfo.popFnReturns();
     }
 
