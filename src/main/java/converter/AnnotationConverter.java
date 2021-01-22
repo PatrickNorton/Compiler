@@ -60,6 +60,9 @@ public final class AnnotationConverter implements BaseConverter {
             case "notTest":
                 CompilerWarning.warn("Test mode is always turned off for now", name);
                 return convertIfTest(start, true);
+            case "deprecated":
+                CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                return BaseConverter.bytesWithoutAnnotations(start, node, info);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getName());
         }
@@ -79,6 +82,9 @@ public final class AnnotationConverter implements BaseConverter {
                 throw CompilerTodoError.of("'cfg' attributes not implemented yet", name);
             case "inline":
                 return convertInline(start, name);
+            case "deprecated":
+                CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                return BaseConverter.bytesWithoutAnnotations(start, node, info);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
