@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.AnnotatableNode;
 import main.java.parser.AssertStatementNode;
 import main.java.parser.AssignmentNode;
 import main.java.parser.AugmentedAssignmentNode;
@@ -42,9 +43,15 @@ public interface BaseConverter {
         return toBytes(tokens, info).convert(start);
     }
 
+    static List<Byte> bytesWithoutAnnotations(int start, AnnotatableNode tokens, CompilerInfo info) {
+        return withoutAnnotations(tokens, info).convert(start);
+    }
+
     @NotNull
     private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
-        if (node instanceof TestNode) {
+        if (node instanceof AnnotatableNode) {
+            return new AnnotationConverter(info, (AnnotatableNode) node);
+        } else if (node instanceof TestNode) {
             return TestConverter.of(info, (TestNode) node, 0);
         } else if (node instanceof AssertStatementNode) {
             return new AssertConverter(info, (AssertStatementNode) node);
@@ -54,14 +61,8 @@ public interface BaseConverter {
             return new AugAssignConverter(info, (AugmentedAssignmentNode) node);
         } else if (node instanceof BreakStatementNode) {
             return new BreakConverter(info, (BreakStatementNode) node);
-        } else if (node instanceof ClassDefinitionNode) {
-            return new ClassConverter(info, (ClassDefinitionNode) node);
         } else if (node instanceof ContinueStatementNode) {
             return new ContinueConverter(info, (ContinueStatementNode) node);
-        } else if (node instanceof DeclarationNode) {
-            return new DeclarationConverter(info, (DeclarationNode) node);
-        } else if (node instanceof DeclaredAssignmentNode) {
-            return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
         } else if (node instanceof DecrementNode) {
             return new IncrementDecrementConverter(info, (DecrementNode) node);
         } else if (node instanceof DeleteStatementNode) {
@@ -70,20 +71,14 @@ public interface BaseConverter {
             return new DoWhileConverter(info, (DoStatementNode) node);
         } else if (node instanceof DotimesStatementNode) {
             return new DotimesConverter(info, (DotimesStatementNode) node);
-        } else if (node instanceof EnumDefinitionNode) {
-            return new EnumConverter(info, (EnumDefinitionNode) node);
         } else if (node instanceof ForStatementNode) {
             return new ForConverter(info, (ForStatementNode) node);
-        } else if (node instanceof FunctionDefinitionNode) {
-            return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node);
         } else if (node instanceof IfStatementNode) {
             return new IfConverter(info, (IfStatementNode) node);
         } else if (node instanceof ImportExportNode) {
             return new ImportExportConverter(info, (ImportExportNode) node);
         } else if (node instanceof IncrementNode) {
             return new IncrementDecrementConverter(info, (IncrementNode) node);
-        } else if (node instanceof InterfaceDefinitionNode) {
-            return new InterfaceConverter(info, (InterfaceDefinitionNode) node);
         } else if (node instanceof ReturnStatementNode) {
             return new ReturnConverter(info, (ReturnStatementNode) node);
         } else if (node instanceof StatementBodyNode) {
@@ -92,14 +87,34 @@ public interface BaseConverter {
             return new TryConverter(info, (TryStatementNode) node);
         } else if (node instanceof TypedefStatementNode) {
             return new TypedefConverter(info, (TypedefStatementNode) node);
-        } else if (node instanceof UnionDefinitionNode) {
-            return new UnionConverter(info, (UnionDefinitionNode) node);
         } else if (node instanceof WhileStatementNode) {
             return new WhileConverter(info, (WhileStatementNode) node);
         } else if (node instanceof WithStatementNode) {
             return new WithConverter(info, (WithStatementNode) node);
         } else if (node instanceof YieldStatementNode) {
             return new YieldConverter(info, (YieldStatementNode) node);
+        } else {
+            throw CompilerTodoError.of("Unsupported node", node);
+        }
+    }
+
+    private static BaseConverter withoutAnnotations(AnnotatableNode node, CompilerInfo info) {
+        if (node instanceof TestNode) {
+            return TestConverter.of(info, (TestNode) node, 0);
+        } else if (node instanceof ClassDefinitionNode) {
+            return new ClassConverter(info, (ClassDefinitionNode) node);
+        } else if (node instanceof DeclarationNode) {
+            return new DeclarationConverter(info, (DeclarationNode) node);
+        } else if (node instanceof DeclaredAssignmentNode) {
+            return new DeclaredAssignmentConverter(info, (DeclaredAssignmentNode) node);
+        } else if (node instanceof EnumDefinitionNode) {
+            return new EnumConverter(info, (EnumDefinitionNode) node);
+        } else if (node instanceof FunctionDefinitionNode) {
+            return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node);
+        } else if (node instanceof InterfaceDefinitionNode) {
+            return new InterfaceConverter(info, (InterfaceDefinitionNode) node);
+        }  else if (node instanceof UnionDefinitionNode) {
+            return new UnionConverter(info, (UnionDefinitionNode) node);
         } else {
             throw CompilerTodoError.of("Unsupported node", node);
         }
