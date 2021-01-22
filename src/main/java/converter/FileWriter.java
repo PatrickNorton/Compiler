@@ -76,7 +76,7 @@ public final class FileWriter {
                 var byteArray = Util.toByteArray(function.getBytes());
                 writer.write(Util.toByteArray(StringConstant.strBytes(function.getName())));
                 writer.write(function.isGenerator() ? 1 : 0);
-                writer.write(Util.toByteArray((short) 0));  // TODO: Put variable count
+                writer.write(Util.toByteArray((short) function.getMax()));
                 writer.write(Util.toByteArray(byteArray.length));
                 writer.write(byteArray);
             }

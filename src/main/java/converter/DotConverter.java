@@ -260,20 +260,7 @@ public final class DotConverter implements TestConverter {
             throw CompilerException.format("Cannot use !! operator on non-optional type", dot);
         }
         var postDot = dot.getPostDot();
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.JUMP_NN.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.strConstant())));  // TODO: Error type
-        bytes.add(Bytecode.LOAD_CONST.value);
-        var message = String.format("Value %s asserted non-null, was null", postDot);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
-        bytes.add(Bytecode.THROW_QUICK.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-        bytes.add(Bytecode.UNWRAP_OPTION.value);
+        bytes.addAll(NullOpConverter.unwrapOption(info, postDot.toString(), start + bytes.size()));
         return convertPostDot(previous.stripNull(), start, bytes, postDot);
     }
 

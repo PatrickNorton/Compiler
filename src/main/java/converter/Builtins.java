@@ -168,6 +168,7 @@ public final class Builtins {
 
     public static final StdTypeObject NOT_IMPLEMENTED = new StdTypeObject("NotImplemented", List.of(THROWABLE));
     public static final StdTypeObject VALUE_ERROR = new StdTypeObject("ValueError", List.of(THROWABLE));
+    public static final StdTypeObject NULL_ERROR = new StdTypeObject("NullError", List.of(THROWABLE));
 
     public static final LangConstant NULL = new NullConstant();
 
@@ -552,6 +553,10 @@ public final class Builtins {
         var valueErrConstructor = MethodInfo.of(ArgumentInfo.of(STR));
         VALUE_ERROR.setOperators(Map.of(OpSpTypeNode.NEW, valueErrConstructor));
         VALUE_ERROR.seal();
+
+        var nullErrConstructor = MethodInfo.of(ArgumentInfo.of(STR));
+        NULL_ERROR.setOperators(Map.of(OpSpTypeNode.NEW, nullErrConstructor));
+        NULL_ERROR.seal();
     }
 
     static {  // null is const
@@ -615,7 +620,8 @@ public final class Builtins {
             THROWABLE,
             NULL_TYPE,
             HASH,
-            VALUE_ERROR
+            VALUE_ERROR,
+            NULL_ERROR
     );
 
     public static final Map<String, LangObject> BUILTIN_MAP = Map.ofEntries(
@@ -652,6 +658,7 @@ public final class Builtins {
             Map.entry("Iterator", ITERATOR),
             Map.entry("hash", HASH),
             Map.entry("Hashable", HASHABLE),
+            Map.entry("NullError", NULL_ERROR),
             Map.entry("null", NULL)
     );
 
@@ -685,6 +692,7 @@ public final class Builtins {
     private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(RANGE));
     private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(BOOL));
     private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
+    private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_ERROR));
 
     public static LangConstant strConstant() {
         return STR_CONSTANT;
@@ -704,6 +712,10 @@ public final class Builtins {
 
     public static LangConstant nullTypeConstant() {
         return NULL_TYPE_CONSTANT;
+    }
+
+    public static LangConstant nullErrorConstant() {
+        return NULL_ERROR_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {

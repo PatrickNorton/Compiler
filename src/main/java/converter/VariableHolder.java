@@ -11,6 +11,7 @@ import main.java.util.Zipper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ final class VariableHolder {
     private final Map<String, TypeObject> typeMap = new HashMap<>();
     private final List<LocalTypeFrame> localTypes = new ArrayList<>();
     private final IntAllocator varNumbers = new IntAllocator();
+    private int maxVarSize = 0;
 
     public VariableHolder(GlobalCompilerInfo globalInfo) {
         this.globalInfo = globalInfo;
@@ -109,6 +111,12 @@ final class VariableHolder {
             }
         }
         throw CompilerInternalError.format("Variable %s not defined", LineInfo.empty(), name);
+    }
+
+    public int resetMax() {
+        var result = maxVarSize;
+        maxVarSize = Collections.max(varNumbers);
+        return result;
     }
 
     /**

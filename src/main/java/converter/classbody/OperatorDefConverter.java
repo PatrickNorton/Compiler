@@ -8,6 +8,7 @@ import main.java.converter.CompilerInfo;
 import main.java.converter.FunctionInfo;
 import main.java.converter.MethodInfo;
 import main.java.converter.TypeObject;
+import main.java.parser.DescribableNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.GenericOperatorNode;
 import main.java.parser.LineInfo;
@@ -50,12 +51,7 @@ public final class OperatorDefConverter {
         boolean isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         var opInfos = isStatic ? staticOperatorInfos : operatorInfos;
         var ops = isStatic ? staticOperators : operators;
-        checkOps(node, op, fnInfo);
-        var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
-        var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
-        var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
-        opInfos.put(op, mInfo);
-        ops.put(op, new RawMethod(accessLevel, isMut, fnInfo, node.getBody(), node.getLineInfo()));
+        addToOps(node, op, fnInfo, opInfos, ops, node.getBody());
     }
 
     public void parse(@NotNull GenericOperatorNode node) {
@@ -66,13 +62,22 @@ public final class OperatorDefConverter {
         var isGenerator = ALWAYS_GENERATOR.contains(op);
         var retValues = validateReturns(lineInfo, isGenerator, op, returns);
         FunctionInfo fnInfo = new FunctionInfo("", isGenerator, args, retValues);
+        addToOps(node, op, fnInfo, operatorInfos, operators, StatementBodyNode.empty());
+    }
+
+    private void addToOps(
+            @NotNull DescribableNode node,
+            OpSpTypeNode op, FunctionInfo fnInfo,
+            Map<OpSpTypeNode, MethodInfo> opInfos,
+            Map<OpSpTypeNode, RawMethod> ops,
+            StatementBodyNode body
+    ) {
         checkOps(node, op, fnInfo);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = op == OpSpTypeNode.NEW || node.getDescriptors().contains(DescriptorNode.MUT);
         var mInfo = new MethodInfo(accessLevel, isMut, fnInfo);
-        operatorInfos.put(op, mInfo);
-        operators.put(op, new RawMethod(accessLevel, isMut, fnInfo,
-                StatementBodyNode.empty(), node.getLineInfo()));
+        opInfos.put(op, mInfo);
+        ops.put(op, new RawMethod(accessLevel, isMut, fnInfo, body, node.getLineInfo()));
     }
 
     private void checkOps(@NotNull Lined node, OpSpTypeNode op, FunctionInfo fnInfo) {

@@ -153,15 +153,24 @@ public final class IsConverter extends OperatorConverter {
         var condType = converter.returnType()[0];
         if (!(condType instanceof OptionTypeObject)) {
             CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
+            var bytes = new ArrayList<>(converter.convert(start));
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
+            return Pair.of(bytes, condType);
         } else if (condType.equals(Builtins.NULL_TYPE)) {
             CompilerWarning.warn("Using 'is not null' comparison on variable that must be null", arg0);
+            var bytes = new ArrayList<>(converter.convert(start));
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.FALSE)));
+            return Pair.of(bytes, condType);
+        } else {
+            var asType = condType.stripNull();
+            var bytes = new ArrayList<>(converter.convert(start));
+            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), arg1, info, 1));
+            bytes.add(Bytecode.IDENTICAL.value);
+            bytes.add(Bytecode.BOOL_NOT.value);
+            return Pair.of(bytes, asType);
         }
-        var asType = condType.stripNull();
-        var bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), arg1, info, 1));
-        bytes.add(Bytecode.IDENTICAL.value);
-        bytes.add(Bytecode.BOOL_NOT.value);
-        return Pair.of(bytes, asType);
     }
 }
