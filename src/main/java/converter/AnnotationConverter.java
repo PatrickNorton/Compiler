@@ -36,6 +36,9 @@ public final class AnnotationConverter implements BaseConverter {
     }
 
     private List<Byte> convertName(NameNode name, int start) {
+        CompilerWarning.warn(
+                "Annotations are still in very early stages of development and probably won't work", node
+        );
         if (name instanceof VariableNode) {
             return convertVariable((VariableNode) name, start);
         } else if (name instanceof FunctionCallNode) {
