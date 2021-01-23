@@ -177,13 +177,11 @@ public final class AnnotationConverter implements BaseConverter {
                 return false;
             case BOOL_XOR:
                 assert operands.length > 0;
-                var expected = cfgValue(operands[0].getArgument());
+                var result = cfgValue(operands[0].getArgument());
                 for (int i = 1; i < operands.length; i++) {
-                    if (cfgValue(operands[i].getArgument()) != expected) {
-                        return false;
-                    }
+                    result ^= cfgValue(operands[i].getArgument());
                 }
-                return true;
+                return result;
             default:
                 throw CompilerException.of("Non-boolean operands not supported in cfg", value);
         }
