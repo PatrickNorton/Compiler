@@ -5,6 +5,8 @@ import main.java.parser.DefinitionNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.NameNode;
+import main.java.parser.OperatorNode;
+import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -84,7 +86,7 @@ public final class AnnotationConverter implements BaseConverter {
     private List<Byte> convertFunction(FunctionCallNode name, int start) {
         switch (name.getVariable().getName()) {
             case "cfg":
-                throw CompilerTodoError.of("'cfg' attributes not implemented yet", name);
+                return convertCfg(start, name);
             case "inline":
                 return convertInline(start, name);
             case "deprecated":
@@ -118,5 +120,72 @@ public final class AnnotationConverter implements BaseConverter {
                         "The only valid inlines are $inline, $inline(always), and $inline(never)",
                 inline
         );
+    }
+
+    private List<Byte> convertCfg(int start, FunctionCallNode inline) {
+        assert inline.getVariable().getName().equals("cfg");
+        var parameters = inline.getParameters();
+        if (parameters.length == 1) {
+            var param = parameters[0];
+            var argument = param.getArgument();
+            if (!param.isVararg() && param.getVariable().isEmpty()) {
+                return convertIfTest(start, cfgValue(argument));
+            } else {
+                throw CompilerException.of("'cfg' annotations do not support variables", inline);
+            }
+        } else {
+            throw CompilerException.of("'cfg' annotations only support one value", inline);
+        }
+    }
+
+    private boolean cfgValue(TestNode value) {
+        if (value instanceof VariableNode) {
+            switch (((VariableNode) value).getName()) {
+                case "true":
+                    return true;
+                case "false":
+                    return false;
+                default:
+                    throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
+            }
+        } else if (value instanceof OperatorNode) {
+            return cfgBool((OperatorNode) value);
+        } else {
+            throw CompilerTodoError.of("Cfg with non-variables not supported", value);
+        }
+    }
+
+    private boolean cfgBool(OperatorNode value) {
+        var operands = value.getOperands();
+        switch (value.getOperator()) {
+            case BOOL_NOT:
+                assert operands.length == 1;
+                return !cfgValue(operands[0].getArgument());
+            case BOOL_AND:
+                for (var op : operands) {
+                    if (!cfgValue(op.getArgument())) {
+                        return false;
+                    }
+                }
+                return true;
+            case BOOL_OR:
+                for (var op : operands) {
+                    if (cfgValue(op.getArgument())) {
+                        return true;
+                    }
+                }
+                return false;
+            case BOOL_XOR:
+                assert operands.length > 0;
+                var expected = cfgValue(operands[0].getArgument());
+                for (int i = 1; i < operands.length; i++) {
+                    if (cfgValue(operands[i].getArgument()) != expected) {
+                        return false;
+                    }
+                }
+                return true;
+            default:
+                throw CompilerException.of("Non-boolean operands not supported in cfg", value);
+        }
     }
 }
