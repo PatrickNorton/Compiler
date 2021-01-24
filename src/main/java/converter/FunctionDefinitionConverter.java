@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class FunctionDefinitionConverter implements BaseConverter {
     private final CompilerInfo info;
@@ -122,9 +123,12 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     @Contract(" -> new")
     @NotNull
-    public Pair<TypeObject, Integer> parseHeader() {
+    public Optional<Pair<TypeObject, Integer>> parseHeader() {
+        if (!AnnotationConverter.shouldCompile(node, node.getAnnotations())) {
+            return Optional.empty();
+        }
         if (node.getGenerics().length == 0) {
-            return innerHeader(GenericInfo.empty());
+            return Optional.of(innerHeader(GenericInfo.empty()));
         } else {
             var generics = GenericInfo.parse(info, node.getGenerics());
             info.addLocalTypes(null, generics.getParamMap());
@@ -133,7 +137,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             for (var generic : generics) {
                 generic.setParent(result.getKey());
             }
-            return result;
+            return Optional.of(result);
         }
     }
 
@@ -191,7 +195,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     }
 
     @NotNull
-    public static Pair<TypeObject, Integer> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
+    public static Optional<Pair<TypeObject, Integer>> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
         return new FunctionDefinitionConverter(info, node).parseHeader();
     }
 }

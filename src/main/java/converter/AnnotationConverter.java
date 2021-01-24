@@ -4,6 +4,7 @@ import main.java.parser.AnnotatableNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.FunctionDefinitionNode;
+import main.java.parser.Lined;
 import main.java.parser.NameNode;
 import main.java.parser.OperatorNode;
 import main.java.parser.TestNode;
@@ -141,7 +142,7 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private boolean cfgValue(TestNode value) {
+    private static boolean cfgValue(TestNode value) {
         if (value instanceof VariableNode) {
             switch (((VariableNode) value).getName()) {
                 case "true":
@@ -158,7 +159,7 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private boolean cfgBool(OperatorNode value) {
+    private static boolean cfgBool(OperatorNode value) {
         var operands = value.getOperands();
         switch (value.getOperator()) {
             case BOOL_NOT:
@@ -187,6 +188,41 @@ public final class AnnotationConverter implements BaseConverter {
                 return result;
             default:
                 throw CompilerException.of("Non-boolean operands not supported in cfg", value);
+        }
+    }
+
+    public static boolean shouldCompile(Lined lineInfo, NameNode... annotations) {
+        switch (annotations.length) {
+            case 0:
+                return true;
+            case 1:
+                return shouldCompileSingle(lineInfo, annotations[0]);
+            default:
+                throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
+        }
+    }
+
+    private static boolean shouldCompileSingle(Lined lineInfo, NameNode annotation) {
+        if (annotation instanceof FunctionCallNode) {
+            var stmt = (FunctionCallNode) annotation;
+            switch (stmt.getVariable().getName()) {
+                case "test":
+                    CompilerWarning.warn("Test mode is always turned off for now", stmt);
+                    return false;
+                case "notTest":
+                    CompilerWarning.warn("Test mode is always turned off for now", stmt);
+                    return true;
+                case "cfg":
+                    if (stmt.getParameters().length == 1) {
+                        return cfgValue(stmt.getParameters()[0].getArgument());
+                    } else {
+                        return true;
+                    }
+                default:
+                    return true;
+            }
+        } else {
+            return true;
         }
     }
 }
