@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The class to link the {@link TopNode} representing a file.
@@ -106,11 +107,14 @@ public final class Linker {
                 if (!isAutoInterface(def)) {
                     var name = def instanceof BaseClassNode
                             ? ((TypeNode) def.getName()).strName() : def.getName().toString();
-                    TypeObject type = linkDefinition(def);
-                    if (importHandler.getExports().contains(name)) {
-                        importHandler.setExportType(name, type);
+                    var maybeType = linkDefinition(def);
+                    if (maybeType.isPresent()) {
+                        var type = maybeType.orElseThrow();
+                        if (importHandler.getExports().contains(name)) {
+                            importHandler.setExportType(name, type);
+                        }
+                        globals.put(name, type);
                     }
-                    globals.put(name, type);
                 }
             } else if (stmt instanceof TypedefStatementNode) {
                 var tdNode = (TypedefStatementNode) stmt;
@@ -129,17 +133,22 @@ public final class Linker {
         return this;
     }
 
-    private TypeObject linkDefinition(@NotNull DefinitionNode stmt) {
+    private Optional<TypeObject> linkDefinition(@NotNull DefinitionNode stmt) {
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;
-            var pair = FunctionDefinitionConverter.parseHeader(info, fnNode);
-            var constant = new FunctionConstant(fnNode.getName().getName(), pair.getValue());
-            constants.put(fnNode.getName().getName(), (int) info.addConstant(constant));
-            return pair.getKey();
+            var value = FunctionDefinitionConverter.parseHeader(info, fnNode);
+            if (value.isPresent()) {
+                var pair = value.orElseThrow();
+                var constant = new FunctionConstant(fnNode.getName().getName(), pair.getValue());
+                constants.put(fnNode.getName().getName(), (int) info.addConstant(constant));
+                return Optional.of(pair.getKey());
+            } else {
+                return Optional.empty();
+            }
         } else if (stmt instanceof PropertyDefinitionNode) {
             var typeNode = ((PropertyDefinitionNode) stmt).getType();
-            return info.getType(typeNode);
+            return Optional.of(info.getType(typeNode));
         } else if (stmt instanceof ContextDefinitionNode) {
             // FIXME: Type for context definitions
             throw CompilerTodoError.of("Context definitions not supported yet", stmt);
@@ -153,28 +162,28 @@ public final class Linker {
             int index = ClassConverter.completeType(info, clsNode, predeclaredType);
             var constant = new ClassConstant(clsNode.strName(), index, predeclaredType);
             constants.put(clsNode.strName(), (int) info.addConstant(constant));
-            return Builtins.TYPE.generify(predeclaredType);
+            return Optional.of(Builtins.TYPE.generify(predeclaredType));
         } else if (stmt instanceof EnumDefinitionNode) {
             var enumNode = (EnumDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName()).orElseThrow();
             int index = EnumConverter.completeType(info, enumNode, predeclaredType);
             var constant = new ClassConstant(enumNode.getName().strName(), index, predeclaredType);
             constants.put(enumNode.getName().strName(), (int) info.addConstant(constant));
-            return Builtins.TYPE.generify(predeclaredType);
+            return Optional.of(Builtins.TYPE.generify(predeclaredType));
         } else if (stmt instanceof InterfaceDefinitionNode) {
             var interfaceNode = (InterfaceDefinitionNode) stmt;
             var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName()).orElseThrow();
             int index = InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
             var constant = new ClassConstant(interfaceNode.getName().strName(), index, predeclaredType);
             constants.put(interfaceNode.getName().strName(), (int) info.addConstant(constant));
-            return Builtins.TYPE.generify(predeclaredType);
+            return Optional.of(Builtins.TYPE.generify(predeclaredType));
         } else if (stmt instanceof UnionDefinitionNode) {
             var unionNode = (UnionDefinitionNode) stmt;
             var predeclaredType = (UnionTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
             int index = UnionConverter.completeType(info, unionNode, predeclaredType);
             var constant = new ClassConstant(unionNode.strName(), index, predeclaredType);
             constants.put(unionNode.strName(), (int) info.addConstant(constant));
-            return Builtins.TYPE.generify(predeclaredType);
+            return Optional.of(Builtins.TYPE.generify(predeclaredType));
         } else {
             throw CompilerInternalError.format("Unknown definition %s", stmt, name.getClass());
         }

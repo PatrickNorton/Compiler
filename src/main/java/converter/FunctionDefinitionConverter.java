@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class FunctionDefinitionConverter implements BaseConverter {
     private final CompilerInfo info;
@@ -27,14 +28,25 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @Override
     @Unmodifiable
     public List<Byte> convert(int start) {
+        convertInner();
+        return Collections.emptyList();
+    }
+
+    public List<Byte> convertDeprecated() {
+        var fn = convertInner();
+        fn.getInfo().setDeprecated(true);
+        return Collections.emptyList();
+    }
+
+    private Function convertInner() {
         var name = node.getName().getName();
         var predefined = info.getFn(name);
         if (predefined.isPresent()) {
             convertPredefined(predefined.orElseThrow(), name);
+            return predefined.orElseThrow();
         } else {
-            convertUndefined(name);
+            return convertUndefined(name);
         }
-        return Collections.emptyList();
     }
 
     private void convertPredefined(Function fn, String name) {
@@ -62,14 +74,15 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         fn.setMax(maxSize);
     }
 
-    private void convertUndefined(String name) {
+    private Function convertUndefined(String name) {
         var generics = getGenerics();
         var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
         List<Byte> bytes = new ArrayList<>();
-        var index = info.addFunction(new Function(node, fnInfo, bytes));
+        var fn = new Function(node, fnInfo, bytes);
+        var index = info.addFunction(fn);
         for (var generic : generics.values()) {
             generic.setParent(fnInfo.toCallable());
         }
@@ -83,6 +96,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         convertBody(bytes, isGenerator, retTypes);
         varHolder.removeLocalTypes();
         varHolder.removeStackFrame();
+        return fn;
     }
 
     private void convertBody(List<Byte> bytes, boolean isGenerator, TypeObject... retTypes) {
@@ -109,9 +123,12 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     @Contract(" -> new")
     @NotNull
-    public Pair<TypeObject, Integer> parseHeader() {
+    public Optional<Pair<TypeObject, Integer>> parseHeader() {
+        if (!AnnotationConverter.shouldCompile(node, node.getAnnotations())) {
+            return Optional.empty();
+        }
         if (node.getGenerics().length == 0) {
-            return innerHeader(GenericInfo.empty());
+            return Optional.of(innerHeader(GenericInfo.empty()));
         } else {
             var generics = GenericInfo.parse(info, node.getGenerics());
             info.addLocalTypes(null, generics.getParamMap());
@@ -120,7 +137,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             for (var generic : generics) {
                 generic.setParent(result.getKey());
             }
-            return result;
+            return Optional.of(result);
         }
     }
 
@@ -178,7 +195,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     }
 
     @NotNull
-    public static Pair<TypeObject, Integer> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
+    public static Optional<Pair<TypeObject, Integer>> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
         return new FunctionDefinitionConverter(info, node).parseHeader();
     }
 }

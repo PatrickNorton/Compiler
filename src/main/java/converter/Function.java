@@ -9,7 +9,7 @@ public final class Function implements Lined {
     private final LineInfo lineInfo;
     private final FunctionInfo info;
     private final List<Byte> bytes;
-    private int max;
+    private int max = 0;
 
     public Function(Lined lineInfo, FunctionInfo info, List<Byte> bytes) {
         this(lineInfo.getLineInfo(), info, bytes);
@@ -19,7 +19,6 @@ public final class Function implements Lined {
         this.lineInfo = lineInfo;
         this.info = info;
         this.bytes = bytes;
-        this.max = 0;
     }
 
     public Function(FunctionInfo info, List<Byte> bytes) {
