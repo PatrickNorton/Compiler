@@ -49,8 +49,19 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
         var switched = converter.convert(start);
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
+        boolean hadDefault = false;
         List<Byte> bytes = new ArrayList<>(switched);
         for (var caseStatement : node.getCases()) {
+            if (caseStatement instanceof DefaultStatementNode) {
+                hadDefault = true;
+            } else if (hadDefault) {
+                CompilerWarning.warn(
+                        "Default statement before case statement in switch\n" +
+                                "Help: In unoptimized switch statements, cases are run through in order" +
+                                " and thus this is unreachable",
+                        caseStatement
+                );
+            }
             addCase(caseStatement, start, bytes, retTypes);
         }
         return bytes;
@@ -109,20 +120,25 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
         if (!(stmt instanceof DefaultStatementNode)) {
             assert label.length != 0;
-            if (label.length == 1) {
+            List<Integer> tmpJumps = new ArrayList<>(label.length - 1);
+            for (int i = 0; i < label.length; i++) {
                 bytes.add(Bytecode.DUP_TOP.value);
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), label[0], info, 1));
+                bytes.addAll(TestConverter.bytes(start + bytes.size(), label[i], info, 1));
                 bytes.add(Bytecode.EQUAL.value);
                 bytes.add(Bytecode.JUMP_FALSE.value);
                 jumpLocations.add(bytes.size());
                 bytes.addAll(Util.zeroToBytes());
-                bytes.add(Bytecode.POP_TOP.value);
-            } else {
-                throw CompilerTodoError.of("Multiple clauses in switch not supported yet", stmt);
+                if (i != label.length - 1) {
+                    bytes.add(Bytecode.JUMP_TRUE.value);
+                    tmpJumps.add(bytes.size());
+                    bytes.addAll(Util.zeroToBytes());
+                }
             }
-        } else {
-            bytes.add(Bytecode.POP_TOP.value);
+            for (var jump : tmpJumps) {
+                Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump);
+            }
         }
+        bytes.add(Bytecode.POP_TOP.value);
         convertBody(start, bytes, stmt, retTypes);
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addBreak(1, start + bytes.size());
