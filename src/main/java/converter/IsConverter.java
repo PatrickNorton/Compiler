@@ -113,6 +113,8 @@ public final class IsConverter extends OperatorConverter {
             bytes.add(Bytecode.SWAP_2.value);     // Put operands[0] back on top}
         }
         // Last one is special b/c cleanup...
+        // No need to duplicate operands[0], and thus no need to swap to get
+        // around it
         bytes.addAll(TestConverter.bytes(start, operands[operands.length - 1].getArgument(), info, 1));
         bytes.add(Bytecode.IDENTICAL.value);
         bytes.add(Bytecode.BOOL_AND.value);
