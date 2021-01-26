@@ -173,12 +173,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             } else {
                 type = info.getType(argType);
             }
-            var mutability = argType.getMutability();
-            if (mutability.isEmpty() || mutability.get().equals(DescriptorNode.MREF)) {
-                converted[i] = new Argument(arg.getName().getName(), type.makeConst(), arg.getVararg(), arg.getLineInfo());
-            } else {
-                converted[i] = new Argument(arg.getName().getName(), type.makeMut(), arg.getVararg(), arg.getLineInfo());
-            }
+            var mutability = MutableType.fromNullable(argType.getMutability().orElse(null));
+            var properType = mutability.isConstType() ? type.makeConst() : type.makeMut();
+            converted[i] = new Argument(arg.getName().getName(), properType, arg.getVararg(), arg.getLineInfo());
         }
         return converted;
     }
