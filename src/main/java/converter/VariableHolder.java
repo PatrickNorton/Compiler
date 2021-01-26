@@ -5,6 +5,8 @@ import main.java.parser.Lined;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.TypeNode;
 import main.java.util.IntAllocator;
+import main.java.util.IterJoin;
+import main.java.util.Levenshtein;
 import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
@@ -350,7 +352,15 @@ final class VariableHolder {
                         : typeObj.generify(type, typesOf(type.getSubtypes()));
                 return wrap(endType, node);
             } else {
-                throw CompilerException.of("Unknown type " + type, type);
+                var names = IterJoin.from(typeMap.keySet(), LocalTypeIterator::new, Builtins.BUILTIN_MAP.keySet());
+                var suggestion = Levenshtein.closestName(type.strName(), () -> names);
+                if (suggestion.isPresent()) {
+                    throw CompilerException.format(
+                            "Unknown type '%s'. Did you mean '%s'?", type, type.strName(), suggestion.orElseThrow()
+                    );
+                } else {
+                    throw CompilerException.of("Unknown type " + type, type);
+                }
             }
         } else {
             var endType = type.getSubtypes().length == 0 ? value : value.generify(type, typesOf(type.getSubtypes()));
@@ -483,6 +493,38 @@ final class VariableHolder {
 
         public Map<String, TypeObject> getChildren() {
             return children;
+        }
+    }
+
+    private final class LocalTypeIterator implements Iterator<String> {
+        private int frameNo = localTypes.size() - 1;
+        private Iterator<String> frameIter = localTypes.get(frameNo).getChildren().keySet().iterator();
+
+        @Override
+        public boolean hasNext() {
+            if (!frameIter.hasNext()) updateIter();
+            return frameNo >= 0;
+        }
+
+        @Override
+        public String next() {
+            if (!frameIter.hasNext()) {
+                updateIter();
+                if (frameNo < 0) {
+                    throw new NoSuchElementException();
+                }
+            }
+            return frameIter.next();
+        }
+
+        private void updateIter() {
+            while (!frameIter.hasNext() && frameNo > 0) {
+                frameNo--;
+                frameIter = localTypes.get(frameNo).getChildren().keySet().iterator();
+            }
+            if (!frameIter.hasNext()) {
+                frameNo--;
+            }
         }
     }
 }
