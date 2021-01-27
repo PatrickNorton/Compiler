@@ -214,31 +214,35 @@ public final class LiteralConverter implements TestConverter {
                 }
                 return 0;
             case "*":
-                var converter = TestConverter.of(info, value, 1);
-                var convRet = converter.returnType()[0];
-                bytes.addAll(converter.convert(start + bytes.size()));
-                if (convRet instanceof TupleType) {
-                    bytes.add(Bytecode.UNPACK_TUPLE.value);
-                    if (!unknowns.isEmpty()) {
-                        throw CompilerTodoError.of("Tuple unpacking after dynamic unpack", value);
-                    }
-                    return (short) (convRet.getGenerics().size() - 1);
-                } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                    bytes.add(Bytecode.UNPACK_ITERABLE.value);
-                    if (!unknowns.isEmpty()) {
-                        bytes.add(Bytecode.DUP_TOP.value);
-                        bytes.add(Bytecode.SWAP_DYN.value);
-                        bytes.add(Bytecode.PLUS.value);
-                    }
-                    unknowns.add(i);
-                    return 0;
-                } else {
-                    throw splatException(value, convRet);
-                }
+                return convertStar(bytes, start, value, unknowns, i);
             case "**":
                 throw dictSplatException(value);
             default:
                 throw unknownSplatError(value, splat);
+        }
+    }
+
+    private short convertStar(List<Byte> bytes, int start, TestNode value, Set<Integer> unknowns, int i) {
+        var converter = TestConverter.of(info, value, 1);
+        var convRet = converter.returnType()[0];
+        bytes.addAll(converter.convert(start + bytes.size()));
+        if (convRet instanceof TupleType) {
+            bytes.add(Bytecode.UNPACK_TUPLE.value);
+            if (!unknowns.isEmpty()) {
+                throw CompilerTodoError.of("Tuple unpacking after dynamic unpack", value);
+            }
+            return (short) (convRet.getGenerics().size() - 1);
+        } else if (convRet.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
+            bytes.add(Bytecode.UNPACK_ITERABLE.value);
+            if (!unknowns.isEmpty()) {
+                bytes.add(Bytecode.DUP_TOP.value);
+                bytes.add(Bytecode.SWAP_DYN.value);
+                bytes.add(Bytecode.PLUS.value);
+            }
+            unknowns.add(i);
+            return 0;
+        } else {
+            throw splatException(value, convRet);
         }
     }
 
