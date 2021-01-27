@@ -235,7 +235,7 @@ public final class LiteralConverter implements TestConverter {
             return convertStar(bytes, start, value, unknowns, i);
         }
         Set<Integer> values = new HashSet<>();
-        int additional = value.getBuilders().length;
+        int additional = value.getBuilders().length - 1;
         for (int j = 0; j < value.getBuilders().length; j++) {
             var builder = value.getBuilders()[j];
             var splat = value.getIsSplats()[i];
