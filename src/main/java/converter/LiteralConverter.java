@@ -214,12 +214,37 @@ public final class LiteralConverter implements TestConverter {
                 }
                 return 0;
             case "*":
-                return convertStar(bytes, start, value, unknowns, i);
+                if (value instanceof LiteralNode) {
+                    return convertStarLiteral(bytes, start, (LiteralNode) value, unknowns, i, retType);
+                } else {
+                    return convertStar(bytes, start, value, unknowns, i);
+                }
             case "**":
                 throw dictSplatException(value);
             default:
                 throw unknownSplatError(value, splat);
         }
+    }
+
+    private short convertStarLiteral(
+            List<Byte> bytes, int start, LiteralNode value, Set<Integer> unknowns, int i, TypeObject retType
+    ) {
+        var selfType = LiteralType.fromBrace(node.getBraceType(), node);
+        var literalType = LiteralType.fromBrace(value.getBraceType(), value);
+        if (literalType == LiteralType.SET && selfType != LiteralType.SET) {
+            return convertStar(bytes, start, value, unknowns, i);
+        }
+        Set<Integer> values = new HashSet<>();
+        int additional = value.getBuilders().length;
+        for (int j = 0; j < value.getBuilders().length; j++) {
+            var builder = value.getBuilders()[j];
+            var splat = value.getIsSplats()[i];
+            additional += convertInner(bytes, start, builder, splat, retType, values, j);
+        }
+        if (!values.isEmpty()) {
+            unknowns.add(i);
+        }
+        return (short) additional;
     }
 
     private short convertStar(List<Byte> bytes, int start, TestNode value, Set<Integer> unknowns, int i) {
