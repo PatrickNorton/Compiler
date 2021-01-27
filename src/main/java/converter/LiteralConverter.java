@@ -225,6 +225,10 @@ public final class LiteralConverter implements TestConverter {
     private short convertStar(List<Byte> bytes, int start, TestNode value, Set<Integer> unknowns, int i) {
         var converter = TestConverter.of(info, value, 1);
         var convRet = converter.returnType()[0];
+        var constant = converter.constantReturn();
+        if (constant.isPresent() && constant.orElseThrow() instanceof TupleConstant) {
+            return convertTupleLiteral(bytes, (TupleConstant) constant.orElseThrow());
+        }
         bytes.addAll(converter.convert(start + bytes.size()));
         if (convRet instanceof TupleType) {
             bytes.add(Bytecode.UNPACK_TUPLE.value);
@@ -244,6 +248,14 @@ public final class LiteralConverter implements TestConverter {
         } else {
             throw splatException(value, convRet);
         }
+    }
+
+    private short convertTupleLiteral(List<Byte> bytes, TupleConstant constant) {
+        for (var value : constant.getValues()) {
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(value.getKey()));
+        }
+        return (short) (constant.getValues().size() - 1);
     }
 
     private List<Byte> convertEmpty(int start, LiteralType literalType) {
