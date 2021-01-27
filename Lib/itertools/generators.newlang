@@ -94,9 +94,9 @@ generator func map(Callable[T, [U]] function, Iterable[T] sequence) -> U {
 
 generic T
 generator func pairs(Iterable[T] values) -> T, T {
-    var iter = iter(values)
-    while iter.next()? as v1 {
-        if iter.next()? as v2 {
+    var iterator = iter(values)
+    while iterator.next()? as v1 {
+        if iterator.next()? as v2 {
             yield v1, v2
         } else {
             break
