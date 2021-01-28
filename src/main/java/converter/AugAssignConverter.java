@@ -135,7 +135,9 @@ public final class AugAssignConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var valueType = assignedConverter.returnType()[0];
         if (!(valueType instanceof OptionTypeObject)) {
-            throw CompilerException.format("??= only works on an optional variable, not '%s'", node, valueType);
+            throw CompilerException.format(
+                    "??= only works on an optional variable, not one of type '%s'", node, valueType
+            );
         }
         var innerType = ((OptionTypeObject) valueType).getOptionVal();
         var variableType = valueConverter.returnType()[0];
