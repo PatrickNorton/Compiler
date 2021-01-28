@@ -1,4 +1,4 @@
-from string import StringBuilder, ASCII_LOWERCASE, ASCII_UPPERCASE, DIGITS
+from string import StringBuilder, ASCII_LETTERS, DIGITS
 
 from .unicode import Captures
 
@@ -90,5 +90,5 @@ func findCapRef(str replacement) -> CaptureRef? {
 
 func isValidCapLetter(int b) -> bool {
     var c = char(b)
-    return c in DIGITS or c in ASCII_LOWERCASE or c in ASCII_UPPERCASE or c == c'_'
+    return c in (DIGITS + ASCII_LETTERS + "_")
 }
