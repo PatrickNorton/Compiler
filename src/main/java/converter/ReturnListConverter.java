@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.FunctionCallNode;
 import main.java.parser.Lined;
 import main.java.parser.TestListNode;
 import main.java.parser.TestNode;
@@ -26,9 +27,20 @@ public final class ReturnListConverter implements BaseConverter {
     public List<Byte> convert(int start) {
         if (retTypes.length > 1 && values.size() == 1) {
             return convertSingle(start);
+        } else if (canTailCall()) {
+            return convertTailCall(start);
         } else {
             return convertMultiple(start);
         }
+    }
+
+    private boolean canTailCall() {
+        return value == Bytecode.RETURN && retTypes.length == 1 && values.size() == 1
+                && values.getVararg(0).isEmpty()
+                && values.get(0) instanceof FunctionCallNode
+                && !OptionTypeObject.needsMakeOption(
+                        retTypes[0], TestConverter.returnType(values.get(0), info, 1)[0]
+        );
     }
 
     private List<Byte> convertMultiple(int start) {
@@ -99,6 +111,15 @@ public final class ReturnListConverter implements BaseConverter {
                 bytes.addAll(Util.shortZeroBytes());
                 bytes.addAll(Util.shortToBytes((short) distFromTop));
         }
+    }
+
+    private List<Byte> convertTailCall(int start) {
+        assert canTailCall();
+        var node = (FunctionCallNode) values.get(0);
+        List<Byte> bytes = new ArrayList<>(FunctionCallConverter.convertTail(info, node, 1, start));
+        bytes.add(Bytecode.RETURN.value);  // Maybe unnecessary b/c of tail-call semantics
+        bytes.addAll(Util.shortToBytes((short) 1));
+        return bytes;
     }
 
     private void checkReturnTypes() {
