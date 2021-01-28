@@ -1,6 +1,6 @@
 # from interfaces typeget Iterable
 
-export product, repeat
+export product, repeat, repeatWith
 
 # FIXME: Types for product, etc.
 
@@ -31,6 +31,19 @@ generator func repeat(T value, int? times = null) -> T {
     } else {
         while true {
             yield value
+        }
+    }
+}
+
+generic T
+generator func repeatWith(Callable[[T]] value, int? times = null) -> T {
+    if times? as t {
+        dotimes t {
+            yield value()
+        }
+    } else {
+        while true {
+            yield value()
         }
     }
 }
