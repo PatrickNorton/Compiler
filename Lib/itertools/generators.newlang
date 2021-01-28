@@ -124,14 +124,14 @@ generator func traverse(T sequence) -> U {
 
 generic T
 generator func withNext(Iterable[T] values) -> T, T {
-    var iter = iter(values)
+    var iterator = iter(values)
     mut T previous
-    if iter.next()? as p {
+    if iterator.next()? as p {
         previous = p
     } else {
         return
     }
-    for T current in iter {
+    for T current in iterator {
         yield previous, current
         previous = current
     }
