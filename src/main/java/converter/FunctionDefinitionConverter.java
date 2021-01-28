@@ -54,9 +54,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var generics = fnInfo.getGenerics().getParamMap();
         var index = info.fnIndex(name);
         var bytes = fn.getBytes();
-        if (!bytes.isEmpty()) {
-            throw CompilerException.doubleDef(name, fn, node);
-        }
+        assert bytes.isEmpty();
         var constVal = new FunctionConstant(name, index);
         var fnRets = fnInfo.getReturns();
         var isGen = fnInfo.isGenerator();
@@ -148,6 +146,10 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
         var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, generics, argInfo, trueRet);
         var func = new Function(node, fnInfo, new ArrayList<>());
+        var previouslyDefined = info.getFn(func.getName());
+        if (previouslyDefined.isPresent()) {
+            throw CompilerException.doubleDef(func.getName(), previouslyDefined.orElseThrow(), node);
+        }
         int index = info.addFunction(func);
         return Pair.of(new FunctionInfoType(fnInfo), index);
     }
