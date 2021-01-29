@@ -1160,7 +1160,7 @@ union Primitive {
 
 func isCaptureChar(char c, bool first) -> bool {
     return (c == c'_'
-        or (not first and c in DIGITS or c in ".[]")
+        or (not first and c in DIGITS + ".[]")
         or c in ASCII_LETTERS)
 }
 
