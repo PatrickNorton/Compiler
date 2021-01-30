@@ -21,6 +21,10 @@ public final class WarningHolder {
     }
 
     public Level warningLevel(WarningType type) {
+        assert allowed.size() == denied.size();
+        if (allowed.isEmpty()) {
+            return Level.WARN;
+        }
         if (last(allowed).contains(type)) {
             assert !last(denied).contains(type);
             return Level.ALLOW;

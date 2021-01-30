@@ -102,7 +102,7 @@ public final class AnnotationConverter implements BaseConverter {
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "allow":
             case "deny":
-                var warningHolder = new WarningHolder();
+                var warningHolder = info.warningHolder();
                 changeWarnings(name, warningHolder);
                 var bytes = BaseConverter.bytesWithoutAnnotations(start, node, info);
                 warningHolder.popWarnings();
