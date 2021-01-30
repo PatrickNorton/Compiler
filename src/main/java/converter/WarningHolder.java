@@ -25,14 +25,15 @@ public final class WarningHolder {
         if (allowed.isEmpty()) {
             return Level.WARN;
         }
-        if (last(allowed).contains(type)) {
-            assert !last(denied).contains(type);
-            return Level.ALLOW;
-        } else if (last(denied).contains(type)) {
-            return Level.DENY;
-        } else {
-            return Level.WARN;
+        for (int i = allowed.size() - 1; i >= 0; i--) {
+            if (allowed.get(i).contains(type)) {
+                assert !denied.get(i).contains(type);
+                return Level.ALLOW;
+            } else if (denied.get(i).contains(type)) {
+                return Level.DENY;
+            }
         }
+        return Level.WARN;
     }
 
     public void popWarnings() {
@@ -58,9 +59,5 @@ public final class WarningHolder {
     public void denyAll() {
         allowed.add(EnumSet.noneOf(WarningType.class));
         denied.add(EnumSet.allOf(WarningType.class));
-    }
-
-    private static <T> T last(List<T> values) {
-        return values.get(values.size() - 1);
     }
 }
