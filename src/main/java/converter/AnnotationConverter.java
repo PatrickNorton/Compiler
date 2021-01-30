@@ -52,7 +52,9 @@ public final class AnnotationConverter implements BaseConverter {
     private List<Byte> convertVariable(VariableNode name, int start) {
         switch (name.getName()) {
             case "cfg":
-                throw CompilerException.of("'cfg' attributes require arguments", name);
+            case "allow":
+            case "deny":
+                throw CompilerException.format("'%s' attributes require arguments", name, name.getName());
             case "hot":
             case "cold":
             case "inline":
@@ -95,6 +97,10 @@ public final class AnnotationConverter implements BaseConverter {
                 return convertInline(start, name);
             case "deprecated":
                 CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                return BaseConverter.bytesWithoutAnnotations(start, node, info);
+            case "allow":
+            case "deny":
+                CompilerWarning.warn("Warning levels not implemented yet", name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
