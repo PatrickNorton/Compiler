@@ -12,7 +12,9 @@ import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public final class AnnotationConverter implements BaseConverter {
     private final AnnotatableNode node;
@@ -100,8 +102,11 @@ public final class AnnotationConverter implements BaseConverter {
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "allow":
             case "deny":
-                CompilerWarning.warn("Warning levels not implemented yet", name);
-                return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                var warningHolder = new WarningHolder();
+                changeWarnings(name, warningHolder);
+                var bytes = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                warningHolder.popWarnings();
+                return bytes;
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
@@ -229,6 +234,67 @@ public final class AnnotationConverter implements BaseConverter {
             }
         } else {
             return true;
+        }
+    }
+
+    private static void changeWarnings(FunctionCallNode annotation, WarningHolder warningHolder) {
+        var name = annotation.getVariable().getName();
+        assert name.equals("allow") || name.equals("deny");
+        Set<WarningType> allowedTypes = EnumSet.noneOf(WarningType.class);
+        for (var param : annotation.getParameters()) {
+            if (!param.getVariable().isEmpty() || !param.getVararg().isEmpty()) {
+                throw CompilerException.format("Illegal format for %s annotation", annotation, name);
+            }
+            var argument = param.getArgument();
+            if (!(argument instanceof VariableNode)) {
+                throw CompilerException.format("Illegal format for %s annotation", annotation, name);
+            }
+            var argName = ((VariableNode) argument).getName();
+            switch (argName) {
+                case "all":
+                    warnAll(name, warningHolder, annotation);
+                    return;
+                case "deprecated":
+                    addWarning(WarningType.DEPRECATED, allowedTypes, annotation);
+                    break;
+                case "unused":
+                    addWarning(WarningType.UNUSED, allowedTypes, annotation);
+                    break;
+                case "trivial":
+                    addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation);
+                    break;
+                default:
+                    throw CompilerException.format("Unknown warning type %s", annotation, argName);
+            }
+        }
+        switch (name) {
+            case "allow":
+                warningHolder.allow(allowedTypes.toArray(new WarningType[0]));
+                break;
+            case "deny":
+                warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
+                break;
+            default:
+                throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
+        }
+    }
+
+    private static void warnAll(String name, WarningHolder warningHolder, Lined annotation) {
+        switch (name) {
+            case "allow":
+                warningHolder.allowAll();
+                break;
+            case "deny":
+                warningHolder.denyAll();
+                break;
+            default:
+                throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
+        }
+    }
+
+    private static void addWarning(WarningType type, Set<WarningType> values, Lined lined) {
+        if (!values.add(type)) {
+            CompilerWarning.warn("Duplicated allow lint for warnings", lined);
         }
     }
 }
