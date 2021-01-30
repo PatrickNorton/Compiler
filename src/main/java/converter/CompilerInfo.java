@@ -31,6 +31,7 @@ public final class CompilerInfo {
     private final int staticIndex;
     private final Map<String, Integer> fnIndices = new HashMap<>();
     private final LoopManager loopManager = new LoopManager();
+    private final WarningHolder warnings = new WarningHolder();
 
     private final VariableHolder varHolder;
 
@@ -92,6 +93,10 @@ public final class CompilerInfo {
 
     public GlobalCompilerInfo globalInfo() {
         return globalInfo;
+    }
+
+    public WarningHolder warningHolder() {
+        return warnings;
     }
 
     /**
