@@ -116,8 +116,13 @@ public final class ReturnListConverter implements BaseConverter {
     private List<Byte> convertTailCall(int start) {
         assert canTailCall();
         var node = (FunctionCallNode) values.get(0);
-        List<Byte> bytes = new ArrayList<>(FunctionCallConverter.convertTail(info, node, 1, start));
-        bytes.add(Bytecode.RETURN.value);  // Maybe unnecessary b/c of tail-call semantics
+        var converter = new FunctionCallConverter(info, node, 1);
+        var retType = converter.returnType()[0];
+        if (!retTypes[0].isSuperclass(retType)) {
+            throw typeError(values.get(0), 0, retTypes[0], retType);
+        }
+        List<Byte> bytes = new ArrayList<>(converter.convertTail(start));
+        bytes.add(Bytecode.RETURN.value);  // Necessary b/c tail-call may delegate to normal call at runtime
         bytes.addAll(Util.shortToBytes((short) 1));
         return bytes;
     }

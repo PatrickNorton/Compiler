@@ -46,6 +46,10 @@ public final class FunctionCallConverter implements TestConverter {
         return convert(start, false);
     }
 
+    public List<Byte> convertTail(int start) {
+        return convert(start, true);
+    }
+
     private List<Byte> convert(int start, boolean tail) {
         if (node.getCaller() instanceof EscapedOperatorNode) {
             return convertOp(start);
@@ -437,9 +441,5 @@ public final class FunctionCallConverter implements TestConverter {
         int temp = values[a];
         values[a] = values[b];
         values[b] = temp;
-    }
-
-    public static List<Byte> convertTail(CompilerInfo info, FunctionCallNode node, int retCount, int start) {
-        return new FunctionCallConverter(info, node, retCount).convert(start, true);
     }
 }
