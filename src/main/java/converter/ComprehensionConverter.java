@@ -72,7 +72,9 @@ public final class ComprehensionConverter implements TestConverter {
         if (braceType == BraceType.GENERATOR) {
             if (retCount == 0) {
                 // Comprehensions that are not called have no side effects, so no need to deal with it
-                CompilerWarning.warn("Comprehension with no returns serves no purpose", node);
+                CompilerWarning.warn(
+                        "Comprehension with no returns serves no purpose", WarningType.UNUSED, info, node
+                );
                 return Collections.emptyList();
             }
             var bytes = innerConvert(0, braceType);

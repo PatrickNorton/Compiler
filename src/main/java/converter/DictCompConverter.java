@@ -41,7 +41,7 @@ public final class DictCompConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {  // TODO: Refactor with ComprehensionConverter (and ForConverter?)
         if (retCount == 0) {
-            CompilerWarning.warn("Unnecessary dict creation", node);
+            CompilerWarning.warn("Unnecessary dict creation", WarningType.UNUSED, info, node);
         } else if (retCount > 1) {
             throw CompilerException.format("Dict comprehension only returns one value, got %d", node, retCount);
         }

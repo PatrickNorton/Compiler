@@ -31,6 +31,7 @@ public final class CompilerInfo {
     private final int staticIndex;
     private final Map<String, Integer> fnIndices = new HashMap<>();
     private final LoopManager loopManager = new LoopManager();
+    private final WarningHolder warnings = new WarningHolder();
 
     private final VariableHolder varHolder;
 
@@ -92,6 +93,10 @@ public final class CompilerInfo {
 
     public GlobalCompilerInfo globalInfo() {
         return globalInfo;
+    }
+
+    public WarningHolder warningHolder() {
+        return warnings;
     }
 
     /**
@@ -296,7 +301,7 @@ public final class CompilerInfo {
     }
 
     private void addLocals() {
-        varHolder.addLocals(importHandler);
+        varHolder.addLocals(importHandler, warningHolder());
     }
 
     public void loadDependents() {
@@ -338,7 +343,7 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
-        return varHolder.getType(type);
+        return varHolder.getType(type, warningHolder());
     }
 
     /**

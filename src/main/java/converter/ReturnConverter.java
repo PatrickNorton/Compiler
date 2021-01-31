@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.ReturnStatementNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,6 +38,12 @@ public final class ReturnConverter implements BaseConverter {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
         }
         return bytes;
+    }
+
+    @Override
+    @NotNull
+    public Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+        return Pair.of(convert(start), node.getCond().isEmpty());
     }
 
     private void convertEmpty(List<Byte> bytes) {

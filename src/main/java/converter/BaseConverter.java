@@ -30,6 +30,7 @@ import main.java.parser.UnionDefinitionNode;
 import main.java.parser.WhileStatementNode;
 import main.java.parser.WithStatementNode;
 import main.java.parser.YieldStatementNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -39,12 +40,21 @@ public interface BaseConverter {
     List<Byte> convert(int start);
 
     @NotNull
+    default Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+        return Pair.of(convert(start), false);
+    }
+
+    @NotNull
     static List<Byte> bytes(int start, BaseNode tokens, CompilerInfo info) {
         return toBytes(tokens, info).convert(start);
     }
 
     static List<Byte> bytesWithoutAnnotations(int start, AnnotatableNode tokens, CompilerInfo info) {
         return withoutAnnotations(tokens, info).convert(start);
+    }
+
+    static Pair<List<Byte>, Boolean> bytesWithReturn(int start, BaseNode tokens, CompilerInfo info) {
+        return toBytes(tokens, info).convertAndReturn(start);
     }
 
     @NotNull

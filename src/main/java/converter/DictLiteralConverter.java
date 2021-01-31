@@ -50,7 +50,7 @@ public final class DictLiteralConverter implements TestConverter {
         List<Byte> bytes = new ArrayList<>();
         assert node.getKeys().length == node.getValues().length;
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
-            CompilerWarning.warn("Unnecessary dict creation", node);
+            CompilerWarning.warn("Unnecessary dict creation", WarningType.UNUSED, info, node);
             for (var pair : node.pairs()) {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), pair.getKey(), info));
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), pair.getValue(), info));

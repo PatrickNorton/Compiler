@@ -256,7 +256,7 @@ final class VariableHolder {
         }
     }
 
-    public void addLocals(ImportHandler importHandler) {
+    public void addLocals(ImportHandler importHandler, WarningHolder warnings) {
         for (var pair : importHandler.importInfos().entrySet()) {
             var path = pair.getKey();
             var info = pair.getValue();
@@ -268,7 +268,7 @@ final class VariableHolder {
                     if (!varMap.containsKey(asName)) {
                         var type = importHandler.importedType(info, path, name);
                         var constIndex = importHandler.importedConstant(info, path, name);
-                        varMap.put(asName, getVariableInfo(info, type, constIndex));
+                        varMap.put(asName, getVariableInfo(info, type, constIndex, warnings));
                     }
                 }
             } else if (!info.getNames().get(0).equals("*")) {
@@ -276,7 +276,7 @@ final class VariableHolder {
                     if (!varMap.containsKey(name)) {
                         var type = importHandler.importedType(info, path, name);
                         var constIndex = importHandler.importedConstant(info, path, name);
-                        varMap.put(name, getVariableInfo(info, type, constIndex));
+                        varMap.put(name, getVariableInfo(info, type, constIndex, warnings));
                     }
                 }
             } else {
@@ -285,19 +285,23 @@ final class VariableHolder {
                     var name = export.getKey();
                     var type = export.getValue();
                     var constIndex = importHandler.importedConstant(info, path, name);
-                    varMap.put(name, getVariableInfo(info, type, constIndex));
+                    varMap.put(name, getVariableInfo(info, type, constIndex, warnings));
                 }
             }
         }
     }
 
     @NotNull
-    private VariableInfo getVariableInfo(ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex) {
+    private VariableInfo getVariableInfo(
+            ImportInfo info, TypeObject type, @NotNull OptionalUint constIndex, WarningHolder warnings
+    ) {
         if (constIndex.isPresent()) {
             var constant = globalInfo.getConstant(constIndex.orElseThrow());
             return new VariableInfo(type, constant, info.getLineInfo());
         } else {
-            CompilerWarning.warn("Import is not a compile-time constant, may fail at runtime", info);
+            CompilerWarning.warn(
+                    "Import is not a compile-time constant, may fail at runtime", WarningType.NO_TYPE, warnings, info
+            );
             return new VariableInfo(type, true, (short) varNumbers.getNext(), info.getLineInfo());
         }
     }
@@ -308,7 +312,7 @@ final class VariableHolder {
      * @param type The node to translate
      * @return The compiler's type
      */
-    public TypeObject getType(@NotNull TypeLikeNode type) {
+    public TypeObject getType(@NotNull TypeLikeNode type, WarningHolder warnings) {
         if (!type.isDecided()) {
             throw CompilerInternalError.format("Cannot call 'getType' on 'var'", type);
         }
@@ -319,7 +323,9 @@ final class VariableHolder {
             case "null":
                 assert node.getSubtypes().length == 0;
                 if (node.isOptional()) {
-                    CompilerWarning.warn("Type 'null?' is equivalent to null", type);
+                    CompilerWarning.warn(
+                            "Type 'null?' is equivalent to null", WarningType.TRIVIAL_VALUE, warnings, type
+                    );
                 }
                 return Builtins.NULL_TYPE;
             case "cls":
@@ -334,7 +340,7 @@ final class VariableHolder {
                 }
                 return wrap(accessHandler.getSuper(), node);
             case "":
-                return TypeObject.list(typesOf(node.getSubtypes()));
+                return TypeObject.list(typesOf(warnings, node.getSubtypes()));
         }
         var value = typeMap.get(type.strName());
         if (value == null) {
@@ -349,7 +355,7 @@ final class VariableHolder {
                 var typeObj = (TypeObject) builtin;
                 var endType = type.getSubtypes().length == 0
                         ? typeObj
-                        : typeObj.generify(type, typesOf(type.getSubtypes()));
+                        : typeObj.generify(type, typesOf(warnings, type.getSubtypes()));
                 return wrap(endType, node);
             } else {
                 var names = IterJoin.from(typeMap.keySet(), LocalTypeIterator::new, Builtins.BUILTIN_MAP.keySet());
@@ -363,7 +369,8 @@ final class VariableHolder {
                 }
             }
         } else {
-            var endType = type.getSubtypes().length == 0 ? value : value.generify(type, typesOf(type.getSubtypes()));
+            var endType = type.getSubtypes().length == 0 ? value
+                    : value.generify(type, typesOf(warnings, type.getSubtypes()));
             return wrap(endType, node);
         }
     }
@@ -411,10 +418,10 @@ final class VariableHolder {
         }
     }
 
-    public TypeObject[] typesOf(@NotNull TypeLikeNode... types) {
+    public TypeObject[] typesOf(WarningHolder warningHolder, @NotNull TypeLikeNode... types) {
         var typeObjects = new TypeObject[types.length];
         for (int i = 0; i < types.length; i++) {
-            typeObjects[i] = getType(types[i]);
+            typeObjects[i] = getType(types[i], warningHolder);
         }
         return typeObjects;
     }

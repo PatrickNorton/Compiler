@@ -64,7 +64,11 @@ public final class IsConverter extends OperatorConverter {
 
     private List<Byte> convert0(int start) {
         assert operands.length == 0 || operands.length == 1;
-        CompilerWarning.warnf("'%s' with < 2 operands will always be %b", lineInfo, isType ? "is" : "is not", isType);
+        CompilerWarning.warnf(
+                "'%s' with < 2 operands will always be %b",
+                WarningType.TRIVIAL_VALUE, info,
+                lineInfo, isType ? "is" : "is not", isType
+        );
         // Have to get side-effects
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
         bytes.add(Bytecode.POP_TOP.value);
@@ -154,13 +158,18 @@ public final class IsConverter extends OperatorConverter {
         var converter = TestConverter.of(info, arg0, 1);
         var condType = converter.returnType()[0];
         if (!(condType instanceof OptionTypeObject)) {
-            CompilerWarning.warn("Using 'is not null' comparison on non-nullable variable", arg0);
+            CompilerWarning.warn(
+                    "Using 'is not null' comparison on non-nullable variable", WarningType.TRIVIAL_VALUE, info, arg0
+            );
             var bytes = new ArrayList<>(converter.convert(start));
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
             return Pair.of(bytes, condType);
         } else if (condType.equals(Builtins.NULL_TYPE)) {
-            CompilerWarning.warn("Using 'is not null' comparison on variable that must be null", arg0);
+            CompilerWarning.warn(
+                    "Using 'is not null' comparison on variable that must be null",
+                    WarningType.TRIVIAL_VALUE, info, arg0
+            );
             var bytes = new ArrayList<>(converter.convert(start));
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.FALSE)));

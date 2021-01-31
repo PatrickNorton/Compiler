@@ -229,7 +229,9 @@ public final class DotConverter implements TestConverter {
         assert dot.getDotPrefix().equals("?");
         var postDot = dot.getPostDot();
         if (!(previous instanceof OptionTypeObject)) {
-            CompilerWarning.warnf("Using ?. operator on non-optional type %s", dot, previous.name());
+            CompilerWarning.warnf(
+                    "Using ?. operator on non-optional type %s", WarningType.TRIVIAL_VALUE, info, dot, previous.name()
+            );
             if (previous.sameBaseType(Builtins.NULL_TYPE)) {
                 bytes.add(Bytecode.POP_TOP.value);
                 bytes.add(Bytecode.LOAD_NULL.value);

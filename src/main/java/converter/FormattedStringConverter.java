@@ -31,7 +31,7 @@ public final class FormattedStringConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
-            CompilerWarning.warn("Unused formatted string", node);
+            CompilerWarning.warn("Unused formatted string", WarningType.UNUSED, info, node);
         } else if (retCount > 1) {
             throw CompilerException.format("F-string literal only returns one value, not %d", node, retCount);
         }
@@ -40,7 +40,7 @@ public final class FormattedStringConverter implements TestConverter {
         var tests = node.getTests();
         assert strings.length == tests.length || strings.length == tests.length + 1;
         if (tests.length == 0) {
-            CompilerWarning.warn("F-string with no formatted arguments", node);
+            CompilerWarning.warn("F-string with no formatted arguments", WarningType.TRIVIAL_VALUE, info, node);
         }
         for (int i = 0; i < strings.length; i++) {
             if (i < tests.length) {

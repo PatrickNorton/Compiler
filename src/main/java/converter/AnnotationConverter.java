@@ -12,7 +12,9 @@ import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public final class AnnotationConverter implements BaseConverter {
     private final AnnotatableNode node;
@@ -38,7 +40,8 @@ public final class AnnotationConverter implements BaseConverter {
 
     private List<Byte> convertName(NameNode name, int start) {
         CompilerWarning.warn(
-                "Annotations are still in very early stages of development and probably won't work", node
+                "Annotations are still in very early stages of development and probably won't work",
+                WarningType.NO_TYPE, info, node
         );
         if (name instanceof VariableNode) {
             return convertVariable((VariableNode) name, start);
@@ -52,26 +55,28 @@ public final class AnnotationConverter implements BaseConverter {
     private List<Byte> convertVariable(VariableNode name, int start) {
         switch (name.getName()) {
             case "cfg":
-                throw CompilerException.of("'cfg' attributes require arguments", name);
+            case "allow":
+            case "deny":
+                throw CompilerException.format("'%s' attributes require arguments", name, name.getName());
             case "hot":
             case "cold":
             case "inline":
                 if (!(node instanceof DefinitionNode)) {
                     throw CompilerException.of("Frequency hints may only be used on definitions", node);
                 }
-                CompilerWarning.warn("Frequency hints do not do anything yet", name);
+                CompilerWarning.warn("Frequency hints do not do anything yet", WarningType.NO_TYPE, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "test":
-                CompilerWarning.warn("Test mode is always turned off for now", name);
+                CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
                 return convertIfTest(start, false);
             case "notTest":
-                CompilerWarning.warn("Test mode is always turned off for now", name);
+                CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
                 return convertIfTest(start, true);
             case "deprecated":
                 if (node instanceof FunctionDefinitionNode) {
                     return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertDeprecated();
                 } else {
-                    CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                    CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.NO_TYPE, info, name);
                     return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
             default:
@@ -94,8 +99,15 @@ public final class AnnotationConverter implements BaseConverter {
             case "inline":
                 return convertInline(start, name);
             case "deprecated":
-                CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.NO_TYPE, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
+            case "allow":
+            case "deny":
+                var warningHolder = info.warningHolder();
+                changeWarnings(name, warningHolder);
+                var bytes = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                warningHolder.popWarnings();
+                return bytes;
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
@@ -114,7 +126,9 @@ public final class AnnotationConverter implements BaseConverter {
                 switch (((VariableNode) argument).getName()) {
                     case "always":
                     case "never":
-                        CompilerWarning.warn("Frequency hints do not do anything yet", inline);
+                        CompilerWarning.warn(
+                                "Frequency hints do not do anything yet", WarningType.NO_TYPE, info, inline
+                        );
                         return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
             }
@@ -191,26 +205,26 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    public static boolean shouldCompile(Lined lineInfo, NameNode... annotations) {
+    public static boolean shouldCompile(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
         switch (annotations.length) {
             case 0:
                 return true;
             case 1:
-                return shouldCompileSingle(lineInfo, annotations[0]);
+                return shouldCompileSingle(info, annotations[0]);
             default:
                 throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
         }
     }
 
-    private static boolean shouldCompileSingle(Lined lineInfo, NameNode annotation) {
+    private static boolean shouldCompileSingle(CompilerInfo info, NameNode annotation) {
         if (annotation instanceof FunctionCallNode) {
             var stmt = (FunctionCallNode) annotation;
             switch (stmt.getVariable().getName()) {
                 case "test":
-                    CompilerWarning.warn("Test mode is always turned off for now", stmt);
+                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, stmt);
                     return false;
                 case "notTest":
-                    CompilerWarning.warn("Test mode is always turned off for now", stmt);
+                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, stmt);
                     return true;
                 case "cfg":
                     if (stmt.getParameters().length == 1) {
@@ -223,6 +237,70 @@ public final class AnnotationConverter implements BaseConverter {
             }
         } else {
             return true;
+        }
+    }
+
+    private static void changeWarnings(FunctionCallNode annotation, WarningHolder warningHolder) {
+        var name = annotation.getVariable().getName();
+        assert name.equals("allow") || name.equals("deny");
+        Set<WarningType> allowedTypes = EnumSet.noneOf(WarningType.class);
+        for (var param : annotation.getParameters()) {
+            if (!param.getVariable().isEmpty() || !param.getVararg().isEmpty()) {
+                throw CompilerException.format("Illegal format for %s annotation", annotation, name);
+            }
+            var argument = param.getArgument();
+            if (!(argument instanceof VariableNode)) {
+                throw CompilerException.format("Illegal format for %s annotation", annotation, name);
+            }
+            var argName = ((VariableNode) argument).getName();
+            switch (argName) {
+                case "all":
+                    warnAll(name, warningHolder, annotation);
+                    return;
+                case "deprecated":
+                    addWarning(WarningType.DEPRECATED, allowedTypes, annotation, warningHolder);
+                    break;
+                case "unused":
+                    addWarning(WarningType.UNUSED, allowedTypes, annotation, warningHolder);
+                    break;
+                case "trivial":
+                    addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation, warningHolder);
+                    break;
+                case "unreachable":
+                    addWarning(WarningType.UNREACHABLE, allowedTypes, annotation, warningHolder);
+                    break;
+                default:
+                    throw CompilerException.format("Unknown warning type %s", annotation, argName);
+            }
+        }
+        switch (name) {
+            case "allow":
+                warningHolder.allow(allowedTypes.toArray(new WarningType[0]));
+                break;
+            case "deny":
+                warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
+                break;
+            default:
+                throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
+        }
+    }
+
+    private static void warnAll(String name, WarningHolder warningHolder, Lined annotation) {
+        switch (name) {
+            case "allow":
+                warningHolder.allowAll();
+                break;
+            case "deny":
+                warningHolder.denyAll();
+                break;
+            default:
+                throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
+        }
+    }
+
+    private static void addWarning(WarningType type, Set<WarningType> values, Lined lined, WarningHolder holder) {
+        if (!values.add(type)) {
+            CompilerWarning.warn("Duplicated allow lint for warnings", WarningType.UNUSED, holder, lined);
         }
     }
 }

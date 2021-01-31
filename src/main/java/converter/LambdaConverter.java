@@ -43,7 +43,7 @@ public final class LambdaConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
-            CompilerWarning.warn("Unused lambda", node);
+            CompilerWarning.warn("Unused lambda", WarningType.UNUSED, info, node);
             return Collections.emptyList();
         } else if (retCount > 1) {
             throw CompilerException.format("Lambda literal only returns one value, not %d", node, retCount);
