@@ -40,7 +40,8 @@ public final class AnnotationConverter implements BaseConverter {
 
     private List<Byte> convertName(NameNode name, int start) {
         CompilerWarning.warn(
-                "Annotations are still in very early stages of development and probably won't work", node
+                "Annotations are still in very early stages of development and probably won't work",
+                WarningType.NO_TYPE, info, node
         );
         if (name instanceof VariableNode) {
             return convertVariable((VariableNode) name, start);
@@ -63,19 +64,19 @@ public final class AnnotationConverter implements BaseConverter {
                 if (!(node instanceof DefinitionNode)) {
                     throw CompilerException.of("Frequency hints may only be used on definitions", node);
                 }
-                CompilerWarning.warn("Frequency hints do not do anything yet", name);
+                CompilerWarning.warn("Frequency hints do not do anything yet", WarningType.NO_TYPE, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "test":
-                CompilerWarning.warn("Test mode is always turned off for now", name);
+                CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
                 return convertIfTest(start, false);
             case "notTest":
-                CompilerWarning.warn("Test mode is always turned off for now", name);
+                CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
                 return convertIfTest(start, true);
             case "deprecated":
                 if (node instanceof FunctionDefinitionNode) {
                     return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertDeprecated();
                 } else {
-                    CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                    CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.NO_TYPE, info, name);
                     return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
             default:
@@ -98,7 +99,7 @@ public final class AnnotationConverter implements BaseConverter {
             case "inline":
                 return convertInline(start, name);
             case "deprecated":
-                CompilerWarning.warn("Deprecation notices not yet implemented", name);
+                CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.NO_TYPE, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "allow":
             case "deny":
@@ -125,7 +126,9 @@ public final class AnnotationConverter implements BaseConverter {
                 switch (((VariableNode) argument).getName()) {
                     case "always":
                     case "never":
-                        CompilerWarning.warn("Frequency hints do not do anything yet", inline);
+                        CompilerWarning.warn(
+                                "Frequency hints do not do anything yet", WarningType.NO_TYPE, info, inline
+                        );
                         return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
             }
@@ -202,26 +205,26 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    public static boolean shouldCompile(Lined lineInfo, NameNode... annotations) {
+    public static boolean shouldCompile(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
         switch (annotations.length) {
             case 0:
                 return true;
             case 1:
-                return shouldCompileSingle(lineInfo, annotations[0]);
+                return shouldCompileSingle(info, annotations[0]);
             default:
                 throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
         }
     }
 
-    private static boolean shouldCompileSingle(Lined lineInfo, NameNode annotation) {
+    private static boolean shouldCompileSingle(CompilerInfo info, NameNode annotation) {
         if (annotation instanceof FunctionCallNode) {
             var stmt = (FunctionCallNode) annotation;
             switch (stmt.getVariable().getName()) {
                 case "test":
-                    CompilerWarning.warn("Test mode is always turned off for now", stmt);
+                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, stmt);
                     return false;
                 case "notTest":
-                    CompilerWarning.warn("Test mode is always turned off for now", stmt);
+                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, stmt);
                     return true;
                 case "cfg":
                     if (stmt.getParameters().length == 1) {
@@ -255,13 +258,13 @@ public final class AnnotationConverter implements BaseConverter {
                     warnAll(name, warningHolder, annotation);
                     return;
                 case "deprecated":
-                    addWarning(WarningType.DEPRECATED, allowedTypes, annotation);
+                    addWarning(WarningType.DEPRECATED, allowedTypes, annotation, warningHolder);
                     break;
                 case "unused":
-                    addWarning(WarningType.UNUSED, allowedTypes, annotation);
+                    addWarning(WarningType.UNUSED, allowedTypes, annotation, warningHolder);
                     break;
                 case "trivial":
-                    addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation);
+                    addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation, warningHolder);
                     break;
                 default:
                     throw CompilerException.format("Unknown warning type %s", annotation, argName);
@@ -292,9 +295,9 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private static void addWarning(WarningType type, Set<WarningType> values, Lined lined) {
+    private static void addWarning(WarningType type, Set<WarningType> values, Lined lined, WarningHolder holder) {
         if (!values.add(type)) {
-            CompilerWarning.warn("Duplicated allow lint for warnings", lined);
+            CompilerWarning.warn("Duplicated allow lint for warnings", WarningType.NO_TYPE, holder, lined);
         }
     }
 }

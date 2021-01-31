@@ -5,5 +5,6 @@ public enum WarningType {
     DEPRECATED,
     UNUSED,
     TRIVIAL_VALUE,
+    UNREACHABLE,
     ;
 }

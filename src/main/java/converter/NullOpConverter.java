@@ -75,10 +75,14 @@ public final class NullOpConverter extends OperatorConverter {
         assert op == OperatorTypeNode.NULL_COERCE;
         var firstConverter = TestConverter.of(info, args[0].getArgument(), 1);
         if (!(firstConverter.returnType()[0] instanceof OptionTypeObject)) {  // Non-optional return types won't be null
-            CompilerWarning.warn("Using ?? operator on non-optional value", args[0]);
+            CompilerWarning.warn(
+                    "Using ?? operator on non-optional value", WarningType.TRIVIAL_VALUE, info, args[0]
+            );
             return firstConverter.convert(start);
         } else if (firstConverter.returnType()[0].equals(Builtins.NULL_TYPE)) {
-            CompilerWarning.warn("Using ?? operator on value that is always null", args[0]);
+            CompilerWarning.warn(
+                    "Using ?? operator on value that is always null", WarningType.TRIVIAL_VALUE, info, args[0]
+            );
             return TestConverter.bytes(start, args[1].getArgument(), info, 1);
         }
         List<Byte> bytes = unwrapSecond(start, firstConverter);
@@ -105,7 +109,7 @@ public final class NullOpConverter extends OperatorConverter {
             bytes.addAll(unwrapOption(info, args[0].toString(), start + bytes.size()));
         } else {
             CompilerWarning.warn("Used !! operator on non-optional value",
-                    args[0].getLineInfo());
+                    WarningType.TRIVIAL_VALUE, info, args[0].getLineInfo());
         }
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP.value);

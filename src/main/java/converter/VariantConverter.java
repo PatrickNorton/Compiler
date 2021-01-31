@@ -28,7 +28,7 @@ public final class VariantConverter implements TestConverter {
     @Override
     public List<Byte> convert(int start) {
         if (retCount == 0) {
-            CompilerWarning.warn("Unused variant access", node);
+            CompilerWarning.warn("Unused variant access", WarningType.UNUSED, info, node);
         } else if (retCount > 1) {
             throw CompilerException.format("Union variant can only return one value, not %d", node, retCount);
         }

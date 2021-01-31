@@ -301,7 +301,7 @@ public final class CompilerInfo {
     }
 
     private void addLocals() {
-        varHolder.addLocals(importHandler);
+        varHolder.addLocals(importHandler, warningHolder());
     }
 
     public void loadDependents() {
@@ -343,7 +343,7 @@ public final class CompilerInfo {
     @NotNull
     @Contract(pure = true)
     public TypeObject getType(@NotNull TypeLikeNode type) {
-        return varHolder.getType(type);
+        return varHolder.getType(type, warningHolder());
     }
 
     /**

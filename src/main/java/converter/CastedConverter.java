@@ -49,7 +49,7 @@ public final class CastedConverter extends OperatorConverter {
         if (args.length != 2) {
             throw argsException();
         } else if (retCount == 0) {
-            CompilerWarning.warn("Cast is useless when not assigned to a value", lineInfo);
+            CompilerWarning.warn("Cast is useless when not assigned to a value", WarningType.UNUSED, info, lineInfo);
             return TestConverter.bytes(start, args[0].getArgument(), info, 0);
         } else if (retCount != 1) {
             throw retException();

@@ -23,7 +23,11 @@ public final class CompilerWarning {
     private CompilerWarning() {}
 
     private static void warnIf(String message, WarningType warn, CompilerInfo compilerInfo, LineInfo info) {
-        var level = compilerInfo.warningHolder().warningLevel(warn);
+        warnIf(message, warn, compilerInfo.warningHolder(), info);
+    }
+
+    private static void warnIf(String message, WarningType warn, WarningHolder warningHolder, LineInfo info) {
+        var level = warningHolder.warningLevel(warn);
         switch (level) {
             case ALLOW:
                 return;
@@ -43,11 +47,12 @@ public final class CompilerWarning {
      * information for where the warning occurred.
      *
      * @param message The message to warn
-     * @param info The {@link LineInfo} for where the warning occurred
+     * @param warn The type of warning
+     * @param info The value to get the {@link WarningHolder} for
+     * @param lineInfo The {@link LineInfo} for where the warning occurred
      */
-    public static void warn(String message, @NotNull LineInfo info) {
-        System.err.printf("Warning - file %s, line %d: %s%n%s%n",
-                info.getPath(), info.getLineNumber(), message, info.infoString());
+    public static void warn(String message, WarningType warn, CompilerInfo info, @NotNull LineInfo lineInfo) {
+        warnIf(message, warn, info, lineInfo);
     }
 
     /**
@@ -56,10 +61,26 @@ public final class CompilerWarning {
      *
      * @implNote Equivalent to {@code warn(message, node.getLineInfo())}
      * @param message The message to warn
+     * @param warn The type of warning
+     * @param info The value to get the {@link WarningHolder} for
      * @param node The {@link Lined} object to get the location from
      */
-    public static void warn(String message, @NotNull Lined node) {
-        warn(message, node.getLineInfo());
+    public static void warn(String message, WarningType warn, CompilerInfo info, Lined node) {
+        warnIf(message, warn, info, node.getLineInfo());
+    }
+
+    /**
+     * Emits a compiler warning with a custom message, taking a {@link Lined}
+     * object containing the {@link LineInfo} for where the warning occurred.
+     *
+     * @implNote Equivalent to {@code warn(message, node.getLineInfo())}
+     * @param message The message to warn
+     * @param warn The type of warning
+     * @param info The value to determine what kind of warning should happen
+     * @param node The {@link Lined} object to get the location from
+     */
+    public static void warn(String message, WarningType warn, WarningHolder info, Lined node) {
+        warnIf(message, warn, info, node.getLineInfo());
     }
 
     /**

@@ -122,7 +122,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     @Contract(" -> new")
     @NotNull
     public Optional<Pair<TypeObject, Integer>> parseHeader() {
-        if (!AnnotationConverter.shouldCompile(node, node.getAnnotations())) {
+        if (!AnnotationConverter.shouldCompile(node, info, node.getAnnotations())) {
             return Optional.empty();
         }
         if (node.getGenerics().length == 0) {

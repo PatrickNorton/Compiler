@@ -59,7 +59,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                         "Default statement before case statement in switch\n" +
                                 "Help: In unoptimized switch statements, cases are run through in order" +
                                 " and thus this is unreachable",
-                        caseStatement
+                        WarningType.UNREACHABLE, info, caseStatement
                 );
             }
             addCase(caseStatement, start, bytes, retTypes);
@@ -454,7 +454,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                                 "defaultVal is true but no default statement was found", node
                         )
                 );
-                CompilerWarning.warn("Default statement in switch with all variants covered", defaultInfo);
+                CompilerWarning.warn(
+                        "Default statement in switch with all variants covered",
+                        WarningType.UNREACHABLE, info, defaultInfo
+                );
             }
         }
         var switchTable = smallTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);

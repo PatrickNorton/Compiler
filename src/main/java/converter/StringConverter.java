@@ -47,7 +47,7 @@ public final class StringConverter implements ConstantConverter {
     public List<Byte> convert(int start) {
         assert !node.getPrefixes().contains(StringPrefix.FORMATTED);
         if (retCount == 0) {
-            CompilerWarning.warn("String-like literal unused", node);
+            CompilerWarning.warn("String-like literal unused", WarningType.UNUSED, info, node);
             return Collections.emptyList();
         }
         if (node.getPrefixes().contains(StringPrefix.REGEX)) {
