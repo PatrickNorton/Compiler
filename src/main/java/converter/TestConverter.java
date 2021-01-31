@@ -18,9 +18,11 @@ import main.java.parser.SwitchStatementNode;
 import main.java.parser.TernaryNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +32,13 @@ public interface TestConverter extends BaseConverter {
 
     default Optional<LangConstant> constantReturn() {
         return Optional.empty();
+    }
+
+    @Override
+    @NotNull
+    default Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+        var retTypes = returnType();
+        return Pair.of(convert(start), Arrays.asList(retTypes).contains(Builtins.THROWS));
     }
 
     @NotNull
