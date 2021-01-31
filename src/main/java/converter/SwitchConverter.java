@@ -7,12 +7,14 @@ import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
+import main.java.util.Pair;
 import main.java.util.StringEscape;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +67,18 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             addCase(caseStatement, start, bytes, retTypes);
         }
         return bytes;
+    }
+
+    @Override
+    protected Pair<List<Byte>, Boolean> trueConvertWithReturn(int start) {
+        boolean willReturn;
+        if (retCount > 0) {
+            willReturn = Arrays.asList(returnType()).contains(Builtins.THROWS);
+        } else {
+            // TODO: Unions with all cases covered
+            willReturn = anyHasDefault();
+        }
+        return Pair.of(trueConvert(start), willReturn);
     }
 
     @NotNull
@@ -469,6 +483,15 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private boolean anyHasAs() {
         for (var stmt : node.getCases()) {
             if (!stmt.getAs().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean anyHasDefault() {
+        for (var stmt : node.getCases()) {
+            if (stmt instanceof DefaultStatementNode) {
                 return true;
             }
         }
