@@ -40,7 +40,7 @@ public final class VariableConverter implements TestConverter {
     public List<Byte> convert(int start) {
         if (retCount == 0) {
             checkDef();
-            CompilerWarning.warnf("Unused variable %s", node, node.getName());
+            CompilerWarning.warnf("Unused variable %s", WarningType.UNUSED, info, node, node.getName());
             return Collections.emptyList();
         } else if (retCount > 1) {
             checkDef();

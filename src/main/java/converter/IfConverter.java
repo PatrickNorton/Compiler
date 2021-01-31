@@ -145,7 +145,10 @@ public final class IfConverter implements BaseConverter {
     private void checkCond(LangConstant value, Lined node) {
         var boolVal = value.boolValue();
         if (boolVal.isPresent()) {
-            CompilerWarning.warnf("Statement in conditional will always evaluate to %b", node, boolVal.orElseThrow());
+            CompilerWarning.warnf(
+                    "Statement in conditional will always evaluate to %b",
+                    WarningType.TRIVIAL_VALUE, info, node, boolVal.orElseThrow()
+            );
         }
     }
 

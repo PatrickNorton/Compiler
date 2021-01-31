@@ -388,7 +388,7 @@ public final class FunctionCallConverter implements TestConverter {
         var fnIndex = info.fnIndex(strName);
         assert fnIndex != -1;
         if (info.fnInfo(strName).orElseThrow().isDeprecated()) {
-            CompilerWarning.warnf("Function '%s' is deprecated", node, strName);
+            CompilerWarning.warnf("Function '%s' is deprecated", WarningType.DEPRECATED, info, node, strName);
         }
         List<Byte> bytes = new ArrayList<>();
         convertArgs(bytes, start, fnInfo, needsMakeOption);

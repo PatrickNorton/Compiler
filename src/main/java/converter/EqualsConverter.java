@@ -73,6 +73,7 @@ public final class EqualsConverter extends OperatorConverter {
         assert args.length == 0 || args.length == 1;
         CompilerWarning.warnf(
                 "'%s' with < 2 operands will always be %b",
+                WarningType.TRIVIAL_VALUE, info,
                 lineInfo, equalsType ? "==" : "!=", equalsType
         );
         // Have to get side-effects

@@ -22,6 +22,22 @@ import org.jetbrains.annotations.NotNull;
 public final class CompilerWarning {
     private CompilerWarning() {}
 
+    private static void warnIf(String message, WarningType warn, CompilerInfo compilerInfo, LineInfo info) {
+        var level = compilerInfo.warningHolder().warningLevel(warn);
+        switch (level) {
+            case ALLOW:
+                return;
+            case WARN:
+                System.err.printf("Warning - file %s, line %d: %s%n%s%n",
+                    info.getPath(), info.getLineNumber(), message, info.infoString());
+                return;
+            case DENY:
+                throw CompilerException.of(message, info);
+            default:
+                throw CompilerInternalError.format("Unknown warning level %s", info, level);
+        }
+    }
+
     /**
      * Emits a compiler warning with a custom message and the relevant
      * information for where the warning occurred.
@@ -51,11 +67,15 @@ public final class CompilerWarning {
      * information for where the warning occurred.
      *
      * @param message The message to be formatted
-     * @param info The {@link LineInfo} of where the warning occurred
+     * @param warn The type of warning
+     * @param info The value to get the {@link WarningHolder} for
+     * @param lineInfo The {@link LineInfo} of where the warning occurred
      * @param args The args to format with
      */
-    public static void warnf(String message, @NotNull LineInfo info, Object... args) {
-        warn(String.format(message, args), info);
+    public static void warnf(
+            String message, WarningType warn, CompilerInfo info, @NotNull LineInfo lineInfo, Object... args
+    ) {
+        warnIf(String.format(message, args), warn, info, lineInfo);
     }
 
     /**
@@ -63,10 +83,12 @@ public final class CompilerWarning {
      * information for where the warning occurred.
      *
      * @param message The message to be formatted
+     * @param warn The type of warning
+     * @param info The value to get the {@link WarningHolder} for
      * @param node The {@link Lined} object to get the location from
      * @param args The args to format with
      */
-    public static void warnf(String message, @NotNull Lined node, Object... args) {
-        warn(String.format(message, args), node.getLineInfo());
+    public static void warnf(String message, WarningType warn, CompilerInfo info, Lined node, Object... args) {
+        warnIf(String.format(message, args), warn, info, node.getLineInfo());
     }
 }

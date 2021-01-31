@@ -64,7 +64,11 @@ public final class IsConverter extends OperatorConverter {
 
     private List<Byte> convert0(int start) {
         assert operands.length == 0 || operands.length == 1;
-        CompilerWarning.warnf("'%s' with < 2 operands will always be %b", lineInfo, isType ? "is" : "is not", isType);
+        CompilerWarning.warnf(
+                "'%s' with < 2 operands will always be %b",
+                WarningType.TRIVIAL_VALUE, info,
+                lineInfo, isType ? "is" : "is not", isType
+        );
         // Have to get side-effects
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
         bytes.add(Bytecode.POP_TOP.value);

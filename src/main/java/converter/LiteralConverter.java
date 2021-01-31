@@ -130,7 +130,7 @@ public final class LiteralConverter implements TestConverter {
     public List<Byte> convert(int start) {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
-            CompilerWarning.warnf("Unnecessary %s creation", node, literalType.name);
+            CompilerWarning.warnf("Unnecessary %s creation", WarningType.UNUSED, info, node, literalType.name);
             List<Byte> bytes = new ArrayList<>();
             for (var value : node.getBuilders()) {
                 bytes.addAll(BaseConverter.bytes(start + bytes.size(), value, info));

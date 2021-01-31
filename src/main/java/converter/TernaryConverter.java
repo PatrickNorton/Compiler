@@ -78,7 +78,10 @@ public final class TernaryConverter implements TestConverter {
     }
 
     private List<Byte> convertOpt(int start, boolean condVal) {
-        CompilerWarning.warnf("Condition of ternary always evaluates to %b", node.getStatement(), condVal);
+        CompilerWarning.warnf(
+                "Condition of ternary always evaluates to %b",
+                WarningType.TRIVIAL_VALUE, info, node.getStatement(), condVal
+        );
         var evaluated = condVal ? node.getIfTrue() : node.getIfFalse();
         var notEvaluated = condVal ? node.getIfFalse() : node.getIfTrue();
         TestConverter.bytes(start, notEvaluated, info, retCount);  // Check for errors, but don't add to bytes

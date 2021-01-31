@@ -70,6 +70,7 @@ public final class CastedConverter extends OperatorConverter {
         if (representedType.isSuperclass(argType)) {
             CompilerWarning.warnf(
                     "Useless cast: %s is already a subclass of %s",
+                    WarningType.TRIVIAL_VALUE, info,
                     lineInfo, argType.name(), representedType.name()
             );
             return argConverter.convert(start);
