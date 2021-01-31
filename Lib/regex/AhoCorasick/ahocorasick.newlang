@@ -259,7 +259,7 @@ enum MatchKind {
     }
 
     public method supportsStream() -> bool {
-        self.isStandard()
+        return self.isStandard()
     }
 
     public method asPacked() -> PackedMatch? {

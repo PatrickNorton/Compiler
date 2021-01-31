@@ -66,6 +66,7 @@ class Program {
                 }
             }
         }
+        raise NotImplemented()  # FIXME: 'while true' always returns
     }
 
     public method leadsToMatch(int pc) -> bool {

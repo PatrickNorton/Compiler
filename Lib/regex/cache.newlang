@@ -13,6 +13,7 @@ class Cached[T] {
         } else {
             # return null
         }
+        raise NotImplemented()
     }
 
     public mut method put(T value) {

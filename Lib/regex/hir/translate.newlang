@@ -301,6 +301,7 @@ class TranslatorI from Visitor[Hir] {
                     return Hir.wordBoundary(WordBoundary.ASCII_NEGATE)
                 }
             }
+            default => raise NotImplemented()
         }
     }
 

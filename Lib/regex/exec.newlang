@@ -64,6 +64,7 @@ class Exec {
                 }
                 return null
             }
+            default => raise NotImplemented()
         }
     }
 
@@ -640,7 +641,7 @@ class ExecNoSync {
             }
 
             case MatchType.DfaMany {
-                # raise ValueError("BUG: RegexSet cannot be used with captures")
+                raise ValueError("BUG: RegexSet cannot be used with captures")
             }
         }
     }
@@ -706,6 +707,7 @@ class ExecNoSync {
                     return null
                 }
             }
+            default => raise NotImplemented()
         }
     }
 
@@ -991,7 +993,7 @@ class ExecNoSync {
         int end,
     ) -> bool {
         if self.ro.nfa.usesBytes() {
-            Bounded.exec(
+            return Bounded.exec(
                 self.ro.nfa,
                 self.cache,
                 matches,
@@ -1001,7 +1003,7 @@ class ExecNoSync {
                 end,
             )
         } else {
-            Bounded.exec(
+            return Bounded.exec(
                 self.ro.nfa,
                 self.cache,
                 matches,
@@ -1026,7 +1028,7 @@ class ExecNoSyncStr {
     }
 
     public method slotsLen() -> int {
-        self.value.slotsLen()
+        return self.value.slotsLen()
     }
 
     public method nextAfterEmpty(str text, int i) -> int {

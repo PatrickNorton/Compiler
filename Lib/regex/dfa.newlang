@@ -300,7 +300,7 @@ class Fsm {
                 return si
             }
             # Allocate room for our state and add it.
-            self.addState(key)
+            return self.addState(key)
         } else {
             return STATE_DEAD
         }
@@ -721,7 +721,7 @@ class Fsm {
     }
 
     private method continuePastFirstMatch() -> bool {
-        self.prog.isReverse or self.prog.matches.length > 1
+        return self.prog.isReverse or self.prog.matches.length > 1
     }
 
     private mut method followEpsilons(
@@ -819,6 +819,7 @@ union Result[T] {
         # FIXME? Should be able to refer to 'cls.T' as 'T'
         # DOUBLE FIXME: This does not work
         # return Result[cls.T].NoMatch(at) if self.NoMatch? else self
+        raise NotImplemented()
     }
 }
 

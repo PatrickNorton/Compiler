@@ -162,6 +162,7 @@ class Bounded {
                 }
             }
         }
+        raise NotImplemented()  # FIXME: 'while true' always returns
     }
 
     private mut method hasVisited(InstPtr ip, InputAt at) -> bool {

@@ -125,6 +125,7 @@ class CharInput from Input {
                 var c1, var c2 = self.previousChar(at), self.nextChar(at)
                 return not isWordByte(c1) xor isWordByte(c2)
             }
+            default => raise NotImplemented()
         }
     }
 
@@ -224,6 +225,7 @@ class ByteInput from Input {
                 }
                 return isWordByte(c1) == isWordByte(c2)
             }
+            default => raise NotImplemented()
         }
     }
 

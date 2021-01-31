@@ -70,6 +70,7 @@ class Patterns {
         result.minimumLen = self.minimumLen
         result.maxPatternId = self.maxPatternId
         result.totalPatternBytes = self.totalPatternBytes
+        return result
     }
 }
 

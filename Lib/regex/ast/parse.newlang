@@ -421,9 +421,9 @@ class ParserI {
             raise self.error(self.span(), ErrorKind.EscapeUnexpectedEof())
         }
         if self.chr() == c'{' {
-            self.parseHexBrace(hexKind)
+            return self.parseHexBrace(hexKind)
         } else {
-            self.parseHexDigits(hexKind)
+            return self.parseHexDigits(hexKind)
         }
     }
 
@@ -892,6 +892,7 @@ class ParserI {
                 }
             }
         }
+        raise NotImplemented()  # FIXME: 'while true' always returns
     }
 
     private mut method pushClassOpen(ClassSetUnion parentUnion) -> ClassSetUnion {

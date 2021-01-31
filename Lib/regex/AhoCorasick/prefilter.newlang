@@ -90,7 +90,7 @@ class Builder {
     mut RareBytesBuilder rareBytes
     final PackedBuilder? packed
 
-    public operator new(MatchKind kind) -> Builder {
+    public operator new(MatchKind kind) {
         self.count = 0
         self.asciiCaseInsensitive_ = false
         self.startBytes = StartBytesBuilder()
@@ -369,6 +369,8 @@ class RareBytesTwo from Prefilter {
             state.updateAt(i)
             var offset = self.offsets.value[haystack[pos]].max
             return Candidate.PossibleStartOfMatch(max3(at, pos - offset, 0))
+        } else {
+            raise NotImplemented() # FIXME: What was supposed to go here?
         }
     }
 

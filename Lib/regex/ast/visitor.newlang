@@ -67,6 +67,7 @@ class HeapVisitor {
                 }
             }
         }
+        raise NotImplemented()  # FIXME: 'while true' always returns
     }
 
     private mut method induct(Ast ast, Visitor visitor) -> Frame? {
