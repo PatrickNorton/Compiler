@@ -42,6 +42,7 @@ func expandStr(Captures caps, str replacement) -> str {
             }
         }
     }
+    return str(dst)
 }
 
 class CaptureRef {

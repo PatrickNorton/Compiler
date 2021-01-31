@@ -559,4 +559,5 @@ func nfaNextStateMemoized(NFA nfa, Rep dfa, int populating, mut int current, int
         return next if next != FAIL_ID
         current = nfa.failureTransition(current)
     }
+    raise NotImplemented()  # FIXME: 'while true' always returns
 }

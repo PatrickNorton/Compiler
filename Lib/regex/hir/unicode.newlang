@@ -219,7 +219,7 @@ func propertyValues(str canonicalPropertyName) -> list[tuple[char, char]]? {
 func symbolicNameNormalize(str x) -> str {
     mut var tmp = x.encode("UTF-8")
     var len = symbolicNameNormalizeBytes(tmp).length
-    tmp[:len].encode("UTF-8")
+    return tmp[:len].encode("UTF-8")
 }
 
 func symbolicNameNormalizeBytes(mut bytes val) -> bytes {
