@@ -147,7 +147,7 @@ public final class IfConverter implements BaseConverter {
         if (boolVal.isPresent()) {
             CompilerWarning.warnf(
                     "Statement in conditional will always evaluate to %b",
-                    WarningType.TRIVIAL_VALUE, info, node, boolVal.orElseThrow()
+                    WarningType.UNREACHABLE, info, node, boolVal.orElseThrow()
             );
         }
     }

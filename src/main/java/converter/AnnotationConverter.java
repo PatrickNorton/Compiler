@@ -266,6 +266,9 @@ public final class AnnotationConverter implements BaseConverter {
                 case "trivial":
                     addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation, warningHolder);
                     break;
+                case "unreachable":
+                    addWarning(WarningType.UNREACHABLE, allowedTypes, annotation, warningHolder);
+                    break;
                 default:
                     throw CompilerException.format("Unknown warning type %s", annotation, argName);
             }
@@ -297,7 +300,7 @@ public final class AnnotationConverter implements BaseConverter {
 
     private static void addWarning(WarningType type, Set<WarningType> values, Lined lined, WarningHolder holder) {
         if (!values.add(type)) {
-            CompilerWarning.warn("Duplicated allow lint for warnings", WarningType.NO_TYPE, holder, lined);
+            CompilerWarning.warn("Duplicated allow lint for warnings", WarningType.UNUSED, holder, lined);
         }
     }
 }
