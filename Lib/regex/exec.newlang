@@ -43,10 +43,9 @@ class Exec {
                 if not start or not self.ro.nfa.isAnchoredStart {
                     if lits.findStart(bytes(text[start:]))? as f {
                         return (f.0 + start, f.1 + start)
-                    } else {
-                        return null
                     }
                 }
+                return null
             }
             case MatchLiteralType.ANCHORED_END {
                 var lits = self.ro.suffixes

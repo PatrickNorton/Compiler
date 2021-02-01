@@ -407,6 +407,8 @@ class RareBytesThree from Prefilter {
             state.updateAt(i)
             var offset = self.offsets.value[haystack[pos]].max
             return Candidate.PossibleStartOfMatch(max3(at, pos - offset, 0))
+        } else {
+            return Candidate.None()
         }
     }
 

@@ -152,6 +152,7 @@ class NFA from Automaton {
         var idVal = self.states.length
         final list[tuple[PatternId, PatternLength]] val = []
         self.states.add(State(trans, DEAD_ID if self.anchored else self.startId, val, depth))
+        return idVal
     }
 
     public method startState() -> int {
