@@ -82,7 +82,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                             name
                     );
                 }
-                var fnNode = ((FunctionCallNode) name);
+                var fnNode = (FunctionCallNode) name;
                 bytes.add(Bytecode.DUP_TOP.value);
                 for (var arg : fnNode.getParameters()) {
                     bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
