@@ -60,7 +60,11 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 if (pair.getKey() == OpSpTypeNode.NEW) {
                     info.accessHandler().enterConstructor(type);
                 }
-                var bytes = BaseConverter.bytes(0, methodInfo.getBody(), info);
+                var bodyPair = BaseConverter.bytesWithReturn(0, methodInfo.getBody(), info);
+                var bytes = bodyPair.getKey();
+                if (endsWithoutReturning(type, fnInfo, bodyPair.getValue())) {
+                    CompilerWarning.warn("Function ends without returning", WarningType.NO_TYPE, info, methodInfo);
+                }
                 retInfo.popFnReturns();
                 var mInfo = new MethodInfo(methodInfo.getAccessLevel(), methodInfo.isMut(), methodInfo.getInfo());
                 result.put(pair.getKey(), new Method(methodInfo, mInfo, bytes));
@@ -78,6 +82,23 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             }
         }
         return result;
+    }
+
+    private boolean endsWithoutReturning(UserType<?> type, FunctionInfo fnInfo, boolean returns) {
+        if (fnInfo.isGenerator() || fnReturns(fnInfo).length == 0 || returns) {
+            return false;
+        }
+        var contract = type.contract();
+        if (contract.getKey().contains(fnInfo.getName())) {
+            return false;
+        } else {
+            for (var key : contract.getValue()) {
+                if (key.toString().equals(fnInfo.getName())) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     private TypeObject[] fnReturns(@NotNull FunctionInfo fnInfo) {
