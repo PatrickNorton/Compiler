@@ -139,7 +139,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             obj.isConstClass();
         }
         parseStatements(converter);
-        converter.attributes().addUnionMethods(variantMethods(obj));
+        converter.methods().addUnionMethods(variantMethods(obj));
         obj.setOperators(converter.getOperatorInfos());
         obj.setStaticOperators(converter.getStaticOperatorInfos());
         converter.checkAttributes();
@@ -167,7 +167,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         Map<String, AttributeInfo> result = new HashMap<>(vars.size() + variants.size());
         result.putAll(vars);
         for (var pair : variants.entrySet()) {
-            var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType).toCallable();
+            var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType, pair.getKey()).toCallable();
             result.put(pair.getKey(), new AttributeInfo(AccessLevel.PUBLIC, fnInfo));
         }
         return result;
@@ -202,7 +202,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     private Map<String, RawMethod> variantMethods(UnionTypeObject selfType) {
         Map<String, RawMethod> result = new HashMap<>(variants.size());
         for (var pair : variants.entrySet()) {
-            var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType);
+            var fnInfo = variantInfo(pair.getValue().getValue().getType(), selfType, pair.getKey());
             var selfVar = new VariableNode(LineInfo.empty(), selfType.name());
             var variantNo = pair.getValue().getKey();
             var variantVal = new VariableNode(LineInfo.empty(), VARIANT_NAME);
@@ -216,12 +216,12 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     @NotNull
-    private FunctionInfo variantInfo(TypeObject val, UnionTypeObject type) {
+    private FunctionInfo variantInfo(TypeObject val, UnionTypeObject type, String name) {
         if (val.sameBaseType(Builtins.NULL_TYPE)) {
             return new FunctionInfo(type.makeMut());
         } else {
             var arg = new Argument(VARIANT_NAME, val);
-            return new FunctionInfo(new ArgumentInfo(arg), type.makeMut());
+            return new FunctionInfo(name, new ArgumentInfo(arg), type.makeMut());
         }
     }
 
