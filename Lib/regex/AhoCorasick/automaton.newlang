@@ -57,7 +57,7 @@ interface Automaton {
                 stateId,
             )
         } else {
-            self.standardFindAtImp(prestate, null, haystack, at, stateId)
+            return self.standardFindAtImp(prestate, null, haystack, at, stateId)
         }
     }
 
@@ -216,7 +216,7 @@ interface Automaton {
                 return m
             }
         }
-        self.standardFindAt(prestate, haystack, at, int(stateId))
+        return self.standardFindAt(prestate, haystack, at, int(stateId))
     }
 
     public method findAtNoState(
@@ -235,6 +235,7 @@ interface Automaton {
             case MatchKind.LEFTMOST_LONGEST {
                 return self.leftmostFindAtNoState(prestate, haystack, at)
             }
+            default => raise NotImplemented()
         }
     }
 }
