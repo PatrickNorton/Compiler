@@ -2,12 +2,14 @@ package main.java.converter;
 
 import main.java.parser.AnnotatableNode;
 import main.java.parser.DefinitionNode;
+import main.java.parser.EnumDefinitionNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.Lined;
 import main.java.parser.NameNode;
 import main.java.parser.OperatorNode;
 import main.java.parser.TestNode;
+import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,6 +74,15 @@ public final class AnnotationConverter implements BaseConverter {
             case "notTest":
                 CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
                 return convertIfTest(start, true);
+            case "nonExhaustive":
+                if (node instanceof EnumDefinitionNode || node instanceof UnionDefinitionNode) {
+                    CompilerWarning.warn(
+                            "Non-exhaustive enums/unions are not yet supported", WarningType.NO_TYPE, info, name
+                    );
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                } else {
+                    throw CompilerException.of("$nonExhaustive is only valid on enums and unions", name);
+                }
             case "deprecated":
                 if (node instanceof FunctionDefinitionNode) {
                     return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertDeprecated();
