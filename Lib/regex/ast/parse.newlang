@@ -892,7 +892,6 @@ class ParserI {
                 }
             }
         }
-        raise NotImplemented()  # FIXME: 'while true' always returns
     }
 
     private mut method pushClassOpen(ClassSetUnion parentUnion) -> ClassSetUnion {

@@ -96,7 +96,6 @@ class RabinKarp {
             )
             at++
         }
-        raise NotImplemented() # FIXME: 'while true' always returns
     }
 
     # Verify whether the pattern with the given id matches at

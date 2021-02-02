@@ -190,7 +190,6 @@ class Utf8Sequences {
                 }
             }
         }
-        raise NotImplemented()  # FIXME: 'while true' always returns
     }
 
     public mut method reset(char start, char end) {
