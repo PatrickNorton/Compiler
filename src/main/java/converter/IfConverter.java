@@ -63,6 +63,8 @@ public final class IfConverter implements BaseConverter {
             bytes.addAll(Util.intToBytes(jumpPos));
             bytes.add(Bytecode.POP_TOP.value);
             willReturn.makeUncertain();
+        } else {
+            willReturn.makeUncertain();
         }
         return Pair.of(bytes, willReturn);
     }
