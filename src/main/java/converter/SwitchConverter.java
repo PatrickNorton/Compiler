@@ -200,8 +200,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     jumps.put(value, start + bytes.size());
                 } else {
                     throw CompilerException.format(
-                            "Cannot define %s twice in switch statement",
-                            node, errorEscape.apply(value)
+                            "Cannot define %s twice in switch statement", node, errorEscape.apply(value)
                     );
                 }
             }
