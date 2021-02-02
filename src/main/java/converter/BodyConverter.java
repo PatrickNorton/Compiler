@@ -24,20 +24,18 @@ public final class BodyConverter implements BaseConverter {
 
     @Override
     @NotNull
-    public Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
         info.addStackFrame();
-        boolean returned = false;
+        var returned = new DivergingInfo();
         boolean warned = false;
         List<Byte> bytes = new ArrayList<>();
         for (var statement : node) {
-            if (returned && !warned) {
+            if (returned.willDiverge() && !warned) {
                 CompilerWarning.warn("Unreachable statement", WarningType.UNREACHABLE, info, statement);
                 warned = true;
             }
             var pair = BaseConverter.bytesWithReturn(start + bytes.size(), statement, info);
-            if (pair.getValue()) {
-                returned = true;
-            }
+            returned.orWith(pair.getValue());
             bytes.addAll(pair.getKey());
         }
         info.removeStackFrame();

@@ -107,14 +107,6 @@ public final class AttributeConverter {
         }
     }
 
-    public void addUnionMethods(@NotNull Map<String, RawMethod> variantMethods) {
-        for (var pair : variantMethods.entrySet()) {
-            checkVars(pair.getKey(), pair.getValue(), staticVars);
-            checkVars(pair.getKey(), pair.getValue(), staticColons);
-        }
-        staticColons.putAll(variantMethods);
-    }
-
     private void parseNonColon(@NotNull DeclaredAssignmentNode node) {
         var attrType = info.getType(node.getTypes()[0].getType());
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());

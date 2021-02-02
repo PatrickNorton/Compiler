@@ -77,6 +77,13 @@ public final class MethodConverter {
         }
     }
 
+    public void addUnionMethods(@NotNull Map<String, RawMethod> variantMethods) {
+        for (var pair : variantMethods.entrySet()) {
+            checkVars(pair.getKey(), pair.getValue(), staticMethods);
+        }
+        staticMethods.putAll(variantMethods);
+    }
+
     public Map<String, RawMethod> getMethods() {
         return methodMap;
     }

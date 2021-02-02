@@ -47,7 +47,7 @@ public final class OperatorDefConverter {
         var lineInfo = node.getRetType().length > 0 ? node.getRetType()[0].getLineInfo() : node.getLineInfo();
         boolean isGenerator = ALWAYS_GENERATOR.contains(op);
         var retValues = validateReturns(lineInfo, isGenerator, op, returns);
-        FunctionInfo fnInfo = new FunctionInfo("", isGenerator, args, retValues);
+        FunctionInfo fnInfo = new FunctionInfo(op.toString(), isGenerator, args, retValues);
         boolean isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
         var opInfos = isStatic ? staticOperatorInfos : operatorInfos;
         var ops = isStatic ? staticOperators : operators;
@@ -61,7 +61,7 @@ public final class OperatorDefConverter {
         var lineInfo = node.getRetvals().length > 0 ? node.getRetvals()[0].getLineInfo() : node.getLineInfo();
         var isGenerator = ALWAYS_GENERATOR.contains(op);
         var retValues = validateReturns(lineInfo, isGenerator, op, returns);
-        FunctionInfo fnInfo = new FunctionInfo("", isGenerator, args, retValues);
+        FunctionInfo fnInfo = new FunctionInfo(op.toString(), isGenerator, args, retValues);
         addToOps(node, op, fnInfo, operatorInfos, operators, StatementBodyNode.empty());
     }
 

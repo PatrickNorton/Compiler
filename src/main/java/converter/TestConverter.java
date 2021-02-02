@@ -36,9 +36,10 @@ public interface TestConverter extends BaseConverter {
 
     @Override
     @NotNull
-    default Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+    default Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
         var retTypes = returnType();
-        return Pair.of(convert(start), Arrays.asList(retTypes).contains(Builtins.THROWS));
+        var willThrow = Arrays.asList(retTypes).contains(Builtins.THROWS);
+        return Pair.of(convert(start), willThrow ? new DivergingInfo().knownReturn() : new DivergingInfo());
     }
 
     @NotNull
