@@ -24,12 +24,12 @@ public final class WhileConverter extends LoopConverter {
     }
 
     @Override
-    protected Pair<List<Byte>, Boolean> trueConvertWithReturn(int start) {
+    protected Pair<List<Byte>, DivergingInfo> trueConvertWithReturn(int start) {
         List<Byte> bytes = new ArrayList<>();
         boolean hasAs = !node.getAs().isEmpty();
         info.loopManager().setContinuePoint(start);
         boolean isWhileTrue;
-        boolean willReturn;
+        DivergingInfo willReturn;
         if (!hasAs) {
             if (node.getCond() instanceof VariableNode && ((VariableNode) node.getCond()).getName().equals("true")) {
                 isWhileTrue = true;
@@ -68,15 +68,23 @@ public final class WhileConverter extends LoopConverter {
             }
             var nobreakReturns = addNobreak(bytes, start, jumpLoc);
             if (!isWhileTrue) {
-                willReturn &= nobreakReturns;
+                willReturn.andWith(nobreakReturns);
             }
         } else if (hasAs) {
-            willReturn = false;  // 'while true' cannot have an 'as' clause
+            willReturn.makeUncertain();  // 'while true' cannot have an 'as' clause
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
             bytes.add(Bytecode.POP_TOP.value);
         } else {
-            willReturn &= isWhileTrue;
+            if (!isWhileTrue) {
+                willReturn.makeUncertain();
+            }
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        }
+        if (isWhileTrue && !willReturn.mayBreak()) {
+            if (!willReturn.mayReturn()) {
+                CompilerWarning.warn("Infinite loop", WarningType.UNREACHABLE, info, node);
+            }
+            willReturn.knownReturn();
         }
         return Pair.of(bytes, willReturn);
     }
@@ -94,7 +102,7 @@ public final class WhileConverter extends LoopConverter {
         bytes.addAll(pair.getKey());
     }
 
-    private boolean addNobreak(@NotNull List<Byte> bytes, int start, int jumpLoc) {
+    private DivergingInfo addNobreak(@NotNull List<Byte> bytes, int start, int jumpLoc) {
         var pair = BaseConverter.bytesWithReturn(start + bytes.size(), node.getNobreak(), info);
         bytes.addAll(pair.getKey());
         if (!node.getAs().isEmpty()) {

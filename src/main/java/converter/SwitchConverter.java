@@ -11,6 +11,7 @@ import main.java.util.Pair;
 import main.java.util.StringEscape;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @Override
-    protected Pair<List<Byte>, Boolean> trueConvertWithReturn(int start) {
+    protected Pair<List<Byte>, DivergingInfo> trueConvertWithReturn(int start) {
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var retType = converter.returnType()[0];
         if (!(retType instanceof UnionTypeObject) && incompleteReturn()) {
@@ -56,7 +57,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         var switched = converter.convert(start);
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         boolean hadDefault = false;
-        boolean willReturn = true;
+        DivergingInfo willReturn = null;
         List<Byte> bytes = new ArrayList<>(switched);
         for (var caseStatement : node.getCases()) {
             if (caseStatement instanceof DefaultStatementNode) {
@@ -69,9 +70,15 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                         WarningType.UNREACHABLE, info, caseStatement
                 );
             }
-            willReturn &= addCase(caseStatement, start, bytes, retTypes);
+            willReturn = andWith(willReturn, addCase(caseStatement, start, bytes, retTypes));
         }
-        return Pair.of(bytes, willReturn && hadDefault);
+        if (willReturn == null) {
+            willReturn = new DivergingInfo();
+        }
+        if (!hadDefault) {
+            willReturn.makeUncertain();
+        }
+        return Pair.of(bytes, willReturn);
     }
 
     @NotNull
@@ -118,7 +125,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return types;
     }
 
-    private boolean addCase(@NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes, TypeObject[] retTypes) {
+    private DivergingInfo addCase(
+            @NotNull CaseStatementNode stmt, int start, @NotNull List<Byte> bytes, TypeObject[] retTypes
+    ) {
         // TODO: Ensure 'default' statement is at the end
         var label = stmt.getLabel();
         List<Integer> jumpLocations = new ArrayList<>(label.length);
@@ -158,10 +167,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @NotNull
-    private Pair<List<Byte>, Boolean> convertTbl(int start) {
+    private Pair<List<Byte>, DivergingInfo> convertTbl(int start) {
         Map<BigInteger, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
-        boolean willReturn = true;
+        DivergingInfo willReturn = null;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         List<Byte> bytes = tblHeader(start);
         int tblPos = bytes.size();
@@ -173,7 +182,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (stmt instanceof DefaultStatementNode) {
                 var pair = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 defaultVal = pair.getKey();
-                willReturn &= pair.getValue();
+                willReturn = andWith(willReturn, pair.getValue());
                 continue;
             }
             if (stmt.getLabel().length == 0) {
@@ -189,22 +198,28 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     jumps.put(value, start + bytes.size());
                 }
             }
-            willReturn &= convertBody(start, bytes, stmt, retTypes);
+            willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
         }
+        if (willReturn == null) {
+            willReturn = new DivergingInfo();
+        }
+        if (defaultVal == 0) {
+            willReturn.makeUncertain();
+        }
         var switchTable = getTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
         int tblIndex = info.addSwitchTable(switchTable);
         Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
-        return Pair.of(bytes, willReturn && defaultVal != 0);
+        return Pair.of(bytes, willReturn);
     }
 
     @NotNull
-    private Pair<List<Byte>, Boolean> convertStr(int start) {
+    private Pair<List<Byte>, DivergingInfo> convertStr(int start) {
         Map<String, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
-        boolean willReturn = true;
+        DivergingInfo willReturn = null;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         var bytes = tblHeader(start);
         int tblPos = bytes.size();
@@ -216,7 +231,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (stmt instanceof DefaultStatementNode) {
                 var pair = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 defaultVal = pair.getKey();
-                willReturn &= pair.getValue();
+                willReturn = andWith(willReturn, pair.getValue());
                 continue;
             }
             if (stmt.getLabel().length == 0) {
@@ -239,20 +254,26 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     throw literalException("string", label);
                 }
             }
-            willReturn &= convertBody(start, bytes, stmt, retTypes);
+            willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
         }
+        if (willReturn == null) {
+            willReturn = new DivergingInfo();
+        }
+        if (defaultVal == 0) {
+            willReturn.makeUncertain();
+        }
         var switchTable = strTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
         int tblIndex = info.addSwitchTable(switchTable);
         Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
-        return Pair.of(bytes, willReturn && defaultVal != 0);
+        return Pair.of(bytes, willReturn);
     }
 
-    private Pair<List<Byte>, Boolean> convertChar(int start) {
+    private Pair<List<Byte>, DivergingInfo> convertChar(int start) {
         Map<Integer, Integer> jumps = new HashMap<>();  // int not char b/c Java Unicode sucks
-        boolean willReturn = true;
+        DivergingInfo willReturn = null;
         int defaultVal = 0;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         var bytes = tblHeader(start);
@@ -265,7 +286,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (stmt instanceof DefaultStatementNode) {
                 var pair = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
                 defaultVal = pair.getKey();
-                willReturn &= pair.getValue();
+                willReturn = andWith(willReturn, pair.getValue());
                 continue;
             }
             if (stmt.getLabel().length == 0) {
@@ -288,15 +309,21 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     throw literalException("char", label);
                 }
             }
-            willReturn &= convertBody(start, bytes, stmt, retTypes);
+            willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
         }
+        if (willReturn == null) {
+            willReturn = new DivergingInfo();
+        }
+        if (defaultVal == 0) {
+            willReturn.makeUncertain();
+        }
         var switchTable = charTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
         int tblIndex = info.addSwitchTable(switchTable);
         Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
-        return Pair.of(bytes, willReturn && defaultVal != 0);
+        return Pair.of(bytes, willReturn);
     }
 
     @NotNull
@@ -335,7 +362,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return new StringSwitchTable(jumps, defaultVal);
     }
 
-    private boolean convertBody(int start, @NotNull List<Byte> bytes,
+    private DivergingInfo convertBody(int start, @NotNull List<Byte> bytes,
                               @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
         if (stmt.isArrow()) {
             return convertArrow(start, bytes, stmt, retTypes);
@@ -351,7 +378,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         }
     }
 
-    private boolean convertArrow(int start, @NotNull List<Byte> bytes,
+    private DivergingInfo convertArrow(int start, @NotNull List<Byte> bytes,
                               @NotNull CaseStatementNode stmt, @NotNull TypeObject[] retTypes) {
         assert stmt.isArrow();
         var converter = TestConverter.of(info, (TestNode) stmt.getBody().get(0), retCount);
@@ -368,7 +395,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return pair.getValue();
     }
 
-    private Pair<Integer, Boolean> getDefaultVal(int start, int defaultVal, List<Byte> bytes,
+    private Pair<Integer, DivergingInfo> getDefaultVal(int start, int defaultVal, List<Byte> bytes,
                               CaseStatementNode stmt, TypeObject[] retTypes) {
         if (defaultVal != 0) {
             throw defaultException(stmt);
@@ -376,10 +403,10 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
     }
 
-    private  Pair<Integer, Boolean> convertDefault(int start, @NotNull List<Byte> bytes,
+    private  Pair<Integer, DivergingInfo> convertDefault(int start, @NotNull List<Byte> bytes,
                                @NotNull DefaultStatementNode stmt, TypeObject[] retTypes) {
         var defaultVal = start + bytes.size();
-        boolean willReturn;
+        DivergingInfo willReturn;
         if (stmt.isArrow()) {
             willReturn = convertArrow(start, bytes, stmt, retTypes);
         } else {
@@ -394,11 +421,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @NotNull
-    private Pair<List<Byte>, Boolean> convertUnion(int start, UnionTypeObject union) {
+    private Pair<List<Byte>, DivergingInfo> convertUnion(int start, UnionTypeObject union) {
         Map<Integer, Integer> jumps = new HashMap<>();
         boolean hasAs = anyHasAs();
         int defaultVal = 0;
-        boolean willReturn = true;
+        DivergingInfo willReturn = null;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getSwitched(), info, 1));
         if (hasAs) {
@@ -422,7 +449,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 }
                 var pair = convertDefault(start, bytes, (DefaultStatementNode) stmt, retTypes);
                 defaultVal = pair.getKey();
-                willReturn &= pair.getValue();
+                willReturn = andWith(willReturn, pair.getValue());
                 continue;
             }
             var stmtHasAs = !stmt.getAs().isEmpty();
@@ -456,13 +483,16 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             if (hasAs && !stmtHasAs) {
                 bytes.add(Bytecode.POP_TOP.value);
             }
-            willReturn &= convertBody(start, bytes, stmt, retTypes);
+            willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
             bytes.add(Bytecode.JUMP.value);
             info.loopManager().addBreak(1, start + bytes.size());
             bytes.addAll(Util.zeroToBytes());
             if (!stmt.getAs().isEmpty()) {
                 info.removeStackFrame();
             }
+        }
+        if (willReturn == null) {
+            willReturn = new DivergingInfo();
         }
         if (!hasDefault && retCount > 0) {
             var missingUnion = incompleteUnion(union, usedVariants);
@@ -487,7 +517,9 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 );
             }
         } else {
-            willReturn &= incompleteUnion(union, usedVariants).isEmpty();
+            if (incompleteUnion(union, usedVariants).isPresent()) {
+                willReturn.makeUncertain();
+            }
         }
         var switchTable = smallTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
         int tblIndex = info.addSwitchTable(switchTable);
@@ -648,5 +680,14 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     private static CompilerException emptyLabelException(Lined stmt) {
         return CompilerException.format("Case statements must have at least one label", stmt);
+    }
+
+    private static DivergingInfo andWith(@Nullable DivergingInfo info1, DivergingInfo info2) {
+        if (info1 != null) {
+            info1.andWith(info2);
+            return info1;
+        } else {
+            return info2;
+        }
     }
 }

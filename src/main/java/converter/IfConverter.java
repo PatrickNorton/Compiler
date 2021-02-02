@@ -31,9 +31,9 @@ public final class IfConverter implements BaseConverter {
 
     @Override
     @NotNull
-    public Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
         List<Byte> bytes;
-        boolean willReturn;
+        DivergingInfo willReturn;
         boolean hasAs = !node.getAs().isEmpty();
         boolean hasElse = !node.getElseStmt().isEmpty();
         checkConditions();
@@ -50,22 +50,24 @@ public final class IfConverter implements BaseConverter {
         int elifsRemaining = node.getElifs().length - 1;
         boolean popAs = hasAs;
         for (var elif : node.getElifs()) {
-            willReturn &= addElif(bytes, start, elif, hasElse || elifsRemaining > 0 || !elif.getAs().isEmpty(), popAs);
+            var trailing = hasElse || elifsRemaining > 0 || !elif.getAs().isEmpty();
+            willReturn.andWith(addElif(bytes, start, elif, trailing, popAs));
             popAs = !elif.getAs().isEmpty();
             elifsRemaining--;
         }
         if (hasElse) {
-            willReturn &= addElse(bytes, start, node.getElseStmt(), popAs);
+            willReturn.andWith(addElse(bytes, start, node.getElseStmt(), popAs));
         } else if (popAs) {
             var jumpPos = start + bytes.size() + Bytecode.JUMP.size() + Bytecode.POP_TOP.size();
             bytes.add(Bytecode.JUMP.value);
             bytes.addAll(Util.intToBytes(jumpPos));
             bytes.add(Bytecode.POP_TOP.value);
+            willReturn.makeUncertain();
         }
-        return Pair.of(bytes, willReturn && hasElse);
+        return Pair.of(bytes, willReturn);
     }
 
-    private boolean addBody(
+    private DivergingInfo addBody(
             @NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean trailingJump, boolean jumpType
     ) {
         var pair = BaseConverter.bytesWithReturn(
@@ -80,7 +82,7 @@ public final class IfConverter implements BaseConverter {
         return pair.getValue();
     }
 
-    private boolean addBodyWithAs(@NotNull List<Byte> bytes, int start, StatementBodyNode body, VariableNode asName) {
+    private DivergingInfo addBodyWithAs(@NotNull List<Byte> bytes, int start, StatementBodyNode body, VariableNode asName) {
         bytes.add(Bytecode.JUMP_FALSE.value);
         int jumpInsert = bytes.size();
         bytes.addAll(Util.zeroToBytes());
@@ -92,7 +94,7 @@ public final class IfConverter implements BaseConverter {
         return pair.getValue();
     }
 
-    private boolean addElif(
+    private DivergingInfo addElif(
             @NotNull List<Byte> bytes, int start, @NotNull ElifStatementNode elif, boolean trailingJump, boolean popAs
     ) {
         var cond = elif.getTest();
@@ -103,7 +105,7 @@ public final class IfConverter implements BaseConverter {
         if (popAs) {
             bytes.add(Bytecode.POP_TOP.value);
         }
-        boolean willReturn;
+        DivergingInfo willReturn;
         if (elif.getAs().isEmpty()) {
             var pair = convertOptimizedNot(start + Bytecode.JUMP.size() + bytes.size(), cond);
             bytes.addAll(pair.getKey());
@@ -119,7 +121,7 @@ public final class IfConverter implements BaseConverter {
         return willReturn;
     }
 
-    private boolean addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean popAs) {
+    private DivergingInfo addElse(@NotNull List<Byte> bytes, int start, StatementBodyNode body, boolean popAs) {
         bytes.add(Bytecode.JUMP.value);
         int jumpIndex = bytes.size();
         bytes.addAll(Util.zeroToBytes());

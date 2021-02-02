@@ -53,7 +53,9 @@ public final class RaiseConverter implements TestConverter {
 
     @Override
     @NotNull
-    public Pair<List<Byte>, Boolean> convertAndReturn(int start) {
-        return Pair.of(convert(start), node.getCond().isEmpty());
+    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
+        var divergingInfo = node.getCond().isEmpty()
+                ? new DivergingInfo().knownReturn() : new DivergingInfo().possibleReturn();
+        return Pair.of(convert(start), divergingInfo);
     }
 }

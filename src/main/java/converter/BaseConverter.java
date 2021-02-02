@@ -40,8 +40,8 @@ public interface BaseConverter {
     List<Byte> convert(int start);
 
     @NotNull
-    default Pair<List<Byte>, Boolean> convertAndReturn(int start) {
-        return Pair.of(convert(start), false);
+    default Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
+        return Pair.of(convert(start), new DivergingInfo());
     }
 
     @NotNull
@@ -53,7 +53,7 @@ public interface BaseConverter {
         return withoutAnnotations(tokens, info).convert(start);
     }
 
-    static Pair<List<Byte>, Boolean> bytesWithReturn(int start, BaseNode tokens, CompilerInfo info) {
+    static Pair<List<Byte>, DivergingInfo> bytesWithReturn(int start, BaseNode tokens, CompilerInfo info) {
         return toBytes(tokens, info).convertAndReturn(start);
     }
 

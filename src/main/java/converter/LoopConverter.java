@@ -31,18 +31,18 @@ public abstract class LoopConverter implements BaseConverter {
 
     @Override
     @NotNull
-    public Pair<List<Byte>, Boolean> convertAndReturn(int start) {
+    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
         info.loopManager().enterLoop(hasContinue);
         info.addStackFrame();
         var pair = trueConvertWithReturn(start);
         info.loopManager().exitLoop(start, pair.getKey());
         info.removeStackFrame();
-        return pair;
+        return Pair.of(pair.getKey(), pair.getValue().removeLevel());
     }
 
     protected abstract List<Byte> trueConvert(int start);
 
-    protected Pair<List<Byte>, Boolean> trueConvertWithReturn(int start) {
-        return Pair.of(trueConvert(start), false);
+    protected Pair<List<Byte>, DivergingInfo> trueConvertWithReturn(int start) {
+        return Pair.of(trueConvert(start), new DivergingInfo());
     }
 }

@@ -62,7 +62,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 }
                 var bodyPair = BaseConverter.bytesWithReturn(0, methodInfo.getBody(), info);
                 var bytes = bodyPair.getKey();
-                if (endsWithoutReturning(type, fnInfo, bodyPair.getValue())) {
+                if (endsWithoutReturning(type, fnInfo, bodyPair.getValue().willReturn())) {
                     CompilerWarning.warn("Function ends without returning", WarningType.NO_TYPE, info, methodInfo);
                 }
                 retInfo.popFnReturns();
