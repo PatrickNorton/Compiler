@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public final class SwitchConverter extends LoopConverter implements TestConverter {
     private final SwitchStatementNode node;
@@ -46,7 +48,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             throw CompilerException.format("Cannot get return from switch: Missing 'default' statement", node);
         }
         if (Builtins.INT.isSuperclass(retType)) {
-            return convertTbl(start);
+            return convertInt(start);
         } else if (Builtins.STR.isSuperclass(retType)) {
             return convertStr(start);
         } else if (Builtins.CHAR.isSuperclass(retType)) {
@@ -166,9 +168,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return willReturn;
     }
 
-    @NotNull
-    private Pair<List<Byte>, DivergingInfo> convertTbl(int start) {
-        Map<BigInteger, Integer> jumps = new HashMap<>();
+    private <T> Pair<List<Byte>, DivergingInfo> convertTbl(
+            int start, BiFunction<TestConverter, Lined, T> addToMap,
+            Function<T, String> errorEscape,
+            BiFunction<Map<T, Integer>, Integer, SwitchTable> createTable
+    ) {
+        Map<T, Integer> jumps = new HashMap<>();
         int defaultVal = 0;
         DivergingInfo willReturn = null;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
@@ -190,12 +195,14 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             }
             for (var label : stmt.getLabel()) {
                 var lblConverter = TestConverter.of(info, label, 1);
-                var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
-                var value = IntArithmetic.convertConst(constant).orElseThrow(() -> literalException("int", label));
-                if (jumps.containsKey(value)) {
-                    throw CompilerException.format("Cannot define number %d twice in switch statement", node, value);
-                } else {
+                var value = addToMap.apply(lblConverter, label);
+                if (!jumps.containsKey(value)) {
                     jumps.put(value, start + bytes.size());
+                } else {
+                    throw CompilerException.format(
+                            "Cannot define %s twice in switch statement",
+                            node, errorEscape.apply(value)
+                    );
                 }
             }
             willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
@@ -209,121 +216,42 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         if (defaultVal == 0) {
             willReturn.makeUncertain();
         }
-        var switchTable = getTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
+        var switchTable = createTable.apply(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
         int tblIndex = info.addSwitchTable(switchTable);
         Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
         return Pair.of(bytes, willReturn);
     }
 
-    @NotNull
+    private Pair<List<Byte>, DivergingInfo> convertInt(int start) {
+        BiFunction<TestConverter, Lined, BigInteger> addToMap = (lblConverter, label) -> {
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("int", label));
+            return IntArithmetic.convertConst(constant).orElseThrow(() -> literalException("int", label));
+        };
+        return convertTbl(start, addToMap, BigInteger::toString, this::getTbl);
+    }
+
     private Pair<List<Byte>, DivergingInfo> convertStr(int start) {
-        Map<String, Integer> jumps = new HashMap<>();
-        int defaultVal = 0;
-        DivergingInfo willReturn = null;
-        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
-        var bytes = tblHeader(start);
-        int tblPos = bytes.size();
-        bytes.addAll(Util.shortZeroBytes());
-        for (var stmt : node.getCases()) {
-            if (!stmt.getAs().isEmpty()) {
-                throw asException(stmt.getAs());
+        BiFunction<TestConverter, Lined, String> addToMap = (lblConverter, label) -> {
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
+            if (constant instanceof StringConstant) {
+                return ((StringConstant) constant).getValue();
+            } else {
+                throw literalException("string", label);
             }
-            if (stmt instanceof DefaultStatementNode) {
-                var pair = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
-                defaultVal = pair.getKey();
-                willReturn = andWith(willReturn, pair.getValue());
-                continue;
-            }
-            if (stmt.getLabel().length == 0) {
-                throw emptyLabelException(stmt);
-            }
-            for (var label : stmt.getLabel()) {
-                var lblConverter = TestConverter.of(info, label, 1);
-                var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("string", label));
-                if (constant instanceof StringConstant) {
-                    var value = ((StringConstant) constant).getValue();
-                    if (jumps.containsKey(value)) {
-                        throw CompilerException.format(
-                                "Cannot define str \"%s\" twice in switch statement",
-                                node, StringEscape.escape(value)
-                         );
-                    } else {
-                        jumps.put(value, start + bytes.size());
-                    }
-                } else {
-                    throw literalException("string", label);
-                }
-            }
-            willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
-            bytes.add(Bytecode.JUMP.value);
-            info.loopManager().addBreak(1, start + bytes.size());
-            bytes.addAll(Util.zeroToBytes());
-        }
-        if (willReturn == null) {
-            willReturn = new DivergingInfo();
-        }
-        if (defaultVal == 0) {
-            willReturn.makeUncertain();
-        }
-        var switchTable = strTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
-        int tblIndex = info.addSwitchTable(switchTable);
-        Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
-        return Pair.of(bytes, willReturn);
+        };
+        return convertTbl(start, addToMap, StringEscape::escape, this::strTbl);
     }
 
     private Pair<List<Byte>, DivergingInfo> convertChar(int start) {
-        Map<Integer, Integer> jumps = new HashMap<>();  // int not char b/c Java Unicode sucks
-        DivergingInfo willReturn = null;
-        int defaultVal = 0;
-        var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
-        var bytes = tblHeader(start);
-        int tblPos = bytes.size();
-        bytes.addAll(Util.shortZeroBytes());
-        for (var stmt : node.getCases()) {
-            if (!stmt.getAs().isEmpty()) {
-                throw asException(stmt.getAs());
+        BiFunction<TestConverter, Lined, Integer> addToMap = (lblConverter, label) -> {
+            var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("char", label));
+            if (constant instanceof CharConstant) {
+                return ((CharConstant) constant).getValue();
+            } else {
+                throw literalException("char", label);
             }
-            if (stmt instanceof DefaultStatementNode) {
-                var pair = getDefaultVal(start, defaultVal, bytes, stmt, retTypes);
-                defaultVal = pair.getKey();
-                willReturn = andWith(willReturn, pair.getValue());
-                continue;
-            }
-            if (stmt.getLabel().length == 0) {
-                throw emptyLabelException(stmt);
-            }
-            for (var label : stmt.getLabel()) {
-                var lblConverter = TestConverter.of(info, label, 1);
-                var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("char", label));
-                if (constant instanceof CharConstant) {
-                    var value = ((CharConstant) constant).getValue();
-                    if (jumps.containsKey(value)) {
-                        throw CompilerException.format(
-                                "Cannot define char %s twice in switch statement",
-                                node, ((CharConstant) constant).name()
-                         );
-                    } else {
-                        jumps.put(value, start + bytes.size());
-                    }
-                } else {
-                    throw literalException("char", label);
-                }
-            }
-            willReturn = andWith(willReturn, convertBody(start, bytes, stmt, retTypes));
-            bytes.add(Bytecode.JUMP.value);
-            info.loopManager().addBreak(1, start + bytes.size());
-            bytes.addAll(Util.zeroToBytes());
-        }
-        if (willReturn == null) {
-            willReturn = new DivergingInfo();
-        }
-        if (defaultVal == 0) {
-            willReturn.makeUncertain();
-        }
-        var switchTable = charTbl(jumps, defaultVal == 0 ? start + bytes.size() : defaultVal);
-        int tblIndex = info.addSwitchTable(switchTable);
-        Util.emplace(bytes, Util.shortToBytes((short) tblIndex), tblPos);
-        return Pair.of(bytes, willReturn);
+        };
+        return convertTbl(start, addToMap, CharConstant::name, this::charTbl);
     }
 
     @NotNull
@@ -661,7 +589,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     @NotNull
-    private static CompilerException literalException(String literalType, TestNode label) {
+    private static CompilerException literalException(String literalType, Lined label) {
         return CompilerException.format(
                 "'switch' on a %1$s requires a %1$s literal in each case statement",
                 label, literalType
