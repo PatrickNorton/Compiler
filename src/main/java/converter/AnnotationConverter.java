@@ -280,6 +280,9 @@ public final class AnnotationConverter implements BaseConverter {
                 case "unreachable":
                     addWarning(WarningType.UNREACHABLE, allowedTypes, annotation, warningHolder);
                     break;
+                case "infinite":
+                    addWarning(WarningType.INFINITE_LOOP, allowedTypes, annotation, warningHolder);
+                    break;
                 default:
                     throw CompilerException.format("Unknown warning type %s", annotation, argName);
             }
