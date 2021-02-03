@@ -6,5 +6,6 @@ public enum WarningType {
     UNUSED,
     TRIVIAL_VALUE,
     UNREACHABLE,
+    INFINITE_LOOP,
     ;
 }
