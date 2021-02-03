@@ -25,9 +25,9 @@ public final class DivergingInfo {
 
     public void andWith(DivergingInfo other) {
         this.willReturn &= other.willReturn;
-        this.mayReturn &= other.mayReturn;
+        this.mayReturn |= other.mayReturn;
         this.willBreak.retainAll(other.willBreak);
-        this.mayBreak.retainAll(other.mayBreak);
+        this.mayBreak.addAll(other.mayBreak);
     }
 
     public void orWith(DivergingInfo other) {

@@ -50,10 +50,14 @@ public final class CharConstant implements LangConstant {
     @Override
     @NotNull
     public String name(IndexedSet<LangConstant> constants) {
-        return name();
+        return name(value);
     }
 
     public String name() {
+        return name(value);
+    }
+
+    public static String name(int value) {
         switch (value) {
             case '\'':
                 return "c\"'\"";

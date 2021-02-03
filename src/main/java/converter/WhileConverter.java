@@ -81,9 +81,6 @@ public final class WhileConverter extends LoopConverter {
             Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
         }
         if (isWhileTrue && !willReturn.mayBreak()) {
-            if (!willReturn.mayReturn()) {
-                CompilerWarning.warn("Infinite loop", WarningType.UNREACHABLE, info, node);
-            }
             willReturn.knownReturn();
         }
         return Pair.of(bytes, willReturn);
