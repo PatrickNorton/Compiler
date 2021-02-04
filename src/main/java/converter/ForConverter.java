@@ -6,6 +6,7 @@ import main.java.parser.TypedVariableNode;
 import main.java.parser.VarLikeNode;
 import main.java.parser.VariableNode;
 import main.java.util.Levenshtein;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,10 +23,15 @@ public final class ForConverter extends LoopConverter {
         this.info = info;
     }
 
+    @Override
+    protected List<Byte> trueConvert(int start) {
+        return trueConvertWithReturn(start).getKey();
+    }
+
     @NotNull
     @Contract(pure = true)
     @Override
-    public List<Byte> trueConvert(int start) {
+    public Pair<List<Byte>, DivergingInfo> trueConvertWithReturn(int start) {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
         if (iterLen > varLen) {
@@ -42,7 +48,7 @@ public final class ForConverter extends LoopConverter {
     }
 
     @NotNull
-    private List<Byte> convertSingleIter(int start) {
+    private Pair<List<Byte>, DivergingInfo> convertSingleIter(int start) {
         var retCount = node.getVars().length;
         var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
         List<Byte> bytes = new ArrayList<>();
@@ -55,12 +61,12 @@ public final class ForConverter extends LoopConverter {
         for (int i = retCount - 1; i >= 0; i--) {
             addVariableStorage(bytes, i, valueConverter, false);
         }
-        addCleanup(start, bytes, jumpPos);
-        return bytes;
+        var divergingInfo = addCleanup(start, bytes, jumpPos);
+        return Pair.of(bytes, divergingInfo);
     }
 
     @NotNull
-    private List<Byte> convertMultipleIter(int start) {
+    private Pair<List<Byte>, DivergingInfo> convertMultipleIter(int start) {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
         if (varLen != iterLen) {
@@ -88,8 +94,8 @@ public final class ForConverter extends LoopConverter {
             var valueConverter = valueConverters.get(i);
             addVariableStorage(bytes, i, valueConverter, true);
         }
-        addCleanup(start, bytes, jumpPos);
-        return bytes;
+        var divergingInfo = addCleanup(start, bytes, jumpPos);
+        return Pair.of(bytes, divergingInfo);
     }
 
     private void addVariableStorage(List<Byte> bytes, int i, TestConverter valueConverter, boolean firstRet) {
@@ -120,13 +126,24 @@ public final class ForConverter extends LoopConverter {
         bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
     }
 
-    private void addCleanup(int start, @NotNull List<Byte> bytes, int jumpPos) {
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
+    private DivergingInfo addCleanup(int start, @NotNull List<Byte> bytes, int jumpPos) {
+        var pair = BaseConverter.bytesWithReturn(start + bytes.size(), node.getBody(), info);
+        var divergingInfo = pair.getValue();
+        bytes.addAll(pair.getKey());
         bytes.add(Bytecode.JUMP.value);
         info.loopManager().addContinue(start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getNobreak(), info));
+        if (node.getNobreak().isEmpty()) {
+            divergingInfo.makeUncertain();
+        } else {
+            var nobreak = BaseConverter.bytesWithReturn(
+                    start + bytes.size(), node.getNobreak(), info
+            );
+            bytes.addAll(nobreak.getKey());
+            divergingInfo.andWith(nobreak.getValue());
+        }
+        return divergingInfo;
     }
 
     private TypeObject returnType(int i, @NotNull TestConverter valueConverter) {

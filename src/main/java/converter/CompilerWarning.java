@@ -36,7 +36,17 @@ public final class CompilerWarning {
                     info.getPath(), info.getLineNumber(), message, info.infoString());
                 return;
             case DENY:
-                throw CompilerException.of(message, info);
+                var warnName = warn.annotationName();
+                if (warnName.isPresent()) {
+                    throw CompilerException.format(
+                            "%s\nNote: Error because of $deny(%s) or $deny(all)",
+                            info, message, warnName.orElseThrow()
+                    );
+                } else {
+                    throw CompilerException.format(
+                            "%s\nNote: Error because of $deny(all)", info, message
+                    );
+                }
             default:
                 throw CompilerInternalError.format("Unknown warning level %s", info, level);
         }
