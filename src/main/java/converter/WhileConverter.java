@@ -42,9 +42,14 @@ public final class WhileConverter extends LoopConverter {
             isWhileTrue = false;
             convertCondWithAs(bytes, start);
         }
-        bytes.add(isWhileTrue ? Bytecode.JUMP.value : Bytecode.JUMP_FALSE.value);
-        int jumpLoc = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
+        int jumpLoc;
+        if (isWhileTrue) {
+            jumpLoc = -1;
+        } else {
+            bytes.add(Bytecode.JUMP_FALSE.value);
+            jumpLoc = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+        }
         if (hasAs) {
             bytes.add(Bytecode.STORE.value);
             bytes.addAll(Util.shortToBytes(info.varIndex(node.getAs())));
@@ -77,8 +82,8 @@ public final class WhileConverter extends LoopConverter {
         } else {
             if (!isWhileTrue) {
                 willReturn.makeUncertain();
+                Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
             }
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
         }
         if (isWhileTrue && !willReturn.mayBreak()) {
             if (!willReturn.mayReturn() && !info.getFnReturns().isGenerator()) {
