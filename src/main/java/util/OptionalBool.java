@@ -117,4 +117,18 @@ public final class OptionalBool {
             return Optional.of(ifTrue);
         }
     }
+
+    /**
+     * If this is both present and the present value is {@code true}.
+     * <p>
+     *     This is equivalent to {@code this.}{@link #isPresent()} {@code &&}
+     *     {@code this.}{@link #orElseThrow()}. {@code
+     *     OptionalBool.of(true).isTrue()} will always return {@code true}.
+     * </p>
+     *
+     * @return If this is true
+     */
+    public boolean isTrue() {
+        return value > 0;
+    }
 }

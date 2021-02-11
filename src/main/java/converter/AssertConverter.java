@@ -41,7 +41,7 @@ public final class AssertConverter implements BaseConverter {
         } else {
             var converter = TestConverter.of(info, node.getAs(), 1);
             var retType = converter.returnType()[0];
-            if (!Builtins.STR.isSuperclass(retType)) {
+            if (!Builtins.str().isSuperclass(retType)) {
                 throw CompilerException.format(
                         "'as' clause in an assert statement must return a 'str', not '%s'",
                         node.getAs(), retType.name()

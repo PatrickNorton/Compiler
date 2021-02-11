@@ -41,7 +41,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             }
             info.addStackFrame();
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
-            info.addVariable("cls", Builtins.TYPE.generify(type), true, node);
+            info.addVariable("cls", Builtins.type().generify(type), true, node);
             var handler = info.accessHandler();
             try {
                 handler.allowPrivateAccess(type);
@@ -50,7 +50,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 var fnInfo = methodInfo.getInfo();
                 for (var arg : fnInfo.getArgs()) {
                     if (arg.isVararg()) {
-                        info.addVariable(arg.getName(), Builtins.ITERABLE.generify(arg, arg.getType()), methodInfo);
+                        info.addVariable(arg.getName(), Builtins.iterable().generify(arg, arg.getType()), methodInfo);
                     } else {
                         info.addVariable(arg.getName(), arg.getType(), methodInfo);
                     }
@@ -152,7 +152,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
         var constant = new ClassConstant(name, info.classIndex(type), type);
-        info.addVariable(name, Builtins.TYPE.generify(type), constant, node);
+        info.addVariable(name, Builtins.type().generify(type), constant, node);
         var cls = create(type, variants, superConstants, converter);
         info.setClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {
@@ -164,7 +164,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                                    List<Short> superConstants, @NotNull ConverterHolder converter) {
         var name = node.getName().strName();
         info.checkDefinition(name, node);
-        info.reserveConstVar(name, Builtins.TYPE.generify(type), node);
+        info.reserveConstVar(name, Builtins.type().generify(type), node);
         var cls = create(type, variants, superConstants, converter);
         int classIndex = info.addClass(cls);
         if (Builtins.FORBIDDEN_NAMES.contains(name)) {

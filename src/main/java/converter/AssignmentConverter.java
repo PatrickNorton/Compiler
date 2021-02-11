@@ -279,9 +279,9 @@ public final class AssignmentConverter implements BaseConverter {
 
     private void checkSlice(TypeObject varType, TypeObject setType) {
         var ops = varType.tryOperatorInfo(node, OpSpTypeNode.SET_SLICE, info);
-        var args = new Argument[] {new Argument("", Builtins.SLICE), new Argument("", setType)};
+        var args = new Argument[] {new Argument("", Builtins.slice()), new Argument("", setType)};
         if (ops.generifyArgs(args).isEmpty()) {
-            var nameArr = TypeObject.name(Builtins.SLICE);
+            var nameArr = TypeObject.name(Builtins.slice());
             throw indexErr(true, varType, nameArr, ops);
         }
     }

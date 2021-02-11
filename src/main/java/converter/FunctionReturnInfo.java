@@ -22,7 +22,8 @@ public final class FunctionReturnInfo {
      * Adds the given function returns to the file.
      * <p>
      *     <b>IMPORTANT</b>: If {@code isGen} is {@code true}, {@code values}
-     *     should <i>not</i> be a subclass of {@link Builtins#ITERABLE Iterable}
+     *     should <i>not</i> be a subclass of {@link Builtins#iterable()
+     *     Iterable}
      *     (probably), but instead the parameters of the iterable (as they would
      *     appear after the arrow in a generator definition).
      * </p>

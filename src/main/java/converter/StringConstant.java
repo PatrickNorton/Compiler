@@ -58,7 +58,7 @@ public final class StringConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.STR;
+        return Builtins.str();
     }
 
     @NotNull

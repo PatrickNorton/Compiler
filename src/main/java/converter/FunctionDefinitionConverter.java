@@ -76,7 +76,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var generics = getGenerics();
         var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var trueRet = isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(retTypes)} : retTypes;
+        var trueRet = isGenerator ? new TypeObject[]{Builtins.iterable().generify(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
         List<Byte> bytes = new ArrayList<>();
         var fn = new Function(node, fnInfo, bytes);
@@ -114,7 +114,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var type = info.getType(arg.getType());
             var argName = arg.getName().getName();
             if (arg.getVararg()) {
-                info.addVariable(argName, Builtins.ITERABLE.generify(arg, type), arg);
+                info.addVariable(argName, Builtins.iterable().generify(arg, type), arg);
             } else {
                 info.addVariable(argName, type, arg);
             }
@@ -145,7 +145,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var argInfo = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var trueRet = isGenerator ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
+        var trueRet = isGenerator ? new TypeObject[] {Builtins.iterable().generify(returns)} : returns;
         var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, generics, argInfo, trueRet);
         var func = new Function(node, fnInfo, new ArrayList<>());
         var previouslyDefined = info.getFn(func.getName());

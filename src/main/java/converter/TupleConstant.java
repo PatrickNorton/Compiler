@@ -40,7 +40,7 @@ public final class TupleConstant implements LangConstant {
         for (int i = 0; i < values.size(); i++) {
             generics[i] = values.get(i).getValue();
         }
-        return Builtins.TUPLE.generify(generics);
+        return Builtins.tuple().generify(generics);
     }
 
     @Override

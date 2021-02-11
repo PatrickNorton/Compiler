@@ -123,7 +123,7 @@ public final class OperatorDefConverter {
                         info, op, returns[0].name(), DEFAULT_RETURNS.get(op).name()
                 );
             }
-            return isGenerator ? new TypeObject[]{Builtins.ITERABLE.generify(info, returns)} : returns;
+            return isGenerator ? new TypeObject[]{Builtins.iterable().generify(info, returns)} : returns;
         } else {
             return DEFAULT_RETURNS.containsKey(op) ? new TypeObject[] {DEFAULT_RETURNS.get(op)} : new TypeObject[0];
         }
@@ -141,20 +141,20 @@ public final class OperatorDefConverter {
     static {
         var temp = new EnumMap<OpSpTypeNode, TypeObject>(OpSpTypeNode.class);
         // Conversion methods
-        temp.put(OpSpTypeNode.STR, Builtins.STR);
-        temp.put(OpSpTypeNode.BOOL, Builtins.BOOL);
-        temp.put(OpSpTypeNode.REPR, Builtins.STR);
-        temp.put(OpSpTypeNode.INT, Builtins.INT);
-        temp.put(OpSpTypeNode.HASH, Builtins.INT);
+        temp.put(OpSpTypeNode.STR, Builtins.str());
+        temp.put(OpSpTypeNode.BOOL, Builtins.bool());
+        temp.put(OpSpTypeNode.REPR, Builtins.str());
+        temp.put(OpSpTypeNode.INT, Builtins.intType());
+        temp.put(OpSpTypeNode.HASH, Builtins.intType());
         // Boolean operators
-        temp.put(OpSpTypeNode.EQUALS, Builtins.BOOL);
-        temp.put(OpSpTypeNode.LESS_THAN, Builtins.BOOL);
-        temp.put(OpSpTypeNode.LESS_EQUAL, Builtins.BOOL);
-        temp.put(OpSpTypeNode.GREATER_THAN, Builtins.BOOL);
-        temp.put(OpSpTypeNode.GREATER_EQUAL, Builtins.BOOL);
-        temp.put(OpSpTypeNode.IN, Builtins.BOOL);
+        temp.put(OpSpTypeNode.EQUALS, Builtins.bool());
+        temp.put(OpSpTypeNode.LESS_THAN, Builtins.bool());
+        temp.put(OpSpTypeNode.LESS_EQUAL, Builtins.bool());
+        temp.put(OpSpTypeNode.GREATER_THAN, Builtins.bool());
+        temp.put(OpSpTypeNode.GREATER_EQUAL, Builtins.bool());
+        temp.put(OpSpTypeNode.IN, Builtins.bool());
 
-        temp.put(OpSpTypeNode.COMPARE, Builtins.INT);
+        temp.put(OpSpTypeNode.COMPARE, Builtins.intType());
 
         DEFAULT_RETURNS = Collections.unmodifiableMap(temp);
     }

@@ -41,7 +41,7 @@ public final class IncrementDecrementConverter implements BaseConverter {
     private List<Byte> convertVariable(int start, boolean isDecrement) {
         assert node.getVariable() instanceof VariableNode;
         var converter = TestConverter.of(info, node.getVariable(), 1);
-        if (!Builtins.INT.isSuperclass(converter.returnType()[0])) {
+        if (!Builtins.intType().isSuperclass(converter.returnType()[0])) {
             throw typeError(converter.returnType()[0], isDecrement);
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
@@ -79,7 +79,7 @@ public final class IncrementDecrementConverter implements BaseConverter {
         var name = pair.getValue();
         var retType = converter.returnType()[0];
         var attrInfo = retType.tryAttrType(node, name, info);
-        if (!Builtins.INT.isSuperclass(attrInfo)) {
+        if (!Builtins.intType().isSuperclass(attrInfo)) {
             throw typeError(attrInfo, isDecrement);
         }
         if (!retType.canSetAttr(name, info)) {

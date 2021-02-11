@@ -327,7 +327,7 @@ final class VariableHolder {
                             "Type 'null?' is equivalent to null", WarningType.TRIVIAL_VALUE, warnings, type
                     );
                 }
-                return Builtins.NULL_TYPE;
+                return Builtins.nullType();
             case "cls":
                 var cls = accessHandler.getCls();
                 if (cls == null) {
@@ -505,7 +505,8 @@ final class VariableHolder {
 
     private final class LocalTypeIterator implements Iterator<String> {
         private int frameNo = localTypes.size() - 1;
-        private Iterator<String> frameIter = localTypes.get(frameNo).getChildren().keySet().iterator();
+        private Iterator<String> frameIter = frameNo >= 0
+                ? localTypes.get(frameNo).getChildren().keySet().iterator() : Collections.emptyIterator();
 
         @Override
         public boolean hasNext() {

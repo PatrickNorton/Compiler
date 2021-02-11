@@ -105,6 +105,7 @@ public final class ImportHandler {
         boolean isModule = false;
         Optional<InterfaceDefinitionNode> hasAuto = Optional.empty();
         Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
+        loadInfo(Converter.builtinPath().resolve("__builtins__.newlang"), "__builtins__");
         for (var stmt : node) {
             if (stmt instanceof ImportExportNode) {
                 var ieNode = (ImportExportNode) stmt;
@@ -142,7 +143,7 @@ public final class ImportHandler {
         }
         for (var export : exports.entrySet()) {
             if (types.containsKey(export.getKey())) {
-                export.setValue(Builtins.TYPE.generify(types.get(export.getKey()).getKey()));
+                export.setValue(Builtins.type().generify(types.get(export.getKey()).getKey()));
             }
         }
         if (isModule) {
@@ -174,9 +175,15 @@ public final class ImportHandler {
             throw CompilerInternalError.format("Unknown class type %s", stmt, stmt.getClass());
         }
         generics.setParent(type);
-        types.put(strName, Pair.of(type, cls));
-        lineInfos.put(strName, cls.getLineInfo());
-        definedInFile.add(type);
+        var isBuiltin = AnnotationConverter.isBuiltin(cls, info, cls.getAnnotations());
+        if (isBuiltin.isPresent()) {
+            var builtin = isBuiltin.orElseThrow();
+            Builtins.setBuiltin(builtin.getKey(), builtin.getValue(), type);
+        } else {
+            types.put(strName, Pair.of(type, cls));
+            lineInfos.put(strName, cls.getLineInfo());
+            definedInFile.add(type);
+        }
         return type;
     }
 

@@ -50,7 +50,7 @@ public final class SliceConverter implements TestConverter {
 
     private void checkTypes(TestNode subNode) {
         var retType = TestConverter.returnType(subNode, info, 1)[0];
-        if (!Builtins.INT.isSuperclass(retType)) {
+        if (!Builtins.intType().isSuperclass(retType)) {
             throw CompilerException.format(
                     "Type '%s' is not a superclass of int, cannot be used in a slice",
                     node, retType.name()

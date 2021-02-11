@@ -127,7 +127,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     @Override
     public final TypeObject getType() {
-        return Builtins.TYPE.generify(this);
+        return Builtins.type().generify(this);
     }
 
     /**
@@ -715,8 +715,8 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      *     The current union algorithm is meant to return the "most specific"
      *     class that is a superclass of all given values. If the list of values
      *     has length 1, the given value is returned. If all given values are
-     *     the special value {@link Builtins#THROWS}, it is returned, otherwise
-     *     it is removed from the set.
+     *     the special value {@link Builtins#throwsType()}, it is returned,
+     *     otherwise it is removed from the set.
      * </p>
      *
      * @param values The values to get the union of
@@ -738,8 +738,8 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      *     The current union algorithm is meant to return the "most specific"
      *     class that is a superclass of all given values. If the list of values
      *     has length 1, the given value is returned. If all given values are
-     *     the special value {@link Builtins#THROWS}, it is returned, otherwise
-     *     it is removed from the set.
+     *     the special value {@link Builtins#throwsType()}, it is returned,
+     *     otherwise it is removed from the set.
      * </p>
      *
      * @param values The values to get the union of
@@ -754,14 +754,14 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         if (valueSet.size() == 1) {
             return valueSet.iterator().next();
         } else {
-            valueSet.remove(Builtins.THROWS);
+            valueSet.remove(Builtins.throwsType());
             if (valueSet.isEmpty()) {
-                return Builtins.THROWS;
+                return Builtins.throwsType();
             }
             TypeObject currentSuper = null;
             boolean isOptional = false;
             for (var value : valueSet) {
-                if (value == Builtins.NULL_TYPE) {
+                if (value == Builtins.nullType()) {
                     isOptional = true;
                 } else if (value instanceof OptionTypeObject) {
                     isOptional = true;
@@ -772,7 +772,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                 }
             }
             if (currentSuper == null) {  // Can only happen if all types are null
-                return Builtins.NULL_TYPE;
+                return Builtins.nullType();
             }
             return isOptional ? optional(currentSuper) : currentSuper;
         }
@@ -805,7 +805,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                 bSupers.add(pair.getValue());
             }
         }
-        return Builtins.OBJECT;
+        return Builtins.object();
     }
 
     @NotNull

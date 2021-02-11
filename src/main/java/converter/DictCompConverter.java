@@ -29,11 +29,11 @@ public final class DictCompConverter implements TestConverter {
             var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
             var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1)[0];
             info.removeStackFrame();
-            return new TypeObject[] {Builtins.DICT.generify(keyType, valType).makeMut()};
+            return new TypeObject[] {Builtins.dict().generify(keyType, valType).makeMut()};
         } else {
             var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
             var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1)[0];
-            return new TypeObject[] {Builtins.DICT.generify(keyType, valType).makeMut()};
+            return new TypeObject[] {Builtins.dict().generify(keyType, valType).makeMut()};
         }
     }
 

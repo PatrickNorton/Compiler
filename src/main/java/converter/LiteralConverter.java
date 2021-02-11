@@ -68,28 +68,38 @@ public final class LiteralConverter implements TestConverter {
     }
 
     private enum LiteralType {
-        LIST(Builtins.LIST, "list", Bytecode.LIST_CREATE, Bytecode.LIST_DYN),
-        SET(Builtins.SET, "set", Bytecode.SET_CREATE, Bytecode.SET_DYN),
-        TUPLE(Builtins.TUPLE, "tuple", Bytecode.PACK_TUPLE),
+        LIST("list", Bytecode.LIST_CREATE, Bytecode.LIST_DYN),
+        SET("set", Bytecode.SET_CREATE, Bytecode.SET_DYN),
+        TUPLE("tuple", Bytecode.PACK_TUPLE),
         ;
 
-        TypeObject type;
         String name;
         Bytecode bytecode;
         Bytecode dynCode;
 
-        LiteralType(TypeObject type, String name, Bytecode bytecode) {
-            this.type = type;
+        LiteralType(String name, Bytecode bytecode) {
             this.name = name;
             this.bytecode = bytecode;
             this.dynCode = null;
         }
 
-        LiteralType(TypeObject type, String name, Bytecode bytecode, Bytecode dynCode) {
-            this.type = type;
+        LiteralType(String name, Bytecode bytecode, Bytecode dynCode) {
             this.name = name;
             this.bytecode = bytecode;
             this.dynCode = dynCode;
+        }
+
+        TypeObject type() {
+            switch (this) {
+                case LIST:
+                    return Builtins.list();
+                case SET:
+                    return Builtins.set();
+                case TUPLE:
+                    return Builtins.tuple();
+                default:
+                    throw new UnsupportedOperationException();
+            }
         }
 
         static LiteralType fromBrace(@NotNull String brace, Lined lineInfo) {
@@ -110,7 +120,7 @@ public final class LiteralConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
-        var literalCls = literalType.type.makeMut();
+        var literalCls = literalType.type().makeMut();
         if (literalType == LiteralType.TUPLE) {
             return new TypeObject[]{literalCls.generify(tupleReturnTypes())};
         } else if (node.getBuilders().length == 0) {
@@ -294,7 +304,7 @@ public final class LiteralConverter implements TestConverter {
             throw CompilerException.format("Cannot deduce type of %s literal", node, literalType.name);
         }
         var generics = expected[0].getGenerics();
-        literalType.type.generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
+        literalType.type().generify(node, generics.toArray(new TypeObject[0]));  // Ensure generification is possible
         bytes.addAll(new TypeLoader(node.getLineInfo(), returnTypes(), info).convert(start));
         bytes.add(literalType.bytecode.value);
         bytes.addAll(Util.shortZeroBytes());
@@ -321,7 +331,7 @@ public final class LiteralConverter implements TestConverter {
                     var retType = TestConverter.returnType(args[i], info, 1)[0];
                     if (retType instanceof TupleType) {
                         result.addAll(retType.getGenerics());
-                    } else if (Builtins.ITERABLE.isSuperclass(retType)) {
+                    } else if (Builtins.iterable().isSuperclass(retType)) {
                         result.add(Builtins.deIterable(retType)[0]);
                     } else {
                         throw splatException(args[i], retType);
@@ -334,7 +344,7 @@ public final class LiteralConverter implements TestConverter {
             }
         }
         if (expectedVal == null) {
-            return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
+            return args.length == 0 ? Builtins.object() : TypeObject.union(result);
         } else {
             if (args.length == 0) {
                 return expectedVal;
@@ -346,7 +356,7 @@ public final class LiteralConverter implements TestConverter {
 
     private boolean expectedTypeWorks() {
         assert expected != null;
-        return LiteralType.fromBrace(node.getBraceType(), node).type.sameBaseType(expected[0]);
+        return LiteralType.fromBrace(node.getBraceType(), node).type().sameBaseType(expected[0]);
     }
 
     @NotNull

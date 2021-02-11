@@ -22,23 +22,34 @@ public final class ComprehensionConverter implements TestConverter {
     }
 
     private enum BraceType {
-        LIST("list", Builtins.LIST, Bytecode.LIST_CREATE, Bytecode.LIST_ADD, true),
-        SET("set", Builtins.SET, Bytecode.SET_CREATE, Bytecode.SET_ADD, true),
-        GENERATOR("generator", Builtins.ITERABLE, null, Bytecode.YIELD, false),
+        LIST("list", Bytecode.LIST_CREATE, Bytecode.LIST_ADD, true),
+        SET("set", Bytecode.SET_CREATE, Bytecode.SET_ADD, true),
+        GENERATOR("generator", null, Bytecode.YIELD, false),
         ;
 
         final String name;
-        final TypeObject type;
         final Bytecode createCode;
         final Bytecode addCode;
         final boolean addSwap;
 
-        BraceType(String name, TypeObject type, Bytecode createCode, Bytecode addCode, boolean addSwap) {
+        BraceType(String name, Bytecode createCode, Bytecode addCode, boolean addSwap) {
             this.name = name;
-            this.type = type;
             this.createCode = createCode;
             this.addCode = addCode;
             this.addSwap = addSwap;
+        }
+
+        TypeObject type() {
+            switch (this) {
+                case LIST:
+                    return Builtins.list();
+                case SET:
+                    return Builtins.set();
+                case GENERATOR:
+                    return Builtins.iterable();
+                default:
+                    throw new UnsupportedOperationException();
+            }
         }
 
         static BraceType fromBrace(@NotNull String brace, Lined lineInfo) {
@@ -58,7 +69,7 @@ public final class ComprehensionConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        var resultType = BraceType.fromBrace(node.getBrace(), node).type;
+        var resultType = BraceType.fromBrace(node.getBrace(), node).type();
         return new TypeObject[] {resultType.generify(genericType()).makeMut()};
     }
 

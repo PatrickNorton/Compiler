@@ -97,11 +97,11 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         }
     }
 
-    public static int completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj) {
-        return new ClassConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, ClassDefinitionNode node, StdTypeObject obj, boolean reserve) {
+        return new ClassConverter(info, node).completeType(obj, reserve);
     }
 
-    private int completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull StdTypeObject obj, boolean reserve) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         obj.getGenericInfo().setParent(obj);
@@ -113,13 +113,13 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             checkConstSupers(obj, obj.getSupers());
         }
         parseIntoObject(converter, obj, isConst);
-        return info.reserveClass(obj);
+        return reserve ? info.reserveClass(obj) : -1;
     }
 
     private TypeObject superType(@NotNull StdTypeObject obj) {
         var supers = obj.getSupers();
         if (supers.isEmpty()) {
-            return Builtins.OBJECT;
+            return Builtins.object();
         }
         return supers.get(0);
     }

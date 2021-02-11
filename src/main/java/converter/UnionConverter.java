@@ -106,11 +106,11 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         return node.getDescriptors().contains(DescriptorNode.STATIC);
     }
 
-    public static int completeType(CompilerInfo info, UnionDefinitionNode node, UnionTypeObject obj) {
-        return new UnionConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, UnionDefinitionNode node, UnionTypeObject obj, boolean reserve) {
+        return new UnionConverter(info, node).completeType(obj, reserve);
     }
 
-    private int completeType(@NotNull UnionTypeObject obj) {
+    private int completeType(@NotNull UnionTypeObject obj, boolean reserve) {
         var converter = new ConverterHolder(info);
         var supers = convertSupers(info.typesOf(node.getSuperclasses()));
         var isConst = node.getDescriptors().contains(DescriptorNode.CONST);
@@ -127,7 +127,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
             info.accessHandler().removeCls();
             info.removeLocalTypes();
         }
-        return info.reserveClass(obj);
+        return reserve ? info.reserveClass(obj) : -1;
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull UnionTypeObject obj, boolean isConst) {
@@ -217,7 +217,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     @NotNull
     private FunctionInfo variantInfo(TypeObject val, UnionTypeObject type, String name) {
-        if (val.sameBaseType(Builtins.NULL_TYPE)) {
+        if (val.sameBaseType(Builtins.nullType())) {
             return new FunctionInfo(type.makeMut());
         } else {
             var arg = new Argument(VARIANT_NAME, val);

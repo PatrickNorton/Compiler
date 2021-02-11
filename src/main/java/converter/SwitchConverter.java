@@ -47,11 +47,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         if (!(retType instanceof UnionTypeObject) && incompleteReturn()) {
             throw CompilerException.format("Cannot get return from switch: Missing 'default' statement", node);
         }
-        if (Builtins.INT.isSuperclass(retType)) {
+        if (Builtins.intType().isSuperclass(retType)) {
             return convertInt(start);
-        } else if (Builtins.STR.isSuperclass(retType)) {
+        } else if (Builtins.str().isSuperclass(retType)) {
             return convertStr(start);
-        } else if (Builtins.CHAR.isSuperclass(retType)) {
+        } else if (Builtins.charType().isSuperclass(retType)) {
             return convertChar(start);
         } else if (retType instanceof UnionTypeObject) {
             return convertUnion(start, (UnionTypeObject) retType);

@@ -76,17 +76,17 @@ public final class TupleType extends TypeObject {
         switch (o) {
             case EQUALS:
                 return Optional.of(new FunctionInfo(
-                        ArgumentInfo.of(Builtins.TUPLE.generify(generics.toArray(new TypeObject[0]))),
-                        Builtins.BOOL
+                        ArgumentInfo.of(Builtins.tuple().generify(generics.toArray(new TypeObject[0]))),
+                        Builtins.bool()
                 ));
             case BOOL:
-                return Optional.of(new FunctionInfo(Builtins.BOOL));
+                return Optional.of(new FunctionInfo(Builtins.bool()));
             case STR:
             case REPR:
-                return Optional.of(new FunctionInfo(Builtins.STR));
+                return Optional.of(new FunctionInfo(Builtins.str()));
             case HASH:
                 if (isHashable()) {
-                    return Optional.of(new FunctionInfo(Builtins.INT));
+                    return Optional.of(new FunctionInfo(Builtins.intType()));
                 } else {
                     return Optional.empty();
                 }

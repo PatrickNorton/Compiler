@@ -48,7 +48,7 @@ public final class BigintConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.INT;
+        return Builtins.intType();
     }
 
     @NotNull

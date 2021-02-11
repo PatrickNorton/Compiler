@@ -110,7 +110,7 @@ public final class DotConverter implements TestConverter {
 
     @NotNull
     private TypeObject[] normalDotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
-        assert dot.getDotPrefix().isEmpty() || !result.isSuperclass(Builtins.NULL_TYPE);
+        assert dot.getDotPrefix().isEmpty() || !result.isSuperclass(Builtins.nullType());
         var postDot = dot.getPostDot();
         if (postDot instanceof VariableNode) {
             return new TypeObject[]{result.tryAttrType(postDot, ((VariableNode) postDot).getName(), info)};
@@ -232,10 +232,10 @@ public final class DotConverter implements TestConverter {
             CompilerWarning.warnf(
                     "Using ?. operator on non-optional type %s", WarningType.TRIVIAL_VALUE, info, dot, previous.name()
             );
-            if (previous.sameBaseType(Builtins.NULL_TYPE)) {
+            if (previous.sameBaseType(Builtins.nullType())) {
                 bytes.add(Bytecode.POP_TOP.value);
                 bytes.add(Bytecode.LOAD_NULL.value);
-                return new TypeObject[]{Builtins.NULL_TYPE};
+                return new TypeObject[]{Builtins.nullType()};
             } else {
                 return convertPostDot(previous.stripNull(), start, bytes, postDot);
             }
@@ -256,7 +256,7 @@ public final class DotConverter implements TestConverter {
             TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull DottedVar dot
     ) {
         assert dot.getDotPrefix().equals("!!");
-        if (previous.sameBaseType(Builtins.NULL_TYPE)) {
+        if (previous.sameBaseType(Builtins.nullType())) {
             throw CompilerException.format("Cannot use !! operator on null type", dot);
         } else if (!(previous instanceof OptionTypeObject)) {
             throw CompilerException.format("Cannot use !! operator on non-optional type", dot);

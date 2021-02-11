@@ -42,7 +42,7 @@ public final class IsConverter extends OperatorConverter {
     @Override
     @NotNull
     public TypeObject[] returnType() {
-        return new TypeObject[] {Builtins.BOOL};
+        return new TypeObject[] {Builtins.bool()};
     }
 
     @Override
@@ -165,7 +165,7 @@ public final class IsConverter extends OperatorConverter {
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
             return Pair.of(bytes, condType);
-        } else if (condType.equals(Builtins.NULL_TYPE)) {
+        } else if (condType.equals(Builtins.nullType())) {
             CompilerWarning.warn(
                     "Using 'is not null' comparison on variable that must be null",
                     WarningType.TRIVIAL_VALUE, info, arg0

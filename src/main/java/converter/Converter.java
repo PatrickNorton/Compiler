@@ -133,7 +133,7 @@ public final class Converter {
     }
 
     @NotNull
-    private static Path builtinPath() {
+    public static Path builtinPath() {
         return new File("Lib").toPath().toAbsolutePath();
     }
 
