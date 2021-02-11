@@ -102,11 +102,11 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         return bytes;
     }
 
-    public static int completeType(CompilerInfo info, EnumDefinitionNode node, StdTypeObject obj) {
-        return new EnumConverter(info, node).completeType(obj);
+    public static int completeType(CompilerInfo info, EnumDefinitionNode node, StdTypeObject obj, boolean reserve) {
+        return new EnumConverter(info, node).completeType(obj, reserve);
     }
 
-    private int completeType(@NotNull StdTypeObject obj) {
+    private int completeType(@NotNull StdTypeObject obj, boolean reserve) {
         var converter = new ConverterHolder(info);
         obj.getGenericInfo().reParse(info, node.getName().getSubtypes());
         try {
@@ -115,7 +115,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         } finally {
             info.accessHandler().removeCls();
         }
-        return info.reserveClass(obj);
+        return reserve ? info.reserveClass(obj) : -1;
     }
 
     private void parseIntoObject(ConverterHolder converter, @NotNull StdTypeObject obj) {

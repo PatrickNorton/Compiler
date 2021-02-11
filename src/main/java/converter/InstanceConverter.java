@@ -28,7 +28,7 @@ public final class InstanceConverter extends OperatorConverter {
     @Override
     @NotNull
     public TypeObject[] returnType() {
-        return new TypeObject[] {Builtins.BOOL};
+        return new TypeObject[] {Builtins.bool()};
     }
 
     @Override
@@ -55,7 +55,7 @@ public final class InstanceConverter extends OperatorConverter {
         var arg1 = operands[1].getArgument();
         var converter1 = TestConverter.of(info, arg1, 1);
         var arg1ret = converter1.returnType()[0];
-        if (!Builtins.TYPE.isSuperclass(arg1ret)) {
+        if (!Builtins.type().isSuperclass(arg1ret)) {
             throw CompilerException.of(
                     "'instanceof' operator requires second argument to be an instance of 'type'", arg1
             );

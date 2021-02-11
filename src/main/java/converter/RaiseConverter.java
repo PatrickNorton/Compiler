@@ -26,7 +26,7 @@ public final class RaiseConverter implements TestConverter {
             throw returnError();
         }
         var result = new TypeObject[retCount];
-        Arrays.fill(result, Builtins.THROWS);
+        Arrays.fill(result, Builtins.throwsType());
         return result;
     }
 
@@ -43,7 +43,7 @@ public final class RaiseConverter implements TestConverter {
         int condLoc = IfConverter.addJump(start, bytes, node.getCond(), info);
         var converter = TestConverter.of(info, node.getRaised(), 1);
         var retType = converter.returnType()[0];
-        if (!Builtins.THROWABLE.isSuperclass(retType)) {
+        if (!Builtins.throwable().isSuperclass(retType)) {
             throw CompilerException.format(
                     "Expected superclass of 'Throwable' in raise statement body, got '%s'",
                     node, retType.name()

@@ -32,7 +32,7 @@ public final class ClassConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.TYPE.generify(type);
+        return Builtins.type().generify(type);
     }
 
     @NotNull

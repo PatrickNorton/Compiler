@@ -56,7 +56,7 @@ public final class BuiltinConstant implements LangConstant {
 
     private String name() {
         var result = Builtins.TRUE_BUILTINS.get(builtinIndex);
-        if (result == Builtins.NULL_TYPE) {
+        if (result == Builtins.nullType()) {
             return "type(null)";
         }
         for (var pair : Builtins.BUILTIN_MAP.entrySet()) {

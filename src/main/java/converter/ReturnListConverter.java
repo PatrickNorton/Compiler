@@ -64,9 +64,9 @@ public final class ReturnListConverter implements BaseConverter {
                 return TestConverter.bytes(start, stmt, info, 1);
             case "*":
                 var retType = TestConverter.returnType(stmt, info, 1)[0];
-                if (retType.sameBaseType(Builtins.TUPLE)) {
+                if (retType.sameBaseType(Builtins.tuple())) {
                     throw CompilerTodoError.format("Cannot convert %s with varargs yet", stmt, returnName());
-                } else if (Builtins.ITERABLE.isSuperclass(retType)) {
+                } else if (Builtins.iterable().isSuperclass(retType)) {
                     throw CompilerException.format("Cannot unpack iterable in %s statement", stmt, returnName());
                 } else {
                     throw CompilerException.format(

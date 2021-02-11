@@ -41,7 +41,7 @@ public final class IntConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.INT;
+        return Builtins.intType();
     }
 
     @Override

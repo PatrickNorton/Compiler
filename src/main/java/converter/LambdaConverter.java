@@ -118,7 +118,7 @@ public final class LambdaConverter implements TestConverter {
             } else if (expected == null) {
                 throw CompilerException.of("Cannot deduce type of lambda argument", arg.getName());
             } else {
-                if (expected.sameBaseType(Builtins.CALLABLE)) {
+                if (expected.sameBaseType(Builtins.callable())) {
                     var generics = expected.getGenerics();
                     assert generics.size() == 2;
                     var expectedArgs = (ListTypeObject) generics.get(0);

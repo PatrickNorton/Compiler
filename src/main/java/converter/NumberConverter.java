@@ -45,7 +45,7 @@ public final class NumberConverter implements ConstantConverter {
     public TypeObject[] returnType() {
         var constant = constant();
         return new TypeObject[] {
-                constant instanceof IntConstant || constant instanceof BigintConstant ? Builtins.INT : Builtins.DECIMAL
+                constant instanceof IntConstant || constant instanceof BigintConstant ? Builtins.intType() : Builtins.decimal()
         };
     }
 }

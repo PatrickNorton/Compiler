@@ -32,7 +32,7 @@ public final class OptionTypeConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.TYPE.generify(TypeObject.optional(genericType));
+        return Builtins.type().generify(TypeObject.optional(genericType));
     }
 
     @NotNull

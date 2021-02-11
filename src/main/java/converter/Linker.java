@@ -21,6 +21,7 @@ import main.java.parser.TypedefStatementNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -107,13 +108,16 @@ public final class Linker {
                 if (!isAutoInterface(def)) {
                     var name = def instanceof BaseClassNode
                             ? ((TypeNode) def.getName()).strName() : def.getName().toString();
-                    var maybeType = linkDefinition(def);
+                    var isBuiltin = AnnotationConverter.isBuiltin(def, info, def.getAnnotations());
+                    var maybeType = linkDefinition(def, isBuiltin.orElse(null));
                     if (maybeType.isPresent()) {
                         var type = maybeType.orElseThrow();
                         if (importHandler.getExports().contains(name)) {
                             importHandler.setExportType(name, type);
                         }
-                        globals.put(name, type);
+                        if (isBuiltin.isEmpty()) {
+                            globals.put(name, type);
+                        }
                     }
                 }
             } else if (stmt instanceof TypedefStatementNode) {
@@ -133,15 +137,22 @@ public final class Linker {
         return this;
     }
 
-    private Optional<TypeObject> linkDefinition(@NotNull DefinitionNode stmt) {
+    private Optional<TypeObject> linkDefinition(
+            @NotNull DefinitionNode stmt, @Nullable Pair<String, Integer> isBuiltin
+    ) {
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;
             var value = FunctionDefinitionConverter.parseHeader(info, fnNode);
             if (value.isPresent()) {
                 var pair = value.orElseThrow();
-                var constant = new FunctionConstant(fnNode.getName().getName(), pair.getValue());
-                constants.put(fnNode.getName().getName(), (int) info.addConstant(constant));
+                if (isBuiltin == null) {
+                    var constant = new FunctionConstant(fnNode.getName().getName(), pair.getValue());
+                    constants.put(fnNode.getName().getName(), (int) info.addConstant(constant));
+                } else {
+                    var object = new LangInstance(pair.getKey());
+                    Builtins.setBuiltin(isBuiltin.getKey(), isBuiltin.getValue(), object);
+                }
                 return Optional.of(pair.getKey());
             } else {
                 return Optional.empty();
@@ -159,33 +170,44 @@ public final class Linker {
         } else if (stmt instanceof ClassDefinitionNode) {
             var clsNode = (ClassDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName()).orElseThrow();
-            int index = ClassConverter.completeType(info, clsNode, predeclaredType);
-            var constant = new ClassConstant(clsNode.strName(), index, predeclaredType);
-            constants.put(clsNode.strName(), (int) info.addConstant(constant));
-            return Optional.of(Builtins.TYPE.generify(predeclaredType));
+            int index = ClassConverter.completeType(info, clsNode, predeclaredType, isBuiltin == null);
+            addConstant(clsNode.strName(), index, predeclaredType, isBuiltin);
+            return Optional.of(Builtins.type().generify(predeclaredType));
         } else if (stmt instanceof EnumDefinitionNode) {
             var enumNode = (EnumDefinitionNode) stmt;
             var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName()).orElseThrow();
-            int index = EnumConverter.completeType(info, enumNode, predeclaredType);
-            var constant = new ClassConstant(enumNode.getName().strName(), index, predeclaredType);
-            constants.put(enumNode.getName().strName(), (int) info.addConstant(constant));
-            return Optional.of(Builtins.TYPE.generify(predeclaredType));
+            int index = EnumConverter.completeType(info, enumNode, predeclaredType, isBuiltin == null);
+            addConstant(enumNode.getName().strName(), index, predeclaredType, isBuiltin);
+            return Optional.of(Builtins.type().generify(predeclaredType));
         } else if (stmt instanceof InterfaceDefinitionNode) {
             var interfaceNode = (InterfaceDefinitionNode) stmt;
+            var strName = interfaceNode.getName().strName();
             var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName()).orElseThrow();
-            int index = InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
-            var constant = new ClassConstant(interfaceNode.getName().strName(), index, predeclaredType);
-            constants.put(interfaceNode.getName().strName(), (int) info.addConstant(constant));
-            return Optional.of(Builtins.TYPE.generify(predeclaredType));
+            if (isBuiltin == null) {
+                int index = InterfaceConverter.completeType(info, interfaceNode, predeclaredType);
+                var constant = new ClassConstant(strName, index, predeclaredType);
+                constants.put(strName, (int) info.addConstant(constant));
+            } else {
+                InterfaceConverter.completeWithoutReserving(info, interfaceNode, predeclaredType);
+            }
+            return Optional.of(Builtins.type().generify(predeclaredType));
         } else if (stmt instanceof UnionDefinitionNode) {
             var unionNode = (UnionDefinitionNode) stmt;
             var predeclaredType = (UnionTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
-            int index = UnionConverter.completeType(info, unionNode, predeclaredType);
-            var constant = new ClassConstant(unionNode.strName(), index, predeclaredType);
-            constants.put(unionNode.strName(), (int) info.addConstant(constant));
-            return Optional.of(Builtins.TYPE.generify(predeclaredType));
+            int index = UnionConverter.completeType(info, unionNode, predeclaredType, isBuiltin == null);
+            addConstant(unionNode.getName().strName(), index, predeclaredType, isBuiltin);
+            return Optional.of(Builtins.type().generify(predeclaredType));
         } else {
             throw CompilerInternalError.format("Unknown definition %s", stmt, name.getClass());
+        }
+    }
+
+    private void addConstant(
+            String strName, int index, UserType<?> predeclaredType, @Nullable Pair<String, Integer> isBuiltin
+    ) {
+        if (isBuiltin == null) {
+            var constant = new ClassConstant(strName, index, predeclaredType);
+            constants.put(strName, (int) info.addConstant(constant));
         }
     }
 

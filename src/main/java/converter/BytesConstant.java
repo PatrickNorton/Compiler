@@ -48,7 +48,7 @@ public final class BytesConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.BYTES;
+        return Builtins.bytes();
     }
 
     @Override

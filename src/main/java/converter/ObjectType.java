@@ -34,18 +34,22 @@ public final class ObjectType extends TypeObject {
         return other.equals(this);
     }
 
-    private static final FunctionInfo EQUALS_INFO = new FunctionInfo(ArgumentInfo.of(Builtins.OBJECT), Builtins.BOOL);
-    private static final FunctionInfo STR_INFO = new FunctionInfo(ArgumentInfo.of(), Builtins.STR);
+    private static final class ConstantHolder {
+        private static final FunctionInfo EQUALS_INFO = new FunctionInfo(
+                ArgumentInfo.of(Builtins.object()), Builtins.bool()
+        );
+        private static final FunctionInfo STR_INFO = new FunctionInfo(ArgumentInfo.of(), Builtins.str());
+    }
 
     @Override
     @NotNull
     public Optional<FunctionInfo> operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
         switch (o) {
             case EQUALS:
-                return Optional.of(EQUALS_INFO);
+                return Optional.of(ConstantHolder.EQUALS_INFO);
             case STR:
             case REPR:
-                return Optional.of(STR_INFO);
+                return Optional.of(ConstantHolder.STR_INFO);
             default:
                 return Optional.empty();
         }

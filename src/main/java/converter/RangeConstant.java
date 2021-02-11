@@ -74,7 +74,7 @@ public final class RangeConstant implements LangConstant {
     @Override
     @NotNull
     public TypeObject getType() {
-        return Builtins.RANGE;
+        return Builtins.range();
     }
 
     @Override

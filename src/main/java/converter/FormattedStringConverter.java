@@ -24,7 +24,7 @@ public final class FormattedStringConverter implements TestConverter {
     @NotNull
     @Override
     public TypeObject[] returnType() {
-        return new TypeObject[] {Builtins.STR};
+        return new TypeObject[] {Builtins.str()};
     }
 
     @NotNull
@@ -178,7 +178,7 @@ public final class FormattedStringConverter implements TestConverter {
 
     private void convertToStr(TestNode arg, int start, @NotNull List<Byte> bytes) {
         var converter = TestConverter.of(info, arg, 1);
-        boolean isNotStr = !Builtins.STR.isSuperclass(converter.returnType()[0]);
+        boolean isNotStr = !Builtins.str().isSuperclass(converter.returnType()[0]);
         bytes.addAll(converter.convert(start + bytes.size()));
         if (isNotStr) {
             bytes.add(Bytecode.CALL_OP.value);
@@ -221,7 +221,7 @@ public final class FormattedStringConverter implements TestConverter {
     }
 
     private void makeInt(TypeObject retType, Lined arg, List<Byte> bytes) {
-        if (!Builtins.INT.isSuperclass(retType)) {
+        if (!Builtins.intType().isSuperclass(retType)) {
             retType.tryOperatorInfo(arg, OpSpTypeNode.INT, info);
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.INT.ordinal()));

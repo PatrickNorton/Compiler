@@ -49,7 +49,7 @@ public final class IndexConverter implements TestConverter {
     public TypeObject[] returnType() {
         var type = TypeObject.of(info, node);
         if (type != null) {
-            return new TypeObject[]{Builtins.TYPE.generify(type)};
+            return new TypeObject[]{Builtins.type().generify(type)};
         }
         var operator = isSlice() ? OpSpTypeNode.GET_SLICE : OpSpTypeNode.GET_ATTR;
         return TestConverter.returnType(node.getVar(), info, 1)[0].tryOperatorReturnType(node, operator, info);
@@ -96,7 +96,7 @@ public final class IndexConverter implements TestConverter {
     private void checkSliceType() {
         var retType = TestConverter.returnType(node.getVar(), info, 1)[0];
         var fnInfo = retType.tryOperatorInfo(node.getLineInfo(), OpSpTypeNode.GET_SLICE, info);
-        if (!fnInfo.matches(new Argument("", Builtins.SLICE))) {
+        if (!fnInfo.matches(new Argument("", Builtins.slice()))) {
             throw CompilerException.format(
                     "Type '%s' has an operator [:] that does not take a slice as its argument",
                     node, retType.name()

@@ -41,7 +41,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
     public TypeObject[] returnType() {
         var firstOpConverter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(op, info);
-        return retType.orElseGet(() -> new TypeObject[]{Builtins.THROWS});
+        return retType.orElseGet(() -> new TypeObject[]{Builtins.throwsType()});
     }
 
     @Override

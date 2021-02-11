@@ -191,7 +191,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
                 assert generic.getSubtypes().length == 1 && generic.getSubtypes()[0].isVararg();  // => [*T]
                 param = new TemplateParam(generic.getSubtypes()[0].strName(), i, TypeObject.list());
             } else {
-                var bound = generic.getSubtypes().length == 1 ? info.getType(generic.getSubtypes()[0]) : Builtins.OBJECT;
+                var bound = generic.getSubtypes().length == 1 ? info.getType(generic.getSubtypes()[0]) : Builtins.object();
                 param = new TemplateParam(generic.strName(), i, bound);
             }
             params.add(param);
@@ -212,7 +212,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
                 assert generic.getSubtypes().length == 1 && generic.getSubtypes()[0].isVararg();  // => [*T]
                 param = new TemplateParam(generic.getSubtypes()[0].strName(), i, TypeObject.list());
             } else if (generic.getSubtypes().length == 0) {
-                param = new TemplateParam(generic.strName(), i, Builtins.OBJECT);
+                param = new TemplateParam(generic.strName(), i, Builtins.object());
             } else {
                 // FIXME: Default interfaces are done before types are registered, therefore this will cause a NPE
                 param = new TemplateParam(generic.strName(), i, null);
@@ -225,7 +225,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
     @NotNull
     @Contract("_ -> new")
     public static GenericInfo of(TemplateParam... args) {
-        return new GenericInfo(Collections.unmodifiableList(List.of(args)), true);
+        return new GenericInfo(List.of(args), true);
     }
 
     private static final GenericInfo EMPTY = new GenericInfo(List.of(), true);

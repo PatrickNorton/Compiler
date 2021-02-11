@@ -39,7 +39,7 @@ public final class NullOpConverter extends OperatorConverter {
             case NOT_NULL:
                 return notNullReturn();
             case OPTIONAL:
-                return new TypeObject[] {Builtins.BOOL};
+                return new TypeObject[] {Builtins.bool()};
             default:
                 throw CompilerInternalError.of("", lineInfo);
         }
@@ -79,7 +79,7 @@ public final class NullOpConverter extends OperatorConverter {
                     "Using ?? operator on non-optional value", WarningType.TRIVIAL_VALUE, info, args[0]
             );
             return firstConverter.convert(start);
-        } else if (firstConverter.returnType()[0].equals(Builtins.NULL_TYPE)) {
+        } else if (firstConverter.returnType()[0].equals(Builtins.nullType())) {
             CompilerWarning.warn(
                     "Using ?? operator on value that is always null", WarningType.TRIVIAL_VALUE, info, args[0]
             );
@@ -100,7 +100,7 @@ public final class NullOpConverter extends OperatorConverter {
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         var retType = converter.returnType()[0];
-        if (retType.equals(Builtins.NULL_TYPE)) {
+        if (retType.equals(Builtins.nullType())) {
             throw CompilerException.of(
                     "Cannot use !! operator on variable on variable with type null",
                     args[0]
@@ -143,9 +143,9 @@ public final class NullOpConverter extends OperatorConverter {
     @NotNull
     private TypeObject[] notNullReturn() {
         var retType = TestConverter.returnType(args[0].getArgument(), info, 1)[0];
-        if (retType.equals(Builtins.NULL_TYPE)) {
+        if (retType.equals(Builtins.nullType())) {
              // Doesn't particularly matter what, it'll fail later
-            return new TypeObject[] {Builtins.THROWS};
+            return new TypeObject[] {Builtins.throwsType()};
         } else {
             return new TypeObject[] {retType.stripNull()};
         }
@@ -155,7 +155,7 @@ public final class NullOpConverter extends OperatorConverter {
     private TypeObject[] nullCoerceReturn() {
         var ret0 = TestConverter.returnType(args[0].getArgument(), info, 1)[0];
         var ret1 = TestConverter.returnType(args[1].getArgument(), info, 1)[0];
-        var result = ret0.equals(Builtins.NULL_TYPE) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
+        var result = ret0.equals(Builtins.nullType()) ? ret1 : TypeObject.union(ret0.stripNull(), ret1);
         return new TypeObject[] {result};
     }
 

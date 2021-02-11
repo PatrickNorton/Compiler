@@ -42,7 +42,7 @@ public final class EqualsConverter extends OperatorConverter {
     @Override
     @NotNull
     public TypeObject[] returnType() {
-        return new TypeObject[] {Builtins.BOOL};
+        return new TypeObject[] {Builtins.bool()};
     }
 
     @Override

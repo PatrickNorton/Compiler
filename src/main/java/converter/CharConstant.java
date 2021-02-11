@@ -44,7 +44,7 @@ public final class CharConstant implements LangConstant {
     @Override
     @NotNull
     public TypeObject getType() {
-        return Builtins.CHAR;
+        return Builtins.charType();
     }
 
     @Override

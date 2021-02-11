@@ -139,7 +139,7 @@ public final class OptionTypeObject extends TypeObject {
     public static boolean needsMakeOption(TypeObject maybeOption, TypeObject other) {
         if (maybeOption instanceof OptionTypeObject) {
             var option = (OptionTypeObject) maybeOption;
-            return Builtins.NULL_TYPE.isSuperclass(other) || option.optionVal.isSuperclass(other);
+            return Builtins.nullType().isSuperclass(other) || option.optionVal.isSuperclass(other);
         } else {
             return false;
         }
@@ -147,7 +147,7 @@ public final class OptionTypeObject extends TypeObject {
 
     public static boolean superWithOption(TypeObject maybeOption, TypeObject other) {
         assert needsMakeOption(maybeOption, other);
-        return other.sameBaseType(Builtins.NULL_TYPE) || maybeOption.isSuperclass(TypeObject.optional(other));
+        return other.sameBaseType(Builtins.nullType()) || maybeOption.isSuperclass(TypeObject.optional(other));
     }
 
     @Override
@@ -174,7 +174,7 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     private static FunctionInfo getMap(BaseType type) {
-        var param = new TemplateParam("T", 0, Builtins.OBJECT);
+        var param = new TemplateParam("T", 0, Builtins.object());
         var innerFn = new FunctionInfo(ArgumentInfo.of(type.getValue()), param).toCallable();
         var fnInfo = new FunctionInfo("map", false, ArgumentInfo.of(innerFn), TypeObject.optional(param));
         param.setParent(fnInfo.toCallable());
@@ -182,7 +182,7 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     private static FunctionInfo getFlatMap(BaseType type) {
-        var param = new TemplateParam("T", 0, Builtins.OBJECT);
+        var param = new TemplateParam("T", 0, Builtins.object());
         var optionParam = TypeObject.optional(param);
         var innerFn = new FunctionInfo(ArgumentInfo.of(type.getValue()), optionParam).toCallable();
         var fnInfo = new FunctionInfo("flatMap", false, ArgumentInfo.of(innerFn), optionParam);

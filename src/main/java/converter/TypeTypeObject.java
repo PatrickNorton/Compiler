@@ -105,7 +105,7 @@ public final class TypeTypeObject extends TypeObject {
     @NotNull
     public Optional<TypeObject[]> operatorReturnType(OpSpTypeNode o, AccessLevel access) {
         if (o == OpSpTypeNode.CALL) {
-            return Optional.of(new TypeObject[] {generic == null ? Builtins.OBJECT : generic.makeMut()});
+            return Optional.of(new TypeObject[] {generic == null ? Builtins.object() : generic.makeMut()});
         } else {
             return generic == null ? Optional.empty() : generic.staticOperatorReturnType(o);
         }

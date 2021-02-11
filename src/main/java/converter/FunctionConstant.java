@@ -28,7 +28,7 @@ public final class FunctionConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.CALLABLE;
+        return Builtins.callable();
     }
 
     @NotNull

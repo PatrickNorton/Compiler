@@ -98,13 +98,13 @@ public final class StringConverter implements ConstantConverter {
     public TypeObject[] returnType() {
         switch (StringType.fromPrefixes(node.getPrefixes())) {
             case STR:
-                return new TypeObject[] {Builtins.STR};
+                return new TypeObject[] {Builtins.str()};
             case BYTES:
-                return new TypeObject[] {Builtins.BYTES};
+                return new TypeObject[] {Builtins.bytes()};
             case CHAR:
-                return new TypeObject[] {Builtins.CHAR};
+                return new TypeObject[] {Builtins.charType()};
             case BYTE:
-                return new TypeObject[] {Builtins.INT};
+                return new TypeObject[] {Builtins.intType()};
             default:
                 throw new UnsupportedOperationException();
         }

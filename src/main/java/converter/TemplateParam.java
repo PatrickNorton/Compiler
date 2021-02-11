@@ -165,7 +165,7 @@ public final class TemplateParam extends NameableType {
             var generic = generics[i];
             if (generic instanceof TypeNode) {
                 if (generic.getSubtypes().length == 0) {
-                    result.put(generic.strName(), new TemplateParam(generic.strName(), i, Builtins.OBJECT));
+                    result.put(generic.strName(), new TemplateParam(generic.strName(), i, Builtins.object()));
                 } else {
                     var bounds = TypeObject.union(info.typesOf(generic.getSubtypes()));
                     result.put(generic.strName(), new TemplateParam(generic.strName(), i, bounds));

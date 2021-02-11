@@ -36,7 +36,7 @@ public final class MethodConverter {
         var args = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGen = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var trueRet = isGen ? new TypeObject[] {Builtins.ITERABLE.generify(returns)} : returns;
+        var trueRet = isGen ? new TypeObject[] {Builtins.iterable().generify(returns)} : returns;
         var fnInfo = new FunctionInfo(name, isGen, generics, args, trueRet);
         var accessLevel = AccessLevel.fromDescriptors(node.getDescriptors());
         var isMut = node.getDescriptors().contains(DescriptorNode.MUT);

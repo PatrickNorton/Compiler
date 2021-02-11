@@ -26,7 +26,7 @@ public final class BoolConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.BOOL;
+        return Builtins.bool();
     }
 
     public boolean getValue() {

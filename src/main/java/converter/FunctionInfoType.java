@@ -21,7 +21,7 @@ public final class FunctionInfoType extends TypeObject {
 
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
-        if (other.sameBaseType(Builtins.CALLABLE)) {
+        if (other.sameBaseType(Builtins.callable())) {
             var generics = other.getGenerics();
             assert generics.size() == 2;
             var args = generics.get(0);

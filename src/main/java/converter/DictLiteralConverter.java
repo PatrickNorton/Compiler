@@ -36,11 +36,11 @@ public final class DictLiteralConverter implements TestConverter {
                 throw CompilerException.of("Cannot deduce type of dict literal", node);
             }
             var generics = expected[0].getGenerics();
-            return new TypeObject[] {Builtins.DICT.generify(node, generics.toArray(new TypeObject[0])).makeMut()};
+            return new TypeObject[] {Builtins.dict().generify(node, generics.toArray(new TypeObject[0])).makeMut()};
         } else {
             var keyType = returnTypes(node.getKeys());
             var valType = returnTypes(node.getValues());
-            return new TypeObject[] {Builtins.DICT.generify(keyType, valType).makeMut()};
+            return new TypeObject[] {Builtins.dict().generify(keyType, valType).makeMut()};
         }
     }
 
@@ -77,6 +77,6 @@ public final class DictLiteralConverter implements TestConverter {
         for (int i = 0; i < args.length; i++) {
             result[i] = TestConverter.returnType(args[i], info, 1)[0];
         }
-        return args.length == 0 ? Builtins.OBJECT : TypeObject.union(result);
+        return args.length == 0 ? Builtins.object() : TypeObject.union(result);
     }
 }
