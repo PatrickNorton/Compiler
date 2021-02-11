@@ -255,13 +255,13 @@ class Fsm {
         # matches are delayed by one byte, start states can never be match
         # states.
         var flagi = (
-            (emptyFlags.start << 0)
-                | (emptyFlags.end << 1)
-                | (emptyFlags.startLine << 2)
-                | (emptyFlags.endLine << 3)
-                | (emptyFlags.wordBoundary << 4)
-                | (emptyFlags.notWordBoundary << 5)
-                | (stateFlags.isWord << 6)
+            (int(emptyFlags.start) << 0)
+                | (int(emptyFlags.end) << 1)
+                | (int(emptyFlags.startLine) << 2)
+                | (int(emptyFlags.endLine) << 3)
+                | (int(emptyFlags.wordBoundary) << 4)
+                | (int(emptyFlags.notWordBoundary) << 5)
+                | (int(stateFlags.isWord) << 6)
         )
         var f = self.cache.startStates[flagi]
         return STATE_DEAD if f == STATE_DEAD

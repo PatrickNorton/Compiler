@@ -19,7 +19,7 @@ class ByteClasses {
         return self.value[index]
     }
 
-    public operator []= (int index, int value) {
+    public mut operator []= (int index, int value) {
         self.value[index] = value
     }
 

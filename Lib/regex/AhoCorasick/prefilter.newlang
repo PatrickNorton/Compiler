@@ -278,9 +278,9 @@ class RareBytesBuilder {
 }
 
 class ByteSet {
-    public Array[bool] value
+    public mut Array[bool] value
 
-    public operator new(Array[bool] value = Array(false, 256)) {
+    public operator new(mut Array[bool] value = Array(false, 256)) {
         self.value = value
     }
 
@@ -313,8 +313,7 @@ class RareByteOffsets {
     }
 
     public mut method add(int byte, RareByteOffset off) {
-        var value = self.value
-        value[byte] = RareByteOffset(max(self.value[byte].max, off.max))
+        self.value[byte] = RareByteOffset(max(self.value[byte].max, off.max))
     }
 }
 
