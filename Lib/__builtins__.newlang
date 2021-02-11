@@ -1,3 +1,5 @@
+export print
+
 $builtin("print", 0)
 func print(object obj, /) {}
 
@@ -16,6 +18,7 @@ const class int {
     public operator >> (int other, /) -> int {}
     public operator & (int other, /) -> int {}
     public operator | (int other, /) -> int {}
+    public operator ^ (int other, /) -> int {}
     public operator ~ -> int {}
 
     public operator == (int other, /) -> bool {}
@@ -51,8 +54,8 @@ const class str {
     public method splitLines() -> list[str] {}
     public method upper() -> str {}
     public method lower() -> str {}
-    public method indexOf(char c, /) -> int? {}
-    public method lastIndexOf(char c, /) -> int? {}
+    public method indexOf(str s, /) -> int? {}
+    public method lastIndexOf(str s, /) -> int? {}
     public method encode(str encoding) -> mut bytes {}
     public method intBase(int base) -> int? {}
     public method asInt() -> int? {}
@@ -72,7 +75,8 @@ const class range {
 }
 
 $builtin("iter", 7)
-func iter[T](Iterable[T], value, /) -> Iterator[T] {}
+generic T
+func iter(Iterable[T] value, /) -> mut Iterator[T] {}
 
 $builtin("repr", 8)
 func repr(object val, /) -> str {}
@@ -89,7 +93,7 @@ class list[T] {
     public operator [] (int i, /) -> T {}
     public mut operator []= (int i, T value, /) {}
     public mut operator del[] (int i, /) {}
-    public operator [:] (slice s, /) -> list[T] {}
+    public operator [:] (slice s, /) -> mut list[T] {}
     public mut operator [:]= (slice s, Iterable[T] values, /) {}
     public mut operator del[:] (slice s, /) {}
     public operator iter[:] (slice s, /) -> Iterable[T] {}
@@ -123,6 +127,7 @@ class set[T] {
     public operator >= (set[T] other, /) -> bool {}
     public operator < (set[T] other, /) -> bool {}
     public operator <= (set[T] other, /) -> bool {}
+    public operator iter -> T {}
 
     public mut method add(T value, /) {}
     public mut method addAll(Iterable[T] values, /) {}
@@ -139,13 +144,14 @@ const class char {
     public method upper() -> char {}
     public method lower() -> char {}
 
-    public static method fromInt(int i, /) -> char {}
+    public static method fromInt(int i, /) -> char? {}
 }
 
-$builtin("open", 13)
-func open(str file) -> Context[object] {}
+# $builtin("open", 13)
+# func open(str file) -> Context[object] {}
 
 $builtin("reversed", 14)
+generic T
 generator func reversed(Iterable[T] values, /) -> T {}
 
 $builtin("slice", 15)
@@ -176,7 +182,8 @@ class Array[T] {
 }
 
 $builtin("enumerate", 18)
-generator func enumerate[T](Iterable[T] value, /) -> int, T {}
+generic T
+generator func enumerate(Iterable[T] value, /) -> int, T {}
 
 $builtin("bytes", 19)
 class bytes {
@@ -198,7 +205,7 @@ class bytes {
     public method indexOf(int value, /) -> int? {}
     public method get(int i, /) -> int? {}
     public mut method add(int value, /) {}
-    public mut method addChar(char c, /) {}
+    public mut method addChar(char c, /, str encoding) {}
     public method startsWith(bytes value, /) -> bool {}
     public method endsWith(bytes value, /) -> bool {}
     public method lastIndexOf(int value, /) -> int? {}
@@ -225,5 +232,9 @@ class dict[K, V] {
     public mut method remove(K key, /) -> V? {}
 }
 
+# FIXME: Hashable on tuples
 $builtin("hash", 26)
-func hash(Hashable value, /) -> int {}
+func hash(object value, /) -> int {}
+
+$builtin("dec")
+class dec {}
