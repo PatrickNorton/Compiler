@@ -11,6 +11,7 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -167,7 +168,7 @@ public final class FunctionCallConverter implements TestConverter {
     ) {
         var args = getArgs(info, params);
         var genPair = fnInfo.generifyArgs(args)
-                .orElseThrow(() -> argError(node, fnInfo.toCallable().name(), args, fnInfo.getArgs().getNormalArgs()));
+                .orElseThrow(() -> argError(node, fnInfo.toCallable().name(), args, posArgs(fnInfo)));
         var generics = genPair.getKey();
         if (generics.isEmpty()) {
             var returns = fnInfo.getReturns();
@@ -235,7 +236,7 @@ public final class FunctionCallConverter implements TestConverter {
         var operatorInfo = callerType.tryOperatorInfo(lineInfo, OpSpTypeNode.CALL, info);
         var opGenerics = operatorInfo.generifyArgs(args);
         if (opGenerics.isEmpty()) {
-            throw argError(lineInfo, callerType.name(), args, operatorInfo.getArgs().getNormalArgs());
+            throw argError(lineInfo, callerType.name(), args, posArgs(operatorInfo));
         }
         return Pair.of(operatorInfo, opGenerics.orElseThrow().getValue());
     }
@@ -357,8 +358,7 @@ public final class FunctionCallConverter implements TestConverter {
             if (params.length != 1) {  // No operator needs more than self
                 var builtin = Builtins.BUILTIN_MAP.get(strName).getType();
                 var fnInfo = builtin.operatorInfo(OpSpTypeNode.CALL, AccessLevel.PUBLIC).orElseThrow();
-                var expected = fnInfo.getArgs().getNormalArgs();
-                throw argError(node, builtin.name(), getArgs(params), expected);
+                throw argError(node, builtin.name(), getArgs(params), posArgs(fnInfo));
             }
             bytes.addAll(TestConverter.bytes(start + bytes.size(), params[0].getArgument(), info, 1));
             bytes.add(Bytecode.CALL_OP.value);
@@ -441,5 +441,14 @@ public final class FunctionCallConverter implements TestConverter {
         int temp = values[a];
         values[a] = values[b];
         values[b] = temp;
+    }
+
+    private static Argument[] posArgs(FunctionInfo fnInfo) {
+        var argInfo = fnInfo.getArgs();
+        var posArgs = argInfo.getPositionArgs();
+        var normalArgs = argInfo.getNormalArgs();
+        var result = Arrays.copyOf(posArgs, posArgs.length + normalArgs.length);
+        System.arraycopy(normalArgs, 0, result, posArgs.length, normalArgs.length);
+        return result;
     }
 }
