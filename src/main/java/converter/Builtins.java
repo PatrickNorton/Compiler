@@ -136,6 +136,8 @@ public final class Builtins {
         return NULL_TYPE;
     }
 
+    // These are all created by the parsing of __builtins__.newlang, which is parsed at runtime
+
     public static TypeObject range() {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("range"));
     }
