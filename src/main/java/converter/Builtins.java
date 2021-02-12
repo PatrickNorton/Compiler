@@ -227,7 +227,7 @@ public final class Builtins {
         THROWABLE.seal();
     }
 
-    public static final List<LangObject> TRUE_BUILTINS = new ArrayList<>(Arrays.asList(
+    private static final List<LangObject> TRUE_BUILTINS = new ArrayList<>(Arrays.asList(
             null,  // print
             CALLABLE,
             null,  // int
@@ -274,6 +274,10 @@ public final class Builtins {
             Map.entry("tuple", TUPLE),
             Map.entry("null", NULL)
     ));
+
+    public static LangObject constantNo(int index) {
+        return TRUE_BUILTINS.get(index);
+    }
 
     @NotNull
     @Contract("_ -> new")
