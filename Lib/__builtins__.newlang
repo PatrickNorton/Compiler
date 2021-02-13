@@ -63,6 +63,12 @@ const class str {
     public static method fromChars(list[char] chars) -> str {}
 }
 
+$builtin("bool", 4)
+const class bool {
+    public operator new (object o, /) {}
+    public operator bool -> bool {}
+}
+
 $builtin("range", 5)
 const class range {
     public int length
@@ -114,6 +120,7 @@ class list[T] {
     public mut method addAll(Iterable[T] values, /) {}
     public mut method popFirst() -> T? {}
     public mut method swap(int i, int j, /) {}
+    public mut method remove(int i) -> T {}
 }
 
 $builtin("set", 11)
@@ -230,6 +237,26 @@ class dict[K, V] {
     public mut method setDefault(K key, V value, /) -> V {}
     public mut method replace(K key, V value, /) -> V? {}
     public mut method remove(K key, /) -> V? {}
+}
+
+$builtin("NotImplemented", 22)
+class NotImplemented from Throwable {
+    public operator new {}
+}
+
+$builtin("ValueError", 27)
+class ValueError from Throwable {
+    public operator new (str msg, /) {}
+}
+
+$builtin("NullError", 28)
+class NullError from Throwable {
+    public operator new (str msg, /) {}
+}
+
+$builtin("AssertionError", 30)
+class AssertionError from Throwable {
+    public operator new (str msg, /) {}
 }
 
 # FIXME: Hashable on tuples

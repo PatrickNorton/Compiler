@@ -27,7 +27,7 @@ public final class BuiltinConstant implements LangConstant {
     @NotNull
     @Override
     public TypeObject getType() {
-        return Builtins.TRUE_BUILTINS.get(builtinIndex).getType();
+        return Builtins.constantNo(builtinIndex).getType();
     }
 
     @Override
@@ -55,7 +55,7 @@ public final class BuiltinConstant implements LangConstant {
     }
 
     private String name() {
-        var result = Builtins.TRUE_BUILTINS.get(builtinIndex);
+        var result = Builtins.constantNo(builtinIndex);
         if (result == Builtins.nullType()) {
             return "type(null)";
         }

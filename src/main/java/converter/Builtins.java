@@ -97,12 +97,6 @@ public final class Builtins {
         return TYPE;
     }
 
-    private static final StdTypeObject BOOL = new StdTypeObject("bool");
-
-    public static TypeObject bool() {
-        return BOOL;
-    }
-
     public static final LangConstant TRUE = new BoolConstant(true);
 
     public static final LangConstant FALSE = new BoolConstant(false);
@@ -114,10 +108,6 @@ public final class Builtins {
     }
 
     private static final InterfaceType THROWABLE = new InterfaceType("Throwable", GenericInfo.empty());
-
-    private static final StdTypeObject NOT_IMPLEMENTED = new StdTypeObject("NotImplemented", List.of(THROWABLE));
-    private static final StdTypeObject VALUE_ERROR = new StdTypeObject("ValueError", List.of(THROWABLE));
-    private static final StdTypeObject NULL_ERROR = new StdTypeObject("NullError", List.of(THROWABLE));
 
     public static InterfaceType throwable() {
         return THROWABLE;
@@ -135,6 +125,8 @@ public final class Builtins {
     public static StdTypeObject nullType() {
         return NULL_TYPE;
     }
+
+    // These are all created by the parsing of __builtins__.newlang, which is parsed at runtime
 
     public static TypeObject range() {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("range"));
@@ -176,6 +168,18 @@ public final class Builtins {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("dec"));
     }
 
+    public static TypeObject bool() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("bool"));
+    }
+
+    public static TypeObject nullError() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("NullError"));
+    }
+
+    public static TypeObject assertError() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("AssertionError"));
+    }
+
     public static LangObject iter() {
         return Objects.requireNonNull(BUILTIN_MAP.get("iter"));
     }
@@ -203,36 +207,6 @@ public final class Builtins {
         ITERATOR.seal();
     }
 
-    static {
-        var notImplConstructor = MethodInfo.of();
-        NOT_IMPLEMENTED.setOperators(Map.of(OpSpTypeNode.NEW, notImplConstructor));
-        NOT_IMPLEMENTED.seal();
-
-        // FIXME: Make into ArgumentInfo.of(str) when put into __builtins__.newlang
-        var valueErrConstructor = MethodInfo.of(ArgumentInfo.of(OBJECT));
-        VALUE_ERROR.setOperators(Map.of(OpSpTypeNode.NEW, valueErrConstructor));
-        VALUE_ERROR.seal();
-
-        var nullErrConstructor = MethodInfo.of(ArgumentInfo.of(OBJECT));
-        NULL_ERROR.setOperators(Map.of(OpSpTypeNode.NEW, nullErrConstructor));
-        NULL_ERROR.seal();
-    }
-
-    static {
-        var boolNewInfo = MethodInfo.of(ArgumentInfo.of(OBJECT));
-        var boolBoolInfo = MethodInfo.of(BOOL);
-
-        var boolMap = Map.of(
-                OpSpTypeNode.NEW, boolNewInfo,
-                OpSpTypeNode.BOOL, boolBoolInfo
-        );
-        BOOL.setOperators(boolMap);
-
-        BOOL.isConstClass();
-        BOOL.seal();
-
-    }
-
     static {  // null is const
         NULL_TYPE.isConstClass();
         NULL_TYPE.seal();
@@ -253,12 +227,12 @@ public final class Builtins {
         THROWABLE.seal();
     }
 
-    public static final List<LangObject> TRUE_BUILTINS = new ArrayList<>(Arrays.asList(
+    private static final List<LangObject> TRUE_BUILTINS = new ArrayList<>(Arrays.asList(
             null,  // print
             CALLABLE,
             null,  // int
             null,  // str
-            BOOL,
+            null,  // bool
             null,  // range
             TYPE,
             null,  // iter
@@ -276,14 +250,15 @@ public final class Builtins {
             null,  // bytes
             null,  // dict
             OBJECT,
-            NOT_IMPLEMENTED,
+            null,  // NotImplemented
             TUPLE,
             THROWABLE,
             NULL_TYPE,
             null,  // hash
-            VALUE_ERROR,
-            NULL_ERROR,
-            ITERABLE
+            null,  // ValueError
+            null,  // NullError
+            ITERABLE,
+            null   // AssertionError
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(
@@ -294,15 +269,15 @@ public final class Builtins {
             Map.entry("Iterable", ITERABLE),
             Map.entry("Throwable", THROWABLE),
             Map.entry("object", OBJECT),
-            Map.entry("NotImplemented", NOT_IMPLEMENTED),
-            Map.entry("ValueError", VALUE_ERROR),
             Map.entry("Iterator", ITERATOR),
             Map.entry("Hashable", HASHABLE),
-            Map.entry("NullError", NULL_ERROR),
             Map.entry("tuple", TUPLE),
-            Map.entry("bool", BOOL),
             Map.entry("null", NULL)
     ));
+
+    public static LangObject constantNo(int index) {
+        return TRUE_BUILTINS.get(index);
+    }
 
     @NotNull
     @Contract("_ -> new")
@@ -340,16 +315,12 @@ public final class Builtins {
 
     // Prevents initialization until needed, thus preventing loading before types initialized
     private static final class ConstantHolder {
-        private static final LangConstant STR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(Builtins.str()));
         private static final LangConstant ITER_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(Builtins.iter()));
         private static final LangConstant RANGE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(Builtins.range()));
-        private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(BOOL));
+        private static final LangConstant BOOL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(Builtins.bool()));
         private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
-        private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_ERROR));
-    }
-
-    public static LangConstant strConstant() {
-        return ConstantHolder.STR_CONSTANT;
+        private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(nullError()));
+        private static final LangConstant ASSERTION_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(assertError()));
     }
 
     public static LangConstant iterConstant() {
@@ -370,6 +341,10 @@ public final class Builtins {
 
     public static LangConstant nullErrorConstant() {
         return ConstantHolder.NULL_ERROR_CONSTANT;
+    }
+
+    public static LangConstant assertionErrorConstant() {
+        return ConstantHolder.ASSERTION_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
