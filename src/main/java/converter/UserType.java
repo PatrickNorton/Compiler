@@ -322,13 +322,21 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             var newAccess = access == AccessLevel.PRIVATE ? AccessLevel.PROTECTED : access;
             for (var superCls : info.supers) {
                 var supAttr = superCls.attrTypeWithGenerics(value, newAccess);
-                if (supAttr.isPresent()) {
+                if (supAttr.isPresent() && hasImpl(value, superCls)) {
                     return supAttr;
                 }
             }
             return Optional.empty();
         } else {
             return typeFromAttr(attr.intoAttrInfo(), access);
+        }
+    }
+
+    private boolean hasImpl(String value, TypeObject superCls) {
+        if (superCls instanceof UserType) {
+            return !((UserType<?>) superCls).contract().getKey().contains(value);
+        } else {
+            return true;
         }
     }
 
