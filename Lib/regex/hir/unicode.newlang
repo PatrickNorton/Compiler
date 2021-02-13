@@ -106,10 +106,22 @@ union UnicodeError from Throwable {
     null PropertyNotFound
     null PropertyValueNotFound
     null PerlClassNotFound
+
+    public method msg() -> str {
+        return switch self {
+            case UnicodeError.PropertyNotFound => "Property not found"
+            case UnicodeError.PropertyValueNotFound => "Property value not found"
+            case UnicodeError.PerlClassNotFound => "Perl class not found"
+        }
+    }
 }
 
 class CaseFoldError from Throwable {
     public operator new {}
+
+    public method msg() -> str {
+        return ""
+    }
 }
 
 func unicodeType(ClassQuery query) -> ClassUnicode {

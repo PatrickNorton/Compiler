@@ -127,7 +127,8 @@ class Compiler {
     }
 
     private mut method compileFinish() -> mut Program {
-        self.compiled.insts = [inst.Compiled!! for var inst in self.insts]
+        print(self.insts)
+        self.compiled.insts = [inst.unwrap() for var inst in self.insts]
         self.compiled.byteClasses = self.byteClasses.byteClasses()
         self.compiled.captureNameIdx = self.captureNameIdx
         return self.compiled
@@ -660,7 +661,7 @@ union MaybeInst {
         return MaybeInst.Split2(halfFilled)
     }
 
-    private method unwrap() -> Inst {
+    method unwrap() -> Inst {
         return switch self {
             case MaybeInst.Compiled as inst => inst
             default => raise Unreachable(
@@ -869,6 +870,14 @@ class Unreachable from Throwable {
 
     public operator new(str value) {
         self.value = value
+    }
+
+    public operator str {
+        return f"Unreachable: {self.value}"
+    }
+
+    public method msg() -> str {
+        return self.value
     }
 }
 

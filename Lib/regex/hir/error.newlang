@@ -12,6 +12,10 @@ class RegexBuildError from Throwable {
         self.pattern = pattern
         self.span = span
     }
+
+    public method msg() -> str {
+        return str(self.kind)
+    }
 }
 
 enum ErrorKind {

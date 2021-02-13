@@ -584,6 +584,10 @@ const class AstError from Throwable {
         self.kind = kind
         self.pattern = pattern
     }
+
+    public method msg() -> str {
+        return str(self.kind)
+    }
 }
 
 union ErrorKind {
