@@ -107,12 +107,6 @@ public final class Builtins {
         return TUPLE;
     }
 
-    private static final InterfaceType THROWABLE = new InterfaceType("Throwable", GenericInfo.empty());
-
-    public static InterfaceType throwable() {
-        return THROWABLE;
-    }
-
     private static final StdTypeObject THROWS = new StdTypeObject("throws");
 
     public static TypeObject throwsType() {
@@ -180,6 +174,10 @@ public final class Builtins {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("AssertionError"));
     }
 
+    public static TypeObject throwable() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("Throwable"));
+    }
+
     public static LangObject iter() {
         return Objects.requireNonNull(BUILTIN_MAP.get("iter"));
     }
@@ -223,10 +221,6 @@ public final class Builtins {
         CALLABLE_RETURN.setParent(CALLABLE);
     }
 
-    static {  // seal everything else
-        THROWABLE.seal();
-    }
-
     private static final List<LangObject> TRUE_BUILTINS = new ArrayList<>(Arrays.asList(
             null,  // print
             CALLABLE,
@@ -252,7 +246,7 @@ public final class Builtins {
             OBJECT,
             null,  // NotImplemented
             TUPLE,
-            THROWABLE,
+            null,  // Throwable
             NULL_TYPE,
             null,  // hash
             null,  // ValueError
@@ -267,7 +261,6 @@ public final class Builtins {
             Map.entry("false", FALSE),
             Map.entry("Callable", CALLABLE),
             Map.entry("Iterable", ITERABLE),
-            Map.entry("Throwable", THROWABLE),
             Map.entry("object", OBJECT),
             Map.entry("Iterator", ITERATOR),
             Map.entry("Hashable", HASHABLE),
