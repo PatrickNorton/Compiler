@@ -317,6 +317,12 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
 
     @NotNull
     public Optional<TypeObject> attrTypeWithGenerics(String value, AccessLevel access) {
+        // Should only be taken during auto-interface check of superclass
+        // Given that, the auto interface will be applied to this type instead
+        // of the superclass and thus still work
+        if (info.attributes == null) {
+            return Optional.empty();
+        }
         var attr = info.attributes.get(value);
         if (attr == null) {
             var newAccess = access == AccessLevel.PRIVATE ? AccessLevel.PROTECTED : access;
