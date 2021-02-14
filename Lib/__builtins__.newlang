@@ -244,6 +244,11 @@ class NotImplemented from Throwable {
     public operator new {}
 }
 
+$builtin("Throwable", 24)
+interface Throwable {
+    public method msg() -> str
+}
+
 $builtin("ValueError", 27)
 class ValueError from Throwable {
     public operator new (str msg, /) {}
