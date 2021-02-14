@@ -16,6 +16,7 @@ public final class ReturnListConverter implements BaseConverter {
     private final Bytecode value;
 
     public ReturnListConverter(TestListNode values, CompilerInfo info, TypeObject[] retTypes, Bytecode value) {
+        assert value == Bytecode.RETURN || value == Bytecode.YIELD : String.format("Invalid bytecode value %s", value);
         this.values = values;
         this.info = info;
         this.retTypes = retTypes;
