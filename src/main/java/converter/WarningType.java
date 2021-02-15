@@ -9,6 +9,7 @@ public enum WarningType {
     TRIVIAL_VALUE,
     UNREACHABLE,
     INFINITE_LOOP,
+    TODO,
     ;
 
     public Optional<String> annotationName() {
@@ -23,6 +24,8 @@ public enum WarningType {
                 return Optional.of("unreachable");
             case INFINITE_LOOP:
                 return Optional.of("infinite");
+            case TODO:
+                return Optional.of("todo");
             case NO_TYPE:
             default:
                 return Optional.empty();
