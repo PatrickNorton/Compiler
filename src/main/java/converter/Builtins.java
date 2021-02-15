@@ -66,13 +66,6 @@ public final class Builtins {
         return CALLABLE;
     }
 
-    private static final Map<OpSpTypeNode, MethodInfo> HASHABLE_MAP = Map.of(
-            // FIXME: 'int'
-            OpSpTypeNode.HASH, MethodInfo.of(ArgumentInfo.of(), OBJECT)
-    );
-
-    private static final InterfaceType HASHABLE = new InterfaceType("Hashable", GenericInfo.empty(), HASHABLE_MAP);
-
     private static final TemplateParam ITERABLE_PARAM = new TemplateParam("K", 0, true);
 
     private static final InterfaceType ITERABLE = new InterfaceType("Iterable", GenericInfo.of(ITERABLE_PARAM));
@@ -183,7 +176,7 @@ public final class Builtins {
     }
 
     public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
-            CONTEXT, CALLABLE, HASHABLE, ITERABLE
+            CONTEXT, CALLABLE, ITERABLE
     );
 
     static {
@@ -263,7 +256,6 @@ public final class Builtins {
             Map.entry("Iterable", ITERABLE),
             Map.entry("object", OBJECT),
             Map.entry("Iterator", ITERATOR),
-            Map.entry("Hashable", HASHABLE),
             Map.entry("tuple", TUPLE),
             Map.entry("null", NULL)
     ));

@@ -4,6 +4,7 @@ import main.java.parser.AugAssignTypeNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
+import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
@@ -124,34 +125,31 @@ public final class AugAssignConverter implements BaseConverter {
     }
 
     private List<Byte> convertNullCoerce(int start) {
-        if (!(node.getName() instanceof VariableNode)) {
-            throw CompilerTodoError.of("??= for non-variables", node);
+        var name = node.getName();
+        if (name instanceof VariableNode) {
+            return convertNullCoerceVar(start);
+        } else if (name instanceof DottedVariableNode) {
+            return convertNullCoerceDot(start);
+        } else if (name instanceof IndexNode) {
+            return convertNullCoerceIndex(start);
+        } else {
+            throw CompilerInternalError.of("Unknown type for null-coerce assignment", node);
         }
+    }
+
+    private List<Byte> convertNullCoerceVar(int start) {
         var variable = (VariableNode) node.getName();
         if (info.variableIsImmutable(variable.getName())) {
             throw CompilerException.of("Cannot assign to immutable variable", node);
         }
         var assignedConverter = TestConverter.of(info, variable, 1);
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
-        var valueType = assignedConverter.returnType()[0];
-        if (!(valueType instanceof OptionTypeObject)) {
-            throw CompilerException.format(
-                    "??= only works on an optional variable, not one of type '%s'", node, valueType
-            );
+        var variableType = assignedConverter.returnType()[0];
+        var valueType = valueConverter.returnType()[0];
+        if (!(variableType instanceof OptionTypeObject)) {
+            throw coerceError(node, variableType);
         }
-        var innerType = ((OptionTypeObject) valueType).getOptionVal();
-        var variableType = valueConverter.returnType()[0];
-        boolean needsMakeOption;
-        if (valueType.isSuperclass(variableType)) {
-            needsMakeOption = false;
-        } else if (innerType.isSuperclass(variableType)) {
-            needsMakeOption = true;
-        } else {
-            throw CompilerException.format(
-                    "Cannot assign: Expected instance of '%s', got '%s'",
-                    node, innerType.name(), variableType.name()
-            );
-        }
+        boolean needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
         List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
         bytes.add(Bytecode.JUMP_NN.value);
         int jumpLoc = bytes.size();
@@ -164,6 +162,101 @@ public final class AugAssignConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
         return bytes;
+    }
+
+    private List<Byte> convertNullCoerceDot(int start) {
+        var name = (DottedVariableNode) node.getName();
+        if (!(name.getLast().getPostDot() instanceof VariableNode)) {
+            throw CompilerTodoError.of("??= on indices", name.getLast());
+        }
+        var pair = DotConverter.exceptLast(info, name, 1);
+        var preDotConverter = pair.getKey();
+        var strName = pair.getValue();
+        var retType = preDotConverter.returnType()[0];
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
+        var valueType = valueConverter.returnType()[0];
+        var variableType = retType.tryAttrType(name.getLast(), strName, info);
+        if (!(variableType instanceof OptionTypeObject)) {
+            throw coerceError(node, variableType);
+        }
+        var needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
+        var constIndex = info.constIndex(LangConstant.of(strName));
+        List<Byte> bytes = new ArrayList<>(preDotConverter.convert(start));
+        bytes.add(Bytecode.DUP_TOP.value);
+        bytes.add(Bytecode.LOAD_DOT.value);
+        bytes.addAll(Util.shortToBytes(constIndex));
+        bytes.add(Bytecode.JUMP_NN.value);
+        int jumpLoc = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(valueConverter.convert(start));
+        if (needsMakeOption) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
+        bytes.add(Bytecode.STORE_ATTR.value);
+        bytes.addAll(Util.shortToBytes(constIndex));
+        bytes.add(Bytecode.JUMP.value);
+        int jump2 = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        bytes.add(Bytecode.POP_TOP.value);
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
+        return bytes;
+    }
+
+    private List<Byte> convertNullCoerceIndex(int start) {
+        var name = (IndexNode) node.getName();
+        var preDotConverter = TestConverter.of(info, name.getVar(), 1);
+        var postDotConverters = convertersOf(name.getIndices());
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
+        var variableType = preDotConverter.returnType()[0].tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
+        var valueType = valueConverter.returnType()[0];
+        if (!(variableType instanceof OptionTypeObject)) {
+            throw coerceError(node, variableType);
+        }
+        var needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
+        List<Byte> bytes = new ArrayList<>(preDotConverter.convert(start));
+        for (var postDot : postDotConverters) {
+            bytes.addAll(postDot.convert(start + bytes.size()));
+        }
+        if (postDotConverters.length == 1) {
+            bytes.add(Bytecode.DUP_TOP_2.value);
+        } else {
+            bytes.add(Bytecode.DUP_TOP_N.value);
+            bytes.addAll(Util.shortToBytes((short) (postDotConverters.length + 1)));
+        }
+        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) postDotConverters.length));
+        bytes.add(Bytecode.JUMP_NN.value);
+        int jumpLoc = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(valueConverter.convert(start));
+        if (needsMakeOption) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
+        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) (postDotConverters.length + 1)));
+        bytes.add(Bytecode.JUMP.value);
+        int jump2 = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        for (int i = 0; i < postDotConverters.length + 1; i++) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
+        return bytes;
+    }
+
+    private boolean needsMakeOption(OptionTypeObject variableType, TypeObject valueType) {
+        if (variableType.isSuperclass(valueType)) {
+            return false;
+        } else if (variableType.getOptionVal().isSuperclass(valueType)) {
+            return true;
+        } else {
+            throw CompilerException.format(
+                    "Cannot assign: Expected instance of '%s', got '%s'",
+                    node, variableType.getOptionVal().name(), valueType.name()
+            );
+        }
     }
 
     private void checkInfo(FunctionInfo fnInfo, TypeObject assignedReturn, TypeObject valueReturn) {
@@ -189,5 +282,19 @@ public final class AugAssignConverter implements BaseConverter {
                 );
             }
         }
+    }
+
+    private TestConverter[] convertersOf(TestNode[] nodes) {
+        var result = new TestConverter[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            result[i] = TestConverter.of(info, nodes[i], 1);
+        }
+        return result;
+    }
+
+    private static CompilerException coerceError(Lined node, TypeObject valueType) {
+        return CompilerException.format(
+                "??= only works on an optional variable, not one of type '%s'", node, valueType.name()
+        );
     }
 }

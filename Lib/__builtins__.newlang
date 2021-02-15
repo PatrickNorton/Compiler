@@ -270,3 +270,8 @@ func hash(object value, /) -> int {}
 
 $builtin("dec")
 class dec {}
+
+$builtin("Hashable")
+auto interface Hashable {
+    public operator hash -> int
+}
