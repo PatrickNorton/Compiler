@@ -7,6 +7,7 @@ import main.java.parser.IndexNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
+import main.java.parser.SpecialOpNameNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Levenshtein;
@@ -69,8 +70,13 @@ public final class AssignmentConverter implements BaseConverter {
                 var last = ((DottedVariableNode) name).getLast();
                 if (last.getPostDot() instanceof IndexNode) {
                     assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, valueConverter);
-                } else {
+                } else if (last.getPostDot() instanceof VariableNode) {
                     assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
+                } else if (last.getPostDot() instanceof SpecialOpNameNode) {
+                    throw CompilerException.of("Cannot assign to constant value", node);
+                } else {
+                    var clsName = last.getPostDot().getClass().getName();
+                    throw CompilerInternalError.format("Illegal node %s", node, clsName);
                 }
             } else {
                 throw CompilerException.of("Assignment must be to a variable, index, or dotted variable", node);
