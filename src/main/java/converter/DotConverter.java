@@ -295,8 +295,10 @@ public final class DotConverter implements TestConverter {
     ) {
         if (postDot.getCaller() instanceof SpecialOpNameNode) {
             return convertOperator(previous, start, bytes, postDot);
-        } else {
+        } else if (postDot.getCaller() instanceof VariableNode) {
             return convertNameMethod(previous, start, bytes, postDot);
+        } else {
+            throw CompilerTodoError.of("More complex function-call prefixes not implemented yet", postDot);
         }
     }
 
