@@ -130,10 +130,11 @@ public final class AugAssignConverter implements BaseConverter {
             return convertNullCoerceVar(start);
         } else if (name instanceof DottedVariableNode) {
             return convertNullCoerceDot(start);
+        } else if (name instanceof IndexNode) {
+            return convertNullCoerceIndex(start);
         } else {
-            throw CompilerTodoError.of("??= for indices", node);
+            throw CompilerInternalError.of("Unknown type for null-coerce assignment", node);
         }
-
     }
 
     private List<Byte> convertNullCoerceVar(int start) {
@@ -202,6 +203,49 @@ public final class AugAssignConverter implements BaseConverter {
         return bytes;
     }
 
+    private List<Byte> convertNullCoerceIndex(int start) {
+        var name = (IndexNode) node.getName();
+        var preDotConverter = TestConverter.of(info, name.getVar(), 1);
+        var postDotConverters = convertersOf(name.getIndices());
+        var valueConverter = TestConverter.of(info, node.getValue(), 1);
+        var variableType = preDotConverter.returnType()[0].tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
+        var valueType = valueConverter.returnType()[0];
+        if (!(variableType instanceof OptionTypeObject)) {
+            throw coerceError(node, variableType);
+        }
+        var needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
+        List<Byte> bytes = new ArrayList<>(preDotConverter.convert(start));
+        for (var postDot : postDotConverters) {
+            bytes.addAll(postDot.convert(start + bytes.size()));
+        }
+        if (postDotConverters.length == 1) {
+            bytes.add(Bytecode.DUP_TOP_2.value);
+        } else {
+            bytes.add(Bytecode.DUP_TOP_N.value);
+            bytes.addAll(Util.shortToBytes((short) (postDotConverters.length + 1)));
+        }
+        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) postDotConverters.length));
+        bytes.add(Bytecode.JUMP_NN.value);
+        int jumpLoc = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(valueConverter.convert(start));
+        if (needsMakeOption) {
+            bytes.add(Bytecode.MAKE_OPTION.value);
+        }
+        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
+        bytes.addAll(Util.shortToBytes((short) (postDotConverters.length + 1)));
+        bytes.add(Bytecode.JUMP.value);
+        int jump2 = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        for (int i = 0; i < postDotConverters.length + 1; i++) {
+            bytes.add(Bytecode.POP_TOP.value);
+        }
+        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
+        return bytes;
+    }
+
     private boolean needsMakeOption(OptionTypeObject variableType, TypeObject valueType) {
         if (variableType.isSuperclass(valueType)) {
             return false;
@@ -238,6 +282,14 @@ public final class AugAssignConverter implements BaseConverter {
                 );
             }
         }
+    }
+
+    private TestConverter[] convertersOf(TestNode[] nodes) {
+        var result = new TestConverter[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            result[i] = TestConverter.of(info, nodes[i], 1);
+        }
+        return result;
     }
 
     private static CompilerException coerceError(Lined node, TypeObject valueType) {
