@@ -376,16 +376,20 @@ public final class ImportHandler {
 
     private Path loadFile(String moduleName, @NotNull ImportExportNode node) {
         Path path;
+        boolean isStdlib;
         if (node.getPreDots() > 0) {
             var parentPath = info.path();
             for (int i = 0; i < node.getPreDots(); i++) {
                 parentPath = parentPath.getParent();
             }
             path = Converter.localModulePath(parentPath, moduleName, node);
+            isStdlib = false;
         } else {
-            path = Converter.findPath(moduleName, node);
+            var pair = Converter.findPath(moduleName, node);
+            path = pair.getKey();
+            isStdlib = pair.getValue();
         }
-        loadInfo(path, moduleName, PermissionLevel.NORMAL);
+        loadInfo(path, moduleName, isStdlib ? PermissionLevel.STDLIB : info.permissions());
         return path;
     }
 
@@ -425,11 +429,15 @@ public final class ImportHandler {
     }
 
     private void registerWildcardExport(String moduleName, @NotNull ImportExportNode node) {
-        var path = node.getPreDots() > 0
-                ? Converter.localModulePath(info.path().getParent(), moduleName, node)
-                : Converter.findPath(moduleName, node);
-        loadInfo(path, moduleName, PermissionLevel.NORMAL);
-        wildcardExports.add(path);
+        if (node.getPreDots() > 0) {
+            var path = Converter.localModulePath(info.path().getParent(), moduleName, node);
+            loadInfo(path, moduleName, info.permissions());
+            wildcardExports.add(path);
+        } else {
+            var pair = Converter.findPath(moduleName, node);
+            loadInfo(pair.getKey(), moduleName, pair.getValue() ? PermissionLevel.STDLIB : info.permissions());
+            wildcardExports.add(pair.getKey());
+        }
         // FIXME: Register exports accurately
     }
 
