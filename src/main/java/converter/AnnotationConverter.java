@@ -67,18 +67,18 @@ public final class AnnotationConverter implements BaseConverter {
                 if (!(node instanceof DefinitionNode)) {
                     throw CompilerException.of("Frequency hints may only be used on definitions", node);
                 }
-                CompilerWarning.warn("Frequency hints do not do anything yet", WarningType.NO_TYPE, info, name);
+                CompilerWarning.warn("Frequency hints do not do anything yet", WarningType.TODO, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "test":
-                CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
+                CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, name);
                 return convertIfTest(start, false);
             case "notTest":
-                CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, name);
+                CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, name);
                 return convertIfTest(start, true);
             case "nonExhaustive":
                 if (node instanceof EnumDefinitionNode || node instanceof UnionDefinitionNode) {
                     CompilerWarning.warn(
-                            "Non-exhaustive enums/unions are not yet supported", WarningType.NO_TYPE, info, name
+                            "Non-exhaustive enums/unions are not yet supported", WarningType.TODO, info, name
                     );
                     return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 } else {
@@ -88,7 +88,7 @@ public final class AnnotationConverter implements BaseConverter {
                 if (node instanceof FunctionDefinitionNode) {
                     return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertDeprecated();
                 } else {
-                    CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.NO_TYPE, info, name);
+                    CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.TODO, info, name);
                     return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
             default:
@@ -111,7 +111,7 @@ public final class AnnotationConverter implements BaseConverter {
             case "inline":
                 return convertInline(start, name);
             case "deprecated":
-                CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.NO_TYPE, info, name);
+                CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.TODO, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "allow":
             case "deny":
@@ -147,7 +147,7 @@ public final class AnnotationConverter implements BaseConverter {
                     case "always":
                     case "never":
                         CompilerWarning.warn(
-                                "Frequency hints do not do anything yet", WarningType.NO_TYPE, info, inline
+                                "Frequency hints do not do anything yet", WarningType.TODO, info, inline
                         );
                         return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
@@ -252,10 +252,10 @@ public final class AnnotationConverter implements BaseConverter {
             var stmt = (FunctionCallNode) annotation;
             switch (stmt.getVariable().getName()) {
                 case "test":
-                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, stmt);
+                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, stmt);
                     return false;
                 case "notTest":
-                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.NO_TYPE, info, stmt);
+                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, stmt);
                     return true;
                 case "cfg":
                     if (stmt.getParameters().length == 1) {

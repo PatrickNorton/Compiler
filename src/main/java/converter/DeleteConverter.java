@@ -103,6 +103,11 @@ public final class DeleteConverter implements BaseConverter {
         var varHolder = info.varHolder();
         if (varHolder.varDefinedInCurrentFrame(name)) {  // TODO: Drop non-top-frame variable properly
             varHolder.removeVariable(name);
+        } else {
+            CompilerWarning.warn(
+                    "del on variable not defined in current frame will not remove the variable properly",
+                    WarningType.TODO, info, node
+            );
         }
         return bytes;
     }

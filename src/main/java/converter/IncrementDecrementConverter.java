@@ -2,10 +2,12 @@ package main.java.converter;
 
 import main.java.parser.DecrementNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.FunctionCallNode;
 import main.java.parser.IncDecNode;
 import main.java.parser.IncrementNode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.SpecialOpNameNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -67,8 +69,12 @@ public final class IncrementDecrementConverter implements BaseConverter {
             return convertDotVar(start, dot, isDecrement);
         } else if (last instanceof IndexNode) {
             return convertDotIndex(start, dot, isDecrement);
+        } else if (last instanceof FunctionCallNode) {
+            throw CompilerException.format("Cannot %s result of function call", node, incName(isDecrement));
+        } else if (last instanceof SpecialOpNameNode) {
+            throw CompilerException.format("Cannot %s raw operator", node, incName(isDecrement));
         } else {
-            throw CompilerTodoError.format("Cannot convert index %s yet", node, incName(isDecrement));
+            throw CompilerInternalError.format("Unknown type for dotted %s", node, incName(isDecrement));
         }
     }
 
