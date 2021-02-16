@@ -37,15 +37,22 @@ public final class CompilerInfo {
 
     private final FunctionReturnInfo fnReturns = new FunctionReturnInfo();
 
+    private final PermissionLevel permissionLevel;
+
     private boolean linked = false;
     private boolean compiled = false;
     private boolean dependentsFound = false;
 
     public CompilerInfo(TopNode node, GlobalCompilerInfo globalInfo) {
+        this(node, globalInfo, PermissionLevel.NORMAL);
+    }
+
+    public CompilerInfo(TopNode node, GlobalCompilerInfo globalInfo, PermissionLevel level) {
         this.node = node;
         this.globalInfo = globalInfo;
         this.varHolder = new VariableHolder(globalInfo);
         this.staticIndex = globalInfo.reserveStatic();
+        this.permissionLevel = level;
     }
 
     /**
@@ -97,6 +104,10 @@ public final class CompilerInfo {
 
     public WarningHolder warningHolder() {
         return warnings;
+    }
+
+    public PermissionLevel permissions() {
+        return permissionLevel;
     }
 
     /**
@@ -490,7 +501,7 @@ public final class CompilerInfo {
      */
     public void checkDefinition(String name, Lined info) {
         if (varHolder.varDefinedInCurrentFrame(name)) {
-            var declInfo = varHolder.varInfo(name).orElseThrow().getDeclarationInfo();;
+            var declInfo = varHolder.varInfo(name).orElseThrow().getDeclarationInfo();
             throw CompilerException.doubleDef(name, declInfo, info.getLineInfo());
         }
     }

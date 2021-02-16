@@ -105,7 +105,7 @@ public final class ImportHandler {
         boolean isModule = false;
         Optional<InterfaceDefinitionNode> hasAuto = Optional.empty();
         Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
-        loadInfo(Converter.builtinPath().resolve("__builtins__.newlang"), "__builtins__");
+        loadInfo(Converter.builtinPath().resolve("__builtins__.newlang"), "__builtins__", PermissionLevel.BUILTIN);
         for (var stmt : node) {
             if (stmt instanceof ImportExportNode) {
                 var ieNode = (ImportExportNode) stmt;
@@ -385,7 +385,7 @@ public final class ImportHandler {
         } else {
             path = Converter.findPath(moduleName, node);
         }
-        loadInfo(path, moduleName);
+        loadInfo(path, moduleName, PermissionLevel.NORMAL);
         return path;
     }
 
@@ -428,17 +428,17 @@ public final class ImportHandler {
         var path = node.getPreDots() > 0
                 ? Converter.localModulePath(info.path().getParent(), moduleName, node)
                 : Converter.findPath(moduleName, node);
-        loadInfo(path, moduleName);
+        loadInfo(path, moduleName, PermissionLevel.NORMAL);
         wildcardExports.add(path);
         // FIXME: Register exports accurately
     }
 
-    private void loadInfo(Path path, String moduleName) {
+    private void loadInfo(Path path, String moduleName, PermissionLevel level) {
         CompilerInfo f;
         if (ALL_FILES.containsKey(path)) {
             f = ALL_FILES.get(path);
         } else {
-            f = new CompilerInfo(Parser.parse(path.toFile()), info.globalInfo());
+            f = new CompilerInfo(Parser.parse(path.toFile()), info.globalInfo(), level);
             ALL_FILES.put(path, f);
             toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
         }
