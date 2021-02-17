@@ -144,7 +144,7 @@ class TextWrapper {
 
     private method wrapChunks(list[str] chunks) -> list[str] {
         mut list[str] lines = []
-        raise ValueError("invalid width %r (must be > 0)" % self.width) if self.width <= 0
+        raise ValueError(f"invalid width {self.width} (must be > 0)") if self.width <= 0
         if self.maxLines? as maxLines {
             var indent = self.initialIndent if maxLines <= 1 else self.subsequentIndent
             if indent.length + self.placeholder.lstrip().length > self.width {
