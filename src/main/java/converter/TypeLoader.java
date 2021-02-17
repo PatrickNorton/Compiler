@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public final class TypeLoader implements TestConverter {
-    private LineInfo lineInfo;
-    private TypeObject value;
-    private CompilerInfo info;
+    private final LineInfo lineInfo;
+    private final TypeObject value;
+    private final CompilerInfo info;
 
     public TypeLoader(LineInfo lineInfo, TypeObject value, CompilerInfo info) {
         this.lineInfo = lineInfo;
