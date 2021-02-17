@@ -130,6 +130,17 @@ public final class AnnotationConverter implements BaseConverter {
                             "'builtin' annotation is only valid on class and function definitions", node
                     );
                 }
+            case "native":
+                var native0 = name.getParameters()[0].getArgument();
+                if (native0 instanceof StringNode && ((StringNode) native0).getContents().equals("sys")) {
+                    if (node instanceof FunctionDefinitionNode) {
+                        return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertSys();
+                    } else {
+                        throw CompilerTodoError.of("'sys' annotation on non-functions", node);
+                    }
+                } else {
+                    throw CompilerException.of("Unknown native function type", name);
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }

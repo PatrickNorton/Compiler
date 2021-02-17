@@ -38,6 +38,31 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return Collections.emptyList();
     }
 
+    public List<Byte> convertSys() {
+        if (!info.permissions().isBuiltin()) {
+            throw CompilerException.of("'$native(\"sys\")' is only allowed in builtin files", node);
+        }
+        assert node.getBody().isEmpty();
+        var name = node.getName().getName();
+        var fn = info.getFn(name);
+        if (fn.isPresent()) {
+            var func = fn.orElseThrow();
+            var argc = func.getInfo().getArgs().size();
+            var bytes = func.getBytes();
+            assert bytes.isEmpty();
+            bytes.add(Bytecode.SYSCALL.value);
+            bytes.addAll(Util.shortToBytes((short) Syscalls.get(name)));
+            bytes.addAll(Util.shortToBytes((short) argc));
+            if (func.getReturns().length > 0) {
+                bytes.add(Bytecode.RETURN.value);
+                bytes.addAll(Util.shortToBytes((short) func.getReturns().length));
+            }
+            return Collections.emptyList();
+        } else {
+            throw CompilerInternalError.of("System function should always be predefined", node);
+        }
+    }
+
     private Function convertInner() {
         var name = node.getName().getName();
         var predefined = info.getFn(name);
