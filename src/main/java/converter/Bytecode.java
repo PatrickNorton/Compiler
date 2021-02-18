@@ -115,6 +115,8 @@ public enum Bytecode {
     // Misc.
     MAKE_FUNCTION(0x70, Type.FUNCTION_NO),
     GET_TYPE(0x71),
+    GET_SYS(0x72, Type.SYSCALL_NO),
+    SYSCALL(0x73, Type.SYSCALL_NO, Type.ARGC),
     // Dups, part 2 (maybe realign?)
     DUP_TOP_2(0x78),
     DUP_TOP_N(0x79, Type.ARGC),
@@ -132,6 +134,7 @@ public enum Bytecode {
         FUNCTION_NO(2),
         STACK_POS(2),
         TABLE_NO(2),
+        SYSCALL_NO(2),
         ;
         final byte byteCount;
 

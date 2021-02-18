@@ -121,12 +121,25 @@ public final class AnnotationConverter implements BaseConverter {
                 warningHolder.popWarnings();
                 return bytes;
             case "builtin":
-                if (node instanceof BaseClassNode || node instanceof FunctionDefinitionNode) {
+                if (!info.permissions().isBuiltin()) {
+                    throw CompilerException.of("'builtin' is an internal-only annotation", name);
+                } else if (node instanceof BaseClassNode || node instanceof FunctionDefinitionNode) {
                     return Collections.emptyList();
                 } else {
                     throw CompilerException.of(
                             "'builtin' annotation is only valid on class and function definitions", node
                     );
+                }
+            case "native":
+                var native0 = name.getParameters()[0].getArgument();
+                if (native0 instanceof StringNode && ((StringNode) native0).getContents().equals("sys")) {
+                    if (node instanceof FunctionDefinitionNode) {
+                        return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertSys();
+                    } else {
+                        throw CompilerTodoError.of("'sys' annotation on non-functions", node);
+                    }
+                } else {
+                    throw CompilerException.of("Unknown native function type", name);
                 }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
@@ -241,7 +254,7 @@ public final class AnnotationConverter implements BaseConverter {
             case 0:
                 return Optional.empty();
             case 1:
-                return builtinValues(lineInfo, annotations[0]);
+                return builtinValues(lineInfo, annotations[0], info);
             default:
                 throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
         }
@@ -332,13 +345,16 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private static Optional<Pair<String, Integer>> builtinValues(Lined lineInfo, NameNode annotation) {
+    private static Optional<Pair<String, Integer>> builtinValues(Lined lineInfo, NameNode annotation, CompilerInfo info) {
         if (!(annotation instanceof FunctionCallNode)) {
             return Optional.empty();
         }
         var func = (FunctionCallNode) annotation;
         if (!func.getVariable().getName().equals("builtin")) {
             return Optional.empty();
+        }
+        if (!info.permissions().isBuiltin()) {
+            throw CompilerException.of("'builtin' is an internal-only annotation", lineInfo);
         }
         switch (func.getParameters().length) {
             case 0:

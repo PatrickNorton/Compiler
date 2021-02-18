@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.Lined;
 import main.java.parser.TopNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -59,10 +60,11 @@ public final class Converter {
      *     folder.
      * </p>
      * @param name The name of the module
-     * @return The {@link Path path} to the module
+     * @return The {@link Path path} to the module and if the file is in the
+     *         stdlib
      */
     @NotNull
-    public static Path findPath(String name, Lined info) {
+    public static Pair<Path, Boolean> findPath(String name, Lined info) {
         var path = System.getenv("NEWLANG_PATH");
         for (String filename : path.split(":")) {
             if (!filename.isEmpty()) {
@@ -71,7 +73,7 @@ public final class Converter {
                             .filter(f -> f.endsWith(name + Util.FILE_EXTENSION) || f.endsWith(name))
                             .collect(Collectors.toList());
                     if (!result.isEmpty()) {
-                        return getPath(result, name, info);
+                        return Pair.of(getPath(result, name, info), false);
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -83,7 +85,7 @@ public final class Converter {
         for (var builtin : builtinPath) {
             var finalName = Path.of(builtin).getFileName().toString();
             if (isModule(builtinPath().resolve(builtin)) && nameMatches(name, finalName)) {
-                return getPath(List.of(builtinPath().resolve(builtin)), name, info);
+                return Pair.of(getPath(List.of(builtinPath().resolve(builtin)), name, info), true);
             }
         }
         throw CompilerException.of("Cannot find module " + name, info);
