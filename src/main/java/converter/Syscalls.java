@@ -17,6 +17,10 @@ public final class Syscalls {
         return VALUES.get(stripTrailingUnderscores(name));
     }
 
+    public static String nameOf(int value) {
+        return VALUES.inverse().get(value);
+    }
+
     private static String stripTrailingUnderscores(String value) {
         if (!value.endsWith("_")) {
             return value;
