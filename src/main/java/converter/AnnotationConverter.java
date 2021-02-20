@@ -91,6 +91,8 @@ public final class AnnotationConverter implements BaseConverter {
                     CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.TODO, info, name);
                     return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 }
+            case "native":
+                throw CompilerTodoError.of("'native' annotation", node);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getName());
         }
