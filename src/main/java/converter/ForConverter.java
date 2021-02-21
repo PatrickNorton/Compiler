@@ -134,6 +134,9 @@ public final class ForConverter extends LoopConverter {
         info.loopManager().addContinue(start + bytes.size());
         bytes.addAll(Util.zeroToBytes());
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        if ((divergingInfo.willBreak() || divergingInfo.willReturn()) && !divergingInfo.mayContinue()) {
+            CompilerWarning.warn("Loop executes no more than once", WarningType.UNREACHABLE, info, node);
+        }
         if (node.getNobreak().isEmpty()) {
             divergingInfo.makeUncertain();
         } else {

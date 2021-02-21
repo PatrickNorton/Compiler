@@ -32,7 +32,6 @@ public final class WhileConverter extends LoopConverter {
         var condPair = convertCond(bytes, start, hasAs);
         var isWhileTrue = condPair.getKey();
         var constantCondition = condPair.getValue();
-        DivergingInfo willReturn;
         int jumpLoc;
         if (constantCondition.isPresent()) {
             if (!constantCondition.orElseThrow()) {
@@ -53,7 +52,11 @@ public final class WhileConverter extends LoopConverter {
         }
         var pair = BaseConverter.bytesWithReturn(start + bytes.size(), node.getBody(), info);
         var body = pair.getKey();
-        willReturn = pair.getValue();
+        var willReturn = pair.getValue();
+        if ((willReturn.willBreak() || willReturn.willReturn()) && !willReturn.mayContinue()) {
+            var msg = isWhileTrue ? "exactly" : "no more than";
+            CompilerWarning.warnf("Loop executes %s once", WarningType.UNREACHABLE, info, node, msg);
+        }
         bytes.addAll(body);
         if (hasAs) {
             info.removeStackFrame();
@@ -85,13 +88,15 @@ public final class WhileConverter extends LoopConverter {
             }
         }
         if (isWhileTrue && !willReturn.mayBreak()) {
-            if (!willReturn.mayReturn() && !info.getFnReturns().isGenerator()) {
+            if (!willReturn.mayDiverge() && !info.getFnReturns().isGenerator()) {
                 // Generators may infinitely yield, so no warnings for them
                 // In the future, we may want to keep track of yields too, so
                 // we can warn on yield-less infinite loops
                 CompilerWarning.warn("Infinite loop", WarningType.INFINITE_LOOP, info, node);
             }
-            willReturn.knownReturn();
+            if (willReturn.mayReturn()) {
+                willReturn.knownReturn();
+            }
         }
         return Pair.of(bytes, willReturn);
     }
