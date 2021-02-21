@@ -32,10 +32,20 @@ public final class DotimesConverter extends LoopConverter {
         bytes.add(Bytecode.DOTIMES.value);
         int jumpLoc = bytes.size();
         bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
+        bytes.addAll(convertBody(start + bytes.size()));
         bytes.add(Bytecode.JUMP.value);
         bytes.addAll(Util.intToBytes(topJump));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        return bytes;
+    }
+
+    private List<Byte> convertBody(int start) {
+        var pair = BaseConverter.bytesWithReturn(start, node.getBody(), info);
+        var bytes = pair.getKey();
+        var divergingInfo = pair.getValue();
+        if ((divergingInfo.willBreak() || divergingInfo.willReturn()) && !divergingInfo.mayContinue()) {
+            CompilerWarning.warn("Loop executes no more than once", WarningType.UNREACHABLE, info, node);
+        }
         return bytes;
     }
 }
