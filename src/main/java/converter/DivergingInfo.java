@@ -8,19 +8,28 @@ public final class DivergingInfo {
     private boolean mayReturn;
     private final Set<Integer> willBreak;
     private final Set<Integer> mayBreak;
+    private boolean willContinue;
+    private boolean mayContinue;
 
     public DivergingInfo() {
         willReturn = false;
         mayReturn = false;
         willBreak = new HashSet<>();
         mayBreak = new HashSet<>();
+        willContinue = false;
+        mayContinue = false;
     }
 
-    private DivergingInfo(boolean willReturn, boolean mayReturn, Set<Integer> willBreak, Set<Integer> mayBreak) {
+    private DivergingInfo(
+            boolean willReturn, boolean mayReturn, Set<Integer> willBreak,
+            Set<Integer> mayBreak, boolean willContinue, boolean mayContinue
+    ) {
         this.willReturn = willReturn;
         this.mayReturn = mayReturn;
         this.willBreak = willBreak;
         this.mayBreak = mayBreak;
+        this.willContinue = willContinue;
+        this.mayContinue = mayContinue;
     }
 
     public void andWith(DivergingInfo other) {
@@ -28,6 +37,8 @@ public final class DivergingInfo {
         this.mayReturn |= other.mayReturn;
         this.willBreak.retainAll(other.willBreak);
         this.mayBreak.addAll(other.mayBreak);
+        this.willContinue &= other.willContinue;
+        this.mayContinue |= other.mayContinue;
     }
 
     public void orWith(DivergingInfo other) {
@@ -35,6 +46,8 @@ public final class DivergingInfo {
         this.mayReturn |= other.mayReturn;
         this.willBreak.addAll(other.willBreak);
         this.mayBreak.addAll(other.mayBreak);
+        this.willContinue |= other.willContinue;
+        this.mayContinue |= other.mayContinue;
     }
 
     public DivergingInfo knownReturn() {
@@ -57,13 +70,23 @@ public final class DivergingInfo {
         this.mayBreak.add(level);
     }
 
+    public void knownContinue() {
+        this.willContinue = true;
+        this.mayContinue = true;
+    }
+
+    public void possibleContinue() {
+        this.mayContinue = true;
+    }
+
     public void makeUncertain() {
         this.willReturn = false;
         this.willBreak.clear();
+        this.willContinue = false;
     }
 
     public DivergingInfo removeLevel() {
-        return new DivergingInfo(willReturn, mayReturn, lessOne(willBreak), lessOne(mayBreak));
+        return new DivergingInfo(willReturn, mayReturn, lessOne(willBreak), lessOne(mayBreak), false, false);
     }
 
     public boolean willReturn() {
@@ -75,11 +98,11 @@ public final class DivergingInfo {
     }
 
     public boolean willDiverge() {
-        return willReturn || !willBreak.isEmpty();
+        return willReturn || willContinue || !willBreak.isEmpty();
     }
 
     public boolean mayDiverge() {
-        return mayReturn || !mayBreak.isEmpty();
+        return mayReturn || mayContinue || !mayBreak.isEmpty();
     }
 
     public boolean willBreak() {
@@ -88,6 +111,14 @@ public final class DivergingInfo {
 
     public boolean mayBreak() {
         return !mayBreak.isEmpty();
+    }
+
+    public boolean willContinue() {
+        return willContinue;
+    }
+
+    public boolean mayContinue() {
+        return mayContinue;
     }
 
     private static Set<Integer> lessOne(Set<Integer> values) {
