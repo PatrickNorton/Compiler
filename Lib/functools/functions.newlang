@@ -22,3 +22,8 @@ generic T
 func identity(T foo) -> T {
     return foo
 }
+
+generic T
+func lazy(T value) -> Callable[[T]] {
+    return lambda => value
+}
