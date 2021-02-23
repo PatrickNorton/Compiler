@@ -138,6 +138,7 @@ class set[T] {
 
     public mut method add(T value, /) {}
     public mut method addAll(Iterable[T] values, /) {}
+    public mut method remove(T value, /) -> bool {}
     public mut method clear() {}
 }
 
