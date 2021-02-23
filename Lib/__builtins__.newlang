@@ -233,6 +233,7 @@ class dict[K, V] {
     public operator == (dict[K, V] other, /) -> bool {}
 
     public method get(K key, /) -> V? {}
+    public method set(K key, V value, /) -> V? {}
     public mut method clear() {}
     public mut method setDefault(K key, V value, /) -> V {}
     public mut method replace(K key, V value, /) -> V? {}
