@@ -39,8 +39,12 @@ public final class ReturnListConverter implements BaseConverter {
         return value == Bytecode.RETURN && retTypes.length == 1 && values.size() == 1
                 && values.getVararg(0).isEmpty()
                 && values.get(0) instanceof FunctionCallNode
-                && !OptionTypeObject.needsMakeOption(
-                        retTypes[0], TestConverter.returnType(values.get(0), info, 1)[0]
+                && !firstNeedsOption();
+    }
+
+    private boolean firstNeedsOption() {
+        return OptionTypeObject.needsMakeOption(
+                retTypes[0], TestConverter.returnType(values.get(0), info, 1)[0]
         );
     }
 

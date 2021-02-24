@@ -216,6 +216,8 @@ public enum Bytecode {
                 return String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
             case OPERATOR:
                 return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
+            case SYSCALL_NO:
+                return String.format("%d (%s)", value, Syscalls.nameOf(value));
             default:
                 throw new UnsupportedOperationException("Unknown enum value");
         }

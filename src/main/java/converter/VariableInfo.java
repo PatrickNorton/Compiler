@@ -2,6 +2,8 @@ package main.java.converter;
 
 import main.java.parser.LineInfo;
 
+import java.util.Objects;
+
 public final class VariableInfo {
     private final TypeObject type;
     private final boolean isConst;
@@ -57,11 +59,7 @@ public final class VariableInfo {
     }
 
     public LangConstant constValue() {
-        if (langConst == null) {
-            throw new IllegalStateException("Cannot invoke constValue() where null");
-        } else {
-            return langConst;
-        }
+        return Objects.requireNonNull(langConst, "Cannot invoke constValue() where null");
     }
 
     public boolean hasConstValue() {

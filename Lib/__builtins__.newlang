@@ -138,6 +138,7 @@ class set[T] {
 
     public mut method add(T value, /) {}
     public mut method addAll(Iterable[T] values, /) {}
+    public mut method remove(T value, /) -> bool {}
     public mut method clear() {}
 }
 
@@ -233,6 +234,7 @@ class dict[K, V] {
     public operator == (dict[K, V] other, /) -> bool {}
 
     public method get(K key, /) -> V? {}
+    public mut method set(K key, V value, /) -> V? {}
     public mut method clear() {}
     public mut method setDefault(K key, V value, /) -> V {}
     public mut method replace(K key, V value, /) -> V? {}

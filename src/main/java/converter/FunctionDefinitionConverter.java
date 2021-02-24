@@ -39,8 +39,8 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     }
 
     public List<Byte> convertSys() {
-        if (!info.permissions().isBuiltin()) {
-            throw CompilerException.of("'$native(\"sys\")' is only allowed in builtin files", node);
+        if (!info.permissions().isStdlib()) {
+            throw CompilerException.of("'$native(\"sys\")' is only allowed in stdlib files", node);
         }
         assert node.getBody().isEmpty();
         var name = node.getName().getName();
