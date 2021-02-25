@@ -166,9 +166,17 @@ public final class AugAssignConverter implements BaseConverter {
 
     private List<Byte> convertNullCoerceDot(int start) {
         var name = (DottedVariableNode) node.getName();
-        if (!(name.getLast().getPostDot() instanceof VariableNode)) {
-            throw CompilerTodoError.of("??= on indices", name.getLast());
+        if (name.getLast().getPostDot() instanceof VariableNode) {
+            return convertNullCoerceDotVar(start);
+        } else if (name.getLast().getPostDot() instanceof IndexNode) {
+            return convertNullCoerceDottedIndex(start);
+        } else {
+            throw CompilerTodoError.of("??= on other dotted variables", name.getLast());
         }
+    }
+
+    private List<Byte> convertNullCoerceDotVar(int start) {
+        var name = (DottedVariableNode) node.getName();
         var pair = DotConverter.exceptLast(info, name, 1);
         var preDotConverter = pair.getKey();
         var strName = pair.getValue();
@@ -207,6 +215,19 @@ public final class AugAssignConverter implements BaseConverter {
         var name = (IndexNode) node.getName();
         var preDotConverter = TestConverter.of(info, name.getVar(), 1);
         var postDotConverters = convertersOf(name.getIndices());
+        return convertNullIndex(start, preDotConverter, postDotConverters);
+    }
+
+    private List<Byte> convertNullCoerceDottedIndex(int start) {
+        var name = (DottedVariableNode) node.getName();
+        var converterPair = DotConverter.exceptLastIndex(info, name, 1);
+        var preDotConverter = converterPair.getKey();
+        var postDotConverters = convertersOf(converterPair.getValue());
+        return convertNullIndex(start, preDotConverter, postDotConverters);
+    }
+
+    private List<Byte> convertNullIndex(int start, TestConverter preDotConverter, TestConverter... postDotConverters) {
+        var name = node.getName();
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var variableType = preDotConverter.returnType()[0].tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
         var valueType = valueConverter.returnType()[0];
