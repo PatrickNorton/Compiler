@@ -88,13 +88,12 @@ public final class WhileConverter extends LoopConverter {
             }
         }
         if (isWhileTrue && !willReturn.mayBreak()) {
-            if (!willReturn.mayDiverge() && !info.getFnReturns().isGenerator()) {
+            if (!willReturn.mayReturn() && !info.getFnReturns().isGenerator()) {
                 // Generators may infinitely yield, so no warnings for them
                 // In the future, we may want to keep track of yields too, so
                 // we can warn on yield-less infinite loops
                 CompilerWarning.warn("Infinite loop", WarningType.INFINITE_LOOP, info, node);
-            }
-            if (willReturn.mayReturn()) {
+            } else if (willReturn.mayReturn()) {
                 willReturn.knownReturn();
             }
         }
