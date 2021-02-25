@@ -143,6 +143,8 @@ public final class AnnotationConverter implements BaseConverter {
                 } else {
                     throw CompilerException.of("Unknown native function type", name);
                 }
+            case "derive":
+                throw CompilerTodoError.of("'derive' annotation is unimplemented", name);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
