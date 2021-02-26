@@ -831,7 +831,7 @@ class State {
     }
 
     public operator hash {
-        return hash(self.data)
+        return 0  # FIXME
     }
 
     method flags() -> StateFlags {

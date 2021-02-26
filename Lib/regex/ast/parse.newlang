@@ -327,7 +327,7 @@ class ParserI {
         if not digits {
             raise self.error(span, ErrorKind.DecimalEmpty())
         }
-        return int(digits)
+        return digits.asInt()!!
     }
 
     private mut method parsePrimitive() -> Primitive {

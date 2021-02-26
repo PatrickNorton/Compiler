@@ -234,7 +234,7 @@ class IntervalSet[I[Interval]] {
     # Returns true if and only if this class is in a canonical ordering.
     private method isCanonical() -> bool {
         for var a, var b in pairs(self.ranges) {
-            if int(a) >= int(b) {
+            if int(a.upper) >= int(b.upper) and int(a.lower) >= int(b.lower) {
                 return false
             }
             if a.isContiguous(b) {
