@@ -101,22 +101,6 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
         }
     }
 
-    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
-        var op = info.operators.get(o);
-        if (op != null) {
-            if (isConst && op.isMut()) {
-                return Optional.empty();
-            }
-            if (AccessLevel.canAccess(op.getAccessLevel(), access)) {
-                return Optional.of(op.getInfo());
-            } else {
-                return Optional.empty();
-            }
-        } else {
-            return Optional.empty();
-        }
-    }
-
     @Override
     public TypeObject typedefAs(String name) {
         return new UnionTypeObject(this, name);

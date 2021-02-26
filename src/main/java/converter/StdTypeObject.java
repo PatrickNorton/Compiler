@@ -116,22 +116,6 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
         }
     }
 
-    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
-        // TODO: Check access bounds
-        var op = info.operators.get(o);
-        if (op == null) {
-            return Optional.empty();
-        }
-        if (isConst && op.isMut()) {
-            return Optional.empty();
-        } else if (AccessLevel.canAccess(op.getAccessLevel(), access)) {
-            return Optional.of(op.getInfo());
-        } else {
-            return Optional.empty();
-        }
-        // return Optional.ofNullable(info.operators.get(o)).map(MethodInfo::getInfo);
-    }
-
     @Override
     @NotNull
     public Optional<TypeObject[]> staticOperatorReturnType(OpSpTypeNode o) {

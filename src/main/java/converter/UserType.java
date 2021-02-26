@@ -338,9 +338,46 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
+    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+        if (info.operators == null) {
+            return Optional.empty();
+        }
+        var op = info.operators.get(o);
+        if (op == null) {
+            return superOperatorInfo(o, access);
+        }
+        var opInfo = op.intoMethodInfo();
+        if (isConst && opInfo.isMut() && o != OpSpTypeNode.NEW) {
+            return Optional.empty();
+        } else if (AccessLevel.canAccess(opInfo.getAccessLevel(), access)) {
+            return Optional.of(opInfo.getInfo());
+        } else {
+            return superOperatorInfo(o, access);
+        }
+    }
+
+    private Optional<FunctionInfo> superOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+        var newAccess = access == AccessLevel.PRIVATE ? AccessLevel.PROTECTED : access;
+        for (var superCls : info.supers) {
+            var supAttr = superCls.trueOperatorInfo(o, newAccess);
+            if (supAttr.isPresent() && hasImpl(o, superCls)) {
+                return supAttr;
+            }
+        }
+        return new ObjectType().operatorInfo(o, access);
+    }
+
     private boolean hasImpl(String value, TypeObject superCls) {
         if (superCls instanceof UserType) {
             return !((UserType<?>) superCls).contract().getKey().contains(value);
+        } else {
+            return true;
+        }
+    }
+
+    private boolean hasImpl(OpSpTypeNode value, TypeObject superCls) {
+        if (superCls instanceof UserType) {
+            return !((UserType<?>) superCls).contract().getValue().contains(value);
         } else {
             return true;
         }

@@ -39,6 +39,7 @@ public final class ObjectType extends TypeObject {
                 ArgumentInfo.of(Builtins.object()), Builtins.bool()
         );
         private static final FunctionInfo STR_INFO = new FunctionInfo(ArgumentInfo.of(), Builtins.str());
+        private static final FunctionInfo BOOL_INFO = new FunctionInfo(ArgumentInfo.of(), Builtins.bool());
     }
 
     @Override
@@ -50,6 +51,8 @@ public final class ObjectType extends TypeObject {
             case STR:
             case REPR:
                 return Optional.of(ConstantHolder.STR_INFO);
+            case BOOL:
+                return Optional.of(ConstantHolder.BOOL_INFO);
             default:
                 return Optional.empty();
         }
