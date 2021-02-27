@@ -20,6 +20,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableType {
     protected final I info;
@@ -461,6 +462,30 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     public Optional<Iterable<String>> staticDefined() {
         return Optional.of(StaticIterator::new);
+    }
+
+    protected static String stdName(
+            String baseName, List<TypeObject> generics, boolean isConst,
+            String typedefName, boolean isConstClass
+    ) {
+        if (generics.isEmpty()) {
+            String name = typedefName.isEmpty() ? baseName : typedefName;
+            if (isConst || isConstClass) {
+                return name;
+            } else {
+                return String.format("mut %s", name);
+            }
+        } else {
+            var valueJoiner = new StringJoiner(", ", "[", "]");
+            for (var cls : generics) {
+                valueJoiner.add(cls.name());
+            }
+            if (isConst || isConstClass) {
+                return baseName + valueJoiner.toString();
+            } else {
+                return String.format("mut %s%s", baseName, valueJoiner);
+            }
+        }
     }
 
     protected static abstract class Info<O extends IntoMethodInfo, A extends IntoAttrInfo> {

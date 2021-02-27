@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
-
 public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
 
     public UnionTypeObject(String name, GenericInfo info) {
@@ -70,24 +68,7 @@ public final class UnionTypeObject extends UserType<UnionTypeObject.Info> {
 
     @Override
     public String name() {
-        if (generics.isEmpty()) {
-            String name = typedefName.isEmpty() ? info.name : typedefName;
-            if (isConst || info.isConstClass) {
-                return name;
-            } else {
-                return String.format("mut %s", name);
-            }
-        } else {
-            var valueJoiner = new StringJoiner(", ", "[", "]");
-            for (var cls : generics) {
-                valueJoiner.add(cls.name());
-            }
-            if (isConst || info.isConstClass) {
-                return info.name + valueJoiner.toString();
-            } else {
-                return String.format("mut %s%s", info.name, valueJoiner);
-            }
-        }
+        return stdName(info.name, generics, isConst, typedefName, info.isConstClass);
     }
 
     @NotNull
