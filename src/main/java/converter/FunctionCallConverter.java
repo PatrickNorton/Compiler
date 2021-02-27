@@ -380,7 +380,7 @@ public final class FunctionCallConverter implements TestConverter {
             bytes.add(Bytecode.GET_TYPE.value);
             return bytes;
         } else {
-            throw new RuntimeException();
+            throw CompilerInternalError.format("Invalid builtin function name %s", node, strName);
         }
     }
 
