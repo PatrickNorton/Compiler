@@ -186,7 +186,7 @@ public final class AnnotationConverter implements BaseConverter {
             if (!param.isVararg() && param.getVariable().isEmpty()) {
                 return convertIfTest(start, cfgValue(argument));
             } else {
-                throw CompilerException.of("'cfg' annotations do not support variables", inline);
+                throw CompilerException.of("'cfg' annotations do not support named arguments", inline);
             }
         } else {
             throw CompilerException.of("'cfg' annotations only support one value", inline);
