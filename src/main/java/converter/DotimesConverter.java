@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.DotimesStatementNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,10 @@ public final class DotimesConverter extends LoopConverter {
                     node.getIterations(), countConverter.returnType()[0].name()
             );
         }
+        var constant = countConverter.constantReturn();
+        if (constant.isPresent()) {
+            checkConstant(constant.orElseThrow());
+        }
         List<Byte> bytes = new ArrayList<>(countConverter.convert(start));
         int topJump = start + bytes.size();
         info.loopManager().setContinuePoint(topJump);
@@ -37,6 +42,18 @@ public final class DotimesConverter extends LoopConverter {
         bytes.addAll(Util.intToBytes(topJump));
         Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
         return bytes;
+    }
+
+    private void checkConstant(LangConstant constant) {
+        var value = IntArithmetic.convertConst(constant).orElseThrow();
+        if (value.equals(BigInteger.ZERO)) {
+            CompilerWarning.warn("Loop will never execute", WarningType.TRIVIAL_VALUE, info, node.getIterations());
+        } else if (value.equals(BigInteger.ONE)) {
+            CompilerWarning.warn(
+                    "'dotimes 1' is unnecessary, as loop will only execute once",
+                    WarningType.TRIVIAL_VALUE, info, node.getIterations()
+            );
+        }
     }
 
     private List<Byte> convertBody(int start) {
