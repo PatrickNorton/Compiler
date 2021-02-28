@@ -6,6 +6,8 @@ func print(object obj, /) {}
 $builtin("int", 2)
 const class int {
     public operator new (object o, /) {}
+    public operator int -> int {}
+    public operator hash {}
 
     public operator + (int other, /) -> int {}
     public operator - (int other, /) -> int {}
@@ -46,6 +48,8 @@ const class str {
     public operator iter -> char {}
     public operator in (char c, /) -> bool {}
 
+    public operator hash {}
+
     public method get(int i, /) -> char? {}
     public method join(Iterable[str] strs, /) -> str {}
     public method startsWith(str start, /) -> bool {}
@@ -67,6 +71,7 @@ $builtin("bool", 4)
 const class bool {
     public operator new (object o, /) {}
     public operator bool -> bool {}
+    public operator int -> int {}
 }
 
 $builtin("range", 5)
@@ -148,6 +153,7 @@ const class char {
     public operator + (char other, /) -> char {}
     public operator - (char other, /) -> char {}
     public operator == (char other, /) -> bool {}
+    public operator int -> int {}
 
     public method upper() -> char {}
     public method lower() -> char {}

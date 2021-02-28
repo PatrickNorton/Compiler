@@ -143,6 +143,8 @@ public final class AnnotationConverter implements BaseConverter {
                 } else {
                     throw CompilerException.of("Unknown native function type", name);
                 }
+            case "derive":
+                throw CompilerTodoError.of("'derive' annotation is unimplemented", name);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
@@ -184,7 +186,7 @@ public final class AnnotationConverter implements BaseConverter {
             if (!param.isVararg() && param.getVariable().isEmpty()) {
                 return convertIfTest(start, cfgValue(argument));
             } else {
-                throw CompilerException.of("'cfg' annotations do not support variables", inline);
+                throw CompilerException.of("'cfg' annotations do not support named arguments", inline);
             }
         } else {
             throw CompilerException.of("'cfg' annotations only support one value", inline);

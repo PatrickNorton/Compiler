@@ -35,7 +35,11 @@ public final class BodyConverter implements BaseConverter {
                 warned = true;
             }
             var pair = BaseConverter.bytesWithReturn(start + bytes.size(), statement, info);
-            returned.orWith(pair.getValue());
+            if (!returned.willDiverge()) {
+                // When diverging is inevitable, don't add more information
+                // This helps analysis with infinite loops and 'continue'
+                returned.orWith(pair.getValue());
+            }
             bytes.addAll(pair.getKey());
         }
         info.removeStackFrame();

@@ -360,7 +360,10 @@ public final class FunctionCallConverter implements TestConverter {
                 var fnInfo = builtin.operatorInfo(OpSpTypeNode.CALL, AccessLevel.PUBLIC).orElseThrow();
                 throw argError(node, builtin.name(), getArgs(params), posArgs(fnInfo));
             }
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), params[0].getArgument(), info, 1));
+            var argument = params[0].getArgument();
+            var argConverter = TestConverter.of(info, argument, 1);
+            argConverter.returnType()[0].tryOperatorInfo(argument, BUILTINS_TO_OPERATORS.get(strName), info);
+            bytes.addAll(argConverter.convert(start + bytes.size()));
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) BUILTINS_TO_OPERATORS.get(strName).ordinal()));
             bytes.addAll(Util.shortZeroBytes());
@@ -377,7 +380,7 @@ public final class FunctionCallConverter implements TestConverter {
             bytes.add(Bytecode.GET_TYPE.value);
             return bytes;
         } else {
-            throw new RuntimeException();
+            throw CompilerInternalError.format("Invalid builtin function name %s", node, strName);
         }
     }
 

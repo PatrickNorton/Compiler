@@ -20,6 +20,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableType {
     protected final I info;
@@ -338,9 +339,46 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
     }
 
+    public Optional<FunctionInfo> trueOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+        if (info.operators == null) {
+            return Optional.empty();
+        }
+        var op = info.operators.get(o);
+        if (op == null) {
+            return superOperatorInfo(o, access);
+        }
+        var opInfo = op.intoMethodInfo();
+        if (isConst && opInfo.isMut() && o != OpSpTypeNode.NEW) {
+            return Optional.empty();
+        } else if (AccessLevel.canAccess(opInfo.getAccessLevel(), access)) {
+            return Optional.of(opInfo.getInfo());
+        } else {
+            return superOperatorInfo(o, access);
+        }
+    }
+
+    private Optional<FunctionInfo> superOperatorInfo(OpSpTypeNode o, AccessLevel access) {
+        var newAccess = access == AccessLevel.PRIVATE ? AccessLevel.PROTECTED : access;
+        for (var superCls : info.supers) {
+            var supAttr = superCls.trueOperatorInfo(o, newAccess);
+            if (supAttr.isPresent() && hasImpl(o, superCls)) {
+                return supAttr;
+            }
+        }
+        return new ObjectType().operatorInfo(o, access);
+    }
+
     private boolean hasImpl(String value, TypeObject superCls) {
         if (superCls instanceof UserType) {
             return !((UserType<?>) superCls).contract().getKey().contains(value);
+        } else {
+            return true;
+        }
+    }
+
+    private boolean hasImpl(OpSpTypeNode value, TypeObject superCls) {
+        if (superCls instanceof UserType) {
+            return !((UserType<?>) superCls).contract().getValue().contains(value);
         } else {
             return true;
         }
@@ -424,6 +462,30 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
     @Override
     public Optional<Iterable<String>> staticDefined() {
         return Optional.of(StaticIterator::new);
+    }
+
+    protected static String stdName(
+            String baseName, List<TypeObject> generics, boolean isConst,
+            String typedefName, boolean isConstClass
+    ) {
+        if (generics.isEmpty()) {
+            String name = typedefName.isEmpty() ? baseName : typedefName;
+            if (isConst || isConstClass) {
+                return name;
+            } else {
+                return String.format("mut %s", name);
+            }
+        } else {
+            var valueJoiner = new StringJoiner(", ", "[", "]");
+            for (var cls : generics) {
+                valueJoiner.add(cls.name());
+            }
+            if (isConst || isConstClass) {
+                return baseName + valueJoiner.toString();
+            } else {
+                return String.format("mut %s%s", baseName, valueJoiner);
+            }
+        }
     }
 
     protected static abstract class Info<O extends IntoMethodInfo, A extends IntoAttrInfo> {
