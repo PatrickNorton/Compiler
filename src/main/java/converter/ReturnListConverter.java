@@ -54,8 +54,9 @@ public final class ReturnListConverter implements BaseConverter {
         if (retTypes.length == 1) {
             bytes.addAll(TestConverter.bytesMaybeOption(start, values.get(0), info, 1, retTypes[0]));
         } else if (!values.isEmpty()) {
-            for (var ret : values) {
-                bytes.addAll(convertInner(start, ret.getKey(), ret.getValue()));
+            for (int i = 0; i < values.size(); i++) {
+                var retType = retTypes[i];
+                bytes.addAll(convertInner(start + bytes.size(), values.get(i), values.getVararg(i), retType));
             }
         }
         bytes.add(value.value);
@@ -63,19 +64,19 @@ public final class ReturnListConverter implements BaseConverter {
         return bytes;
     }
 
-    private List<Byte> convertInner(int start, TestNode stmt, String vararg) {
+    private List<Byte> convertInner(int start, TestNode stmt, String vararg, TypeObject retType) {
         switch (vararg) {
             case "":
-                return TestConverter.bytes(start, stmt, info, 1);
+                return TestConverter.bytesMaybeOption(start, stmt, info, 1, retType);
             case "*":
-                var retType = TestConverter.returnType(stmt, info, 1)[0];
-                if (retType.sameBaseType(Builtins.tuple())) {
+                var returnType = TestConverter.returnType(stmt, info, 1)[0];
+                if (returnType.sameBaseType(Builtins.tuple())) {
                     throw CompilerTodoError.format("Cannot convert %s with varargs yet", stmt, returnName());
-                } else if (Builtins.iterable().isSuperclass(retType)) {
+                } else if (Builtins.iterable().isSuperclass(returnType)) {
                     throw CompilerException.format("Cannot unpack iterable in %s statement", stmt, returnName());
                 } else {
                     throw CompilerException.format(
-                            "Can only unpack tuples in %s statement, not '%s'", stmt, returnName(), retType.name()
+                            "Can only unpack tuples in %s statement, not '%s'", stmt, returnName(), returnType.name()
                     );
                 }
             case "**":
