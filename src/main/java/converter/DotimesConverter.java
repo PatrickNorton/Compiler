@@ -46,7 +46,13 @@ public final class DotimesConverter extends LoopConverter {
 
     private void checkConstant(LangConstant constant) {
         var value = IntArithmetic.convertConst(constant).orElseThrow();
-        if (value.equals(BigInteger.ZERO)) {
+        if (value.signum() < 0) {
+            CompilerWarning.warn(
+                    "Loop will never execute\n" +
+                            "Note: 'dotimes' loops with negative values may become an error in the future"
+                    , WarningType.TRIVIAL_VALUE, info, node.getIterations()
+            );
+        } else if (value.equals(BigInteger.ZERO)) {
             CompilerWarning.warn("Loop will never execute", WarningType.TRIVIAL_VALUE, info, node.getIterations());
         } else if (value.equals(BigInteger.ONE)) {
             CompilerWarning.warn(
