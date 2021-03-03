@@ -171,7 +171,7 @@ public final class CompilerInfo {
     public short addConstant(LangConstant value) {
         globalInfo.addConstant(value);
         if (globalInfo.indexOf(value) > Short.MAX_VALUE) {
-            throw new RuntimeException("Too many constants");
+            throw CompilerInternalError.of("Too many constants", LineInfo.empty());
         }
         return (short) globalInfo.indexOf(value);
     }
