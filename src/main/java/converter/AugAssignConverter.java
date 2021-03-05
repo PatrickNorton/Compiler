@@ -112,6 +112,7 @@ public final class AugAssignConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var converterReturn = assignedConverter.returnType()[0];
         var attrInfo = converterReturn.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);
+        converterReturn.tryOperatorInfo(node, OpSpTypeNode.SET_ATTR, info);
         var dotType = attrInfo.getReturns()[0];
         var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
@@ -229,7 +230,9 @@ public final class AugAssignConverter implements BaseConverter {
     private List<Byte> convertNullIndex(int start, TestConverter preDotConverter, TestConverter... postDotConverters) {
         var name = node.getName();
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
-        var variableType = preDotConverter.returnType()[0].tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
+        var preDotType = preDotConverter.returnType()[0];
+        var variableType = preDotType.tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
+        preDotType.tryOperatorInfo(name, OpSpTypeNode.SET_ATTR, info);
         var valueType = valueConverter.returnType()[0];
         if (!(variableType instanceof OptionTypeObject)) {
             throw coerceError(node, variableType);
