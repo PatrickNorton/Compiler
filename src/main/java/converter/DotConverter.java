@@ -122,8 +122,12 @@ public final class DotConverter implements TestConverter {
                 attrType = result.tryOperatorInfo(postDot, op, info).toCallable();
             } else if (caller instanceof VariableNode) {
                 attrType = result.tryAttrType(postDot, ((VariableNode) caller).getName(), info);
+            } else if (caller instanceof NameNode) {
+                var dottedVar = new DottedVar(dot.getLineInfo(), dot.getDotPrefix(), (NameNode) caller);
+                var preCallType = normalDotReturnType(result, dottedVar)[0];
+                return preCallType.tryOperatorReturnType(node, OpSpTypeNode.CALL, info);
             } else {
-                throw CompilerTodoError.of("More complex function-call prefixes not implemented yet", postDot);
+                throw CompilerInternalError.of("Invalid function-call prefix", postDot);
             }
             var opInfo = attrType.tryOperatorInfo(postDot, OpSpTypeNode.CALL, info);
             var retTypes = opInfo.getReturns();
@@ -297,8 +301,10 @@ public final class DotConverter implements TestConverter {
             return convertOperator(previous, start, bytes, postDot);
         } else if (postDot.getCaller() instanceof VariableNode) {
             return convertNameMethod(previous, start, bytes, postDot);
+        } else if (postDot.getCaller() instanceof NameNode) {
+            return convertOtherMethod(previous, start, bytes, postDot);
         } else {
-            throw CompilerTodoError.of("More complex function-call prefixes not implemented yet", postDot);
+            throw CompilerInternalError.of("Invalid function-call prefix", postDot);
         }
     }
 
@@ -328,6 +334,20 @@ public final class DotConverter implements TestConverter {
         bytes.addAll(pair.getKey());
         bytes.add(Bytecode.CALL_METHOD.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
+        bytes.addAll(Util.shortToBytes(pair.getValue().shortValue()));
+        return type.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
+    }
+
+    private TypeObject[] convertOtherMethod(
+            TypeObject previous, int start, @NotNull List<Byte> bytes, @NotNull FunctionCallNode postDot
+    ) {
+        var caller = (NameNode) postDot.getCaller();
+        var type = convertPostDot(previous, start, bytes, caller)[0];
+        var pair = FunctionCallConverter.convertArgs(
+                info, postDot, start + bytes.size(), type, postDot.getParameters()
+        );
+        bytes.addAll(pair.getKey());
+        bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes(pair.getValue().shortValue()));
         return type.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
     }
