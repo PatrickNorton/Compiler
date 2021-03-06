@@ -205,7 +205,7 @@ public final class DotConverter implements TestConverter {
                     previous = convertNotNullDot(prev, start, bytes, dot);
                     break;
                 default:
-                    throw new RuntimeException("Unknown value for dot prefix");
+                    throw CompilerInternalError.format("Unknown value for dot prefix: '%s'", dot, dot.getDotPrefix());
             }
         }
         if (previous.length < retCount) {
