@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.AugAssignTypeNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.FunctionCallNode;
 import main.java.parser.IndexNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
@@ -33,13 +34,19 @@ public final class AugAssignConverter implements BaseConverter {
             return convertVar(start);
         } else if (name instanceof DottedVariableNode) {
             var last = ((DottedVariableNode) name).getLast();
-            if (last.getPostDot() instanceof IndexNode) {
-                return convertDotIndex(start);
-            } else {
+            if (last.getPostDot() instanceof VariableNode) {
                 return convertDot(start);
+            } else if (last.getPostDot() instanceof IndexNode) {
+                return convertDotIndex(start);
+            } else if (last.getPostDot() instanceof FunctionCallNode) {
+                throw CompilerException.of("Augmented assignment does not work on function calls", name);
+            } else {
+                throw CompilerTodoError.of("Augmented assignment on non-standard dotted variables", name);
             }
         } else if (name instanceof IndexNode) {
             return convertIndex(start);
+        } else if (name instanceof FunctionCallNode) {
+            throw CompilerException.of("Augmented assignment does not work on function calls", name);
         } else {
             throw CompilerTodoError.of(
                     "Augmented assignment to non-variable or dotted variables not supported yet", name
