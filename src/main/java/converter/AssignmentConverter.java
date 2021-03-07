@@ -56,13 +56,9 @@ public final class AssignmentConverter implements BaseConverter {
             var value = values.get(i);
             var valueConverter = TestConverter.of(info, value, 1);
             if (name instanceof VariableNode) {
-                TestConverter valConverter;
-                var varType = info.getType(((VariableNode) name).getName());
-                if (varType.isPresent()) {
-                    valConverter = TestConverter.of(info, value, 1, varType.orElseThrow());
-                } else {
-                    valConverter = valueConverter;  // Will fail at assignment stage, so doesn't really matter
-                }
+                var varName = ((VariableNode) name).getName();
+                var varType = info.getType(varName).orElseThrow(() -> defError(varName, (VariableNode) name));
+                var valConverter = TestConverter.of(info, value, 1, varType);
                 assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valConverter);
             } else if (name instanceof IndexNode) {
                 assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
@@ -182,18 +178,22 @@ public final class AssignmentConverter implements BaseConverter {
 
     private void checkDef(String name, VariableNode variable) {
         if (info.varIsUndefined(name)) {
-            var closest = Levenshtein.closestName(name, info.definedNames());
-            if (closest.isPresent()) {
-                throw CompilerException.format(
-                        "Attempted to assign to undefined name %s%n" +
-                        "Help: Did you mean %s?", variable, name, closest.orElseThrow()
-                );
-            } else {
-                throw CompilerException.format("Attempted to assign to undefined name %s", variable, name);
-            }
+            throw defError(name, variable);
         }
         if (info.variableIsImmutable(name)) {
             throw CompilerException.format("Cannot assign to const variable %s", variable, name);
+        }
+    }
+
+    private CompilerException defError(String name, VariableNode variable) {
+        var closest = Levenshtein.closestName(name, info.definedNames());
+        if (closest.isPresent()) {
+            return CompilerException.format(
+                    "Attempted to assign to undefined name %s%n" +
+                    "Help: Did you mean %s?", variable, name, closest.orElseThrow()
+            );
+        } else {
+            return CompilerException.format("Attempted to assign to undefined name %s", variable, name);
         }
     }
 
