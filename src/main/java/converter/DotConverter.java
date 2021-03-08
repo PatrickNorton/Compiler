@@ -104,7 +104,7 @@ public final class DotConverter implements TestConverter {
             case "!!":
                 return nonNullReturnType(result, dot);
             default:
-                throw new RuntimeException("Unknown type of dot " + dot.getDotPrefix());
+                throw CompilerInternalError.of("Unknown type of dot " + dot.getDotPrefix(), dot);
         }
     }
 
