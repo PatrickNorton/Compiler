@@ -174,12 +174,15 @@ public final class AugAssignConverter implements BaseConverter {
 
     private List<Byte> convertNullCoerceDot(int start) {
         var name = (DottedVariableNode) node.getName();
-        if (name.getLast().getPostDot() instanceof VariableNode) {
+        var postDot = name.getLast().getPostDot();
+        if (postDot instanceof VariableNode) {
             return convertNullCoerceDotVar(start);
-        } else if (name.getLast().getPostDot() instanceof IndexNode) {
+        } else if (postDot instanceof IndexNode) {
             return convertNullCoerceDottedIndex(start);
+        } else if (postDot instanceof FunctionCallNode) {
+            throw CompilerException.of("Augmented assignment does not work on function calls", node);
         } else {
-            throw CompilerTodoError.of("??= on other dotted variables", name.getLast());
+            throw CompilerTodoError.of("??= on other dotted variables", postDot);
         }
     }
 
