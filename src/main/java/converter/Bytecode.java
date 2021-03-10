@@ -226,12 +226,8 @@ public enum Bytecode {
     private static int fromBytes(@NotNull List<Byte> bytes) {
         int total = 0;
         for (int i = 0; i < bytes.size(); i++) {
-            total |= byteToInt(bytes.get(i)) << Byte.SIZE * (bytes.size() - i - 1);
+            total |= Byte.toUnsignedInt(bytes.get(i)) << Byte.SIZE * (bytes.size() - i - 1);
         }
         return total;
-    }
-
-    private static int byteToInt(byte value) {
-        return value < 0 ? value + 256 : value;
     }
 }

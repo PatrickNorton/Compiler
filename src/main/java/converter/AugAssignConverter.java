@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.AugAssignTypeNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.FunctionCallNode;
 import main.java.parser.IndexNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
@@ -33,13 +34,19 @@ public final class AugAssignConverter implements BaseConverter {
             return convertVar(start);
         } else if (name instanceof DottedVariableNode) {
             var last = ((DottedVariableNode) name).getLast();
-            if (last.getPostDot() instanceof IndexNode) {
-                return convertDotIndex(start);
-            } else {
+            if (last.getPostDot() instanceof VariableNode) {
                 return convertDot(start);
+            } else if (last.getPostDot() instanceof IndexNode) {
+                return convertDotIndex(start);
+            } else if (last.getPostDot() instanceof FunctionCallNode) {
+                throw CompilerException.of("Augmented assignment does not work on function calls", name);
+            } else {
+                throw CompilerTodoError.of("Augmented assignment on non-standard dotted variables", name);
             }
         } else if (name instanceof IndexNode) {
             return convertIndex(start);
+        } else if (name instanceof FunctionCallNode) {
+            throw CompilerException.of("Augmented assignment does not work on function calls", name);
         } else {
             throw CompilerTodoError.of(
                     "Augmented assignment to non-variable or dotted variables not supported yet", name
@@ -112,6 +119,7 @@ public final class AugAssignConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var converterReturn = assignedConverter.returnType()[0];
         var attrInfo = converterReturn.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);
+        converterReturn.tryOperatorInfo(node, OpSpTypeNode.SET_ATTR, info);
         var dotType = attrInfo.getReturns()[0];
         var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
@@ -166,12 +174,15 @@ public final class AugAssignConverter implements BaseConverter {
 
     private List<Byte> convertNullCoerceDot(int start) {
         var name = (DottedVariableNode) node.getName();
-        if (name.getLast().getPostDot() instanceof VariableNode) {
+        var postDot = name.getLast().getPostDot();
+        if (postDot instanceof VariableNode) {
             return convertNullCoerceDotVar(start);
-        } else if (name.getLast().getPostDot() instanceof IndexNode) {
+        } else if (postDot instanceof IndexNode) {
             return convertNullCoerceDottedIndex(start);
+        } else if (postDot instanceof FunctionCallNode) {
+            throw CompilerException.of("Augmented assignment does not work on function calls", node);
         } else {
-            throw CompilerTodoError.of("??= on other dotted variables", name.getLast());
+            throw CompilerTodoError.of("??= on other dotted variables", postDot);
         }
     }
 
@@ -229,7 +240,9 @@ public final class AugAssignConverter implements BaseConverter {
     private List<Byte> convertNullIndex(int start, TestConverter preDotConverter, TestConverter... postDotConverters) {
         var name = node.getName();
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
-        var variableType = preDotConverter.returnType()[0].tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
+        var preDotType = preDotConverter.returnType()[0];
+        var variableType = preDotType.tryOperatorReturnType(name, OpSpTypeNode.GET_ATTR, info)[0];
+        preDotType.tryOperatorInfo(name, OpSpTypeNode.SET_ATTR, info);
         var valueType = valueConverter.returnType()[0];
         if (!(variableType instanceof OptionTypeObject)) {
             throw coerceError(node, variableType);
