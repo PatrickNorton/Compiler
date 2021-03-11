@@ -64,6 +64,6 @@ public final class BuiltinConstant implements LangConstant {
                 return pair.getKey();
             }
         }
-        throw new RuntimeException();
+        throw new RuntimeException(String.format("Unknown builtin %s (number %d)", result, builtinIndex));
     }
 }
