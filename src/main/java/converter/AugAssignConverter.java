@@ -184,6 +184,8 @@ public final class AugAssignConverter implements BaseConverter {
             return convertNullCoerceDotVar(start);
         } else if (postDot instanceof IndexNode) {
             return convertNullCoerceDottedIndex(start);
+        } else if (postDot instanceof DottedVariableNode) {
+            throw CompilerInternalError.format("Dotted variables should not be part of a post-dot", postDot);
         } else {
             throw CompilerInternalError.format(
                     "Post-dot type not filtered by removeIllegal(): %s", postDot, postDot.getClass()
