@@ -3,10 +3,13 @@ package main.java.converter;
 import main.java.parser.AugAssignTypeNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
+import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.IndexNode;
 import main.java.parser.Lined;
+import main.java.parser.NameNode;
 import main.java.parser.OpSpTypeNode;
+import main.java.parser.SpecialOpNameNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -133,7 +136,7 @@ public final class AugAssignConverter implements BaseConverter {
     }
 
     private List<Byte> convertNullCoerce(int start) {
-        var name = node.getName();
+        var name = removeIllegal(node.getName());
         if (name instanceof VariableNode) {
             return convertNullCoerceVar(start);
         } else if (name instanceof DottedVariableNode) {
@@ -141,7 +144,9 @@ public final class AugAssignConverter implements BaseConverter {
         } else if (name instanceof IndexNode) {
             return convertNullCoerceIndex(start);
         } else {
-            throw CompilerInternalError.of("Unknown type for null-coerce assignment", node);
+            throw CompilerInternalError.format(
+                    "Post-dot type not filtered by removeIllegal(): %s", name, name.getClass()
+            );
         }
     }
 
@@ -174,15 +179,15 @@ public final class AugAssignConverter implements BaseConverter {
 
     private List<Byte> convertNullCoerceDot(int start) {
         var name = (DottedVariableNode) node.getName();
-        var postDot = name.getLast().getPostDot();
+        var postDot = removeIllegal(name.getLast().getPostDot());
         if (postDot instanceof VariableNode) {
             return convertNullCoerceDotVar(start);
         } else if (postDot instanceof IndexNode) {
             return convertNullCoerceDottedIndex(start);
-        } else if (postDot instanceof FunctionCallNode) {
-            throw CompilerException.of("Augmented assignment does not work on function calls", node);
         } else {
-            throw CompilerTodoError.of("??= on other dotted variables", postDot);
+            throw CompilerInternalError.format(
+                    "Post-dot type not filtered by removeIllegal(): %s", postDot, postDot.getClass()
+            );
         }
     }
 
@@ -315,6 +320,20 @@ public final class AugAssignConverter implements BaseConverter {
                         node, assignedReturn.name(), returnType.name(), node.getName()
                 );
             }
+        }
+    }
+
+    private NameNode removeIllegal(NameNode name) {
+        if (name instanceof VariableNode || name instanceof IndexNode || name instanceof DottedVariableNode) {
+            return name;
+        } else if (name instanceof FunctionCallNode) {
+            throw CompilerException.of("Augmented assignment does not work on function calls", node);
+        } else if (name instanceof SpecialOpNameNode) {
+            throw CompilerException.of("Augmented assignment does not work on function calls", node);
+        } else if (name instanceof EscapedOperatorNode) {
+            throw CompilerException.of("Augmented assignment does not work on escaped operators", node);
+        } else {
+            throw CompilerInternalError.format("Unknown type of NameNode: %s", name, name.getClass());
         }
     }
 
