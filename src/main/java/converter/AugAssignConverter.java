@@ -329,11 +329,11 @@ public final class AugAssignConverter implements BaseConverter {
         if (name instanceof VariableNode || name instanceof IndexNode || name instanceof DottedVariableNode) {
             return name;
         } else if (name instanceof FunctionCallNode) {
-            throw CompilerException.of("Augmented assignment does not work on function calls", node);
+            throw CompilerException.of(illegalMessage("function calls"), node);
         } else if (name instanceof SpecialOpNameNode) {
-            throw CompilerException.of("Augmented assignment does not work on function calls", node);
+            throw CompilerException.of(illegalMessage("operator names"), node);
         } else if (name instanceof EscapedOperatorNode) {
-            throw CompilerException.of("Augmented assignment does not work on escaped operators", node);
+            throw CompilerException.of(illegalMessage("escaped operators"), node);
         } else {
             throw CompilerInternalError.format("Unknown type of NameNode: %s", name, name.getClass());
         }
@@ -345,6 +345,10 @@ public final class AugAssignConverter implements BaseConverter {
             result[i] = TestConverter.of(info, nodes[i], 1);
         }
         return result;
+    }
+
+    private static String illegalMessage(String value) {
+        return String.format("Augmented assignment does not work on %s", value);
     }
 
     private static CompilerException coerceError(Lined node, TypeObject valueType) {
