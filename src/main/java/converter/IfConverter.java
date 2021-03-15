@@ -181,7 +181,9 @@ public final class IfConverter implements BaseConverter {
             var op = (OperatorNode) cond;
             if (op.getOperator() == OperatorTypeNode.BOOL_NOT) {
                 if (op.getOperands().length != 1) {
-                    throw CompilerInternalError.of("Got more than one operand in 'not' statement", cond);
+                    throw CompilerException.format(
+                            "'not' statement expected one operand, got %d", cond, op.getOperands().length
+                    );
                 } else {
                     var bytes = TestConverter.bytes(start, op.getOperands()[0].getArgument(), info, 1);
                     return Pair.of(bytes, true);
