@@ -85,11 +85,13 @@ public final class Tokenizer {
             );
         }
         for (TokenType info : TokenType.values()) {
-            Matcher match = info.matcher(next);
-            if (match.find()) {
+            var match = info.matches(next);
+            if (match.isPresent()) {
+                var end = match.orElseThrow();
                 LineInfo lineInfo = lineInfo();
-                next = next.substring(match.end());
-                return Optional.of(new Token(info, match.group(), lineInfo));
+                var group = next.substring(0, end);
+                next = next.substring(end);
+                return Optional.of(new Token(info, group, lineInfo));
             }
         }
         return Optional.empty();

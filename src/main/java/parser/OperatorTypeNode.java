@@ -7,7 +7,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -63,6 +66,11 @@ public enum OperatorTypeNode implements AtomicNode {
                     .collect(Collectors.joining("|"))
             + ")"
     );
+
+    private static final List<String> SORTED = Arrays.stream(values())
+            .map(Objects::toString)
+            .sorted(Comparator.comparingInt(String::length).reversed())
+            .collect(Collectors.toList());
 
     public final String name;
     public final int precedence;
@@ -156,8 +164,17 @@ public enum OperatorTypeNode implements AtomicNode {
     }
 
     @Contract(pure = true)
-    static Pattern pattern() {
-        return PATTERN;
+    static Optional<Integer> pattern(String input) {
+        for (var name : SORTED) {
+            if (input.startsWith(name)) {
+                if (Character.isAlphabetic(name.charAt(name.length() - 1))
+                    && Character.isUnicodeIdentifierPart(input.codePointAt(name.length()))) {
+                    return Optional.empty();
+                }
+                return Optional.of(name.length());
+            }
+        }
+        return Optional.empty();
     }
 
     @Contract(pure = true)

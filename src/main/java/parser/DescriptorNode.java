@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
@@ -164,8 +165,16 @@ public enum DescriptorNode implements AtomicNode {
     }
 
     @Contract(pure = true)
-    static Pattern pattern() {
-        return PATTERN;
+    static Optional<Integer> pattern(String input) {
+        for (var node : values()) {
+            if (input.startsWith(node.name)) {
+                if (Character.isUnicodeIdentifierPart(input.charAt(node.name.length()))) {
+                    return Optional.empty();
+                }
+                return Optional.of(node.name.length());
+            }
+        }
+        return Optional.empty();
     }
 
     public static boolean isLessStrict(DescriptorNode x, @NotNull DescriptorNode y) {
