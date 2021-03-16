@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -55,17 +54,6 @@ public enum OperatorTypeNode implements AtomicNode {
     NOT_INSTANCEOF("not instanceof", 9),
     COMPARE("<=>", 7),
     ;
-
-    public static final Pattern PATTERN = Pattern.compile("^(" +
-            Arrays.stream(values())
-                    .filter(t -> t != U_SUBTRACT)
-                    .map(Object::toString)
-                    .sorted(Comparator.comparingInt(String::length).reversed())
-                    .map(s -> Pattern.compile("\\w$").matcher(s).find() ? s + "\\b" : Pattern.quote(s))
-                    .map(s -> s.replaceFirst(" ", " +"))
-                    .collect(Collectors.joining("|"))
-            + ")"
-    );
 
     private static final List<String> SORTED = Arrays.stream(values())
             .map(Objects::toString)
@@ -167,11 +155,10 @@ public enum OperatorTypeNode implements AtomicNode {
     static Optional<Integer> pattern(String input) {
         for (var name : SORTED) {
             if (input.startsWith(name)) {
-                if (Character.isAlphabetic(name.charAt(name.length() - 1))
-                    && Character.isUnicodeIdentifierPart(input.codePointAt(name.length()))) {
-                    return Optional.empty();
+                if (!(Character.isAlphabetic(name.charAt(name.length() - 1))
+                    && Character.isUnicodeIdentifierPart(input.codePointAt(name.length())))) {
+                    return Optional.of(name.length());
                 }
-                return Optional.of(name.length());
             }
         }
         return Optional.empty();

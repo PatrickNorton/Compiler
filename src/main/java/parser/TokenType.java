@@ -366,7 +366,7 @@ public enum TokenType {
         if (input.charAt(cursor) == '.') {
             cursor++;
             if (!digits.contains(input.charAt(cursor))) {
-                return Optional.empty();
+                return cursor == prefix.length() + 1 ? Optional.empty() : Optional.of(cursor - 1);
             }
             cursor++;
             while (digits.contains(input.charAt(cursor))) {
