@@ -257,11 +257,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private List<Byte> tblHeader(int start) {
         var converter = TestConverter.of(info, node.getSwitched(), 1);
         var constant = converter.constantReturn();
-        if (constant.isPresent()) {
+        if (constant.isPresent() && constant.orElseThrow().strValue().isPresent()) {
             CompilerWarning.warnf(
                     "Switch conditional always evaluates to %s",
                     WarningType.TRIVIAL_VALUE, info, node.getSwitched(),
-                    constant.orElseThrow().strValue()
+                    constant.orElseThrow().strValue().orElseThrow()
             );
         }
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
