@@ -5,10 +5,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -65,12 +67,10 @@ public enum Keyword {
     ;
 
     private static final Map<String, Keyword> values;
-    static final Pattern PATTERN = Pattern.compile("^(" +
-            Arrays.stream(values())
-                    .map(Object::toString)
-                    .collect(Collectors.joining("|"))
-            + ")\\b"
-    );
+    private static final List<String> SORTED = Arrays.stream(values())
+            .map(x -> x.name)
+            .sorted(Comparator.comparingInt(String::length).reversed())
+            .collect(Collectors.toList());
 
     public final String name;
     private final Function<TokenList, IndependentNode> parseLeft;
@@ -140,8 +140,17 @@ public enum Keyword {
     }
 
     @Contract(pure = true)
-    static Pattern pattern() {
-        return PATTERN;
+    static Optional<Integer> pattern(String input) {
+        for (var name : SORTED) {
+            if (input.startsWith(name)) {
+                if (Character.isUnicodeIdentifierPart(input.charAt(name.length()))) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(name.length());
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     @NotNull
