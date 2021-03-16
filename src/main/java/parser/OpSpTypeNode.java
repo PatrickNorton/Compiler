@@ -8,8 +8,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public enum OpSpTypeNode {
@@ -77,14 +78,10 @@ public enum OpSpTypeNode {
     ;
 
     private static final Map<String, OpSpTypeNode> values;
-    public static final Pattern PATTERN = Pattern.compile("^operator\\b *(" +
-             Arrays.stream(values())
-                     .map(o -> o.name)
-                     .sorted(Comparator.comparingInt(String::length).reversed())
-                     .map(s -> Pattern.compile("\\w$").matcher(s).find() ? s + "\\b" : Pattern.quote(s))
-                     .collect(Collectors.joining("|"))
-            + ")"
-    );
+    private static final List<String> SORTED = Arrays.stream(values())
+            .map(x -> x.name)
+            .sorted(Comparator.comparingInt(String::length).reversed())
+            .collect(Collectors.toList());
 
     public final String name;
 
@@ -147,8 +144,27 @@ public enum OpSpTypeNode {
     }
 
     @Contract(pure = true)
-    static Pattern pattern() {
-        return PATTERN;
+    static Optional<Integer> pattern(String input) {
+        if (!input.startsWith("operator")) {
+            return Optional.empty();
+        }
+        int start = "operator".length();
+        int cursor = start;
+        while (input.charAt(cursor) == ' ') {
+            cursor++;
+        }
+        for (var name : SORTED) {
+            if (input.startsWith(name, cursor)) {
+                if (cursor == start && Character.isAlphabetic(name.charAt(0))) {
+                    return Optional.empty();
+                } else if (Character.isUnicodeIdentifierPart(input.charAt(cursor + name.length()))) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(cursor + name.length());
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     @NotNull

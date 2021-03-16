@@ -3,13 +3,10 @@ package main.java.parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public enum OpFuncTypeNode {
     ADD("+", OperatorTypeNode.ADD),
@@ -43,15 +40,6 @@ public enum OpFuncTypeNode {
     ;
 
     private static final Map<String, OpFuncTypeNode> values;
-    public static final Pattern PATTERN = Pattern.compile("^\\\\(" +
-            Arrays.stream(values())
-                    .filter(x -> x != U_SUBTRACT)
-                    .map(o -> o.name)
-                    .sorted(Comparator.comparingInt(String::length).reversed())
-                    .map(s -> Pattern.compile("\\w$").matcher(s).find() ? s + "\\b" : Pattern.quote(s))
-                    .collect(Collectors.joining("|"))
-            +")"
-    );
 
     public final String name;
     public final OperatorTypeNode operator;
@@ -86,8 +74,16 @@ public enum OpFuncTypeNode {
     }
 
     @Contract(pure = true)
-    static Pattern pattern() {
-        return PATTERN;
+    static Optional<Integer> pattern(String input) {
+        if (input.charAt(0) != '\\') {
+            return Optional.empty();
+        }
+        for (var node : values()) {
+            if (input.startsWith(node.name, 1)) {
+                return Optional.of(node.name.length() + 1);
+            }
+        }
+        return Optional.empty();
     }
 
     @NotNull

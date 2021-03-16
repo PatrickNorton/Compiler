@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -75,8 +76,13 @@ public enum AugAssignTypeNode {
     }
 
     @Contract(pure = true)
-    public static Pattern pattern() {
-        return PATTERN;
+    public static Optional<Integer> pattern(String input) {
+        for (var node : values()) {
+            if (input.startsWith(node.sequence + "=")) {
+                return Optional.of(node.sequence.length() + 1);
+            }
+        }
+        return Optional.empty();
     }
 
     @NotNull
