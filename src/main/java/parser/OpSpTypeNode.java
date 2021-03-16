@@ -158,6 +158,8 @@ public enum OpSpTypeNode {
             if (input.startsWith(name, cursor)) {
                 if (cursor == start && Character.isAlphabetic(name.charAt(0))) {
                     return Optional.empty();
+                } else if (cursor + name.length() == input.length()) {
+                    return Optional.of(cursor + name.length());
                 } else if (Character.isUnicodeIdentifierPart(input.charAt(cursor + name.length()))) {
                     return Optional.empty();
                 } else {

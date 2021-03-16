@@ -143,7 +143,8 @@ public enum Keyword {
     static Optional<Integer> pattern(String input) {
         for (var name : SORTED) {
             if (input.startsWith(name)) {
-                if (Character.isUnicodeIdentifierPart(input.charAt(name.length()))) {
+                if (name.length() < input.length() &&
+                        Character.isUnicodeIdentifierPart(input.charAt(name.length()))) {
                     return Optional.empty();
                 } else {
                     return Optional.of(name.length());
