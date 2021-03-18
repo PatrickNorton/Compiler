@@ -32,27 +32,30 @@ public final class AugAssignConverter implements BaseConverter {
         if (node.getOperator() == AugAssignTypeNode.NULL_COERCE) {
             return convertNullCoerce(start);
         }
-        var name = node.getName();
+        var name = removeIllegal(node.getName());
         if (name instanceof VariableNode) {
             return convertVar(start);
         } else if (name instanceof DottedVariableNode) {
             var last = ((DottedVariableNode) name).getLast();
-            if (last.getPostDot() instanceof VariableNode) {
+            var postDot = removeIllegal(last.getPostDot());
+            if (postDot instanceof VariableNode) {
                 return convertDot(start);
-            } else if (last.getPostDot() instanceof IndexNode) {
+            } else if (postDot instanceof IndexNode) {
                 return convertDotIndex(start);
-            } else if (last.getPostDot() instanceof FunctionCallNode) {
-                throw CompilerException.of("Augmented assignment does not work on function calls", name);
+            } else if (postDot instanceof DottedVariableNode) {
+                throw CompilerInternalError.of(
+                        "Dotted variables should not have dotted variables as post-dots", name
+                );
             } else {
-                throw CompilerTodoError.of("Augmented assignment on non-standard dotted variables", name);
+                throw CompilerInternalError.format(
+                        "Type not filtered by removeIllegal(): %s", name, postDot.getClass()
+                );
             }
         } else if (name instanceof IndexNode) {
             return convertIndex(start);
-        } else if (name instanceof FunctionCallNode) {
-            throw CompilerException.of("Augmented assignment does not work on function calls", name);
         } else {
-            throw CompilerTodoError.of(
-                    "Augmented assignment to non-variable or dotted variables not supported yet", name
+            throw CompilerInternalError.format(
+                    "Type not filtered by removeIllegal(): %s", name, name.getClass()
             );
         }
     }
