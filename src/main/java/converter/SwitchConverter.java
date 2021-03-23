@@ -406,6 +406,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 usedVariants.add(lblNo);
                 jumps.put(lblNo, start + bytes.size());
                 if (stmtHasAs) {  // Will work b/c there must only be one label if there is an 'as' clause
+                    assert stmt.getLabel().length == 1;
                     var as = stmt.getAs();
                     bytes.add(Bytecode.GET_VARIANT.value);
                     bytes.addAll(Util.shortToBytes((short) lblNo));

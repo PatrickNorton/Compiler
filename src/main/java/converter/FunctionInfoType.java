@@ -9,14 +9,22 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
 public final class FunctionInfoType extends TypeObject {
     private final FunctionInfo info;
+    private final String typedefName;
 
     public FunctionInfoType(FunctionInfo info) {
         this.info = info;
+        this.typedefName = "";
+    }
+
+    private FunctionInfoType(FunctionInfo info, String typedefName) {
+        this.info = info;
+        this.typedefName = typedefName;
     }
 
     @Override
@@ -85,10 +93,30 @@ public final class FunctionInfoType extends TypeObject {
         return new GenerifiedFnInfoType(info, List.of(args));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FunctionInfoType that = (FunctionInfoType) o;
+        return info == that.info;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(info);
+    }
+
     @NotNull
     @Contract(pure = true)
     @Override
     public String name() {
+        return typedefName.isEmpty() ? baseName() : typedefName;
+    }
+
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public String baseName() {
         var argStr = info.getArgs().argStr();
         if (info.getReturns().length == 0) {
             return "func" + argStr;
@@ -101,16 +129,9 @@ public final class FunctionInfoType extends TypeObject {
         }
     }
 
-    @Contract(pure = true)
-    @Override
-    @NotNull
-    public String baseName() {
-        return name();
-    }
-
     @Override
     public TypeObject typedefAs(String name) {
-        throw new UnsupportedOperationException("How on earth did you typedef this?");
+        return new FunctionInfoType(info, name);
     }
 
     @Override
