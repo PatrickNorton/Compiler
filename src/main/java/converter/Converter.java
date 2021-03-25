@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 public final class Converter {
     private static final FilenameFilter EXPORT_FILTER = (f, s) -> s.equals(Util.EXPORTS_FILENAME);
 
-    private static File destFile = null;
-
     private Converter() {}
 
     /**
@@ -39,13 +37,8 @@ public final class Converter {
      * @param node The AST node to compile
      */
     public static void convertToFile(@NotNull File file, TopNode node) {
-        if (destFile != null) {
-            throw CompilerInternalError.of(
-                    "Cannot call Converter#convertToFile more than once per compilation", node
-            );
-        }
-        destFile = file.getParentFile();
-        var info = new CompilerInfo(node, new GlobalCompilerInfo()).link();
+        var destFile = file.getParentFile();
+        var info = new CompilerInfo(node, new GlobalCompilerInfo(destFile)).link();
         ImportHandler.compileAll(info);
         info.writeToFile(file);
     }
@@ -121,7 +114,7 @@ public final class Converter {
     }
 
     @NotNull
-    static File resolveFile(String name) {
+    static File resolveFile(File destFile, String name) {
         return destFile.toPath().resolve(name + Util.BYTECODE_EXTENSION).toFile();
     }
 

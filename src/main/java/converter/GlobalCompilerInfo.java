@@ -5,6 +5,7 @@ import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ import java.util.Map;
  * @see CompilerInfo
  */
 public final class GlobalCompilerInfo {
+    private final File destFile;
+
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final List<SwitchTable> tables = new ArrayList<>();
 
@@ -34,6 +37,14 @@ public final class GlobalCompilerInfo {
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));  // Reserve for default
     private final List<ClassInfo> classes = new ArrayList<>();
     private final Map<BaseType, Integer> classMap = new HashMap<>();
+
+    public GlobalCompilerInfo(File destFile) {
+        this.destFile = destFile;
+    }
+
+    public File destFile() {
+        return this.destFile;
+    }
 
     public void addConstant(LangConstant value) {
         constants.add(value);
