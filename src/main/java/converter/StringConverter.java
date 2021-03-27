@@ -79,7 +79,8 @@ public final class StringConverter implements ConstantConverter {
                     return new IntConstant(cp);
                 } else {
                     throw CompilerException.format(
-                            "Byte literals only support ASCII values, not '%s'", node, StringEscape.escaped(cp)
+                            "Byte literals only support ASCII values, not '%s' (value 0x%x)",
+                            node, StringEscape.escaped(cp), cp
                     );
                 }
             default:
