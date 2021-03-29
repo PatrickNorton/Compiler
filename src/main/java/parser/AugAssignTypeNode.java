@@ -3,14 +3,10 @@ package main.java.parser;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public enum AugAssignTypeNode {
     ADD("+", OperatorTypeNode.ADD),
@@ -33,14 +29,6 @@ public enum AugAssignTypeNode {
     ;
 
     private static final Map<String, AugAssignTypeNode> values;
-    public static final Pattern PATTERN = Pattern.compile("^(" +
-            Arrays.stream(values())
-                    .map(Object::toString)
-                    .sorted(Comparator.comparingInt(String::length).reversed())
-                    .map(Pattern::quote)
-                    .collect(Collectors.joining("|"))
-            + ")"
-    );
 
     public final String sequence;
     public final OperatorTypeNode operator;
