@@ -144,7 +144,11 @@ public final class AnnotationConverter implements BaseConverter {
                     throw CompilerException.of("Unknown native function type", name);
                 }
             case "derive":
-                throw CompilerTodoError.of("'derive' annotation is unimplemented", name);
+                if (node instanceof BaseClassNode) {
+                    throw CompilerTodoError.of("'derive' annotation is unimplemented", name);
+                } else {
+                    throw CompilerException.of("'derive' annotation only works on class definitions", node);
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
