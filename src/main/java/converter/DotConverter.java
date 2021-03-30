@@ -369,16 +369,7 @@ public final class DotConverter implements TestConverter {
             return result.getReturns();
         } else {
             var result = type.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);
-            for (var value : indices) {  // TODO: Merge with IndexNode
-                bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, 1));
-            }
-            if (indices.length == 1) {
-                bytes.add(Bytecode.SUBSCRIPT.value);
-            } else {
-                bytes.add(Bytecode.CALL_OP.value);
-                bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_ATTR.ordinal()));
-                bytes.addAll(Util.shortToBytes((short) indices.length));
-            }
+            bytes.addAll(IndexConverter.convertIndices(start, info, indices));
             return result.getReturns();
         }
     }
