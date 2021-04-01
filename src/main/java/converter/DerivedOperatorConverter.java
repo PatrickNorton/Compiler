@@ -117,6 +117,8 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.add(Bytecode.CALL_OP.value);
         bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.HASH.ordinal()));
         bytes.addAll(Util.shortZeroBytes());
+        bytes.add(Bytecode.RETURN.value);
+        bytes.addAll(Util.shortToBytes((short) 1));
         return bytes;
     }
 }
