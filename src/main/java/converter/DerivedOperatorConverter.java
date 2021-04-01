@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.EscapedOperatorNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +35,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
         } else if (op instanceof VariableNode) {
             switch (((VariableNode) op).getName()) {
                 case "hash":
-                    throw CompilerTodoError.of("$derive(hash)", node);
+                    return convertHash();
                 case "repr":
                     throw CompilerTodoError.of("$derive(repr)", node);
                 default:
@@ -89,5 +90,33 @@ public final class DerivedOperatorConverter implements BaseConverter {
 
     private int postJumpSize() {
         return Bytecode.JUMP_TRUE.size() + Bytecode.LOAD_CONST.size() + Bytecode.RETURN.size();
+    }
+
+    private List<Byte> convertHash() {
+        var type = info.getType("self").orElseThrow();
+        assert type instanceof UserType;
+        List<Byte> bytes = new ArrayList<>();
+        int fieldCount = 0;
+        for (var field : ((UserType<?>) type).getFields()) {
+            var fieldType = type.attrType(field, AccessLevel.PRIVATE).orElseThrow();
+            if (fieldType.operatorInfo(OpSpTypeNode.HASH, AccessLevel.PRIVATE).isEmpty()) {
+                throw CompilerException.format(
+                        "Cannot derive hash for type '%s': " +
+                                "Field %s has type '%s', which does not implement a hash operator",
+                        node, type.name(), field, fieldType
+                );
+            }
+            bytes.add(Bytecode.LOAD_VALUE.value);
+            bytes.addAll(Util.shortZeroBytes());
+            bytes.add(Bytecode.LOAD_DOT.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(field))));
+            fieldCount++;
+        }
+        bytes.add(Bytecode.PACK_TUPLE.value);
+        bytes.addAll(Util.shortToBytes((short) fieldCount));
+        bytes.add(Bytecode.CALL_OP.value);
+        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.HASH.ordinal()));
+        bytes.addAll(Util.shortZeroBytes());
+        return bytes;
     }
 }
