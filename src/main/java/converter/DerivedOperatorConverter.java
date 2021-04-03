@@ -37,7 +37,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
                 case "hash":
                     return convertHash();
                 case "repr":
-                    throw CompilerTodoError.of("$derive(repr)", node);
+                    return convertRepr();
                 default:
                     throw CompilerException.of(
                             "Invalid derived operator: Can only derive ==, <=>, repr, and hash operators", node
@@ -149,6 +149,33 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.add(Bytecode.CALL_OP.value);
         bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.HASH.ordinal()));
         bytes.addAll(Util.shortZeroBytes());
+        bytes.add(Bytecode.RETURN.value);
+        bytes.addAll(Util.shortToBytes((short) 1));
+        return bytes;
+    }
+
+    private List<Byte> convertRepr() {
+        var type = info.getType("self").orElseThrow();
+        assert type instanceof UserType;
+        List<Byte> bytes = new ArrayList<>();
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(type.baseName() + '{'))));
+        var first = true;
+        for (var field : ((UserType<?>) type).getFields()) {
+            var fieldName = first ? field + ": " : ", " + field + ": ";
+            first = false;
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(fieldName))));
+            bytes.add(Bytecode.PLUS.value);
+            bytes.add(Bytecode.LOAD_VALUE.value);
+            bytes.addAll(Util.shortZeroBytes());
+            bytes.add(Bytecode.LOAD_DOT.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(field))));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.REPR.ordinal()));
+            bytes.addAll(Util.shortZeroBytes());
+            bytes.add(Bytecode.PLUS.value);
+        }
         bytes.add(Bytecode.RETURN.value);
         bytes.addAll(Util.shortToBytes((short) 1));
         return bytes;
