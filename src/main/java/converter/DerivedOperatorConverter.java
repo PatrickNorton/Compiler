@@ -154,6 +154,16 @@ public final class DerivedOperatorConverter implements BaseConverter {
         return bytes;
     }
 
+    /**
+     * Adds code for derived repr values.
+     * <p>
+     *     This code generates the following repr:
+     *     <code><pre>
+     * [Type name]{[field]=[repr(value)], ...} (for each field)
+     *     </pre></code>
+     * </p>
+     * @return The bytecode to generate the representation
+     */
     private List<Byte> convertRepr() {
         var type = info.getType("self").orElseThrow();
         assert type instanceof UserType;
@@ -162,7 +172,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(type.baseName() + '{'))));
         var first = true;
         for (var field : ((UserType<?>) type).getFields()) {
-            var fieldName = first ? field + ": " : ", " + field + ": ";
+            var fieldName = first ? field + " = " : ", " + field + ": ";
             first = false;
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(fieldName))));
