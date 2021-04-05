@@ -1,8 +1,6 @@
 package main.java.converter;
 
-import main.java.parser.EscapedOperatorNode;
 import main.java.parser.OpSpTypeNode;
-import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -20,35 +18,17 @@ public final class DerivedOperatorConverter implements BaseConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
-        var op = node.getOperator();
-        if (op instanceof EscapedOperatorNode) {
-            switch (((EscapedOperatorNode) op).getOperator()) {
-                case EQUALS:
-                    return convertEquals(start);
-                case COMPARE:
-                    throw CompilerTodoError.of("$derive(\\<=>)", node);
-                default:
-                    throw CompilerException.of(
-                            "Invalid derived operator: Can only derive ==, <=>, repr, and hash operators", node
-                    );
-            }
-        } else if (op instanceof VariableNode) {
-            switch (((VariableNode) op).getName()) {
-                case "hash":
-                    return convertHash();
-                case "repr":
-                    return convertRepr();
-                default:
-                    throw CompilerException.of(
-                            "Invalid derived operator: Can only derive ==, <=>, repr, and hash operators", node
-                    );
-            }
-        } else {
-            throw CompilerException.of(
-                    "Invalid derived operator: " +
-                            "Only escaped operators and references are valid in a derive statement",
-                    node
-            );
+        switch (node.getOperator()) {
+            case EQUALS:
+                return convertEquals(start);
+            case COMPARE:
+                throw CompilerTodoError.of("$derive(\\<=>)", node);
+            case HASH:
+                return convertHash();
+            case REPR:
+                return convertRepr();
+            default:
+                throw CompilerInternalError.of("Attempted to convert invalid operator", node);
         }
     }
 
