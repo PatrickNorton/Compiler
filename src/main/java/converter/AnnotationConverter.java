@@ -4,11 +4,13 @@ import main.java.parser.AnnotatableNode;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.EnumDefinitionNode;
+import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.Lined;
 import main.java.parser.NameNode;
 import main.java.parser.NumberNode;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorNode;
 import main.java.parser.StringNode;
 import main.java.parser.TestNode;
@@ -145,7 +147,10 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "derive":
                 if (node instanceof BaseClassNode) {
-                    throw CompilerTodoError.of("'derive' annotation is unimplemented", name);
+                    var operator = deriveOperator(name);
+                    throw CompilerTodoError.format(
+                            "'derive' annotation is unimplemented (derived %s)", name, operator
+                    );
                 } else {
                     throw CompilerException.of("'derive' annotation only works on class definitions", node);
                 }
@@ -396,5 +401,51 @@ public final class AnnotationConverter implements BaseConverter {
         if (!values.add(type)) {
             CompilerWarning.warn("Duplicated allow lint for warnings", WarningType.UNUSED, holder, lined);
         }
+    }
+
+    private static OpSpTypeNode deriveOperator(FunctionCallNode node) {
+        assert node.getVariable().getName().equals("derive");
+        var args = node.getParameters();
+        if (args.length != 1) {
+            throw CompilerException.of("'derive' attribute only takes one value at the moment", node);
+        } else if (args[0].isVararg()) {
+            throw CompilerException.of("Varargs are not allowed in 'derive' attributes", node);
+        } else{
+            return deriveOperator(args[0].getArgument(), node);
+        }
+    }
+
+    private static OpSpTypeNode deriveOperator(TestNode op, Lined node) {
+        if (op instanceof EscapedOperatorNode) {
+            switch (((EscapedOperatorNode) op).getOperator()) {
+                case EQUALS:
+                    return OpSpTypeNode.EQUALS;
+                case COMPARE:
+                    return OpSpTypeNode.COMPARE;
+                default:
+                    throw invalidOpException(node);
+            }
+        } else if (op instanceof VariableNode) {
+            switch (((VariableNode) op).getName()) {
+                case "hash":
+                    return OpSpTypeNode.HASH;
+                case "repr":
+                    return OpSpTypeNode.REPR;
+                default:
+                    throw invalidOpException(node);
+            }
+        } else {
+            throw CompilerException.of(
+                    "Invalid derived operator: " +
+                            "Only escaped operators and references are valid in a derive statement",
+                    node
+            );
+        }
+    }
+
+    private static CompilerException invalidOpException(Lined node) {
+        throw CompilerException.of(
+                "Invalid derived operator: Can only derive ==, <=>, repr, and hash operators", node
+        );
     }
 }
