@@ -62,6 +62,7 @@ public final class AnnotationConverter implements BaseConverter {
             case "cfg":
             case "allow":
             case "deny":
+            case "forbid":
                 throw CompilerException.format("'%s' attributes require arguments", name, name.getName());
             case "hot":
             case "cold":
@@ -119,6 +120,7 @@ public final class AnnotationConverter implements BaseConverter {
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "allow":
             case "deny":
+            case "forbid":
                 var warningHolder = info.warningHolder();
                 changeWarnings(name, warningHolder);
                 var bytes = BaseConverter.bytesWithoutAnnotations(start, node, info);
@@ -340,6 +342,8 @@ public final class AnnotationConverter implements BaseConverter {
             case "deny":
                 warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
                 break;
+            case "forbid":
+                throw CompilerTodoError.of("'forbid' is unimplemented as a warning level", annotation);
             default:
                 throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
         }
