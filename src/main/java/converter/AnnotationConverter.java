@@ -407,6 +407,16 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
+    public static List<OpSpTypeNode> deriveOperators(NameNode[] nodes) {
+        for (var node : nodes) {
+            if (node instanceof FunctionCallNode
+                    && ((FunctionCallNode) node).getVariable().getName().equals("derive")) {
+                return List.of(deriveOperator((FunctionCallNode) node));
+            }
+        }
+        return Collections.emptyList();
+    }
+
     private static OpSpTypeNode deriveOperator(FunctionCallNode node) {
         assert node.getVariable().getName().equals("derive");
         var args = node.getParameters();
