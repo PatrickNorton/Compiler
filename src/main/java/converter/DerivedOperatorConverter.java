@@ -152,7 +152,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(type.baseName() + '{'))));
         var first = true;
         for (var field : ((UserType<?>) type).getFields()) {
-            var fieldName = first ? field + " = " : ", " + field + ": ";
+            var fieldName = first ? field + " = " : ", " + field + " = ";
             first = false;
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(fieldName))));
@@ -166,6 +166,9 @@ public final class DerivedOperatorConverter implements BaseConverter {
             bytes.addAll(Util.shortZeroBytes());
             bytes.add(Bytecode.PLUS.value);
         }
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of("}"))));
+        bytes.add(Bytecode.PLUS.value);
         bytes.add(Bytecode.RETURN.value);
         bytes.addAll(Util.shortToBytes((short) 1));
         return bytes;

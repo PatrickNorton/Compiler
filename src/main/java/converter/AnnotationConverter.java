@@ -149,10 +149,7 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "derive":
                 if (node instanceof BaseClassNode) {
-                    var operator = deriveOperator(name);
-                    throw CompilerTodoError.format(
-                            "'derive' annotation is unimplemented (derived %s)", name, operator
-                    );
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 } else {
                     throw CompilerException.of("'derive' annotation only works on class definitions", node);
                 }
