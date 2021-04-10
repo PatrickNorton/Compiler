@@ -767,6 +767,7 @@ class CompileClass {
     }
 }
 
+$derive(\==, hash)
 class SuffixCacheKey {
     InstPtr fromInst
     int start
@@ -776,18 +777,6 @@ class SuffixCacheKey {
         self.fromInst = fromInst
         self.start = start
         self.end = end
-    }
-
-    public operator == (SuffixCacheKey other) {
-        return (
-            self.fromInst == other.fromInst
-            and self.start == other.start
-            and self.end == other.end
-        )
-    }
-
-    public operator hash {
-        return hash((self.fromInst, self.start, self.end))
     }
 }
 
