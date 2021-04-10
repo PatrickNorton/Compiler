@@ -448,7 +448,7 @@ public final class ImportHandler {
         } else {
             f = new CompilerInfo(Parser.parse(path.toFile()), info.globalInfo(), level);
             ALL_FILES.put(path, f);
-            toCompile.add(Pair.of(f, Converter.resolveFile(moduleName)));
+            toCompile.add(Pair.of(f, Converter.resolveFile(info.globalInfo().destFile(), moduleName)));
         }
         f.loadDependents();
     }

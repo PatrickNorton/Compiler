@@ -5,6 +5,8 @@ import main.java.converter.ArgumentInfo;
 import main.java.converter.Builtins;
 import main.java.converter.CompilerException;
 import main.java.converter.CompilerInfo;
+import main.java.converter.CompilerInternalError;
+import main.java.converter.DerivedOperatorNode;
 import main.java.converter.FunctionInfo;
 import main.java.converter.MethodInfo;
 import main.java.converter.TypeObject;
@@ -63,6 +65,17 @@ public final class OperatorDefConverter {
         var retValues = validateReturns(lineInfo, isGenerator, op, returns);
         FunctionInfo fnInfo = new FunctionInfo(op.toString(), isGenerator, args, retValues);
         addToOps(node, op, fnInfo, operatorInfos, operators, StatementBodyNode.empty());
+    }
+
+    public void parseDerived(OpSpTypeNode op, Lined lineInfo) {
+        var args = derivedArgs(op, lineInfo);
+        var returns = derivedRets(op, lineInfo);
+        var fnInfo = new FunctionInfo(op.toString(), args, returns);
+        var body = new StatementBodyNode(new DerivedOperatorNode(lineInfo.getLineInfo(), op));
+        checkOps(lineInfo, op, fnInfo);
+        var methodInfo = new MethodInfo(AccessLevel.PUBLIC, false, fnInfo);
+        operatorInfos.put(op, methodInfo);
+        operators.put(op, new RawMethod(AccessLevel.PUBLIC, fnInfo, body, lineInfo.getLineInfo()));
     }
 
     private void addToOps(
@@ -131,6 +144,35 @@ public final class OperatorDefConverter {
 
     private static CompilerException emptyArgsError(OpSpTypeNode operator, Lined lineInfo) {
         return CompilerException.format("Operator %s requires an empty argument list", lineInfo, operator.toString());
+    }
+
+    private static ArgumentInfo derivedArgs(OpSpTypeNode op, Lined lineInfo) {
+        switch (op) {
+            case HASH:
+            case REPR:
+                return ArgumentInfo.of();
+            case EQUALS:
+                return ArgumentInfo.of(Builtins.object());
+            case COMPARE:
+                throw new UnsupportedOperationException("compare operator args");
+            default:
+                throw CompilerInternalError.format("Unexpected derived operator: %s", lineInfo, op);
+        }
+    }
+
+    private static TypeObject[] derivedRets(OpSpTypeNode op, Lined lineInfo) {
+        switch (op) {
+            case HASH:
+                return new TypeObject[] {Builtins.intType()};
+            case REPR:
+                return new TypeObject[] {Builtins.str()};
+            case EQUALS:
+                return new TypeObject[] {Builtins.bool()};
+            case COMPARE:
+                throw new UnsupportedOperationException("compare operator return");
+            default:
+                throw CompilerInternalError.format("Unexpected derived operator: %s", lineInfo, op);
+        }
     }
 
     private static final Map<OpSpTypeNode, TypeObject> DEFAULT_RETURNS;

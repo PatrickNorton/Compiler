@@ -219,6 +219,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     }
 
     protected final void parseStatements(ConverterHolder converter) {
+        addDerivedOperators(converter);
         for (var stmt : node.getBody().getStatements()) {
             parseStatement(stmt, converter);
         }
@@ -285,6 +286,14 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                     );
                 }
             }
+        }
+    }
+
+    private void addDerivedOperators(ConverterHolder converter) {
+        var opConverter = converter.operators();
+        var operators = AnnotationConverter.deriveOperators(node.getAnnotations());
+        for (var op : operators) {
+            opConverter.parseDerived(op, node.getAnnotations()[0]);
         }
     }
 }

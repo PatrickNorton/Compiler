@@ -186,20 +186,23 @@ public final class ConverterHolder {
             Map<String, AttributeInfo> properties
     ) {
         var finalAttrs = new HashMap<>(attrs);
-        addInfos(finalAttrs, colons.entrySet());
-        addInfos(finalAttrs, methods.entrySet());
+        addInfos(false, finalAttrs, colons.entrySet());
+        addInfos(true, finalAttrs, methods.entrySet());
         finalAttrs.putAll(properties);
         return finalAttrs;
     }
 
     private static void addInfos(
+            boolean isMethod,
             Map<String, AttributeInfo> finalAttrs,
             @NotNull Set<Map.Entry<String, RawMethod>> entrySet
     ) {
         for (var pair : entrySet) {
             var methodInfo = pair.getValue();
             var mutType = methodInfo.isMut() ? MutableType.MUT_METHOD : MutableType.STANDARD;
-            var attrInfo = new AttributeInfo(methodInfo.getAccessLevel(), mutType, methodInfo.getInfo().toCallable());
+            var attrInfo = new AttributeInfo(
+                    isMethod, methodInfo.getAccessLevel(), mutType, methodInfo.getInfo().toCallable()
+            );
             finalAttrs.put(pair.getKey(), attrInfo);
         }
     }

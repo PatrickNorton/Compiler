@@ -5,6 +5,7 @@ import main.java.util.Pair;
 import main.java.util.Zipper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -464,6 +465,10 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         return Optional.of(StaticIterator::new);
     }
 
+    public Iterable<String> getFields() {
+        return FieldIterator::new;
+    }
+
     protected static String stdName(
             String baseName, List<TypeObject> generics, boolean isConst,
             String typedefName, boolean isConstClass
@@ -618,6 +623,40 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
             }
             if (!currentIter.hasNext()) {
                 superIndex++;
+            }
+        }
+    }
+
+    private final class FieldIterator implements Iterator<String> {
+        private final Iterator<? extends Map.Entry<String, ? extends IntoAttrInfo>>
+                values = info.attributes.entrySet().iterator();
+        @Nullable
+        private String next = null;
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) {
+                return true;
+            }
+            while (values.hasNext()) {
+                var entry = values.next();
+                if (!entry.getValue().intoAttrInfo().isMethod()) {
+                    next = entry.getKey();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public String next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            } else {
+                assert this.next != null;
+                var next = this.next;
+                this.next = null;
+                return next;
             }
         }
     }

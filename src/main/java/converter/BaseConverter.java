@@ -77,6 +77,8 @@ public interface BaseConverter {
             return new IncrementDecrementConverter(info, (DecrementNode) node);
         } else if (node instanceof DeleteStatementNode) {
             return new DeleteConverter(info, (DeleteStatementNode) node);
+        } else if (node instanceof DerivedOperatorNode) {
+            return new DerivedOperatorConverter(info, (DerivedOperatorNode) node);
         } else if (node instanceof DoStatementNode) {
             return new DoWhileConverter(info, (DoStatementNode) node);
         } else if (node instanceof DotimesStatementNode) {

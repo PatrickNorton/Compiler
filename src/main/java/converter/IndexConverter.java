@@ -66,11 +66,7 @@ public final class IndexConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_SLICE.ordinal()));
             bytes.addAll(Util.shortToBytes((short) 1));
         } else {
-            for (var index : node.getIndices()) {
-                bytes.addAll(TestConverter.bytes(start, index, info, 1));
-            }
-            bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
-            bytes.addAll(Util.shortToBytes((short) node.getIndices().length));
+            bytes.addAll(convertIndices(start + bytes.size(), info, node.getIndices()));
             if (retCount == 0) {
                 bytes.add(Bytecode.POP_TOP.value);
             }
@@ -170,6 +166,20 @@ public final class IndexConverter implements TestConverter {
 
     public static boolean isSlice(TestNode[] indices) {
         return indices.length == 1 && indices[0] instanceof SliceNode;
+    }
+
+    public static List<Byte> convertIndices(int start, CompilerInfo info, TestNode[] indices) {
+        List<Byte> bytes = new ArrayList<>();
+        for (var value : indices) {
+            bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, 1));
+        }
+        if (indices.length == 1) {
+            bytes.add(Bytecode.SUBSCRIPT.value);
+        } else {
+            bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+            bytes.addAll(Util.shortToBytes((short) indices.length));
+        }
+        return bytes;
     }
 
     static List<Byte> convertDuplicate(int start, TestConverter converter, TestNode[] indices, CompilerInfo info) {
