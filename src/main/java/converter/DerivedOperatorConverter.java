@@ -148,8 +148,17 @@ public final class DerivedOperatorConverter implements BaseConverter {
         var type = info.getType("self").orElseThrow();
         assert type instanceof UserType;
         List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(type.baseName() + '{'))));
+        if (((UserType<?>) type).isFinal() && ((UserType<?>) type).getGenericInfo().isEmpty()) {
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(type.baseName() + '{'))));
+        } else {
+            bytes.add(Bytecode.LOAD_VALUE.value);
+            bytes.addAll(Util.shortZeroBytes());
+            bytes.add(Bytecode.GET_TYPE.value);
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
+            bytes.addAll(Util.shortZeroBytes());
+        }
         var first = true;
         for (var field : ((UserType<?>) type).getFields()) {
             var fieldName = first ? field + " = " : ", " + field + " = ";
