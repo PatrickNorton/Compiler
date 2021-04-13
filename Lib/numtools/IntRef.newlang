@@ -1,5 +1,6 @@
 export IntRef
 
+$derive(\==, repr)
 final class IntRef {
     mut int value
 
@@ -13,10 +14,6 @@ final class IntRef {
 
     public operator str {
         return f"IntRef({self.value})"
-    }
-
-    public operator repr {
-        return f"IntRef({self.value !r})"
     }
 
     public operator + (cls other) -> cls {
