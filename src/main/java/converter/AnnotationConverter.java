@@ -19,6 +19,7 @@ import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -408,22 +409,24 @@ public final class AnnotationConverter implements BaseConverter {
         for (var node : nodes) {
             if (node instanceof FunctionCallNode
                     && ((FunctionCallNode) node).getVariable().getName().equals("derive")) {
-                return List.of(deriveOperator((FunctionCallNode) node));
+                return deriveOperator((FunctionCallNode) node);
             }
         }
         return Collections.emptyList();
     }
 
-    private static OpSpTypeNode deriveOperator(FunctionCallNode node) {
+    private static List<OpSpTypeNode> deriveOperator(FunctionCallNode node) {
         assert node.getVariable().getName().equals("derive");
         var args = node.getParameters();
-        if (args.length != 1) {
-            throw CompilerException.of("'derive' attribute only takes one value at the moment", node);
-        } else if (args[0].isVararg()) {
-            throw CompilerException.of("Varargs are not allowed in 'derive' attributes", node);
-        } else{
-            return deriveOperator(args[0].getArgument(), node);
+        List<OpSpTypeNode> operators = new ArrayList<>(args.length);
+        for (var arg : args) {
+            if (arg.isVararg()) {
+                throw CompilerException.of("Varargs are not allowed in 'derive' attributes", node);
+            } else {
+                operators.add(deriveOperator(arg.getArgument(), node));
+            }
         }
+        return operators;
     }
 
     private static OpSpTypeNode deriveOperator(TestNode op, Lined node) {
