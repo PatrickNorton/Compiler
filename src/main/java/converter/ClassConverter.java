@@ -38,6 +38,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
             }
             parseIntoObject(converter, type, isConst);
             generics.setParent(type);
+            info.reserveClass(type);
         } else {
             type = (StdTypeObject) info.getTypeObj(node.strName());
             try {
@@ -53,11 +54,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         }
         var superConstants = getSuperConstants(type);
         checkContract(type, type.getSupers());
-        if (hasType) {
-            putInInfo(type, "class", superConstants, converter);
-        } else {
-            addToInfo(type, "class", superConstants, converter);
-        }
+        putInInfo(type, "class", superConstants, converter);
         return Collections.emptyList();
     }
 

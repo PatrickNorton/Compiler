@@ -238,7 +238,7 @@ public final class Linker {
         }
     }
 
-    public boolean isModule(@NotNull TopNode node) {
+    private boolean isModule(@NotNull TopNode node) {
         for (var stmt : node) {
             if (stmt instanceof ImportExportNode && ((ImportExportNode) stmt).getType() == ImportExportNode.EXPORT) {
                 return true;

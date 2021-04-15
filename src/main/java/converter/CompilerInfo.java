@@ -43,8 +43,6 @@ public final class CompilerInfo {
     private boolean compiled = false;
     private boolean dependentsFound = false;
 
-    private boolean module = false;
-
     public CompilerInfo(TopNode node, GlobalCompilerInfo globalInfo) {
         this(node, globalInfo, PermissionLevel.NORMAL);
     }
@@ -110,13 +108,6 @@ public final class CompilerInfo {
 
     public PermissionLevel permissions() {
         return permissionLevel;
-    }
-
-    // FIXME: Hack because reserving constant types doesn't work in non-module
-    //        files yet :(
-    public boolean isModule() {
-        assert linked;
-        return module;
     }
 
     /**
@@ -311,7 +302,6 @@ public final class CompilerInfo {
         loadDependents();
         ImportHandler.loadDefaultInterfaces();
         var linker = new Linker(this).link(node);
-        module = linker.isModule(node);
         importHandler.setFromLinker(linker);
         linked = true;
         return this;
