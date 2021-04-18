@@ -267,9 +267,10 @@ public final class ImportHandler {
             Map<String, Integer> result = new HashMap<>();
             for (int i = 0; i < node.getValues().length; i++) {
                 var value = node.getValues()[i];
-                values.add(value.toString());
-                var valStr = from.toString() + "." + value.toString();
-                var as = node.getAs().length == 0 ? value.toString() : node.getAs()[i].toString();
+                var valueStr = value.toString();
+                values.add(valueStr);
+                var valStr = from.toString() + "." + valueStr;
+                var as = node.getAs().length == 0 ? valueStr : node.getAs()[i].toString();
                 importStrings.add(valStr);
                 result.put(as, importStrings.indexOf(valStr));
             }
