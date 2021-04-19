@@ -302,8 +302,9 @@ public final class ImportHandler {
             List<String> values = new ArrayList<>();
             for (int i = 0; i < node.getValues().length; i++) {
                 var value = node.getValues()[i];
-                values.add(value.toString());
-                var valStr = from.toString() + "." + value.toString();
+                var valueStr = value.toString();
+                values.add(valueStr);
+                var valStr = from.toString() + "." + valueStr;
                 importStrings.add(valStr);
             }
             List<String> asNames;
