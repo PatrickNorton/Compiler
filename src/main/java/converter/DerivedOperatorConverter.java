@@ -81,8 +81,8 @@ public final class DerivedOperatorConverter implements BaseConverter {
     private List<Byte> postJumpBytes(int start) {
         List<Byte> bytes = new ArrayList<>(postJumpSize());
         bytes.add(Bytecode.JUMP_TRUE.value);
-        bytes.addAll(Util.zeroToBytes());
         int jump = bytes.size();
+        bytes.addAll(Util.zeroToBytes());
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.FALSE)));
         bytes.add(Bytecode.RETURN.value);
