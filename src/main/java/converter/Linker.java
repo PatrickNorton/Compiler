@@ -143,7 +143,7 @@ public final class Linker {
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;
-            var value = FunctionDefinitionConverter.parseHeader(info, fnNode);
+            var value = FunctionDefinitionConverter.parseHeader(info, fnNode, isBuiltin != null);
             if (value.isPresent()) {
                 var pair = value.orElseThrow();
                 if (isBuiltin == null) {

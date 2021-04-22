@@ -146,18 +146,18 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
     }
 
-    @Contract(" -> new")
+    @Contract("_ -> new")
     @NotNull
-    public Optional<Pair<TypeObject, Integer>> parseHeader() {
+    public Optional<Pair<TypeObject, Integer>> parseHeader(boolean isBuiltin) {
         if (!AnnotationConverter.shouldCompile(node, info, node.getAnnotations())) {
             return Optional.empty();
         }
         if (node.getGenerics().length == 0) {
-            return Optional.of(innerHeader(GenericInfo.empty()));
+            return Optional.of(innerHeader(GenericInfo.empty(), isBuiltin));
         } else {
             var generics = GenericInfo.parse(info, node.getGenerics());
             info.addLocalTypes(null, generics.getParamMap());
-            var result = innerHeader(generics);
+            var result = innerHeader(generics, isBuiltin);
             info.removeLocalTypes();
             for (var generic : generics) {
                 generic.setParent(result.getKey());
@@ -166,7 +166,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         }
     }
 
-    private Pair<TypeObject, Integer> innerHeader(@NotNull GenericInfo generics) {
+    private Pair<TypeObject, Integer> innerHeader(@NotNull GenericInfo generics, boolean isBuiltin) {
         var argInfo = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
@@ -177,7 +177,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         if (previouslyDefined.isPresent()) {
             throw CompilerException.doubleDef(func.getName(), previouslyDefined.orElseThrow(), node);
         }
-        int index = info.addFunction(func);
+        int index = isBuiltin ? -1 : info.addFunction(func);
         return Pair.of(new FunctionInfoType(fnInfo), index);
     }
 
@@ -221,7 +221,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     }
 
     @NotNull
-    public static Optional<Pair<TypeObject, Integer>> parseHeader(CompilerInfo info, FunctionDefinitionNode node) {
-        return new FunctionDefinitionConverter(info, node).parseHeader();
+    public static Optional<Pair<TypeObject, Integer>> parseHeader(
+            CompilerInfo info, FunctionDefinitionNode node, boolean isBuiltin
+    ) {
+        return new FunctionDefinitionConverter(info, node).parseHeader(isBuiltin);
     }
 }
