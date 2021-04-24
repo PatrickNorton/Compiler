@@ -65,6 +65,7 @@ public final class CompilerInfo {
      *
      * @throws CompilerException If a compilation error occurs
      * @throws CompilerInternalError An unexpected internal error
+     * @throws CompilerTodoError A part of the compiler that needs to be done
      * @return Itself
      */
     public CompilerInfo compile() {
