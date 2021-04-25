@@ -99,14 +99,32 @@ public final class CompilerInfo {
         return importHandler;
     }
 
+    /**
+     * Get the {@link GlobalCompilerInfo} for this file.
+     *
+     * @return The handler
+     * @see GlobalCompilerInfo
+     */
     public GlobalCompilerInfo globalInfo() {
         return globalInfo;
     }
 
+    /**
+     * Get the {@link WarningHolder} for this file.
+     *
+     * @return The handler
+     * @see WarningHolder
+     */
     public WarningHolder warningHolder() {
         return warnings;
     }
 
+    /**
+     * Get the {@link PermissionLevel} for this file.
+     *
+     * @return The handler
+     * @see PermissionLevel
+     */
     public PermissionLevel permissions() {
         return permissionLevel;
     }
