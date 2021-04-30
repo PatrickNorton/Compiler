@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -165,6 +166,15 @@ public final class OptionTypeObject extends TypeObject {
                 );
             default:
                 return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<FunctionInfo> operatorInfo(OpSpTypeNode o, @NotNull CompilerInfo info) {
+        if (o == OpSpTypeNode.HASH) {
+            return optionVal.operatorInfo(OpSpTypeNode.HASH, info);
+        } else {
+            return Optional.empty();
         }
     }
 

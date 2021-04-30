@@ -395,7 +395,9 @@ public final class AnnotationConverter implements BaseConverter {
                 return Optional.of(Pair.of(argument1.getContents(),
                         argument2.getValue().toBigIntegerExact().intValueExact()));
             default:
-                throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                throw CompilerException.format(
+                        "Ill-formed 'builtin' annotation (got %d parameters)", lineInfo, func.getParameters().length
+                );
         }
     }
 
