@@ -1,5 +1,7 @@
+export BoolRef
+
 $derive(\==)
-public class BoolRef {
+class BoolRef {
     bool value
 
     public operator new(bool value) {
