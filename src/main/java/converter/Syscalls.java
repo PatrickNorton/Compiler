@@ -8,6 +8,10 @@ public final class Syscalls {
     private Syscalls() {}
 
     private static final BidirectionalMap<String, Integer> VALUES = BidirectionalMap.ofEntries(
+            Map.entry("read", 0),
+            Map.entry("write", 1),
+            Map.entry("open", 2),
+            Map.entry("close", 3),
             Map.entry("getcwd", 79),
             Map.entry("chdir", 80),
             Map.entry("mkdir", 83)
