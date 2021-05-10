@@ -114,7 +114,7 @@ public final class GenericInfo implements Iterable<TemplateParam>, RandomAccess 
             int diff = remainingArgs - remainingParams;
             List<TypeObject> listArgs = new ArrayList<>(diff);
             listArgs.addAll(Arrays.asList(args).subList(i, diff + i + 1));
-            result.add(TypeObject.list(listArgs.toArray(new TypeObject[0])));
+            result.add(TypeObject.list(listArgs));
             i++;
             for (; i < params.size(); i++) {
                 if (isInvalid(args[i + diff], params.get(i))) {

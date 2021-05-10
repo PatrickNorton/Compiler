@@ -72,6 +72,11 @@ const class bool {
     public operator new (object o, /) {}
     public operator bool -> bool {}
     public operator int -> int {}
+
+    public operator & (bool other, /) -> bool {}
+    public operator | (bool other, /) -> bool {}
+    public operator ^ (bool other, /) -> bool {}
+    public operator ~ -> bool {}
 }
 
 $builtin("range", 5)

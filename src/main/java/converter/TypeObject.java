@@ -879,6 +879,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    static TypeObject list(List<TypeObject> args) {
+        return new ListTypeObject(args.toArray(new TypeObject[0]));
+    }
+
+    @NotNull
     static String[] name(@NotNull TypeObject... args) {
         String[] result = new String[args.length];
         for (int i = 0; i < args.length; i++) {
