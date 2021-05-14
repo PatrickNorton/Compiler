@@ -2,7 +2,7 @@ export BoolRef
 
 $derive(\==)
 class BoolRef {
-    bool value
+    mut bool value
 
     public operator new(bool value) {
         self.value = value
