@@ -63,6 +63,9 @@ const class str {
     public method encode(str encoding) -> mut bytes {}
     public method intBase(int base) -> int? {}
     public method asInt() -> int? {}
+    public method strip(char? pat = null) -> str {}
+    public method stripLeading(str? pat = null) -> str {}
+    public method stripTrailing(str? pat = null) -> str {}
 
     public static method fromChars(list[char] chars) -> str {}
 }
