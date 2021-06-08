@@ -8,6 +8,7 @@ import java.util.Set;
 public final class WarningHolder {
     private final List<Set<WarningType>> allowed;
     private final List<Set<WarningType>> denied;
+    private final ErrorCounter counter;
 
     public enum Level {
         ALLOW,
@@ -15,7 +16,8 @@ public final class WarningHolder {
         DENY,
     }
 
-    public WarningHolder() {
+    public WarningHolder(ErrorCounter counter) {
+        this.counter = counter;
         this.allowed = new ArrayList<>();
         this.denied = new ArrayList<>();
     }
@@ -59,5 +61,13 @@ public final class WarningHolder {
     public void denyAll() {
         allowed.add(EnumSet.noneOf(WarningType.class));
         denied.add(EnumSet.allOf(WarningType.class));
+    }
+
+    public void addWarning() {
+        counter.addWarning();
+    }
+
+    public void addError() {
+        counter.addError();
     }
 }

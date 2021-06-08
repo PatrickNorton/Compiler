@@ -37,6 +37,7 @@ public final class GlobalCompilerInfo {
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));  // Reserve for default
     private final List<ClassInfo> classes = new ArrayList<>();
     private final Map<BaseType, Integer> classMap = new HashMap<>();
+    private final ErrorCounter warnings = new ErrorCounter();
 
     public GlobalCompilerInfo(File destFile) {
         this.destFile = destFile;
@@ -68,6 +69,10 @@ public final class GlobalCompilerInfo {
 
     public IndexedSet<LangConstant> getConstants() {
         return constants;
+    }
+
+    public ErrorCounter getWarnings() {
+        return warnings;
     }
 
     public int addTable(SwitchTable value) {
