@@ -344,4 +344,6 @@ public final class Builtins {
             return deIterable(val.operatorReturnType(OpSpTypeNode.ITER, AccessLevel.PUBLIC).orElseThrow()[0]);
         }
     }
+
+    public static final Set<String> STABLE_FEATURES = Set.of();
 }

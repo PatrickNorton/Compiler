@@ -219,7 +219,7 @@ public final class AnnotationConverter implements BaseConverter {
             var name = ((FunctionCallNode) value).getVariable().getName();
             switch (name) {
                 case "feature":
-                    throw CompilerTodoError.of("cfg(feature) annotations", value);
+                    return cfgFeature((FunctionCallNode) value);
                 case "version":
                     return cfgVersion((FunctionCallNode) value);
                 default:
@@ -278,6 +278,17 @@ public final class AnnotationConverter implements BaseConverter {
         } else {
             return version.compareTo(Builtins.CURRENT_VERSION) >= 0;
         }
+    }
+
+    private static boolean cfgFeature(FunctionCallNode value) {
+        assert value.getVariable().getName().equals("feature");
+        var args = value.getParameters();
+        if (args.length != 1) {
+            throw CompilerException.of("Invalid format for 'feature' cfg attribute", value);
+        }
+        var arg = args[0];
+        var strValue = getString(arg.getArgument());
+        return Builtins.STABLE_FEATURES.contains(strValue);
     }
 
     private static String getString(TestNode value) {
