@@ -154,6 +154,9 @@ public final class AnnotationConverter implements BaseConverter {
                 } else {
                     throw CompilerException.of("'derive' annotation only works on class definitions", node);
                 }
+            case "stable":
+            case "unstable":
+                throw CompilerTodoError.of("Stable/unstable annotations", node);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
@@ -212,6 +215,16 @@ public final class AnnotationConverter implements BaseConverter {
                 default:
                     throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
             }
+        } else if (value instanceof FunctionCallNode) {
+            var name = ((FunctionCallNode) value).getVariable().getName();
+            switch (name) {
+                case "feature":
+                    throw CompilerTodoError.of("cfg(feature) annotations", value);
+                case "version":
+                    return cfgVersion((FunctionCallNode) value);
+                default:
+                    throw CompilerException.format("Unknown cfg function predicate %s", value, name);
+            }
         } else if (value instanceof OperatorNode) {
             return cfgBool((OperatorNode) value);
         } else {
@@ -248,6 +261,30 @@ public final class AnnotationConverter implements BaseConverter {
                 return result;
             default:
                 throw CompilerException.of("Non-boolean operands not supported in cfg", value);
+        }
+    }
+
+    private static boolean cfgVersion(FunctionCallNode value) {
+        assert value.getVariable().getName().equals("version");
+        var args = value.getParameters();
+        if (args.length != 1) {
+            throw CompilerException.of("Invalid format for 'version' cfg attribute", value);
+        }
+        var arg = args[0];
+        var strValue = getString(arg.getArgument());
+        var version = Version.parse(strValue);
+        if (version == null) {
+            throw CompilerException.of("Invalid version format", arg);
+        } else {
+            return version.compareTo(Builtins.CURRENT_VERSION) >= 0;
+        }
+    }
+
+    private static String getString(TestNode value) {
+        if (value instanceof StringNode) {
+            return ((StringNode) value).getContents();
+        } else {
+            throw CompilerException.of("Expected string literal here", value);
         }
     }
 

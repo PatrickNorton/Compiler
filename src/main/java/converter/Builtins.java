@@ -19,6 +19,8 @@ public final class Builtins {
         throw new UnsupportedOperationException("No Builtins for you!");
     }
 
+    public static final Version CURRENT_VERSION = new Version(0, 0, 1);
+
     public static final Set<String> FORBIDDEN_NAMES = Set.of(
             "true",
             "false",
