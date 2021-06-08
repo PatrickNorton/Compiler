@@ -40,7 +40,7 @@ public final class Version implements Comparable<Version> {
     }
 
     public String strValue() {
-        return String.format("%d.%d.%d", major, major, bugfix);
+        return String.format("%d.%d.%d", major, minor, bugfix);
     }
 
     public static Version parse(String value) {
