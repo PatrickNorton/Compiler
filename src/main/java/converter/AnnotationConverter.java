@@ -241,6 +241,12 @@ public final class AnnotationConverter implements BaseConverter {
                     return true;
                 case "false":
                     return false;
+                case "test":
+                    System.err.println("Test mode is always off for now");
+                    return false;
+                case "debug":
+                    System.err.println("Debug mode is always off for now");
+                    return false;
                 default:
                     throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
             }
@@ -251,6 +257,10 @@ public final class AnnotationConverter implements BaseConverter {
                     return cfgFeature((FunctionCallNode) value);
                 case "version":
                     return cfgVersion((FunctionCallNode) value);
+                case "all":
+                    return cfgAll((FunctionCallNode) value);
+                case "any":
+                    return cfgAny((FunctionCallNode) value);
                 default:
                     throw CompilerException.format("Unknown cfg function predicate %s", value, name);
             }
@@ -318,6 +328,34 @@ public final class AnnotationConverter implements BaseConverter {
         var arg = args[0];
         var strValue = getString(arg.getArgument());
         return Builtins.STABLE_FEATURES.contains(strValue);
+    }
+
+    private static boolean cfgAll(FunctionCallNode value) {
+        assert value.getVariable().getName().equals("all");
+        var args = value.getParameters();
+        for (var arg : args) {
+            if (arg.isVararg() || !arg.getVariable().isEmpty()) {
+                throw CompilerException.of("Invalid format for cfg(all)", value);
+            }
+            if (!cfgValue(arg.getArgument())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean cfgAny(FunctionCallNode value) {
+        assert value.getVariable().getName().equals("all");
+        var args = value.getParameters();
+        for (var arg : args) {
+            if (arg.isVararg() || !arg.getVariable().isEmpty()) {
+                throw CompilerException.of("Invalid format for cfg(all)", value);
+            }
+            if (cfgValue(arg.getArgument())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String[] getStrings(ArgumentNode... values) {
