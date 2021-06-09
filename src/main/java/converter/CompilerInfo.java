@@ -6,6 +6,8 @@ import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.parser.TypeLikeNode;
 import main.java.parser.VariableNode;
+import main.java.util.Counter;
+import main.java.util.HashCounter;
 import main.java.util.IndexedSet;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
@@ -32,6 +34,7 @@ public final class CompilerInfo {
     private final Map<String, Integer> fnIndices = new HashMap<>();
     private final LoopManager loopManager = new LoopManager();
     private final WarningHolder warnings;
+    private final Counter<String> features = new HashCounter<>();
 
     private final VariableHolder varHolder;
 
@@ -794,6 +797,26 @@ public final class CompilerInfo {
 
     public List<SwitchTable> getTables() {
         return globalInfo.getTables();
+    }
+
+    public void addFeature(String feature) {
+        features.increment(feature);
+    }
+
+    public void addFeatures(String... features) {
+        for (var feature : features) {
+            addFeature(feature);
+        }
+    }
+
+    public void removeFeature(String feature) {
+        features.decrement(feature);
+    }
+
+    public void removeFeatures(String... features) {
+        for (var feature : features) {
+            removeFeature(feature);
+        }
     }
 
     /**

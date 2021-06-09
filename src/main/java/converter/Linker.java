@@ -140,6 +140,9 @@ public final class Linker {
     private Optional<TypeObject> linkDefinition(
             @NotNull DefinitionNode stmt, @Nullable Pair<String, Integer> isBuiltin
     ) {
+        if (!AnnotationConverter.shouldCompile(stmt, info, stmt.getAnnotations())) {
+            return Optional.empty();
+        }
         var name = stmt.getName();
         if (stmt instanceof FunctionDefinitionNode) {
             var fnNode = (FunctionDefinitionNode) stmt;

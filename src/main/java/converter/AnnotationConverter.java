@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.AnnotatableNode;
+import main.java.parser.ArgumentNode;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.EnumDefinitionNode;
@@ -156,7 +157,35 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "stable":
             case "unstable":
-                throw CompilerTodoError.of("Stable/unstable annotations", node);
+                if (info.permissions().isStdlib()) {
+                    throw CompilerTodoError.of("Stable/unstable annotations", name);
+                } else {
+                    throw CompilerException.of(
+                            "'stable' and 'unstable' annotations are only available for the standard library", node
+                    );
+                }
+            case "feature":
+                var features = getStrings(name.getParameters());
+                if (info.permissions().isStdlib()) {
+                    info.addFeatures(features);
+                    var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    info.removeFeatures(features);
+                    return result;
+                }
+                for (var featureName : features) {
+                    if (Builtins.STABLE_FEATURES.contains(featureName)) {
+                        CompilerWarning.warnf(
+                                "Use of '$feature' attribute for stable feature %s",
+                                WarningType.NO_TYPE, info, name, featureName
+                        );
+                    } else {
+                        throw CompilerTodoError.of("Proper unstable feature annotations", name);
+                    }
+                    info.addFeature(featureName);
+                }
+                var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                info.removeFeatures(features);
+                return result;
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
@@ -276,7 +305,7 @@ public final class AnnotationConverter implements BaseConverter {
         if (version == null) {
             throw CompilerException.of("Invalid version format", arg);
         } else {
-            return version.compareTo(Builtins.CURRENT_VERSION) >= 0;
+            return version.compareTo(Builtins.CURRENT_VERSION) <= 0;
         }
     }
 
@@ -289,6 +318,14 @@ public final class AnnotationConverter implements BaseConverter {
         var arg = args[0];
         var strValue = getString(arg.getArgument());
         return Builtins.STABLE_FEATURES.contains(strValue);
+    }
+
+    private static String[] getStrings(ArgumentNode... values) {
+        var result = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = getString(values[i].getArgument());
+        }
+        return result;
     }
 
     private static String getString(TestNode value) {

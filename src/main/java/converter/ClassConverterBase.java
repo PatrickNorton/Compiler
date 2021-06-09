@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.converter.classbody.ConverterHolder;
 import main.java.converter.classbody.RawMethod;
+import main.java.parser.AnnotatableNode;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DeclarationNode;
 import main.java.parser.DeclaredAssignmentNode;
@@ -228,7 +229,10 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
     protected final void parseStatements(ConverterHolder converter) {
         addDerivedOperators(converter);
         for (var stmt : node.getBody().getStatements()) {
-            parseStatement(stmt, converter);
+            if (!(stmt instanceof AnnotatableNode) ||
+                    AnnotationConverter.shouldCompile(stmt, info, ((AnnotatableNode) stmt).getAnnotations())) {
+                parseStatement(stmt, converter);
+            }
         }
     }
 
