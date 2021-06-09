@@ -12,7 +12,6 @@ import main.java.parser.Lined;
 import main.java.parser.NameNode;
 import main.java.parser.NumberNode;
 import main.java.parser.OpSpTypeNode;
-import main.java.parser.OperatorNode;
 import main.java.parser.StringNode;
 import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
@@ -114,7 +113,7 @@ public final class AnnotationConverter implements BaseConverter {
     private List<Byte> convertFunction(FunctionCallNode name, int start) {
         switch (name.getVariable().getName()) {
             case "cfg":
-                return convertCfg(start, name);
+                return convertIfTest(start, new CfgConverter(info, name).convert());
             case "inline":
                 return convertInline(start, name);
             case "deprecated":
@@ -218,146 +217,6 @@ public final class AnnotationConverter implements BaseConverter {
         );
     }
 
-    private List<Byte> convertCfg(int start, FunctionCallNode inline) {
-        assert inline.getVariable().getName().equals("cfg");
-        var parameters = inline.getParameters();
-        if (parameters.length == 1) {
-            var param = parameters[0];
-            var argument = param.getArgument();
-            if (!param.isVararg() && param.getVariable().isEmpty()) {
-                return convertIfTest(start, cfgValue(argument));
-            } else {
-                throw CompilerException.of("'cfg' annotations do not support named arguments", inline);
-            }
-        } else {
-            throw CompilerException.of("'cfg' annotations only support one value", inline);
-        }
-    }
-
-    private static boolean cfgValue(TestNode value) {
-        if (value instanceof VariableNode) {
-            switch (((VariableNode) value).getName()) {
-                case "true":
-                    return true;
-                case "false":
-                    return false;
-                case "test":
-                    System.err.println("Test mode is always off for now");
-                    return false;
-                case "debug":
-                    System.err.println("Debug mode is always off for now");
-                    return false;
-                default:
-                    throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
-            }
-        } else if (value instanceof FunctionCallNode) {
-            var name = ((FunctionCallNode) value).getVariable().getName();
-            switch (name) {
-                case "feature":
-                    return cfgFeature((FunctionCallNode) value);
-                case "version":
-                    return cfgVersion((FunctionCallNode) value);
-                case "all":
-                    return cfgAll((FunctionCallNode) value);
-                case "any":
-                    return cfgAny((FunctionCallNode) value);
-                default:
-                    throw CompilerException.format("Unknown cfg function predicate %s", value, name);
-            }
-        } else if (value instanceof OperatorNode) {
-            return cfgBool((OperatorNode) value);
-        } else {
-            throw CompilerTodoError.of("Cfg with non-variables not supported", value);
-        }
-    }
-
-    private static boolean cfgBool(OperatorNode value) {
-        var operands = value.getOperands();
-        switch (value.getOperator()) {
-            case BOOL_NOT:
-                assert operands.length == 1;
-                return !cfgValue(operands[0].getArgument());
-            case BOOL_AND:
-                for (var op : operands) {
-                    if (!cfgValue(op.getArgument())) {
-                        return false;
-                    }
-                }
-                return true;
-            case BOOL_OR:
-                for (var op : operands) {
-                    if (cfgValue(op.getArgument())) {
-                        return true;
-                    }
-                }
-                return false;
-            case BOOL_XOR:
-                assert operands.length > 0;
-                var result = cfgValue(operands[0].getArgument());
-                for (int i = 1; i < operands.length; i++) {
-                    result ^= cfgValue(operands[i].getArgument());
-                }
-                return result;
-            default:
-                throw CompilerException.of("Non-boolean operands not supported in cfg", value);
-        }
-    }
-
-    private static boolean cfgVersion(FunctionCallNode value) {
-        assert value.getVariable().getName().equals("version");
-        var args = value.getParameters();
-        if (args.length != 1) {
-            throw CompilerException.of("Invalid format for 'version' cfg attribute", value);
-        }
-        var arg = args[0];
-        var strValue = getString(arg.getArgument());
-        var version = Version.parse(strValue);
-        if (version == null) {
-            throw CompilerException.of("Invalid version format", arg);
-        } else {
-            return version.compareTo(Builtins.CURRENT_VERSION) <= 0;
-        }
-    }
-
-    private static boolean cfgFeature(FunctionCallNode value) {
-        assert value.getVariable().getName().equals("feature");
-        var args = value.getParameters();
-        if (args.length != 1) {
-            throw CompilerException.of("Invalid format for 'feature' cfg attribute", value);
-        }
-        var arg = args[0];
-        var strValue = getString(arg.getArgument());
-        return Builtins.STABLE_FEATURES.contains(strValue);
-    }
-
-    private static boolean cfgAll(FunctionCallNode value) {
-        assert value.getVariable().getName().equals("all");
-        var args = value.getParameters();
-        for (var arg : args) {
-            if (arg.isVararg() || !arg.getVariable().isEmpty()) {
-                throw CompilerException.of("Invalid format for cfg(all)", value);
-            }
-            if (!cfgValue(arg.getArgument())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean cfgAny(FunctionCallNode value) {
-        assert value.getVariable().getName().equals("all");
-        var args = value.getParameters();
-        for (var arg : args) {
-            if (arg.isVararg() || !arg.getVariable().isEmpty()) {
-                throw CompilerException.of("Invalid format for cfg(all)", value);
-            }
-            if (cfgValue(arg.getArgument())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static String[] getStrings(ArgumentNode... values) {
         var result = new String[values.length];
         for (int i = 0; i < values.length; i++) {
@@ -407,11 +266,8 @@ public final class AnnotationConverter implements BaseConverter {
                     CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, stmt);
                     return true;
                 case "cfg":
-                    if (stmt.getParameters().length == 1) {
-                        return cfgValue(stmt.getParameters()[0].getArgument());
-                    } else {
-                        return true;
-                    }
+                    var converter = new CfgConverter(info, stmt);
+                    return converter.convert();
                 default:
                     return true;
             }
