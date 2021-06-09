@@ -291,6 +291,11 @@ public final class AnnotationConverter implements BaseConverter {
             var argName = ((VariableNode) argument).getName();
             switch (argName) {
                 case "all":
+                    if (annotation.getParameters().length > 1) {
+                        throw CompilerException.format(
+                                "'all' used in conjunction with other parameters in '%s' statement", annotation, name
+                        );
+                    }
                     warnAll(name, warningHolder, annotation);
                     return;
                 case "deprecated":
@@ -314,13 +319,19 @@ public final class AnnotationConverter implements BaseConverter {
         }
         switch (name) {
             case "allow":
+                for (var allowed : allowedTypes) {
+                    if (warningHolder.isForbidden(allowed)) {
+                        throw CompilerException.format("Cannot allow forbidden warning %s", annotation, allowed);
+                    }
+                }
                 warningHolder.allow(allowedTypes.toArray(new WarningType[0]));
                 break;
             case "deny":
                 warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
                 break;
             case "forbid":
-                throw CompilerTodoError.of("'forbid' is unimplemented as a warning level", annotation);
+                warningHolder.forbid(allowedTypes.toArray(new WarningType[0]));
+                break;
             default:
                 throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
         }
@@ -329,10 +340,21 @@ public final class AnnotationConverter implements BaseConverter {
     private static void warnAll(String name, WarningHolder warningHolder, Lined annotation) {
         switch (name) {
             case "allow":
+                for (var allowed : WarningType.values()) {
+                    if (warningHolder.isForbidden(allowed)) {
+                        throw CompilerException.format(
+                                "Cannot allow forbidden warning %s%nNote: Warning allowed because of allow(all)",
+                                annotation, allowed
+                        );
+                    }
+                }
                 warningHolder.allowAll();
                 break;
             case "deny":
                 warningHolder.denyAll();
+                break;
+            case "forbid":
+                warningHolder.forbidAll();
                 break;
             default:
                 throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
