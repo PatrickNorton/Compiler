@@ -108,6 +108,8 @@ public final class TupleType extends TypeObject {
                 }
             }
             return true;
+        } else if (other.sameBaseType(Builtins.hashable())) {
+            return isHashable();
         } else if (other.willSuperRecurse()) {
             return false;
         } else {

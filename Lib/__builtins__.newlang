@@ -280,9 +280,8 @@ class AssertionError from Throwable {
     public operator new (str msg, /) {}
 }
 
-# FIXME: Hashable on tuples
 $builtin("hash", 26)
-func hash(object value, /) -> int {}
+func hash(Hashable value, /) -> int {}
 
 $builtin("dec")
 class dec {}

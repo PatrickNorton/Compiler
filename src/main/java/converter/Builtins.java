@@ -177,6 +177,10 @@ public final class Builtins {
         return Objects.requireNonNull(BUILTIN_MAP.get("iter"));
     }
 
+    public static TypeObject hashable() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("Hashable"));
+    }
+
     public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
             CONTEXT, CALLABLE, ITERABLE
     );
