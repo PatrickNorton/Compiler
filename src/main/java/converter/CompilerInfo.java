@@ -338,6 +338,16 @@ public final class CompilerInfo {
         varHolder.addLocals(importHandler, warningHolder());
     }
 
+    /**
+     * Registers all the files on which this depends and loads all type
+     * definitions.
+     * <p>
+     *     Unlike {@link ImportHandler#registerDependents}, which this calls,
+     *     it can be called multiple times on the same object without issue.
+     * </p>
+     *
+     * @see ImportHandler#registerDependents
+     */
     public void loadDependents() {
         if (!dependentsFound) {
             dependentsFound = true;
@@ -392,6 +402,19 @@ public final class CompilerInfo {
         return varHolder.classOf(str);
     }
 
+    /**
+     * Gets the parent type for a locally-defined type.
+     * <p>
+     *     This forwards to {@link VariableHolder#localParent}, see it for more
+     *     information.
+     * </p>
+     *
+     * @param typ The local type to get the parent of
+     * @return The parent of that type, or {@link Optional#empty()} if not a
+     *         local type.
+     * @see VariableHolder#localParent
+     */
+    @NotNull
     public Optional<TypeObject> localParent(TypeObject typ) {
         return varHolder.localParent(typ);
     }
@@ -791,28 +814,67 @@ public final class CompilerInfo {
         return varHolder.accessHandler();
     }
 
+    /**
+     * Adds a switch table to the global pool.
+     *
+     * @param val The table to add
+     * @return The index in the table.
+     * @see GlobalCompilerInfo#addTable
+     */
     public int addSwitchTable(SwitchTable val) {
         return globalInfo.addTable(val);
     }
 
+    /**
+     * Gets the global list of switch tables.
+     *
+     * @return The list of switch tables.
+     */
     public List<SwitchTable> getTables() {
         return globalInfo.getTables();
     }
 
+    /**
+     * Adds the given feature name to the list of active features.
+     *
+     * @param feature The feature name
+     */
     public void addFeature(String feature) {
         features.increment(feature);
     }
 
+    /**
+     * Adds all the given features to the active feature list.
+     *
+     * @param features The feature names
+     * @see #addFeature
+     */
     public void addFeatures(String... features) {
         for (var feature : features) {
             addFeature(feature);
         }
     }
 
+    /**
+     * Removes the given feature from the active feature list.
+     * <p>
+     *     If the given feature was added through {@link #addFeature} multiple
+     *     times, then {@code removeFeature} will only remove the feature when
+     *     it has been called as many times as {@link #addFeature}.
+     * </p>
+     *
+     * @param feature The feature name
+     */
     public void removeFeature(String feature) {
         features.decrement(feature);
     }
 
+    /**
+     * Removes all of the given features from the active feature list.
+     *
+     * @param features The feature names
+     * @see #removeFeature
+     */
     public void removeFeatures(String... features) {
         for (var feature : features) {
             removeFeature(feature);

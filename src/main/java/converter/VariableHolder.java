@@ -375,6 +375,21 @@ final class VariableHolder {
         }
     }
 
+    /**
+     * Gets the parent type for this locally-defined type.
+     * <p>
+     *     A locally-defined type is one that is defined as part of another
+     *     type definition, such as generics. As an example, if {@code T} is
+     *     defined as part of {@code Foo[T]}, calling {@code localParent(T)}
+     *     will return {@code Foo}. If the type given is not locally-defined,
+     *     this will return {@link Optional#empty()}.
+     * </p>
+     *
+     * @param typ The local type to get the parent of
+     * @return The parent type, or {@link Optional#empty()} if not
+     *         locally-defined.
+     */
+    @NotNull
     public Optional<TypeObject> localParent(TypeObject typ) {
         for (int i = localTypes.size() - 1; i >= 0; i--) {
             var frame = localTypes.get(i);
