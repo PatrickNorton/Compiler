@@ -185,6 +185,23 @@ public final class AnnotationConverter implements BaseConverter {
                 var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
                 info.removeFeatures(features);
                 return result;
+            case "cfgAttr":
+                if (name.getParameters().length != 2) {
+                    throw CompilerException.format(
+                            "'cfgAttr' annotation takes exactly 2 arguments, not %d",
+                            name, name.getParameters().length
+                    );
+                } else {
+                    var config = name.getParameters()[0];
+                    var attr = name.getParameters()[1];
+                    if (!(attr.getArgument() instanceof NameNode)) {
+                        throw CompilerException.of("Invalid format for attribute", attr.getArgument());
+                    } else if (CfgConverter.valueOf(config.getArgument(), info)) {
+                        return convertName((NameNode) attr.getArgument(), start);
+                    } else {
+                        return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    }
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }

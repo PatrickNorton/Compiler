@@ -162,4 +162,11 @@ public final class CfgConverter {
             throw CompilerException.of("Expected string literal here", value);
         }
     }
+
+    public static boolean valueOf(TestNode value, CompilerInfo info) {
+        // 'null' is reasonable here because convert() is the only function that
+        // uses this.node (and we don't expect that to change with further
+        // additions).
+        return new CfgConverter(info, null).valueOf(value);
+    }
 }
