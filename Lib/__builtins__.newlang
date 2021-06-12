@@ -54,18 +54,23 @@ const class str {
     public method join(Iterable[str] strs, /) -> str {}
     public method startsWith(str start, /) -> bool {}
     public method endsWith(str end, /) -> bool {}
-    public method split(str split, /) -> list[str] {}
+    public method split(str split, /, int? count = null) -> list[str] {}
+    public method replace(str pat, str new, /, int? count = null) -> str {}
     public method splitLines() -> list[str] {}
     public method upper() -> str {}
     public method lower() -> str {}
+    public method isUpper() -> bool {}
+    public method isLower() -> bool {}
     public method indexOf(str s, /) -> int? {}
     public method lastIndexOf(str s, /) -> int? {}
     public method encode(str encoding) -> mut bytes {}
     public method intBase(int base) -> int? {}
     public method asInt() -> int? {}
-    public method strip(char? pat = null) -> str {}
-    public method stripLeading(str? pat = null) -> str {}
-    public method stripTrailing(str? pat = null) -> str {}
+    public method strip(char? pat = null, /) -> str {}
+    public method stripLeading(str? pat = null, /) -> str {}
+    public method stripTrailing(str? pat = null, /) -> str {}
+    public method expandTabs(int size = 4) -> str {}
+    public method isAscii() -> bool {}
 
     public static method fromChars(list[char] chars) -> str {}
 }
@@ -165,6 +170,12 @@ const class char {
 
     public method upper() -> char {}
     public method lower() -> char {}
+    public method isUpper() -> bool {}
+    public method isLower() -> bool {}
+    public method isAscii() -> bool {}
+    public method utf8Len() -> int {}
+    public method utf16Len() -> int {}
+    public method encode(str encoding) -> bytes {}
 
     public static method fromInt(int i, /) -> char? {}
 }
