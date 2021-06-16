@@ -138,6 +138,9 @@ public final class AnnotationConverter implements BaseConverter {
                     );
                 }
             case "native":
+                if (!info.permissions().isStdlib()) {
+                    throw CompilerException.of("'native' is an internal-only annotation", name);
+                }
                 var native0 = name.getParameters()[0].getArgument();
                 if (native0 instanceof StringNode && ((StringNode) native0).getContents().equals("sys")) {
                     if (node instanceof FunctionDefinitionNode) {
@@ -202,6 +205,8 @@ public final class AnnotationConverter implements BaseConverter {
                         return BaseConverter.bytesWithoutAnnotations(start, node, info);
                     }
                 }
+            case "extern":
+                throw CompilerTodoError.of("External functions are not yet implemented", node);
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
