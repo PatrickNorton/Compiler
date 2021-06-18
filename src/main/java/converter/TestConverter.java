@@ -30,6 +30,24 @@ public interface TestConverter extends BaseConverter {
     @NotNull
     TypeObject[] returnType();
 
+    /**
+     * Calculates the constant value if returned, or {@link Optional#empty()} if
+     * no constant value exists.
+     * <p>
+     *     As an example: {@code parse("a").constantReturn()} will return {@code
+     *     new StringConstant("a")}, but {@code
+     *     parse(someFunc()).constantReturn()} will return {@link
+     *     Optional#empty()}. (N.B. {@code parse()} is an arbitrary function
+     *     that takes the code given and turns it into a parse tree.
+     * </p>
+     * <p>
+     *     This method is guaranteed to return a non-empty value for bare
+     *     constants, but what constant-value folding it can calculate is
+     *     unspecified and may change at any point.
+     * </p>
+     *
+     * @return The constant value, if it exists.
+     */
     default Optional<LangConstant> constantReturn() {
         return Optional.empty();
     }
