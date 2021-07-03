@@ -54,7 +54,17 @@ public final class TryConverter implements BaseConverter {
                 jump3 = -1;
             }
             bytes.add(Bytecode.FINALLY.value);
-            bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getFinallyStmt(), info));
+            var finallyResult = BaseConverter.bytesWithReturn(
+                    start + bytes.size(), node.getFinallyStmt(), info
+            );
+            bytes.addAll(finallyResult.getKey());
+            if (finallyResult.getValue().mayDiverge()) {
+                CompilerWarning.warn(
+                        "'return', 'break', or 'continue' statements in a " +
+                                "finally' statement can cause unexpected behavior",
+                        WarningType.NO_TYPE, info, node.getFinallyStmt()
+                );
+            }
             if (jump3 != -1) {
                 Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
             }
