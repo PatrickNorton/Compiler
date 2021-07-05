@@ -95,6 +95,8 @@ public final class FormattedStringConverter implements TestConverter {
                     return baseConstant(converter, 8);
                 case 'b':
                     return baseConstant(converter, 2);
+                case 'c':
+                    return charConstant(converter);
                 default:
                     return Optional.empty();
             }
@@ -128,6 +130,37 @@ public final class FormattedStringConverter implements TestConverter {
             } else if (value instanceof BigintConstant) {
                 var intVal = ((BigintConstant) value).getValue();
                 return Optional.of(intVal.toString(base));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> charConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof CharConstant) {
+                var charVal = ((CharConstant) value).getValue();
+                return Optional.of(Character.toString(charVal));
+            }
+            if (value instanceof IntConstant) {
+                var intVal = ((IntConstant) value).getValue();
+                try {
+                    return Optional.of(Character.toString(intVal));
+                } catch (IllegalArgumentException badChar) {
+                    return Optional.empty();
+                }
+            } else if (value instanceof BigintConstant) {
+                var intVal = ((BigintConstant) value).getValue();
+                try {
+                    var smallVal = intVal.intValueExact();
+                    return Optional.of(Character.toString(smallVal));
+                } catch (IllegalArgumentException | ArithmeticException e) {
+                    return Optional.empty();
+                }
             } else {
                 return Optional.empty();
             }
@@ -170,6 +203,9 @@ public final class FormattedStringConverter implements TestConverter {
                 break;
             case 'b':
                 convertToBase(arg, 2, start, bytes);
+                break;
+            case 'c':
+                convertToChar(arg, start, bytes);
                 break;
             default:
                 throw CompilerException.format("Invalid format argument %c", node, fStr.charAt(0));
@@ -226,6 +262,27 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.INT.ordinal()));
             bytes.addAll(Util.shortToBytes((short) 0));
+        }
+    }
+
+    private void convertToChar(TestNode arg, int start, List<Byte> bytes) {
+        var converter = TestConverter.of(info, arg, 1);
+        var retType = converter.returnType()[0];
+        if (Builtins.charType().isSuperclass(retType)) {
+            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 0));
+        } else if (Builtins.intType().isSuperclass(retType)) {
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.charConstant())));
+            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.add(Bytecode.CALL_TOS.value);
+            bytes.addAll(Util.shortToBytes((short) 1));
+        } else {
+            throw CompilerException.format(
+                    "'c' format argument expects either an int or a char, not %s", arg, retType
+            );
         }
     }
 }
