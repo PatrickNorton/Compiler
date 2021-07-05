@@ -317,6 +317,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
+            if (!arg.getDefaultVal().isEmpty() && !info.permissions().isStdlib()) {
+                CompilerWarning.warn("Default values for arguments not implemented yet", WarningType.TODO, info, arg);
+            }
             result[i] = new Argument(
                     arg.getName().getName(), info.getType(arg.getType()),
                     arg.getVararg(), arg.getLineInfo()
