@@ -312,6 +312,7 @@ public final class Builtins {
         private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
         private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(nullError()));
         private static final LangConstant ASSERTION_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(assertError()));
+        private static final LangConstant CHAR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(charType()));
     }
 
     public static LangConstant iterConstant() {
@@ -336,6 +337,10 @@ public final class Builtins {
 
     public static LangConstant assertionErrorConstant() {
         return ConstantHolder.ASSERTION_CONSTANT;
+    }
+
+    public static LangConstant charConstant() {
+        return ConstantHolder.CHAR_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
