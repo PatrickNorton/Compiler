@@ -46,7 +46,7 @@ public final class FormattedStringConverter implements TestConverter {
             if (i < tests.length) {
                 var format = node.getFormats()[i];
                 var strValue = argConstant(tests[i], format);
-                if (format.size() > 0 && strValue.isPresent()) {
+                if (!format.isEmpty() && strValue.isPresent()) {
                     var string = strings[i] + strValue.orElseThrow();
                     bytes.add(Bytecode.LOAD_CONST.value);
                     bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(string))));
@@ -76,13 +76,9 @@ public final class FormattedStringConverter implements TestConverter {
     }
 
     private Optional<String> argConstant(TestNode arg, FormattedStringNode.FormatInfo format) {
-        if (format.size() > 0) {
-            var fStr = format.getSpecifier();
-            if (fStr.length() != 1) {
-                return Optional.empty();
-            }
+        if (!format.isEmpty()) {
             var converter = TestConverter.of(info, arg, retCount);
-            switch (fStr.charAt(0)) {
+            switch (format.getType()) {
                 case 's':
                     return converter.constantReturn().flatMap(LangConstant::strValue);
                 case 'r':
@@ -97,6 +93,15 @@ public final class FormattedStringConverter implements TestConverter {
                     return baseConstant(converter, 2);
                 case 'c':
                     return charConstant(converter);
+                case 'X':
+                case 'n':
+                case 'e':
+                case 'E':
+                case 'f':
+                case 'F':
+                case 'g':
+                case 'G':
+                case '%':
                 default:
                     return Optional.empty();
             }
@@ -171,7 +176,7 @@ public final class FormattedStringConverter implements TestConverter {
 
     private void convertArgument(TestNode arg, int start, List<Byte> bytes,
                                  @NotNull FormattedStringNode.FormatInfo format) {
-        if (format.size() > 0) {
+        if (!format.isEmpty()) {
             convertFormatArgs(arg, start, bytes, format);
         } else {
             convertToStr(arg, start, bytes);
@@ -180,12 +185,12 @@ public final class FormattedStringConverter implements TestConverter {
 
     private void convertFormatArgs(TestNode arg, int start, List<Byte> bytes,
                                    @NotNull FormattedStringNode.FormatInfo format) {
-        assert format.size() > 0;
-        var fStr = format.getSpecifier();
-        if (fStr.length() != 1) {
-            throw CompilerTodoError.of("Non-trivial f-string specifiers (not !s and !r)", arg);
+        assert !format.isEmpty();
+        if (!format.onlyType()) {
+            throw CompilerTodoError.of("Non-trivial f-string specifiers (not ![char])", arg);
         }
-        switch (fStr.charAt(0)) {
+        var fType = format.getType();
+        switch (fType) {
             case 's':
                 convertToStr(arg, start, bytes);
                 break;
@@ -207,8 +212,18 @@ public final class FormattedStringConverter implements TestConverter {
             case 'c':
                 convertToChar(arg, start, bytes);
                 break;
+            case 'X':
+            case 'n':
+            case 'e':
+            case 'E':
+            case 'f':
+            case 'F':
+            case 'g':
+            case 'G':
+            case '%':
+                throw CompilerTodoError.format("Unimplemented format argument %c", node, fType);
             default:
-                throw CompilerException.format("Invalid format argument %c", node, fStr.charAt(0));
+                throw CompilerException.format("Invalid format argument %c", node, fType);
         }
     }
 
