@@ -1,5 +1,6 @@
 package main.java.parser;
 
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -83,8 +84,9 @@ public class FormattedStringNode extends StringLikeNode {
             if (newEnd == -1) {
                 throw ParserException.of("Unmatched braces in f-string", info);
             }
-            formats.add(FormatInfo.parse(inside, newStart, newEnd - 1));
-            int end = newEnd - formats.get(formats.size() - 1).size();
+            var fmtPair = FormatInfo.parse(inside, newStart, newEnd - 1, info);
+            formats.add(fmtPair.getKey());
+            int end = newEnd - fmtPair.getValue();
             tests.add(parseTest(info, inside.substring(newStart + 1, end - 1)));
         }
         if (newEnd < inside.length()) {
@@ -189,45 +191,177 @@ public class FormattedStringNode extends StringLikeNode {
         private static final Set<Character> FORMAT_INVALID = Set.of(
             '"', '\'', '[', ']', '(', ')', '{', '}'
         );
+        private static final Set<Character> ALIGN_VALID = Set.of('>', '<', '=', '+');
+        private static final Set<Character> SIGN_VALID = Set.of(' ', '+', '-');
+        private static final Set<Character> TYPE_VALID = Set.of(
+                'b', 'c', 'd', 'o', 'x', 'X', 'n', 'e', 'E', 'f', 'F', 'g', 'G', '%', 'r', 's'
+        );
 
-        private String specifier;
+        // [[fill]align][sign][#][0][minimumwidth][.precision][type]
+        private final char fill;
+        private final char align;
+        private final char sign;
+        private final boolean hash;
+        private final boolean zero;
+        private final int minWidth;
+        private final int precision;
+        private final char type;
 
-        @Contract(pure = true)
-        FormatInfo(String specifier) {
-            this.specifier = specifier;
+        private FormatInfo(
+                char fill, char align, char sign, boolean hash, boolean zero, int minWidth, int precision, char type
+        ) {
+            this.fill = fill;
+            this.align = align;
+            this.sign = sign;
+            this.hash = hash;
+            this.zero = zero;
+            this.minWidth = minWidth;
+            this.precision = precision;
+            this.type = type;
         }
 
-        @Contract(pure = true)
-        public int size() {
-            return specifier == null ? 0 : specifier.length() + 1;
+        public char getFill() {
+            return fill;
         }
 
-        public String getSpecifier() {
-            return specifier;
+        public char getAlign() {
+            return align;
         }
 
-        /**
-         * Get the format specifier out of a f-string.
-         * <p>
-         *     F-string specifiers always start with an !, and that is how they
-         *     are parsed. (More formally, and for reference later, they go
-         *     <code> "!" [conversion] [":" [see <a href=
-         *     https://www.python.org/dev/peps/pep-3101>Python's formatting
-         *     grammar</a>]]</code>).
-         * </p>
-         *
-         * @param str The string to be parsed
-         * @param openBrace The location of the open brace
-         * @param closeBrace The location of the close brace
-         * @return The parsed specifier
-         * @see <a href=https://www.python.org/dev/peps/pep-3101>
-         *     Python's formatting grammar</a>
-         */
-        @NotNull
-        @Contract("_, _, _ -> new")
-        static FormatInfo parse(String str, int openBrace, int closeBrace) {
-            String specifier = specifier(str, openBrace, closeBrace);
-            return new FormatInfo(specifier);
+        public char getSign() {
+            return sign;
+        }
+
+        public boolean isHash() {
+            return hash;
+        }
+
+        public boolean isZero() {
+            return zero;
+        }
+
+        public int getMinWidth() {
+            return minWidth;
+        }
+
+        public int getPrecision() {
+            return precision;
+        }
+
+        public char getType() {
+            return type;
+        }
+
+        public boolean isEmpty() {
+            return onlyType() && type == '\0';
+        }
+
+        public boolean onlyType() {
+            return fill == '\0' && align == '\0' && sign == '\0' && !hash
+                    && !zero && minWidth == 0 && precision == 0;
+        }
+
+        public String toString() {
+            if (isEmpty()) {
+                return "";
+            }
+            StringBuilder sb = new StringBuilder("!");
+            if (fill != '\0') {
+                sb.append(fill);
+            }
+            if (align != '\0') {
+                sb.append(align);
+            }
+            if (sign != '\0') {
+                sb.append(sign);
+            }
+            if (hash) {
+                sb.append('#');
+            }
+            if (zero) {
+                sb.append('0');
+            }
+            if (minWidth != 0) {
+                sb.append(minWidth);
+            }
+            if (precision != 0) {
+                sb.append(precision);
+            }
+            if (type != '\0') {
+                sb.append(type);
+            }
+            return sb.toString();
+        }
+
+        static Pair<FormatInfo, Integer> parse(String str, int openBrace, int closeBrace, LineInfo lineInfo) {
+            var specifier = specifier(str, openBrace, closeBrace);
+            if (specifier == null) {
+                return Pair.of(empty(), 0);
+            } else if (specifier.isEmpty()) {
+                return Pair.of(empty(), 1);
+            }
+            int currentPos = 0;
+            char fill;
+            char align;
+            if (specifier.length() > 1 && ALIGN_VALID.contains(specifier.charAt(currentPos + 1))) {
+                fill = specifier.charAt(currentPos);
+                currentPos++;
+                align = specifier.charAt(currentPos);
+                currentPos++;
+            } else {
+                fill = '\0';
+                if (ALIGN_VALID.contains(specifier.charAt(currentPos))) {
+                    align = specifier.charAt(currentPos);
+                    currentPos++;
+                } else {
+                    align = '\0';
+                }
+            }
+            char sign;
+            if (SIGN_VALID.contains(specifier.charAt(currentPos))) {
+                sign = specifier.charAt(currentPos);
+                currentPos++;
+            } else {
+                sign = '\0';
+            }
+            boolean hash;
+            if (specifier.charAt(currentPos) == '#') {
+                currentPos++;
+                hash = true;
+            } else {
+                hash = false;
+            }
+            boolean zero;
+            if (specifier.charAt(currentPos) == '0') {
+                currentPos++;
+                zero = true;
+            } else {
+                zero = false;
+            }
+            var min = parseInt(specifier.substring(currentPos));
+            int minWidth = min.getKey();
+            currentPos += min.getValue();
+            int precision;
+            if (specifier.charAt(currentPos) == '.') {
+                currentPos++;
+                var prec = parseInt(specifier.substring(currentPos));
+                precision = prec.getKey();
+                currentPos += prec.getValue();
+            } else {
+                precision = 0;
+            }
+            char type;
+            if (TYPE_VALID.contains(specifier.charAt(currentPos))) {
+                type = specifier.charAt(currentPos);
+                currentPos++;
+            } else {
+                type = '\0';
+            }
+            if (currentPos != specifier.length()) {
+                throw ParserException.of(String.format("Invalid format specifier !%s", specifier), lineInfo);
+            }
+            var len = specifier.length() + 1;
+            return Pair.of(new FormatInfo(fill, align, sign, hash, zero, minWidth, precision, type), len);
         }
 
         @Nullable
@@ -246,9 +380,21 @@ public class FormattedStringNode extends StringLikeNode {
             return null;
         }
 
-        public String toString() {
-            return specifier == null ? "" : " !" + specifier;
+        private static Pair<Integer, Integer> parseInt(String str) {
+            int current = 0;
+            int result = 0;
+            while (current < str.length() && Character.isDigit(str.charAt(current))) {
+                result *= 10;
+                result += Character.digit(str.charAt(current), 10);
+                current++;
+            }
+            return Pair.of(result, current);
+        }
+
+        static FormatInfo empty() {
+            return new FormatInfo(
+                    '\0', '\0', '\0', false, false, 0, 0, '\0'
+            );
         }
     }
-
 }
