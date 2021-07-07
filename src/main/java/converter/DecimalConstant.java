@@ -17,6 +17,11 @@ public final class DecimalConstant implements LangConstant {
         this.value = value;
     }
 
+    @NotNull
+    public BigDecimal getValue() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

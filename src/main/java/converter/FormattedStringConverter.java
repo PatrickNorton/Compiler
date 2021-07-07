@@ -6,6 +6,7 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,6 +77,9 @@ public final class FormattedStringConverter implements TestConverter {
     }
 
     private Optional<String> argConstant(TestNode arg, FormattedStringNode.FormatInfo format) {
+        if (!format.onlyType()) {
+            return Optional.empty();
+        }
         if (!format.isEmpty()) {
             var converter = TestConverter.of(info, arg, retCount);
             switch (format.getType()) {
@@ -83,6 +87,7 @@ public final class FormattedStringConverter implements TestConverter {
                     return converter.constantReturn().flatMap(LangConstant::strValue);
                 case 'r':
                     return converter.constantReturn().flatMap(LangConstant::reprValue);
+                case 'n':
                 case 'd':
                     return decimalConstant(converter);
                 case 'x':
@@ -94,14 +99,21 @@ public final class FormattedStringConverter implements TestConverter {
                 case 'c':
                     return charConstant(converter);
                 case 'X':
-                case 'n':
+                    return upperHexConstant(converter);
                 case 'e':
+                    return expConstant(converter);
                 case 'E':
+                    return upperExpConstant(converter);
                 case 'f':
+                    return fixedConstant(converter);
                 case 'F':
+                    return upperFixedConstant(converter);
                 case 'g':
+                    return generalFloatConstant(converter);
                 case 'G':
+                    return upperGeneralConstant(converter);
                 case '%':
+                    return percentConstant(converter);
                 default:
                     return Optional.empty();
             }
@@ -135,6 +147,124 @@ public final class FormattedStringConverter implements TestConverter {
             } else if (value instanceof BigintConstant) {
                 var intVal = ((BigintConstant) value).getValue();
                 return Optional.of(intVal.toString(base));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> upperHexConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof IntConstant) {
+                var intVal = ((IntConstant) value).getValue();
+                return Optional.of(Integer.toHexString(intVal).toUpperCase());
+            } else if (value instanceof BigintConstant) {
+                var intVal = ((BigintConstant) value).getValue();
+                return Optional.of(intVal.toString(16).toUpperCase());
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> expConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof DecimalConstant) {
+                var decValue = ((DecimalConstant) value).getValue();
+                return Optional.of(expConstant(decValue));
+            } else if (value instanceof IntConstant) {
+                var intValue = ((IntConstant) value).getValue();
+                return Optional.of(expConstant(BigDecimal.valueOf(intValue)));
+            } else if (value instanceof BigintConstant) {
+                var intValue = ((BigintConstant) value).getValue();
+                return Optional.of(expConstant(new BigDecimal(intValue)));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private String expConstant(BigDecimal decValue) {
+        var shift = decValue.precision() - decValue.scale() - 1;
+        var result = decValue.movePointLeft(shift);
+        return String.format("%.6fe%+03d", result, shift);
+    }
+
+    private Optional<String> upperExpConstant(TestConverter converter) {
+        return expConstant(converter).map(String::toUpperCase);
+    }
+
+    private Optional<String> fixedConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof DecimalConstant) {
+                var decValue = ((DecimalConstant) value).getValue();
+                return Optional.of(String.format("%.6f", decValue));
+            } else if (value instanceof IntConstant) {
+                var intValue = ((IntConstant) value).getValue();
+                return Optional.of(String.format("%.6f", (float) intValue));
+            } else if (value instanceof BigintConstant) {
+                var intValue = ((BigintConstant) value).getValue();
+                return Optional.of(String.format("%.6f", new BigDecimal(intValue)));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> upperFixedConstant(TestConverter converter) {
+        return fixedConstant(converter).map(String::toUpperCase);
+    }
+
+    public Optional<String> generalFloatConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof DecimalConstant) {
+                var decValue = ((DecimalConstant) value).getValue();
+                return Optional.of(decValue.toString());
+            } else if (value instanceof IntConstant) {
+                var intValue = ((IntConstant) value).getValue();
+                return Optional.of(Double.toString(intValue));
+            } else if (value instanceof BigintConstant) {
+                var intValue = ((BigintConstant) value).getValue();
+                return Optional.of(new BigDecimal(intValue).toString());
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> upperGeneralConstant(TestConverter converter) {
+        return generalFloatConstant(converter).map(String::toUpperCase);
+    }
+
+    private Optional<String> percentConstant(TestConverter converter) {
+        var constant = converter.constantReturn();
+        if (constant.isPresent()) {
+            var value = constant.orElseThrow();
+            if (value instanceof DecimalConstant) {
+                var decVal = ((DecimalConstant) value).getValue();
+                var adjusted = decVal.movePointRight(2).toString();
+                return Optional.of(String.format("%s%%", adjusted));
+            } else if (value instanceof IntConstant) {
+                var intVal = ((IntConstant) value).getValue();
+                return Optional.of(String.format("%d00%%", intVal));
+            } else if (value instanceof BigintConstant) {
+                var intVal = ((BigintConstant) value).getValue();
+                return Optional.of(String.format("%d00%%", intVal));
             } else {
                 return Optional.empty();
             }
