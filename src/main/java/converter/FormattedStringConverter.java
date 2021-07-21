@@ -333,6 +333,9 @@ public final class FormattedStringConverter implements TestConverter {
             case 'x':
                 convertToBase(arg, 16, start, bytes);
                 break;
+            case 'X':
+                convertToUpperHex(arg, start, bytes, format);
+                break;
             case 'o':
                 convertToBase(arg, 8, start, bytes);
                 break;
@@ -342,7 +345,6 @@ public final class FormattedStringConverter implements TestConverter {
             case 'c':
                 convertToChar(arg, start, bytes);
                 break;
-            case 'X':
             case 'n':
             case 'e':
             case 'E':
@@ -429,5 +431,20 @@ public final class FormattedStringConverter implements TestConverter {
                     "'c' format argument expects either an int or a char, not %s", arg, retType
             );
         }
+    }
+
+    private void convertToUpperHex(TestNode arg, int start, List<Byte> bytes, FormattedStringNode.FormatInfo format) {
+        assert format.getType() == 'X';
+        var fmtArgs = FormatConstant.fromFormatInfo(format);
+        var converter = TestConverter.of(info, arg, 1);
+        var retType = converter.returnType()[0];
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31)))); // TODO: Builtin format_internal() function
+        bytes.addAll(converter.convert(start + bytes.size()));
+        makeInt(retType, arg, bytes);
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex(fmtArgs)));
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) 2));
     }
 }

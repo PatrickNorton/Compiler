@@ -55,6 +55,9 @@ public final class BuiltinConstant implements LangConstant {
     }
 
     private String name() {
+        if (builtinIndex == 31) {  // FIXME
+            return "__format_internal";
+        }
         var result = Builtins.constantNo(builtinIndex);
         if (result == Builtins.nullType()) {
             return "type(null)";

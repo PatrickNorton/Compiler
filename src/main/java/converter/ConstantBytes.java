@@ -18,4 +18,5 @@ public enum ConstantBytes {
     OPTION_TYPE,
     CHAR,
     ASCII,
+    FORMAT,
 }
