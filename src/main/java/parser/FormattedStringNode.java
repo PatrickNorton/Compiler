@@ -191,7 +191,7 @@ public class FormattedStringNode extends StringLikeNode {
         private static final Set<Character> FORMAT_INVALID = Set.of(
             '"', '\'', '[', ']', '(', ')', '{', '}'
         );
-        private static final Set<Character> ALIGN_VALID = Set.of('>', '<', '=', '+');
+        private static final Set<Character> ALIGN_VALID = Set.of('>', '<', '=', '^');
         private static final Set<Character> SIGN_VALID = Set.of(' ', '+', '-');
         private static final Set<Character> TYPE_VALID = Set.of(
                 'b', 'c', 'd', 'o', 'x', 'X', 'n', 'e', 'E', 'f', 'F', 'g', 'G', '%', 'r', 's'
