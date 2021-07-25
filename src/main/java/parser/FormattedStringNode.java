@@ -3,7 +3,6 @@ package main.java.parser;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -202,9 +201,11 @@ public class FormattedStringNode extends StringLikeNode {
         private final int minWidth;
         private final int precision;
         private final char type;
+        private final LineInfo lineInfo;
 
         private FormatInfo(
-                char fill, char align, char sign, boolean hash, boolean zero, int minWidth, int precision, char type
+                char fill, char align, char sign, boolean hash, boolean zero,
+                int minWidth, int precision, char type, LineInfo lineInfo
         ) {
             this.fill = fill;
             this.align = align;
@@ -214,6 +215,7 @@ public class FormattedStringNode extends StringLikeNode {
             this.minWidth = minWidth;
             this.precision = precision;
             this.type = type;
+            this.lineInfo = lineInfo;
         }
 
         public char getFill() {
@@ -257,6 +259,10 @@ public class FormattedStringNode extends StringLikeNode {
                     && !zero && minWidth == 0 && precision == 0;
         }
 
+        public LineInfo getLineInfo() {
+            return lineInfo;
+        }
+
         public String toString() {
             if (isEmpty()) {
                 return "";
@@ -290,7 +296,9 @@ public class FormattedStringNode extends StringLikeNode {
         }
 
         static Pair<FormatInfo, Integer> parse(String str, int openBrace, int closeBrace, LineInfo lineInfo) {
-            var specifier = specifier(str, openBrace, closeBrace);
+            var pair = specifier(str, openBrace, closeBrace);
+            var specifier = pair.getKey();
+            int bangPlace = pair.getValue();
             if (specifier == null) {
                 return Pair.of(empty(), 0);
             } else if (specifier.isEmpty()) {
@@ -357,23 +365,27 @@ public class FormattedStringNode extends StringLikeNode {
                 throw ParserException.of(String.format("Invalid format specifier !%s", specifier), lineInfo);
             }
             var len = specifier.length() + 1;
-            return Pair.of(new FormatInfo(fill, align, sign, hash, zero, minWidth, precision, type), len);
+            var line = lineInfo.substring(bangPlace + 2);
+            return Pair.of(new FormatInfo(fill, align, sign, hash, zero, minWidth, precision, type, line), len);
         }
 
-        @Nullable
-        private static String specifier(String str, int openBrace, int closeBrace) {
+        private static Pair<String, Integer> specifier(String str, int openBrace, int closeBrace) {
             StringBuilder sb = new StringBuilder();
             for (int i = closeBrace - 1; i > openBrace; i--) {
                 char currentChar = str.charAt(i);
                 if (currentChar < 32 || currentChar >= 127 || FORMAT_INVALID.contains(currentChar)) {
-                    return null;
+                    return Pair.of(null, -1);
                 } else if (currentChar == '!') {
-                    return str.charAt(i + 1) == '=' || str.charAt(i - 1) == '!' ? null : sb.reverse().toString();
+                    if (str.charAt(i + 1) == '=' || str.charAt(i - 1) == '!') {
+                        return Pair.of(null, -1);
+                    } else {
+                        return Pair.of(sb.reverse().toString(), i);
+                    }
                 } else {
                     sb.append(currentChar);
                 }
             }
-            return null;
+            return Pair.of(null, -1);
         }
 
         private static Pair<Integer, Integer> parseInt(String str) {
@@ -389,7 +401,8 @@ public class FormattedStringNode extends StringLikeNode {
 
         static FormatInfo empty() {
             return new FormatInfo(
-                    '\0', '\0', '\0', false, false, 0, 0, '\0'
+                    '\0', '\0', '\0', false,
+                    false, 0, 0, '\0', LineInfo.empty()
             );
         }
     }
