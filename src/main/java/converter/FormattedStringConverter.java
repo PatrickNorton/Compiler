@@ -367,7 +367,7 @@ public final class FormattedStringConverter implements TestConverter {
             }
         } else {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
-            checkStrFormat(format, node);
+            checkStrFormat(format);
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
             bytes.addAll(converter.convert(start + bytes.size()));
@@ -392,7 +392,7 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.addAll(Util.shortToBytes((short) 0));
         } else {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
-            checkStrFormat(format, node);
+            checkStrFormat(format);
             bytes.add(Bytecode.LOAD_CONST.value);
             bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
             bytes.addAll(converter.convert(start + bytes.size()));
@@ -406,16 +406,16 @@ public final class FormattedStringConverter implements TestConverter {
         }
     }
 
-    private void checkStrFormat(FormatInfo format, TestNode node) {
+    private void checkStrFormat(FormatInfo format) {
         if (format.getSign() != '\0') {
             throw CompilerException.of(
                     "Sign specifier is invalid in non-numeric format specifiers",
-                    node
+                    format
             );
         } else if (format.getPrecision() != 0) {
             throw CompilerException.of(
                     "Precision is not allowed in non-numeric format specifiers",
-                    node
+                    format
             );
         }
     }
@@ -498,7 +498,7 @@ public final class FormattedStringConverter implements TestConverter {
 
     private void convertFmtInt(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
         if (format.getPrecision() != 0) {
-            throw CompilerException.of("Precision is not allowed in integer format specifier", arg);
+            throw CompilerException.of("Precision is not allowed in integer format specifier", format);
         }
         var fmtArgs = FormatConstant.fromFormatInfo(format);
         var retType = convertFmtLoad(arg, start, bytes);
@@ -514,7 +514,7 @@ public final class FormattedStringConverter implements TestConverter {
         if (!Builtins.intType().isSuperclass(retType) && !Builtins.decimal().isSuperclass(retType)) {
             throw CompilerException.format(
                     "Decimal format specifiers require either an integer or decimal argument, not '%s'",
-                    arg, retType.name()
+                    format, retType.name()
             );
         }
         bytes.add(Bytecode.LOAD_CONST.value);
