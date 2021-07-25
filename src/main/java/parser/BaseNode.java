@@ -6,6 +6,6 @@ package main.java.parser;
  * @author Patrick Norton
  * @see IndependentNode
  */
-public interface BaseNode {
+public interface BaseNode extends Lined {
     LineInfo getLineInfo();
 }

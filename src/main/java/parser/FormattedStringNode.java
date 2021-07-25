@@ -182,7 +182,7 @@ public class FormattedStringNode extends StringLikeNode {
      * @author Patrick Norton
      * @see FormattedStringNode
      */
-    public static class FormatInfo {
+    public static class FormatInfo implements Lined {
         private static final Set<Character> FORMAT_INVALID = Set.of(
             '"', '\'', '[', ']', '(', ')', '{', '}'
         );
@@ -259,6 +259,7 @@ public class FormattedStringNode extends StringLikeNode {
                     && !zero && minWidth == 0 && precision == 0;
         }
 
+        @Override
         public LineInfo getLineInfo() {
             return lineInfo;
         }
