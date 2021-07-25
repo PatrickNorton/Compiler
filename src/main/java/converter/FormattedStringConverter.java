@@ -349,7 +349,7 @@ public final class FormattedStringConverter implements TestConverter {
             case 'g':
             case 'G':
             case '%':
-                throw CompilerTodoError.format("Unimplemented format argument %c", node, fType);
+                convertDecimal(arg, start, bytes, format);
             default:
                 throw CompilerException.format("Invalid format argument %c", node, fType);
         }
@@ -487,19 +487,38 @@ public final class FormattedStringConverter implements TestConverter {
         convertFmtInt(arg, start, bytes, format);
     }
 
-    private void convertFmtInt(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
-        if (format.getPrecision() != 0) {
-            throw CompilerException.of("Precision is not allowed in integer format specifier", arg);
-        }
-        var fmtArgs = FormatConstant.fromFormatInfo(format);
+    private TypeObject convertFmtLoad(TestNode arg, int start, List<Byte> bytes) {
         var converter = TestConverter.of(info, arg, 1);
         var retType = converter.returnType()[0];
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
         bytes.addAll(converter.convert(start + bytes.size()));
+        return retType;
+    }
+
+    private void convertFmtInt(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
+        if (format.getPrecision() != 0) {
+            throw CompilerException.of("Precision is not allowed in integer format specifier", arg);
+        }
+        var fmtArgs = FormatConstant.fromFormatInfo(format);
+        var retType = convertFmtLoad(arg, start, bytes);
         makeInt(retType, arg, bytes);
         bytes.add(Bytecode.LOAD_CONST.value);
         bytes.addAll(Util.shortToBytes(info.constIndex(fmtArgs)));
+        bytes.add(Bytecode.CALL_TOS.value);
+        bytes.addAll(Util.shortToBytes((short) 2));
+    }
+
+    private void convertDecimal(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
+        var retType = convertFmtLoad(arg, start, bytes);
+        if (!Builtins.intType().isSuperclass(retType) && !Builtins.decimal().isSuperclass(retType)) {
+            throw CompilerException.format(
+                    "Decimal format specifiers require either an integer or decimal argument, not '%s'",
+                    arg, retType.name()
+            );
+        }
+        bytes.add(Bytecode.LOAD_CONST.value);
+        bytes.addAll(Util.shortToBytes(info.constIndex( FormatConstant.fromFormatInfo(format))));
         bytes.add(Bytecode.CALL_TOS.value);
         bytes.addAll(Util.shortToBytes((short) 2));
     }
