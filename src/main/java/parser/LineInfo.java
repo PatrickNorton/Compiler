@@ -59,4 +59,8 @@ public class LineInfo {
     public int hashCode() {
         return Objects.hash(path, lineNumber, line, startingPoint);
     }
+
+    public LineInfo substring(int start) {
+        return new LineInfo(path, lineNumber, line, startingPoint + start);
+    }
 }
