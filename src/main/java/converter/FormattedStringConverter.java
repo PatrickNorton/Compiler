@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.FormattedStringNode;
+import main.java.parser.FormattedStringNode.FormatInfo;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
@@ -304,43 +305,38 @@ public final class FormattedStringConverter implements TestConverter {
         }
     }
 
-    private void convertArgument(TestNode arg, int start, List<Byte> bytes,
-                                 @NotNull FormattedStringNode.FormatInfo format) {
+    private void convertArgument(TestNode arg, int start, List<Byte> bytes, @NotNull FormatInfo format) {
         if (!format.isEmpty()) {
             convertFormatArgs(arg, start, bytes, format);
         } else {
-            convertToStr(arg, start, bytes);
+            convertToStr(arg, start, bytes, format);
         }
     }
 
-    private void convertFormatArgs(TestNode arg, int start, List<Byte> bytes,
-                                   @NotNull FormattedStringNode.FormatInfo format) {
+    private void convertFormatArgs(TestNode arg, int start, List<Byte> bytes, @NotNull FormatInfo format) {
         assert !format.isEmpty();
-        if (!format.onlyType()) {
-            throw CompilerTodoError.of("Non-trivial f-string specifiers (not ![char])", arg);
-        }
         var fType = format.getType();
         switch (fType) {
             case 's':
-                convertToStr(arg, start, bytes);
+                convertToStr(arg, start, bytes, format);
                 break;
             case 'r':
-                convertToRepr(arg, start, bytes);
+                convertToRepr(arg, start, bytes, format);
                 break;
             case 'd':
-                convertToInt(arg, start, bytes);
+                convertToInt(arg, start, bytes, format);
                 break;
             case 'x':
-                convertToBase(arg, 16, start, bytes);
+                convertToBase(arg, 16, start, bytes, format);
                 break;
             case 'X':
                 convertToUpperHex(arg, start, bytes, format);
                 break;
             case 'o':
-                convertToBase(arg, 8, start, bytes);
+                convertToBase(arg, 8, start, bytes, format);
                 break;
             case 'b':
-                convertToBase(arg, 2, start, bytes);
+                convertToBase(arg, 2, start, bytes, format);
                 break;
             case 'c':
                 convertToChar(arg, start, bytes);
@@ -359,48 +355,101 @@ public final class FormattedStringConverter implements TestConverter {
         }
     }
 
-    private void convertToStr(TestNode arg, int start, @NotNull List<Byte> bytes) {
+    private void convertToStr(TestNode arg, int start, @NotNull List<Byte> bytes, FormatInfo format) {
         var converter = TestConverter.of(info, arg, 1);
         boolean isNotStr = !Builtins.str().isSuperclass(converter.returnType()[0]);
-        bytes.addAll(converter.convert(start + bytes.size()));
-        if (isNotStr) {
+        if (format.onlyType()) {
+            bytes.addAll(converter.convert(start + bytes.size()));
+            if (isNotStr) {
+                bytes.add(Bytecode.CALL_OP.value);
+                bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
+                bytes.addAll(Util.shortToBytes((short) 0));
+            }
+        } else {
+            var fmtArgs = FormatConstant.fromFormatInfo(format);
+            checkStrFormat(format, node);
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
+            bytes.addAll(converter.convert(start + bytes.size()));
+            if (isNotStr) {
+                bytes.add(Bytecode.CALL_OP.value);
+                bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
+                bytes.addAll(Util.shortToBytes((short) 0));
+            }
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(fmtArgs)));
+            bytes.add(Bytecode.CALL_TOS.value);
+            bytes.addAll(Util.shortToBytes((short) 2));
+        }
+    }
+
+    private void convertToRepr(TestNode arg, int start, @NotNull List<Byte> bytes, FormatInfo format) {
+        var converter = TestConverter.of(info, arg, 1);
+        if (format.onlyType()) {
+            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.REPR.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 0));
+        } else {
+            var fmtArgs = FormatConstant.fromFormatInfo(format);
+            checkStrFormat(format, node);
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
+            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.add(Bytecode.CALL_OP.value);
+            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.REPR.ordinal()));
+            bytes.addAll(Util.shortToBytes((short) 0));
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(fmtArgs)));
+            bytes.add(Bytecode.CALL_TOS.value);
+            bytes.addAll(Util.shortToBytes((short) 2));
+        }
+    }
+
+    private void checkStrFormat(FormatInfo format, TestNode node) {
+        if (format.getSign() != '\0') {
+            throw CompilerException.of(
+                    "Sign specifier is invalid in non-numeric format specifiers",
+                    node
+            );
+        } else if (format.getPrecision() != 0) {
+            throw CompilerException.of(
+                    "Precision is not allowed in non-numeric format specifiers",
+                    node
+            );
+        }
+    }
+
+    private void convertToInt(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
+        if (format.onlyType()) {
+            var converter = TestConverter.of(info, arg, 1);
+            var retType = converter.returnType()[0];
+            bytes.addAll(converter.convert(start + bytes.size()));
+            makeInt(retType, arg, bytes);
             bytes.add(Bytecode.CALL_OP.value);
             bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
             bytes.addAll(Util.shortToBytes((short) 0));
+        } else {
+            convertFmtInt(arg, start, bytes, format);
         }
     }
 
-    private void convertToRepr(TestNode arg, int start, @NotNull List<Byte> bytes) {
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), arg, info, 1));
-        bytes.add(Bytecode.CALL_OP.value);
-        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.REPR.ordinal()));
-        bytes.addAll(Util.shortToBytes((short) 0));
-    }
-
-    private void convertToInt(TestNode arg, int start, List<Byte> bytes) {
-        var converter = TestConverter.of(info, arg, 1);
-        var retType = converter.returnType()[0];
-        bytes.addAll(converter.convert(start + bytes.size()));
-        makeInt(retType, arg, bytes);
-        bytes.add(Bytecode.CALL_OP.value);
-        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.STR.ordinal()));
-        bytes.addAll(Util.shortToBytes((short) 0));
-    }
-
-    private void convertToBase(TestNode arg, int base, int start, List<Byte> bytes) {
+    private void convertToBase(TestNode arg, int base, int start, List<Byte> bytes, FormatInfo format) {
         if (base == 10) {
-            convertToInt(arg, start, bytes);
-            return;
+            convertToInt(arg, start, bytes, format);
+        } else if (format.onlyType()) {
+            var converter = TestConverter.of(info, arg, 1);
+            var retType = converter.returnType()[0];
+            bytes.addAll(converter.convert(start + bytes.size()));
+            makeInt(retType, arg, bytes);
+            bytes.add(Bytecode.LOAD_CONST.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(base))));
+            bytes.add(Bytecode.CALL_METHOD.value);
+            bytes.addAll(Util.shortToBytes(info.constIndex("strBase")));
+            bytes.addAll(Util.shortToBytes((short) 1));
+        } else {
+            convertFmtInt(arg, start, bytes, format);
         }
-        var converter = TestConverter.of(info, arg, 1);
-        var retType = converter.returnType()[0];
-        bytes.addAll(converter.convert(start + bytes.size()));
-        makeInt(retType, arg, bytes);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(base))));
-        bytes.add(Bytecode.CALL_METHOD.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex("strBase")));
-        bytes.addAll(Util.shortToBytes((short) 1));
     }
 
     private void makeInt(TypeObject retType, Lined arg, List<Byte> bytes) {
@@ -433,13 +482,20 @@ public final class FormattedStringConverter implements TestConverter {
         }
     }
 
-    private void convertToUpperHex(TestNode arg, int start, List<Byte> bytes, FormattedStringNode.FormatInfo format) {
+    private void convertToUpperHex(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
         assert format.getType() == 'X';
+        convertFmtInt(arg, start, bytes, format);
+    }
+
+    private void convertFmtInt(TestNode arg, int start, List<Byte> bytes, FormatInfo format) {
+        if (format.getPrecision() != 0) {
+            throw CompilerException.of("Precision is not allowed in integer format specifier", arg);
+        }
         var fmtArgs = FormatConstant.fromFormatInfo(format);
         var converter = TestConverter.of(info, arg, 1);
         var retType = converter.returnType()[0];
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31)))); // TODO: Builtin format_internal() function
+        bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
         bytes.addAll(converter.convert(start + bytes.size()));
         makeInt(retType, arg, bytes);
         bytes.add(Bytecode.LOAD_CONST.value);
