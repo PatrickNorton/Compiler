@@ -138,7 +138,7 @@ public final class Linker {
     }
 
     private Optional<TypeObject> linkDefinition(
-            @NotNull DefinitionNode stmt, @Nullable Pair<String, Integer> isBuiltin
+            @NotNull DefinitionNode stmt, @Nullable BuiltinInfo isBuiltin
     ) {
         if (!AnnotationConverter.shouldCompile(stmt, info, stmt.getAnnotations())) {
             return Optional.empty();
@@ -154,7 +154,7 @@ public final class Linker {
                     constants.put(fnNode.getName().getName(), (int) info.addConstant(constant));
                 } else {
                     var object = new LangInstance(pair.getKey());
-                    Builtins.setBuiltin(isBuiltin.getKey(), isBuiltin.getValue(), object);
+                    Builtins.setBuiltin(isBuiltin.getName(), isBuiltin.getIndex(), isBuiltin.isHidden(), object);
                 }
                 return Optional.of(pair.getKey());
             } else {
@@ -206,7 +206,7 @@ public final class Linker {
     }
 
     private void addConstant(
-            String strName, int index, UserType<?> predeclaredType, @Nullable Pair<String, Integer> isBuiltin
+            String strName, int index, UserType<?> predeclaredType, @Nullable BuiltinInfo isBuiltin
     ) {
         if (isBuiltin == null) {
             var constant = new ClassConstant(strName, index, predeclaredType);

@@ -181,6 +181,10 @@ public final class Builtins {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("Hashable"));
     }
 
+    private static LangObject format() {
+        return Objects.requireNonNull(BUILTIN_HIDDEN.get("__format_internal"));
+    }
+
     public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
             CONTEXT, CALLABLE, ITERABLE
     );
@@ -251,7 +255,8 @@ public final class Builtins {
             null,  // ValueError
             null,  // NullError
             ITERABLE,
-            null   // AssertionError
+            null,  // AssertionError
+            null   // __format_internal
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(
@@ -265,6 +270,8 @@ public final class Builtins {
             Map.entry("tuple", TUPLE),
             Map.entry("null", NULL)
     ));
+
+    public static final Map<String, LangObject> BUILTIN_HIDDEN = new HashMap<>();
 
     public static LangObject constantNo(int index) {
         return TRUE_BUILTINS.get(index);
@@ -295,9 +302,14 @@ public final class Builtins {
                 : Optional.empty();
     }
 
-    public static void setBuiltin(String name, int index, LangObject value) {
-        assert !BUILTIN_MAP.containsKey(name);
-        BUILTIN_MAP.put(name, value);
+    public static void setBuiltin(String name, int index, boolean isHidden, LangObject value) {
+        if (!isHidden) {
+            assert !BUILTIN_MAP.containsKey(name);
+            BUILTIN_MAP.put(name, value);
+        } else {
+            assert !BUILTIN_HIDDEN.containsKey(name);
+            BUILTIN_HIDDEN.put(name, value);
+        }
         if (index != -1) {
             assert index < TRUE_BUILTINS.size() && TRUE_BUILTINS.get(index) == null;
             TRUE_BUILTINS.set(index, value);
@@ -313,6 +325,7 @@ public final class Builtins {
         private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(nullError()));
         private static final LangConstant ASSERTION_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(assertError()));
         private static final LangConstant CHAR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(charType()));
+        private static final LangConstant FORMAT_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(format()));
     }
 
     public static LangConstant iterConstant() {
@@ -341,6 +354,10 @@ public final class Builtins {
 
     public static LangConstant charConstant() {
         return ConstantHolder.CHAR_CONSTANT;
+    }
+
+    public static LangConstant formatConstant() {
+        return ConstantHolder.FORMAT_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {

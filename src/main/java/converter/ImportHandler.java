@@ -178,7 +178,7 @@ public final class ImportHandler {
         var isBuiltin = AnnotationConverter.isBuiltin(cls, info, cls.getAnnotations());
         if (isBuiltin.isPresent()) {
             var builtin = isBuiltin.orElseThrow();
-            Builtins.setBuiltin(builtin.getKey(), builtin.getValue(), type);
+            Builtins.setBuiltin(builtin.getName(), builtin.getIndex(), builtin.isHidden(), type);
         } else {
             types.put(strName, Pair.of(type, cls));
             lineInfos.put(strName, cls.getLineInfo());

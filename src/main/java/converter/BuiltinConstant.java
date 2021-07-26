@@ -55,14 +55,16 @@ public final class BuiltinConstant implements LangConstant {
     }
 
     private String name() {
-        if (builtinIndex == 31) {  // FIXME
-            return "__format_internal";
-        }
         var result = Builtins.constantNo(builtinIndex);
         if (result == Builtins.nullType()) {
             return "type(null)";
         }
         for (var pair : Builtins.BUILTIN_MAP.entrySet()) {
+            if (pair.getValue() == result) {
+                return pair.getKey();
+            }
+        }
+        for (var pair : Builtins.BUILTIN_HIDDEN.entrySet()) {
             if (pair.getValue() == result) {
                 return pair.getKey();
             }

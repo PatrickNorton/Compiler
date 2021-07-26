@@ -16,7 +16,6 @@ import main.java.parser.StringNode;
 import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
-import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -266,7 +265,7 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    public static Optional<Pair<String, Integer>> isBuiltin(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
+    public static Optional<BuiltinInfo> isBuiltin(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
         switch (annotations.length) {
             case 0:
                 return Optional.empty();
@@ -383,7 +382,7 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private static Optional<Pair<String, Integer>> builtinValues(Lined lineInfo, NameNode annotation, CompilerInfo info) {
+    private static Optional<BuiltinInfo> builtinValues(Lined lineInfo, NameNode annotation, CompilerInfo info) {
         if (!(annotation instanceof FunctionCallNode)) {
             return Optional.empty();
         }
@@ -403,7 +402,7 @@ public final class AnnotationConverter implements BaseConverter {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
                 var argument = (StringNode) param.getArgument();
-                return Optional.of(Pair.of(argument.getContents(), -1));
+                return Optional.of(new BuiltinInfo(argument.getContents(), -1));
             case 2:
                 var param1 = func.getParameters()[0];
                 if (!(param1.getArgument() instanceof StringNode)) {
@@ -415,8 +414,30 @@ public final class AnnotationConverter implements BaseConverter {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
                 var argument2 = (NumberNode) param2.getArgument();
-                return Optional.of(Pair.of(argument1.getContents(),
+                return Optional.of(new BuiltinInfo(argument1.getContents(),
                         argument2.getValue().toBigIntegerExact().intValueExact()));
+            case 3:
+                var p1 = func.getParameters()[0];
+                if (!(p1.getArgument() instanceof StringNode)) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                var a1 = (StringNode) p1.getArgument();
+                var p2 = func.getParameters()[1];
+                if (!(p2.getArgument() instanceof NumberNode)) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                var a2 = (NumberNode) p2.getArgument();
+                var p3 = func.getParameters()[2];
+                if (!(p3.getArgument() instanceof VariableNode)) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                var a3 = (VariableNode) p3.getArgument();
+                if (!a3.getName().equals("hidden")) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                return Optional.of(
+                        new BuiltinInfo(a1.getContents(), a2.getValue().toBigIntegerExact().intValueExact(), true)
+                );
             default:
                 throw CompilerException.format(
                         "Ill-formed 'builtin' annotation (got %d parameters)", lineInfo, func.getParameters().length

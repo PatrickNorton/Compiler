@@ -369,7 +369,7 @@ public final class FormattedStringConverter implements TestConverter {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
             checkStrFormat(format);
             bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
+            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.formatConstant())));
             bytes.addAll(converter.convert(start + bytes.size()));
             if (isNotStr) {
                 bytes.add(Bytecode.CALL_OP.value);
@@ -491,7 +491,7 @@ public final class FormattedStringConverter implements TestConverter {
         var converter = TestConverter.of(info, arg, 1);
         var retType = converter.returnType()[0];
         bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(new BuiltinConstant(31))));
+        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.formatConstant())));
         bytes.addAll(converter.convert(start + bytes.size()));
         return retType;
     }
