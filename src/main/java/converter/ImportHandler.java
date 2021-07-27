@@ -16,6 +16,7 @@ import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
+import main.java.util.Levenshtein;
 import main.java.util.OptionalUint;
 import main.java.util.Pair;
 import main.java.util.Zipper;
@@ -529,7 +530,7 @@ public final class ImportHandler {
                     // If value was not exported, don't fail, just continue
                 }
             }
-            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+            throw exportError(lineInfo, name);
         }
         var export = exports.get(name);
         if (export instanceof TypeTypeObject) {
@@ -559,7 +560,7 @@ public final class ImportHandler {
                     // If value was not exported, don't fail, just continue
                 }
             }
-            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+            throw exportError(lineInfo, name);
         }
         var export = exports.get(name);
         if (export != null) {
@@ -569,7 +570,7 @@ public final class ImportHandler {
             previousFiles.add(Pair.of(lineInfo, name));
             return ALL_FILES.get(path).importHandler().typeOfExport(name, lineInfo, previousFiles);
         } else {
-            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+            throw exportError(lineInfo, name);
         }
     }
 
@@ -589,7 +590,7 @@ public final class ImportHandler {
                     // If value was not exported, don't fail, just continue
                 }
             }
-            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+            throw exportError(lineInfo, name);
         }
         var export = exportConstants.get(name);
         if (export != null && export.isPresent()) {
@@ -601,7 +602,7 @@ public final class ImportHandler {
         } else if (export != null) {
             return export;
         } else {
-            throw CompilerException.format("No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile());
+            throw exportError(lineInfo, name);
         }
     }
 
@@ -654,6 +655,38 @@ public final class ImportHandler {
 
     public Map<Path, ImportInfo> importInfos() {
         return imports;
+    }
+
+    private CompilerException exportError(LineInfo lineInfo, String name) {
+        var possibleName = closestExportedName(name, new HashSet<>());
+        if (possibleName.isPresent()) {
+            return CompilerException.format(
+                    "No value '%s' was exported from file '%s'\nDid you mean %s?",
+                    lineInfo, name, info.sourceFile(), possibleName.orElseThrow()
+            );
+        } else {
+            return CompilerException.format(
+                    "No value '%s' was exported from file '%s'", lineInfo, name, info.sourceFile()
+            );
+        }
+    }
+
+    private Optional<String> closestExportedName(String name, Set<Path> previousFiles) {
+        var export = Levenshtein.closestName(name, exports.keySet());
+        if (export.isPresent()) {
+            return export;
+        }
+        for (var path : wildcardExports) {
+            if (!previousFiles.contains(path)) {
+                previousFiles.add(path);
+                var handler = ALL_FILES.get(path).importHandler();
+                var exported = handler.closestExportedName(name, previousFiles);
+                if (exported.isPresent()) {
+                    return exported;
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private static String moduleName(@NotNull ImportExportNode node, int i) {
