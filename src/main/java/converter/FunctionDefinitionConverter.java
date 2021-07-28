@@ -38,6 +38,15 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return Collections.emptyList();
     }
 
+    public List<Byte> convertMustUse(String message) {
+        var fn = convertInner();
+        if (fn.getInfo().getReturns().length == 0) {
+            throw CompilerException.of("$mustUse annotation requires function to return a value", node);
+        }
+        fn.getInfo().setMustUse(message);
+        return Collections.emptyList();
+    }
+
     public List<Byte> convertSys() {
         if (!info.permissions().isStdlib()) {
             throw CompilerException.of("'$native(\"sys\")' is only allowed in stdlib files", node);

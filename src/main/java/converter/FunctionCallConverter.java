@@ -390,8 +390,23 @@ public final class FunctionCallConverter implements TestConverter {
     ) {
         var fnIndex = info.fnIndex(strName);
         assert fnIndex != -1;
-        if (info.fnInfo(strName).orElseThrow().isDeprecated()) {
+        if (fnInfo.isDeprecated()) {
             CompilerWarning.warnf("Function '%s' is deprecated", WarningType.DEPRECATED, info, node, strName);
+        }
+        if (fnInfo.mustUse() && retCount < fnInfo.getReturns().length) {
+            var val = fnInfo.getReturns().length - retCount == 1 ? "value" : "values";
+            var message = fnInfo.getMustUseMessage();
+            if (message.isEmpty()) {
+                CompilerWarning.warnf(
+                        "Unused return %s of '%s' that must be used",
+                        WarningType.UNUSED, info, node, val, strName
+                );
+            } else {
+                CompilerWarning.warnf(
+                        "Unused return %s of '%s' that must be used\nNote: %s",
+                        WarningType.UNUSED, info, node, val, strName, message
+                );
+            }
         }
         List<Byte> bytes = new ArrayList<>();
         convertArgs(bytes, start, fnInfo, needsMakeOption);

@@ -9,6 +9,7 @@ import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.Lined;
+import main.java.parser.MethodDefinitionNode;
 import main.java.parser.NameNode;
 import main.java.parser.NumberNode;
 import main.java.parser.OpSpTypeNode;
@@ -96,6 +97,14 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "native":
                 throw CompilerTodoError.of("'native' annotation", node);
+            case "mustUse":
+                if (node instanceof FunctionDefinitionNode) {
+                    return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertMustUse("");
+                } else if ( node instanceof MethodDefinitionNode) {
+                    throw CompilerTodoError.of("'mustUse' annotation on methods", node);
+                } else {
+                    throw CompilerException.of("'mustUse' annotation is only valid on function definitions", node);
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getName());
         }
@@ -206,6 +215,31 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "extern":
                 throw CompilerTodoError.of("External functions are not yet implemented", node);
+            case "mustUse":
+                if (name.getParameters().length != 1) {
+                    throw CompilerException.format(
+                            "'mustUse' annotation takes exactly 1 argument, not %d",
+                            name, name.getParameters().length
+                    );
+                } else {
+                    var useMsg = name.getParameters()[0];
+                    if (!(useMsg.getArgument() instanceof StringNode)) {
+                        throw CompilerException.of(
+                                "'mustUse' annotation argument must be a string literal", name
+                        );
+                    }
+                    var message = ((StringNode) useMsg.getArgument()).getContents();
+                    if (node instanceof FunctionDefinitionNode) {
+                        return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node)
+                                .convertMustUse(message);
+                    } else if (node instanceof MethodDefinitionNode) {
+                        throw CompilerTodoError.of("'mustUse' annotation on methods", node);
+                    } else {
+                        throw CompilerException.of(
+                                "'mustUse' annotation is only valid on function definitions", node
+                        );
+                    }
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
         }
