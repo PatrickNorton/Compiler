@@ -271,7 +271,7 @@ public final class Builtins {
             Map.entry("null", NULL)
     ));
 
-    public static final Map<String, LangObject> BUILTIN_HIDDEN = new HashMap<>();
+    private static final Map<String, LangObject> BUILTIN_HIDDEN = new HashMap<>();
 
     public static LangObject constantNo(int index) {
         return TRUE_BUILTINS.get(index);
@@ -369,6 +369,24 @@ public final class Builtins {
             assert Builtins.iterable().isSuperclass(val);
             return deIterable(val.operatorReturnType(OpSpTypeNode.ITER, AccessLevel.PUBLIC).orElseThrow()[0]);
         }
+    }
+
+    public static String builtinName(int builtinIndex) {
+        var result = constantNo(builtinIndex);
+        if (result == Builtins.nullType()) {
+            return "type(null)";
+        }
+        for (var pair : BUILTIN_MAP.entrySet()) {
+            if (pair.getValue() == result) {
+                return pair.getKey();
+            }
+        }
+        for (var pair : BUILTIN_HIDDEN.entrySet()) {
+            if (pair.getValue() == result) {
+                return pair.getKey();
+            }
+        }
+        throw new RuntimeException(String.format("Unknown builtin %s (number %d)", result, builtinIndex));
     }
 
     public static final Set<String> STABLE_FEATURES = Set.of();
