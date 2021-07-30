@@ -101,7 +101,10 @@ public final class AnnotationConverter implements BaseConverter {
                 if (node instanceof FunctionDefinitionNode) {
                     return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertMustUse("");
                 } else if ( node instanceof MethodDefinitionNode) {
-                    throw CompilerTodoError.of("'mustUse' annotation on methods", node);
+                    CompilerWarning.warn(
+                            "'mustUse' annotation does not work on methods", WarningType.TODO, info, node
+                    );
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 } else {
                     throw CompilerException.of("'mustUse' annotation is only valid on function definitions", node);
                 }
@@ -233,7 +236,10 @@ public final class AnnotationConverter implements BaseConverter {
                         return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node)
                                 .convertMustUse(message);
                     } else if (node instanceof MethodDefinitionNode) {
-                        throw CompilerTodoError.of("'mustUse' annotation on methods", node);
+                        CompilerWarning.warn(
+                            "'mustUse' annotation does not work on methods", WarningType.TODO, info, node
+                    );
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
                     } else {
                         throw CompilerException.of(
                                 "'mustUse' annotation is only valid on function definitions", node
