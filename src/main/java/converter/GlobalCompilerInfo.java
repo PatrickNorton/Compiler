@@ -14,13 +14,7 @@ import java.util.Map;
 
 /**
  * The class for compiler information that is shared between all files.
- * <p>
- *     This should only be constructed once, as a static member of {@link
- *     CompilerInfo}. Creating another one will cause bad things to happen.
- * </p>
  *
- * @apiNote Yes, I know global state is bad, but I'm not sure of a better way
- *          to do this yet, so here it stays.
  * @author Patrick Norton
  * @see CompilerInfo
  */
