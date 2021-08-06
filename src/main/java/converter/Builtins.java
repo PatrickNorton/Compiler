@@ -169,6 +169,10 @@ public final class Builtins {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("AssertionError"));
     }
 
+    public static TypeObject arithmeticError() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("ArithmeticError"));
+    }
+
     public static TypeObject throwable() {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("Throwable"));
     }
@@ -324,8 +328,10 @@ public final class Builtins {
         private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
         private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(nullError()));
         private static final LangConstant ASSERTION_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(assertError()));
+        private static final LangConstant ARITH_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(arithmeticError()));
         private static final LangConstant CHAR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(charType()));
         private static final LangConstant FORMAT_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(format()));
+        private static final LangConstant DECIMAL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(decimal()));
     }
 
     public static LangConstant iterConstant() {
@@ -352,12 +358,20 @@ public final class Builtins {
         return ConstantHolder.ASSERTION_CONSTANT;
     }
 
+    public static LangConstant arithmeticErrorConstant() {
+        return ConstantHolder.ARITH_CONSTANT;
+    }
+
     public static LangConstant charConstant() {
         return ConstantHolder.CHAR_CONSTANT;
     }
 
     public static LangConstant formatConstant() {
         return ConstantHolder.FORMAT_CONSTANT;
+    }
+
+    public static LangConstant decimalConstant() {
+        return ConstantHolder.DECIMAL_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {

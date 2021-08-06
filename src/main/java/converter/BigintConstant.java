@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class BigintConstant implements LangConstant {
+public final class BigintConstant implements NumberConstant {
     private final BigInteger value;
 
     public BigintConstant(BigInteger value) {
@@ -18,6 +18,11 @@ public final class BigintConstant implements LangConstant {
     }
 
     public BigInteger getValue() {
+        return value;
+    }
+
+    @Override
+    public BigInteger bigValue() {
         return value;
     }
 

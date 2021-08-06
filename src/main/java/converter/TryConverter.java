@@ -45,36 +45,41 @@ public final class TryConverter implements BaseConverter {
         var jump2 = bytes.size();
         bytes.addAll(Util.zeroToBytes());
         if (!node.getFinallyStmt().isEmpty()) {
-            int jump3;
-            if (node.getExcepted().length > 0) {
-                bytes.add(Bytecode.JUMP.value);
-                jump3 = bytes.size();
-                bytes.addAll(Util.zeroToBytes());
-            } else {
-                jump3 = -1;
-            }
-            bytes.add(Bytecode.FINALLY.value);
-            var finallyResult = BaseConverter.bytesWithReturn(
-                    start + bytes.size(), node.getFinallyStmt(), info
-            );
-            bytes.addAll(finallyResult.getKey());
-            if (finallyResult.getValue().mayDiverge()) {
-                CompilerWarning.warn(
-                        "'return', 'break', or 'continue' statements in a " +
-                                "finally' statement can cause unexpected behavior",
-                        WarningType.NO_TYPE, info, node.getFinallyStmt()
-                );
-            }
-            if (jump3 != -1) {
-                Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
-            }
-            // Work out some kinks first
-            throw CompilerTodoError.of("Finally not implemented yet", node.getFinallyStmt());
+            convertFinally(start, bytes, jump2);
         }
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump1);
         Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
         bytes.add(Bytecode.END_TRY.value);
         bytes.addAll(Util.shortToBytes((short) node.getExcepted().length));
         return bytes;
+    }
+
+    private void convertFinally(int start, List<Byte> bytes, int jump2) {
+        assert !node.getFinallyStmt().isEmpty();
+        int jump3;
+        if (node.getExcepted().length > 0) {
+            bytes.add(Bytecode.JUMP.value);
+            jump3 = bytes.size();
+            bytes.addAll(Util.zeroToBytes());
+        } else {
+            jump3 = -1;
+        }
+        bytes.add(Bytecode.FINALLY.value);
+        var finallyResult = BaseConverter.bytesWithReturn(
+                start + bytes.size(), node.getFinallyStmt(), info
+        );
+        bytes.addAll(finallyResult.getKey());
+        if (finallyResult.getValue().mayDiverge()) {
+            CompilerWarning.warn(
+                    "'return', 'break', or 'continue' statements in a " +
+                            "finally' statement can cause unexpected behavior",
+                    WarningType.NO_TYPE, info, node.getFinallyStmt()
+            );
+        }
+        if (jump3 != -1) {
+            Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
+        }
+        // Work out some kinks first
+        throw CompilerTodoError.of("Finally not implemented yet", node.getFinallyStmt());
     }
 }
