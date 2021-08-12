@@ -57,7 +57,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         if (this.equals(other) || this.sameBaseType(Builtins.throwsType())) {
             return true;
         } else if (other instanceof UserType && this.sameBaseType(other)) {
-            if (!((UserType<?>) other).isConst && isConst) {
+            if (!constSemantics() && !((UserType<?>) other).isConst && isConst) {
                 return false;
             } else if (((UserType<?>) other).generics.isEmpty()) {
                 return constSemantics() || ((UserType<?>) other).isConst || !isConst;
