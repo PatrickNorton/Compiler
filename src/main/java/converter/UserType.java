@@ -486,7 +486,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 valueJoiner.add(cls.name());
             }
             if (isConst || isConstClass) {
-                return baseName + valueJoiner.toString();
+                return baseName + valueJoiner;
             } else {
                 return String.format("mut %s%s", baseName, valueJoiner);
             }
