@@ -54,18 +54,23 @@ const class str {
     public method join(Iterable[str] strs, /) -> str {}
     public method startsWith(str start, /) -> bool {}
     public method endsWith(str end, /) -> bool {}
-    public method split(str split, /) -> list[str] {}
+    public method split(str split, /, int? count = null) -> list[str] {}
+    public method replace(str pat, str new, /, int? count = null) -> str {}
     public method splitLines() -> list[str] {}
     public method upper() -> str {}
     public method lower() -> str {}
+    public method isUpper() -> bool {}
+    public method isLower() -> bool {}
     public method indexOf(str s, /) -> int? {}
     public method lastIndexOf(str s, /) -> int? {}
     public method encode(str encoding) -> mut bytes {}
     public method intBase(int base) -> int? {}
     public method asInt() -> int? {}
-    public method strip(char? pat = null) -> str {}
-    public method stripLeading(str? pat = null) -> str {}
-    public method stripTrailing(str? pat = null) -> str {}
+    public method strip(char? pat = null, /) -> str {}
+    public method stripLeading(str? pat = null, /) -> str {}
+    public method stripTrailing(str? pat = null, /) -> str {}
+    public method expandTabs(int size = 4) -> str {}
+    public method isAscii() -> bool {}
 
     public static method fromChars(list[char] chars) -> str {}
 }
@@ -165,6 +170,12 @@ const class char {
 
     public method upper() -> char {}
     public method lower() -> char {}
+    public method isUpper() -> bool {}
+    public method isLower() -> bool {}
+    public method isAscii() -> bool {}
+    public method utf8Len() -> int {}
+    public method utf16Len() -> int {}
+    public method encode(str encoding) -> bytes {}
 
     public static method fromInt(int i, /) -> char? {}
 }
@@ -248,11 +259,13 @@ class dict[K, V] {
     public operator == (dict[K, V] other, /) -> bool {}
 
     public method get(K key, /) -> V? {}
+    public method getPair(K key, /) -> tuple[K, V]? {}
     public mut method set(K key, V value, /) -> V? {}
     public mut method clear() {}
     public mut method setDefault(K key, V value, /) -> V {}
     public mut method replace(K key, V value, /) -> V? {}
     public mut method remove(K key, /) -> V? {}
+    public mut method retain(Callable[K, V, [bool]] predicate, /) {}
 }
 
 $builtin("NotImplemented", 22)
@@ -280,9 +293,8 @@ class AssertionError from Throwable {
     public operator new (str msg, /) {}
 }
 
-# FIXME: Hashable on tuples
 $builtin("hash", 26)
-func hash(object value, /) -> int {}
+func hash(Hashable value, /) -> int {}
 
 $builtin("dec")
 class dec {}
@@ -291,3 +303,9 @@ $builtin("Hashable")
 auto interface Hashable {
     public operator hash -> int
 }
+
+# Note: this function signature isn't strictly accurate, but since this is
+# hidden, its signature isn't ever used (its only use is in the internals of
+# format creation).
+$builtin("__format_internal", 31, hidden)
+func __format_internal(int format, object value) {}

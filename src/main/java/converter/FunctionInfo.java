@@ -16,6 +16,8 @@ public final class FunctionInfo {
     private final TypeObject[] returns;
     private final GenericInfo generics;
     private boolean isDeprecated = false;
+    private boolean mustUse = false;
+    private String mustUseMessage = "";
 
     public FunctionInfo(TypeObject... returns) {
         this("", ArgumentInfo.of(), returns);
@@ -81,6 +83,19 @@ public final class FunctionInfo {
 
     public void setDeprecated(boolean deprecated) {
         isDeprecated = deprecated;
+    }
+
+    public boolean mustUse() {
+        return mustUse;
+    }
+
+    public String getMustUseMessage() {
+        return mustUseMessage;
+    }
+
+    public void setMustUse(String message) {
+        mustUse = true;
+        mustUseMessage = message;
     }
 
     @NotNull

@@ -9,6 +9,7 @@ public enum WarningType {
     TRIVIAL_VALUE,
     UNREACHABLE,
     INFINITE_LOOP,
+    ZERO_DIVISION,
     TODO,
     ;
 
@@ -26,6 +27,8 @@ public enum WarningType {
                 return Optional.of("infinite");
             case TODO:
                 return Optional.of("todo");
+            case ZERO_DIVISION:
+                return Optional.of("zero");
             case NO_TYPE:
             default:
                 return Optional.empty();

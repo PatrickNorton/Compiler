@@ -219,6 +219,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
             return newArgs.length == 0
                     ? Optional.of(Pair.of(Collections.emptyMap(), Collections.emptySet()))
                     : Optional.empty();
+        } else if (newArgs.length == 0 && positionArgs.length + normalArgs.length != 0) {
+            return Optional.empty();
         }
         Map<Integer, TypeObject> result = new HashMap<>();
         Set<Integer> needsMakeOption = new HashSet<>();
@@ -317,6 +319,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var result = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
+            if (!arg.getDefaultVal().isEmpty() && !info.permissions().isStdlib()) {
+                CompilerWarning.warn("Default values for arguments not implemented yet", WarningType.TODO, info, arg);
+            }
             result[i] = new Argument(
                     arg.getName().getName(), info.getType(arg.getType()),
                     arg.getVararg(), arg.getLineInfo()

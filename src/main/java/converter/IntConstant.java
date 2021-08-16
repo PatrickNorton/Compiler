@@ -2,14 +2,16 @@ package main.java.converter;
 
 import main.java.util.IndexedSet;
 import main.java.util.OptionalBool;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class IntConstant implements LangConstant {
+public final class IntConstant implements NumberConstant {
     private final int value;
 
     public IntConstant(int value) {
@@ -51,6 +53,13 @@ public final class IntConstant implements LangConstant {
 
     public int getValue() {
         return value;
+    }
+
+    @Contract(pure = true)
+    @Override
+    @NotNull
+    public BigInteger bigValue() {
+        return BigInteger.valueOf(value);
     }
 
     @Override

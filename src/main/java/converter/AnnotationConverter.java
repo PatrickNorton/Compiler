@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.AnnotatableNode;
+import main.java.parser.ArgumentNode;
 import main.java.parser.BaseClassNode;
 import main.java.parser.DefinitionNode;
 import main.java.parser.EnumDefinitionNode;
@@ -8,15 +9,14 @@ import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.Lined;
+import main.java.parser.MethodDefinitionNode;
 import main.java.parser.NameNode;
 import main.java.parser.NumberNode;
 import main.java.parser.OpSpTypeNode;
-import main.java.parser.OperatorNode;
 import main.java.parser.StringNode;
 import main.java.parser.TestNode;
 import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
-import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -97,6 +97,17 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "native":
                 throw CompilerTodoError.of("'native' annotation", node);
+            case "mustUse":
+                if (node instanceof FunctionDefinitionNode) {
+                    return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertMustUse("");
+                } else if ( node instanceof MethodDefinitionNode) {
+                    CompilerWarning.warn(
+                            "'mustUse' annotation does not work on methods", WarningType.TODO, info, node
+                    );
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                } else {
+                    throw CompilerException.of("'mustUse' annotation is only valid on function definitions", node);
+                }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getName());
         }
@@ -113,7 +124,7 @@ public final class AnnotationConverter implements BaseConverter {
     private List<Byte> convertFunction(FunctionCallNode name, int start) {
         switch (name.getVariable().getName()) {
             case "cfg":
-                return convertCfg(start, name);
+                return convertIfTest(start, new CfgConverter(info, name).convert());
             case "inline":
                 return convertInline(start, name);
             case "deprecated":
@@ -138,6 +149,9 @@ public final class AnnotationConverter implements BaseConverter {
                     );
                 }
             case "native":
+                if (!info.permissions().isStdlib()) {
+                    throw CompilerException.of("'native' is an internal-only annotation", name);
+                }
                 var native0 = name.getParameters()[0].getArgument();
                 if (native0 instanceof StringNode && ((StringNode) native0).getContents().equals("sys")) {
                     if (node instanceof FunctionDefinitionNode) {
@@ -153,6 +167,84 @@ public final class AnnotationConverter implements BaseConverter {
                     return BaseConverter.bytesWithoutAnnotations(start, node, info);
                 } else {
                     throw CompilerException.of("'derive' annotation only works on class definitions", node);
+                }
+            case "stable":
+            case "unstable":
+                if (info.permissions().isStdlib()) {
+                    throw CompilerTodoError.of("Stable/unstable annotations", name);
+                } else {
+                    throw CompilerException.of(
+                            "'stable' and 'unstable' annotations are only available for the standard library", node
+                    );
+                }
+            case "feature":
+                var features = getStrings(name.getParameters());
+                if (info.permissions().isStdlib()) {
+                    info.addFeatures(features);
+                    var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    info.removeFeatures(features);
+                    return result;
+                }
+                for (var featureName : features) {
+                    if (Builtins.STABLE_FEATURES.contains(featureName)) {
+                        CompilerWarning.warnf(
+                                "Use of '$feature' attribute for stable feature %s",
+                                WarningType.NO_TYPE, info, name, featureName
+                        );
+                    } else {
+                        throw CompilerTodoError.of("Proper unstable feature annotations", name);
+                    }
+                    info.addFeature(featureName);
+                }
+                var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                info.removeFeatures(features);
+                return result;
+            case "cfgAttr":
+                if (name.getParameters().length != 2) {
+                    throw CompilerException.format(
+                            "'cfgAttr' annotation takes exactly 2 arguments, not %d",
+                            name, name.getParameters().length
+                    );
+                } else {
+                    var config = name.getParameters()[0];
+                    var attr = name.getParameters()[1];
+                    if (!(attr.getArgument() instanceof NameNode)) {
+                        throw CompilerException.of("Invalid format for attribute", attr.getArgument());
+                    } else if (CfgConverter.valueOf(config.getArgument(), info)) {
+                        return convertName((NameNode) attr.getArgument(), start);
+                    } else {
+                        return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    }
+                }
+            case "extern":
+                throw CompilerTodoError.of("External functions are not yet implemented", node);
+            case "mustUse":
+                if (name.getParameters().length != 1) {
+                    throw CompilerException.format(
+                            "'mustUse' annotation takes exactly 1 argument, not %d",
+                            name, name.getParameters().length
+                    );
+                } else {
+                    var useMsg = name.getParameters()[0];
+                    if (!(useMsg.getArgument() instanceof StringNode)) {
+                        throw CompilerException.of(
+                                "'mustUse' annotation argument must be a string literal", name
+                        );
+                    }
+                    var message = ((StringNode) useMsg.getArgument()).getContents();
+                    if (node instanceof FunctionDefinitionNode) {
+                        return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node)
+                                .convertMustUse(message);
+                    } else if (node instanceof MethodDefinitionNode) {
+                        CompilerWarning.warn(
+                            "'mustUse' annotation does not work on methods", WarningType.TODO, info, node
+                    );
+                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    } else {
+                        throw CompilerException.of(
+                                "'mustUse' annotation is only valid on function definitions", node
+                        );
+                    }
                 }
             default:
                 throw CompilerException.format("Unknown annotation '%s'", name, name.getVariable().getName());
@@ -186,68 +278,19 @@ public final class AnnotationConverter implements BaseConverter {
         );
     }
 
-    private List<Byte> convertCfg(int start, FunctionCallNode inline) {
-        assert inline.getVariable().getName().equals("cfg");
-        var parameters = inline.getParameters();
-        if (parameters.length == 1) {
-            var param = parameters[0];
-            var argument = param.getArgument();
-            if (!param.isVararg() && param.getVariable().isEmpty()) {
-                return convertIfTest(start, cfgValue(argument));
-            } else {
-                throw CompilerException.of("'cfg' annotations do not support named arguments", inline);
-            }
-        } else {
-            throw CompilerException.of("'cfg' annotations only support one value", inline);
+    private static String[] getStrings(ArgumentNode... values) {
+        var result = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = getString(values[i].getArgument());
         }
+        return result;
     }
 
-    private static boolean cfgValue(TestNode value) {
-        if (value instanceof VariableNode) {
-            switch (((VariableNode) value).getName()) {
-                case "true":
-                    return true;
-                case "false":
-                    return false;
-                default:
-                    throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
-            }
-        } else if (value instanceof OperatorNode) {
-            return cfgBool((OperatorNode) value);
+    private static String getString(TestNode value) {
+        if (value instanceof StringNode) {
+            return ((StringNode) value).getContents();
         } else {
-            throw CompilerTodoError.of("Cfg with non-variables not supported", value);
-        }
-    }
-
-    private static boolean cfgBool(OperatorNode value) {
-        var operands = value.getOperands();
-        switch (value.getOperator()) {
-            case BOOL_NOT:
-                assert operands.length == 1;
-                return !cfgValue(operands[0].getArgument());
-            case BOOL_AND:
-                for (var op : operands) {
-                    if (!cfgValue(op.getArgument())) {
-                        return false;
-                    }
-                }
-                return true;
-            case BOOL_OR:
-                for (var op : operands) {
-                    if (cfgValue(op.getArgument())) {
-                        return true;
-                    }
-                }
-                return false;
-            case BOOL_XOR:
-                assert operands.length > 0;
-                var result = cfgValue(operands[0].getArgument());
-                for (int i = 1; i < operands.length; i++) {
-                    result ^= cfgValue(operands[i].getArgument());
-                }
-                return result;
-            default:
-                throw CompilerException.of("Non-boolean operands not supported in cfg", value);
+            throw CompilerException.of("Expected string literal here", value);
         }
     }
 
@@ -262,7 +305,7 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    public static Optional<Pair<String, Integer>> isBuiltin(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
+    public static Optional<BuiltinInfo> isBuiltin(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
         switch (annotations.length) {
             case 0:
                 return Optional.empty();
@@ -284,11 +327,8 @@ public final class AnnotationConverter implements BaseConverter {
                     CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, stmt);
                     return true;
                 case "cfg":
-                    if (stmt.getParameters().length == 1) {
-                        return cfgValue(stmt.getParameters()[0].getArgument());
-                    } else {
-                        return true;
-                    }
+                    var converter = new CfgConverter(info, stmt);
+                    return converter.convert();
                 default:
                     return true;
             }
@@ -312,6 +352,11 @@ public final class AnnotationConverter implements BaseConverter {
             var argName = ((VariableNode) argument).getName();
             switch (argName) {
                 case "all":
+                    if (annotation.getParameters().length > 1) {
+                        throw CompilerException.format(
+                                "'all' used in conjunction with other parameters in '%s' statement", annotation, name
+                        );
+                    }
                     warnAll(name, warningHolder, annotation);
                     return;
                 case "deprecated":
@@ -329,19 +374,28 @@ public final class AnnotationConverter implements BaseConverter {
                 case "infinite":
                     addWarning(WarningType.INFINITE_LOOP, allowedTypes, annotation, warningHolder);
                     break;
+                case "zero":
+                    addWarning(WarningType.ZERO_DIVISION, allowedTypes, annotation, warningHolder);
+                    break;
                 default:
                     throw CompilerException.format("Unknown warning type %s", annotation, argName);
             }
         }
         switch (name) {
             case "allow":
+                for (var allowed : allowedTypes) {
+                    if (warningHolder.isForbidden(allowed)) {
+                        throw CompilerException.format("Cannot allow forbidden warning %s", annotation, allowed);
+                    }
+                }
                 warningHolder.allow(allowedTypes.toArray(new WarningType[0]));
                 break;
             case "deny":
                 warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
                 break;
             case "forbid":
-                throw CompilerTodoError.of("'forbid' is unimplemented as a warning level", annotation);
+                warningHolder.forbid(allowedTypes.toArray(new WarningType[0]));
+                break;
             default:
                 throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
         }
@@ -350,17 +404,28 @@ public final class AnnotationConverter implements BaseConverter {
     private static void warnAll(String name, WarningHolder warningHolder, Lined annotation) {
         switch (name) {
             case "allow":
+                for (var allowed : WarningType.values()) {
+                    if (warningHolder.isForbidden(allowed)) {
+                        throw CompilerException.format(
+                                "Cannot allow forbidden warning %s%nNote: Warning allowed because of allow(all)",
+                                annotation, allowed
+                        );
+                    }
+                }
                 warningHolder.allowAll();
                 break;
             case "deny":
                 warningHolder.denyAll();
+                break;
+            case "forbid":
+                warningHolder.forbidAll();
                 break;
             default:
                 throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
         }
     }
 
-    private static Optional<Pair<String, Integer>> builtinValues(Lined lineInfo, NameNode annotation, CompilerInfo info) {
+    private static Optional<BuiltinInfo> builtinValues(Lined lineInfo, NameNode annotation, CompilerInfo info) {
         if (!(annotation instanceof FunctionCallNode)) {
             return Optional.empty();
         }
@@ -380,7 +445,7 @@ public final class AnnotationConverter implements BaseConverter {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
                 var argument = (StringNode) param.getArgument();
-                return Optional.of(Pair.of(argument.getContents(), -1));
+                return Optional.of(new BuiltinInfo(argument.getContents(), -1));
             case 2:
                 var param1 = func.getParameters()[0];
                 if (!(param1.getArgument() instanceof StringNode)) {
@@ -392,8 +457,30 @@ public final class AnnotationConverter implements BaseConverter {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
                 var argument2 = (NumberNode) param2.getArgument();
-                return Optional.of(Pair.of(argument1.getContents(),
+                return Optional.of(new BuiltinInfo(argument1.getContents(),
                         argument2.getValue().toBigIntegerExact().intValueExact()));
+            case 3:
+                var p1 = func.getParameters()[0];
+                if (!(p1.getArgument() instanceof StringNode)) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                var a1 = (StringNode) p1.getArgument();
+                var p2 = func.getParameters()[1];
+                if (!(p2.getArgument() instanceof NumberNode)) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                var a2 = (NumberNode) p2.getArgument();
+                var p3 = func.getParameters()[2];
+                if (!(p3.getArgument() instanceof VariableNode)) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                var a3 = (VariableNode) p3.getArgument();
+                if (!a3.getName().equals("hidden")) {
+                    throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
+                }
+                return Optional.of(
+                        new BuiltinInfo(a1.getContents(), a2.getValue().toBigIntegerExact().intValueExact(), true)
+                );
             default:
                 throw CompilerException.format(
                         "Ill-formed 'builtin' annotation (got %d parameters)", lineInfo, func.getParameters().length

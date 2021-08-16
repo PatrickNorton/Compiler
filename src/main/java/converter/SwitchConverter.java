@@ -246,6 +246,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             var constant = lblConverter.constantReturn().orElseThrow(() -> literalException("char", label));
             if (constant instanceof CharConstant) {
                 return ((CharConstant) constant).getValue();
+            } else if (constant instanceof StringConstant) {
+                throw literalException("char", label, "Try prefixing the literal with 'c'");
             } else {
                 throw literalException("char", label);
             }
@@ -602,6 +604,16 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return CompilerException.format(
                 "'switch' on a %1$s requires a %1$s literal in each case statement",
                 label, literalType
+        );
+    }
+
+    @Contract("_, _, _ -> new")
+    @NotNull
+    private static CompilerException literalException(String literalType, Lined label, String note) {
+        return CompilerException.format(
+                "'switch' on a %1$s requires a %1$s literal in each case statement\n" +
+                        "Note: %s",
+                label, literalType, note
         );
     }
 

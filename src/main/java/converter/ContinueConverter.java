@@ -27,15 +27,42 @@ public final class ContinueConverter implements BaseConverter {
     public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
         List<Byte> bytes = new ArrayList<>();
         var divergingInfo = new DivergingInfo();
+        boolean mayJump;
         if (!node.getCond().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start, node.getCond(), info, 1));
-            bytes.add(Bytecode.JUMP_TRUE.value);
+            var condConverter = TestConverter.of(info, node.getCond(), 1);
+            var constant = condConverter.constantReturn();
+            if (constant.isPresent() && constant.orElseThrow().boolValue().isPresent()) {
+                var value = constant.orElseThrow().boolValue().orElseThrow();
+                if (value) {
+                    CompilerWarning.warn(
+                            "'continue' condition is always true\n" +
+                                    "Note: 'continue if true' is equivalent to 'continue'",
+                            WarningType.TRIVIAL_VALUE, info, node
+                    );
+                    bytes.add(Bytecode.JUMP.value);
+                    mayJump = true;
+                } else {
+                    CompilerWarning.warn(
+                            "'continue' condition is always false\n" +
+                                    "Note: 'continue if false' will never be taken and can be removed",
+                            WarningType.TRIVIAL_VALUE, info, node
+                    );
+                    mayJump = false;
+                }
+            } else {
+                bytes.addAll(condConverter.convert(start));
+                bytes.add(Bytecode.JUMP_TRUE.value);
+                mayJump = true;
+            }
             divergingInfo.possibleContinue();
         } else {
             bytes.add(Bytecode.JUMP.value);
             divergingInfo.knownContinue();
+            mayJump = true;
         }
-        info.loopManager().addContinue(start + bytes.size());
+        if (mayJump) {
+            info.loopManager().addContinue(start + bytes.size());
+        }
         bytes.addAll(Util.zeroToBytes());
         return Pair.of(bytes, divergingInfo);
     }

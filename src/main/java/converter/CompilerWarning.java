@@ -32,10 +32,12 @@ public final class CompilerWarning {
             case ALLOW:
                 return;
             case WARN:
+                warningHolder.addWarning();
                 System.err.printf("Warning - file %s, line %d: %s%n%s%n",
                     info.getPath(), info.getLineNumber(), message, info.infoString());
                 return;
             case DENY:
+                warningHolder.addError();
                 var warnName = warn.annotationName();
                 if (warnName.isPresent()) {
                     throw CompilerException.format(

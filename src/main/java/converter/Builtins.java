@@ -19,6 +19,8 @@ public final class Builtins {
         throw new UnsupportedOperationException("No Builtins for you!");
     }
 
+    public static final Version CURRENT_VERSION = new Version(0, 0, 1);
+
     public static final Set<String> FORBIDDEN_NAMES = Set.of(
             "true",
             "false",
@@ -167,12 +169,24 @@ public final class Builtins {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("AssertionError"));
     }
 
+    public static TypeObject arithmeticError() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("ArithmeticError"));
+    }
+
     public static TypeObject throwable() {
         return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("Throwable"));
     }
 
     public static LangObject iter() {
         return Objects.requireNonNull(BUILTIN_MAP.get("iter"));
+    }
+
+    public static TypeObject hashable() {
+        return Objects.requireNonNull((TypeObject) BUILTIN_MAP.get("Hashable"));
+    }
+
+    private static LangObject format() {
+        return Objects.requireNonNull(BUILTIN_HIDDEN.get("__format_internal"));
     }
 
     public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
@@ -193,7 +207,7 @@ public final class Builtins {
         var peekInfo = AttributeInfo.method(peekFnInfo);
         var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERATOR_PARAM));
 
-        ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
+        ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of());
         ITERATOR.setAttributes(Map.of("next", nextInfo, "peek", peekInfo), Set.of("next"));
         ITERATOR.seal();
     }
@@ -245,7 +259,9 @@ public final class Builtins {
             null,  // ValueError
             null,  // NullError
             ITERABLE,
-            null   // AssertionError
+            null,  // AssertionError
+            null,  // __format_internal
+            ITERATOR
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(
@@ -259,6 +275,8 @@ public final class Builtins {
             Map.entry("tuple", TUPLE),
             Map.entry("null", NULL)
     ));
+
+    private static final Map<String, LangObject> BUILTIN_HIDDEN = new HashMap<>();
 
     public static LangObject constantNo(int index) {
         return TRUE_BUILTINS.get(index);
@@ -289,9 +307,14 @@ public final class Builtins {
                 : Optional.empty();
     }
 
-    public static void setBuiltin(String name, int index, LangObject value) {
-        assert !BUILTIN_MAP.containsKey(name);
-        BUILTIN_MAP.put(name, value);
+    public static void setBuiltin(String name, int index, boolean isHidden, LangObject value) {
+        if (!isHidden) {
+            assert !BUILTIN_MAP.containsKey(name);
+            BUILTIN_MAP.put(name, value);
+        } else {
+            assert !BUILTIN_HIDDEN.containsKey(name);
+            BUILTIN_HIDDEN.put(name, value);
+        }
         if (index != -1) {
             assert index < TRUE_BUILTINS.size() && TRUE_BUILTINS.get(index) == null;
             TRUE_BUILTINS.set(index, value);
@@ -306,6 +329,10 @@ public final class Builtins {
         private static final LangConstant NULL_TYPE_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(NULL_TYPE));
         private static final LangConstant NULL_ERROR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(nullError()));
         private static final LangConstant ASSERTION_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(assertError()));
+        private static final LangConstant ARITH_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(arithmeticError()));
+        private static final LangConstant CHAR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(charType()));
+        private static final LangConstant FORMAT_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(format()));
+        private static final LangConstant DECIMAL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(decimal()));
     }
 
     public static LangConstant iterConstant() {
@@ -332,6 +359,22 @@ public final class Builtins {
         return ConstantHolder.ASSERTION_CONSTANT;
     }
 
+    public static LangConstant arithmeticErrorConstant() {
+        return ConstantHolder.ARITH_CONSTANT;
+    }
+
+    public static LangConstant charConstant() {
+        return ConstantHolder.CHAR_CONSTANT;
+    }
+
+    public static LangConstant formatConstant() {
+        return ConstantHolder.FORMAT_CONSTANT;
+    }
+
+    public static LangConstant decimalConstant() {
+        return ConstantHolder.DECIMAL_CONSTANT;
+    }
+
     public static TypeObject[] deIterable(@NotNull TypeObject val) {
         if (val.sameBaseType(Builtins.iterable())) {
             var generics = val.getGenerics().get(0);
@@ -342,4 +385,24 @@ public final class Builtins {
             return deIterable(val.operatorReturnType(OpSpTypeNode.ITER, AccessLevel.PUBLIC).orElseThrow()[0]);
         }
     }
+
+    public static String builtinName(int builtinIndex) {
+        var result = constantNo(builtinIndex);
+        if (result == Builtins.nullType()) {
+            return "type(null)";
+        }
+        for (var pair : BUILTIN_MAP.entrySet()) {
+            if (pair.getValue() == result) {
+                return pair.getKey();
+            }
+        }
+        for (var pair : BUILTIN_HIDDEN.entrySet()) {
+            if (pair.getValue() == result) {
+                return pair.getKey();
+            }
+        }
+        throw new RuntimeException(String.format("Unknown builtin %s (number %d)", result, builtinIndex));
+    }
+
+    public static final Set<String> STABLE_FEATURES = Set.of();
 }

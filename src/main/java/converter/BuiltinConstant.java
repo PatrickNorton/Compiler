@@ -55,15 +55,6 @@ public final class BuiltinConstant implements LangConstant {
     }
 
     private String name() {
-        var result = Builtins.constantNo(builtinIndex);
-        if (result == Builtins.nullType()) {
-            return "type(null)";
-        }
-        for (var pair : Builtins.BUILTIN_MAP.entrySet()) {
-            if (pair.getValue() == result) {
-                return pair.getKey();
-            }
-        }
-        throw new RuntimeException(String.format("Unknown builtin %s (number %d)", result, builtinIndex));
+        return Builtins.builtinName(builtinIndex);
     }
 }

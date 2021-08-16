@@ -10,6 +10,12 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The interface representing builtin constant values.
+ *
+ * @author Patrick Norton
+ * @see CompilerInfo#addConstant(LangConstant)
+ */
 public interface LangConstant extends LangObject {
     @NotNull
     List<Byte> toBytes();

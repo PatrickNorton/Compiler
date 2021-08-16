@@ -38,6 +38,15 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return Collections.emptyList();
     }
 
+    public List<Byte> convertMustUse(String message) {
+        var fn = convertInner();
+        if (fn.getInfo().getReturns().length == 0) {
+            throw CompilerException.of("$mustUse annotation requires function to return a value", node);
+        }
+        fn.getInfo().setMustUse(message);
+        return Collections.emptyList();
+    }
+
     public List<Byte> convertSys() {
         if (!info.permissions().isStdlib()) {
             throw CompilerException.of("'$native(\"sys\")' is only allowed in stdlib files", node);
@@ -101,7 +110,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var generics = getGenerics();
         var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var trueRet = isGenerator ? new TypeObject[]{Builtins.iterable().generify(retTypes)} : retTypes;
+        var trueRet = isGenerator ? new TypeObject[]{iteratorType(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
         List<Byte> bytes = new ArrayList<>();
         var fn = new Function(node, fnInfo, bytes);
@@ -170,7 +179,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var argInfo = ArgumentInfo.of(node.getArgs(), info);
         var returns = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
-        var trueRet = isGenerator ? new TypeObject[] {Builtins.iterable().generify(returns)} : returns;
+        var trueRet = isGenerator ? new TypeObject[] {iteratorType(returns)} : returns;
         var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, generics, argInfo, trueRet);
         var func = new Function(node, fnInfo, new ArrayList<>());
         var previouslyDefined = info.getFn(func.getName());
@@ -189,6 +198,20 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var posArgs = convert(generics, args.getPositionArgs());
         return new ArgumentInfo(kwargs, normalArgs, posArgs);
     }
+
+    /*
+    private method convert(dict[str, TemplateParam] generics, list[TypedArgumentNode] args) {
+        final var converted = list(capacity=args.length)
+        for arg in args {
+            var argType = arg.getType()
+            TypeObject type = generics.get(argType.strName()) ?? self.info.getType(argType)
+            var mutability = MutableType.fromNullable(argType.getMutability())
+            var properType = type.makeConst() if  mutability.isConstType() else type.makeMut()
+            converted.add(Argument(arg.name.name, properType, arg.vararg, arg.lineInfo))
+        }
+        return converted
+    }
+     */
 
     @NotNull
     private Argument[] convert(Map<String, TemplateParam> generics, @NotNull TypedArgumentNode[] args) {
@@ -225,5 +248,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             CompilerInfo info, FunctionDefinitionNode node, boolean isBuiltin
     ) {
         return new FunctionDefinitionConverter(info, node).parseHeader(isBuiltin);
+    }
+
+    private static TypeObject iteratorType(TypeObject... params) {
+        return Builtins.iterator().makeMut().generify(params);
     }
 }

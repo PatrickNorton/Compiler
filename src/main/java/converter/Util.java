@@ -218,4 +218,11 @@ public final class Util {
     static boolean fitsInByte(BigInteger value) {
         return value.compareTo(BYTE_MAX) <= 0 && value.compareTo(BYTE_MIN) >= 0;
     }
+
+    static int decimalDigits(int value) {
+        if (value == 0) {
+            return 1;
+        }
+        return (int) (Math.log10(Math.abs(value)) + 1);
+    }
 }

@@ -71,10 +71,12 @@ public final class Levenshtein {
         String min = null;
         int dist = Integer.MAX_VALUE;
         for (var variable : candidates) {
-            var levDist = Levenshtein.distance(name, variable);
-            if (levDist < dist || min == null) {
-                min = variable;
-                dist = levDist;
+            if (!variable.isEmpty()) {
+                var levDist = Levenshtein.distance(name, variable);
+                if (levDist < dist || min == null) {
+                    min = variable;
+                    dist = levDist;
+                }
             }
         }
         var maxDistance = Math.max(name.length(), 3) / 3;
