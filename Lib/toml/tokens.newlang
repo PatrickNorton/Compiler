@@ -1,4 +1,4 @@
- export Tokenizer
+export Span, Token, StringToken, Error, WantedError, Tokenizer
 
 const class Span {
     int start
@@ -371,16 +371,22 @@ class CrlfFold from Iterator[tuple[int, char]] {
     }
 
     public mut method next() -> tuple[int, char]? {
-        return self.peeked.take() ?? self.iter.next()
+        return self.takePeeked() ?? self.iter.next()
     }
 
     public mut method peek() -> tuple[int, char]? {
-        if self.peeked.take()? as peek {
+        if self.takePeeked()? as peek {
             return peek
         } else {
             self.peeked = self.iter.next()
             return self.peeked
         }
+    }
+
+    private mut method takePeeked() -> tuple[int, char]? {
+        var result = self.peeked
+        self.peeked = null
+        return result
     }
 }
 
