@@ -219,6 +219,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
             return newArgs.length == 0
                     ? Optional.of(Pair.of(Collections.emptyMap(), Collections.emptySet()))
                     : Optional.empty();
+        } else if (newArgs.length == 0 && positionArgs.length + normalArgs.length != 0) {
+            return Optional.empty();
         }
         Map<Integer, TypeObject> result = new HashMap<>();
         Set<Integer> needsMakeOption = new HashSet<>();
