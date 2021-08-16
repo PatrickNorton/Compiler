@@ -207,7 +207,7 @@ public final class Builtins {
         var peekInfo = AttributeInfo.method(peekFnInfo);
         var iterInfo = MethodInfo.of(ITERABLE.generify(LineInfo.empty(), ITERATOR_PARAM));
 
-        ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of(OpSpTypeNode.ITER));
+        ITERATOR.setOperators(Map.of(OpSpTypeNode.ITER, iterInfo), Set.of());
         ITERATOR.setAttributes(Map.of("next", nextInfo, "peek", peekInfo), Set.of("next"));
         ITERATOR.seal();
     }
@@ -260,7 +260,8 @@ public final class Builtins {
             null,  // NullError
             ITERABLE,
             null,  // AssertionError
-            null   // __format_internal
+            null,  // __format_internal
+            ITERATOR
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(

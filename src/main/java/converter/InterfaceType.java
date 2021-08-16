@@ -148,8 +148,16 @@ public final class InterfaceType extends UserType<InterfaceType.Info> {
         for (var sup : info.supers) {
             if (sup instanceof UserType) {
                 var contract = ((UserType<?>) sup).contract();
-                methods.addAll(contract.getKey());
-                ops.addAll(contract.getValue());
+                for (var method : contract.getKey()) {
+                    if (info.attributes.get(method) == null && info.staticAttributes.get(method) == null) {
+                        methods.add(method);
+                    }
+                }
+                for (var operator : contract.getValue()) {
+                    if (info.operators.get(operator) == null) {
+                        ops.add(operator);
+                    }
+                }
             }
         }
         var contract = Pair.of(methods, ops);
