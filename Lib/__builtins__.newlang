@@ -314,3 +314,6 @@ $builtin("ArithmeticError", 33)
 class ArithmeticError from Throwable {
     public operator new (str msg, /) {}
 }
+
+$builtin("__test_internal", 34, hidden)
+func __test_internal(*Callable[[]] vars) {}

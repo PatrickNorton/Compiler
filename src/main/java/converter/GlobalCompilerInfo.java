@@ -214,6 +214,12 @@ public final class GlobalCompilerInfo {
         if (functions.get(0) == null) {
             var defaultNo = singleDefaultPos();
             var bytes = defaultNo != -1 ? defaultFunctions.get(defaultNo) : createDefaultFn();
+            if (isTest()) {
+                var index = TestFnConverter.convertTestStart(this);
+                bytes.add(Bytecode.CALL_FN.value);
+                bytes.addAll(Util.shortToBytes((short) index));
+                bytes.addAll(Util.shortZeroBytes());
+            }
             functions.set(0, new Function(new FunctionInfo("__default__"), bytes));
         }
         return functions;

@@ -79,11 +79,22 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             convertPredefined(predefined.orElseThrow(), name);
             return predefined.orElseThrow();
         } else {
-            return convertUndefined(name);
+            return convertUndefined(name).getKey();
         }
     }
 
-    private void convertPredefined(Function fn, String name) {
+    private FunctionConstant convertWithConstant() {
+        var name = node.getName().getName();
+        var predefined = info.getFn(name);
+        if (predefined.isPresent()) {
+            return convertPredefined(predefined.orElseThrow(), name);
+        } else {
+            return convertUndefined(name).getValue();
+        }
+    }
+
+    @NotNull
+    private FunctionConstant convertPredefined(@NotNull Function fn, String name) {
         var fnInfo = fn.getInfo();
         var generics = fnInfo.getGenerics().getParamMap();
         var index = info.fnIndex(name);
@@ -104,9 +115,11 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         varHolder.removeStackFrame();
         var maxSize = varHolder.resetMax();
         fn.setMax(maxSize);
+        return constVal;
     }
 
-    private Function convertUndefined(String name) {
+    @NotNull
+    private Pair<Function, FunctionConstant> convertUndefined(String name) {
         var generics = getGenerics();
         var retTypes = info.typesOf(node.getRetval());
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
@@ -128,7 +141,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         convertBody(bytes, isGenerator, retTypes);
         varHolder.removeLocalTypes();
         varHolder.removeStackFrame();
-        return fn;
+        return Pair.of(fn, constVal);
     }
 
     private void convertBody(List<Byte> bytes, boolean isGenerator, TypeObject... retTypes) {
@@ -248,6 +261,10 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             CompilerInfo info, FunctionDefinitionNode node, boolean isBuiltin
     ) {
         return new FunctionDefinitionConverter(info, node).parseHeader(isBuiltin);
+    }
+
+    public static FunctionConstant convertWithConstant(CompilerInfo info, FunctionDefinitionNode node) {
+        return new FunctionDefinitionConverter(info, node).convertWithConstant();
     }
 
     private static TypeObject iteratorType(TypeObject... params) {

@@ -75,10 +75,12 @@ public final class AnnotationConverter implements BaseConverter {
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "test":
                 CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, name);
-                return convertIfTest(start, false);
-            case "notTest":
-                CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, name);
-                return convertIfTest(start, true);
+                if (node instanceof FunctionDefinitionNode) {
+                    TestFnConverter.convertTestFunction(info, (FunctionDefinitionNode) node);
+                    return Collections.emptyList();
+                } else {
+                    throw CompilerException.of("Only functions may be used as tests", node);
+                }
             case "nonExhaustive":
                 if (node instanceof EnumDefinitionNode || node instanceof UnionDefinitionNode) {
                     CompilerWarning.warn(
