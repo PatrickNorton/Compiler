@@ -261,7 +261,8 @@ public final class Builtins {
             ITERABLE,
             null,  // AssertionError
             null,  // __format_internal
-            ITERATOR
+            ITERATOR,
+            null   // ArithmeticError
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(
