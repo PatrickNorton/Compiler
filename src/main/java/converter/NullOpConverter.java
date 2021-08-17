@@ -196,7 +196,6 @@ public final class NullOpConverter extends OperatorConverter {
     private static List<Byte> unwrapSecond(int start, @NotNull TestConverter converter) {
         List<Byte> bytes = new ArrayList<>(converter.convert(start));
         bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.SWAP_2.value);
         bytes.add(Bytecode.UNWRAP_OPTION.value);
         bytes.add(Bytecode.SWAP_2.value);
         return bytes;
