@@ -10,11 +10,13 @@ public final class CLArgs {
     private final Path target;
     private final boolean isTest;
     private final boolean isDebug;
+    private final int optLevel;
 
-    private CLArgs(Path target, boolean test, boolean isDebug) {
+    private CLArgs(Path target, boolean test, boolean isDebug, int optLevel) {
         this.target = target;
         this.isTest = test;
         this.isDebug = isDebug;
+        this.optLevel = optLevel;
     }
 
     public Path getTarget() {
@@ -29,12 +31,17 @@ public final class CLArgs {
         return isDebug;
     }
 
+    public int getOptLevel() {
+        return optLevel;
+    }
+
     @Contract("_ -> new")
     @NotNull
     public static CLArgs parse(@NotNull String[] args) {
         var file = Paths.get(args[0]);
         var test = false;
         var debug = true;
+        var optLevel = 0;
         for (int i = 1; i < args.length; i++) {
             var arg = args[i];
             switch (arg) {
@@ -42,14 +49,32 @@ public final class CLArgs {
                 case "-t":
                     test = true;
                     break;
-                case "-o":
+                case "--ndebug":
                     debug = false;
+                    break;
+                case "-O0":
+                    optLevel = 0;
+                    break;
+                case "-O1":
+                    optLevel = 1;
+                    break;
+                case "-O2":
+                    optLevel = 2;
+                    break;
+                case "-O3":
+                    optLevel = 3;
+                    break;
+                case "--cfg":
+                    throw new UnsupportedOperationException("--cfg argument unsupported");
+                case "-V":
+                case "--version":
+                    System.out.println("Version: 0.0.1");
                     break;
                 default:
                     var errorMsg = String.format("Illegal argument %s", arg);
                     throw new IllegalArgumentException(errorMsg);
             }
         }
-        return new CLArgs(file, test, debug);
+        return new CLArgs(file, test, debug, optLevel);
     }
 }
