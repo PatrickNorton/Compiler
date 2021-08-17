@@ -5,18 +5,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class CLArgs {
     private final Path target;
     private final boolean isTest;
     private final boolean isDebug;
     private final int optLevel;
+    private final Set<String> cfgOptions;
 
-    private CLArgs(Path target, boolean test, boolean isDebug, int optLevel) {
+    private CLArgs(Path target, boolean test, boolean isDebug, int optLevel, Set<String> cfgOptions) {
         this.target = target;
         this.isTest = test;
         this.isDebug = isDebug;
         this.optLevel = optLevel;
+        this.cfgOptions = cfgOptions;
     }
 
     public Path getTarget() {
@@ -35,6 +39,10 @@ public final class CLArgs {
         return optLevel;
     }
 
+    public Set<String> getCfgOptions() {
+        return cfgOptions;
+    }
+
     @Contract("_ -> new")
     @NotNull
     public static CLArgs parse(@NotNull String[] args) {
@@ -42,6 +50,7 @@ public final class CLArgs {
         var test = false;
         var debug = true;
         var optLevel = 0;
+        Set<String> cfgOptions = new HashSet<>();
         for (int i = 1; i < args.length; i++) {
             var arg = args[i];
             switch (arg) {
@@ -65,7 +74,9 @@ public final class CLArgs {
                     optLevel = 3;
                     break;
                 case "--cfg":
-                    throw new UnsupportedOperationException("--cfg argument unsupported");
+                    var cfgVal = args[i++];
+                    cfgOptions.add(cfgVal);
+                    break;
                 case "-V":
                 case "--version":
                     System.out.println("Version: 0.0.1");
@@ -75,6 +86,6 @@ public final class CLArgs {
                     throw new IllegalArgumentException(errorMsg);
             }
         }
-        return new CLArgs(file, test, debug, optLevel);
+        return new CLArgs(file, test, debug, optLevel, cfgOptions);
     }
 }

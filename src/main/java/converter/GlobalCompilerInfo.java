@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class for compiler information that is shared between all files.
@@ -399,6 +400,10 @@ public final class GlobalCompilerInfo {
 
     public List<FunctionConstant> getTestFunctions() {
         return testFunctions;
+    }
+
+    public Set<String> cfgValues() {
+        return arguments.getCfgOptions();
     }
 
     {  // Prevent "non-updating" compiler warning

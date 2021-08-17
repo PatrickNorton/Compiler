@@ -43,7 +43,7 @@ public final class CfgConverter {
                 case "debug":
                     return info.globalInfo().isDebug();
                 default:
-                    throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
+                    return info.globalInfo().cfgValues().contains(((VariableNode) value).getName());
             }
         } else if (value instanceof FunctionCallNode) {
             var name = ((FunctionCallNode) value).getVariable().getName();
