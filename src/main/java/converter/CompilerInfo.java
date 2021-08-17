@@ -190,13 +190,10 @@ public final class CompilerInfo {
      * Add a constant to the constant pool.
      *
      * @param value The value to add
+     * @return The index in the pool
      */
     public short addConstant(LangConstant value) {
-        globalInfo.addConstant(value);
-        if (globalInfo.indexOf(value) > Short.MAX_VALUE) {
-            throw CompilerInternalError.of("Too many constants", LineInfo.empty());
-        }
-        return (short) globalInfo.indexOf(value);
+        return globalInfo.addConstant(value);
     }
 
     /**
@@ -206,7 +203,7 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public short constIndex(LangConstant value) {
-        return globalInfo.containsConst(value) ? (short) globalInfo.indexOf(value) : addConstant(value);
+        return globalInfo.constIndex(value);
     }
 
     /**

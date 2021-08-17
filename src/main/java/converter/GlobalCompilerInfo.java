@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -51,9 +52,15 @@ public final class GlobalCompilerInfo {
      * Adds a constant to the global constant pool.
      *
      * @param value The constant to add
+     * @return The index in the pool
      */
-    public void addConstant(LangConstant value) {
+    public short addConstant(LangConstant value) {
         constants.add(value);
+        var index = indexOf(value);
+        if (index > Short.MAX_VALUE) {
+            throw CompilerInternalError.of("Too many constants", LineInfo.empty());
+        }
+        return (short) index;
     }
 
     /**
@@ -95,6 +102,16 @@ public final class GlobalCompilerInfo {
      */
     public void setConstant(int index, LangConstant value) {
         constants.set(index, value);
+    }
+
+    /**
+     * The index of a constant in the constant stack.
+     *
+     * @param value The name of the variable
+     * @return The index in the stack
+     */
+    public short constIndex(LangConstant value) {
+        return containsConst(value) ? (short) indexOf(value) : addConstant(value);
     }
 
     /**
