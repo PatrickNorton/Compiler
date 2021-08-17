@@ -23,6 +23,10 @@ public final class FunctionInfo {
         this("", ArgumentInfo.of(), returns);
     }
 
+    public FunctionInfo(String name, TypeObject... returns) {
+        this(name, ArgumentInfo.of(), returns);
+    }
+
     public FunctionInfo(String name, boolean isGenerator, TypeObject... returns) {
         this(name, isGenerator, ArgumentInfo.of(), returns);
     }

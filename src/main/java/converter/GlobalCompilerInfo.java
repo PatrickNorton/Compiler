@@ -32,6 +32,7 @@ public final class GlobalCompilerInfo {
     private final List<ClassInfo> classes = new ArrayList<>();
     private final Map<BaseType, Integer> classMap = new HashMap<>();
     private final ErrorCounter warnings = new ErrorCounter();
+    private final List<FunctionConstant> testFunctions = new ArrayList<>();
 
     public GlobalCompilerInfo(File destFile) {
         this.destFile = destFile;
@@ -196,7 +197,7 @@ public final class GlobalCompilerInfo {
         if (functions.get(0) == null) {
             var defaultNo = singleDefaultPos();
             var bytes = defaultNo != -1 ? defaultFunctions.get(defaultNo) : createDefaultFn();
-            functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
+            functions.set(0, new Function(new FunctionInfo("__default__"), bytes));
         }
         return functions;
     }
@@ -227,7 +228,7 @@ public final class GlobalCompilerInfo {
             var func = defaultFunctions.get(i);
             if (!func.isEmpty()) {
                 var fnName = String.format("__default__$%d", i);
-                var fn = new Function(new FunctionInfo(fnName, new ArgumentInfo()), func);
+                var fn = new Function(new FunctionInfo(fnName), func);
                 functions.add(fn);
                 result.add(Bytecode.CALL_FN.value);
                 result.addAll(Util.shortToBytes((short) (functions.size() - 1)));
@@ -351,6 +352,23 @@ public final class GlobalCompilerInfo {
     public List<ClassInfo> getClasses() {
         assert !classes.contains(null) : String.format("Class no. %d is null", classes.indexOf(null));
         return classes;
+    }
+
+    /**
+     * Returns whether the compilation is happening in test node.
+     *
+     * @return If the compilation is in test mode
+     */
+    public boolean isTest() {
+        return false;
+    }
+
+    public void addTestFunction(FunctionConstant index) {
+        testFunctions.add(index);
+    }
+
+    public List<FunctionConstant> getTestFunctions() {
+        return testFunctions;
     }
 
     {  // Prevent "non-updating" compiler warning
