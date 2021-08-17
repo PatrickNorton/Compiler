@@ -39,11 +39,9 @@ public final class CfgConverter {
                 case "false":
                     return false;
                 case "test":
-                    CompilerWarning.warn("Test mode is always off for now", WarningType.TODO, info, value);
-                    return false;
+                    return info.globalInfo().isTest();
                 case "debug":
-                    CompilerWarning.warn("Debug mode is always off for now", WarningType.TODO, info, value);
-                    return false;
+                    return info.globalInfo().isDebug();
                 default:
                     throw CompilerTodoError.of("Unknown cfg value: only true/false allowed so far", value);
             }

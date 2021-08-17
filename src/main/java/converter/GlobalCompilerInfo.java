@@ -386,11 +386,15 @@ public final class GlobalCompilerInfo {
      * @return If the compilation is in test mode
      */
     public boolean isTest() {
-        return false;
+        return arguments.isTest();
     }
 
     public void addTestFunction(FunctionConstant index) {
         testFunctions.add(index);
+    }
+
+    public boolean isDebug() {
+        return arguments.isDebug();
     }
 
     public List<FunctionConstant> getTestFunctions() {

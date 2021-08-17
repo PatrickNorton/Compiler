@@ -74,7 +74,6 @@ public final class AnnotationConverter implements BaseConverter {
                 CompilerWarning.warn("Frequency hints do not do anything yet", WarningType.TODO, info, name);
                 return BaseConverter.bytesWithoutAnnotations(start, node, info);
             case "test":
-                CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, name);
                 if (node instanceof FunctionDefinitionNode) {
                     TestFnConverter.convertTestFunction(info, (FunctionDefinitionNode) node);
                     return Collections.emptyList();
@@ -323,11 +322,7 @@ public final class AnnotationConverter implements BaseConverter {
             var stmt = (FunctionCallNode) annotation;
             switch (stmt.getVariable().getName()) {
                 case "test":
-                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, stmt);
-                    return false;
-                case "notTest":
-                    CompilerWarning.warn("Test mode is always turned off for now", WarningType.TODO, info, stmt);
-                    return true;
+                    return info.globalInfo().isTest();
                 case "cfg":
                     var converter = new CfgConverter(info, stmt);
                     return converter.convert();
