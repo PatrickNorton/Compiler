@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.CLArgs;
 import main.java.parser.LineInfo;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
@@ -21,6 +22,7 @@ import java.util.Map;
  */
 public final class GlobalCompilerInfo {
     private final File destFile;
+    private final CLArgs arguments;
 
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final List<SwitchTable> tables = new ArrayList<>();
@@ -35,8 +37,9 @@ public final class GlobalCompilerInfo {
     private final ErrorCounter warnings = new ErrorCounter();
     private final List<FunctionConstant> testFunctions = new ArrayList<>();
 
-    public GlobalCompilerInfo(File destFile) {
+    public GlobalCompilerInfo(File destFile, CLArgs args) {
         this.destFile = destFile;
+        this.arguments = args;
     }
 
     /**

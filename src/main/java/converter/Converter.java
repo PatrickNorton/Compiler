@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.CLArgs;
 import main.java.parser.Lined;
 import main.java.parser.TopNode;
 import main.java.util.Pair;
@@ -36,9 +37,9 @@ public final class Converter {
      * @param file The name of the file compiled
      * @param node The AST node to compile
      */
-    public static void convertToFile(@NotNull File file, TopNode node) {
+    public static void convertToFile(@NotNull File file, TopNode node, CLArgs args) {
         var destFile = file.getParentFile();
-        var info = new CompilerInfo(node, new GlobalCompilerInfo(destFile)).link();
+        var info = new CompilerInfo(node, new GlobalCompilerInfo(destFile, args)).link();
         ImportHandler.compileAll(info);
         info.writeToFile(file);
     }
