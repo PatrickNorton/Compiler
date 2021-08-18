@@ -406,6 +406,10 @@ public final class GlobalCompilerInfo {
         return arguments.getCfgOptions();
     }
 
+    public boolean optIsEnabled(String opt) {
+        return arguments.optIsEnabled(opt);
+    }
+
     {  // Prevent "non-updating" compiler warning
         anonymousNums.remove(0);
         staticVarNumbers.remove(0);

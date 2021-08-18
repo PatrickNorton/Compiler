@@ -5,7 +5,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class CLArgs {
@@ -13,13 +16,18 @@ public final class CLArgs {
     private final boolean isTest;
     private final boolean isDebug;
     private final int optLevel;
+    private final Map<String, Boolean> explicitOpts;
     private final Set<String> cfgOptions;
 
-    private CLArgs(Path target, boolean test, boolean isDebug, int optLevel, Set<String> cfgOptions) {
+    private CLArgs(
+            Path target, boolean test, boolean isDebug, int optLevel,
+            Map<String, Boolean> explicitOpts, Set<String> cfgOptions
+    ) {
         this.target = target;
         this.isTest = test;
         this.isDebug = isDebug;
         this.optLevel = optLevel;
+        this.explicitOpts = explicitOpts;
         this.cfgOptions = cfgOptions;
     }
 
@@ -43,6 +51,19 @@ public final class CLArgs {
         return cfgOptions;
     }
 
+    public boolean optIsEnabled(String opt) {
+        assert ALL_OPTIMIZATIONS.contains(opt);
+        if (explicitOpts.containsKey(opt)) {
+            return !explicitOpts.get(opt);
+        }
+        for (int i = 0; i < optLevel; i++) {
+            if (OPT_LIST.get(i).contains(opt)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Contract("_ -> new")
     @NotNull
     public static CLArgs parse(@NotNull String[] args) {
@@ -50,6 +71,7 @@ public final class CLArgs {
         var test = false;
         var debug = true;
         var optLevel = 0;
+        Map<String, Boolean> optimizations = new HashMap<>();
         Set<String> cfgOptions = new HashSet<>();
         for (int i = 1; i < args.length; i++) {
             var arg = args[i];
@@ -82,10 +104,63 @@ public final class CLArgs {
                     System.out.println("Version: 0.0.1");
                     break;
                 default:
+                    if (arg.startsWith("-f")) {
+                        updateOptimizations(arg.substring(2), optimizations, false);
+                    } else if (arg.startsWith("-F")) {
+                        updateOptimizations(arg.substring(2), optimizations, true);
+                    }
                     var errorMsg = String.format("Illegal argument %s", arg);
                     throw new IllegalArgumentException(errorMsg);
             }
         }
-        return new CLArgs(file, test, debug, optLevel, cfgOptions);
+        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions);
     }
+
+    private static void updateOptimizations(String name, @NotNull Map<String, Boolean> optimizations, boolean negative) {
+        if (optimizations.containsKey(name)) {
+            var errorMsg = String.format("Redefinition of optimization option %s", name);
+            throw new IllegalArgumentException(errorMsg);
+        } else if (!ALL_OPTIMIZATIONS.contains(name)) {
+            var errorMsg = String.format("Unknown optimization option %s", name);
+            throw new IllegalArgumentException(errorMsg);
+        } else {
+            optimizations.put(name, negative);
+        }
+    }
+
+    private static final Set<String> ALL_OPTIMIZATIONS = Set.of(
+            "const-bytes-object",
+            "dce",      // Dead code elimination
+            "dse",      // Dead store elimination
+            "gcse",     // Common subexpression elimination
+            "inline-functions",
+            "inline-functions-called-once",
+            "inline-small-functions",
+            "pure-const"
+    );
+
+    private static final Set<String> O0_OPTIMIZATIONS = Set.of();
+
+    private static final Set<String> O1_OPTIMIZATIONS = Set.of(
+            "const-bytes-object",
+            "dce",
+            "dse",
+            "inline-functions-called-once",
+            "pure-const"
+    );
+
+    private static final Set<String> O2_OPTIMIZATIONS = Set.of(
+            "gcse",
+            "inline-functions",
+            "inline-small-functions"
+    );
+
+    private static final Set<String> O3_OPTIMIZATIONS = Set.of();
+
+    private static final List<Set<String>> OPT_LIST = List.of(
+            O0_OPTIMIZATIONS,
+            O1_OPTIMIZATIONS,
+            O2_OPTIMIZATIONS,
+            O3_OPTIMIZATIONS
+    );
 }
