@@ -410,6 +410,10 @@ public final class GlobalCompilerInfo {
         return arguments.optIsEnabled(opt);
     }
 
+    public boolean shouldPrintBytecode() {
+        return arguments.shouldPrintBytecode();
+    }
+
     {  // Prevent "non-updating" compiler warning
         anonymousNums.remove(0);
         staticVarNumbers.remove(0);

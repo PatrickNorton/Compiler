@@ -52,7 +52,9 @@ public final class FileWriter {
      * @param file The file to write to
      */
     public void writeToFile(@NotNull File file) {
-        printDisassembly();
+        if (info.globalInfo().shouldPrintBytecode()) {
+            printDisassembly();
+        }
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdir()) {
                 throw new RuntimeException("Could not create file " + file);

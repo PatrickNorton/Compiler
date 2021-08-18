@@ -18,10 +18,12 @@ public final class CLArgs {
     private final int optLevel;
     private final Map<String, Boolean> explicitOpts;
     private final Set<String> cfgOptions;
+    private final boolean printBytecode;
 
     private CLArgs(
             Path target, boolean test, boolean isDebug, int optLevel,
-            Map<String, Boolean> explicitOpts, Set<String> cfgOptions
+            Map<String, Boolean> explicitOpts, Set<String> cfgOptions,
+            boolean printBytecode
     ) {
         this.target = target;
         this.isTest = test;
@@ -29,6 +31,7 @@ public final class CLArgs {
         this.optLevel = optLevel;
         this.explicitOpts = explicitOpts;
         this.cfgOptions = cfgOptions;
+        this.printBytecode = printBytecode;
     }
 
     public Path getTarget() {
@@ -49,6 +52,10 @@ public final class CLArgs {
 
     public Set<String> getCfgOptions() {
         return cfgOptions;
+    }
+
+    public boolean shouldPrintBytecode() {
+        return printBytecode;
     }
 
     public boolean optIsEnabled(String opt) {
@@ -73,6 +80,7 @@ public final class CLArgs {
         var optLevel = 0;
         Map<String, Boolean> optimizations = new HashMap<>();
         Set<String> cfgOptions = new HashSet<>();
+        var printBytecode = false;
         for (int i = 1; i < args.length; i++) {
             var arg = args[i];
             switch (arg) {
@@ -103,17 +111,22 @@ public final class CLArgs {
                 case "--version":
                     System.out.println("Version: 0.0.1");
                     break;
+                case "--print-bytecode":
+                    printBytecode = true;
+                    break;
                 default:
                     if (arg.startsWith("-f")) {
                         updateOptimizations(arg.substring(2), optimizations, false);
                     } else if (arg.startsWith("-F")) {
                         updateOptimizations(arg.substring(2), optimizations, true);
+                    } else {
+                        var errorMsg = String.format("Illegal argument %s", arg);
+                        throw new IllegalArgumentException(errorMsg);
                     }
-                    var errorMsg = String.format("Illegal argument %s", arg);
-                    throw new IllegalArgumentException(errorMsg);
+                    break;
             }
         }
-        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions);
+        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions, printBytecode);
     }
 
     private static void updateOptimizations(String name, @NotNull Map<String, Boolean> optimizations, boolean negative) {
