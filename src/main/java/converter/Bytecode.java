@@ -4,6 +4,7 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -141,6 +142,19 @@ public enum Bytecode {
         Type(int bytes) {
             byteCount = (byte) bytes;
         }
+
+        void assemble(List<Byte> bytes, int value) {
+            switch (byteCount) {
+                case 2:
+                    bytes.addAll(Util.shortToBytes((short) value));
+                    break;
+                case 4:
+                    bytes.addAll(Util.intToBytes(value));
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unknown byte count");
+            }
+        }
     }
 
     public final byte value;
@@ -168,6 +182,30 @@ public enum Bytecode {
 
     public int size() {
         return sum + 1;
+    }
+
+    public boolean isJump() {
+        return operands.length > 0 && operands[0] == Type.LOCATION;
+    }
+
+    @NotNull
+    public List<Byte> assemble(int firstParam, int secondParam) {
+        List<Byte> bytes = new ArrayList<>(size());
+        bytes.add(value);
+        switch (operands.length) {
+            case 0:
+                break;
+            case 1:
+                operands[0].assemble(bytes, firstParam);
+                break;
+            case 2:
+                operands[0].assemble(bytes, firstParam);
+                operands[1].assemble(bytes, secondParam);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown operand count");
+        }
+        return bytes;
     }
 
     private static final Map<Byte, Bytecode> VALUE_MAP;
