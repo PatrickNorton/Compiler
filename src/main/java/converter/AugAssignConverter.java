@@ -14,7 +14,6 @@ import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class AugAssignConverter implements BaseConverter {
@@ -29,19 +28,25 @@ public final class AugAssignConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         if (node.getOperator() == AugAssignTypeNode.NULL_COERCE) {
-            return convertNullCoerce(start);
+            return convertNullCoerce();
         }
         var name = removeIllegal(node.getName());
         if (name instanceof VariableNode) {
-            return convertVar(start);
+            return convertVar();
         } else if (name instanceof DottedVariableNode) {
             var last = ((DottedVariableNode) name).getLast();
             var postDot = removeIllegal(last.getPostDot());
             if (postDot instanceof VariableNode) {
-                return convertDot(start);
+                return convertDot();
             } else if (postDot instanceof IndexNode) {
-                return convertDotIndex(start);
+                return convertDotIndex();
             } else if (postDot instanceof DottedVariableNode) {
                 throw CompilerInternalError.of(
                         "Dotted variables should not have dotted variables as post-dots", name
@@ -52,7 +57,7 @@ public final class AugAssignConverter implements BaseConverter {
                 );
             }
         } else if (name instanceof IndexNode) {
-            return convertIndex(start);
+            return convertIndex();
         } else {
             throw CompilerInternalError.format(
                     "Type not filtered by removeIllegal(): %s", name, name.getClass()
@@ -61,7 +66,7 @@ public final class AugAssignConverter implements BaseConverter {
     }
 
     @NotNull
-    private List<Byte> convertVar(int start) {
+    private BytecodeList convertVar() {
         assert node.getName() instanceof VariableNode;
         var assignedConverter = TestConverter.of(info, node.getName(), 1);
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
@@ -69,17 +74,16 @@ public final class AugAssignConverter implements BaseConverter {
         var operator = node.getOperator().operator;
         var opInfo = converterReturn.operatorInfo(OpSpTypeNode.translate(operator), info);
         checkInfo(opInfo.orElse(null), assignedConverter.returnType()[0], valueConverter.returnType()[0]);
-        List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
-        bytes.addAll(valueConverter.convert(start));
-        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
-        bytes.add(Bytecode.STORE.value);
+        var bytes = new BytecodeList(assignedConverter.convert());
+        bytes.addAll(valueConverter.convert());
+        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator));
         var variable = (VariableNode) node.getName();
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
+        bytes.add(Bytecode.STORE, info.varIndex(variable));
         return bytes;
     }
 
     @NotNull
-    private List<Byte> convertDot(int start) {
+    private BytecodeList convertDot() {
         assert node.getName() instanceof DottedVariableNode;
         var operator = node.getOperator().operator;
         var trueOp = OpSpTypeNode.translate(operator);
@@ -92,34 +96,35 @@ public final class AugAssignConverter implements BaseConverter {
         var dotType = converterReturn.tryAttrType(node, strName, info);
         var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
-        List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.LOAD_DOT.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(strName))));
-        bytes.addAll(valueConverter.convert(start));
-        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
-        bytes.add(Bytecode.STORE_ATTR.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(strName))));
+        var bytes = new BytecodeList(assignedConverter.convert());
+        bytes.add(Bytecode.DUP_TOP);
+        bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(strName)));
+        bytes.addAll(valueConverter.convert());
+        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator));
+        bytes.add(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(strName)));
         return bytes;
     }
 
-    private List<Byte> convertDotIndex(int start) {
+    @NotNull
+    private BytecodeList convertDotIndex() {
         assert node.getName() instanceof DottedVariableNode;
         var name = (DottedVariableNode) node.getName();
         var pair = DotConverter.exceptLastIndex(info, name, 1);
         var assignedConverter = pair.getKey();
         var indices = pair.getValue();
-        return convertIndex(start, assignedConverter, indices);
+        return convertIndex(assignedConverter, indices);
     }
 
-    private List<Byte> convertIndex(int start) {
+    @NotNull
+    private BytecodeList convertIndex() {
         assert node.getName() instanceof IndexNode;
         var index = (IndexNode) node.getName();
         var assignedConverter = TestConverter.of(info, index.getVar(), 1);
-        return convertIndex(start, assignedConverter, index.getIndices());
+        return convertIndex(assignedConverter, index.getIndices());
     }
 
-    private List<Byte> convertIndex(int start, TestConverter assignedConverter, TestNode[] indices) {
+    @NotNull
+    private BytecodeList convertIndex(@NotNull TestConverter assignedConverter, TestNode[] indices) {
         var operator = node.getOperator().operator;
         var trueOp = OpSpTypeNode.translate(operator);
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
@@ -129,23 +134,21 @@ public final class AugAssignConverter implements BaseConverter {
         var dotType = attrInfo.getReturns()[0];
         var returnInfo = dotType.operatorInfo(trueOp, info.accessLevel(converterReturn));
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
-        var bytes = IndexConverter.convertDuplicate(start, assignedConverter, indices, info);
-        bytes.addAll(Util.shortToBytes((short) indices.length));
-        bytes.addAll(valueConverter.convert(start));
-        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator).value);
-        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
-        bytes.addAll(Util.shortToBytes((short) indices.length));
+        var bytes = IndexConverter.convertDuplicate(assignedConverter, indices, info, indices.length);
+        bytes.addAll(valueConverter.convert());
+        bytes.add(OperatorConverter.BYTECODE_MAP.get(operator));
+        bytes.add(Bytecode.STORE_SUBSCRIPT, indices.length);
         return bytes;
     }
 
-    private List<Byte> convertNullCoerce(int start) {
+    private BytecodeList convertNullCoerce() {
         var name = removeIllegal(node.getName());
         if (name instanceof VariableNode) {
-            return convertNullCoerceVar(start);
+            return convertNullCoerceVar();
         } else if (name instanceof DottedVariableNode) {
-            return convertNullCoerceDot(start);
+            return convertNullCoerceDot();
         } else if (name instanceof IndexNode) {
-            return convertNullCoerceIndex(start);
+            return convertNullCoerceIndex();
         } else {
             throw CompilerInternalError.format(
                     "Post-dot type not filtered by removeIllegal(): %s", name, name.getClass()
@@ -153,7 +156,8 @@ public final class AugAssignConverter implements BaseConverter {
         }
     }
 
-    private List<Byte> convertNullCoerceVar(int start) {
+    @NotNull
+    private BytecodeList convertNullCoerceVar() {
         var variable = (VariableNode) node.getName();
         if (info.variableIsImmutable(variable.getName())) {
             throw CompilerException.of("Cannot assign to immutable variable", node);
@@ -166,27 +170,25 @@ public final class AugAssignConverter implements BaseConverter {
             throw coerceError(node, variableType);
         }
         boolean needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
-        List<Byte> bytes = new ArrayList<>(assignedConverter.convert(start));
-        bytes.add(Bytecode.JUMP_NN.value);
-        int jumpLoc = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(valueConverter.convert(start));
+        var bytes = new BytecodeList(assignedConverter.convert());
+        var label = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_NN, label);
+        bytes.addAll(valueConverter.convert());
         if (needsMakeOption) {
-            bytes.add(Bytecode.MAKE_OPTION.value);
+            bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        bytes.add(Bytecode.STORE, info.varIndex(variable));
+        bytes.addLabel(label);
         return bytes;
     }
 
-    private List<Byte> convertNullCoerceDot(int start) {
+    private BytecodeList convertNullCoerceDot() {
         var name = (DottedVariableNode) node.getName();
         var postDot = removeIllegal(name.getLast().getPostDot());
         if (postDot instanceof VariableNode) {
-            return convertNullCoerceDotVar(start);
+            return convertNullCoerceDotVar();
         } else if (postDot instanceof IndexNode) {
-            return convertNullCoerceDottedIndex(start);
+            return convertNullCoerceDottedIndex();
         } else if (postDot instanceof DottedVariableNode) {
             throw CompilerInternalError.format("Dotted variables should not be part of a post-dot", postDot);
         } else {
@@ -196,7 +198,8 @@ public final class AugAssignConverter implements BaseConverter {
         }
     }
 
-    private List<Byte> convertNullCoerceDotVar(int start) {
+    @NotNull
+    private BytecodeList convertNullCoerceDotVar() {
         var name = (DottedVariableNode) node.getName();
         var pair = DotConverter.exceptLast(info, name, 1);
         var preDotConverter = pair.getKey();
@@ -210,44 +213,43 @@ public final class AugAssignConverter implements BaseConverter {
         }
         var needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
         var constIndex = info.constIndex(LangConstant.of(strName));
-        List<Byte> bytes = new ArrayList<>(preDotConverter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.LOAD_DOT.value);
-        bytes.addAll(Util.shortToBytes(constIndex));
-        bytes.add(Bytecode.JUMP_NN.value);
-        int jumpLoc = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(valueConverter.convert(start));
+        var bytes = new BytecodeList(preDotConverter.convert());
+        bytes.add(Bytecode.DUP_TOP);
+        bytes.add(Bytecode.LOAD_DOT, constIndex);
+        var label = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_NN, label);
+        bytes.addAll(valueConverter.convert());
         if (needsMakeOption) {
-            bytes.add(Bytecode.MAKE_OPTION.value);
+            bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.STORE_ATTR.value);
-        bytes.addAll(Util.shortToBytes(constIndex));
-        bytes.add(Bytecode.JUMP.value);
-        int jump2 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
-        bytes.add(Bytecode.POP_TOP.value);
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
+        bytes.add(Bytecode.STORE_ATTR, constIndex);
+        var label2 = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP, label2);
+        bytes.addLabel(label);
+        bytes.add(Bytecode.POP_TOP);
+        bytes.addLabel(label2);
         return bytes;
     }
 
-    private List<Byte> convertNullCoerceIndex(int start) {
+    @NotNull
+    private BytecodeList convertNullCoerceIndex() {
         var name = (IndexNode) node.getName();
         var preDotConverter = TestConverter.of(info, name.getVar(), 1);
         var postDotConverters = convertersOf(name.getIndices());
-        return convertNullIndex(start, preDotConverter, postDotConverters);
+        return convertNullIndex(preDotConverter, postDotConverters);
     }
 
-    private List<Byte> convertNullCoerceDottedIndex(int start) {
+    @NotNull
+    private BytecodeList convertNullCoerceDottedIndex() {
         var name = (DottedVariableNode) node.getName();
         var converterPair = DotConverter.exceptLastIndex(info, name, 1);
         var preDotConverter = converterPair.getKey();
         var postDotConverters = convertersOf(converterPair.getValue());
-        return convertNullIndex(start, preDotConverter, postDotConverters);
+        return convertNullIndex(preDotConverter, postDotConverters);
     }
 
-    private List<Byte> convertNullIndex(int start, TestConverter preDotConverter, TestConverter... postDotConverters) {
+    @NotNull
+    private BytecodeList convertNullIndex(@NotNull TestConverter preDotConverter, TestConverter... postDotConverters) {
         var name = node.getName();
         var valueConverter = TestConverter.of(info, node.getValue(), 1);
         var preDotType = preDotConverter.returnType()[0];
@@ -258,35 +260,30 @@ public final class AugAssignConverter implements BaseConverter {
             throw coerceError(node, variableType);
         }
         var needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
-        List<Byte> bytes = new ArrayList<>(preDotConverter.convert(start));
+        var bytes = new BytecodeList(preDotConverter.convert());
         for (var postDot : postDotConverters) {
-            bytes.addAll(postDot.convert(start + bytes.size()));
+            bytes.addAll(postDot.convert());
         }
         if (postDotConverters.length == 1) {
-            bytes.add(Bytecode.DUP_TOP_2.value);
+            bytes.add(Bytecode.DUP_TOP_2);
         } else {
-            bytes.add(Bytecode.DUP_TOP_N.value);
-            bytes.addAll(Util.shortToBytes((short) (postDotConverters.length + 1)));
+            bytes.add(Bytecode.DUP_TOP_N, postDotConverters.length + 1);
         }
-        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
-        bytes.addAll(Util.shortToBytes((short) postDotConverters.length));
-        bytes.add(Bytecode.JUMP_NN.value);
-        int jumpLoc = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(valueConverter.convert(start));
+        bytes.add(Bytecode.LOAD_SUBSCRIPT, postDotConverters.length);
+        var label = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_NN, label);
+        bytes.addAll(valueConverter.convert());
         if (needsMakeOption) {
-            bytes.add(Bytecode.MAKE_OPTION.value);
+            bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
-        bytes.addAll(Util.shortToBytes((short) (postDotConverters.length + 1)));
-        bytes.add(Bytecode.JUMP.value);
-        int jump2 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        bytes.add(Bytecode.STORE_SUBSCRIPT, postDotConverters.length + 1);
+        var label2 = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP, label2);
+        bytes.addLabel(label);
         for (int i = 0; i < postDotConverters.length + 1; i++) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
+        bytes.addLabel(label2);
         return bytes;
     }
 

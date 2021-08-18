@@ -12,7 +12,6 @@ import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class IncrementDecrementConverter implements BaseConverter {
@@ -24,51 +23,53 @@ public final class IncrementDecrementConverter implements BaseConverter {
         this.info = info;
     }
 
+    @Override
+    public @NotNull List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
     @NotNull
     @Override
-    public final List<Byte> convert(int start) {
+    public BytecodeList convert() {
         boolean isDecrement = node instanceof DecrementNode;
         assert isDecrement ^ node instanceof IncrementNode;
         if (node.getVariable() instanceof VariableNode) {
-            return convertVariable(start, isDecrement);
+            return convertVariable(isDecrement);
         } else if (node.getVariable() instanceof DottedVariableNode) {
-            return convertDot(start, isDecrement);
+            return convertDot(isDecrement);
         } else if (node.getVariable() instanceof IndexNode) {
-            return convertIndex(start, isDecrement);
+            return convertIndex(isDecrement);
         } else {
             throw CompilerInternalError.format("Non-variable %s not yet implemented", node, incName(isDecrement));
         }
     }
 
-    private List<Byte> convertVariable(int start, boolean isDecrement) {
+    @NotNull
+    private BytecodeList convertVariable(boolean isDecrement) {
         assert node.getVariable() instanceof VariableNode;
         var converter = TestConverter.of(info, node.getVariable(), 1);
         if (!Builtins.intType().isSuperclass(converter.returnType()[0])) {
             throw typeError(converter.returnType()[0], isDecrement);
         }
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.LOAD_CONST.value);
-        int constIndex = info.addConstant(LangConstant.of(1));
-        bytes.addAll(Util.shortToBytes((short) constIndex));
-        bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
+        var bytes = new BytecodeList(converter.convert());
+        bytes.add(Bytecode.LOAD_CONST, info.addConstant(LangConstant.of(1)));
+        bytes.add(isDecrement ? Bytecode.MINUS : Bytecode.PLUS);
         var variable = (VariableNode) node.getVariable();
         if (info.variableIsImmutable(variable.getName())) {
             throw CompilerException.format("Cannot %s non-mut variable", node, incName(isDecrement));
         }
-        short varIndex = info.varIndex(variable);
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(varIndex));
+        bytes.add(Bytecode.STORE, info.varIndex(variable));
         return bytes;
     }
 
-    private List<Byte> convertDot(int start, boolean isDecrement) {
+    private BytecodeList convertDot(boolean isDecrement) {
         assert node.getVariable() instanceof DottedVariableNode;
         var dot = (DottedVariableNode) node.getVariable();
         var last = dot.getLast().getPostDot();
         if (last instanceof VariableNode) {
-            return convertDotVar(start, dot, isDecrement);
+            return convertDotVar(dot, isDecrement);
         } else if (last instanceof IndexNode) {
-            return convertDotIndex(start, dot, isDecrement);
+            return convertDotIndex(dot, isDecrement);
         } else if (last instanceof FunctionCallNode) {
             throw CompilerException.format("Cannot %s result of function call", node, incName(isDecrement));
         } else if (last instanceof SpecialOpNameNode) {
@@ -78,7 +79,8 @@ public final class IncrementDecrementConverter implements BaseConverter {
         }
     }
 
-    private List<Byte> convertDotVar(int start, DottedVariableNode dot, boolean isDecrement) {
+    @NotNull
+    private BytecodeList convertDotVar(DottedVariableNode dot, boolean isDecrement) {
         assert node.getVariable() == dot;
         var pair = DotConverter.exceptLast(info, dot, 1);
         var converter = pair.getKey();
@@ -91,44 +93,40 @@ public final class IncrementDecrementConverter implements BaseConverter {
         if (!retType.canSetAttr(name, info)) {
             throw CompilerException.format("Cannot %s non-mut attribute", node, incName(isDecrement));
         }
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.LOAD_DOT.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
-        bytes.add((isDecrement ? Bytecode.MINUS : Bytecode.PLUS).value);
-        bytes.add(Bytecode.STORE_ATTR.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(name))));
+        var bytes = new BytecodeList(converter.convert());
+        bytes.add(Bytecode.DUP_TOP);
+        bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(name)));
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(1)));
+        bytes.add(isDecrement ? Bytecode.MINUS : Bytecode.PLUS);
+        bytes.add(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(name)));
         return bytes;
     }
 
-    private List<Byte> convertDotIndex(int start, DottedVariableNode dot, boolean isDecrement) {
+    @NotNull
+    private BytecodeList convertDotIndex(DottedVariableNode dot, boolean isDecrement) {
         assert node.getVariable() == dot;
         var pair = DotConverter.exceptLastIndex(info, dot, 1);
         var converter = pair.getKey();
         var indices = pair.getValue();
-        return finishIndex(start, isDecrement, converter, indices);
+        return finishIndex(isDecrement, converter, indices);
     }
 
-    private List<Byte> convertIndex(int start, boolean isDecrement) {
+    @NotNull
+    private BytecodeList convertIndex(boolean isDecrement) {
         assert node.getVariable() instanceof IndexNode;
         var index = (IndexNode) node.getVariable();
         var converter = TestConverter.of(info, index.getVar(), 1);
         var indices = index.getIndices();
-        return finishIndex(start, isDecrement, converter, indices);
+        return finishIndex(isDecrement, converter, indices);
     }
 
     @NotNull
-    private List<Byte> finishIndex(int start, boolean isDecrement, TestConverter converter, TestNode[] indices) {
+    private BytecodeList finishIndex(boolean isDecrement, @NotNull TestConverter converter, TestNode[] indices) {
         checkIndex(converter.returnType()[0], isDecrement);
-        var bytes = IndexConverter.convertDuplicate(start, converter, indices, info);
-        bytes.addAll(Util.intToBytes((short) indices.length));
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
-        bytes.add(Bytecode.PLUS.value);
-        bytes.add(Bytecode.STORE_SUBSCRIPT.value);
-        bytes.addAll(Util.shortToBytes((short) (indices.length + 1)));
+        var bytes = IndexConverter.convertDuplicate(converter, indices, info, indices.length);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(1)));
+        bytes.add(Bytecode.PLUS);
+        bytes.add(Bytecode.STORE_SUBSCRIPT, indices.length + 1);
         return bytes;
     }
 

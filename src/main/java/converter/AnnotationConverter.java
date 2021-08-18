@@ -35,30 +35,35 @@ public final class AnnotationConverter implements BaseConverter {
         this.info = info;
     }
 
-    @Override
     @NotNull
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
         switch (node.getAnnotations().length) {
             case 0:
-                return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                return BaseConverter.bytesWithoutAnnotations(node, info);
             case 1:
-                return convertName(node.getAnnotations()[0], start);
+                return convertName(node.getAnnotations()[0]);
             default:
                 throw CompilerTodoError.of("Multiple annotations on one statement", node);
         }
     }
 
-    private List<Byte> convertName(NameNode name, int start) {
+    private BytecodeList convertName(NameNode name) {
         if (name instanceof VariableNode) {
-            return convertVariable((VariableNode) name, start);
+            return convertVariable((VariableNode) name);
         } else if (name instanceof FunctionCallNode) {
-            return convertFunction((FunctionCallNode) name, start);
+            return convertFunction((FunctionCallNode) name);
         } else {
             throw CompilerTodoError.of("Other annotations", name);
         }
     }
 
-    private List<Byte> convertVariable(VariableNode name, int start) {
+    private BytecodeList convertVariable(@NotNull VariableNode name) {
         switch (name.getName()) {
             case "cfg":
             case "allow":
@@ -72,11 +77,11 @@ public final class AnnotationConverter implements BaseConverter {
                     throw CompilerException.of("Frequency hints may only be used on definitions", node);
                 }
                 CompilerWarning.warn("Frequency hints do not do anything yet", WarningType.TODO, info, name);
-                return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                return BaseConverter.bytesWithoutAnnotations(node, info);
             case "test":
                 if (node instanceof FunctionDefinitionNode) {
                     TestFnConverter.convertTestFunction(info, (FunctionDefinitionNode) node);
-                    return Collections.emptyList();
+                    return new BytecodeList();
                 } else {
                     throw CompilerException.of("Only functions may be used as tests", node);
                 }
@@ -85,7 +90,7 @@ public final class AnnotationConverter implements BaseConverter {
                     CompilerWarning.warn(
                             "Non-exhaustive enums/unions are not yet supported", WarningType.TODO, info, name
                     );
-                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    return BaseConverter.bytesWithoutAnnotations(node, info);
                 } else {
                     throw CompilerException.of("$nonExhaustive is only valid on enums and unions", name);
                 }
@@ -94,7 +99,7 @@ public final class AnnotationConverter implements BaseConverter {
                     return new FunctionDefinitionConverter(info, (FunctionDefinitionNode) node).convertDeprecated();
                 } else {
                     CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.TODO, info, name);
-                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    return BaseConverter.bytesWithoutAnnotations(node, info);
                 }
             case "native":
                 throw CompilerTodoError.of("'native' annotation", node);
@@ -105,7 +110,7 @@ public final class AnnotationConverter implements BaseConverter {
                     CompilerWarning.warn(
                             "'mustUse' annotation does not work on methods", WarningType.TODO, info, node
                     );
-                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    return BaseConverter.bytesWithoutAnnotations(node, info);
                 } else {
                     throw CompilerException.of("'mustUse' annotation is only valid on function definitions", node);
                 }
@@ -114,36 +119,37 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private List<Byte> convertIfTest(int start, boolean convert) {
+    @NotNull
+    private BytecodeList convertIfTest(boolean convert) {
         if (convert) {
-            return BaseConverter.bytesWithoutAnnotations(start, node, info);
+            return BaseConverter.bytesWithoutAnnotations(node, info);
         } else {
-            return Collections.emptyList();
+            return new BytecodeList();
         }
     }
 
-    private List<Byte> convertFunction(FunctionCallNode name, int start) {
+    private BytecodeList convertFunction(@NotNull FunctionCallNode name) {
         switch (name.getVariable().getName()) {
             case "cfg":
-                return convertIfTest(start, new CfgConverter(info, name).convert());
+                return convertIfTest(new CfgConverter(info, name).convert());
             case "inline":
-                return convertInline(start, name);
+                return convertInline(name);
             case "deprecated":
                 CompilerWarning.warn("Deprecation notices not yet implemented", WarningType.TODO, info, name);
-                return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                return BaseConverter.bytesWithoutAnnotations(node, info);
             case "allow":
             case "deny":
             case "forbid":
                 var warningHolder = info.warningHolder();
                 changeWarnings(name, warningHolder);
-                var bytes = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                var bytes = BaseConverter.bytesWithoutAnnotations(node, info);
                 warningHolder.popWarnings();
                 return bytes;
             case "builtin":
                 if (!info.permissions().isBuiltin()) {
                     throw CompilerException.of("'builtin' is an internal-only annotation", name);
                 } else if (node instanceof BaseClassNode || node instanceof FunctionDefinitionNode) {
-                    return Collections.emptyList();
+                    return new BytecodeList();
                 } else {
                     throw CompilerException.of(
                             "'builtin' annotation is only valid on class and function definitions", node
@@ -165,7 +171,7 @@ public final class AnnotationConverter implements BaseConverter {
                 }
             case "derive":
                 if (node instanceof BaseClassNode) {
-                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    return BaseConverter.bytesWithoutAnnotations(node, info);
                 } else {
                     throw CompilerException.of("'derive' annotation only works on class definitions", node);
                 }
@@ -182,7 +188,7 @@ public final class AnnotationConverter implements BaseConverter {
                 var features = getStrings(name.getParameters());
                 if (info.permissions().isStdlib()) {
                     info.addFeatures(features);
-                    var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    var result = BaseConverter.bytesWithoutAnnotations(node, info);
                     info.removeFeatures(features);
                     return result;
                 }
@@ -197,7 +203,7 @@ public final class AnnotationConverter implements BaseConverter {
                     }
                     info.addFeature(featureName);
                 }
-                var result = BaseConverter.bytesWithoutAnnotations(start, node, info);
+                var result = BaseConverter.bytesWithoutAnnotations(node, info);
                 info.removeFeatures(features);
                 return result;
             case "cfgAttr":
@@ -212,9 +218,9 @@ public final class AnnotationConverter implements BaseConverter {
                     if (!(attr.getArgument() instanceof NameNode)) {
                         throw CompilerException.of("Invalid format for attribute", attr.getArgument());
                     } else if (CfgConverter.valueOf(config.getArgument(), info)) {
-                        return convertName((NameNode) attr.getArgument(), start);
+                        return convertName((NameNode) attr.getArgument());
                     } else {
-                        return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                        return BaseConverter.bytesWithoutAnnotations(node, info);
                     }
                 }
             case "extern":
@@ -240,7 +246,7 @@ public final class AnnotationConverter implements BaseConverter {
                         CompilerWarning.warn(
                             "'mustUse' annotation does not work on methods", WarningType.TODO, info, node
                     );
-                    return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                    return BaseConverter.bytesWithoutAnnotations(node, info);
                     } else {
                         throw CompilerException.of(
                                 "'mustUse' annotation is only valid on function definitions", node
@@ -252,7 +258,8 @@ public final class AnnotationConverter implements BaseConverter {
         }
     }
 
-    private List<Byte> convertInline(int start, FunctionCallNode inline) {
+    @NotNull
+    private BytecodeList convertInline(@NotNull FunctionCallNode inline) {
         assert inline.getVariable().getName().equals("inline");
         if (!(node instanceof DefinitionNode)) {
             throw CompilerException.of("Frequency hints may only be used on definitions", node);
@@ -268,7 +275,7 @@ public final class AnnotationConverter implements BaseConverter {
                         CompilerWarning.warn(
                                 "Frequency hints do not do anything yet", WarningType.TODO, info, inline
                         );
-                        return BaseConverter.bytesWithoutAnnotations(start, node, info);
+                        return BaseConverter.bytesWithoutAnnotations(node, info);
                 }
             }
         }

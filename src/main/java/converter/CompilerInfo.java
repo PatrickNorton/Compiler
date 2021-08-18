@@ -9,6 +9,7 @@ import main.java.parser.VariableNode;
 import main.java.util.Counter;
 import main.java.util.HashCounter;
 import main.java.util.IndexedSet;
+import main.java.util.IntAllocator;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +36,7 @@ public final class CompilerInfo {
     private final LoopManager loopManager = new LoopManager();
     private final WarningHolder warnings;
     private final Counter<String> features = new HashCounter<>();
+    private final IntAllocator jumpLabels = new IntAllocator();
 
     private final VariableHolder varHolder;
 
@@ -876,6 +878,10 @@ public final class CompilerInfo {
         for (var feature : features) {
             removeFeature(feature);
         }
+    }
+
+    public int newJumpLabel() {
+        return jumpLabels.getNext();
     }
 
     /**

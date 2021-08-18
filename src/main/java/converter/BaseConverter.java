@@ -40,8 +40,18 @@ public interface BaseConverter {
     List<Byte> convert(int start);
 
     @NotNull
+    default BytecodeList convert() {
+        return new BytecodeList();
+    }
+
+    @NotNull
     default Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
         return Pair.of(convert(start), new DivergingInfo());
+    }
+
+    @NotNull
+    default Pair<BytecodeList, DivergingInfo> convertAndReturn() {
+        return Pair.of(convert(), new DivergingInfo());
     }
 
     @NotNull
@@ -49,8 +59,9 @@ public interface BaseConverter {
         return toBytes(tokens, info).convert(start);
     }
 
-    static List<Byte> bytesWithoutAnnotations(int start, AnnotatableNode tokens, CompilerInfo info) {
-        return withoutAnnotations(tokens, info).convert(start);
+    @NotNull
+    static BytecodeList bytesWithoutAnnotations(AnnotatableNode tokens, CompilerInfo info) {
+        return withoutAnnotations(tokens, info).convert();
     }
 
     static Pair<List<Byte>, DivergingInfo> bytesWithReturn(int start, BaseNode tokens, CompilerInfo info) {

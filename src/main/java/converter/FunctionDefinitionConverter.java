@@ -32,22 +32,33 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return Collections.emptyList();
     }
 
-    public List<Byte> convertDeprecated() {
-        var fn = convertInner();
-        fn.getInfo().setDeprecated(true);
-        return Collections.emptyList();
+    @NotNull
+    @Override
+    public BytecodeList convert() {
+        convertInner();
+        return new BytecodeList();
     }
 
-    public List<Byte> convertMustUse(String message) {
+    @NotNull
+    public BytecodeList convertDeprecated() {
+        var fn = convertInner();
+        fn.getInfo().setDeprecated(true);
+        return new BytecodeList();
+    }
+
+    @NotNull
+    public BytecodeList convertMustUse(String message) {
         var fn = convertInner();
         if (fn.getInfo().getReturns().length == 0) {
             throw CompilerException.of("$mustUse annotation requires function to return a value", node);
         }
         fn.getInfo().setMustUse(message);
-        return Collections.emptyList();
+        return new BytecodeList();
     }
 
-    public List<Byte> convertSys() {
+    @Contract(" -> new")
+    @NotNull
+    public BytecodeList convertSys() {
         if (!info.permissions().isStdlib()) {
             throw CompilerException.of("'$native(\"sys\")' is only allowed in stdlib files", node);
         }
@@ -66,7 +77,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
                 bytes.add(Bytecode.RETURN.value);
                 bytes.addAll(Util.shortToBytes((short) func.getReturns().length));
             }
-            return Collections.emptyList();
+            return new BytecodeList();
         } else {
             throw CompilerInternalError.of("System function should always be predefined", node);
         }

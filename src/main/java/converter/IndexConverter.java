@@ -152,7 +152,7 @@ public final class IndexConverter implements TestConverter {
     private Optional<LangConstant> bytesConstant(List<Byte> value) {
         var maybeIndex = intIndexConstant();
         if (maybeIndex.isPresent()) {
-            var index = maybeIndex.orElseThrow();
+            int index = maybeIndex.orElseThrow();
             if (index < value.size()) {
                 return Optional.of(LangConstant.of(value.get(index)));
             }
@@ -182,18 +182,17 @@ public final class IndexConverter implements TestConverter {
         return bytes;
     }
 
-    static List<Byte> convertDuplicate(int start, TestConverter converter, TestNode[] indices, CompilerInfo info) {
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+    static BytecodeList convertDuplicate(TestConverter converter, TestNode[] indices, CompilerInfo info, int argc) {
+        var bytes = new BytecodeList(converter.convert());
         for (var param : indices) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), param, info, 1));
+            bytes.addAll(TestConverter.bytes(param, info, 1));
         }
         if (indices.length == 1) {
-            bytes.add(Bytecode.DUP_TOP_2.value);
+            bytes.add(Bytecode.DUP_TOP_2);
         } else {
-            bytes.add(Bytecode.DUP_TOP_N.value);
-            bytes.addAll(Util.shortToBytes((short) (indices.length + 1)));
+            bytes.add(Bytecode.DUP_TOP_N, indices.length + 1);
         }
-        bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
+        bytes.add(Bytecode.LOAD_SUBSCRIPT, argc);
         return bytes;
     }
 }

@@ -66,6 +66,11 @@ public interface TestConverter extends BaseConverter {
     }
 
     @NotNull
+    static BytecodeList bytes(@NotNull TestNode node, CompilerInfo info, int retCount) {
+        return of(info, node, retCount).convert();
+    }
+
+    @NotNull
     static TypeObject[] returnType(TestNode node, CompilerInfo info, int retCount) {
         return of(info, node, retCount).returnType();
     }

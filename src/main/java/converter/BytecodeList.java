@@ -16,6 +16,14 @@ public final class BytecodeList {
         this.values = new ArrayList<>();
     }
 
+    public BytecodeList(@NotNull BytecodeList other) {
+        this.values = new ArrayList<>(other.values);
+    }
+
+    public BytecodeList(int initialCapacity) {
+        this.values = new ArrayList<>(initialCapacity);
+    }
+
     public void add(Bytecode bytecode) {
         this.values.add(new Value(bytecode));
     }
@@ -34,6 +42,18 @@ public final class BytecodeList {
 
     public void addAll(@NotNull BytecodeList other) {
         this.values.addAll(other.values);
+    }
+
+    public void addFirst(Bytecode bytecode) {
+        this.values.add(0, new Value(bytecode));
+    }
+
+    public void addFirst(Bytecode bytecode, int firstParam) {
+        this.values.add(0, new Value(bytecode, firstParam));
+    }
+
+    public void addFirst(Bytecode bytecode, int firstParam, int secondParam) {
+        this.values.add(0, new Value(bytecode, firstParam, secondParam));
     }
 
     @NotNull
