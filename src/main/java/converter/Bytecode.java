@@ -208,7 +208,6 @@ public enum Bytecode {
             case ARGC:
             case LOCATION:
             case VARIABLE:
-            case FUNCTION_NO:
             case STACK_POS:
             case TABLE_NO:
                 return Integer.toString(value);
@@ -218,6 +217,8 @@ public enum Bytecode {
                 return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
             case SYSCALL_NO:
                 return String.format("%d (%s)", value, Syscalls.nameOf(value));
+            case FUNCTION_NO:
+                return String.format("%d (%s)", value, info.getFunctions().get(value).getName());
             default:
                 throw new UnsupportedOperationException("Unknown enum value");
         }
