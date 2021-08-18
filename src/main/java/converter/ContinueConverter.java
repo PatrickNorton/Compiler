@@ -4,7 +4,6 @@ import main.java.parser.ContinueStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class ContinueConverter implements BaseConverter {
@@ -19,15 +18,20 @@ public final class ContinueConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        return convertAndReturn(start).getKey();
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
+        return convertAndReturn().getKey();
     }
 
     @Override
     @NotNull
-    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
-        List<Byte> bytes = new ArrayList<>();
+    public Pair<BytecodeList, DivergingInfo> convertAndReturn() {
+        var bytes = new BytecodeList();
         var divergingInfo = new DivergingInfo();
-        boolean mayJump;
         if (!node.getCond().isEmpty()) {
             var condConverter = TestConverter.of(info, node.getCond(), 1);
             var constant = condConverter.constantReturn();
@@ -39,31 +43,23 @@ public final class ContinueConverter implements BaseConverter {
                                     "Note: 'continue if true' is equivalent to 'continue'",
                             WarningType.TRIVIAL_VALUE, info, node
                     );
-                    bytes.add(Bytecode.JUMP.value);
-                    mayJump = true;
+                    bytes.add(Bytecode.JUMP, info.loopManager().continueLabel());
                 } else {
                     CompilerWarning.warn(
                             "'continue' condition is always false\n" +
                                     "Note: 'continue if false' will never be taken and can be removed",
                             WarningType.TRIVIAL_VALUE, info, node
                     );
-                    mayJump = false;
                 }
             } else {
-                bytes.addAll(condConverter.convert(start));
-                bytes.add(Bytecode.JUMP_TRUE.value);
-                mayJump = true;
+                bytes.addAll(condConverter.convert());
+                bytes.add(Bytecode.JUMP_TRUE, info.loopManager().continueLabel());
             }
             divergingInfo.possibleContinue();
         } else {
-            bytes.add(Bytecode.JUMP.value);
+            bytes.add(Bytecode.JUMP, info.loopManager().continueLabel());
             divergingInfo.knownContinue();
-            mayJump = true;
         }
-        if (mayJump) {
-            info.loopManager().addContinue(start + bytes.size());
-        }
-        bytes.addAll(Util.zeroToBytes());
         return Pair.of(bytes, divergingInfo);
     }
 }

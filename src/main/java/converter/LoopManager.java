@@ -70,6 +70,10 @@ public final class LoopManager {
         pointerSet.add(location);
     }
 
+    public int breakLabel(int levels) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Add a continue statement's pointer to the list.
      *
@@ -78,6 +82,10 @@ public final class LoopManager {
     public void addContinue(int location) {
         var pointerSet = continuePointers.computeIfAbsent(loopLevel.size(), k -> new HashSet<>());
         pointerSet.add(location);
+    }
+
+    public int continueLabel() {
+        throw new UnsupportedOperationException();
     }
 
     /**
