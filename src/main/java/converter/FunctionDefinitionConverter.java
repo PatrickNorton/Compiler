@@ -121,7 +121,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         varHolder.addStackFrame();
         checkGen();
         varHolder.addLocalTypes(fnInfo.toCallable(), generics);
-        convertBody(bytes, isGen, trueRet);
+        convertBody(bytes, isGen, index, trueRet);
         varHolder.removeLocalTypes();
         varHolder.removeStackFrame();
         var maxSize = varHolder.resetMax();
@@ -149,17 +149,19 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         varHolder.addStackFrame();
         checkGen();
         varHolder.addLocalTypes(fnInfo.toCallable(), new HashMap<>(generics));
-        convertBody(bytes, isGenerator, retTypes);
+        convertBody(bytes, isGenerator, index, retTypes);
         varHolder.removeLocalTypes();
         varHolder.removeStackFrame();
         return Pair.of(fn, constVal);
     }
 
-    private void convertBody(List<Byte> bytes, boolean isGenerator, TypeObject... retTypes) {
+    private void convertBody(List<Byte> bytes, boolean isGenerator, int fnNo, TypeObject... retTypes) {
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
         addArgs();
+        info.setFunctionNumber(fnNo);
         var pair = BaseConverter.bytesWithReturn(bytes.size(), node.getBody(), info);
+        info.removeFunctionNumber();
         bytes.addAll(pair.getKey());
         if (!isGenerator && retTypes.length > 0 && !pair.getValue().willReturn()) {
             CompilerWarning.warn("Function ends without returning", WarningType.NO_TYPE, info, node);

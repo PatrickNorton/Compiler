@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 public final class BigSwitchTable implements SwitchTable {
+    private final int functionNo;
     private final Map<BigInteger, Integer> values;
     private final int defaultVal;
 
-    public BigSwitchTable(Map<BigInteger, Integer> values, int default_stmt) {
+    public BigSwitchTable(int functionNo, Map<BigInteger, Integer> values, int default_stmt) {
+        this.functionNo = functionNo;
         this.values = values;
         this.defaultVal = default_stmt;
     }
@@ -30,18 +32,18 @@ public final class BigSwitchTable implements SwitchTable {
      * </pre></code>
      * </p>
      *
-     * @see SwitchTable#toBytes()
+     * @see SwitchTable#toBytes
      * @return The list of bytes represented
      */
     @Override
     @NotNull
-    public List<Byte> toBytes() {
+    public List<Byte> toBytes(Map<Integer, Integer> translation) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.BIG.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values.entrySet()) {
             bytes.addAll(BigintConstant.convertBigint(val.getKey()));
-            bytes.addAll(Util.intToBytes(val.getValue()));
+            bytes.addAll(Util.intToBytes(translation.get(val.getValue())));
         }
         bytes.addAll(Util.intToBytes(defaultVal));
         return bytes;
@@ -56,5 +58,10 @@ public final class BigSwitchTable implements SwitchTable {
         }
         value.append(String.format("default: %d%n", defaultVal));
         return value.toString();
+    }
+
+    @Override
+    public int functionNo() {
+        return functionNo;
     }
 }

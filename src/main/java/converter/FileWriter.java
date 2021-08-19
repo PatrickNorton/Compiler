@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The class that writes a compiled source to a file.
@@ -91,8 +93,13 @@ public final class FileWriter {
             writer.flush();
             var tables = info.getTables();
             writer.write(Util.toByteArray(tables.size()));
+            Map<Integer, Map<Integer, Integer>> translationCache = new HashMap<>();
             for (var tbl : tables) {
-                writer.write(Util.toByteArray(tbl.toBytes()));
+                var fnNo = tbl.functionNo();
+                var table = translationCache.computeIfAbsent(
+                        fnNo, x -> functions.get(x).getBytecode().getLabelMap()
+                );
+                writer.write(Util.toByteArray(tbl.toBytes(table)));
             }
             writer.flush();
         } catch (IOException e) {

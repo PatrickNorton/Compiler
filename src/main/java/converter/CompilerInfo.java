@@ -37,6 +37,7 @@ public final class CompilerInfo {
     private final WarningHolder warnings;
     private final Counter<String> features = new HashCounter<>();
     private final IntAllocator jumpLabels = new IntAllocator();
+    private final List<Integer> functionNumbers = new ArrayList<>();
 
     private final VariableHolder varHolder;
 
@@ -882,6 +883,18 @@ public final class CompilerInfo {
 
     public int newJumpLabel() {
         return jumpLabels.getNext();
+    }
+
+    public void setFunctionNumber(int value) {
+        functionNumbers.add(value);
+    }
+
+    public void removeFunctionNumber() {
+        functionNumbers.remove(functionNumbers.size() - 1);
+    }
+
+    public int getFunctionNumber() {
+        return functionNumbers.get(functionNumbers.size() - 1);
     }
 
     /**

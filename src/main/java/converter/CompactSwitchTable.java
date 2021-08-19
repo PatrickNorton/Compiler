@@ -4,12 +4,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class CompactSwitchTable implements SwitchTable {
+    private final int functionNo;
     private final List<Integer> values;
     private final int defaultVal;
 
-    public CompactSwitchTable(List<Integer> values, int defaultVal) {
+    public CompactSwitchTable(int functionNo, List<Integer> values, int defaultVal) {
+        this.functionNo = functionNo;
         this.values = values;
         this.defaultVal = defaultVal;
     }
@@ -28,17 +31,17 @@ public final class CompactSwitchTable implements SwitchTable {
      * The default index to jump to
      * </pre></code>
      * </p>
-     * @see SwitchTable#toBytes()
+     * @see SwitchTable#toBytes)
      * @return The list of bytes represented
      */
     @Override
     @NotNull
-    public List<Byte> toBytes() {
+    public List<Byte> toBytes(Map<Integer, Integer> translation) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.COMPACT.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values) {
-            bytes.addAll(Util.intToBytes(val));
+            bytes.addAll(Util.intToBytes(translation.get(val)));
         }
         bytes.addAll(Util.intToBytes(defaultVal));
         return bytes;
@@ -53,5 +56,10 @@ public final class CompactSwitchTable implements SwitchTable {
         }
         value.append(String.format("default: %d%n", defaultVal));
         return value.toString();
+    }
+
+    @Override
+    public int functionNo() {
+        return functionNo;
     }
 }

@@ -7,9 +7,6 @@ import main.java.util.OptionalBool;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class WhileConverter extends LoopConverter {
     private final WhileStatementNode node;
 
@@ -20,37 +17,31 @@ public final class WhileConverter extends LoopConverter {
 
     @NotNull
     @Override
-    protected List<Byte> trueConvert(int start) {
-        return trueConvertWithReturn(start).getKey();
+    protected BytecodeList trueConvert() {
+        return trueConvertWithReturn().getKey();
     }
 
     @Override
-    protected Pair<List<Byte>, DivergingInfo> trueConvertWithReturn(int start) {
-        List<Byte> bytes = new ArrayList<>();
+    @NotNull
+    protected Pair<BytecodeList, DivergingInfo> trueConvertWithReturn() {
+        var bytes = new BytecodeList();
         boolean hasAs = !node.getAs().isEmpty();
-        info.loopManager().setContinuePoint(start);
-        var condPair = convertCond(bytes, start, hasAs);
+        bytes.addLabel(info.loopManager().continueLabel());
+        var condPair = convertCond(bytes, hasAs);
         var isWhileTrue = condPair.getKey();
         var constantCondition = condPair.getValue();
-        int jumpLoc;
+        int jumpLbl = info.newJumpLabel();
         if (constantCondition.isPresent()) {
             if (!constantCondition.orElseThrow()) {
-                bytes.add(Bytecode.JUMP.value);
-                jumpLoc = bytes.size();
-                bytes.addAll(Util.zeroToBytes());
-            } else {
-                jumpLoc = -1;
+                bytes.add(Bytecode.JUMP, jumpLbl);
             }
         } else {
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            jumpLoc = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
+            bytes.add(Bytecode.JUMP_FALSE, jumpLbl);
         }
         if (hasAs) {
-            bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes(info.varIndex(node.getAs())));
+            bytes.add(Bytecode.STORE, info.varIndex(node.getAs()));
         }
-        var pair = BaseConverter.bytesWithReturn(start + bytes.size(), node.getBody(), info);
+        var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var body = pair.getKey();
         var willReturn = pair.getValue();
         if ((willReturn.willBreak() || willReturn.willReturn()) && !willReturn.mayContinue()) {
@@ -61,9 +52,7 @@ public final class WhileConverter extends LoopConverter {
         if (hasAs) {
             info.removeStackFrame();
         }
-        bytes.add(Bytecode.JUMP.value);
-        info.loopManager().addContinue(start + bytes.size());
-        bytes.addAll(Util.zeroToBytes());
+        bytes.add(Bytecode.JUMP, info.loopManager().continueLabel());
         if (!node.getNobreak().isEmpty()) {
             if (isWhileTrue) {
                 CompilerWarning.warn(
@@ -71,20 +60,20 @@ public final class WhileConverter extends LoopConverter {
                         WarningType.UNREACHABLE, info, node.getNobreak()
                 );
             }
-            var nobreakReturns = addNobreak(bytes, start, jumpLoc, !constantCondition.isTrue());
+            var nobreakReturns = addNobreak(bytes, jumpLbl, !constantCondition.isTrue());
             if (!isWhileTrue) {
                 willReturn.andWith(nobreakReturns);
             }
         } else if (hasAs) {
             willReturn.makeUncertain();  // 'while true' cannot have an 'as' clause
             if (!constantCondition.isTrue()) {
-                Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+                bytes.addLabel(jumpLbl);
             }
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         } else if (!isWhileTrue) {
             willReturn.makeUncertain();
             if (!constantCondition.isTrue()) {
-                Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+                bytes.addLabel(jumpLbl);
             }
         }
         if (isWhileTrue && !willReturn.mayBreak()) {
@@ -100,7 +89,8 @@ public final class WhileConverter extends LoopConverter {
         return Pair.of(bytes, willReturn);
     }
 
-    private Pair<Boolean, OptionalBool> convertCond(List<Byte> bytes, int start, boolean hasAs) {
+    @NotNull
+    private Pair<Boolean, OptionalBool> convertCond(BytecodeList bytes, boolean hasAs) {
         if (!hasAs) {
             if (node.getCond() instanceof VariableNode && ((VariableNode) node.getCond()).getName().equals("true")) {
                 return Pair.of(true, OptionalBool.of(true));
@@ -114,41 +104,41 @@ public final class WhileConverter extends LoopConverter {
                     );
                     return Pair.of(false, constant);
                 } else {
-                    var cond = converter.convert(start + bytes.size());
+                    var cond = converter.convert();
                     bytes.addAll(cond);
                     return Pair.of(false, OptionalBool.empty());
                 }
             }
         } else {
-            convertCondWithAs(bytes, start);
+            convertCondWithAs(bytes);
             return Pair.of(false, OptionalBool.empty());
         }
     }
 
-    private void convertCondWithAs(List<Byte> bytes, int start) {
+    private void convertCondWithAs(BytecodeList bytes) {
         var condition = node.getCond();
         if (!(condition instanceof OperatorNode)) {
             throw CompilerException.of(
                     "Cannot use 'as' here: condition must be 'instanceof' or 'is not null'", condition
             );
         }
-        var pair = OperatorConverter.convertWithAs(start + bytes.size(), (OperatorNode) condition, info, 1);
+        var pair = OperatorConverter.convertWithAs((OperatorNode) condition, info, 1);
         info.addStackFrame();
         info.addVariable(node.getAs().getName(), pair.getValue(), node.getAs());
         bytes.addAll(pair.getKey());
     }
 
-    private DivergingInfo addNobreak(@NotNull List<Byte> bytes, int start, int jumpLoc, boolean emplaceJump) {
-        var pair = BaseConverter.bytesWithReturn(start + bytes.size(), node.getNobreak(), info);
+    private DivergingInfo addNobreak(@NotNull BytecodeList bytes, int jumpLbl, boolean emplaceJump) {
+        var pair = BaseConverter.bytesWithReturn(node.getNobreak(), info);
         bytes.addAll(pair.getKey());
         if (!node.getAs().isEmpty()) {
-            int jumpPos = start + bytes.size() + Bytecode.JUMP.size() + Bytecode.POP_TOP.size();
-            bytes.add(Bytecode.JUMP.value);
-            bytes.addAll(Util.intToBytes(jumpPos));
+            int label = info.newJumpLabel();
+            bytes.add(Bytecode.JUMP, jumpLbl);
             if (emplaceJump) {
-                Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+                bytes.addLabel(jumpLbl);
             }
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
+            bytes.addLabel(label);
         }
         return pair.getValue();
     }

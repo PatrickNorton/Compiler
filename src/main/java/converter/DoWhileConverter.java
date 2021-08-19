@@ -3,9 +3,6 @@ package main.java.converter;
 import main.java.parser.DoStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class DoWhileConverter extends LoopConverter {
     private final DoStatementNode node;
 
@@ -16,16 +13,17 @@ public final class DoWhileConverter extends LoopConverter {
 
     @NotNull
     @Override
-    protected List<Byte> trueConvert(int start) {
-        List<Byte> bytes = new ArrayList<>(convertBody(start));
-        info.loopManager().setContinuePoint(start + bytes.size());
-        bytes.addAll(convertCond(start + bytes.size()));
-        bytes.add(Bytecode.JUMP_TRUE.value);
-        bytes.addAll(Util.intToBytes(start));
+    protected BytecodeList trueConvert() {
+        int label = info.newJumpLabel();
+        var bytes = new BytecodeList(convertBody());
+        bytes.addLabel(info.loopManager().continueLabel());
+        bytes.addAll(convertCond());
+        bytes.add(Bytecode.JUMP_TRUE, label);
         return bytes;
     }
 
-    private List<Byte> convertCond(int start) {
+    @NotNull
+    private BytecodeList convertCond() {
         var converter = TestConverter.of(info, node.getConditional(), 1);
         var constantReturn = converter.constantReturn();
         if (constantReturn.isPresent()) {
@@ -42,11 +40,11 @@ public final class DoWhileConverter extends LoopConverter {
                 );
             }
         }
-        return converter.convert(start);
+        return converter.convert();
     }
 
-    private List<Byte> convertBody(int start) {
-        var pair = BaseConverter.bytesWithReturn(start, node.getBody(), info);
+    private BytecodeList convertBody() {
+        var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var bytes = pair.getKey();
         var divergingInfo = pair.getValue();
         if ((divergingInfo.willBreak() || divergingInfo.willReturn()) && !divergingInfo.mayContinue()) {

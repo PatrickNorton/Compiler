@@ -24,14 +24,14 @@ public final class ForConverter extends LoopConverter {
     }
 
     @Override
-    protected List<Byte> trueConvert(int start) {
-        return trueConvertWithReturn(start).getKey();
+    protected BytecodeList trueConvert() {
+        return trueConvertWithReturn().getKey();
     }
 
     @NotNull
     @Contract(pure = true)
     @Override
-    public Pair<List<Byte>, DivergingInfo> trueConvertWithReturn(int start) {
+    public Pair<BytecodeList, DivergingInfo> trueConvertWithReturn() {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
         if (iterLen > varLen) {
@@ -41,32 +41,32 @@ public final class ForConverter extends LoopConverter {
                     node, iterLen, varLen
             );
         } else if (iterLen == 1) {
-            return convertSingleIter(start);
+            return convertSingleIter();
         } else {
-            return convertMultipleIter(start);
+            return convertMultipleIter();
         }
     }
 
     @NotNull
-    private Pair<List<Byte>, DivergingInfo> convertSingleIter(int start) {
+    private Pair<BytecodeList, DivergingInfo> convertSingleIter() {
         var retCount = node.getVars().length;
         var valueConverter = TestConverter.of(info, node.getIterables().get(0), 1);
-        List<Byte> bytes = new ArrayList<>();
-        addIter(info, start, bytes, valueConverter);
-        info.loopManager().setContinuePoint(start + bytes.size());
-        bytes.add(Bytecode.FOR_ITER.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(Util.shortToBytes((short) retCount));
+        var bytes = new BytecodeList();
+        addIter(info, bytes, valueConverter);
+        bytes.addLabel(info.loopManager().continueLabel());
+        var topLabel = info.newJumpLabel();
+        bytes.addLabel(topLabel);
+        var label = info.newJumpLabel();
+        bytes.add(Bytecode.FOR_ITER, label, retCount);
         for (int i = retCount - 1; i >= 0; i--) {
             addVariableStorage(bytes, i, valueConverter, false);
         }
-        var divergingInfo = addCleanup(start, bytes, jumpPos);
+        var divergingInfo = addCleanup(label, bytes);
         return Pair.of(bytes, divergingInfo);
     }
 
     @NotNull
-    private Pair<List<Byte>, DivergingInfo> convertMultipleIter(int start) {
+    private Pair<BytecodeList, DivergingInfo> convertMultipleIter() {
         var varLen = node.getVars().length;
         var iterLen = node.getIterables().size();
         if (varLen != iterLen) {
@@ -77,28 +77,26 @@ public final class ForConverter extends LoopConverter {
             );
         }
         List<TestConverter> valueConverters = new ArrayList<>();
-        List<Byte> bytes = new ArrayList<>();
+        var bytes = new BytecodeList();
         for (int i = 0; i < varLen; i++) {
             var iterator = node.getIterables().get(i);
             var valueConverter = TestConverter.of(info, iterator, 1);
             valueConverters.add(valueConverter);
-            addIter(info, start, bytes, valueConverter);
+            addIter(info, bytes, valueConverter);
         }
-        info.loopManager().setContinuePoint(start + bytes.size());
-        bytes.add(Bytecode.FOR_PARALLEL.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(Util.shortToBytes((short) varLen));
+        bytes.addLabel(info.loopManager().continueLabel());
+        var label = info.newJumpLabel();
+        bytes.add(Bytecode.FOR_PARALLEL, label, varLen);
         assert valueConverters.size() == varLen;
         for (int i = varLen - 1; i >= 0; i--) {
             var valueConverter = valueConverters.get(i);
             addVariableStorage(bytes, i, valueConverter, true);
         }
-        var divergingInfo = addCleanup(start, bytes, jumpPos);
+        var divergingInfo = addCleanup(label, bytes);
         return Pair.of(bytes, divergingInfo);
     }
 
-    private void addVariableStorage(List<Byte> bytes, int i, TestConverter valueConverter, boolean firstRet) {
+    private void addVariableStorage(BytecodeList bytes, int i, TestConverter valueConverter, boolean firstRet) {
         var typedVar = node.getVars()[i];
         var iteratorType = getIteratorType(i, valueConverter, firstRet);
         var variable = typedVar.getVariable();
@@ -122,27 +120,23 @@ public final class ForConverter extends LoopConverter {
                 throw CompilerException.format("Cannot assign to immutable variable '%s'", node, name);
             }
         }
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable)));
+        bytes.add(Bytecode.STORE, info.varIndex(variable));
     }
 
-    private DivergingInfo addCleanup(int start, @NotNull List<Byte> bytes, int jumpPos) {
-        var pair = BaseConverter.bytesWithReturn(start + bytes.size(), node.getBody(), info);
+    @NotNull
+    private DivergingInfo addCleanup(int label, @NotNull BytecodeList bytes) {
+        var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var divergingInfo = pair.getValue();
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.JUMP.value);
-        info.loopManager().addContinue(start + bytes.size());
-        bytes.addAll(Util.zeroToBytes());
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        bytes.add(Bytecode.JUMP, info.loopManager().continueLabel());
+        bytes.addLabel(label);
         if ((divergingInfo.willBreak() || divergingInfo.willReturn()) && !divergingInfo.mayContinue()) {
             CompilerWarning.warn("Loop executes no more than once", WarningType.UNREACHABLE, info, node);
         }
         if (node.getNobreak().isEmpty()) {
             divergingInfo.makeUncertain();
         } else {
-            var nobreak = BaseConverter.bytesWithReturn(
-                    start + bytes.size(), node.getNobreak(), info
-            );
+            var nobreak = BaseConverter.bytesWithReturn(node.getNobreak(), info);
             bytes.addAll(nobreak.getKey());
             divergingInfo.andWith(nobreak.getValue());
         }
@@ -176,21 +170,17 @@ public final class ForConverter extends LoopConverter {
         }
     }
 
-    static void addIter(
-            @NotNull CompilerInfo info, int start, @NotNull List<Byte> bytes, @NotNull TestConverter converter
-    ) {
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
-        bytes.addAll(convertIter(converter, start + bytes.size()));
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
+    static void addIter(@NotNull CompilerInfo info, @NotNull BytecodeList bytes, @NotNull TestConverter converter) {
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.addAll(convertIter(converter));
+        bytes.add(Bytecode.CALL_TOS, 1);
     }
 
-    private static List<Byte> convertIter(TestConverter converter, int start) {
+    private static BytecodeList convertIter(TestConverter converter) {
         if (converter instanceof IndexConverter && ((IndexConverter) converter).isSlice()) {
-            return ((IndexConverter) converter).convertIterSlice(start);
+            return ((IndexConverter) converter).convertIterSlice();
         } else {
-            return converter.convert(start);
+            return converter.convert();
         }
     }
 

@@ -48,6 +48,10 @@ public final class Function implements Lined {
         return bytes;
     }
 
+    public BytecodeList getBytecode() {
+        throw new UnsupportedOperationException();
+    }
+
     public FunctionInfo getInfo() {
         return info;
     }

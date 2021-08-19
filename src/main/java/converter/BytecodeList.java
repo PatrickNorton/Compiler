@@ -83,6 +83,20 @@ public final class BytecodeList {
         return bytes;
     }
 
+    @NotNull
+    public Map<Integer, Integer> getLabelMap() {
+        int index = 0;
+        Map<Integer, Integer> result = new HashMap<>();
+        for (var value : values) {
+            if (value.isLabel()) {
+                result.put(value.getFirstParam(), index);
+            } else {
+                index += value.getBytecodeType().size();
+            }
+        }
+        return result;
+    }
+
     private int findLabelIndex(int labelNo, Map<Integer, Integer> labelIndices, int currentIndex, int byteLen) {
         int bytecodeLen = byteLen;
         for (int i = currentIndex; i < values.size(); i++) {

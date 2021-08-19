@@ -4,8 +4,6 @@ import main.java.parser.DotimesStatementNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class DotimesConverter extends LoopConverter {
     private final DotimesStatementNode node;
@@ -19,7 +17,7 @@ public final class DotimesConverter extends LoopConverter {
 
     @NotNull
     @Override
-    public List<Byte> trueConvert(int start) {
+    public BytecodeList trueConvert() {
         var countConverter = TestConverter.of(info, node.getIterations(), 1);
         if (!Builtins.intType().isSuperclass(countConverter.returnType()[0])) {
             throw CompilerException.format(
@@ -31,16 +29,15 @@ public final class DotimesConverter extends LoopConverter {
         if (constant.isPresent()) {
             checkConstant(constant.orElseThrow());
         }
-        List<Byte> bytes = new ArrayList<>(countConverter.convert(start));
-        int topJump = start + bytes.size();
-        info.loopManager().setContinuePoint(topJump);
-        bytes.add(Bytecode.DOTIMES.value);
-        int jumpLoc = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(convertBody(start + bytes.size()));
-        bytes.add(Bytecode.JUMP.value);
-        bytes.addAll(Util.intToBytes(topJump));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        var bytes = new BytecodeList(countConverter.convert());
+        bytes.addLabel(info.loopManager().continueLabel());
+        int topLabel = info.newJumpLabel();
+        bytes.addLabel(topLabel);
+        int label = info.newJumpLabel();
+        bytes.add(Bytecode.DOTIMES, label);
+        bytes.addAll(convertBody());
+        bytes.add(Bytecode.JUMP, topLabel);
+        bytes.addLabel(label);
         return bytes;
     }
 
@@ -62,8 +59,8 @@ public final class DotimesConverter extends LoopConverter {
         }
     }
 
-    private List<Byte> convertBody(int start) {
-        var pair = BaseConverter.bytesWithReturn(start, node.getBody(), info);
+    private BytecodeList convertBody() {
+        var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var bytes = pair.getKey();
         var divergingInfo = pair.getValue();
         if ((divergingInfo.willBreak() || divergingInfo.willReturn()) && !divergingInfo.mayContinue()) {

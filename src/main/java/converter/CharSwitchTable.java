@@ -1,14 +1,18 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public final class CharSwitchTable implements SwitchTable {
+    private final int functionNo;
     private final Map<Integer, Integer> values;
     private final int defaultVal;
 
-    public CharSwitchTable(Map<Integer, Integer> values, int defaultVal) {
+    public CharSwitchTable(int functionNo, Map<Integer, Integer> values, int defaultVal) {
+        this.functionNo = functionNo;
         this.values = values;
         this.defaultVal = defaultVal;
     }
@@ -27,17 +31,18 @@ public final class CharSwitchTable implements SwitchTable {
      * </pre></code>
      * </p>
      *
-     * @see SwitchTable#toBytes()
+     * @see SwitchTable#toBytes
      * @return The list of bytes represented
      */
     @Override
-    public List<Byte> toBytes() {
+    @NotNull
+    public List<Byte> toBytes(Map<Integer, Integer> translation) {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.CHAR.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values.entrySet()) {
             bytes.addAll(Util.intToBytes(val.getKey()));
-            bytes.addAll(Util.intToBytes(val.getValue()));
+            bytes.addAll(Util.intToBytes(translation.get(val.getValue())));
         }
         bytes.addAll(Util.intToBytes(defaultVal));
         return bytes;
@@ -52,5 +57,10 @@ public final class CharSwitchTable implements SwitchTable {
         }
         value.append(String.format("default: %d%n", defaultVal));
         return value.toString();
+    }
+
+    @Override
+    public int functionNo() {
+        return functionNo;
     }
 }

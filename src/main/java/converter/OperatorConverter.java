@@ -108,7 +108,17 @@ public abstract class OperatorConverter implements TestConverter {
     }
 
     @NotNull
+    public static Pair<BytecodeList, TypeObject> convertWithAs(OperatorNode node, CompilerInfo info, int retCount) {
+        return of(info, node, retCount).convertWithAs();
+    }
+
+    @NotNull
     protected abstract Pair<List<Byte>, TypeObject> convertWithAs(int start);
+
+    @NotNull
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
+        throw new UnsupportedOperationException();
+    }
 
     protected static CompilerException asException(Lined lineInfo) {
         return CompilerException.of(

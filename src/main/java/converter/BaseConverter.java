@@ -69,6 +69,11 @@ public interface BaseConverter {
     }
 
     @NotNull
+    static Pair<BytecodeList, DivergingInfo> bytesWithReturn(BaseNode tokens, CompilerInfo info) {
+        return toBytes(tokens, info).convertAndReturn();
+    }
+
+    @NotNull
     private static BaseConverter toBytes(@NotNull BaseNode node, CompilerInfo info) {
         if (node instanceof AnnotatableNode) {
             return new AnnotationConverter(info, (AnnotatableNode) node);
