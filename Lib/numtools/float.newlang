@@ -1,0 +1,25 @@
+export float32, float64, float
+
+$native("float")
+const class float32 {
+    public operator + (float32 other, /) -> float32
+    public operator - (float32 other, /) -> float32
+    public operator * (float32 other, /) -> float32
+    public operator / (float32 other, /) -> float32
+    public operator % (float32 other, /) -> float32
+    public operator ** (float32 other, /) -> float32
+    public operator u- -> float32
+}
+
+$native("float")
+const class float64 {
+    public operator + (float64 other, /) -> float64
+    public operator - (float64 other, /) -> float64
+    public operator * (float64 other, /) -> float64
+    public operator / (float64 other, /) -> float64
+    public operator % (float64 other, /) -> float64
+    public operator ** (float64 other, /) -> float64
+    public operator u- -> float64
+}
+
+typedef float as float64
