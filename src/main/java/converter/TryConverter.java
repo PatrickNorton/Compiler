@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.TryStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class TryConverter implements BaseConverter {
@@ -18,56 +17,50 @@ public final class TryConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.ENTER_TRY.value);
-        var jump0 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
-        bytes.add(Bytecode.JUMP.value);
-        var jump1 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        Util.emplace(bytes, Util.intToBytes(bytes.size()), jump0);
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
+        var bytes = new BytecodeList();
+        var jump0 = info.newJumpLabel();
+        bytes.add(Bytecode.ENTER_TRY, jump0);
+        bytes.addAll(BaseConverter.bytes(node.getBody(), info));
+        var jump1 = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP, jump1);
+        bytes.addLabel(jump0);
         for (var except : node.getExcepted()) {
-            bytes.add(Bytecode.EXCEPT_N.value);
-            var constIndex = info.constIndex(info.getType(except).name());
-            bytes.addAll(Util.shortToBytes(constIndex));
+            bytes.add(Bytecode.EXCEPT_N, info.constIndex(info.getType(except).name()));
         }
         if (!node.getAsVar().isEmpty()) {
             var asVar = node.getAsVar();
             info.addVariable(asVar.getName(), TypeObject.union(info.typesOf(node.getExcepted())), asVar);
-            bytes.add(Bytecode.STORE.value);
-            bytes.addAll(Util.shortToBytes(info.varIndex(node.getAsVar())));
+            bytes.add(Bytecode.STORE, info.varIndex(node.getAsVar()));
         } else {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getExcept(), info));
-        bytes.add(Bytecode.JUMP.value);
-        var jump2 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
+        bytes.addAll(BaseConverter.bytes(node.getExcept(), info));
+        bytes.add(Bytecode.JUMP, jump1);
         if (!node.getFinallyStmt().isEmpty()) {
-            convertFinally(start, bytes, jump2);
+            convertFinally(bytes);
         }
-        Util.emplace(bytes, Util.intToBytes(bytes.size()), jump1);
-        Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
-        bytes.add(Bytecode.END_TRY.value);
-        bytes.addAll(Util.shortToBytes((short) node.getExcepted().length));
+        bytes.addLabel(jump1);
+        bytes.add(Bytecode.END_TRY, node.getExcepted().length);
         return bytes;
     }
 
-    private void convertFinally(int start, List<Byte> bytes, int jump2) {
+    private void convertFinally(BytecodeList bytes) {
         assert !node.getFinallyStmt().isEmpty();
-        int jump3;
+        Label jump3;
         if (node.getExcepted().length > 0) {
-            bytes.add(Bytecode.JUMP.value);
-            jump3 = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
+            jump3 = info.newJumpLabel();
+            bytes.add(Bytecode.JUMP, jump3);
         } else {
-            jump3 = -1;
+            jump3 = null;
         }
-        bytes.add(Bytecode.FINALLY.value);
-        var finallyResult = BaseConverter.bytesWithReturn(
-                start + bytes.size(), node.getFinallyStmt(), info
-        );
+        bytes.add(Bytecode.FINALLY);
+        var finallyResult = BaseConverter.bytesWithReturn(node.getFinallyStmt(), info);
         bytes.addAll(finallyResult.getKey());
         if (finallyResult.getValue().mayDiverge()) {
             CompilerWarning.warn(
@@ -76,8 +69,8 @@ public final class TryConverter implements BaseConverter {
                     WarningType.NO_TYPE, info, node.getFinallyStmt()
             );
         }
-        if (jump3 != -1) {
-            Util.emplace(bytes, Util.intToBytes(bytes.size()), jump2);
+        if (jump3 != null) {
+            bytes.addLabel(jump3);
         }
         // Work out some kinks first
         throw CompilerTodoError.of("Finally not implemented yet", node.getFinallyStmt());

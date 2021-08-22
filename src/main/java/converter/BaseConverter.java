@@ -60,6 +60,11 @@ public interface BaseConverter {
     }
 
     @NotNull
+    static BytecodeList bytes(BaseNode tokens, CompilerInfo info) {
+        return toBytes(tokens, info).convert();
+    }
+
+    @NotNull
     static BytecodeList bytesWithoutAnnotations(AnnotatableNode tokens, CompilerInfo info) {
         return withoutAnnotations(tokens, info).convert();
     }

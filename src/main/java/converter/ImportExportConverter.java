@@ -2,9 +2,7 @@ package main.java.converter;
 
 import main.java.parser.ImportExportNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.Collections;
 import java.util.List;
 
 public final class ImportExportConverter implements BaseConverter {
@@ -18,8 +16,13 @@ public final class ImportExportConverter implements BaseConverter {
 
     @NotNull
     @Override
-    @Unmodifiable
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         switch (node.getType()) {
             case IMPORT:
             case TYPEGET:
@@ -30,7 +33,7 @@ public final class ImportExportConverter implements BaseConverter {
             default:
                 throw CompilerInternalError.of("Unknown type for ImportExportNode: " + node.getType(), node);
         }
-        return Collections.emptyList();
+        return new BytecodeList();
     }
 
     private void addImport() {

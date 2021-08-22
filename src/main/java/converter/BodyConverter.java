@@ -4,7 +4,6 @@ import main.java.parser.StatementBodyNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class BodyConverter implements BaseConverter {
@@ -22,19 +21,25 @@ public final class BodyConverter implements BaseConverter {
         return convertAndReturn(start).getKey();
     }
 
+    @NotNull
+    @Override
+    public BytecodeList convert() {
+        return convertAndReturn().getKey();
+    }
+
     @Override
     @NotNull
-    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
+    public Pair<BytecodeList, DivergingInfo> convertAndReturn() {
         info.addStackFrame();
         var returned = new DivergingInfo();
         boolean warned = false;
-        List<Byte> bytes = new ArrayList<>();
+        var bytes = new BytecodeList();
         for (var statement : node) {
             if (returned.willDiverge() && !warned) {
                 CompilerWarning.warn("Unreachable statement", WarningType.UNREACHABLE, info, statement);
                 warned = true;
             }
-            var pair = BaseConverter.bytesWithReturn(start + bytes.size(), statement, info);
+            var pair = BaseConverter.bytesWithReturn(statement, info);
             if (!returned.willDiverge()) {
                 // When diverging is inevitable, don't add more information
                 // This helps analysis with infinite loops and 'continue'
