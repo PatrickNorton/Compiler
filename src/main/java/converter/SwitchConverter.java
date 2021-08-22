@@ -7,7 +7,6 @@ import main.java.parser.Lined;
 import main.java.parser.SwitchStatementNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import main.java.util.MutableInt;
 import main.java.util.Pair;
 import main.java.util.StringEscape;
 import org.jetbrains.annotations.Contract;
@@ -133,13 +132,13 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     ) {
         // TODO: Ensure 'default' statement is at the end
         var label = stmt.getLabel();
-        int jumpLabel = info.newJumpLabel();
+        var jumpLabel = info.newJumpLabel();
         if (!stmt.getAs().isEmpty()) {
             throw CompilerException.of("'as' clause not allowed here", stmt.getAs());
         }
         if (!(stmt instanceof DefaultStatementNode)) {
             assert label.length != 0;
-            int tmpLabel = info.newJumpLabel();
+            var tmpLabel = info.newJumpLabel();
             for (int i = 0; i < label.length; i++) {
                 bytes.add(Bytecode.DUP_TOP);
                 bytes.addAll(TestConverter.bytes(label[i], info, 1));
@@ -162,25 +161,25 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     private <T> Pair<BytecodeList, DivergingInfo> convertTbl(
             BiFunction<TestConverter, Lined, T> addToMap,
             Function<T, String> errorEscape,
-            @NotNull BiFunction<Map<T, Integer>, Integer, SwitchTable> createTable
+            @NotNull BiFunction<Map<T, Label>, Label, SwitchTable> createTable
     ) {
-        Map<T, Integer> jumps = new HashMap<>();
+        Map<T, Label> jumps = new HashMap<>();
         BytecodeList bytes = tblHeader();
-        var defaultVal = new MutableInt(0);
-        var pair = convertTblInner(addToMap, errorEscape, jumps, defaultVal);
-        var switchTable = createTable.apply(jumps, defaultVal.getValue());
+        var pair = convertTblInner(addToMap, errorEscape, jumps);
+        var switchTable = createTable.apply(jumps, pair.getDefaultVal());
         int tblIndex = info.addSwitchTable(switchTable);
         bytes.add(Bytecode.SWITCH_TABLE, tblIndex);
-        bytes.addAll(pair.getKey());
-        return Pair.of(bytes, pair.getValue());
+        bytes.addAll(pair.getBytes());
+        return Pair.of(bytes, pair.getDivergingInfo());
     }
 
     @NotNull
-    private <T> Pair<BytecodeList, DivergingInfo> convertTblInner(
+    private <T> TblReturn convertTblInner(
             BiFunction<TestConverter, Lined, T> addToMap,
             Function<T, String> errorEscape,
-            Map<T, Integer> jumps, MutableInt defaultVal
+            Map<T, Label> jumps
     ) {
+        Label defaultVal = null;
         DivergingInfo willReturn = null;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
         var bytes = new BytecodeList();
@@ -190,8 +189,8 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 throw asException(stmt.getAs());
             }
             if (stmt instanceof DefaultStatementNode) {
-                var pair = getDefaultVal(defaultVal.getValue(), bytes, stmt, retTypes);
-                defaultVal.setValue(pair.getKey());
+                var pair = getDefaultVal(defaultVal, bytes, stmt, retTypes);
+                defaultVal = pair.getKey();
                 willReturn = andWith(willReturn, pair.getValue());
                 continue;
             }
@@ -217,12 +216,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         if (willReturn == null) {
             willReturn = new DivergingInfo();
         }
-        if (defaultVal.getValue() == 0) {
+        if (defaultVal == null) {
             willReturn.makeUncertain();
-            defaultVal.setValue(info.newJumpLabel());
-            bytes.addLabel(defaultVal.getValue());
+            defaultVal = info.newJumpLabel();
+            bytes.addLabel(defaultVal);
         }
-        return Pair.of(bytes, willReturn);
+        return new TblReturn(bytes, willReturn, defaultVal);
     }
 
     @NotNull
@@ -280,29 +279,29 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @Contract("_, _ -> new")
     @NotNull
-    private SwitchTable getTbl(@NotNull Map<BigInteger, Integer> jumps, int defaultVal) {
+    private SwitchTable getTbl(@NotNull Map<BigInteger, Label> jumps, Label defaultVal) {
         var threshold = 2 * (long) jumps.size();
         var max = Collections.max(jumps.keySet());
         if (max.compareTo(BigInteger.valueOf(threshold)) > 0 || max.compareTo(BIG_MAX) > 0) {
-            return new BigSwitchTable(info.getFunctionNumber(), jumps, defaultVal);
+            return new BigSwitchTable(jumps, defaultVal);
         } else {
             var tblSize = max.intValueExact() + 1;
-            List<Integer> table = new ArrayList<>(tblSize);
+            List<Label> table = new ArrayList<>(tblSize);
             for (int i = 0; i < tblSize; i++) {
                 table.add(jumps.getOrDefault(BigInteger.valueOf(i), defaultVal));
             }
-            return new CompactSwitchTable(info.getFunctionNumber(), table, defaultVal);
+            return new CompactSwitchTable(table, defaultVal);
         }
     }
 
-    private SwitchTable charTbl(Map<Integer, Integer> jumps, int defaultVal) {
-        return new CharSwitchTable(info.getFunctionNumber(), jumps, defaultVal);
+    private SwitchTable charTbl(Map<Integer, Label> jumps, Label defaultVal) {
+        return new CharSwitchTable(jumps, defaultVal);
     }
 
     @Contract(value = "_, _ -> new", pure = true)
     @NotNull
-    private SwitchTable strTbl(Map<String, Integer> jumps, int defaultVal) {
-        return new StringSwitchTable(info.getFunctionNumber(), jumps, defaultVal);
+    private SwitchTable strTbl(Map<String, Label> jumps, Label defaultVal) {
+        return new StringSwitchTable(jumps, defaultVal);
     }
 
     private DivergingInfo convertBody(
@@ -339,16 +338,18 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         return pair.getValue();
     }
 
-    private Pair<Integer, DivergingInfo> getDefaultVal(int defaultVal, BytecodeList bytes,
+    @NotNull
+    private Pair<Label, DivergingInfo> getDefaultVal(Label defaultVal, BytecodeList bytes,
                                                        CaseStatementNode stmt, TypeObject[] retTypes) {
-        if (defaultVal != 0) {
+        if (defaultVal != null) {
             throw defaultException(stmt);
         }
         return convertDefault(bytes, (DefaultStatementNode) stmt, retTypes);
     }
 
-    private  Pair<Integer, DivergingInfo> convertDefault(@NotNull BytecodeList bytes,
-                                                         @NotNull DefaultStatementNode stmt, TypeObject[] retTypes) {
+    @NotNull
+    private Pair<Label, DivergingInfo> convertDefault(@NotNull BytecodeList bytes,
+                                                      @NotNull DefaultStatementNode stmt, TypeObject[] retTypes) {
         var defaultLbl = info.newJumpLabel();
         bytes.addLabel(defaultLbl);
         DivergingInfo willReturn;
@@ -365,26 +366,26 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     private Pair<BytecodeList, DivergingInfo> convertUnion(UnionTypeObject union) {
-        Map<Integer, Integer> jumps = new HashMap<>();
+        Map<Integer, Label> jumps = new HashMap<>();
         boolean hasAs = anyHasAs();
         var bytes = new BytecodeList(TestConverter.bytes(node.getSwitched(), info, 1));
         if (hasAs) {
             bytes.add(Bytecode.DUP_TOP);
         }
         bytes.add(Bytecode.VARIANT_NO);
-        var defaultVal = new MutableInt(0);
-        var pair = convertUnionInner(hasAs, union, jumps, defaultVal);
-        var switchTable = smallTbl(jumps, defaultVal.getValue());
+        var pair = convertUnionInner(hasAs, union, jumps);
+        var switchTable = smallTbl(jumps, pair.getDefaultVal());
         int tblIndex = info.addSwitchTable(switchTable);
         bytes.add(Bytecode.SWITCH_TABLE, tblIndex);
-        bytes.addAll(pair.getKey());
-        return Pair.of(bytes, pair.getValue());
+        bytes.addAll(pair.getBytes());
+        return Pair.of(bytes, pair.getDivergingInfo());
     }
 
     @NotNull
-    private Pair<BytecodeList, DivergingInfo> convertUnionInner(
-            boolean hasAs, UnionTypeObject union, Map<Integer, Integer> jumps, MutableInt defaultVal
+    private TblReturn convertUnionInner(
+            boolean hasAs, UnionTypeObject union, Map<Integer, Label> jumps
     ) {
+        Label defaultVal = null;
         var bytes = new BytecodeList();
         DivergingInfo willReturn = null;
         var retTypes = retCount == 0 ? new TypeObject[0] : returnType();
@@ -392,7 +393,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         Set<Integer> usedVariants = new HashSet<>();
         for (var stmt : node.getCases()) {
             if (stmt instanceof DefaultStatementNode) {
-                if (defaultVal.getValue() != 0) {
+                if (defaultVal != null) {
                     throw defaultException(stmt);
                 }
                 assert stmt.getAs().isEmpty();
@@ -401,7 +402,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                     bytes.add(Bytecode.POP_TOP);
                 }
                 var pair = convertDefault(bytes, (DefaultStatementNode) stmt, retTypes);
-                defaultVal.setValue(pair.getKey());
+                defaultVal = pair.getKey();
                 willReturn = andWith(willReturn, pair.getValue());
                 continue;
             }
@@ -473,12 +474,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 willReturn.makeUncertain();
             }
         }
-        if (defaultVal.getValue() == 0) {
+        if (defaultVal != null) {
             var label = info.newJumpLabel();
             bytes.addLabel(label);
-            defaultVal.setValue(label);
+            defaultVal = label;
         }
-        return Pair.of(bytes, willReturn);
+        return new TblReturn(bytes, willReturn, defaultVal);
     }
 
     private boolean anyHasAs() {
@@ -581,14 +582,14 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     @Contract("_, _ -> new")
-    private SwitchTable smallTbl(@NotNull Map<Integer, Integer> jumps, int defaultVal) {
+    private SwitchTable smallTbl(@NotNull Map<Integer, Label> jumps, Label defaultVal) {
         var max = Collections.max(jumps.keySet());
         var tblSize = max + 1;
-        List<Integer> table = new ArrayList<>(tblSize);
+        List<Label> table = new ArrayList<>(tblSize);
         for (int i = 0; i < tblSize; i++) {
             table.add(jumps.getOrDefault(i, defaultVal));
         }
-        return new CompactSwitchTable(info.getFunctionNumber(), table, defaultVal);
+        return new CompactSwitchTable(table, defaultVal);
     }
 
     private void addSwap(BytecodeList bytes, int distFromTop) {
@@ -650,6 +651,30 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
             return info1;
         } else {
             return info2;
+        }
+    }
+
+    private static final class TblReturn {
+        private final BytecodeList bytes;
+        private final DivergingInfo divergingInfo;
+        private final Label defaultVal;
+
+        public TblReturn(BytecodeList bytes, DivergingInfo divergingInfo, Label defaultVal) {
+            this.bytes = bytes;
+            this.divergingInfo = divergingInfo;
+            this.defaultVal = defaultVal;
+        }
+
+        public BytecodeList getBytes() {
+            return bytes;
+        }
+
+        public DivergingInfo getDivergingInfo() {
+            return divergingInfo;
+        }
+
+        public Label getDefaultVal() {
+            return defaultVal;
         }
     }
 }

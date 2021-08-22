@@ -68,9 +68,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
                 if (pair.getKey() == OpSpTypeNode.NEW) {
                     info.accessHandler().enterConstructor(type);
                 }
-                info.setFunctionNumber(-1);  // FIXME
                 var bodyPair = BaseConverter.bytesWithReturn(0, methodInfo.getBody(), info);
-                info.removeFunctionNumber();
                 var bytes = bodyPair.getKey();
                 if (endsWithoutReturning(type, fnInfo, bodyPair.getValue().willReturn())) {
                     CompilerWarning.warn("Function ends without returning", WarningType.NO_TYPE, info, methodInfo);

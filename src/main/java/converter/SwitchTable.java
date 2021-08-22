@@ -1,7 +1,6 @@
 package main.java.converter;
 
 import java.util.List;
-import java.util.Map;
 
 public interface SwitchTable {
     /**
@@ -14,11 +13,10 @@ public interface SwitchTable {
      *     For the currently used bytes, see {@link TableBytes}
      * </p>
      *
-     * @param translation The translation from label numbers to indices
      * @return The list of bytes represented
      * @see TableBytes
      */
-    List<Byte> toBytes(Map<Integer, Integer> translation);
+    List<Byte> toBytes();
 
     /**
      * The {@link String string} representation of the table, for use in
@@ -27,6 +25,4 @@ public interface SwitchTable {
      * @return The representation
      */
     String strDisassembly();
-
-    int functionNo();
 }

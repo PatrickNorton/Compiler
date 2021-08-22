@@ -14,7 +14,7 @@ public final class DoWhileConverter extends LoopConverter {
     @NotNull
     @Override
     protected BytecodeList trueConvert() {
-        int label = info.newJumpLabel();
+        var label = info.newJumpLabel();
         var bytes = new BytecodeList(convertBody());
         bytes.addLabel(info.loopManager().continueLabel());
         bytes.addAll(convertCond());

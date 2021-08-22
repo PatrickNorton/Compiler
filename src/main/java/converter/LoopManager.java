@@ -19,7 +19,7 @@ public final class LoopManager {
      */
     public void enterLoop(@NotNull CompilerInfo info, boolean hasContinue) {
         var breakLabel = info.newJumpLabel();
-        var continueLabel = hasContinue ? info.newJumpLabel() : -1;
+        var continueLabel = hasContinue ? info.newJumpLabel() : null;
         entries.add(new LoopEntry(hasContinue, breakLabel, continueLabel));
     }
 
@@ -40,7 +40,7 @@ public final class LoopManager {
      *     Care should be taken that this never be added to the bytecode list.
      * </p>
      */
-    public int breakLabel(int levels) {
+    public Label breakLabel(int levels) {
         return entries.get(entries.size() - levels + 1).getBreakLabel();
     }
 
@@ -52,22 +52,22 @@ public final class LoopManager {
      *     *once* per loop.
      * </p>
      */
-    public int continueLabel() {
+    public Label continueLabel() {
         for (int i = entries.size() - 1; i >= 0; i--) {
             var entry = entries.get(i);
             if (entry.hasContinue()) {
                 return entry.getContinueLabel();
             }
         }
-        return -1;
+        return null;
     }
 
     private static final class LoopEntry {
         private final boolean hasContinue;
-        private final int breakLabel;
-        private final int continueLabel;
+        private final Label breakLabel;
+        private final Label continueLabel;
 
-        public LoopEntry(boolean hasContinue, int breakLabel, int continueLabel) {
+        public LoopEntry(boolean hasContinue, Label breakLabel, Label continueLabel) {
             this.hasContinue = hasContinue;
             this.breakLabel = breakLabel;
             this.continueLabel = continueLabel;
@@ -77,11 +77,11 @@ public final class LoopManager {
             return hasContinue;
         }
 
-        public int getBreakLabel() {
+        public Label getBreakLabel() {
             return breakLabel;
         }
 
-        public int getContinueLabel() {
+        public Label getContinueLabel() {
             return continueLabel;
         }
     }

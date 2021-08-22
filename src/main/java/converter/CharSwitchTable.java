@@ -7,12 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class CharSwitchTable implements SwitchTable {
-    private final int functionNo;
-    private final Map<Integer, Integer> values;
-    private final int defaultVal;
+    private final Map<Integer, Label> values;
+    private final Label defaultVal;
 
-    public CharSwitchTable(int functionNo, Map<Integer, Integer> values, int defaultVal) {
-        this.functionNo = functionNo;
+    public CharSwitchTable(Map<Integer, Label> values, Label defaultVal) {
         this.values = values;
         this.defaultVal = defaultVal;
     }
@@ -36,15 +34,15 @@ public final class CharSwitchTable implements SwitchTable {
      */
     @Override
     @NotNull
-    public List<Byte> toBytes(Map<Integer, Integer> translation) {
+    public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.CHAR.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values.entrySet()) {
             bytes.addAll(Util.intToBytes(val.getKey()));
-            bytes.addAll(Util.intToBytes(translation.get(val.getValue())));
+            bytes.addAll(Util.intToBytes(val.getValue().getValue()));
         }
-        bytes.addAll(Util.intToBytes(defaultVal));
+        bytes.addAll(Util.intToBytes(defaultVal.getValue()));
         return bytes;
     }
 
@@ -53,14 +51,10 @@ public final class CharSwitchTable implements SwitchTable {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {
             var chr = new CharConstant(pair.getKey()).name();
-            value.append(String.format("%s: %d%n", chr, pair.getValue()));
+            value.append(String.format("%s: %d%n", chr, pair.getValue().getValue()));
         }
-        value.append(String.format("default: %d%n", defaultVal));
+        value.append(String.format("default: %d%n", defaultVal.getValue()));
         return value.toString();
     }
 
-    @Override
-    public int functionNo() {
-        return functionNo;
-    }
 }

@@ -9,7 +9,6 @@ import main.java.parser.VariableNode;
 import main.java.util.Counter;
 import main.java.util.HashCounter;
 import main.java.util.IndexedSet;
-import main.java.util.IntAllocator;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +35,6 @@ public final class CompilerInfo {
     private final LoopManager loopManager = new LoopManager();
     private final WarningHolder warnings;
     private final Counter<String> features = new HashCounter<>();
-    private final IntAllocator jumpLabels = new IntAllocator();
-    private final List<Integer> functionNumbers = new ArrayList<>();
 
     private final VariableHolder varHolder;
 
@@ -881,20 +878,11 @@ public final class CompilerInfo {
         }
     }
 
-    public int newJumpLabel() {
-        return jumpLabels.getNext();
-    }
 
-    public void setFunctionNumber(int value) {
-        functionNumbers.add(value);
-    }
-
-    public void removeFunctionNumber() {
-        functionNumbers.remove(functionNumbers.size() - 1);
-    }
-
-    public int getFunctionNumber() {
-        return functionNumbers.get(functionNumbers.size() - 1);
+    @Contract(value = " -> new", pure = true)
+    @NotNull
+    public Label newJumpLabel() {
+        return new Label();
     }
 
     /**

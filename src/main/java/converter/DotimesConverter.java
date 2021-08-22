@@ -31,9 +31,9 @@ public final class DotimesConverter extends LoopConverter {
         }
         var bytes = new BytecodeList(countConverter.convert());
         bytes.addLabel(info.loopManager().continueLabel());
-        int topLabel = info.newJumpLabel();
+        var topLabel = info.newJumpLabel();
         bytes.addLabel(topLabel);
-        int label = info.newJumpLabel();
+        var label = info.newJumpLabel();
         bytes.add(Bytecode.DOTIMES, label);
         bytes.addAll(convertBody());
         bytes.add(Bytecode.JUMP, topLabel);

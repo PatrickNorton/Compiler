@@ -210,14 +210,14 @@ public final class IfConverter implements BaseConverter {
         }
     }
 
-    public static int addJump(BytecodeList bytes, @NotNull TestNode cond, CompilerInfo info) {
+    public static Label addJump(BytecodeList bytes, @NotNull TestNode cond, CompilerInfo info) {
         if (!cond.isEmpty()) {
             bytes.addAll(TestConverter.bytes(cond, info, 1));
             var label = info.newJumpLabel();
             bytes.add(Bytecode.JUMP_FALSE, label);
             return label;
         } else {
-            return -1;
+            return null;
         }
     }
 }

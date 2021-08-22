@@ -124,7 +124,7 @@ public final class ForConverter extends LoopConverter {
     }
 
     @NotNull
-    private DivergingInfo addCleanup(int label, @NotNull BytecodeList bytes) {
+    private DivergingInfo addCleanup(Label label, @NotNull BytecodeList bytes) {
         var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var divergingInfo = pair.getValue();
         bytes.addAll(pair.getKey());

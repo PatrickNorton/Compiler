@@ -30,7 +30,7 @@ public final class WhileConverter extends LoopConverter {
         var condPair = convertCond(bytes, hasAs);
         var isWhileTrue = condPair.getKey();
         var constantCondition = condPair.getValue();
-        int jumpLbl = info.newJumpLabel();
+        var jumpLbl = info.newJumpLabel();
         if (constantCondition.isPresent()) {
             if (!constantCondition.orElseThrow()) {
                 bytes.add(Bytecode.JUMP, jumpLbl);
@@ -128,11 +128,11 @@ public final class WhileConverter extends LoopConverter {
         bytes.addAll(pair.getKey());
     }
 
-    private DivergingInfo addNobreak(@NotNull BytecodeList bytes, int jumpLbl, boolean emplaceJump) {
+    private DivergingInfo addNobreak(@NotNull BytecodeList bytes, Label jumpLbl, boolean emplaceJump) {
         var pair = BaseConverter.bytesWithReturn(node.getNobreak(), info);
         bytes.addAll(pair.getKey());
         if (!node.getAs().isEmpty()) {
-            int label = info.newJumpLabel();
+            var label = info.newJumpLabel();
             bytes.add(Bytecode.JUMP, jumpLbl);
             if (emplaceJump) {
                 bytes.addLabel(jumpLbl);

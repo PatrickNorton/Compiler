@@ -24,7 +24,7 @@ public final class YieldConverter implements BaseConverter {
     @NotNull
     public BytecodeList convert() {
         var bytes = new BytecodeList();
-        int jumpLbl = IfConverter.addJump(bytes, node.getCond(), info);
+        var jumpLbl = IfConverter.addJump(bytes, node.getCond(), info);
         if (node.getYielded().isEmpty()) {
             throw CompilerException.of("Empty yield statements are illegal", node);
         } else if (node.isFrom()) {
@@ -38,7 +38,7 @@ public final class YieldConverter implements BaseConverter {
             var converter = new ReturnListConverter(node.getYielded(), info, fnReturns, Bytecode.YIELD);
             bytes.addAll(converter.convert());
         }
-        if (jumpLbl != -1) {
+        if (jumpLbl != null) {
             bytes.addLabel(jumpLbl);
         }
         return bytes;

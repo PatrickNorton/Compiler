@@ -88,7 +88,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
     @NotNull
     private BytecodeList postJumpBytes() {
         var bytes = new BytecodeList(4);
-        int label = info.newJumpLabel();
+        var label = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_TRUE, label);
         bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.FALSE));
         bytes.add(Bytecode.RETURN, 1);
