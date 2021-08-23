@@ -5,10 +5,8 @@ import main.java.parser.ClassDefinitionNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode> implements BaseConverter {
@@ -16,10 +14,16 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         super(info, node);
     }
 
+
     @NotNull
     @Override
-    @Unmodifiable
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         var supers = info.typesOf(node.getSuperclasses());
         var converter = new ConverterHolder(info);
         var descriptors = node.getDescriptors();
@@ -55,7 +59,7 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         var superConstants = getSuperConstants(type);
         checkContract(type, type.getSupers());
         putInInfo(type, "class", superConstants, converter);
-        return Collections.emptyList();
+        return new BytecodeList();
     }
 
     private static boolean classIsConstant(@NotNull ConverterHolder holder) {

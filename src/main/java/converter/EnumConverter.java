@@ -23,6 +23,12 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     @Override
     @NotNull
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));
         var hasType = info.hasType(node.getName().strName());
@@ -51,19 +57,17 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         } else {
             addToInfo(type, "enum", superConstants, converter);
         }
-        return getInitBytes(start, converter.getOperators().get(OpSpTypeNode.NEW));
+        return getInitBytes(converter.getOperators().get(OpSpTypeNode.NEW));
     }
 
     @NotNull
-    private List<Byte> getInitBytes(int start, RawMethod newOperatorInfo) {
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.DO_STATIC.value);
-        int doStaticPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(node.getName().strName())));
+    private BytecodeList getInitBytes(RawMethod newOperatorInfo) {
+        var loopLabel = info.newJumpLabel();
+        BytecodeList bytes = new BytecodeList();
+        bytes.add(Bytecode.DO_STATIC, loopLabel);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(node.getName().strName()));
         for (var name : node.getNames()) {
-            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.add(Bytecode.DUP_TOP);
             if (name instanceof VariableNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
                     throw CompilerException.of(
@@ -72,9 +76,8 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                             name
                     );
                 }
-                bytes.add(Bytecode.DUP_TOP.value);
-                bytes.add(Bytecode.CALL_TOS.value);
-                bytes.addAll(Util.shortZeroBytes());
+                bytes.add(Bytecode.DUP_TOP);
+                bytes.add(Bytecode.CALL_TOS, 0);
             } else if (name instanceof FunctionCallNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
                     throw CompilerException.of(
@@ -83,22 +86,20 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                     );
                 }
                 var fnNode = (FunctionCallNode) name;
-                bytes.add(Bytecode.DUP_TOP.value);
+                bytes.add(Bytecode.DUP_TOP);
                 for (var arg : fnNode.getParameters()) {
-                    bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
+                    bytes.addAll(TestConverter.bytes(arg.getArgument(), info, 1));
                 }
-                bytes.add(Bytecode.CALL_TOS.value);
-                bytes.addAll(Util.shortToBytes((short) fnNode.getParameters().length));
+                bytes.add(Bytecode.CALL_TOS, fnNode.getParameters().length);
             } else {
                 throw CompilerInternalError.format(
                         "Node of type %s not a known EnumKeywordNode", name, name.getClass()
                 );
             }
-            bytes.add(Bytecode.STORE_ATTR.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(new StringConstant(name.getVariable().getName()))));
+            bytes.add(Bytecode.STORE_ATTR, info.constIndex(new StringConstant(name.getVariable().getName())));
         }
-        bytes.add(Bytecode.POP_TOP.value);
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), doStaticPos);
+        bytes.add(Bytecode.POP_TOP);
+        bytes.addLabel(loopLabel);
         return bytes;
     }
 
