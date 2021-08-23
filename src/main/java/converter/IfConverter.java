@@ -172,18 +172,6 @@ public final class IfConverter implements BaseConverter {
         return Pair.of(bytes, false);
     }
 
-    public static int addJump(int start, List<Byte> bytes, TestNode cond, CompilerInfo info) {
-        if (!cond.isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), cond, info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            var jumpPos = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-            return jumpPos;
-        } else {
-            return -1;
-        }
-    }
-
     public static Label addJump(BytecodeList bytes, @NotNull TestNode cond, CompilerInfo info) {
         if (!cond.isEmpty()) {
             bytes.addAll(TestConverter.bytes(cond, info, 1));

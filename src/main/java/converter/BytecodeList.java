@@ -24,6 +24,10 @@ public final class BytecodeList {
         this.values = new ArrayList<>(initialCapacity);
     }
 
+    private BytecodeList(List<Value> values) {
+        this.values = values;
+    }
+
     public void add(Bytecode bytecode) {
         this.values.add(new Value(bytecode));
     }
@@ -118,6 +122,11 @@ public final class BytecodeList {
 
     public boolean isEmpty() {
         return values.isEmpty();
+    }
+
+    @NotNull
+    public static BytecodeList of(Bytecode value) {
+        return new BytecodeList(List.of(new Value(value)));
     }
 
     private static final class Value {

@@ -6,8 +6,6 @@ import main.java.util.StringEscape;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -45,18 +43,23 @@ public final class StringConverter implements ConstantConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         assert !node.getPrefixes().contains(StringPrefix.FORMATTED);
         if (retCount == 0) {
             CompilerWarning.warn("String-like literal unused", WarningType.UNUSED, info, node);
-            return Collections.emptyList();
+            return new BytecodeList();
         }
         if (node.getPrefixes().contains(StringPrefix.REGEX)) {
             throw CompilerTodoError.of("Regex strings not yet supported", node);
         }
         int constIndex = info.addConstant(constant());
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes((short) constIndex));
+        var bytes = new BytecodeList();
+        bytes.add(Bytecode.LOAD_CONST, constIndex);
         return bytes;
     }
 

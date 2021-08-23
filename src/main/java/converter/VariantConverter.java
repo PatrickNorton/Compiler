@@ -2,7 +2,6 @@ package main.java.converter;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class VariantConverter implements TestConverter {
@@ -27,6 +26,12 @@ public final class VariantConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         if (retCount == 0) {
             CompilerWarning.warn("Unused variant access", WarningType.UNUSED, info, node);
         } else if (retCount > 1) {
@@ -35,12 +40,11 @@ public final class VariantConverter implements TestConverter {
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
         var retType = unionConverter.returnType()[0];
         assert retType instanceof TypeTypeObject;
-        List<Byte> bytes = new ArrayList<>(unionConverter.convert(start));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getValue(), info, 1));
-        bytes.add(Bytecode.MAKE_VARIANT.value);
-        bytes.addAll(Util.shortToBytes((short) node.getVariantNo()));
+        var bytes = new BytecodeList(unionConverter.convert());
+        bytes.addAll(TestConverter.bytes(node.getValue(), info, 1));
+        bytes.add(Bytecode.MAKE_VARIANT, node.getVariantNo());
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
