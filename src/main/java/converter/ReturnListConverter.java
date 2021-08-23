@@ -6,7 +6,6 @@ import main.java.parser.TestListNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class ReturnListConverter implements BaseConverter {
@@ -26,12 +25,18 @@ public final class ReturnListConverter implements BaseConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
         if (retTypes.length > 1 && values.size() == 1) {
-            return convertSingle(start);
+            return convertSingle();
         } else if (canTailCall()) {
-            return convertTailCall(start);
+            return convertTailCall();
         } else {
-            return convertMultiple(start);
+            return convertMultiple();
         }
     }
 
@@ -48,26 +53,27 @@ public final class ReturnListConverter implements BaseConverter {
         );
     }
 
-    private List<Byte> convertMultiple(int start) {
-        List<Byte> bytes = new ArrayList<>();
+    @NotNull
+    private BytecodeList convertMultiple() {
+        var bytes = new BytecodeList();
         checkReturnTypes();
         if (retTypes.length == 1) {
-            bytes.addAll(TestConverter.bytesMaybeOption(start, values.get(0), info, 1, retTypes[0]));
+            bytes.addAll(TestConverter.bytesMaybeOption(values.get(0), info, 1, retTypes[0]));
         } else if (!values.isEmpty()) {
             for (int i = 0; i < values.size(); i++) {
                 var retType = retTypes[i];
-                bytes.addAll(convertInner(start + bytes.size(), values.get(i), values.getVararg(i), retType));
+                bytes.addAll(convertInner(values.get(i), values.getVararg(i), retType));
             }
         }
-        bytes.add(value.value);
-        bytes.addAll(Util.shortToBytes((short) retTypes.length));
+        bytes.add(value, retTypes.length);
         return bytes;
     }
 
-    private List<Byte> convertInner(int start, TestNode stmt, String vararg, TypeObject retType) {
+    @NotNull
+    private BytecodeList convertInner(TestNode stmt, @NotNull String vararg, TypeObject retType) {
         switch (vararg) {
             case "":
-                return TestConverter.bytesMaybeOption(start, stmt, info, 1, retType);
+                return TestConverter.bytesMaybeOption(stmt, info, 1, retType);
             case "*":
                 var returnType = TestConverter.returnType(stmt, info, 1)[0];
                 if (returnType.sameBaseType(Builtins.tuple())) {
@@ -86,40 +92,39 @@ public final class ReturnListConverter implements BaseConverter {
         }
     }
 
-    private List<Byte> convertSingle(int start) {
+    @NotNull
+    private BytecodeList convertSingle() {
         assert values.size() == 1;
         var converter = TestConverter.of(info, values.get(0), retTypes.length);
         var retTypes = converter.returnType();
         checkSingleReturn(retTypes);
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        BytecodeList bytes = new BytecodeList(converter.convert());
         for (int i = retTypes.length - 1; i >= 0; i--) {
             if (OptionTypeObject.needsMakeOption(retTypes[i], retTypes[i])) {
                 int distFromTop = retTypes.length - i - 1;
                 addSwap(bytes, distFromTop);
-                bytes.add(Bytecode.MAKE_OPTION.value);
+                bytes.add(Bytecode.MAKE_OPTION);
                 addSwap(bytes, distFromTop);
             }
         }
-        bytes.add(value.value);
-        bytes.addAll(Util.shortToBytes((short) retTypes.length));
+        bytes.add(value, retTypes.length);
         return bytes;
     }
 
-    private void addSwap(List<Byte> bytes, int distFromTop) {
+    private void addSwap(BytecodeList bytes, int distFromTop) {
         switch (distFromTop) {
             case 0:
                 return;
             case 1:
-                bytes.add(Bytecode.SWAP_2.value);
+                bytes.add(Bytecode.SWAP_2);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_STACK.value);
-                bytes.addAll(Util.shortZeroBytes());
-                bytes.addAll(Util.shortToBytes((short) distFromTop));
+                bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
         }
     }
 
-    private List<Byte> convertTailCall(int start) {
+    @NotNull
+    private BytecodeList convertTailCall() {
         assert canTailCall();
         var node = (FunctionCallNode) values.get(0);
         var converter = new FunctionCallConverter(info, node, 1);
@@ -127,9 +132,8 @@ public final class ReturnListConverter implements BaseConverter {
         if (!retTypes[0].isSuperclass(retType)) {
             throw typeError(values.get(0), 0, retTypes[0], retType);
         }
-        List<Byte> bytes = new ArrayList<>(converter.convertTail(start));
-        bytes.add(Bytecode.RETURN.value);  // Necessary b/c tail-call may delegate to normal call at runtime
-        bytes.addAll(Util.shortToBytes((short) 1));
+        BytecodeList bytes = new BytecodeList(converter.convertTail());
+        bytes.add(Bytecode.RETURN, 1);  // Necessary b/c tail-call may delegate to normal call at runtime
         return bytes;
     }
 

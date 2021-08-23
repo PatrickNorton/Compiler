@@ -91,11 +91,31 @@ public interface TestConverter extends BaseConverter {
     }
 
     @NotNull
+    static BytecodeList bytesMaybeOption(@NotNull TestConverter converter, TypeObject endType) {
+        var retType = converter.returnType()[0];
+        if (endType instanceof OptionTypeObject && !(retType instanceof OptionTypeObject)) {
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.MAKE_OPTION);
+            return bytes;
+        } else {
+            return converter.convert();
+        }
+    }
+
+    @NotNull
     static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
                                        int retCount, TypeObject endType) {
         var converter = endType instanceof OptionTypeObject
                 ? of(info, node, retCount) : of(info, node, retCount, endType);
         return bytesMaybeOption(converter, start, endType);
+    }
+
+    @NotNull
+    static BytecodeList bytesMaybeOption(@NotNull TestNode node, CompilerInfo info,
+                                       int retCount, TypeObject endType) {
+        var converter = endType instanceof OptionTypeObject
+                ? of(info, node, retCount) : of(info, node, retCount, endType);
+        return bytesMaybeOption(converter, endType);
     }
 
     @NotNull

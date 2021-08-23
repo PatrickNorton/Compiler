@@ -4,7 +4,6 @@ import main.java.parser.DictLiteralNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class DictLiteralConverter implements TestConverter {
@@ -47,13 +46,19 @@ public final class DictLiteralConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
+        BytecodeList bytes = new BytecodeList();
         assert node.getKeys().length == node.getValues().length;
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects
             CompilerWarning.warn("Unnecessary dict creation", WarningType.UNUSED, info, node);
             for (var pair : node.pairs()) {
-                bytes.addAll(BaseConverter.bytes(start + bytes.size(), pair.getKey(), info));
-                bytes.addAll(BaseConverter.bytes(start + bytes.size(), pair.getValue(), info));
+                bytes.addAll(BaseConverter.bytes(pair.getKey(), info));
+                bytes.addAll(BaseConverter.bytes(pair.getValue(), info));
             }
         } else {
             if (retCount != 1) {
@@ -62,11 +67,10 @@ public final class DictLiteralConverter implements TestConverter {
             var keyType = returnTypes(node.getKeys());
             var valType = returnTypes(node.getValues());
             for (var pair : node.pairs()) {
-                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), pair.getKey(), info, 1, keyType));
-                bytes.addAll(TestConverter.bytesMaybeOption(start + bytes.size(), pair.getValue(), info, 1, valType));
+                bytes.addAll(TestConverter.bytesMaybeOption(pair.getKey(), info, 1, keyType));
+                bytes.addAll(TestConverter.bytesMaybeOption(pair.getValue(), info, 1, valType));
             }
-            bytes.add(Bytecode.DICT_CREATE.value);
-            bytes.addAll(Util.shortToBytes((short) node.size()));
+            bytes.add(Bytecode.DICT_CREATE, node.size());
         }
         return bytes;
     }

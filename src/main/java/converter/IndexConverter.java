@@ -7,7 +7,6 @@ import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,17 +57,21 @@ public final class IndexConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, node.getVar(), info, 1));
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
+        var bytes = new BytecodeList(TestConverter.bytes(node.getVar(), info, 1));
         if (isSlice()) {
             checkSliceType();
-            bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert(start + bytes.size()));
-            bytes.add(Bytecode.CALL_OP.value);
-            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.GET_SLICE.ordinal()));
-            bytes.addAll(Util.shortToBytes((short) 1));
+            bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert());
+            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.GET_SLICE.ordinal(), 1);
         } else {
-            bytes.addAll(convertIndices(start + bytes.size(), info, node.getIndices()));
+            bytes.addAll(convertIndices(info, node.getIndices()));
             if (retCount == 0) {
-                bytes.add(Bytecode.POP_TOP.value);
+                bytes.add(Bytecode.POP_TOP);
             }
         }
         return bytes;
@@ -167,16 +170,16 @@ public final class IndexConverter implements TestConverter {
         return indices.length == 1 && indices[0] instanceof SliceNode;
     }
 
-    public static List<Byte> convertIndices(int start, CompilerInfo info, TestNode[] indices) {
-        List<Byte> bytes = new ArrayList<>();
+    @NotNull
+    public static BytecodeList convertIndices(CompilerInfo info, @NotNull TestNode[] indices) {
+        var bytes = new BytecodeList();
         for (var value : indices) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), value, info, 1));
+            bytes.addAll(TestConverter.bytes(value, info, 1));
         }
         if (indices.length == 1) {
-            bytes.add(Bytecode.SUBSCRIPT.value);
+            bytes.add(Bytecode.SUBSCRIPT);
         } else {
-            bytes.add(Bytecode.LOAD_SUBSCRIPT.value);
-            bytes.addAll(Util.shortToBytes((short) indices.length));
+            bytes.add(Bytecode.LOAD_SUBSCRIPT, indices.length);
         }
         return bytes;
     }
