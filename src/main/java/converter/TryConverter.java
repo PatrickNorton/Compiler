@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.TryStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class TryConverter implements BaseConverter {
     private final TryStatementNode node;
     private final CompilerInfo info;
@@ -12,12 +10,6 @@ public final class TryConverter implements BaseConverter {
     public TryConverter(CompilerInfo info, TryStatementNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

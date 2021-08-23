@@ -5,7 +5,6 @@ import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Optional;
 
 public final class RangeConverter implements TestConverter {
@@ -58,12 +57,6 @@ public final class RangeConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.range()};
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

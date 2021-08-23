@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.NumberNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class NumberConverter implements ConstantConverter {
     private final CompilerInfo info;
     private final NumberNode node;
@@ -14,12 +12,6 @@ public final class NumberConverter implements ConstantConverter {
         this.info = info;
         this.node = node;
         this.retCount = retCount;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

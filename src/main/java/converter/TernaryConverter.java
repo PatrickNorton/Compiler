@@ -4,7 +4,6 @@ import main.java.parser.TernaryNode;
 import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
 
 public final class TernaryConverter implements TestConverter {
@@ -39,12 +38,6 @@ public final class TernaryConverter implements TestConverter {
             result[i] = TypeObject.union(ifTrue[i], ifFalse[i]);
         }
         return result;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

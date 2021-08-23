@@ -41,12 +41,6 @@ public final class FunctionCallConverter implements TestConverter {
         }
     }
 
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
 
     @NotNull
     @Override

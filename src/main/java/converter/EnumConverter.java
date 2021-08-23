@@ -22,12 +22,6 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @NotNull
     public BytecodeList convert() {
         var converter = new ConverterHolder(info);
         var trueSupers = convertSupers(info.typesOf(node.getSuperclasses()));

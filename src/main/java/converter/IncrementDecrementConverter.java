@@ -12,8 +12,6 @@ import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class IncrementDecrementConverter implements BaseConverter {
     private final IncDecNode node;
     private final CompilerInfo info;
@@ -21,11 +19,6 @@ public final class IncrementDecrementConverter implements BaseConverter {
     public IncrementDecrementConverter(CompilerInfo info, IncDecNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @Override
-    public @NotNull List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

@@ -33,12 +33,6 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @NotNull
     public BytecodeList convert() {
         var converter = new ConverterHolder(info);
         var hasType = info.hasType(node.strName());

@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.ImportExportNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class ImportExportConverter implements BaseConverter {
     private final CompilerInfo info;
     private final ImportExportNode node;
@@ -12,12 +10,6 @@ public final class ImportExportConverter implements BaseConverter {
     public ImportExportConverter(CompilerInfo info, ImportExportNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

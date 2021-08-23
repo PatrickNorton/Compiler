@@ -14,8 +14,6 @@ import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class AugAssignConverter implements BaseConverter {
     private final CompilerInfo info;
     private final AugmentedAssignmentNode node;
@@ -23,12 +21,6 @@ public final class AugAssignConverter implements BaseConverter {
     public AugAssignConverter(CompilerInfo info, AugmentedAssignmentNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

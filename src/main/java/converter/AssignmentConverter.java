@@ -27,12 +27,6 @@ public final class AssignmentConverter implements BaseConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @NotNull
-    @Override
     public BytecodeList convert() {
         if (node.isColon()) {
             throw CompilerException.of("Colon assignment is not supported outside of class definitions", node);

@@ -7,7 +7,6 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
 
 public final class EqualsConverter extends OperatorConverter {
@@ -41,12 +40,6 @@ public final class EqualsConverter extends OperatorConverter {
     @NotNull
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.bool()};
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

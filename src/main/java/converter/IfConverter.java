@@ -11,8 +11,6 @@ import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class IfConverter implements BaseConverter {
     private final IfStatementNode node;
     private final CompilerInfo info;
@@ -20,12 +18,6 @@ public final class IfConverter implements BaseConverter {
     public IfConverter(CompilerInfo info, IfStatementNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

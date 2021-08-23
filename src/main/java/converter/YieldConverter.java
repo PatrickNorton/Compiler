@@ -4,8 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.YieldStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class YieldConverter implements BaseConverter {
     private final YieldStatementNode node;
     private final CompilerInfo info;
@@ -13,11 +11,6 @@ public final class YieldConverter implements BaseConverter {
     public YieldConverter(CompilerInfo info, YieldStatementNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @Override
-    public @NotNull List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

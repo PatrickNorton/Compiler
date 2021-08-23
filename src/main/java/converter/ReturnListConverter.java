@@ -6,8 +6,6 @@ import main.java.parser.TestListNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class ReturnListConverter implements BaseConverter {
     private final TestListNode values;
     private final CompilerInfo info;
@@ -20,12 +18,6 @@ public final class ReturnListConverter implements BaseConverter {
         this.info = info;
         this.retTypes = retTypes;
         this.value = value;
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

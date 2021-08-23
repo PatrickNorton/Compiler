@@ -7,7 +7,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Optional;
 
 public final class InConverter extends OperatorConverter {
@@ -58,12 +57,6 @@ public final class InConverter extends OperatorConverter {
     @NotNull
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.bool()};
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

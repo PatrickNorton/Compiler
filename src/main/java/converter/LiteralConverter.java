@@ -137,12 +137,6 @@ public final class LiteralConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @NotNull
-    @Override
     public BytecodeList convert() {
         var literalType = LiteralType.fromBrace(node.getBraceType(), node);
         if (retCount == 0) {  // If this is not being assigned, no need to actually create the list, just get side effects

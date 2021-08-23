@@ -4,8 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.WithStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class WithConverter implements BaseConverter {
     private final WithStatementNode node;
     private final CompilerInfo info;
@@ -13,12 +11,6 @@ public final class WithConverter implements BaseConverter {
     public WithConverter(CompilerInfo info, WithStatementNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

@@ -6,11 +6,8 @@ import main.java.parser.TypedArgumentNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,14 +18,6 @@ public final class FunctionDefinitionConverter implements BaseConverter {
     public FunctionDefinitionConverter(CompilerInfo info, FunctionDefinitionNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    @Override
-    @Unmodifiable
-    public List<Byte> convert(int start) {
-        convertInner();
-        return Collections.emptyList();
     }
 
     @NotNull

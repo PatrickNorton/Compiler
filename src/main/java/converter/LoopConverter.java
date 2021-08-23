@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public abstract class LoopConverter implements BaseConverter {
     protected final CompilerInfo info;
     private final boolean hasContinue;
@@ -16,12 +14,6 @@ public abstract class LoopConverter implements BaseConverter {
     public LoopConverter(CompilerInfo info, boolean hasContinue) {
         this.info = info;
         this.hasContinue = hasContinue;
-    }
-
-    @NotNull
-    @Override
-    public final List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

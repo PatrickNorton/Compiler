@@ -4,8 +4,6 @@ import main.java.parser.DictLiteralNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class DictLiteralConverter implements TestConverter {
     private final DictLiteralNode node;
     private final CompilerInfo info;
@@ -41,12 +39,6 @@ public final class DictLiteralConverter implements TestConverter {
             var valType = returnTypes(node.getValues());
             return new TypeObject[] {Builtins.dict().generify(keyType, valType).makeMut()};
         }
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

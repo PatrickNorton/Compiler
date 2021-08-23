@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
 
 public final class TypeLoader implements TestConverter {
@@ -20,12 +19,6 @@ public final class TypeLoader implements TestConverter {
     @NotNull
     public Optional<LangConstant> constantReturn() {
         return typeConstant(lineInfo, value, info);
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

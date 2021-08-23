@@ -9,8 +9,6 @@ import main.java.parser.TestNode;
 import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class LambdaConverter implements TestConverter {
     private final LambdaNode node;
     private final CompilerInfo info;
@@ -35,12 +33,6 @@ public final class LambdaConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[] {new FunctionInfo(convertArgs(), lambdaReturnType()).toCallable()};
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

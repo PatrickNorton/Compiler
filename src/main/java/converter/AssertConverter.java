@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.AssertStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class AssertConverter implements BaseConverter {
     private final AssertStatementNode node;
     private final CompilerInfo info;
@@ -12,11 +10,6 @@ public final class AssertConverter implements BaseConverter {
     public AssertConverter(CompilerInfo info, AssertStatementNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

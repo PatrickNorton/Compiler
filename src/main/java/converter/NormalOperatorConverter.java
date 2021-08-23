@@ -8,7 +8,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Optional;
 
 public final class NormalOperatorConverter extends OperatorConverter {
@@ -43,12 +42,6 @@ public final class NormalOperatorConverter extends OperatorConverter {
         var firstOpConverter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = firstOpConverter.returnType()[0].operatorReturnType(op, info);
         return retType.orElseGet(() -> new TypeObject[]{Builtins.throwsType()});
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

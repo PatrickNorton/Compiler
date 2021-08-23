@@ -27,12 +27,6 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @NotNull
     public BytecodeList convert() {
         this.genericOps.clear();
         this.genericAttrs.clear();

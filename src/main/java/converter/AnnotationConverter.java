@@ -35,11 +35,6 @@ public final class AnnotationConverter implements BaseConverter {
         this.info = info;
     }
 
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     @NotNull
     public BytecodeList convert() {

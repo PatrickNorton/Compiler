@@ -14,7 +14,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
 
 public final class DotConverter implements TestConverter {
     private final DottedVariableNode node;
@@ -180,12 +179,6 @@ public final class DotConverter implements TestConverter {
         var hasNull = result instanceof OptionTypeObject;
         var bangType = hasNull ? result.stripNull() : result;
         return normalDotReturnType(bangType, dot);
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

@@ -2,8 +2,6 @@ package main.java.converter;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class VariantConverter implements TestConverter {
     private final CompilerInfo info;
     private final VariantCreationNode node;
@@ -21,12 +19,6 @@ public final class VariantConverter implements TestConverter {
         var unionConverter = TestConverter.of(info, node.getUnion(), 1);
         var retType = unionConverter.returnType()[0].getGenerics().get(0);
         return new TypeObject[] {retType.makeMut()};
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

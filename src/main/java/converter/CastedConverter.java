@@ -5,8 +5,6 @@ import main.java.parser.Lined;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class CastedConverter extends OperatorConverter {
     private final ArgumentNode[] args;
     private final Lined lineInfo;
@@ -40,12 +38,6 @@ public final class CastedConverter extends OperatorConverter {
         } else {
             throw typeException(retType);
         }
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

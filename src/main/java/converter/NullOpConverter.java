@@ -6,8 +6,6 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class NullOpConverter extends OperatorConverter {
     private final OperatorTypeNode op;
     private final ArgumentNode[] args;
@@ -42,12 +40,6 @@ public final class NullOpConverter extends OperatorConverter {
             default:
                 throw CompilerInternalError.of("", lineInfo);
         }
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

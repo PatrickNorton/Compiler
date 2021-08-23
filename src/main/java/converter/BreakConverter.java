@@ -4,8 +4,6 @@ import main.java.parser.BreakStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class BreakConverter implements BaseConverter {
     private final BreakStatementNode node;
     private final CompilerInfo info;
@@ -13,12 +11,6 @@ public final class BreakConverter implements BaseConverter {
     public BreakConverter(CompilerInfo info, BreakStatementNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

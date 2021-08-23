@@ -18,11 +18,8 @@ import main.java.parser.SwitchStatementNode;
 import main.java.parser.TernaryNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
-import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public interface TestConverter extends BaseConverter {
@@ -49,14 +46,6 @@ public interface TestConverter extends BaseConverter {
      */
     default Optional<LangConstant> constantReturn() {
         return Optional.empty();
-    }
-
-    @Override
-    @NotNull
-    default Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
-        var retTypes = returnType();
-        var willThrow = Arrays.asList(retTypes).contains(Builtins.throwsType());
-        return Pair.of(convert(start), willThrow ? new DivergingInfo().knownReturn() : new DivergingInfo());
     }
 
     @NotNull

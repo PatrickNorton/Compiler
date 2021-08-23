@@ -23,12 +23,6 @@ public final class DeleteConverter implements BaseConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @NotNull
     public BytecodeList convert() {
         var deleted = node.getDeleted();
         if (deleted instanceof DottedVariableNode) {

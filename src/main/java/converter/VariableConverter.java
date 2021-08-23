@@ -4,7 +4,6 @@ import main.java.parser.VariableNode;
 import main.java.util.Levenshtein;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
 
 public final class VariableConverter implements TestConverter {
@@ -31,12 +30,6 @@ public final class VariableConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[]{info.getType(node.getName()).orElseThrow(this::nameError)};
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

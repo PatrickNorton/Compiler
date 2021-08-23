@@ -1,11 +1,9 @@
 package main.java.converter;
 
 import main.java.parser.RaiseStatementNode;
-import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
 
 public final class RaiseConverter implements TestConverter {
     private final RaiseStatementNode node;
@@ -27,12 +25,6 @@ public final class RaiseConverter implements TestConverter {
         var result = new TypeObject[retCount];
         Arrays.fill(result, Builtins.throwsType());
         return result;
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -60,14 +52,6 @@ public final class RaiseConverter implements TestConverter {
             bytes.addLabel(condLoc);
         }
         return bytes;
-    }
-
-    @Override
-    @NotNull
-    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
-        var divergingInfo = node.getCond().isEmpty()
-                ? new DivergingInfo().knownReturn() : new DivergingInfo().possibleReturn();
-        return Pair.of(convert(start), divergingInfo);
     }
 
     private CompilerException returnError() {

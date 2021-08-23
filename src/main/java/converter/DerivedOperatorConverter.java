@@ -1,10 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
-import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public final class DerivedOperatorConverter implements BaseConverter {
     private final DerivedOperatorNode node;
@@ -13,12 +10,6 @@ public final class DerivedOperatorConverter implements BaseConverter {
     public DerivedOperatorConverter(CompilerInfo info, DerivedOperatorNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -36,14 +27,6 @@ public final class DerivedOperatorConverter implements BaseConverter {
             default:
                 throw CompilerInternalError.of("Attempted to convert invalid operator", node);
         }
-    }
-
-    @Override
-    @NotNull
-    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
-        var divergingInfo = new DivergingInfo();
-        divergingInfo.knownReturn();
-        return Pair.of(convert(start), divergingInfo);
     }
 
     /**

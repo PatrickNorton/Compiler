@@ -4,8 +4,6 @@ import main.java.parser.ReturnStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class ReturnConverter implements BaseConverter {
     private final ReturnStatementNode node;
     private final CompilerInfo info;
@@ -13,12 +11,6 @@ public final class ReturnConverter implements BaseConverter {
     public ReturnConverter(CompilerInfo info, ReturnStatementNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

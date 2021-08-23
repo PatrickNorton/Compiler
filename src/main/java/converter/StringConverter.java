@@ -6,7 +6,6 @@ import main.java.util.StringEscape;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Set;
 
 public final class StringConverter implements ConstantConverter {
@@ -38,12 +37,6 @@ public final class StringConverter implements ConstantConverter {
                 return STR;
             }
         }
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

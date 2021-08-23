@@ -14,13 +14,6 @@ public final class ClassConverter extends ClassConverterBase<ClassDefinitionNode
         super(info, node);
     }
 
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
     @NotNull
     @Override
     public BytecodeList convert() {

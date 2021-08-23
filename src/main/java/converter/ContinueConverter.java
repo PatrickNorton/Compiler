@@ -4,8 +4,6 @@ import main.java.parser.ContinueStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class ContinueConverter implements BaseConverter {
     private final ContinueStatementNode node;
     private final CompilerInfo info;
@@ -13,12 +11,6 @@ public final class ContinueConverter implements BaseConverter {
     public ContinueConverter(CompilerInfo info, ContinueStatementNode node) {
         this.node = node;
         this.info = info;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

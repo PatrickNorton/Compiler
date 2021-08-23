@@ -4,8 +4,6 @@ import main.java.parser.SliceNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class SliceConverter implements TestConverter {
     private final SliceNode node;
     private final CompilerInfo info;
@@ -19,12 +17,6 @@ public final class SliceConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         return new TypeObject[0];
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

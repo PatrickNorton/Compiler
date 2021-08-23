@@ -5,8 +5,6 @@ import main.java.parser.Lined;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class InstanceConverter extends OperatorConverter {
     private final boolean instanceType;
     private final ArgumentNode[] operands;
@@ -28,12 +26,6 @@ public final class InstanceConverter extends OperatorConverter {
     @NotNull
     public TypeObject[] returnType() {
         return new TypeObject[] {Builtins.bool()};
-    }
-
-    @Override
-    @NotNull
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

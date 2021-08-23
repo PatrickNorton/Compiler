@@ -4,8 +4,6 @@ import main.java.parser.DictComprehensionNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class DictCompConverter implements TestConverter {
     private final DictComprehensionNode node;
     private final CompilerInfo info;
@@ -34,12 +32,6 @@ public final class DictCompConverter implements TestConverter {
             var valType = TestConverter.returnType(node.getBuilder()[0].getArgument(), info, 1)[0];
             return new TypeObject[] {Builtins.dict().generify(keyType, valType).makeMut()};
         }
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

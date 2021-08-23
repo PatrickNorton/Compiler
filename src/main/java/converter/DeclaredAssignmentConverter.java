@@ -9,8 +9,6 @@ import main.java.parser.TypeLikeNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public final class DeclaredAssignmentConverter implements BaseConverter {
     private final CompilerInfo info;
     private final DeclaredAssignmentNode node;
@@ -18,12 +16,6 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     public DeclaredAssignmentConverter(CompilerInfo info, DeclaredAssignmentNode node) {
         this.info = info;
         this.node = node;
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull

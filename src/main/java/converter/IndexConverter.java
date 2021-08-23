@@ -56,12 +56,6 @@ public final class IndexConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @NotNull
-    @Override
     public BytecodeList convert() {
         var bytes = new BytecodeList(TestConverter.bytes(node.getVar(), info, 1));
         if (isSlice()) {

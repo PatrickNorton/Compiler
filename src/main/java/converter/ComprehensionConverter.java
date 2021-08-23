@@ -7,8 +7,6 @@ import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public final class ComprehensionConverter implements TestConverter {
     private final ComprehensionNode node;
     private final CompilerInfo info;
@@ -70,12 +68,6 @@ public final class ComprehensionConverter implements TestConverter {
     public TypeObject[] returnType() {
         var resultType = BraceType.fromBrace(node.getBrace(), node).type();
         return new TypeObject[] {resultType.generify(genericType()).makeMut()};
-    }
-
-    @NotNull
-    @Override
-    public List<Byte> convert(int start) {
-        throw new UnsupportedOperationException();
     }
 
     @NotNull
