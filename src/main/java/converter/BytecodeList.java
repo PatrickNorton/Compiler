@@ -5,9 +5,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public final class BytecodeList {
     private final List<Value> values;
@@ -88,20 +86,6 @@ public final class BytecodeList {
             }
         }
         return bytes;
-    }
-
-    @NotNull
-    public Map<Integer, Integer> getLabelMap() {
-        int index = 0;
-        Map<Integer, Integer> result = new HashMap<>();
-        for (var value : values) {
-            if (value.isLabel()) {
-                result.put(value.getFirstParam(), index);
-            } else {
-                index += value.getBytecodeType().size();
-            }
-        }
-        return result;
     }
 
     private int findLabelIndex(Label label, int currentIndex, int byteLen) {
@@ -188,14 +172,6 @@ public final class BytecodeList {
 
         public int getSecondParam() {
             return secondParam;
-        }
-
-        public int byteCount() {
-            if (isLabel) {
-                return 0;
-            } else {
-                return bytecodeType.size();
-            }
         }
     }
 }

@@ -4,7 +4,6 @@ import main.java.parser.SliceNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class SliceConverter implements TestConverter {
@@ -25,26 +24,32 @@ public final class SliceConverter implements TestConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
+        var bytes = new BytecodeList();
         if (!node.getStart().isEmpty()) {
             checkTypes(node.getStart());
-            bytes.addAll(TestConverter.bytes(start, node.getStart(), info, 1));
+            bytes.addAll(TestConverter.bytes(node.getStart(), info, 1));
         } else {
-            bytes.add(Bytecode.LOAD_NULL.value);
+            bytes.add(Bytecode.LOAD_NULL);
         }
         if (!node.getEnd().isEmpty()) {
             checkTypes(node.getEnd());
-            bytes.addAll(TestConverter.bytes(start, node.getEnd(), info, 1));
+            bytes.addAll(TestConverter.bytes(node.getEnd(), info, 1));
         } else {
-            bytes.add(Bytecode.LOAD_NULL.value);
+            bytes.add(Bytecode.LOAD_NULL);
         }
         if (!node.getStep().isEmpty()) {
             checkTypes(node.getStep());
-            bytes.addAll(TestConverter.bytes(start, node.getStep(), info, 1));
+            bytes.addAll(TestConverter.bytes(node.getStep(), info, 1));
         } else {
-            bytes.add(Bytecode.LOAD_NULL.value);
+            bytes.add(Bytecode.LOAD_NULL);
         }
-        bytes.add(Bytecode.MAKE_SLICE.value);
+        bytes.add(Bytecode.MAKE_SLICE);
         return bytes;
     }
 

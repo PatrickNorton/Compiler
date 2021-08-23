@@ -474,7 +474,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 willReturn.makeUncertain();
             }
         }
-        if (defaultVal != null) {
+        if (defaultVal == null) {
             var label = info.newJumpLabel();
             bytes.addLabel(label);
             defaultVal = label;

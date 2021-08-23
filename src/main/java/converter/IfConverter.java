@@ -60,6 +60,7 @@ public final class IfConverter implements BaseConverter {
         } else {
             willReturn.makeUncertain();
         }
+        bytes.addLabel(endLabel);
         return Pair.of(bytes, willReturn);
     }
 

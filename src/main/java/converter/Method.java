@@ -3,18 +3,16 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 
-import java.util.List;
-
 public final class Method implements Lined {
     private final LineInfo lineInfo;
     private final MethodInfo info;
-    private final List<Byte> bytes;
+    private final BytecodeList bytes;
 
-    public Method(Lined lineInfo, MethodInfo info, List<Byte> bytes) {
+    public Method(Lined lineInfo, MethodInfo info, BytecodeList bytes) {
         this(lineInfo.getLineInfo(), info, bytes);
     }
 
-    public Method(LineInfo lineInfo, MethodInfo info, List<Byte> bytes) {
+    public Method(LineInfo lineInfo, MethodInfo info, BytecodeList bytes) {
         this.lineInfo = lineInfo;
         this.info = info;
         this.bytes = bytes;
@@ -37,7 +35,7 @@ public final class Method implements Lined {
         return info.getReturns();
     }
 
-    public List<Byte> getBytes() {
+    public BytecodeList getBytes() {
         return bytes;
     }
 

@@ -18,7 +18,7 @@ public final class BodyConverter implements BaseConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
-        return convertAndReturn(start).getKey();
+        throw new UnsupportedOperationException();
     }
 
     @NotNull

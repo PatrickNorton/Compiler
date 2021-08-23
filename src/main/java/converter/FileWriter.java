@@ -118,21 +118,21 @@ public final class FileWriter {
         for (var cls : classes) {
             for (var fnPair : cls.getMethodDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes().convertToBytes()));
             }
             for (var fnPair : cls.getStaticMethods().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes().convertToBytes()));
             }
             for (var opPair : cls.getOperatorDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
-                System.out.println(Bytecode.disassemble(info, opPair.getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, opPair.getValue().getBytes().convertToBytes()));
             }
             for (var propPair : cls.getProperties().entrySet()) {
                 System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(info, propPair.getValue().getKey().getBytes()));
+                System.out.println(Bytecode.disassemble(info, propPair.getValue().getKey().getBytes().convertToBytes()));
                 System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(info, propPair.getValue().getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, propPair.getValue().getValue().getBytes().convertToBytes()));
             }
         }
         for (int i = 0; i < info.getTables().size(); i++) {

@@ -143,8 +143,9 @@ public final class ClassInfo {
         for (var pair : byteMap.entrySet()) {
             bytes.add((byte) pair.getKey().ordinal());
             bytes.add((byte) (pair.getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
-            bytes.addAll(Util.intToBytes(pair.getValue().getBytes().size()));
-            bytes.addAll(pair.getValue().getBytes());
+            var opBytes = pair.getValue().getBytes().convertToBytes();
+            bytes.addAll(Util.intToBytes(opBytes.size()));
+            bytes.addAll(opBytes);
         }
     }
 
@@ -153,8 +154,9 @@ public final class ClassInfo {
         for (var pair : byteMap.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
             bytes.add((byte) (pair.getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
-            bytes.addAll(Util.intToBytes(pair.getValue().getBytes().size()));
-            bytes.addAll(pair.getValue().getBytes());
+            var methodBytes = pair.getValue().getBytes().convertToBytes();
+            bytes.addAll(Util.intToBytes(methodBytes.size()));
+            bytes.addAll(methodBytes);
         }
     }
 
@@ -162,12 +164,14 @@ public final class ClassInfo {
         bytes.addAll(Util.intToBytes(properties.size()));
         for (var pair : properties.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
+            var getterBytes = pair.getValue().getKey().getBytes().convertToBytes();
             bytes.add((byte) (pair.getValue().getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
-            bytes.addAll(Util.intToBytes(pair.getValue().getKey().getBytes().size()));
-            bytes.addAll(pair.getValue().getKey().getBytes());
+            bytes.addAll(Util.intToBytes(getterBytes.size()));
+            bytes.addAll(getterBytes);
+            var setterBytes = pair.getValue().getValue().getBytes().convertToBytes();
             bytes.add((byte) (pair.getValue().getValue().getInfo().getInfo().isGenerator() ? 1 : 0));
-            bytes.addAll(Util.intToBytes(pair.getValue().getValue().getBytes().size()));
-            bytes.addAll(pair.getValue().getValue().getBytes());
+            bytes.addAll(Util.intToBytes(setterBytes.size()));
+            bytes.addAll(setterBytes);
         }
     }
 
