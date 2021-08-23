@@ -8,7 +8,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,21 +47,28 @@ public final class IsConverter extends OperatorConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
         if (retCount > 1) {
             throw CompilerException.format("'is' only returns 1 value, %d expected", lineInfo, retCount);
         }
         switch (operands.length) {
             case 0:
             case 1:
-                return convert0(start);
+                return convert0();
             case 2:
-                return convert2(start);
+                return convert2();
             default:
-                return convertMany(start);
+                return convertMany();
         }
     }
 
-    private List<Byte> convert0(int start) {
+    @NotNull
+    private BytecodeList convert0() {
         assert operands.length == 0 || operands.length == 1;
         CompilerWarning.warnf(
                 "'%s' with < 2 operands will always be %b",
@@ -70,63 +76,61 @@ public final class IsConverter extends OperatorConverter {
                 lineInfo, isType ? "is" : "is not", isType
         );
         // Have to get side-effects
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(isType))));
+        var bytes = new BytecodeList(TestConverter.bytes(operands[0].getArgument(), info, 1));
+        bytes.add(Bytecode.POP_TOP);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(isType)));
         return bytes;
     }
 
-    private List<Byte> convert2(int start) {
+    private BytecodeList convert2() {
         assert operands.length == 2;
-        List<Byte> constBytes = getConstant();
+        var constBytes = getConstant();
         if (constBytes != null) return constBytes;
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
-        bytes.addAll(TestConverter.bytes(start, operands[1].getArgument(), info, 1));
-        bytes.add(Bytecode.IDENTICAL.value);
+        var bytes = new BytecodeList(TestConverter.bytes(operands[0].getArgument(), info, 1));
+        bytes.addAll(TestConverter.bytes(operands[1].getArgument(), info, 1));
+        bytes.add(Bytecode.IDENTICAL);
         if (!isType) {
-            bytes.add(Bytecode.BOOL_NOT.value);
+            bytes.add(Bytecode.BOOL_NOT);
         }
         return bytes;
     }
 
-    private List<Byte> convertMany(int start) {
+    private BytecodeList convertMany() {
         if (!isType) {
             throw CompilerException.format(
                     "'is not' only works with 2 or fewer operands (got %d)",
                     lineInfo, operands.length
             );
         }
-        List<Byte> constBytes = getConstant();
+        var constBytes = getConstant();
         if (constBytes != null) return constBytes;
         // Since object identity is transitive, it's much easier if we
         // simply compare everything to the first object given.
         // Since nothing in life is ever simple, we have to do some
         // shenanigans with the stack to ensure everything winds
         // up in the right place.
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
-        bytes.addAll(TestConverter.bytes(start, operands[0].getArgument(), info, 1));
+        var bytes = new BytecodeList();
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.TRUE));
+        bytes.addAll(TestConverter.bytes(operands[0].getArgument(), info, 1));
         for (int i = 1; i < operands.length - 1; i++) {
-            bytes.add(Bytecode.DUP_TOP.value);
-            bytes.addAll(TestConverter.bytes(start, operands[i].getArgument(), info, 1));
-            bytes.add(Bytecode.IDENTICAL.value);  // Compare the values
-            bytes.add(Bytecode.SWAP_3.value);     // Bring up the next one (below result & operands[0])
-            bytes.add(Bytecode.BOOL_AND.value);   // 'and' them together
-            bytes.add(Bytecode.SWAP_2.value);     // Put operands[0] back on top}
+            bytes.add(Bytecode.DUP_TOP);
+            bytes.addAll(TestConverter.bytes(operands[i].getArgument(), info, 1));
+            bytes.add(Bytecode.IDENTICAL);  // Compare the values
+            bytes.add(Bytecode.SWAP_3);     // Bring up the next one (below result & operands[0])
+            bytes.add(Bytecode.BOOL_AND);   // 'and' them together
+            bytes.add(Bytecode.SWAP_2);     // Put operands[0] back on top}
         }
         // Last one is special b/c cleanup...
         // No need to duplicate operands[0], and thus no need to swap to get
         // around it
-        bytes.addAll(TestConverter.bytes(start, operands[operands.length - 1].getArgument(), info, 1));
-        bytes.add(Bytecode.IDENTICAL.value);
-        bytes.add(Bytecode.BOOL_AND.value);
+        bytes.addAll(TestConverter.bytes(operands[operands.length - 1].getArgument(), info, 1));
+        bytes.add(Bytecode.IDENTICAL);
+        bytes.add(Bytecode.BOOL_AND);
         return bytes;
     }
 
     @Nullable
-    private List<Byte> getConstant() {
+    private BytecodeList getConstant() {
         var constant = constantReturn();
         if (constant.isPresent()) {
             return loadConstant(info, constant.orElseThrow());
@@ -136,7 +140,7 @@ public final class IsConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
         if (operands.length != 2) {
             throw CompilerException.format(
                     "'is' comparison with 'as' clause may only have 2 parameters, not %d%n" +
@@ -161,26 +165,24 @@ public final class IsConverter extends OperatorConverter {
             CompilerWarning.warn(
                     "Using 'is not null' comparison on non-nullable variable", WarningType.TRIVIAL_VALUE, info, arg0
             );
-            var bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.TRUE)));
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.TRUE));
             return Pair.of(bytes, condType);
         } else if (condType.equals(Builtins.nullType())) {
             CompilerWarning.warn(
                     "Using 'is not null' comparison on variable that must be null",
                     WarningType.TRIVIAL_VALUE, info, arg0
             );
-            var bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.FALSE)));
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.FALSE));
             return Pair.of(bytes, condType);
         } else {
             var asType = condType.stripNull();
-            var bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.DUP_TOP.value);
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), arg1, info, 1));
-            bytes.add(Bytecode.IDENTICAL.value);
-            bytes.add(Bytecode.BOOL_NOT.value);
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.DUP_TOP);
+            bytes.addAll(TestConverter.bytes(arg1, info, 1));
+            bytes.add(Bytecode.IDENTICAL);
+            bytes.add(Bytecode.BOOL_NOT);
             return Pair.of(bytes, asType);
         }
     }

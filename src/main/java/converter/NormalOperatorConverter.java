@@ -8,7 +8,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,24 +48,30 @@ public final class NormalOperatorConverter extends OperatorConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
         var constant = constantReturn();
         if (constant.isPresent()) {
             return loadConstant(info, constant.orElseThrow());
         }
         if (op == OperatorTypeNode.NOT_EQUALS) {
-            return convertNotEquals(start);
+            return convertNotEquals();
         }
-        var opt = optimizeConstant(start);
+        var opt = optimizeConstant();
         if (opt.isPresent()) {
             return opt.orElseThrow();
         }
-        return convertInner(start);
+        return convertInner();
     }
 
     @NotNull
-    private List<Byte> convertInner(int start) {
+    private BytecodeList convertInner() {
         assert op != OperatorTypeNode.NOT_EQUALS;
-        List<Byte> bytes = new ArrayList<>();
+        var bytes = new BytecodeList();
         int opCount = args.length;
         TypeObject opType = null;
         ArgumentNode previousArg = null;
@@ -85,11 +90,11 @@ public final class NormalOperatorConverter extends OperatorConverter {
             }
             opType = opType == null ? retType : opType.operatorReturnType(op, info).orElseThrow()[0];
             previousArg = arg;
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), arg.getArgument(), info, 1));
+            bytes.addAll(TestConverter.bytes(arg.getArgument(), info, 1));
         }
         var bytecode = BYTECODE_MAP.get(op);
         if (opCount == (op.isUnary() ? 1 : 2)) {
-            bytes.add(bytecode.value);
+            bytes.add(bytecode);
         } else if (MANDATORY_ARG_COUNT.contains(op)) {
             throw CompilerException.format(
                     "Cannot call operator '%s' with %d operands (expected exactly %d)",
@@ -99,30 +104,30 @@ public final class NormalOperatorConverter extends OperatorConverter {
             throw CompilerTodoError.of("Operators with > 2 operands not yet supported", lineInfo);
         }
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
     @NotNull
-    private List<Byte> convertNotEquals(int start) {
+    private BytecodeList convertNotEquals() {
         int opCount = args.length;
         assert opCount == 2 && op == OperatorTypeNode.NOT_EQUALS;
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), args[1].getArgument(), info, 1));
+        var bytes = new BytecodeList(TestConverter.bytes(args[0].getArgument(), info, 1));
+        bytes.addAll(TestConverter.bytes(args[1].getArgument(), info, 1));
         if (opCount == (op.isUnary() ? 1 : 2)) {
-            bytes.add(Bytecode.EQUAL.value);
+            bytes.add(Bytecode.EQUAL);
         } else {
             throw CompilerTodoError.of("Operators with > 2 operands not yet supported", lineInfo);
         }
-        bytes.add(Bytecode.BOOL_NOT.value);
+        bytes.add(Bytecode.BOOL_NOT);
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
-    private Optional<List<Byte>> optimizeConstant(int start) {
+    private Optional<BytecodeList> optimizeConstant() {
         if (args.length != 2) {
             return Optional.empty();
         }
@@ -134,259 +139,247 @@ public final class NormalOperatorConverter extends OperatorConverter {
         }
         var secondConstant = secondConverter.constantReturn();
         if (secondConstant.isPresent()) {
-            return Optional.of(secondConstant(firstConverter, (NumberConstant) secondConstant.orElseThrow(), start));
+            return Optional.of(secondConstant(firstConverter, (NumberConstant) secondConstant.orElseThrow()));
         }
         var firstConstant = firstConverter.constantReturn();
         if (firstConstant.isPresent()) {
-            return Optional.of(firstConstant(firstConverter, (NumberConstant) firstConstant.orElseThrow(), start));
+            return Optional.of(firstConstant(firstConverter, (NumberConstant) firstConstant.orElseThrow()));
         }
         return Optional.empty();
     }
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
         throw asException(lineInfo);
     }
 
-    private List<Byte> secondConstant(TestConverter converter, NumberConstant constant, int start) {
+    private BytecodeList secondConstant(TestConverter converter, NumberConstant constant) {
         switch (op) {
             case ADD:
-                return convertAdditionConstant(converter, constant, start);
+                return convertAdditionConstant(converter, constant);
             case SUBTRACT:
-                return convertSubtractionConstant(converter, constant, start);
+                return convertSubtractionConstant(converter, constant);
             case MULTIPLY:
-                return convertMultiplicationConstant(converter, constant, start);
+                return convertMultiplicationConstant(converter, constant);
             case DIVIDE:
-                return convertDivisionConstant(converter, constant, start);
+                return convertDivisionConstant(converter, constant);
             case FLOOR_DIV:
-                return convertFloorDivConstant(converter, constant, start);
+                return convertFloorDivConstant(converter, constant);
             case POWER:
-                return convertPowConstant(converter, constant, start);
+                return convertPowConstant(converter, constant);
             case LEFT_BITSHIFT:
-                return convertLShiftConstant(converter, constant, start);
+                return convertLShiftConstant(converter, constant);
             case RIGHT_BITSHIFT:
-                return convertRShiftConstant(converter, constant, start);
+                return convertRShiftConstant(converter, constant);
             case BITWISE_AND:
-                return convertAndConstant(converter, constant, start);
+                return convertAndConstant(converter, constant);
             case BITWISE_OR:
-                return convertOrConstant(converter, constant, start);
+                return convertOrConstant(converter, constant);
             case BITWISE_XOR:
-                return convertXorConstant(converter, constant, start);
+                return convertXorConstant(converter, constant);
             case MODULO:
-                return convertModConstant(converter, constant, start);
+                return convertModConstant(converter, constant);
             default:
-                return convertOneConstant(converter, constant, start);
+                return convertOneConstant(converter, constant);
         }
     }
 
-    private List<Byte> firstConstant(TestConverter converter, NumberConstant constant, int start) {
+    private BytecodeList firstConstant(TestConverter converter, NumberConstant constant) {
         switch (op) {
             case ADD:
-                return convertAdditionConstant(converter, constant, start);
+                return convertAdditionConstant(converter, constant);
             case MULTIPLY:
-                return convertMultiplicationConstant(converter, constant, start);
+                return convertMultiplicationConstant(converter, constant);
             case POWER:
-                return convertPowConstant(converter, constant, start);
+                return convertPowConstant(converter, constant);
             case BITWISE_AND:
-                return convertAndConstant(converter, constant, start);
+                return convertAndConstant(converter, constant);
             case BITWISE_OR:
-                return convertOrConstant(converter, constant, start);
+                return convertOrConstant(converter, constant);
             case BITWISE_XOR:
-                return convertXorConstant(converter, constant, start);
+                return convertXorConstant(converter, constant);
             default:
-                return convertInner(start);
+                return convertInner();
         }
     }
 
     // FIXME: Run code for side-effects
 
     @NotNull
-    private List<Byte> convertAdditionConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertAdditionConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            return converter.convert(start);
+            return converter.convert();
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertSubtractionConstant(
-            TestConverter converter, @NotNull NumberConstant constant, int start
+    private BytecodeList convertSubtractionConstant(
+            TestConverter converter, @NotNull NumberConstant constant
     ) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            return converter.convert(start);
+            return converter.convert();
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertMultiplicationConstant(
-            TestConverter converter, @NotNull NumberConstant constant, int start
+    private BytecodeList convertMultiplicationConstant(
+            TestConverter converter, @NotNull NumberConstant constant
     ) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(0))));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.U_MINUS.value);
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.U_MINUS);
             return bytes;
         } else if (bigValue.signum() > 0 && bigValue.bitCount() == 1) {
             var powerOfTwo = bigValue.bitLength() - 1;
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(powerOfTwo))));
-            bytes.add(Bytecode.L_BITSHIFT.value);
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(powerOfTwo)));
+            bytes.add(Bytecode.L_BITSHIFT);
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertDivisionConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertDivisionConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             CompilerWarning.warn(
                     "Division by the constant 0 will always result in an error",
                     WarningType.ZERO_DIVISION, info, LineInfo.empty()
             );
-            return convertZeroDivision(converter, start, "divide");
+            return convertZeroDivision(converter, "divide");
         } else if (bigValue.equals(BigInteger.ONE)) {
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.decimalConstant())));
-            bytes.add(Bytecode.CALL_TOS.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.decimalConstant()));
+            bytes.add(Bytecode.CALL_TOS, info.constIndex(LangConstant.of(1)));
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.U_MINUS.value);
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.decimalConstant())));
-            bytes.add(Bytecode.CALL_TOS.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.U_MINUS);
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.decimalConstant()));
+            bytes.add(Bytecode.CALL_TOS, info.constIndex(LangConstant.of(1)));
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertFloorDivConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertFloorDivConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             CompilerWarning.warn(
                     "Division by the constant 0 will always result in an error",
                     WarningType.ZERO_DIVISION, info, LineInfo.empty()
             );
-            return convertZeroDivision(converter, start, "divide");
+            return convertZeroDivision(converter, "divide");
         } else if (bigValue.equals(BigInteger.ONE)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.U_MINUS.value);
+            var bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.U_MINUS);
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertModConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertModConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             CompilerWarning.warn(
                     "Modulo by the constant 0 will always result in an error",
                     WarningType.ZERO_DIVISION, info, LineInfo.empty()
             );
-            return convertZeroDivision(converter, start, "modulo");
+            return convertZeroDivision(converter, "modulo");
         } else if (bigValue.equals(BigInteger.ONE)) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(0))));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
             return bytes;
         } else if (bigValue.signum() > 0 && bigValue.bitCount() == 1) {
             var lessOne = bigValue.subtract(BigInteger.ONE);
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(lessOne))));
-            bytes.add(Bytecode.BITWISE_AND.value);
+            BytecodeList bytes = new BytecodeList(converter.convert());
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(lessOne)));
+            bytes.add(Bytecode.BITWISE_AND);
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertPowConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertPowConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(1))));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(1)));
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.signum() < 0) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(0))));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertAndConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertAndConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(0))));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
-            return converter.convert(start);
+            return converter.convert();
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertOrConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertOrConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(-1))));
+            BytecodeList bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(-1)));
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertXorConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertXorConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.BITWISE_NOT.value);
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.BITWISE_NOT);
             return bytes;
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
@@ -394,58 +387,54 @@ public final class NormalOperatorConverter extends OperatorConverter {
     private static final BigInteger NEG_SHIFT_MAX = SHIFT_MAX.negate();
 
     @NotNull
-    private List<Byte> convertLShiftConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertLShiftConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.compareTo(SHIFT_MAX) > 0) {
             CompilerWarning.warn(
                     "Shift too big to compute properly, will fail at runtime",
                     WarningType.NO_TYPE, info, lineInfo
             );
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertRShiftConstant(TestConverter converter, @NotNull NumberConstant constant, int start) {
+    private BytecodeList convertRShiftConstant(TestConverter converter, @NotNull NumberConstant constant) {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
-            return converter.convert(start);
+            return converter.convert();
         } else if (bigValue.compareTo(NEG_SHIFT_MAX) > 0) {
             CompilerWarning.warn(
                     "Shift magnitude too big to compute properly, will fail at runtime",
                     WarningType.NO_TYPE, info, lineInfo
             );
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         } else {
-            return convertOneConstant(converter, constant, start);
+            return convertOneConstant(converter, constant);
         }
     }
 
     @NotNull
-    private List<Byte> convertOneConstant(@NotNull TestConverter converter, NumberConstant constant, int start) {
+    private BytecodeList convertOneConstant(@NotNull TestConverter converter, NumberConstant constant) {
         assert !op.isUnary();
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
-        bytes.add(BYTECODE_MAP.get(op).value);
+        var bytes = new BytecodeList(converter.convert());
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
+        bytes.add(BYTECODE_MAP.get(op));
         return bytes;
     }
 
     @NotNull
-    private List<Byte> convertZeroDivision(@NotNull TestConverter converter, int start, String divType) {
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.arithmeticErrorConstant())));
-        bytes.add(Bytecode.LOAD_CONST.value);
+    private BytecodeList convertZeroDivision(@NotNull TestConverter converter, String divType) {
+        var bytes = new BytecodeList(converter.convert());
+        bytes.add(Bytecode.POP_TOP);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.arithmeticErrorConstant()));
         var message = String.format("Cannot %s by zero", divType);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
-        bytes.add(Bytecode.THROW_QUICK.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(message)));
+        bytes.add(Bytecode.THROW_QUICK, 1);
         return bytes;
     }
 }

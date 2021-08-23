@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,15 +25,20 @@ public final class TypeLoader implements TestConverter {
     @Override
     @NotNull
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @NotNull
+    public BytecodeList convert() {
         var constant = constantReturn();
         if (constant.isPresent()) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(constant.orElseThrow())));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant.orElseThrow()));
             return bytes;
         } else {
             assert value instanceof TemplateParam;
-            return new TypeLoader(lineInfo, ((TemplateParam) value).getBound(), info).convert(start);
+            return new TypeLoader(lineInfo, ((TemplateParam) value).getBound(), info).convert();
             /*
             Commented out until better type inference can come around
             var parent = info.localParent(value).orElseThrow(

@@ -67,12 +67,6 @@ public final class NullOpConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @NotNull
     protected Pair<BytecodeList, TypeObject> convertWithAs() {
         if (op == OperatorTypeNode.OPTIONAL) {
             return convertQuestionAs();

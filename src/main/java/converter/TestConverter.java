@@ -21,7 +21,6 @@ import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -79,17 +78,6 @@ public interface TestConverter extends BaseConverter {
         return of(info, node, retCount).constantReturn();
     }
 
-    static List<Byte> bytesMaybeOption(TestConverter converter, int start, TypeObject endType) {
-        var retType = converter.returnType()[0];
-        if (endType instanceof OptionTypeObject && !(retType instanceof OptionTypeObject)) {
-            List<Byte> bytes = new ArrayList<>(converter.convert(start));
-            bytes.add(Bytecode.MAKE_OPTION.value);
-            return bytes;
-        } else {
-            return converter.convert(start);
-        }
-    }
-
     @NotNull
     static BytecodeList bytesMaybeOption(@NotNull TestConverter converter, TypeObject endType) {
         var retType = converter.returnType()[0];
@@ -100,14 +88,6 @@ public interface TestConverter extends BaseConverter {
         } else {
             return converter.convert();
         }
-    }
-
-    @NotNull
-    static List<Byte> bytesMaybeOption(int start, @NotNull TestNode node, CompilerInfo info,
-                                       int retCount, TypeObject endType) {
-        var converter = endType instanceof OptionTypeObject
-                ? of(info, node, retCount) : of(info, node, retCount, endType);
-        return bytesMaybeOption(converter, start, endType);
     }
 
     @NotNull

@@ -3,8 +3,6 @@ package main.java.converter;
 import main.java.parser.NumberNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public final class NumberConverter implements ConstantConverter {
@@ -21,16 +19,21 @@ public final class NumberConverter implements ConstantConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         if (retCount == 0) {
             CompilerWarning.warn("Numeric literal unused", WarningType.UNUSED, info, node);
-            return Collections.emptyList();
+            return new BytecodeList();
         } else if (retCount > 1) {
             throw CompilerException.format("Numeric literals return 1 value, %d were expected", node, retCount);
         }
         int constIndex = info.addConstant(constant());
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes((short) constIndex));
+        var bytes = new BytecodeList();
+        bytes.add(Bytecode.LOAD_CONST, constIndex);
         return bytes;
     }
 
