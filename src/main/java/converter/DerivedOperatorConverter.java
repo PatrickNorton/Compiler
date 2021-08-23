@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.OpSpTypeNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 public final class DerivedOperatorConverter implements BaseConverter {
@@ -27,6 +28,14 @@ public final class DerivedOperatorConverter implements BaseConverter {
             default:
                 throw CompilerInternalError.of("Attempted to convert invalid operator", node);
         }
+    }
+
+    @Override
+    @NotNull
+    public Pair<BytecodeList, DivergingInfo> convertAndReturn() {
+        var divergingInfo = new DivergingInfo();
+        divergingInfo.knownReturn();
+        return Pair.of(convert(), divergingInfo);
     }
 
     /**
