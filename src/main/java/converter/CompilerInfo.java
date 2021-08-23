@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,12 +78,12 @@ public final class CompilerInfo {
         link();
         addLocals();
         this.addStackFrame();
-        List<Byte> bytes = new ArrayList<>();
+        BytecodeList bytes = new BytecodeList();
         for (var statement : node) {
             if (statement instanceof ImportExportNode) {
                 continue;
             }
-            bytes.addAll(BaseConverter.bytes(bytes.size(), statement, this));
+            bytes.addAll(BaseConverter.bytes(statement, this));
         }
         this.removeStackFrame();
         // Put the default function at the beginning

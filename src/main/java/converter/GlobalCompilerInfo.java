@@ -31,7 +31,7 @@ public final class GlobalCompilerInfo {
     private final IntAllocator staticVarNumbers = new IntAllocator();
     private final IntAllocator anonymousNums = new IntAllocator();
 
-    private final List<List<Byte>> defaultFunctions = new ArrayList<>();
+    private final List<BytecodeList> defaultFunctions = new ArrayList<>();
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));  // Reserve for default
     private final List<ClassInfo> classes = new ArrayList<>();
     private final Map<BaseType, Integer> classMap = new HashMap<>();
@@ -220,9 +220,7 @@ public final class GlobalCompilerInfo {
             var bytes = defaultNo != -1 ? defaultFunctions.get(defaultNo) : createDefaultFn();
             if (isTest()) {
                 var index = TestFnConverter.convertTestStart(this);
-                bytes.add(Bytecode.CALL_FN.value);
-                bytes.addAll(Util.shortToBytes((short) index));
-                bytes.addAll(Util.shortZeroBytes());
+                bytes.add(Bytecode.CALL_FN, index, 0);
             }
             functions.set(0, new Function(new FunctionInfo("__default__"), bytes));
         }
@@ -249,17 +247,15 @@ public final class GlobalCompilerInfo {
     }
 
     @NotNull
-    private List<Byte> createDefaultFn() {
-        List<Byte> result = new ArrayList<>();
+    private BytecodeList createDefaultFn() {
+        var result = new BytecodeList();
         for (int i = defaultFunctions.size() - 1; i >= 0; i--) {
             var func = defaultFunctions.get(i);
             if (!func.isEmpty()) {
                 var fnName = String.format("__default__$%d", i);
                 var fn = new Function(new FunctionInfo(fnName), func);
                 functions.add(fn);
-                result.add(Bytecode.CALL_FN.value);
-                result.addAll(Util.shortToBytes((short) (functions.size() - 1)));
-                result.addAll(Util.shortZeroBytes());
+                result.add(Bytecode.CALL_FN, functions.size() - 1, 0);
             }
         }
         return result;
@@ -297,7 +293,7 @@ public final class GlobalCompilerInfo {
      * @param bytes The bytecode to insert in the location
      * @see #reserveStatic
      */
-    public void setStatic(int index, List<Byte> bytes) {
+    public void setStatic(int index, BytecodeList bytes) {
         assert defaultFunctions.get(index) == null;
         defaultFunctions.set(index, bytes);
     }

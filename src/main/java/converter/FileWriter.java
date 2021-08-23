@@ -75,7 +75,7 @@ public final class FileWriter {
             var functions = info.getFunctions();
             writer.write(Util.toByteArray(functions.size()));
             for (var function : functions) {
-                var byteArray = Util.toByteArray(function.getBytes());
+                var byteArray = Util.toByteArray(function.getBytes().convertToBytes());
                 writer.write(Util.toByteArray(StringConstant.strBytes(function.getName())));
                 writer.write(function.isGenerator() ? 1 : 0);
                 writer.write(Util.toByteArray((short) function.getMax()));
@@ -112,7 +112,7 @@ public final class FileWriter {
         var functions = info.getFunctions();
         for (var function : functions) {
             System.out.printf("%s:%n", function.getName());
-            System.out.println(Bytecode.disassemble(info, function.getBytes()));
+            System.out.println(Bytecode.disassemble(info, function.getBytes().convertToBytes()));
         }
         var classes = info.getClasses();
         for (var cls : classes) {

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -70,12 +69,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var argc = func.getInfo().getArgs().size();
             var bytes = func.getBytes();
             assert bytes.isEmpty();
-            bytes.add(Bytecode.SYSCALL.value);
-            bytes.addAll(Util.shortToBytes((short) Syscalls.get(name)));
-            bytes.addAll(Util.shortToBytes((short) argc));
+            bytes.add(Bytecode.SYSCALL, Syscalls.get(name), argc);
             if (func.getReturns().length > 0) {
-                bytes.add(Bytecode.RETURN.value);
-                bytes.addAll(Util.shortToBytes((short) func.getReturns().length));
+                bytes.add(Bytecode.RETURN, func.getReturns().length);
             }
             return new BytecodeList();
         } else {
@@ -136,7 +132,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[]{iteratorType(retTypes)} : retTypes;
         var fnInfo = new FunctionInfo(name, isGenerator, convertArgs(generics), trueRet);
-        List<Byte> bytes = new ArrayList<>();
+        var bytes = new BytecodeList();
         var fn = new Function(node, fnInfo, bytes);
         var index = info.addFunction(fn);
         for (var generic : generics.values()) {
@@ -155,11 +151,11 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         return Pair.of(fn, constVal);
     }
 
-    private void convertBody(List<Byte> bytes, boolean isGenerator, TypeObject... retTypes) {
+    private void convertBody(BytecodeList bytes, boolean isGenerator, TypeObject... retTypes) {
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(isGenerator, retTypes);
         addArgs();
-        var pair = BaseConverter.bytesWithReturn(bytes.size(), node.getBody(), info);
+        var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         bytes.addAll(pair.getKey());
         if (!isGenerator && retTypes.length > 0 && !pair.getValue().willReturn()) {
             CompilerWarning.warn("Function ends without returning", WarningType.NO_TYPE, info, node);
@@ -205,7 +201,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var isGenerator = node.getDescriptors().contains(DescriptorNode.GENERATOR);
         var trueRet = isGenerator ? new TypeObject[] {iteratorType(returns)} : returns;
         var fnInfo = new FunctionInfo(node.getName().getName(), isGenerator, generics, argInfo, trueRet);
-        var func = new Function(node, fnInfo, new ArrayList<>());
+        var func = new Function(node, fnInfo, new BytecodeList());
         var previouslyDefined = info.getFn(func.getName());
         if (previouslyDefined.isPresent()) {
             throw CompilerException.doubleDef(func.getName(), previouslyDefined.orElseThrow(), node);

@@ -5,9 +5,8 @@ import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public final class ComprehensionConverter implements TestConverter {
@@ -76,6 +75,12 @@ public final class ComprehensionConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         if (retCount > 1) {
             throw CompilerException.format("Comprehension only returns 1 value, expected %d", node, retCount);
         }
@@ -86,43 +91,36 @@ public final class ComprehensionConverter implements TestConverter {
                 CompilerWarning.warn(
                         "Comprehension with no returns serves no purpose", WarningType.UNUSED, info, node
                 );
-                return Collections.emptyList();
+                return new BytecodeList();
             }
-            var bytes = innerConvert(0, braceType);
-            bytes.add(Bytecode.RETURN.value);
-            bytes.addAll(Util.shortZeroBytes());
+            var bytes = innerConvert(braceType);
+            bytes.add(Bytecode.RETURN, 0);
             var fnInfo = new FunctionInfo(info.generatorName(), true, returnType());
             var fnNo = info.addFunction(new Function(node, fnInfo, bytes));
-            List<Byte> trueBytes = new ArrayList<>();
-            trueBytes.add(Bytecode.MAKE_FUNCTION.value);
-            trueBytes.addAll(Util.shortToBytes((short) fnNo));
-            trueBytes.add(Bytecode.CALL_TOS.value);
-            trueBytes.addAll(Util.shortZeroBytes());
+            BytecodeList trueBytes = new BytecodeList();
+            trueBytes.add(Bytecode.MAKE_FUNCTION, fnNo);
+            trueBytes.add(Bytecode.CALL_TOS, 0);
             return trueBytes;
         } else {
-            return innerConvert(start, braceType);
+            return innerConvert(braceType);
         }
     }
 
     @NotNull
-    private List<Byte> innerConvert(int start, @NotNull BraceType braceType) {
+    private BytecodeList innerConvert(@NotNull BraceType braceType) {
         assert retCount == 1 || retCount == 0;
-        List<Byte> bytes = new ArrayList<>();
+        var bytes = new BytecodeList();
         if (braceType.createCode != null) {
-            bytes.addAll(new TypeLoader(node.getLineInfo(), genericType(), info).convert(start));
-            bytes.add(braceType.createCode.value);
-            bytes.addAll(Util.shortToBytes((short) 0));
+            bytes.addAll(new TypeLoader(node.getLineInfo(), genericType(), info).convert());
+            bytes.add(braceType.createCode, 0);
         }
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getLooped().get(0), info, 1));
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        var topJump = start + bytes.size();
-        bytes.add(Bytecode.FOR_ITER.value);
-        int forJump = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(Util.shortToBytes((short) 1));
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.addAll(TestConverter.bytes(node.getLooped().get(0), info, 1));
+        bytes.add(Bytecode.CALL_TOS, 1);
+        var topJump = info.newJumpLabel();
+        bytes.addLabel(topJump);
+        var forJump = info.newJumpLabel();
+        bytes.add(Bytecode.FOR_ITER, forJump, 1);
         if (node.getVariables().length > 1) {
             throw CompilerTodoError.of("Cannot convert comprehension with more than one variable yet", node);
         }
@@ -135,53 +133,50 @@ public final class ComprehensionConverter implements TestConverter {
             var trueType = varType(typedVar);
             info.addVariable(typedVar.getVariable().getName(), trueType, variable);
         }
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable())));
+        bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
         if (!node.getCondition().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getCondition(), info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            bytes.addAll(Util.intToBytes(topJump));
+            bytes.addAll(TestConverter.bytes(node.getCondition(), info, 1));
+            bytes.add(Bytecode.JUMP_FALSE, topJump);
         }
-        int whileJmp = addWhileCond(start, bytes);
+        var whileJmp = addWhileCond(bytes);
         if (braceType.addSwap) {
-            bytes.add(Bytecode.SWAP_2.value);  // The iterator object will be atop the list, swap it and back again
+            bytes.add(Bytecode.SWAP_2);  // The iterator object will be atop the list, swap it and back again
         }
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getBuilder()[0].getArgument(), info, 1));
-        bytes.add(braceType.addCode.value);
+        bytes.addAll(TestConverter.bytes(node.getBuilder()[0].getArgument(), info, 1));
         if (braceType.addCode == Bytecode.YIELD) {
-            bytes.addAll(Util.shortToBytes((short) 1));
+            bytes.add(Bytecode.YIELD, 1);
+        } else {
+            bytes.add(braceType.addCode);
         }
         if (braceType.addSwap) {
-            bytes.add(Bytecode.SWAP_2.value);
+            bytes.add(Bytecode.SWAP_2);
         }
-        bytes.add(Bytecode.JUMP.value);
-        bytes.addAll(Util.intToBytes(topJump));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), forJump);
-        if (whileJmp != -1) {
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), whileJmp);
+        bytes.add(Bytecode.JUMP, topJump);
+        bytes.addLabel(forJump);
+        if (whileJmp != null) {
+            bytes.addLabel(whileJmp);
         }
         if (retCount == 0) {
             assert braceType != BraceType.GENERATOR;
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         info.removeStackFrame();
         return bytes;
     }
 
-    private int addWhileCond(int start, List<Byte> bytes) {
+    @Nullable
+    private Label addWhileCond(BytecodeList bytes) {
         if (!node.getWhileCond().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getWhileCond(), info, 1));
-            bytes.add(Bytecode.JUMP_TRUE.value);
-            int innerWhileJump = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-            bytes.add(Bytecode.POP_TOP.value);
-            bytes.add(Bytecode.JUMP.value);
-            int whileJmp = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), innerWhileJump);
-            return whileJmp;
+            bytes.addAll(TestConverter.bytes(node.getWhileCond(), info, 1));
+            var innerWhileJump = info.newJumpLabel();
+            bytes.add(Bytecode.JUMP_TRUE, innerWhileJump);
+            bytes.add(Bytecode.POP_TOP);
+            var whileJump = info.newJumpLabel();
+            bytes.add(Bytecode.JUMP, whileJump);
+            bytes.addLabel(innerWhileJump);
+            return whileJump;
         } else {
-            return -1;
+            return null;
         }
     }
 

@@ -3,9 +3,6 @@ package main.java.converter;
 import main.java.parser.FunctionDefinitionNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class TestFnConverter {
     public static void convertTestFunction(@NotNull CompilerInfo info, FunctionDefinitionNode node) {
         if (info.globalInfo().isTest()) {
@@ -20,15 +17,12 @@ public final class TestFnConverter {
 
     public static int convertTestStart(@NotNull GlobalCompilerInfo info) {
         var testFunctions = info.getTestFunctions();
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.testConstant())));
+        BytecodeList bytes = new BytecodeList();
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.testConstant()));
         for (var constant : testFunctions) {
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
         }
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) testFunctions.size()));
+        bytes.add(Bytecode.CALL_TOS, testFunctions.size());
         var fnInfo = new FunctionInfo("__default__$test");
         var function = new Function(fnInfo, bytes);
         return info.addFunction(function);

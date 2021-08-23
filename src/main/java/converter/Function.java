@@ -3,25 +3,23 @@ package main.java.converter;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 
-import java.util.List;
-
 public final class Function implements Lined {
     private final LineInfo lineInfo;
     private final FunctionInfo info;
-    private final List<Byte> bytes;
+    private final BytecodeList bytes;
     private int max = 0;
 
-    public Function(Lined lineInfo, FunctionInfo info, List<Byte> bytes) {
+    public Function(Lined lineInfo, FunctionInfo info, BytecodeList bytes) {
         this(lineInfo.getLineInfo(), info, bytes);
     }
 
-    public Function(LineInfo lineInfo, FunctionInfo info, List<Byte> bytes) {
+    public Function(LineInfo lineInfo, FunctionInfo info, BytecodeList bytes) {
         this.lineInfo = lineInfo;
         this.info = info;
         this.bytes = bytes;
     }
 
-    public Function(FunctionInfo info, List<Byte> bytes) {
+    public Function(FunctionInfo info, BytecodeList bytes) {
         this.lineInfo = LineInfo.empty();
         this.info = info;
         this.bytes = bytes;
@@ -44,7 +42,7 @@ public final class Function implements Lined {
         return info.getReturns();
     }
 
-    public List<Byte> getBytes() {
+    public BytecodeList getBytes() {
         return bytes;
     }
 

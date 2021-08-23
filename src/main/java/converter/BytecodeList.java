@@ -116,6 +116,10 @@ public final class BytecodeList {
         throw CompilerInternalError.format("Unknown label number: %s", LineInfo.empty(), label);
     }
 
+    public boolean isEmpty() {
+        return values.isEmpty();
+    }
+
     private static final class Value {
         private final boolean isLabel;
         private final Bytecode bytecodeType;

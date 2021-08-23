@@ -9,8 +9,6 @@ import main.java.parser.TestNode;
 import main.java.parser.TypedArgumentNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public final class LambdaConverter implements TestConverter {
@@ -42,18 +40,23 @@ public final class LambdaConverter implements TestConverter {
     @NotNull
     @Override
     public List<Byte> convert(int start) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    public BytecodeList convert() {
         if (retCount == 0) {
             CompilerWarning.warn("Unused lambda", WarningType.UNUSED, info, node);
-            return Collections.emptyList();
+            return new BytecodeList();
         } else if (retCount > 1) {
             throw CompilerException.format("Lambda literal only returns one value, not %d", node, retCount);
         }
-        List<Byte> bytes = new ArrayList<>();
+        BytecodeList bytes = new BytecodeList();
         var name = info.lambdaName();
         var fnInfo = new FunctionInfo(name, convertArgs(), info.typesOf(node.getReturns()));
         int fnIndex = info.addFunction(new Function(node, fnInfo, convertBody()));
-        bytes.add(Bytecode.MAKE_FUNCTION.value);
-        bytes.addAll(Util.shortToBytes((short) fnIndex));
+        bytes.add(Bytecode.MAKE_FUNCTION, fnIndex);
         return bytes;
     }
 
@@ -72,14 +75,14 @@ public final class LambdaConverter implements TestConverter {
     }
 
     @NotNull
-    private List<Byte> convertBody() {
+    private BytecodeList convertBody() {
         info.addStackFrame();
         var retInfo = info.getFnReturns();
         retInfo.addFunctionReturns(lambdaReturnType());
         for (var arg : node.getArgs()) {
             info.addVariable(arg.getName().getName(), info.getType(arg.getType()), arg);
         }
-        List<Byte> fnBytes = new ArrayList<>(BaseConverter.bytes(0, fnBody(), info ));
+        var fnBytes = new BytecodeList(BaseConverter.bytes(fnBody(), info ));
         info.removeStackFrame();
         retInfo.popFnReturns();
         return fnBytes;

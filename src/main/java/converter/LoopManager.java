@@ -41,7 +41,7 @@ public final class LoopManager {
      * </p>
      */
     public Label breakLabel(int levels) {
-        return entries.get(entries.size() - levels + 1).getBreakLabel();
+        return entries.get(entries.size() - levels).getBreakLabel();
     }
 
     /**
