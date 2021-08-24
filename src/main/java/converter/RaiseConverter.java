@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.RaiseStatementNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -25,6 +26,14 @@ public final class RaiseConverter implements TestConverter {
         var result = new TypeObject[retCount];
         Arrays.fill(result, Builtins.throwsType());
         return result;
+    }
+
+    @Override
+    @NotNull
+    public Pair<BytecodeList, DivergingInfo> convertAndReturn() {
+        var divergingInfo = node.getCond().isEmpty()
+                ? new DivergingInfo().knownReturn() : new DivergingInfo().possibleReturn();
+        return Pair.of(convert(), divergingInfo);
     }
 
     @Override
