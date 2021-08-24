@@ -47,6 +47,9 @@ public final class RaiseConverter implements TestConverter {
             throw returnError();
         }
         var condLoc = IfConverter.addJump(bytes, node.getCond(), info);
+        if (condLoc != null && retCount > 0) {
+            throw CompilerException.of("'raise' statement with if clause is not allowed in expressions", node);
+        }
         var converter = TestConverter.of(info, node.getRaised(), 1);
         var retType = converter.returnType()[0];
         if (!Builtins.throwable().isSuperclass(retType)) {
