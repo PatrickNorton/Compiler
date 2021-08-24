@@ -38,10 +38,19 @@ public final class Converter {
      * @param node The AST node to compile
      */
     public static void convertToFile(@NotNull File file, TopNode node, CLArgs args) {
+        var start = System.nanoTime();
         var destFile = file.getParentFile();
         var info = new CompilerInfo(node, new GlobalCompilerInfo(destFile, args)).link();
         ImportHandler.compileAll(info);
+        runOptimizationPasses(info);
         info.writeToFile(file);
+        var end = System.nanoTime();
+        var elapsed = (end - start) / 1_000_000_000.;
+        var counter = info.globalInfo().getWarnings();
+        System.out.printf(
+                "Compilation finished in %.2fs with %d errors and %d warnings%n",
+                elapsed, counter.getErrors(), counter.getWarnings()
+        );
     }
 
     /**
@@ -150,5 +159,14 @@ public final class Converter {
 
     private static boolean nameMatches(@NotNull String wantedName, @NotNull String actualName) {
         return wantedName.equals(actualName) || (wantedName + Util.FILE_EXTENSION).equals(actualName);
+    }
+
+    private static void runOptimizationPasses(@NotNull CompilerInfo info) {
+        var globalInfo = info.globalInfo();
+        if (globalInfo.optIsEnabled("inline-functions")) {
+            for (var function : info.getFunctions()) {
+                FunctionInliner.inlineAll(info, function.getBytes());
+            }
+        }
     }
 }

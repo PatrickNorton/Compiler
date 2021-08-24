@@ -1,11 +1,16 @@
 package main.java.converter;
 
 import main.java.parser.LineInfo;
+import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 public final class BytecodeList {
     private final List<Value> values;
@@ -66,6 +71,60 @@ public final class BytecodeList {
         this.values.add(0, new Value(bytecode, firstParam, secondParam));
     }
 
+    public void addAll(@NotNull Index index, @NotNull BytecodeList bytecode) {
+        this.values.addAll(index.value, bytecode.values);
+    }
+
+    public void remove(@NotNull Index index) {
+        this.values.remove(index.value);
+    }
+
+    public int bytecodeCount() {
+        int result = 0;
+        for (var value : values) {
+            if (!value.isLabel()) {
+                result++;
+            }
+        }
+        return result;
+    }
+
+    @Contract("_ -> new")
+    public int[] getOperands(@NotNull Index index) {
+        assert !values.get(index.value).isLabel();
+        var value = values.get(index.value);
+        switch (value.getBytecodeType().operandCount()) {
+            case 0:
+                return new int[0];
+            case 1:
+                return new int[] {value.getFirstParam()};
+            case 2:
+                return new int[] {value.getFirstParam(), value.getSecondParam()};
+            default:
+                throw CompilerInternalError.format(
+                        "Unknown number of operands to bytecode: %d (bytecode value %d)",
+                        LineInfo.empty(),
+                        value.getBytecodeType().operandCount(), value.getBytecodeType().value
+                );
+        }
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public Iterable<Pair<Index, Bytecode>> enumerate() {
+        return Enumerate::new;
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public Iterable<Bytecode> bytecodes() {
+        return BytecodeIter::new;
+    }
+
+    private void addValue(Value value) {
+        this.values.add(value);
+    }
+
     @NotNull
     public List<Byte> convertToBytes() {
         List<Byte> bytes = new ArrayList<>();
@@ -86,6 +145,22 @@ public final class BytecodeList {
             }
         }
         return bytes;
+    }
+
+    @NotNull
+    public BytecodeList copyLabels() {
+        BytecodeList result = new BytecodeList(values.size());
+        Map<Label, Label> translationMap = new HashMap<>();
+        for (var value : values) {
+            var label = value.getLabel();
+            if (label != null) {
+                var newLabel = translationMap.computeIfAbsent(label, x -> new Label());
+                result.addValue(value.copyWithLabel(newLabel));
+            } else {
+                result.addValue(value.getCopy());
+            }
+        }
+        return result;
     }
 
     private int findLabelIndex(Label label, int currentIndex, int byteLen) {
@@ -111,6 +186,14 @@ public final class BytecodeList {
     @NotNull
     public static BytecodeList of(Bytecode value) {
         return new BytecodeList(List.of(new Value(value)));
+    }
+
+    public static final class Index {
+        private final int value;
+
+        private Index(int value) {
+            this.value = value;
+        }
     }
 
     private static final class Value {
@@ -172,6 +255,78 @@ public final class BytecodeList {
 
         public int getSecondParam() {
             return secondParam;
+        }
+
+        @Contract(value = " -> new", pure = true)
+        @NotNull
+        public Value getCopy() {
+            return new Value(isLabel, bytecodeType, label, firstParam, secondParam);
+        }
+
+        @Contract(value = "_ -> new", pure = true)
+        @NotNull
+        public Value copyWithLabel(Label label) {
+            return new Value(isLabel, bytecodeType, label, firstParam, secondParam);
+        }
+    }
+
+    private final class Enumerate implements Iterator<Pair<Index, Bytecode>> {
+        int index;
+
+        private Enumerate() {
+            this.index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            while (index < values.size() && values.get(index).isLabel()) {
+                index++;
+            }
+            return index < values.size();
+        }
+
+        @Override
+        @NotNull
+        public Pair<Index, Bytecode> next() {
+            while (index < values.size() && values.get(index).isLabel()) {
+                index++;
+            }
+            if (index >= values.size()) {
+                throw new NoSuchElementException();
+            } else {
+                var oldIndex = index++;
+                return Pair.of(new Index(oldIndex), values.get(oldIndex).bytecodeType);
+            }
+        }
+    }
+
+    private final class BytecodeIter implements Iterator<Bytecode> {
+        int index;
+
+        private BytecodeIter() {
+            this.index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            while (index < values.size() && values.get(index).isLabel()) {
+                index++;
+            }
+            return index < values.size();
+        }
+
+        @Override
+        @NotNull
+        public Bytecode next() {
+            while (index < values.size() && values.get(index).isLabel()) {
+                index++;
+            }
+            if (index >= values.size()) {
+                throw new NoSuchElementException();
+            } else {
+                var oldIndex = index++;
+                return values.get(oldIndex).bytecodeType;
+            }
         }
     }
 }

@@ -184,8 +184,8 @@ public enum Bytecode {
         return sum + 1;
     }
 
-    public boolean isJump() {
-        return operands.length > 0 && operands[0] == Type.LOCATION;
+    public int operandCount() {
+        return operands.length;
     }
 
     @NotNull

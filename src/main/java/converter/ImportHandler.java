@@ -616,7 +616,6 @@ public final class ImportHandler {
     }
 
     public static void compileAll(CompilerInfo info) {
-        var start = System.nanoTime();
         loadDefaultInterfaces();
         while (!toCompile.isEmpty()) {
             var nextCompilationRound = toCompile;
@@ -630,13 +629,6 @@ public final class ImportHandler {
                 pair.getKey().compile();
             }
         }
-        var end = System.nanoTime();
-        var elapsed = (end - start) / 1_000_000_000.;
-        var counter = info.globalInfo().getWarnings();
-        System.out.printf(
-                "Compilation finished in %.2fs with %d errors and %d warnings%n",
-                elapsed, counter.getErrors(), counter.getWarnings()
-        );
     }
 
     public static void loadDefaultInterfaces() {
