@@ -168,5 +168,8 @@ public final class Converter {
                 FunctionInliner.inlineAll(info, function.getBytes());
             }
         }
+        if (globalInfo.optIsEnabled("dce")) {
+            DeadCode.eliminateJumps(globalInfo);
+        }
     }
 }
