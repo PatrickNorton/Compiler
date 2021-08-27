@@ -1097,7 +1097,7 @@ class ExecNoSyncStr {
             var s, var e = *(pair!!)
             if s == e {
                 lastEnd = self.value.nextAfterEmpty(bytes(text), e)
-                continue if lastMatch? and lastMatch!! == e
+                continue if lastMatch == option(e)
             } else {
                 lastEnd = e
             }
