@@ -317,3 +317,7 @@ class ArithmeticError from Throwable {
 
 $builtin("__test_internal", 34, hidden)
 func __test_internal(*Callable[[]] vars) {}
+
+$builtin("option", 35)
+generic T
+func option(T value, /) -> T? {}

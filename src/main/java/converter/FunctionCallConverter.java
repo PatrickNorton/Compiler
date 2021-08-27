@@ -375,6 +375,17 @@ public final class FunctionCallConverter implements TestConverter {
             bytes.addAll(converter.convert());
             bytes.add(Bytecode.GET_TYPE);
             return bytes;
+        } else if (strName.equals("option")) {
+            var params = node.getParameters();
+            if (params.length != 1) {
+                throw CompilerException.format(
+                        "'option' can only be called with 1 argument, not %d", node, params.length
+                );
+            }
+            var converter = TestConverter.of(info, params[0].getArgument(), 1);
+            bytes.addAll(converter.convert());
+            bytes.add(Bytecode.MAKE_OPTION);
+            return bytes;
         } else {
             throw CompilerInternalError.format("Invalid builtin function name %s", node, strName);
         }

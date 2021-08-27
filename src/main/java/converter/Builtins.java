@@ -28,6 +28,7 @@ public final class Builtins {
             "self",
             "cls",
             "super",
+            "option",
             "null"
     );
 
@@ -267,7 +268,8 @@ public final class Builtins {
             null,  // __format_internal
             ITERATOR,
             null,  // ArithmeticError
-            null   // __test_internal
+            null,  // __test_internal
+            null   // option
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(
