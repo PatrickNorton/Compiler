@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.CLArgs;
 import main.java.parser.LineInfo;
+import main.java.parser.Optimization;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -402,7 +403,7 @@ public final class GlobalCompilerInfo {
         return arguments.getCfgOptions();
     }
 
-    public boolean optIsEnabled(String opt) {
+    public boolean optIsEnabled(Optimization opt) {
         return arguments.optIsEnabled(opt);
     }
 

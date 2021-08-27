@@ -2,6 +2,7 @@ package main.java.converter;
 
 import main.java.parser.CLArgs;
 import main.java.parser.Lined;
+import main.java.parser.Optimization;
 import main.java.parser.TopNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -163,12 +164,12 @@ public final class Converter {
 
     private static void runOptimizationPasses(@NotNull CompilerInfo info) {
         var globalInfo = info.globalInfo();
-        if (globalInfo.optIsEnabled("inline-functions")) {
+        if (globalInfo.optIsEnabled(Optimization.INLINE_FUNCTIONS)) {
             for (var function : info.getFunctions()) {
                 FunctionInliner.inlineAll(info, function.getBytes());
             }
         }
-        if (globalInfo.optIsEnabled("dce")) {
+        if (globalInfo.optIsEnabled(Optimization.DEAD_CODE)) {
             DeadCode.eliminate(globalInfo);
         }
     }

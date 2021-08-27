@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,13 +15,13 @@ public final class CLArgs {
     private final boolean isTest;
     private final boolean isDebug;
     private final int optLevel;
-    private final Map<String, Boolean> explicitOpts;
+    private final Map<Optimization, Boolean> explicitOpts;
     private final Set<String> cfgOptions;
     private final boolean printBytecode;
 
     private CLArgs(
             Path target, boolean test, boolean isDebug, int optLevel,
-            Map<String, Boolean> explicitOpts, Set<String> cfgOptions,
+            Map<Optimization, Boolean> explicitOpts, Set<String> cfgOptions,
             boolean printBytecode
     ) {
         this.target = target;
@@ -58,13 +57,12 @@ public final class CLArgs {
         return printBytecode;
     }
 
-    public boolean optIsEnabled(String opt) {
-        assert ALL_OPTIMIZATIONS.contains(opt);
+    public boolean optIsEnabled(Optimization opt) {
         if (explicitOpts.containsKey(opt)) {
             return !explicitOpts.get(opt);
         }
         for (int i = 0; i < optLevel; i++) {
-            if (OPT_LIST.get(i).contains(opt)) {
+            if (Optimization.OPT_LIST.get(i).contains(opt)) {
                 return true;
             }
         }
@@ -78,7 +76,7 @@ public final class CLArgs {
         var test = false;
         var debug = true;
         var optLevel = 0;
-        Map<String, Boolean> optimizations = new HashMap<>();
+        Map<Optimization, Boolean> optimizations = new HashMap<>();
         Set<String> cfgOptions = new HashSet<>();
         var printBytecode = false;
         for (int i = 1; i < args.length; i++) {
@@ -129,51 +127,13 @@ public final class CLArgs {
         return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions, printBytecode);
     }
 
-    private static void updateOptimizations(String name, @NotNull Map<String, Boolean> optimizations, boolean negative) {
-        if (optimizations.containsKey(name)) {
+    private static void updateOptimizations(String name, @NotNull Map<Optimization, Boolean> optimizations, boolean negative) {
+        var optimization = Optimization.fromStr(name);
+        if (optimizations.containsKey(optimization)) {
             var errorMsg = String.format("Redefinition of optimization option %s", name);
             throw new IllegalArgumentException(errorMsg);
-        } else if (!ALL_OPTIMIZATIONS.contains(name)) {
-            var errorMsg = String.format("Unknown optimization option %s", name);
-            throw new IllegalArgumentException(errorMsg);
         } else {
-            optimizations.put(name, negative);
+            optimizations.put(optimization, negative);
         }
     }
-
-    private static final Set<String> ALL_OPTIMIZATIONS = Set.of(
-            "const-bytes-object",
-            "dce",      // Dead code elimination
-            "dse",      // Dead store elimination
-            "gcse",     // Common subexpression elimination
-            "inline-functions",
-            "inline-functions-called-once",
-            "inline-small-functions",
-            "pure-const"
-    );
-
-    private static final Set<String> O0_OPTIMIZATIONS = Set.of();
-
-    private static final Set<String> O1_OPTIMIZATIONS = Set.of(
-            "const-bytes-object",
-            "dce",
-            "dse",
-            "inline-functions-called-once",
-            "pure-const"
-    );
-
-    private static final Set<String> O2_OPTIMIZATIONS = Set.of(
-            "gcse",
-            "inline-functions",
-            "inline-small-functions"
-    );
-
-    private static final Set<String> O3_OPTIMIZATIONS = Set.of();
-
-    private static final List<Set<String>> OPT_LIST = List.of(
-            O0_OPTIMIZATIONS,
-            O1_OPTIMIZATIONS,
-            O2_OPTIMIZATIONS,
-            O3_OPTIMIZATIONS
-    );
 }
