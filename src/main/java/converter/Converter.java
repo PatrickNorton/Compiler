@@ -169,7 +169,7 @@ public final class Converter {
             }
         }
         if (globalInfo.optIsEnabled("dce")) {
-            DeadCode.eliminateJumps(globalInfo);
+            DeadCode.eliminate(globalInfo);
         }
     }
 }

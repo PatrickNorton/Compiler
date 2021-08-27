@@ -4,6 +4,7 @@ import main.java.parser.LineInfo;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,6 +80,14 @@ public final class BytecodeList {
         this.values.remove(index.value);
     }
 
+    public void removeRange(@NotNull Index start, @NotNull Index end) {
+        this.values.subList(start.value, end.value).clear();
+    }
+
+    public void removeRange(@NotNull Index start) {
+        this.values.subList(start.value, values.size()).clear();
+    }
+
     public int bytecodeCount() {
         int result = 0;
         for (var value : values) {
@@ -87,6 +96,16 @@ public final class BytecodeList {
             }
         }
         return result;
+    }
+
+    @Nullable
+    public Index nextLabel(@NotNull Index value) {
+        for (int i = value.value; i < values.size(); i++) {
+            if (values.get(i).isLabel()) {
+                return new Index(i);
+            }
+        }
+        return null;
     }
 
     @Contract("_ -> new")
@@ -211,6 +230,12 @@ public final class BytecodeList {
         private Index(int value) {
             this.value = value;
         }
+
+        @Contract(value = " -> new", pure = true)
+        @NotNull
+        public Index next() {
+            return new Index(value + 1);
+        }
     }
 
     private static final class Value {
@@ -312,7 +337,37 @@ public final class BytecodeList {
                 throw new NoSuchElementException();
             } else {
                 var oldIndex = index++;
-                return Pair.of(new Index(oldIndex), values.get(oldIndex).bytecodeType);
+                return Pair.of(new Index(oldIndex), values.get(oldIndex).getBytecodeType());
+            }
+        }
+    }
+
+    private final class EnumerateLabel implements Iterator<Pair<Index, Label>> {
+        int index;
+
+        private EnumerateLabel() {
+            this.index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            while (index < values.size() && !values.get(index).isLabel()) {
+                index++;
+            }
+            return index < values.size();
+        }
+
+        @Override
+        @NotNull
+        public Pair<Index, Label> next() {
+            while (index < values.size() && !values.get(index).isLabel()) {
+                index++;
+            }
+            if (index >= values.size()) {
+                throw new NoSuchElementException();
+            } else {
+                var oldIndex = index++;
+                return Pair.of(new Index(oldIndex), values.get(oldIndex).getLabel());
             }
         }
     }
