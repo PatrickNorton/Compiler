@@ -79,7 +79,7 @@ func findCapRef(str replacement) -> CaptureRef? {
 
     var cap = str(rep[i:capEnd])
     if brace {
-        return null if not rep.get(capEnd)?.operator == (y"}") ?? false
+        return null if not rep.get(capEnd)?.operator == option(y"}")
         capEnd++
     }
     if cap.asInt()? as i {

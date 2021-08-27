@@ -237,9 +237,9 @@ class HelpFormatter {
             # remove | separators for suppressed arguments
             if action.help is SUPPRESS {
                 parts.append(None)
-                if inserts.get(i) == '|' {
+                if inserts.get(i) == option('|') {
                     inserts.pop(i)
-                } elif inserts.get(i + 1) == '|' {
+                } elif inserts.get(i + 1) == option('|') {
                     inserts.pop(i + 1)
                 }
             } elif not action.optionStrings {

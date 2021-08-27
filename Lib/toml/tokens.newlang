@@ -392,8 +392,7 @@ class CrlfFold from Iterator[tuple[int, char]] {
 
 generator func crlfFold(str text) -> tuple[int, char] {
     for var i, var ch in enumerate(text) {
-        char? newline = c'\n'  # TODO Make it easier to create option
-        if ch == '\r' and text.get(i + 1) == newline {
+        if ch == '\r' and text.get(i + 1) == option(c'\n') {
             continue
         } else {
             yield (i, ch)
