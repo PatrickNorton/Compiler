@@ -107,8 +107,8 @@ public enum Bytecode {
     STORE_STATIC(0x61, Type.VARIABLE),
     LOAD_STATIC(0x62, Type.VARIABLE),
     // Union/Option stuff
-    GET_VARIANT(0x68, Type.FUNCTION_NO),
-    MAKE_VARIANT(0x69, Type.FUNCTION_NO),
+    GET_VARIANT(0x68, Type.VARIANT),
+    MAKE_VARIANT(0x69, Type.VARIANT),
     VARIANT_NO(0x6A),
     MAKE_OPTION(0x6B),
     IS_SOME(0x6C),
@@ -136,6 +136,7 @@ public enum Bytecode {
         STACK_POS(2),
         TABLE_NO(2),
         SYSCALL_NO(2),
+        VARIANT(2),
         ;
         final byte byteCount;
 
@@ -248,6 +249,7 @@ public enum Bytecode {
             case VARIABLE:
             case STACK_POS:
             case TABLE_NO:
+            case VARIANT:
                 return Integer.toString(value);
             case CONSTANT:
                 return String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
