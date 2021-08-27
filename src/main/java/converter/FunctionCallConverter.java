@@ -53,6 +53,12 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     private BytecodeList convert(boolean tail) {
+        var constant = constantReturn();
+        if (constant.isPresent()) {
+            var bytes = new BytecodeList(2);
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant.orElseThrow()));
+            return bytes;
+        }
         if (node.getCaller() instanceof EscapedOperatorNode) {
             return convertOp();
         }
@@ -303,6 +309,15 @@ public final class FunctionCallConverter implements TestConverter {
             var constantReturn = TestConverter.constantReturn(arg, info, 1);
             if (constantReturn.isPresent()) {
                 return constantOp(op, constantReturn.orElseThrow());
+            } else {
+                return Optional.empty();
+            }
+        } else if (strName.equals("option")) {
+            var arg = node.getParameters()[0].getArgument();
+            var constantReturn = TestConverter.constantReturn(arg, info, 1);
+            if (constantReturn.isPresent()) {
+                var constant = constantReturn.orElseThrow();
+                return Optional.of(new OptionConstant(constant.getType(), info.constIndex(constant)));
             } else {
                 return Optional.empty();
             }
