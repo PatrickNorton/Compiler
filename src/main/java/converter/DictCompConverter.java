@@ -4,9 +4,6 @@ import main.java.parser.DictComprehensionNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class DictCompConverter implements TestConverter {
     private final DictComprehensionNode node;
     private final CompilerInfo info;
@@ -39,25 +36,21 @@ public final class DictCompConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {  // TODO: Refactor with ComprehensionConverter (and ForConverter?)
+    public BytecodeList convert() {  // TODO: Refactor with ComprehensionConverter (and ForConverter?)
         if (retCount == 0) {
             CompilerWarning.warn("Unnecessary dict creation", WarningType.UNUSED, info, node);
         } else if (retCount > 1) {
             throw CompilerException.format("Dict comprehension only returns one value, got %d", node, retCount);
         }
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.DICT_CREATE.value);
-        bytes.addAll(Util.shortToBytes((short) 0));
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.iterConstant())));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getLooped().get(0), info, 1));
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        var topJump = start + bytes.size();
-        bytes.add(Bytecode.FOR_ITER.value);
-        int forJump = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(Util.shortToBytes((short) 1));
+        BytecodeList bytes = new BytecodeList();
+        bytes.add(Bytecode.DICT_CREATE, 0);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.addAll(TestConverter.bytes(node.getLooped().get(0), info, 1));
+        bytes.add(Bytecode.CALL_TOS, 1);
+        var topJump = info.newJumpLabel();
+        bytes.addLabel(topJump);
+        var forJump = info.newJumpLabel();
+        bytes.add(Bytecode.FOR_ITER, forJump, 1);
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();
@@ -66,23 +59,20 @@ public final class DictCompConverter implements TestConverter {
             info.checkDefinition(typedVar.getVariable().getName(), typedVar);
             info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), typedVar);
         }
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable())));
+        bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
         if (!node.getCondition().isEmpty()) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getCondition(), info, 1));
-            bytes.add(Bytecode.JUMP_FALSE.value);
-            bytes.addAll(Util.intToBytes(topJump));
+            bytes.addAll(TestConverter.bytes(node.getCondition(), info, 1));
+            bytes.add(Bytecode.JUMP_FALSE, topJump);
         }
-        bytes.add(Bytecode.SWAP_2.value);  // The iterator object will be atop the list, swap it and back again
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getKey(), info, 1));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), node.getBuilder()[0].getArgument(), info, 1));
-        bytes.add(Bytecode.DICT_ADD.value);
-        bytes.add(Bytecode.SWAP_2.value);
-        bytes.add(Bytecode.JUMP.value);
-        bytes.addAll(Util.intToBytes(topJump));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), forJump);
+        bytes.add(Bytecode.SWAP_2);  // The iterator object will be atop the list, swap it and back again
+        bytes.addAll(TestConverter.bytes(node.getKey(), info, 1));
+        bytes.addAll(TestConverter.bytes(node.getBuilder()[0].getArgument(), info, 1));
+        bytes.add(Bytecode.DICT_ADD);
+        bytes.add(Bytecode.SWAP_2);
+        bytes.add(Bytecode.JUMP, topJump);
+        bytes.addLabel(forJump);
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         info.removeStackFrame();
         return bytes;

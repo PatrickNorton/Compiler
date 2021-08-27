@@ -309,3 +309,15 @@ auto interface Hashable {
 # format creation).
 $builtin("__format_internal", 31, hidden)
 func __format_internal(int format, object value) {}
+
+$builtin("ArithmeticError", 33)
+class ArithmeticError from Throwable {
+    public operator new (str msg, /) {}
+}
+
+$builtin("__test_internal", 34, hidden)
+func __test_internal(*Callable[[]] vars) {}
+
+$builtin("option", 35)
+generic T
+func option(T value, /) -> T? {}

@@ -6,9 +6,6 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class NullOpConverter extends OperatorConverter {
     private final OperatorTypeNode op;
     private final ArgumentNode[] args;
@@ -47,14 +44,14 @@ public final class NullOpConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         switch (op) {
             case NULL_COERCE:
-                return convertNullCoerce(start);
+                return convertNullCoerce();
             case NOT_NULL:
-                return convertNotNull(start);
+                return convertNotNull();
             case OPTIONAL:
-                return convertQuestion(start);
+                return convertQuestion();
             default:
                 throw CompilerInternalError.of("", lineInfo);
         }
@@ -62,43 +59,44 @@ public final class NullOpConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
         if (op == OperatorTypeNode.OPTIONAL) {
-            return convertQuestionAs(start);
+            return convertQuestionAs();
         } else {
             throw asException(lineInfo);
         }
     }
 
     @NotNull
-    private List<Byte> convertNullCoerce(int start) {
+    private BytecodeList convertNullCoerce() {
         assert op == OperatorTypeNode.NULL_COERCE;
         var firstConverter = TestConverter.of(info, args[0].getArgument(), 1);
         if (!(firstConverter.returnType()[0] instanceof OptionTypeObject)) {  // Non-optional return types won't be null
             CompilerWarning.warn(
                     "Using ?? operator on non-optional value", WarningType.TRIVIAL_VALUE, info, args[0]
             );
-            return firstConverter.convert(start);
+            return firstConverter.convert();
         } else if (firstConverter.returnType()[0].equals(Builtins.nullType())) {
             CompilerWarning.warn(
                     "Using ?? operator on value that is always null", WarningType.TRIVIAL_VALUE, info, args[0]
             );
-            return TestConverter.bytes(start, args[1].getArgument(), info, 1);
+            return TestConverter.bytes(args[1].getArgument(), info, 1);
         }
-        List<Byte> bytes = unwrapSecond(start, firstConverter);
-        bytes.add(Bytecode.JUMP_NN.value);
-        addPostJump(start, bytes);
+        var bytes = unwrapSecond(firstConverter);
+        var postLabel = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_NN, postLabel);
+        addPostJump(bytes, postLabel);
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
     @NotNull
-    private List<Byte> convertNotNull(int start) {
+    private BytecodeList convertNotNull() {
         assert op == OperatorTypeNode.NOT_NULL;
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
+        BytecodeList bytes = new BytecodeList(converter.convert());
         var retType = converter.returnType()[0];
         if (retType.equals(Builtins.nullType())) {
             throw CompilerException.of(
@@ -106,38 +104,36 @@ public final class NullOpConverter extends OperatorConverter {
                     args[0]
             );
         } else if (retType instanceof OptionTypeObject) {
-            bytes.addAll(unwrapOption(info, args[0].toString(), start + bytes.size()));
+            bytes.addAll(unwrapOption(info, args[0].toString()));
         } else {
             CompilerWarning.warn("Used !! operator on non-optional value",
                     WarningType.TRIVIAL_VALUE, info, args[0].getLineInfo());
         }
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
     @NotNull
-    private List<Byte> convertQuestion(int start) {
+    private BytecodeList convertQuestion() {
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = converter.returnType()[0];
         if (!(retType instanceof OptionTypeObject)) {
             throw CompilerException.format("Cannot use ? on a non-optional type '%s", args[0], retType.name());
         }
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.IS_SOME.value);
+        var bytes = new BytecodeList(converter.convert());
+        bytes.add(Bytecode.IS_SOME);
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
-    private void addPostJump(int start, @NotNull List<Byte> bytes) {
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), args[1].getArgument(), info, 1));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+    private void addPostJump(@NotNull BytecodeList bytes, Label postLabel) {
+        bytes.add(Bytecode.POP_TOP);
+        bytes.addAll(TestConverter.bytes(args[1].getArgument(), info, 1));
+        bytes.addLabel(postLabel);
     }
 
     @NotNull
@@ -160,45 +156,40 @@ public final class NullOpConverter extends OperatorConverter {
     }
 
     @NotNull
-    private Pair<List<Byte>, TypeObject> convertQuestionAs(int start) {
+    private Pair<BytecodeList, TypeObject> convertQuestionAs() {
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         var retType = converter.returnType()[0];
         if (!(retType instanceof OptionTypeObject)) {
             throw CompilerException.format("Cannot use ? on a non-optional type '%s'", args[0], retType.name());
         }
         var resultType = ((OptionTypeObject) retType).getOptionVal();
-        List<Byte> bytes = unwrapSecond(start, converter);
-        bytes.add(Bytecode.IS_SOME.value);
+        var bytes = unwrapSecond(converter);
+        bytes.add(Bytecode.IS_SOME);
         return Pair.of(bytes, resultType);
     }
 
     @NotNull
-    public static List<Byte> unwrapOption(CompilerInfo info, String value, int start) {
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.JUMP_NN.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.nullErrorConstant())));
-        bytes.add(Bytecode.LOAD_CONST.value);
+    public static BytecodeList unwrapOption(CompilerInfo info, String value) {
+        var bytes = new BytecodeList();
+        bytes.add(Bytecode.DUP_TOP);
+        var jump = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_NN, jump);
+        bytes.add(Bytecode.POP_TOP);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.nullErrorConstant()));
         var message = String.format("Value %s asserted non-null, was null", value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
-        bytes.add(Bytecode.THROW_QUICK.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
-        bytes.add(Bytecode.UNWRAP_OPTION.value);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(message)));
+        bytes.add(Bytecode.THROW_QUICK, 1);
+        bytes.addLabel(jump);
+        bytes.add(Bytecode.UNWRAP_OPTION);
         return bytes;
     }
 
     @NotNull
-    private static List<Byte> unwrapSecond(int start, @NotNull TestConverter converter) {
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.SWAP_2.value);
-        bytes.add(Bytecode.UNWRAP_OPTION.value);
-        bytes.add(Bytecode.SWAP_2.value);
+    private static BytecodeList unwrapSecond(@NotNull TestConverter converter) {
+        var bytes = new BytecodeList(converter.convert());
+        bytes.add(Bytecode.DUP_TOP);
+        bytes.add(Bytecode.UNWRAP_OPTION);
+        bytes.add(Bytecode.SWAP_2);
         return bytes;
     }
 }

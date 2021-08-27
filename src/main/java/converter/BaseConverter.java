@@ -33,28 +33,28 @@ import main.java.parser.YieldStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public interface BaseConverter {
     @NotNull
-    List<Byte> convert(int start);
+    BytecodeList convert();
 
     @NotNull
-    default Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
-        return Pair.of(convert(start), new DivergingInfo());
+    default Pair<BytecodeList, DivergingInfo> convertAndReturn() {
+        return Pair.of(convert(), new DivergingInfo());
     }
 
     @NotNull
-    static List<Byte> bytes(int start, BaseNode tokens, CompilerInfo info) {
-        return toBytes(tokens, info).convert(start);
+    static BytecodeList bytes(BaseNode tokens, CompilerInfo info) {
+        return toBytes(tokens, info).convert();
     }
 
-    static List<Byte> bytesWithoutAnnotations(int start, AnnotatableNode tokens, CompilerInfo info) {
-        return withoutAnnotations(tokens, info).convert(start);
+    @NotNull
+    static BytecodeList bytesWithoutAnnotations(AnnotatableNode tokens, CompilerInfo info) {
+        return withoutAnnotations(tokens, info).convert();
     }
 
-    static Pair<List<Byte>, DivergingInfo> bytesWithReturn(int start, BaseNode tokens, CompilerInfo info) {
-        return toBytes(tokens, info).convertAndReturn(start);
+    @NotNull
+    static Pair<BytecodeList, DivergingInfo> bytesWithReturn(BaseNode tokens, CompilerInfo info) {
+        return toBytes(tokens, info).convertAndReturn();
     }
 
     @NotNull

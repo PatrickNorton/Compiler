@@ -28,6 +28,7 @@ public final class Builtins {
             "self",
             "cls",
             "super",
+            "option",
             "null"
     );
 
@@ -189,6 +190,10 @@ public final class Builtins {
         return Objects.requireNonNull(BUILTIN_HIDDEN.get("__format_internal"));
     }
 
+    private static LangObject testFn() {
+        return Objects.requireNonNull(BUILTIN_HIDDEN.get("__test_internal"));
+    }
+
     public static final Set<InterfaceType> DEFAULT_INTERFACES = Set.of(
             CONTEXT, CALLABLE, ITERABLE
     );
@@ -261,7 +266,10 @@ public final class Builtins {
             ITERABLE,
             null,  // AssertionError
             null,  // __format_internal
-            ITERATOR
+            ITERATOR,
+            null,  // ArithmeticError
+            null,  // __test_internal
+            null   // option
     ));
 
     public static final Map<String, LangObject> BUILTIN_MAP = new HashMap<>(Map.ofEntries(
@@ -333,6 +341,7 @@ public final class Builtins {
         private static final LangConstant CHAR_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(charType()));
         private static final LangConstant FORMAT_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(format()));
         private static final LangConstant DECIMAL_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(decimal()));
+        private static final LangConstant TEST_CONSTANT = new BuiltinConstant(TRUE_BUILTINS.indexOf(testFn()));
     }
 
     public static LangConstant iterConstant() {
@@ -373,6 +382,10 @@ public final class Builtins {
 
     public static LangConstant decimalConstant() {
         return ConstantHolder.DECIMAL_CONSTANT;
+    }
+
+    public static LangConstant testConstant() {
+        return ConstantHolder.TEST_CONSTANT;
     }
 
     public static TypeObject[] deIterable(@NotNull TypeObject val) {

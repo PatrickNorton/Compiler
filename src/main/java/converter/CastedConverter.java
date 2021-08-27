@@ -5,9 +5,6 @@ import main.java.parser.Lined;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class CastedConverter extends OperatorConverter {
     private final ArgumentNode[] args;
     private final Lined lineInfo;
@@ -23,7 +20,7 @@ public final class CastedConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
          throw asException(lineInfo);
     }
 
@@ -45,20 +42,21 @@ public final class CastedConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (args.length != 2) {
             throw argsException();
         } else if (retCount == 0) {
             CompilerWarning.warn("Cast is useless when not assigned to a value", WarningType.UNUSED, info, lineInfo);
-            return TestConverter.bytes(start, args[0].getArgument(), info, 0);
+            return TestConverter.bytes(args[0].getArgument(), info, 0);
         } else if (retCount != 1) {
             throw retException();
         } else {
-            return convertNormal(start);
+            return convertNormal();
         }
     }
 
-    private List<Byte> convertNormal(int start) {
+    @NotNull
+    private BytecodeList convertNormal() {
         var argConverter = TestConverter.of(info, args[0].getArgument(), 1);
         var typeConverter = TestConverter.of(info, args[1].getArgument(), 1);
         var retType = typeConverter.returnType()[0];
@@ -73,21 +71,18 @@ public final class CastedConverter extends OperatorConverter {
                     WarningType.TRIVIAL_VALUE, info,
                     lineInfo, argType.name(), representedType.name()
             );
-            return argConverter.convert(start);
+            return argConverter.convert();
         }
-        List<Byte> bytes = new ArrayList<>(argConverter.convert(start));
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.addAll(typeConverter.convert(start + bytes.size()));
-        bytes.add(Bytecode.INSTANCEOF.value);
-        bytes.add(Bytecode.JUMP.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.LOAD_CONST.value);
+        var bytes = new BytecodeList(argConverter.convert());
+        bytes.add(Bytecode.DUP_TOP);
+        bytes.addAll(typeConverter.convert());
+        bytes.add(Bytecode.INSTANCEOF);
+        var jumpLbl = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP, jumpLbl);
         var message = String.format("Cannot cast to type %s", representedType.name());
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(message))));
-        bytes.add(Bytecode.THROW_QUICK.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(message)));
+        bytes.add(Bytecode.THROW_QUICK, 1);
+        bytes.addLabel(jumpLbl);
         return bytes;
     }
 

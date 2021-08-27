@@ -8,10 +8,8 @@ import main.java.parser.IndependentNode;
 import main.java.parser.InterfaceDefinitionNode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -29,8 +27,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
 
     @Override
     @NotNull
-    @Unmodifiable
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         this.genericOps.clear();
         this.genericAttrs.clear();
         var converter = new ConverterHolder(info);
@@ -68,7 +65,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
         } else {
             addToInfo(type, "interface", superConstants, converter);
         }
-        return Collections.emptyList();
+        return new BytecodeList();
     }
 
     public static void completeWithoutReserving(CompilerInfo info, InterfaceDefinitionNode node, InterfaceType obj) {
@@ -110,7 +107,7 @@ public final class InterfaceConverter extends ClassConverterBase<InterfaceDefini
     }
 
     @Override
-    protected final void parseStatement(IndependentNode stmt, ConverterHolder converter) {
+    protected void parseStatement(IndependentNode stmt, ConverterHolder converter) {
         if (stmt instanceof GenericOperatorNode) {
             var opNode = (GenericOperatorNode) stmt;
             this.genericOps.add(opNode.getOpCode().getOperator());

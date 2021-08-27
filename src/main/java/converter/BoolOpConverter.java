@@ -6,8 +6,6 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public final class BoolOpConverter extends OperatorConverter {
@@ -55,40 +53,39 @@ public final class BoolOpConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         switch (op) {
             case BOOL_AND:
             case BOOL_OR:
-                return convertBoolOp(start);
+                return convertBoolOp();
             case BOOL_NOT:
-                return convertBoolNot(start);
+                return convertBoolNot();
             case BOOL_XOR:
-                return convertBoolXor(start);
+                return convertBoolXor();
             default:
                 throw CompilerInternalError.format("Invalid boolean operator %s", lineInfo, op);
         }
     }
 
     @NotNull
-    private List<Byte> convertBoolOp(int start) {
+    private BytecodeList convertBoolOp() {
         assert op == OperatorTypeNode.BOOL_AND || op == OperatorTypeNode.BOOL_OR;
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.boolConstant())));
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), args[0].getArgument(), info, 1));
-        bytes.add(Bytecode.DUP_TOP.value);
+        var bytes = new BytecodeList();
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.boolConstant()));
+        bytes.addAll(TestConverter.bytes(args[0].getArgument(), info, 1));
+        bytes.add(Bytecode.DUP_TOP);
+        var label = info.newJumpLabel();
         var bytecode = op == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_TRUE : Bytecode.JUMP_FALSE;
-        bytes.add(bytecode.value);
-        addPostJump(start, bytes);
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
+        bytes.add(bytecode, label);
+        addPostJump(bytes, label);
+        bytes.add(Bytecode.CALL_TOS, 1);
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
-    private List<Byte> convertBoolNot(int start) {
+    private BytecodeList convertBoolNot() {
         assert op == OperatorTypeNode.BOOL_NOT;
         if (args.length > 1) {
             throw CompilerException.format(
@@ -96,28 +93,26 @@ public final class BoolOpConverter extends OperatorConverter {
                     lineInfo, args.length
             );
         }
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
-        bytes.add(Bytecode.BOOL_NOT.value);
+        var bytes = new BytecodeList(TestConverter.bytes(args[0].getArgument(), info, 1));
+        bytes.add(Bytecode.BOOL_NOT);
         return bytes;
     }
 
-    private List<Byte> convertBoolXor(int start) {
+    private BytecodeList convertBoolXor() {
         assert op == OperatorTypeNode.BOOL_XOR;
         if (args.length != 2) {
             throw CompilerException.format("'xor' operator must have 2 operands, got %d", lineInfo, args.length);
         }
-        List<Byte> bytes = new ArrayList<>(TestConverter.bytes(start, args[0].getArgument(), info, 1));
-        bytes.addAll(TestConverter.bytes(start, args[1].getArgument(), info, 1));
-        bytes.add(Bytecode.BOOL_XOR.value);
+        var bytes = new BytecodeList(TestConverter.bytes(args[0].getArgument(), info, 1));
+        bytes.addAll(TestConverter.bytes(args[1].getArgument(), info, 1));
+        bytes.add(Bytecode.BOOL_XOR);
         return bytes;
     }
 
-    private void addPostJump(int start, @NotNull List<Byte> bytes) {
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.addAll(TestConverter.bytes(start + bytes.size(), args[1].getArgument(), info, 1));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+    private void addPostJump(@NotNull BytecodeList bytes, Label label) {
+        bytes.add(Bytecode.POP_TOP);
+        bytes.addAll(TestConverter.bytes(args[1].getArgument(), info, 1));
+        bytes.addLabel(label);
     }
 
     private Optional<LangConstant> boolAndConst() {
@@ -190,7 +185,7 @@ public final class BoolOpConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
         throw asException(lineInfo);
     }
 }

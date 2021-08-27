@@ -4,9 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.YieldStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class YieldConverter implements BaseConverter {
     private final YieldStatementNode node;
     private final CompilerInfo info;
@@ -18,13 +15,13 @@ public final class YieldConverter implements BaseConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
-        int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);
+    public BytecodeList convert() {
+        var bytes = new BytecodeList();
+        var jumpLbl = IfConverter.addJump(bytes, node.getCond(), info);
         if (node.getYielded().isEmpty()) {
             throw CompilerException.of("Empty yield statements are illegal", node);
         } else if (node.isFrom()) {
-            convertFrom(start, bytes);
+            convertFrom(bytes);
         } else {
             var retInfo = info.getFnReturns();
             if (!retInfo.isGenerator()) {
@@ -32,15 +29,15 @@ public final class YieldConverter implements BaseConverter {
             }
             var fnReturns = retInfo.currentFnReturns();
             var converter = new ReturnListConverter(node.getYielded(), info, fnReturns, Bytecode.YIELD);
-            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.addAll(converter.convert());
         }
-        if (jumpPos != -1) {
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        if (jumpLbl != null) {
+            bytes.addLabel(jumpLbl);
         }
         return bytes;
     }
 
-    private void convertFrom(int start, List<Byte> bytes) {
+    private void convertFrom(BytecodeList bytes) {
         assert node.isFrom();
         var retInfo = info.getFnReturns();
         if (!retInfo.isGenerator()) {
@@ -50,16 +47,14 @@ public final class YieldConverter implements BaseConverter {
         var rawRet = converter.returnType()[0].tryOperatorReturnType(node, OpSpTypeNode.ITER, info)[0];
         var retTypes = Builtins.deIterable(rawRet);
         checkReturnType(retInfo.currentFnReturns(), retTypes);
-        ForConverter.addIter(info, start, bytes, converter);
-        bytes.add(Bytecode.FOR_ITER.value);
-        int jumpPos = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(Util.shortToBytes((short) 1));
-        bytes.add(Bytecode.YIELD.value);
-        bytes.addAll(Util.shortToBytes((short) 1));
-        bytes.add(Bytecode.JUMP.value);
-        bytes.addAll(Util.intToBytes(jumpPos - 1));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        ForConverter.addIter(info, bytes, converter);
+        var topLabel = info.newJumpLabel();
+        bytes.addLabel(topLabel);
+        var label = info.newJumpLabel();
+        bytes.add(Bytecode.FOR_ITER, label, 1);
+        bytes.add(Bytecode.YIELD, 1);
+        bytes.add(Bytecode.JUMP, topLabel);
+        bytes.addLabel(label);
     }
 
     private void checkReturnType(@NotNull TypeObject[] expected, @NotNull TypeObject[] gotten) {

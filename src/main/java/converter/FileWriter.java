@@ -52,7 +52,9 @@ public final class FileWriter {
      * @param file The file to write to
      */
     public void writeToFile(@NotNull File file) {
-        printDisassembly();
+        if (info.globalInfo().shouldPrintBytecode()) {
+            printDisassembly();
+        }
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdir()) {
                 throw new RuntimeException("Could not create file " + file);
@@ -73,7 +75,7 @@ public final class FileWriter {
             var functions = info.getFunctions();
             writer.write(Util.toByteArray(functions.size()));
             for (var function : functions) {
-                var byteArray = Util.toByteArray(function.getBytes());
+                var byteArray = Util.toByteArray(function.getBytes().convertToBytes());
                 writer.write(Util.toByteArray(StringConstant.strBytes(function.getName())));
                 writer.write(function.isGenerator() ? 1 : 0);
                 writer.write(Util.toByteArray((short) function.getMax()));
@@ -90,6 +92,7 @@ public final class FileWriter {
             var tables = info.getTables();
             writer.write(Util.toByteArray(tables.size()));
             for (var tbl : tables) {
+                // Note: All labels should be written to at point of translation
                 writer.write(Util.toByteArray(tbl.toBytes()));
             }
             writer.flush();
@@ -109,27 +112,27 @@ public final class FileWriter {
         var functions = info.getFunctions();
         for (var function : functions) {
             System.out.printf("%s:%n", function.getName());
-            System.out.println(Bytecode.disassemble(info, function.getBytes()));
+            System.out.println(Bytecode.disassemble(info, function.getBytes().convertToBytes()));
         }
         var classes = info.getClasses();
         for (var cls : classes) {
             for (var fnPair : cls.getMethodDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes().convertToBytes()));
             }
             for (var fnPair : cls.getStaticMethods().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes().convertToBytes()));
             }
             for (var opPair : cls.getOperatorDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
-                System.out.println(Bytecode.disassemble(info, opPair.getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, opPair.getValue().getBytes().convertToBytes()));
             }
             for (var propPair : cls.getProperties().entrySet()) {
                 System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(info, propPair.getValue().getKey().getBytes()));
+                System.out.println(Bytecode.disassemble(info, propPair.getValue().getKey().getBytes().convertToBytes()));
                 System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(info, propPair.getValue().getValue().getBytes()));
+                System.out.println(Bytecode.disassemble(info, propPair.getValue().getValue().getBytes().convertToBytes()));
             }
         }
         for (int i = 0; i < info.getTables().size(); i++) {

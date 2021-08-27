@@ -16,7 +16,6 @@ import main.java.parser.UnionDefinitionNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +33,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
 
     @Override
     @NotNull
-    @Unmodifiable
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         var converter = new ConverterHolder(info);
         var hasType = info.hasType(node.strName());
         UnionTypeObject type;
@@ -69,7 +67,7 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
         } else {
             addToInfo(type, "union", convertVariants(), superConstants, converter);
         }
-        return Collections.emptyList();
+        return new BytecodeList();
     }
 
     protected void parseStatement(IndependentNode stmt, ConverterHolder converter) {

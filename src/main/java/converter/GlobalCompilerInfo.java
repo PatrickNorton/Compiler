@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.parser.CLArgs;
+import main.java.parser.LineInfo;
+import main.java.parser.Optimization;
 import main.java.util.IndexedHashSet;
 import main.java.util.IndexedSet;
 import main.java.util.IntAllocator;
@@ -11,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class for compiler information that is shared between all files.
@@ -20,6 +24,7 @@ import java.util.Map;
  */
 public final class GlobalCompilerInfo {
     private final File destFile;
+    private final CLArgs arguments;
 
     private final IndexedSet<LangConstant> constants = new IndexedHashSet<>();
     private final List<SwitchTable> tables = new ArrayList<>();
@@ -27,14 +32,16 @@ public final class GlobalCompilerInfo {
     private final IntAllocator staticVarNumbers = new IntAllocator();
     private final IntAllocator anonymousNums = new IntAllocator();
 
-    private final List<List<Byte>> defaultFunctions = new ArrayList<>();
+    private final List<BytecodeList> defaultFunctions = new ArrayList<>();
     private final List<Function> functions = new ArrayList<>(Collections.singletonList(null));  // Reserve for default
     private final List<ClassInfo> classes = new ArrayList<>();
     private final Map<BaseType, Integer> classMap = new HashMap<>();
     private final ErrorCounter warnings = new ErrorCounter();
+    private final List<FunctionConstant> testFunctions = new ArrayList<>();
 
-    public GlobalCompilerInfo(File destFile) {
+    public GlobalCompilerInfo(File destFile, CLArgs args) {
         this.destFile = destFile;
+        this.arguments = args;
     }
 
     /**
@@ -50,9 +57,15 @@ public final class GlobalCompilerInfo {
      * Adds a constant to the global constant pool.
      *
      * @param value The constant to add
+     * @return The index in the pool
      */
-    public void addConstant(LangConstant value) {
+    public short addConstant(LangConstant value) {
         constants.add(value);
+        var index = indexOf(value);
+        if (index > Short.MAX_VALUE) {
+            throw CompilerInternalError.of("Too many constants", LineInfo.empty());
+        }
+        return (short) index;
     }
 
     /**
@@ -94,6 +107,16 @@ public final class GlobalCompilerInfo {
      */
     public void setConstant(int index, LangConstant value) {
         constants.set(index, value);
+    }
+
+    /**
+     * The index of a constant in the constant stack.
+     *
+     * @param value The name of the variable
+     * @return The index in the stack
+     */
+    public short constIndex(LangConstant value) {
+        return containsConst(value) ? (short) indexOf(value) : addConstant(value);
     }
 
     /**
@@ -196,7 +219,11 @@ public final class GlobalCompilerInfo {
         if (functions.get(0) == null) {
             var defaultNo = singleDefaultPos();
             var bytes = defaultNo != -1 ? defaultFunctions.get(defaultNo) : createDefaultFn();
-            functions.set(0, new Function(new FunctionInfo("__default__", new ArgumentInfo()), bytes));
+            if (isTest()) {
+                var index = TestFnConverter.convertTestStart(this);
+                bytes.add(Bytecode.CALL_FN, index, 0);
+            }
+            functions.set(0, new Function(new FunctionInfo("__default__"), bytes));
         }
         return functions;
     }
@@ -221,17 +248,15 @@ public final class GlobalCompilerInfo {
     }
 
     @NotNull
-    private List<Byte> createDefaultFn() {
-        List<Byte> result = new ArrayList<>();
+    private BytecodeList createDefaultFn() {
+        var result = new BytecodeList();
         for (int i = defaultFunctions.size() - 1; i >= 0; i--) {
             var func = defaultFunctions.get(i);
             if (!func.isEmpty()) {
                 var fnName = String.format("__default__$%d", i);
-                var fn = new Function(new FunctionInfo(fnName, new ArgumentInfo()), func);
+                var fn = new Function(new FunctionInfo(fnName), func);
                 functions.add(fn);
-                result.add(Bytecode.CALL_FN.value);
-                result.addAll(Util.shortToBytes((short) (functions.size() - 1)));
-                result.addAll(Util.shortZeroBytes());
+                result.add(Bytecode.CALL_FN, functions.size() - 1, 0);
             }
         }
         return result;
@@ -269,7 +294,7 @@ public final class GlobalCompilerInfo {
      * @param bytes The bytecode to insert in the location
      * @see #reserveStatic
      */
-    public void setStatic(int index, List<Byte> bytes) {
+    public void setStatic(int index, BytecodeList bytes) {
         assert defaultFunctions.get(index) == null;
         defaultFunctions.set(index, bytes);
     }
@@ -351,6 +376,39 @@ public final class GlobalCompilerInfo {
     public List<ClassInfo> getClasses() {
         assert !classes.contains(null) : String.format("Class no. %d is null", classes.indexOf(null));
         return classes;
+    }
+
+    /**
+     * Returns whether the compilation is happening in test node.
+     *
+     * @return If the compilation is in test mode
+     */
+    public boolean isTest() {
+        return arguments.isTest();
+    }
+
+    public void addTestFunction(FunctionConstant index) {
+        testFunctions.add(index);
+    }
+
+    public boolean isDebug() {
+        return arguments.isDebug();
+    }
+
+    public List<FunctionConstant> getTestFunctions() {
+        return testFunctions;
+    }
+
+    public Set<String> cfgValues() {
+        return arguments.getCfgOptions();
+    }
+
+    public boolean optIsEnabled(Optimization opt) {
+        return arguments.optIsEnabled(opt);
+    }
+
+    public boolean shouldPrintBytecode() {
+        return arguments.shouldPrintBytecode();
     }
 
     {  // Prevent "non-updating" compiler warning

@@ -27,19 +27,19 @@ public final class AssignmentConverter implements BaseConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (node.isColon()) {
             throw CompilerException.of("Colon assignment is not supported outside of class definitions", node);
         }
         if (node.getNames().length > 1 && node.getValues().size() == 1) {
-            return assignSingleVariable(start);
+            return assignSingleVariable();
         } else {
-            return assignMultipleVariable(start);
+            return assignMultipleVariable();
         }
     }
 
     @NotNull
-    private List<Byte> assignMultipleVariable(int start) {
+    private BytecodeList assignMultipleVariable() {
         var names = node.getNames();
         var values = node.getValues();
         if (names.length != values.size()) {
@@ -49,8 +49,8 @@ public final class AssignmentConverter implements BaseConverter {
                     node, names.length, values.size()
             );
         }
-        List<Byte> assignBytes = new ArrayList<>();
-        List<Byte> storeBytes = new ArrayList<>(names.length * Bytecode.STORE.size());
+        var assignBytes = new BytecodeList();
+        var storeBytes = new BytecodeList(names.length * Bytecode.STORE.size());
         for (int i = 0; i < names.length; i++) {
             var name = names[i];
             var value = values.get(i);
@@ -59,15 +59,15 @@ public final class AssignmentConverter implements BaseConverter {
                 var varName = ((VariableNode) name).getName();
                 var varType = info.getType(varName).orElseThrow(() -> defError(varName, (VariableNode) name));
                 var valConverter = TestConverter.of(info, value, 1, varType);
-                assignToVariable(assignBytes, storeBytes, start, (VariableNode) name, valConverter);
+                assignToVariable(assignBytes, storeBytes, (VariableNode) name, valConverter);
             } else if (name instanceof IndexNode) {
-                assignToIndex(assignBytes, storeBytes, start, (IndexNode) name, valueConverter);
+                assignToIndex(assignBytes, storeBytes, (IndexNode) name, valueConverter);
             } else if (name instanceof DottedVariableNode) {
                 var last = ((DottedVariableNode) name).getLast();
                 if (last.getPostDot() instanceof IndexNode) {
-                    assignToDotIndex(assignBytes, storeBytes, start, (DottedVariableNode) name, valueConverter);
+                    assignToDotIndex(assignBytes, storeBytes, (DottedVariableNode) name, valueConverter);
                 } else if (last.getPostDot() instanceof VariableNode) {
-                    assignToDot(assignBytes, storeBytes, start, (DottedVariableNode) name, value);
+                    assignToDot(assignBytes, storeBytes, (DottedVariableNode) name, value);
                 } else if (last.getPostDot() instanceof SpecialOpNameNode) {
                     throw CompilerException.of("Cannot assign to constant value", node);
                 } else {
@@ -83,13 +83,13 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     @NotNull
-    private List<Byte> assignSingleVariable(int start) {
+    private BytecodeList assignSingleVariable() {
         assert node.getValues().size() == 1;
         var names = node.getNames();
         var value = node.getValues().get(0);
         var valueConverter = TestConverter.of(info, value, node.getNames().length);
         var retTypes = valueConverter.returnType();
-        List<Byte> bytes = new ArrayList<>(valueConverter.convert(start));
+        var bytes = new BytecodeList(valueConverter.convert());
         var nonVariableCount = quickNonVarCount(names);
         assert nonVariableCount >= 0;
         // For this section, we need to take care of possible side-effects and
@@ -112,31 +112,31 @@ public final class AssignmentConverter implements BaseConverter {
         } else if (nonVariableCount == 1) {
             // Only 1 possible side-effect, cannot be switched with another
             for (int i = names.length - 1; i >= 0; i--) {
-                assignTop(bytes, start, retTypes[i], names[i]);
+                assignTop(bytes, retTypes[i], names[i]);
             }
         } else {
             // Have to swap everything (sigh)
             for (int i = 0; i < names.length; i++) {
                 bringToTop(bytes, names.length - i - 1);
-                assignTop(bytes, start, retTypes[i], names[i]);
+                assignTop(bytes, retTypes[i], names[i]);
             }
         }
         return bytes;
     }
 
-    private void assignTop(List<Byte> bytes, int start, TypeObject retType, AssignableNode name) {
+    private void assignTop(BytecodeList bytes, TypeObject retType, AssignableNode name) {
         if (name instanceof VariableNode) {
             assignTopToVariable(bytes, (VariableNode) name, retType);
         } else if (name instanceof IndexNode) {
-            assignTopToIndex(bytes, start, (IndexNode) name, retType);
+            assignTopToIndex(bytes, (IndexNode) name, retType);
         } else if (name instanceof DottedVariableNode) {
-            assignTopToDot(bytes, start, (DottedVariableNode) name, retType);
+            assignTopToDot(bytes, (DottedVariableNode) name, retType);
         } else {
             throw CompilerException.of("Assignment must be to a variable, index, or dotted variable", node);
         }
     }
 
-    private void assignTopToVariable(List<Byte> bytes, @NotNull VariableNode variable, TypeObject valueType) {
+    private void assignTopToVariable(BytecodeList bytes, @NotNull VariableNode variable, TypeObject valueType) {
         var name = variable.getName();
         checkDef(name, variable);
         var varType = info.getType(name).orElseThrow();
@@ -145,14 +145,13 @@ public final class AssignmentConverter implements BaseConverter {
                 throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
-                bytes.add(Bytecode.MAKE_OPTION.value);
+                bytes.add(Bytecode.MAKE_OPTION);
             }
         }
-        bytes.add(0, Bytecode.STORE.value);
-        bytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
+        bytes.addFirst(Bytecode.STORE, info.varIndex(variable));
     }
 
-    private void assignToVariable(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
+    private void assignToVariable(@NotNull BytecodeList bytes, BytecodeList storeBytes,
                                   @NotNull VariableNode variable, @NotNull TestConverter valueConverter) {
         var valT = valueConverter.returnType();
         var valueType = valT[0];
@@ -167,13 +166,12 @@ public final class AssignmentConverter implements BaseConverter {
                 throw CompilerException.format("Cannot assign value of type '%s' to variable of type '%s'",
                         node, valueType.name(), varType.name());
             } else {
-                bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert(start + bytes.size())));
+                bytes.addAll(OptionTypeObject.wrapBytes(valueConverter.convert()));
             }
         } else {
-            bytes.addAll(valueConverter.convert(start + bytes.size()));
+            bytes.addAll(valueConverter.convert());
         }
-        storeBytes.add(0, Bytecode.STORE.value);
-        storeBytes.addAll(1, Util.shortToBytes(info.varIndex(variable)));
+        storeBytes.addFirst(Bytecode.STORE, info.varIndex(variable));
     }
 
     private void checkDef(String name, VariableNode variable) {
@@ -198,66 +196,62 @@ public final class AssignmentConverter implements BaseConverter {
     }
 
     private void assignTopToIndex(
-            @NotNull List<Byte> bytes, int start, @NotNull IndexNode variable, TypeObject valueType
+            @NotNull BytecodeList bytes, @NotNull IndexNode variable, TypeObject valueType
     ) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
-        topToIndex(bytes, start, varConverter, indices, valueType);
+        topToIndex(bytes, varConverter, indices, valueType);
     }
 
     private void topToIndex(
-            List<Byte> bytes, int start, TestConverter preDot, TestNode[] indices, TypeObject valueType
+            BytecodeList bytes, TestConverter preDot, TestNode[] indices, TypeObject valueType
     ) {
         if (IndexConverter.isSlice(indices)) {
             var index = (SliceNode) indices[0];
             checkSlice(valueType, preDot.returnType()[0]);
-            bytes.addAll(preDot.convert(start + bytes.size()));
-            bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
-            bytes.add(Bytecode.SWAP_3.value);
-            bytes.add(Bytecode.CALL_OP.value);
-            bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
-            bytes.addAll(Util.shortToBytes((short) 2));
+            bytes.addAll(preDot.convert());
+            bytes.addAll(new SliceConverter(info, index).convert());
+            bytes.add(Bytecode.SWAP_3);
+            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
         } else {
             var indexConverters = convertIndices(indices);
             checkTypes(preDot.returnType()[0], indexConverters, valueType);
-            bytes.addAll(preDot.convert(start + bytes.size()));
+            bytes.addAll(preDot.convert());
             for (var indexParam : indexConverters) {
-                bytes.addAll(indexParam.convert(start + bytes.size()));
+                bytes.addAll(indexParam.convert());
             }
             bringToTop(bytes, indices.length + 1);
-            bytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
-            bytes.addAll(1, Util.shortToBytes((short) indices.length));
+            bytes.addFirst(Bytecode.STORE_SUBSCRIPT, indices.length);
         }
     }
 
-    private static void bringToTop(List<Byte> bytes, int distFromTop) {
+    private static void bringToTop(BytecodeList bytes, int distFromTop) {
         switch (distFromTop) {
             case 0:
                 return;
             case 1:
-                bytes.add(Bytecode.SWAP_2.value);
+                bytes.add(Bytecode.SWAP_2);
                 return;
             case 2:
-                bytes.add(Bytecode.SWAP_3.value);
+                bytes.add(Bytecode.SWAP_3);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_N.value);
-                bytes.addAll(Util.shortToBytes((short) (distFromTop + 1)));
+                bytes.add(Bytecode.SWAP_N, distFromTop + 1);
         }
     }
 
-    private void assignToIndex(@NotNull List<Byte> bytes, List<Byte> storeBytes, int start,
+    private void assignToIndex(@NotNull BytecodeList bytes, BytecodeList storeBytes,
                                @NotNull IndexNode variable, @NotNull TestConverter valueConverter) {
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
         if (IndexConverter.isSlice(indices)) {
             checkSlice(varConverter.returnType()[0], valueConverter.returnType()[0]);
-            finishSlice(bytes, storeBytes, start, valueConverter, (SliceNode) indices[0]);
+            finishSlice(bytes, storeBytes, valueConverter, (SliceNode) indices[0]);
         } else {
             var indexConverters = convertIndices(indices);
             checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
-            bytes.addAll(TestConverter.bytes(start, variable.getVar(), info, 1));
-            finishIndex(bytes, storeBytes, start, valueConverter, indices);
+            bytes.addAll(TestConverter.bytes(variable.getVar(), info, 1));
+            finishIndex(bytes, storeBytes, valueConverter, indices);
         }
     }
 
@@ -302,7 +296,7 @@ public final class AssignmentConverter implements BaseConverter {
         );
     }
 
-    private void assignToDot(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+    private void assignToDot(@NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
                              @NotNull DottedVariableNode variable, @NotNull TestNode value) {
         var pair = DotConverter.exceptLast(info, variable, 1);
         var preDotConverter = pair.getKey();
@@ -310,85 +304,80 @@ public final class AssignmentConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, value, 1, assignedType);
         var valueType = valueConverter.returnType()[0];
         var needsMakeOption = checkAssign(preDotConverter, pair.getValue(), valueType, variable);
-        bytes.addAll(preDotConverter.convert(start + bytes.size()));
-        bytes.addAll(OptionTypeObject.maybeWrapBytes(valueConverter.convert(start + bytes.size()), needsMakeOption));
-        storeBytes.add(0, Bytecode.STORE_ATTR.value);
-        storeBytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(pair.getValue()))));
+        bytes.addAll(preDotConverter.convert());
+        bytes.addAll(OptionTypeObject.maybeWrapBytes(valueConverter.convert(), needsMakeOption));
+        storeBytes.addFirst(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(pair.getValue())));
     }
 
-    private void assignToDotIndex(@NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
-                             @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
+    private void assignToDotIndex(@NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
+                                  @NotNull DottedVariableNode variable, @NotNull TestConverter valueConverter) {
         var pair = DotConverter.exceptLastIndex(info, variable, 1);
         var varConverter = pair.getKey();
         var indices = pair.getValue();
         if (IndexConverter.isSlice(indices)) {
             checkSlice(varConverter.returnType()[0], valueConverter.returnType()[0]);
-            finishSlice(bytes, storeBytes, start, valueConverter, (SliceNode) indices[0]);
+            finishSlice(bytes, storeBytes, valueConverter, (SliceNode) indices[0]);
         } else {
             var indexConverters = convertIndices(indices);
             checkTypes(varConverter.returnType()[0], indexConverters, valueConverter.returnType()[0]);
-            bytes.addAll(varConverter.convert(start));
-            finishIndex(bytes, storeBytes, start, valueConverter, indices);
+            bytes.addAll(varConverter.convert());
+            finishIndex(bytes, storeBytes, valueConverter, indices);
         }
     }
 
     private void finishIndex(
-            @NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+            @NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
             TestConverter valueConverter, TestNode[] indices
     ) {
         for (var indexParam : indices) {
-            bytes.addAll(TestConverter.bytes(start + bytes.size(), indexParam, info, 1));
+            bytes.addAll(TestConverter.bytes(indexParam, info, 1));
         }
-        bytes.addAll(valueConverter.convert(start + bytes.size()));
-        storeBytes.add(0, Bytecode.STORE_SUBSCRIPT.value);
-        storeBytes.addAll(1, Util.shortToBytes((short) indices.length));
+        bytes.addAll(valueConverter.convert());
+        storeBytes.addFirst(Bytecode.STORE_SUBSCRIPT, indices.length);
     }
 
     private void finishSlice(
-            @NotNull List<Byte> bytes, @NotNull List<Byte> storeBytes, int start,
+            @NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
             TestConverter valueConverter, SliceNode index
     ) {
-        bytes.addAll(valueConverter.convert(start + bytes.size()));
-        bytes.addAll(new SliceConverter(info, index).convert(start + bytes.size()));
-        storeBytes.add(0, Bytecode.CALL_OP.value);
-        storeBytes.addAll(1, Util.shortToBytes((short) OpSpTypeNode.SET_SLICE.ordinal()));
-        storeBytes.addAll(3, Util.shortToBytes((short) 2));
+        bytes.addAll(valueConverter.convert());
+        bytes.addAll(new SliceConverter(info, index).convert());
+        storeBytes.addFirst(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
     }
 
     private void assignTopToDot(
-            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+            @NotNull BytecodeList bytes, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
         var last = variable.getLast().getPostDot();
         if (last instanceof IndexNode) {
-            assignTopToDotIndex(bytes, start, variable, valueType);
+            assignTopToDotIndex(bytes, variable, valueType);
         } else if (last instanceof VariableNode) {
-            assignTopToNormalDot(bytes, start, variable, valueType);
+            assignTopToNormalDot(bytes, variable, valueType);
         } else {
             throw CompilerException.of("Cannot assign", variable);
         }
     }
 
     private void assignTopToNormalDot(
-            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+            @NotNull BytecodeList bytes, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
         var pair = DotConverter.exceptLast(info, variable, 1);
         var preDotConverter = pair.getKey();
         var needsMakeOption = checkAssign(preDotConverter, pair.getValue(), valueType, variable);
-        bytes.addAll(preDotConverter.convert(start + bytes.size()));
-        bytes.add(Bytecode.SWAP_2.value);
+        bytes.addAll(preDotConverter.convert());
+        bytes.add(Bytecode.SWAP_2);
         if (needsMakeOption) {
-            bytes.add(Bytecode.MAKE_OPTION.value);
+            bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(0, Bytecode.STORE_ATTR.value);
         var nameAssigned = pair.getValue();
-        bytes.addAll(1, Util.shortToBytes(info.constIndex(LangConstant.of(nameAssigned))));
+        bytes.addFirst(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(nameAssigned)));
     }
 
     private void assignTopToDotIndex(
-            @NotNull List<Byte> bytes, int start, @NotNull DottedVariableNode variable, TypeObject valueType
+            @NotNull BytecodeList bytes, @NotNull DottedVariableNode variable, TypeObject valueType
     ) {
         var pair = DotConverter.exceptLastIndex(info, variable, 1);
-        topToIndex(bytes, start, pair.getKey(), pair.getValue(), valueType);
+        topToIndex(bytes, pair.getKey(), pair.getValue(), valueType);
     }
 
     @NotNull

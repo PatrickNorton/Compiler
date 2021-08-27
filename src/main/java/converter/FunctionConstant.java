@@ -16,6 +16,10 @@ public final class FunctionConstant implements LangConstant {
         this.functionIndex = index;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @NotNull
     @Override
     public List<Byte> toBytes() {

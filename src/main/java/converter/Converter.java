@@ -1,6 +1,8 @@
 package main.java.converter;
 
+import main.java.parser.CLArgs;
 import main.java.parser.Lined;
+import main.java.parser.Optimization;
 import main.java.parser.TopNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -36,11 +38,20 @@ public final class Converter {
      * @param file The name of the file compiled
      * @param node The AST node to compile
      */
-    public static void convertToFile(@NotNull File file, TopNode node) {
+    public static void convertToFile(@NotNull File file, TopNode node, CLArgs args) {
+        var start = System.nanoTime();
         var destFile = file.getParentFile();
-        var info = new CompilerInfo(node, new GlobalCompilerInfo(destFile)).link();
+        var info = new CompilerInfo(node, new GlobalCompilerInfo(destFile, args)).link();
         ImportHandler.compileAll(info);
+        runOptimizationPasses(info);
         info.writeToFile(file);
+        var end = System.nanoTime();
+        var elapsed = (end - start) / 1_000_000_000.;
+        var counter = info.globalInfo().getWarnings();
+        System.out.printf(
+                "Compilation finished in %.2fs with %d errors and %d warnings%n",
+                elapsed, counter.getErrors(), counter.getWarnings()
+        );
     }
 
     /**
@@ -149,5 +160,17 @@ public final class Converter {
 
     private static boolean nameMatches(@NotNull String wantedName, @NotNull String actualName) {
         return wantedName.equals(actualName) || (wantedName + Util.FILE_EXTENSION).equals(actualName);
+    }
+
+    private static void runOptimizationPasses(@NotNull CompilerInfo info) {
+        var globalInfo = info.globalInfo();
+        if (globalInfo.optIsEnabled(Optimization.INLINE_FUNCTIONS)) {
+            for (var function : info.getFunctions()) {
+                FunctionInliner.inlineAll(info, function.getBytes());
+            }
+        }
+        if (globalInfo.optIsEnabled(Optimization.DEAD_CODE)) {
+            DeadCode.eliminate(globalInfo);
+        }
     }
 }

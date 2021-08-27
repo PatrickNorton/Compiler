@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class StringSwitchTable implements SwitchTable {
-    private final Map<String, Integer> values;
-    private final int defaultVal;
+    private final Map<String, Label> values;
+    private final Label defaultVal;
 
-    public StringSwitchTable(Map<String, Integer> values, int defaultVal) {
+    public StringSwitchTable(Map<String, Label> values, Label defaultVal) {
         this.values = values;
         this.defaultVal = defaultVal;
     }
@@ -30,7 +30,7 @@ public final class StringSwitchTable implements SwitchTable {
      * </pre></code>
      * </p>
      *
-     * @see SwitchTable#toBytes()
+     * @see SwitchTable#toBytes
      * @return The list of bytes represented
      */
     @Override
@@ -41,9 +41,9 @@ public final class StringSwitchTable implements SwitchTable {
         bytes.addAll(Util.intToBytes(values.size()));
         for (var pair : values.entrySet()) {
             bytes.addAll(StringConstant.strBytes(pair.getKey()));
-            bytes.addAll(Util.intToBytes(pair.getValue()));
+            bytes.addAll(Util.intToBytes(pair.getValue().getValue()));
         }
-        bytes.addAll(Util.intToBytes(defaultVal));
+        bytes.addAll(Util.intToBytes(defaultVal.getValue()));
         return bytes;
     }
 
@@ -52,9 +52,10 @@ public final class StringSwitchTable implements SwitchTable {
     public String strDisassembly() {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {
-            value.append(String.format("\"%s\": %d%n", StringEscape.escape(pair.getKey()), pair.getValue()));
+            value.append(String.format("\"%s\": %d%n", StringEscape.escape(pair.getKey()), pair.getValue().getValue()));
         }
-        value.append(String.format("default: %d%n", defaultVal));
+        value.append(String.format("default: %d%n", defaultVal.getValue()));
         return value.toString();
     }
+
 }

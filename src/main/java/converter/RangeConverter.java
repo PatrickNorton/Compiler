@@ -5,9 +5,6 @@ import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public final class RangeConverter implements TestConverter {
@@ -64,32 +61,28 @@ public final class RangeConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (retCount == 0) {
             CompilerWarning.warn("Range literal creation has unused result", WarningType.UNUSED, info, node);
-            return Collections.emptyList();
+            return new BytecodeList();
         }
         var constVal = constantReturn();
         if (constVal.isPresent()) {
             var constant = constVal.orElseThrow();
-            List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
+            var bytes = new BytecodeList(Bytecode.LOAD_CONST.size());
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
             return bytes;
         }
-        List<Byte> bytes = new ArrayList<>();
-        bytes.add(Bytecode.LOAD_CONST.value);
-        var constant = info.constIndex(Builtins.rangeConstant());
-        bytes.addAll(Util.shortToBytes(constant));
-        convertPortion(start, bytes, node.getStart(), 0);
-        convertPortion(start, bytes, node.getEnd(), 0);
-        convertPortion(start, bytes, node.getStep(), 1);
-        bytes.add(Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) 3));
+        var bytes = new BytecodeList();
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.rangeConstant()));
+        convertPortion(bytes, node.getStart(), 0);
+        convertPortion(bytes, node.getEnd(), 0);
+        convertPortion(bytes, node.getStep(), 1);
+        bytes.add(Bytecode.CALL_TOS, 3);
         return bytes;
     }
 
-    private void convertPortion(int start, List<Byte> bytes, @NotNull TestNode node, int defaultVal) {
+    private void convertPortion(BytecodeList bytes, @NotNull TestNode node, int defaultVal) {
         if (!node.isEmpty()) {
             var converter = TestConverter.of(info, node, 1);
             if (!Builtins.intType().isSuperclass(converter.returnType()[0])) {
@@ -98,11 +91,10 @@ public final class RangeConverter implements TestConverter {
                         node, converter.returnType()[0].name(), Builtins.intType().name()
                 );
             }
-            bytes.addAll(converter.convert(start));
+            bytes.addAll(converter.convert());
         } else {
             var constIndex = info.constIndex(LangConstant.of(defaultVal));
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(constIndex));
+            bytes.add(Bytecode.LOAD_CONST, constIndex);
         }
     }
 

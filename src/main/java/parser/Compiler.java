@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,9 +16,10 @@ public class Compiler {
 //        for (int i = 0; i < args.length; i++) {
 //            nodes[i] = main.java.Parser.parse(new File(args[i]));
 //        }
+        var clargs = CLArgs.parse(args);
         List<File> nodes;
         try {
-            nodes = Files.walk(Paths.get(args[0]))
+            nodes = Files.walk(clargs.getTarget())
                     .filter(Files::isRegularFile)
                     .map(Path::toFile)
                     .collect(Collectors.toList());
@@ -31,7 +31,7 @@ public class Compiler {
             var fileName = file.getName();
             var destFolder = file.toPath().resolveSibling("__ncache__");
             var destFile = destFolder.resolve(fileName.replaceFirst("\\.newlang$", Util.BYTECODE_EXTENSION));
-            Converter.convertToFile(destFile.toFile(), node);
+            Converter.convertToFile(destFile.toFile(), node, clargs);
         }
     }
 }

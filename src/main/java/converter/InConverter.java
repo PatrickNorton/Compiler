@@ -7,8 +7,6 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public final class InConverter extends OperatorConverter {
@@ -63,7 +61,7 @@ public final class InConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (args.length != 2) {
             throw CompilerException.format("Expected 2 arguments for 'in' operator, got %d", lineInfo, args.length);
         }
@@ -83,21 +81,21 @@ public final class InConverter extends OperatorConverter {
                     lineInfo, containerConverter.returnType()[0].name(), argTypes
             );
         }
-        List<Byte> bytes = new ArrayList<>(containedConverter.convert(start));
-        bytes.addAll(containerConverter.convert(start + bytes.size()));
-        bytes.add(Bytecode.SWAP_2.value);
-        bytes.add(Bytecode.CONTAINS.value);
+        var bytes = new BytecodeList(containedConverter.convert());
+        bytes.addAll(containerConverter.convert());
+        bytes.add(Bytecode.SWAP_2);
+        bytes.add(Bytecode.CONTAINS);
         if (retCount == 0) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         } else if (!inType) {
-            bytes.add(Bytecode.BOOL_NOT.value);
+            bytes.add(Bytecode.BOOL_NOT);
         }
         return bytes;
     }
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
         throw asException(lineInfo);
     }
 

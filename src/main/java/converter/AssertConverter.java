@@ -3,9 +3,6 @@ package main.java.converter;
 import main.java.parser.AssertStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class AssertConverter implements BaseConverter {
     private final AssertStatementNode node;
     private final CompilerInfo info;
@@ -17,26 +14,23 @@ public final class AssertConverter implements BaseConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         // TODO: Debug vs release
-        var bytes = new ArrayList<>(TestConverter.bytes(start, node.getAssertion(), info, 1));
-        bytes.add(Bytecode.JUMP_TRUE.value);
-        int jumpLoc = bytes.size();
-        bytes.addAll(Util.intToBytes(0));
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(Builtins.assertionErrorConstant())));
-        bytes.addAll(convertMessage(start + bytes.size()));
-        bytes.add(Bytecode.THROW_QUICK.value);
-        bytes.addAll(Util.shortZeroBytes());
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpLoc);
+        var bytes = new BytecodeList(TestConverter.bytes(node.getAssertion(), info, 1));
+        var jumpTag = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_TRUE, jumpTag);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.assertionErrorConstant()));
+        bytes.addAll(convertMessage());
+        bytes.add(Bytecode.THROW_QUICK, 0);
+        bytes.addLabel(jumpTag);
         return bytes;
     }
 
-    private @NotNull List<Byte> convertMessage(int start) {
+    @NotNull
+    private BytecodeList convertMessage() {
         if (node.getAs().isEmpty()) {
-            List<Byte> bytes = new ArrayList<>();
-            bytes.add(Bytecode.LOAD_CONST.value);
-            bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of("Assertion failed"))));
+            var bytes = new BytecodeList();
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of("Assertion failed")));
             return bytes;
         } else {
             var converter = TestConverter.of(info, node.getAs(), 1);
@@ -47,7 +41,7 @@ public final class AssertConverter implements BaseConverter {
                         node.getAs(), retType.name()
                 );
             }
-            return converter.convert(start);
+            return converter.convert();
         }
     }
 }

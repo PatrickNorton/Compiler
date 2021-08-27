@@ -4,9 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import main.java.parser.WithStatementNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class WithConverter implements BaseConverter {
     private final WithStatementNode node;
     private final CompilerInfo info;
@@ -18,7 +15,7 @@ public final class WithConverter implements BaseConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (node.getManaged().size() != 1) {
             throw CompilerTodoError.format(
                     "With statements with more than one managed value (got %d)", node, node.getManaged().size()
@@ -41,26 +38,19 @@ public final class WithConverter implements BaseConverter {
                     node, returnType.name(), trueType.name()
             );
         }
-        List<Byte> bytes = new ArrayList<>(contextConverter.convert(start));
+        var bytes = new BytecodeList(contextConverter.convert());
         info.checkDefinition(variable.getVariable().getName(), variable);
         info.addVariable(variable.getVariable().getName(), trueType, variable);
-        bytes.add(Bytecode.DUP_TOP.value);
-        bytes.add(Bytecode.CALL_OP.value);
-        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.ENTER.ordinal()));
-        bytes.addAll(Util.shortZeroBytes());
-        bytes.add(Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(info.varIndex(variable.getVariable())));
-        bytes.add(Bytecode.ENTER_TRY.value);
-        var tryJump = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        bytes.addAll(BaseConverter.bytes(start + bytes.size(), node.getBody(), info));
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), tryJump);
-        bytes.add(Bytecode.FINALLY.value);
-        bytes.add(Bytecode.CALL_OP.value);
-        bytes.addAll(Util.shortToBytes((short) OpSpTypeNode.EXIT.ordinal()));
-        bytes.addAll(Util.shortZeroBytes());
-        bytes.add(Bytecode.END_TRY.value);
-        bytes.addAll(Util.shortZeroBytes());
+        bytes.add(Bytecode.DUP_TOP);
+        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.ENTER.ordinal(), 0);
+        bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
+        var tryJump = info.newJumpLabel();
+        bytes.add(Bytecode.ENTER_TRY, tryJump);
+        bytes.addAll(BaseConverter.bytes(node.getBody(), info));
+        bytes.addLabel(tryJump);
+        bytes.add(Bytecode.FINALLY);
+        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.EXIT.ordinal(), 0);
+        bytes.add(Bytecode.END_TRY, 0);
         return bytes;
     }
 }

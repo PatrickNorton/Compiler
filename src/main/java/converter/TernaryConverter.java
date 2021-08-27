@@ -4,8 +4,6 @@ import main.java.parser.TernaryNode;
 import main.java.util.OptionalBool;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public final class TernaryConverter implements TestConverter {
@@ -44,32 +42,30 @@ public final class TernaryConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         var condConverter = TestConverter.of(info, node.getStatement(), 1);
         var boolVal = constantBool(condConverter);
         if (boolVal.isPresent()) {
-            return convertOpt(start, boolVal.orElseThrow());
+            return convertOpt(boolVal.orElseThrow());
         }
-        List<Byte> bytes = new ArrayList<>(condConverter.convert(start));
-        bytes.add(Bytecode.JUMP_FALSE.value);
-        int jump1 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
+        var bytes = new BytecodeList(condConverter.convert());
+        var jump1 = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP_FALSE, jump1);
         var ifTrueConverter = TestConverter.of(info, node.getIfTrue(), retCount);
-        bytes.addAll(ifTrueConverter.convert(start + bytes.size()));
+        bytes.addAll(ifTrueConverter.convert());
         var retType = returnType()[0];
         if (retCount == 1 && OptionTypeObject.needsMakeOption(retType, ifTrueConverter.returnType()[0])) {
-            bytes.add(Bytecode.MAKE_OPTION.value);
+            bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.JUMP.value);
-        int jump2 = bytes.size();
-        bytes.addAll(Util.zeroToBytes());
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump1);
+        var jump2 = info.newJumpLabel();
+        bytes.add(Bytecode.JUMP, jump2);
+        bytes.addLabel(jump1);
         var ifFalseConverter = TestConverter.of(info, node.getIfFalse(), retCount);
-        bytes.addAll(ifFalseConverter.convert(start + bytes.size()));
+        bytes.addAll(ifFalseConverter.convert());
         if (retCount == 1 && OptionTypeObject.needsMakeOption(retType, ifFalseConverter.returnType()[0])) {
-            bytes.add(Bytecode.MAKE_OPTION.value);
+            bytes.add(Bytecode.MAKE_OPTION);
         }
-        Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jump2);
+        bytes.addLabel(jump2);
         return bytes;
     }
 
@@ -77,14 +73,15 @@ public final class TernaryConverter implements TestConverter {
         return condConverter.constantReturn().map(LangConstant::boolValue).orElse(OptionalBool.empty());
     }
 
-    private List<Byte> convertOpt(int start, boolean condVal) {
+    @NotNull
+    private BytecodeList convertOpt(boolean condVal) {
         CompilerWarning.warnf(
                 "Condition of ternary always evaluates to %b",
                 WarningType.UNREACHABLE, info, node.getStatement(), condVal
         );
         var evaluated = condVal ? node.getIfTrue() : node.getIfFalse();
         var notEvaluated = condVal ? node.getIfFalse() : node.getIfTrue();
-        TestConverter.bytes(start, notEvaluated, info, retCount);  // Check for errors, but don't add to bytes
-        return TestConverter.bytes(start, evaluated, info, retCount);
+        TestConverter.bytes(notEvaluated, info, retCount);  // Check for errors, but don't add to bytes
+        return TestConverter.bytes(evaluated, info, retCount);
     }
 }

@@ -9,9 +9,6 @@ import main.java.parser.TypeLikeNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class DeclaredAssignmentConverter implements BaseConverter {
     private final CompilerInfo info;
     private final DeclaredAssignmentNode node;
@@ -23,14 +20,14 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (node.isColon()) {
             throw CompilerException.of(":= is only allowed for defining class members", node);
         }
         if (isSingle()) {
-            return convertSingle(start);
+            return convertSingle();
         } else {
-            return convertMultiple(start);
+            return convertMultiple();
         }
     }
 
@@ -40,22 +37,22 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     }
 
     @NotNull
-    private List<Byte> convertMultiple(int start) {
+    private BytecodeList convertMultiple() {
         var types = node.getTypes();
         var values = node.getValues();
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
-        List<Byte> bytes = new ArrayList<>();
-        int fillPos = addStatic(bytes, isStatic);
+        var bytes = new BytecodeList();
+        var staticLbl = addStatic(bytes, isStatic);
         var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
         boolean isConst = mutability.isConstRef();
         int tupleCount = 0;
         for (int i = 0; i < values.size(); i++) {
             switch (values.getVararg(i)) {
                 case "":
-                    convertNoTuple(bytes, start, types[i - tupleCount], isStatic, values.get(i), mutability, isConst);
+                    convertNoTuple(bytes, types[i - tupleCount], isStatic, values.get(i), mutability, isConst);
                     break;
                 case "*":
-                    tupleCount += convertTuple(bytes, start, isStatic, mutability, isConst, tupleCount, i);
+                    tupleCount += convertTuple(bytes, isStatic, mutability, isConst, tupleCount, i);
                     break;
                 case "**":
                     throw CompilerException.of("Cannot unpack dictionaries in declared assignment", values.get(i));
@@ -71,13 +68,13 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             );
         }
         if (isStatic) {
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
+            bytes.addLabel(staticLbl);
         }
         return bytes;
     }
 
     private void convertNoTuple(
-            List<Byte> bytes, int start, TypedVariableNode assigned, boolean isStatic,
+            BytecodeList bytes, @NotNull TypedVariableNode assigned, boolean isStatic,
             TestNode value, MutableType mutability, boolean isConst
     ) {
         var rawType = assigned.getType();
@@ -92,13 +89,13 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             var constant = constValue.orElseThrow();
             addConstant(valueType, assignedType, assignedName, needsMakeOption, constant);
         } else {
-            bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(start), needsMakeOption));
+            bytes.addAll(OptionTypeObject.maybeWrapBytes(converter.convert(), needsMakeOption));
             finishAssignment(bytes, isStatic, assignedType, assignedName, isConst, assigned);
         }
     }
 
     private int convertTuple(
-            List<Byte> bytes, int start, boolean isStatic, MutableType mutability,
+            BytecodeList bytes, boolean isStatic, MutableType mutability,
             boolean isConst, int tupleCount, int i
     ) {
         var types = node.getTypes();
@@ -108,8 +105,8 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         int argC = checkTuple(retType, values.get(i));
         var valueTypes = expandZeroTuple(converter);
         assert argC == valueTypes.length;
-        bytes.addAll(converter.convert(start + bytes.size()));
-        bytes.add(Bytecode.UNPACK_TUPLE.value);
+        bytes.addAll(converter.convert());
+        bytes.add(Bytecode.UNPACK_TUPLE);
         for (int j = argC - 1; j >= 0; j--) {
             var valueType = valueTypes[j];
             var assigned = types[i - tupleCount + j];
@@ -119,7 +116,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             checkName(assignedName);
             boolean needsMakeOption = checkTypes(assignedType, valueType);
             if (needsMakeOption) {
-                bytes.add(Bytecode.MAKE_OPTION.value);
+                bytes.add(Bytecode.MAKE_OPTION);
             }
             finishAssignment(bytes, isStatic, assignedType, assignedName, isConst, assigned);
         }
@@ -163,7 +160,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     }
 
     @NotNull
-    private List<Byte> convertSingle(int start) {
+    private BytecodeList convertSingle() {
         var values = node.getValues();
         var types = node.getTypes();
         assert values.size() == 1;
@@ -171,9 +168,9 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var valueConverter = TestConverter.of(info, value, types.length);
         var valueTypes = expandZeroTuple(valueConverter);
         var isStatic = node.getDescriptors().contains(DescriptorNode.STATIC);
-        List<Byte> bytes = new ArrayList<>();
-        int fillPos = addStatic(bytes, isStatic);
-        bytes.addAll(valueConverter.convert(start + bytes.size()));
+        BytecodeList bytes = new BytecodeList();
+        var staticLabel = addStatic(bytes, isStatic);
+        bytes.addAll(valueConverter.convert());
         var mutability = MutableType.fromNullable(node.getMutability().orElse(null));
         boolean isConst = mutability.isConstRef();
         // Iterate backward b/c variables are in reversed order on the stack
@@ -190,13 +187,13 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
             }
             boolean needsMakeOption = checkTypes(assignedType, valueType);
             if (needsMakeOption) {
-                bytes.add(Bytecode.MAKE_OPTION.value);
+                bytes.add(Bytecode.MAKE_OPTION);
             }
             finishAssignment(bytes, isStatic, assignedType, assignedName, isConst, assigned);
         }
         if (isStatic) {
-            assert fillPos != -1;
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), fillPos);
+            assert staticLabel != null;
+            bytes.addLabel(staticLabel);
         }
         return bytes;
     }
@@ -206,14 +203,13 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         return mutability.isConstType() ? nonConstAssignedType.makeConst() : nonConstAssignedType.makeMut();
     }
 
-    private int addStatic(List<Byte> bytes, boolean isStatic) {
+    private Label addStatic(BytecodeList bytes, boolean isStatic) {
         if (isStatic) {
-            bytes.add(Bytecode.DO_STATIC.value);
-            int fillPos = bytes.size();
-            bytes.addAll(Util.zeroToBytes());
-            return fillPos;
+            var label = info.newJumpLabel();
+            bytes.add(Bytecode.DO_STATIC, label);
+            return label;
         } else {
-            return -1;
+            return null;
         }
     }
 
@@ -232,7 +228,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
     }
 
     private void finishAssignment(
-            @NotNull List<Byte> bytes, boolean isStatic, TypeObject assignedType,
+            @NotNull BytecodeList bytes, boolean isStatic, TypeObject assignedType,
             String assignedName, boolean isConst, Lined lineInfo
     ) {
         info.checkDefinition(assignedName, node);
@@ -242,8 +238,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var index = isStatic
                 ? info.addStaticVar(assignedName, assignedType, true, node)
                 : info.addVariable(assignedName, assignedType, isConst, node);
-        bytes.add(isStatic ? Bytecode.STORE_STATIC.value : Bytecode.STORE.value);
-        bytes.addAll(Util.shortToBytes(index));
+        bytes.add(isStatic ? Bytecode.STORE_STATIC : Bytecode.STORE, index);
     }
 
     private CompilerException mutStaticException(Lined lineInfo) {

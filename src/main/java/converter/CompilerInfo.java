@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,12 +78,12 @@ public final class CompilerInfo {
         link();
         addLocals();
         this.addStackFrame();
-        List<Byte> bytes = new ArrayList<>();
+        BytecodeList bytes = new BytecodeList();
         for (var statement : node) {
             if (statement instanceof ImportExportNode) {
                 continue;
             }
-            bytes.addAll(BaseConverter.bytes(bytes.size(), statement, this));
+            bytes.addAll(BaseConverter.bytes(statement, this));
         }
         this.removeStackFrame();
         // Put the default function at the beginning
@@ -190,13 +189,10 @@ public final class CompilerInfo {
      * Add a constant to the constant pool.
      *
      * @param value The value to add
+     * @return The index in the pool
      */
     public short addConstant(LangConstant value) {
-        globalInfo.addConstant(value);
-        if (globalInfo.indexOf(value) > Short.MAX_VALUE) {
-            throw CompilerInternalError.of("Too many constants", LineInfo.empty());
-        }
-        return (short) globalInfo.indexOf(value);
+        return globalInfo.addConstant(value);
     }
 
     /**
@@ -206,7 +202,7 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public short constIndex(LangConstant value) {
-        return globalInfo.containsConst(value) ? (short) globalInfo.indexOf(value) : addConstant(value);
+        return globalInfo.constIndex(value);
     }
 
     /**
@@ -879,6 +875,13 @@ public final class CompilerInfo {
         for (var feature : features) {
             removeFeature(feature);
         }
+    }
+
+
+    @Contract(value = " -> new", pure = true)
+    @NotNull
+    public Label newJumpLabel() {
+        return new Label();
     }
 
     /**

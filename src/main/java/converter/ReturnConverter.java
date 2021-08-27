@@ -4,9 +4,6 @@ import main.java.parser.ReturnStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class ReturnConverter implements BaseConverter {
     private final ReturnStatementNode node;
     private final CompilerInfo info;
@@ -18,9 +15,9 @@ public final class ReturnConverter implements BaseConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
-        List<Byte> bytes = new ArrayList<>();
-        int jumpPos = IfConverter.addJump(start, bytes, node.getCond(), info);
+    public BytecodeList convert() {
+        var bytes = new BytecodeList();
+        var jumpPos = IfConverter.addJump(bytes, node.getCond(), info);
         var retInfo = info.getFnReturns();
         if (retInfo.notInFunction()) {
             throw CompilerException.of("Cannot return from here", node);
@@ -32,30 +29,29 @@ public final class ReturnConverter implements BaseConverter {
             convertEmpty(bytes);
         } else {
             var retConverter = new ReturnListConverter(node.getReturned(), info, fnReturns, Bytecode.RETURN);
-            bytes.addAll(retConverter.convert(start + bytes.size()));
+            bytes.addAll(retConverter.convert());
         }
-        if (jumpPos != -1) {
-            Util.emplace(bytes, Util.intToBytes(start + bytes.size()), jumpPos);
+        if (jumpPos != null) {
+            bytes.addLabel(jumpPos);
         }
         return bytes;
     }
 
     @Override
     @NotNull
-    public Pair<List<Byte>, DivergingInfo> convertAndReturn(int start) {
+    public Pair<BytecodeList, DivergingInfo> convertAndReturn() {
         var divergingInfo = node.getCond().isEmpty()
                 ? new DivergingInfo().knownReturn() : new DivergingInfo().possibleReturn();
-        return Pair.of(convert(start), divergingInfo);
+        return Pair.of(convert(), divergingInfo);
     }
 
-    private void convertEmpty(List<Byte> bytes) {
+    private void convertEmpty(BytecodeList bytes) {
         if (!node.getReturned().isEmpty()) {
             throw CompilerException.of(
                     "Non-empty 'return' statement invalid in function with no return types", node
             );
         } else {
-            bytes.add(Bytecode.RETURN.value);
-            bytes.addAll(Util.shortZeroBytes());
+            bytes.add(Bytecode.RETURN, 0);
         }
     }
 }

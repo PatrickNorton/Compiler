@@ -8,11 +8,9 @@ import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -103,12 +101,13 @@ public abstract class OperatorConverter implements TestConverter {
         }
     }
 
-    public static Pair<List<Byte>, TypeObject> convertWithAs(int start, OperatorNode node, CompilerInfo info, int retCount) {
-        return of(info, node, retCount).convertWithAs(start);
+    @NotNull
+    public static Pair<BytecodeList, TypeObject> convertWithAs(OperatorNode node, CompilerInfo info, int retCount) {
+        return of(info, node, retCount).convertWithAs();
     }
 
     @NotNull
-    protected abstract Pair<List<Byte>, TypeObject> convertWithAs(int start);
+    protected abstract Pair<BytecodeList, TypeObject> convertWithAs();
 
     protected static CompilerException asException(Lined lineInfo) {
         return CompilerException.of(
@@ -117,10 +116,10 @@ public abstract class OperatorConverter implements TestConverter {
         );
     }
 
-    protected static List<Byte> loadConstant(CompilerInfo info, LangConstant constant) {
-        List<Byte> bytes = new ArrayList<>(Bytecode.LOAD_CONST.size());
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(constant)));
+    @NotNull
+    protected static BytecodeList loadConstant(@NotNull CompilerInfo info, LangConstant constant) {
+        var bytes = new BytecodeList(Bytecode.LOAD_CONST.size());
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
         return bytes;
     }
 

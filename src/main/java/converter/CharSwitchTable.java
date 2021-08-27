@@ -1,14 +1,16 @@
 package main.java.converter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public final class CharSwitchTable implements SwitchTable {
-    private final Map<Integer, Integer> values;
-    private final int defaultVal;
+    private final Map<Integer, Label> values;
+    private final Label defaultVal;
 
-    public CharSwitchTable(Map<Integer, Integer> values, int defaultVal) {
+    public CharSwitchTable(Map<Integer, Label> values, Label defaultVal) {
         this.values = values;
         this.defaultVal = defaultVal;
     }
@@ -27,19 +29,20 @@ public final class CharSwitchTable implements SwitchTable {
      * </pre></code>
      * </p>
      *
-     * @see SwitchTable#toBytes()
+     * @see SwitchTable#toBytes
      * @return The list of bytes represented
      */
     @Override
+    @NotNull
     public List<Byte> toBytes() {
         List<Byte> bytes = new ArrayList<>();
         bytes.add(TableBytes.CHAR.byteValue());
         bytes.addAll(Util.intToBytes(values.size()));
         for (var val : values.entrySet()) {
             bytes.addAll(Util.intToBytes(val.getKey()));
-            bytes.addAll(Util.intToBytes(val.getValue()));
+            bytes.addAll(Util.intToBytes(val.getValue().getValue()));
         }
-        bytes.addAll(Util.intToBytes(defaultVal));
+        bytes.addAll(Util.intToBytes(defaultVal.getValue()));
         return bytes;
     }
 
@@ -48,9 +51,10 @@ public final class CharSwitchTable implements SwitchTable {
         var value = new StringBuilder();
         for (var pair : values.entrySet()) {
             var chr = new CharConstant(pair.getKey()).name();
-            value.append(String.format("%s: %d%n", chr, pair.getValue()));
+            value.append(String.format("%s: %d%n", chr, pair.getValue().getValue()));
         }
-        value.append(String.format("default: %d%n", defaultVal));
+        value.append(String.format("default: %d%n", defaultVal.getValue()));
         return value.toString();
     }
+
 }

@@ -4,9 +4,6 @@ import main.java.parser.VariableNode;
 import main.java.util.Levenshtein;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public final class VariableConverter implements TestConverter {
@@ -37,36 +34,34 @@ public final class VariableConverter implements TestConverter {
 
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (retCount == 0) {
             checkDef();
             CompilerWarning.warnf("Unused variable %s", WarningType.UNUSED, info, node, node.getName());
-            return Collections.emptyList();
+            return new BytecodeList();
         } else if (retCount > 1) {
             checkDef();
             throw CompilerException.format("Variable only returns 1 value, expected %d", node, retCount);
         }
         String name = node.getName();
         if (name.equals("null")) {
-            return List.of(Bytecode.LOAD_NULL.value);
+            return BytecodeList.of(Bytecode.LOAD_NULL);
         }
         checkDef();
         if (info.variableIsStatic(name)) {
             var bytecode = Bytecode.LOAD_STATIC;
-            List<Byte> bytes = new ArrayList<>(bytecode.size());
-            bytes.add(bytecode.value);
+            var bytes = new BytecodeList(bytecode.size());
             short index = info.staticVarIndex(node);
             assert index != -1;
-            bytes.addAll(Util.shortToBytes(index));
+            bytes.add(bytecode, index);
             return bytes;
         } else {
             boolean isConst = info.variableIsConstant(name);
             var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
-            List<Byte> bytes = new ArrayList<>(bytecode.size());
-            bytes.add(bytecode.value);
+            var bytes = new BytecodeList(bytecode.size());
             short index = isConst ? info.constIndex(name) : info.varIndex(node);
             assert index != -1;
-            bytes.addAll(Util.shortToBytes(index));
+            bytes.add(bytecode, index);
             return bytes;
         }
     }

@@ -41,19 +41,20 @@ public final class FunctionCallConverter implements TestConverter {
         }
     }
 
+
     @NotNull
     @Override
-    public List<Byte> convert(int start) {
-        return convert(start, false);
+    public BytecodeList convert() {
+        return convert(false);
     }
 
-    public List<Byte> convertTail(int start) {
-        return convert(start, true);
+    public BytecodeList convertTail() {
+        return convert(true);
     }
 
-    private List<Byte> convert(int start, boolean tail) {
+    private BytecodeList convert(boolean tail) {
         if (node.getCaller() instanceof EscapedOperatorNode) {
-            return convertOp(start);
+            return convertOp();
         }
         var callConverter = TestConverter.of(info, node.getCaller(), 1);
         var retTypes = callConverter.returnType();
@@ -61,41 +62,40 @@ public final class FunctionCallConverter implements TestConverter {
         var fnInfo = fnPair.getKey();
         var needsMakeOption = fnPair.getValue();
         if (isDeterminedFunction(node.getCaller())) {
-            return convertOptimized(start, fnInfo, needsMakeOption, tail);
+            return convertOptimized(fnInfo, needsMakeOption, tail);
         }
-        List<Byte> bytes = new ArrayList<>(callConverter.convert(start));
-        int argc = convertArgs(bytes, start, fnInfo, needsMakeOption);
-        bytes.add(tail ? Bytecode.TAIL_TOS.value : Bytecode.CALL_TOS.value);
-        bytes.addAll(Util.shortToBytes((short) argc));
+        var bytes = new BytecodeList(callConverter.convert());
+        int argc = convertArgs(bytes, fnInfo, needsMakeOption);
+        bytes.add(tail ? Bytecode.TAIL_TOS : Bytecode.CALL_TOS, argc);
         var retType = returnType();
         for (int i = retCount; i < retType.length; i++) {
-            bytes.add(Bytecode.POP_TOP.value);
+            bytes.add(Bytecode.POP_TOP);
         }
         return bytes;
     }
 
-    private List<Byte> convertOp(int start) {
+    private BytecodeList convertOp() {
         assert node.getCaller() instanceof EscapedOperatorNode;
         var op = ((EscapedOperatorNode) node.getCaller()).getOperator().operator;
         var conv = OperatorConverter.ofComponents(info, op, node.getParameters(), node, retCount);
-        return conv.convert(start);
+        return conv.convert();
     }
 
-    private int convertArgs(List<Byte> bytes, int start, @NotNull FunctionInfo fnInfo, Set<Integer> needsMakeOption) {
+    private int convertArgs(BytecodeList bytes, @NotNull FunctionInfo fnInfo, Set<Integer> needsMakeOption) {
         var params = node.getParameters();
         var argPositions = fnInfo.getArgs().argPositions(getArgs(params));
-        return convertInnerArgs(info, bytes, start, params, argPositions, needsMakeOption);
+        return convertInnerArgs(info, bytes, params, argPositions, needsMakeOption);
     }
 
     private static int convertInnerArgs(
-            CompilerInfo info, List<Byte> bytes, int start, ArgumentNode[] params,
+            CompilerInfo info, BytecodeList bytes, ArgumentNode[] params,
             int[] argPositions, Set<Integer> needsMakeOption
     ) {
         int argc = 0;
         for (int i = 0; i < params.length; i++) {
             var value = params[i];
             var converter = TestConverter.of(info, value.getArgument(), 1);
-            bytes.addAll(converter.convert(start + bytes.size()));
+            bytes.addAll(converter.convert());
             if (value.isVararg()) {
                 var retType = converter.returnType()[0];
                 if (!(retType instanceof TupleType)) {
@@ -108,22 +108,22 @@ public final class FunctionCallConverter implements TestConverter {
                         );
                     }
                 }
-                bytes.add(Bytecode.UNPACK_TUPLE.value);
+                bytes.add(Bytecode.UNPACK_TUPLE);
                 var genCount = ((TupleType) retType).getGenerics().size();
                 for (int j = 0; j < genCount; j++) {
                     if (needsMakeOption.contains(i + argc + j)) {
                         if (genCount - j - 1 != 0) {
                             addSwap(bytes, (short) 0, (short) (genCount - j - 1));
-                            bytes.add(Bytecode.MAKE_OPTION.value);
+                            bytes.add(Bytecode.MAKE_OPTION);
                             addSwap(bytes, (short) 0, (short) (genCount - j - 1));
                         } else {
-                            bytes.add(Bytecode.MAKE_OPTION.value);
+                            bytes.add(Bytecode.MAKE_OPTION);
                         }
                     }
                 }
                 argc += genCount - 1;
             } else if (needsMakeOption.contains(i + argc)) {
-                bytes.add(Bytecode.MAKE_OPTION.value);
+                bytes.add(Bytecode.MAKE_OPTION);
             }
         }
         var swaps = swapsToOrder(argPositions);
@@ -135,16 +135,14 @@ public final class FunctionCallConverter implements TestConverter {
         return argc + params.length;
     }
 
-    private static void addSwap(List<Byte> bytes, short dist1, short dist2) {
+    private static void addSwap(BytecodeList bytes, short dist1, short dist2) {
         assert dist1 != dist2;
         var d1 = (short) Math.min(dist1, dist2);
         var d2 = (short) Math.max(dist1, dist2);
         if (d1 == 0 && d2 == 1) {
-            bytes.add(Bytecode.SWAP_2.value);
+            bytes.add(Bytecode.SWAP_2);
         } else {
-            bytes.add(Bytecode.SWAP_STACK.value);
-            bytes.addAll(Util.shortToBytes(d1));
-            bytes.addAll(Util.shortToBytes(d2));
+            bytes.add(Bytecode.SWAP_STACK, d1, d2);
         }
     }
 
@@ -281,13 +279,13 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     @NotNull
-    private List<Byte> convertOptimized(int start, FunctionInfo fnInfo, Set<Integer> needsMakeOption, boolean tail) {
+    private BytecodeList convertOptimized(FunctionInfo fnInfo, Set<Integer> needsMakeOption, boolean tail) {
         assert node.getCaller() instanceof VariableNode;
         var strName = ((VariableNode) node.getCaller()).getName();
         if (Builtins.BUILTIN_MAP.containsKey(strName)) {
-            return convertBuiltin(start, strName);
+            return convertBuiltin(strName);
         } else {
-            return convertCallFn(start, strName, fnInfo, needsMakeOption, tail);
+            return convertCallFn(strName, fnInfo, needsMakeOption, tail);
         }
     }
 
@@ -350,9 +348,9 @@ public final class FunctionCallConverter implements TestConverter {
     );
 
     @NotNull
-    private List<Byte> convertBuiltin(int start, String strName) {
+    private BytecodeList convertBuiltin(String strName) {
         assert Builtins.BUILTIN_MAP.containsKey(strName);
-        List<Byte> bytes = new ArrayList<>();
+        var bytes = new BytecodeList();
         if (BUILTINS_TO_OPERATORS.containsKey(strName)) {
             var params = node.getParameters();
             if (params.length != 1) {  // No operator needs more than self
@@ -363,10 +361,8 @@ public final class FunctionCallConverter implements TestConverter {
             var argument = params[0].getArgument();
             var argConverter = TestConverter.of(info, argument, 1);
             argConverter.returnType()[0].tryOperatorInfo(argument, BUILTINS_TO_OPERATORS.get(strName), info);
-            bytes.addAll(argConverter.convert(start + bytes.size()));
-            bytes.add(Bytecode.CALL_OP.value);
-            bytes.addAll(Util.shortToBytes((short) BUILTINS_TO_OPERATORS.get(strName).ordinal()));
-            bytes.addAll(Util.shortZeroBytes());
+            bytes.addAll(argConverter.convert());
+            bytes.add(Bytecode.CALL_OP,  BUILTINS_TO_OPERATORS.get(strName).ordinal(), 0);
             return bytes;
         } else if (strName.equals("type")) {
             var params = node.getParameters();
@@ -376,8 +372,19 @@ public final class FunctionCallConverter implements TestConverter {
                 );
             }
             var converter = TestConverter.of(info, params[0].getArgument(), 1);
-            bytes.addAll(converter.convert(start + bytes.size()));
-            bytes.add(Bytecode.GET_TYPE.value);
+            bytes.addAll(converter.convert());
+            bytes.add(Bytecode.GET_TYPE);
+            return bytes;
+        } else if (strName.equals("option")) {
+            var params = node.getParameters();
+            if (params.length != 1) {
+                throw CompilerException.format(
+                        "'option' can only be called with 1 argument, not %d", node, params.length
+                );
+            }
+            var converter = TestConverter.of(info, params[0].getArgument(), 1);
+            bytes.addAll(converter.convert());
+            bytes.add(Bytecode.MAKE_OPTION);
             return bytes;
         } else {
             throw CompilerInternalError.format("Invalid builtin function name %s", node, strName);
@@ -385,8 +392,8 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     @NotNull
-    private List<Byte> convertCallFn(
-            int start, String strName, FunctionInfo fnInfo, Set<Integer> needsMakeOption, boolean tail
+    private BytecodeList convertCallFn(
+            String strName, FunctionInfo fnInfo, Set<Integer> needsMakeOption, boolean tail
     ) {
         var fnIndex = info.fnIndex(strName);
         assert fnIndex != -1;
@@ -408,23 +415,21 @@ public final class FunctionCallConverter implements TestConverter {
                 );
             }
         }
-        List<Byte> bytes = new ArrayList<>();
-        convertArgs(bytes, start, fnInfo, needsMakeOption);
-        bytes.add(tail ? Bytecode.TAIL_FN.value : Bytecode.CALL_FN.value);
-        bytes.addAll(Util.shortToBytes(fnIndex));
-        bytes.addAll(Util.shortToBytes((short) node.getParameters().length));
+        var bytes = new BytecodeList();
+        convertArgs(bytes, fnInfo, needsMakeOption);
+        bytes.add(tail ? Bytecode.TAIL_FN : Bytecode.CALL_FN, fnIndex, node.getParameters().length);
         return bytes;
     }
 
-    public static Pair<List<Byte>, Integer> convertArgs(
-            CompilerInfo info, Lined node, int start, TypeObject caller, ArgumentNode[] args
+    public static Pair<BytecodeList, Integer> convertArgs(
+            CompilerInfo info, Lined node, TypeObject caller, ArgumentNode[] args
     ) {
         var pair = ensureTypesMatch(info, node, caller, args);
         var fnInfo = pair.getKey();
         var swaps = pair.getValue();
         var argPositions = fnInfo.getArgs().argPositions(getArgs(info, args));
-        List<Byte> bytes = new ArrayList<>();
-        var argc = convertInnerArgs(info, bytes, start, args, argPositions, swaps);
+        var bytes = new BytecodeList();
+        var argc = convertInnerArgs(info, bytes, args, argPositions, swaps);
         return Pair.of(bytes, argc);
     }
 

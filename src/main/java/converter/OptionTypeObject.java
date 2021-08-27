@@ -125,11 +125,25 @@ public final class OptionTypeObject extends TypeObject {
         return bytes;
     }
 
+    public static BytecodeList maybeWrapBytes(@NotNull BytecodeList bytes, boolean wrap) {
+        if (wrap) {
+            return wrapBytes(bytes);
+        }
+        return bytes;
+    }
+
     @Contract("_ -> param1")
     @NotNull
     public static List<Byte> wrapBytes(@NotNull List<Byte> bytes) {
         List<Byte> result = new ArrayList<>(bytes);
         result.add(Bytecode.MAKE_OPTION.value);
+        return result;
+    }
+
+    @NotNull
+    public static BytecodeList wrapBytes(@NotNull BytecodeList bytes) {
+        var result = new BytecodeList(bytes);
+        result.add(Bytecode.MAKE_OPTION);
         return result;
     }
 

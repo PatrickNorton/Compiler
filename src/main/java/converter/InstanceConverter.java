@@ -5,9 +5,6 @@ import main.java.parser.Lined;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class InstanceConverter extends OperatorConverter {
     private final boolean instanceType;
     private final ArgumentNode[] operands;
@@ -33,16 +30,17 @@ public final class InstanceConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
-        return convertInner(start, false).getKey();
+    public BytecodeList convert() {
+        return convertInner(false).getKey();
     }
 
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
-        return convertInner(start, true);
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
+        return convertInner(true);
     }
 
-    private Pair<List<Byte>, TypeObject> convertInner(int start, boolean dupFirst) {
+    @NotNull
+    private Pair<BytecodeList, TypeObject> convertInner(boolean dupFirst) {
         if (operands.length != 2) {
             throw CompilerException.format(
                     "'instanceof' operator requires 2 arguments, not %d",
@@ -61,14 +59,14 @@ public final class InstanceConverter extends OperatorConverter {
             );
         }
         var instanceCls = ((TypeTypeObject) arg1ret).representedType();
-        var bytes = new ArrayList<>(TestConverter.bytes(start, arg0, info, 1));
+        var bytes = new BytecodeList(TestConverter.bytes(arg0, info, 1));
         if (dupFirst) {
-            bytes.add(Bytecode.DUP_TOP.value);
+            bytes.add(Bytecode.DUP_TOP);
         }
-        bytes.addAll(converter1.convert(start + bytes.size()));
-        bytes.add(Bytecode.INSTANCEOF.value);
+        bytes.addAll(converter1.convert());
+        bytes.add(Bytecode.INSTANCEOF);
         if (!instanceType) {
-            bytes.add(Bytecode.BOOL_NOT.value);
+            bytes.add(Bytecode.BOOL_NOT);
         }
         return Pair.of(bytes, instanceCls);
     }

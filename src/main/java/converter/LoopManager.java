@@ -2,14 +2,8 @@ package main.java.converter;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The class for managing loop-like statements and their {@code break} and
@@ -18,77 +12,77 @@ import java.util.Set;
  * @author Patrick Norton
  */
 public final class LoopManager {
-    private final Deque<Boolean> loopLevel = new ArrayDeque<>();
-    private final Map<Integer, Set<Integer>> breakPointers = new HashMap<>();
-    private final Map<Integer, Set<Integer>> continuePointers = new HashMap<>();
-    private final Deque<Integer> continueLocations = new ArrayDeque<>();
+    private final List<LoopEntry> entries = new ArrayList<>();
 
     /**
      * Enter another loop, implying another level of break/continue statements.
      */
-    public void enterLoop(boolean hasContinue) {
-        loopLevel.push(hasContinue);
-        continueLocations.push(-1);
-        assert continueLocations.size() == loopLevel.size();
+    public void enterLoop(@NotNull CompilerInfo info, boolean hasContinue) {
+        var breakLabel = info.newJumpLabel();
+        var continueLabel = hasContinue ? info.newJumpLabel() : null;
+        entries.add(new LoopEntry(hasContinue, breakLabel, continueLabel));
     }
 
     /**
      * Exit a loop, and set all dangling pointers to the end of the loop.
      *
-     * @param listStart The index of the beginning of the list relative to the
-     *                  start of the function
      * @param bytes The list of bytes
      */
-    public void exitLoop(int listStart, @NotNull List<Byte> bytes) {
-        int level = loopLevel.size();
-        boolean hasContinue = loopLevel.pop();
-        int endLoop = listStart + bytes.size();
-        for (int i : breakPointers.getOrDefault(level, Collections.emptySet())) {
-            Util.emplace(bytes, Util.intToBytes(endLoop), i - listStart);
-        }
-        breakPointers.remove(level);
-        int continueLocation = continueLocations.pop();
-        if (hasContinue) {
-            assert continueLocation != -1 : "Continue location not defined";
-            for (int i : continuePointers.getOrDefault(level, Collections.emptySet())) {
-                Util.emplace(bytes, Util.intToBytes(continueLocation), i - listStart);
+    public void exitLoop(@NotNull BytecodeList bytes) {
+        var entry = entries.remove(entries.size() - 1);
+        bytes.addLabel(entry.getBreakLabel());
+    }
+
+    /**
+     * The label where a `continue` statement should jump to.
+     *
+     * <p>
+     *     Care should be taken that this never be added to the bytecode list.
+     * </p>
+     */
+    public Label breakLabel(int levels) {
+        return entries.get(entries.size() - levels).getBreakLabel();
+    }
+
+    /**
+     * The label where a `continue` statement should jump to.
+     *
+     * <p>
+     *     Care should be taken that this only be added to the bytecode list
+     *     *once* per loop.
+     * </p>
+     */
+    public Label continueLabel() {
+        for (int i = entries.size() - 1; i >= 0; i--) {
+            var entry = entries.get(i);
+            if (entry.hasContinue()) {
+                return entry.getContinueLabel();
             }
-            continuePointers.remove(level);
-        } else {
-            assert continueLocation == -1 : "Continue location erroneously set";
         }
+        return null;
     }
 
-    /**
-     * Add a break statement to the pool of un-linked statements.
-     *
-     * @param levels The number of levels to break
-     * @param location The location (absolute, by start of function)
-     */
-    public void addBreak(int levels, int location) {
-        var pointerSet = breakPointers.computeIfAbsent(loopLevel.size() - levels + 1, k -> new HashSet<>());
-        pointerSet.add(location);
-    }
+    private static final class LoopEntry {
+        private final boolean hasContinue;
+        private final Label breakLabel;
+        private final Label continueLabel;
 
-    /**
-     * Add a continue statement's pointer to the list.
-     *
-     * @param location The location (absolute, by start of function)
-     */
-    public void addContinue(int location) {
-        var pointerSet = continuePointers.computeIfAbsent(loopLevel.size(), k -> new HashSet<>());
-        pointerSet.add(location);
-    }
+        public LoopEntry(boolean hasContinue, Label breakLabel, Label continueLabel) {
+            this.hasContinue = hasContinue;
+            this.breakLabel = breakLabel;
+            this.continueLabel = continueLabel;
+        }
 
-    /**
-     * Set the point where a {@code continue} statement should jump to.
-     *
-     * @param location The location (absolute, by start of function)
-     */
-    public void setContinuePoint(int location) {
-        assert continueLocations.size() == loopLevel.size() : "Mismatch in continue levels";
-        int oldValue = continueLocations.pop();
-        assert oldValue == -1 : "Defined multiple continue points for loop";
-        continueLocations.push(location);
+        public boolean hasContinue() {
+            return hasContinue;
+        }
+
+        public Label getBreakLabel() {
+            return breakLabel;
+        }
+
+        public Label getContinueLabel() {
+            return continueLabel;
+        }
     }
 }

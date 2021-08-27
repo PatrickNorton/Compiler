@@ -2,10 +2,6 @@ package main.java.converter;
 
 import main.java.parser.DeclarationNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
-
-import java.util.Collections;
-import java.util.List;
 
 public final class DeclarationConverter implements BaseConverter {
     private final DeclarationNode node;
@@ -18,8 +14,7 @@ public final class DeclarationConverter implements BaseConverter {
 
     @NotNull
     @Override
-    @Unmodifiable
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (!node.getType().isDecided()) {
             throw CompilerException.of("var not allowed in declarations", node);
         }
@@ -30,6 +25,6 @@ public final class DeclarationConverter implements BaseConverter {
         var trueType = mutability.isConstType() ? type.makeConst() : type.makeMut();
         var isConst = mutability.isConstRef();
         info.addVariable(name, trueType, isConst, node);
-        return Collections.emptyList();
+        return new BytecodeList();
     }
 }

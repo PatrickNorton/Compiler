@@ -7,9 +7,6 @@ import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 public final class EqualsConverter extends OperatorConverter {
@@ -47,7 +44,7 @@ public final class EqualsConverter extends OperatorConverter {
 
     @Override
     @NotNull
-    public List<Byte> convert(int start) {
+    public BytecodeList convert() {
         if (retCount > 1) {
             throw CompilerException.format(
                     "'%s' only returns 1 value, %d expected",
@@ -61,15 +58,15 @@ public final class EqualsConverter extends OperatorConverter {
         switch (args.length) {
             case 0:
             case 1:
-                return convert0(start);
+                return convert0();
             case 2:
-                return convert2(start);
+                return convert2();
             default:
                 throw CompilerTodoError.of("Cannot compute == for more than 2 operands", lineInfo);
         }
     }
 
-    private List<Byte> convert0(int start) {
+    private BytecodeList convert0() {
         assert args.length == 0 || args.length == 1;
         CompilerWarning.warnf(
                 "'%s' with < 2 operands will always be %b",
@@ -77,37 +74,38 @@ public final class EqualsConverter extends OperatorConverter {
                 lineInfo, equalsType ? "==" : "!=", equalsType
         );
         // Have to get side-effects
-        var conv = sideEffects(start);
-        List<Byte> bytes = new ArrayList<>(conv);
-        bytes.add(Bytecode.POP_TOP.value);
-        bytes.add(Bytecode.LOAD_CONST.value);
-        bytes.addAll(Util.shortToBytes(info.constIndex(LangConstant.of(equalsType))));
+        var conv = sideEffects();
+        var bytes = new BytecodeList(conv);
+        bytes.add(Bytecode.POP_TOP);
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(equalsType)));
         return bytes;
     }
 
-    private List<Byte> sideEffects(int start) {
+    @NotNull
+    private BytecodeList sideEffects() {
         assert args.length == 0 || args.length == 1;
-        return args.length == 0 ? Collections.emptyList()
-                : TestConverter.bytes(start, args[0].getArgument(), info, 1);
+        return args.length == 0 ? new BytecodeList()
+                : TestConverter.bytes(args[0].getArgument(), info, 1);
     }
 
-    private List<Byte> convert2(int start) {
+    @NotNull
+    private BytecodeList convert2() {
         assert args.length == 2;
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         // TODO: Equals for types where info doesn't match
         boolean useId = converter.returnType()[0].operatorInfo(OpSpTypeNode.EQUALS, info).isEmpty();
-        List<Byte> bytes = new ArrayList<>(converter.convert(start));
-        bytes.addAll(TestConverter.bytes(start, args[1].getArgument(), info, 1));
-        bytes.add(useId ? Bytecode.IDENTICAL.value : Bytecode.EQUAL.value);
+        BytecodeList bytes = new BytecodeList(converter.convert());
+        bytes.addAll(TestConverter.bytes(args[1].getArgument(), info, 1));
+        bytes.add(useId ? Bytecode.IDENTICAL : Bytecode.EQUAL);
         if (!equalsType) {
-            bytes.add(Bytecode.BOOL_NOT.value);
+            bytes.add(Bytecode.BOOL_NOT);
         }
         return bytes;
     }
 
     @Override
     @NotNull
-    protected Pair<List<Byte>, TypeObject> convertWithAs(int start) {
+    protected Pair<BytecodeList, TypeObject> convertWithAs() {
         throw asException(lineInfo);
     }
 }
