@@ -275,7 +275,8 @@ public final class FunctionCallConverter implements TestConverter {
         var variableName = (VariableNode) name;
         var strName = variableName.getName();
         return info.fnInfo(strName).isPresent() || (Builtins.BUILTIN_MAP.containsKey(strName)
-                && (BUILTINS_TO_OPERATORS.containsKey(strName) || strName.equals("type")));
+                && (BUILTINS_TO_OPERATORS.containsKey(strName)
+                || BUILTINS_TO_BYTECODE.containsKey(strName)));
     }
 
     @NotNull
@@ -347,6 +348,11 @@ public final class FunctionCallConverter implements TestConverter {
             "hash", OpSpTypeNode.HASH
     );
 
+    private static final Map<String, Bytecode> BUILTINS_TO_BYTECODE = Map.of(
+            "type", Bytecode.GET_TYPE,
+            "option", Bytecode.MAKE_OPTION
+    );
+
     @NotNull
     private BytecodeList convertBuiltin(String strName) {
         assert Builtins.BUILTIN_MAP.containsKey(strName);
@@ -364,27 +370,17 @@ public final class FunctionCallConverter implements TestConverter {
             bytes.addAll(argConverter.convert());
             bytes.add(Bytecode.CALL_OP,  BUILTINS_TO_OPERATORS.get(strName).ordinal(), 0);
             return bytes;
-        } else if (strName.equals("type")) {
+        } else if (BUILTINS_TO_BYTECODE.containsKey(strName)) {
             var params = node.getParameters();
             if (params.length != 1) {
                 throw CompilerException.format(
-                        "'type' can only be called with 1 argument, not %d", node, params.length
+                        "'%s' can only be called with 1 argument, not %d",
+                        node, strName, params.length
                 );
             }
             var converter = TestConverter.of(info, params[0].getArgument(), 1);
             bytes.addAll(converter.convert());
-            bytes.add(Bytecode.GET_TYPE);
-            return bytes;
-        } else if (strName.equals("option")) {
-            var params = node.getParameters();
-            if (params.length != 1) {
-                throw CompilerException.format(
-                        "'option' can only be called with 1 argument, not %d", node, params.length
-                );
-            }
-            var converter = TestConverter.of(info, params[0].getArgument(), 1);
-            bytes.addAll(converter.convert());
-            bytes.add(Bytecode.MAKE_OPTION);
+            bytes.add(BUILTINS_TO_BYTECODE.get(strName));
             return bytes;
         } else {
             throw CompilerInternalError.format("Invalid builtin function name %s", node, strName);
