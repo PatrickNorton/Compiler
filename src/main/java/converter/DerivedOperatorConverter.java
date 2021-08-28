@@ -20,7 +20,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
             case EQUALS:
                 return convertEquals();
             case COMPARE:
-                throw CompilerTodoError.of("$derive(\\<=>)", node);
+                return convertCompare();
             case HASH:
                 return convertHash();
             case REPR:
@@ -74,6 +74,8 @@ public final class DerivedOperatorConverter implements BaseConverter {
             bytes.add(Bytecode.EQUAL);
             bytes.addAll(postJumpBytes());
         }
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.TRUE));
+        bytes.add(Bytecode.RETURN, 1);
         return bytes;
     }
 
@@ -85,6 +87,39 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.FALSE));
         bytes.add(Bytecode.RETURN, 1);
         bytes.addLabel(label);
+        return bytes;
+    }
+
+    @NotNull
+    private BytecodeList convertCompare() {
+        // FIXME: Get consistent return type for operator <=> (this uses int)
+        var type = info.getType("self").orElseThrow();
+        assert type instanceof UserType;
+        var bytes = new BytecodeList();
+        for (var field : ((UserType<?>) type).getFields()) {
+            var fieldType = type.attrType(field, AccessLevel.PRIVATE).orElseThrow();
+            if (fieldType.operatorInfo(OpSpTypeNode.COMPARE, AccessLevel.PRIVATE).isEmpty()) {
+                throw CompilerException.format(
+                        "Cannot derive <=> for type '%s': " +
+                                "Field %s has type '%s', which does not implement a <=> operator",
+                        node, type.name(), field, fieldType
+                );
+            }
+            bytes.add(Bytecode.LOAD_VALUE, 0);  // self
+            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
+            bytes.add(Bytecode.LOAD_VALUE, 2);  // other
+            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
+            bytes.add(Bytecode.COMPARE);
+            bytes.add(Bytecode.DUP_TOP);
+            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+            bytes.add(Bytecode.EQUAL);
+            var jumpLabel = info.newJumpLabel();
+            bytes.add(Bytecode.JUMP_TRUE, jumpLabel);
+            bytes.add(Bytecode.RETURN, 1);
+            bytes.addLabel(jumpLabel);
+        }
+        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+        bytes.add(Bytecode.RETURN, 1);
         return bytes;
     }
 
