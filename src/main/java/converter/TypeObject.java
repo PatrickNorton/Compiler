@@ -796,7 +796,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         Set<TypeObject> aSupers = new HashSet<>();
         Set<TypeObject> bSupers = new HashSet<>();
         for (var pair : Zipper.of(userA.recursiveSupers(), userB.recursiveSupers())) {
-            if (bSupers.contains(pair.getKey())) {
+            if (pair.getKey().isSuperclass(pair.getValue())) {
+                return pair.getKey();
+            } else if (pair.getValue().isSuperclass(pair.getKey())) {
+                return pair.getValue();
+            } else if (bSupers.contains(pair.getKey())) {
                 return pair.getKey();
             } else if (aSupers.contains(pair.getValue())) {
                 return pair.getValue();
