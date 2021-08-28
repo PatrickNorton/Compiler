@@ -80,7 +80,18 @@ union Error from Throwable {
     WantedError Wanted
 
     public method msg() -> str {
-        return ""  # TODO
+        return switch self {
+            case Error.InvalidChar as c => f"Invalid char {c.1} at position {c.0}"
+            case Error.InvalidEscape as e => f"Invalid escape {e.1} at position {e.0}"
+            case Error.InvalidHexEscape as h => f"Invalid hex escape {h.1} (\\x{h.1 !x}) at position {h.0}"
+            case Error.InvalidEscapeValue as v => f"Invalid escape {v.1 !x} at position {v.0}"
+            case Error.NewlineInString as n => f"Invalid newline in string literal: position {n}"
+            case Error.Unexpected as u => f"Unexpected character {u.1} at position {u.0}"
+            case Error.UnterminatedString as s => f"Unterminated string beginning at position {s}"
+            case Error.NewlineInTableKey as n => f"Newline in table key at position {n}"
+            case Error.MultilineStringKey as m => f"Multiple lines in string key at position {m}"
+            case Error.Wanted as w => w.msg()
+        }
     }
 
     public static method wanted(int at, str expected, str found) -> cls {
@@ -97,6 +108,10 @@ const class WantedError {
         self.at = at
         self.expected = expected
         self.found = found
+    }
+
+    public method msg() -> str {
+        return f"Error: At position {self.at}, expected character {self.expected}, but got {self.found}"
     }
 }
 
