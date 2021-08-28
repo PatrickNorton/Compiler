@@ -62,6 +62,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
         assert type instanceof UserType;
         var bytes = new BytecodeList();
         bytes.add(Bytecode.LOAD_VALUE, 0);  // self
+        bytes.add(Bytecode.GET_TYPE);
         bytes.add(Bytecode.LOAD_VALUE, 2);  // other
         bytes.add(Bytecode.GET_TYPE);
         bytes.add(Bytecode.EQUAL);
