@@ -408,7 +408,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
     public static ArgumentInfo of(@NotNull TypeObject... args) {
         Argument[] resultArgs = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
-            resultArgs[i] = new Argument("", args[i]);
+            resultArgs[i] = new Argument(String.format("anonymous$%d", i), args[i]);
         }
         return new ArgumentInfo(resultArgs);
     }
@@ -418,7 +418,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
             var argTypes = ((ListTypeObject) args[0].getType()).toArray();
             var result = new Argument[argTypes.length];
             for (int i = 0; i < result.length; i++) {
-                result[i] = new Argument("", argTypes[i]);
+                result[i] = new Argument(String.format("%s$%d", args[0].getName(), i), argTypes[i]);
             }
             return result;
         } else {

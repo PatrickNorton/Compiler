@@ -422,7 +422,7 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.addAll(converter.convert());
             makeInt(retType, arg, bytes);
             bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(base)));
-            bytes.add(Bytecode.CALL_METHOD, info.constIndex("strBase"), 1);
+            bytes.add(Bytecode.CALL_METHOD, info.constIndex(LangConstant.of("strBase")), 1);
         } else {
             convertFmtInt(arg, bytes, format);
         }

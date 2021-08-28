@@ -98,7 +98,8 @@ final class VariableHolder {
     }
 
     public void addVariable(String name, VariableInfo info) {
-         variables.get(variables.size() - 1).put(name, info);
+         var result = variables.get(variables.size() - 1).put(name, info);
+         assert result == null : String.format("Variable '%s' defined twice", name);
     }
 
     public void removeVariable(String name) {
@@ -117,7 +118,7 @@ final class VariableHolder {
 
     public int resetMax() {
         var result = maxVarSize;
-        maxVarSize = Collections.max(varNumbers);
+        maxVarSize = varNumbers.isEmpty() ? 0 : Collections.max(varNumbers);
         return result;
     }
 

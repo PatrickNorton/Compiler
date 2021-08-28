@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -49,6 +50,10 @@ public final class IntAllocator extends AbstractCollection<Integer> implements C
                 removed.add(num);
             } else {
                 max--;
+                removed.remove(max);
+                while (max > 0 && removed.remove(max - 1)) {
+                    max--;
+                }
             }
         }
     }
@@ -129,6 +134,9 @@ public final class IntAllocator extends AbstractCollection<Integer> implements C
 
         @Override
         public Integer next() {
+            if (current >= max) {
+                throw new NoSuchElementException();
+            }
             while (removed.contains(current)) {
                 current++;
             }
