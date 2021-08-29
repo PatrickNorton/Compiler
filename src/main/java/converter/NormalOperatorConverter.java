@@ -136,7 +136,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
         }
         var firstConstant = firstConverter.constantReturn();
         if (firstConstant.isPresent()) {
-            return Optional.of(firstConstant(firstConverter, (NumberConstant) firstConstant.orElseThrow()));
+            return Optional.of(firstConstant(secondConverter, (NumberConstant) firstConstant.orElseThrow()));
         }
         return Optional.empty();
     }
