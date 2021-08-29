@@ -56,8 +56,8 @@ public final class FormattedStringConverter implements TestConverter {
                         bytes.add(Bytecode.PLUS);
                     }
                     convertArgument(tests[i], bytes, format);
-                    bytes.add(Bytecode.PLUS);
                 }
+                bytes.add(Bytecode.PLUS);
             } else {
                 var constValue = LangConstant.of(strings[i]);
                 bytes.add(Bytecode.LOAD_CONST, info.constIndex(constValue));
