@@ -191,7 +191,7 @@ class Utf8Sequences {
                     return Utf8Sequence.One(asciiRange)
                 }
                 for var i in [1:MAX_UTF8_BYTES] {
-                    var m = ((1 << (6 * i)) - 1)
+                    var m = (1 << (6 * i)) - 1
                     var notM = (1 << 32) - 1 - m
                     if (r.start & notM) != (r.end & notM) {
                         if (r.start & m) != 0 {
