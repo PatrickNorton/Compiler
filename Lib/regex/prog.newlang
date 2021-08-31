@@ -101,6 +101,7 @@ union Inst {
     }
 }
 
+$derive(repr)
 class InstSave {
     public InstPtr jump
     public int slot
@@ -111,6 +112,7 @@ class InstSave {
     }
 }
 
+$derive(repr)
 class InstSplit {
     public InstPtr jump1
     public InstPtr jump2
@@ -121,6 +123,7 @@ class InstSplit {
     }
 }
 
+$derive(repr)
 class InstEmptyLook {
     public InstPtr jump
     public EmptyLook look
@@ -150,6 +153,7 @@ enum EmptyLook {
     NOT_WORD_BOUNDARY_ASCII
 }
 
+$derive(repr)
 class InstChar {
     public InstPtr jump
     public char c
@@ -160,6 +164,7 @@ class InstChar {
     }
 }
 
+$derive(repr)
 class InstRanges {
     public InstPtr jump
     public list[tuple[char, char]] ranges
@@ -187,6 +192,7 @@ class InstRanges {
     }
 }
 
+$derive(repr)
 class InstBytes {
     public InstPtr jump
     public int start

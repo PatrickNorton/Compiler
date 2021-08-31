@@ -37,7 +37,6 @@ const union Utf8Sequence {
 
     static method fromEncodedRange(bytes start, bytes end) -> cls {
         assert start.length == end.length
-        # assert false
         return switch start.length {
             case 2 => Utf8Sequence.Two(
                 (
@@ -233,7 +232,7 @@ class ScalarRange {
     }
 
     public operator repr {
-        return f"ScalarRange\{start = 0x{self.start !x}, end = 0x{self.end !x}\}"
+        return f"ScalarRange\{start = {self.start !#x}, end = {self.end !#x}\}"
     }
 
     method split() -> tuple[cls, cls]? {
