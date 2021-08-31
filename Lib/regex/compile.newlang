@@ -127,7 +127,6 @@ class Compiler {
     }
 
     private mut method compileFinish() -> mut Program {
-        print(self.insts)
         self.compiled.insts = [inst.unwrap() for var inst in self.insts]
         self.compiled.byteClasses = self.byteClasses.byteClasses()
         self.compiled.captureNameIdx = self.captureNameIdx
@@ -539,10 +538,11 @@ class Compiler {
                 if jump1? as j1 {
                     if jump2? as j2 {
                         self.insts[pc] = self.insts[pc].fillSplit(j1, j2)
+                        return Hole.None()
                     } else {
                         self.insts[pc] = self.insts[pc].halfFillSplitJump1(j1)
+                        return Hole.One(pc)
                     }
-                    return Hole.None()
                 } else {
                     if jump2? as j2 {
                         self.insts[pc] = self.insts[pc].halfFillSplitJump2(j2)
