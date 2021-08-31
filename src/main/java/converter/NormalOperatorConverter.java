@@ -384,7 +384,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             return converter.convert();
-        } else if (bigValue.compareTo(SHIFT_MAX) > 0) {
+        } else if (bigValue.signum() > 0 && bigValue.compareTo(SHIFT_MAX) > 0) {
             CompilerWarning.warn(
                     "Shift too big to compute properly, will fail at runtime",
                     WarningType.NO_TYPE, info, lineInfo
@@ -400,7 +400,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             return converter.convert();
-        } else if (bigValue.compareTo(NEG_SHIFT_MAX) > 0) {
+        } else if (bigValue.signum() < 0 && bigValue.compareTo(NEG_SHIFT_MAX) > 0) {
             CompilerWarning.warn(
                     "Shift magnitude too big to compute properly, will fail at runtime",
                     WarningType.NO_TYPE, info, lineInfo
