@@ -49,6 +49,9 @@ public final class FormattedStringConverter implements TestConverter {
                 if (!format.isEmpty() && strValue.isPresent()) {
                     var string = strings[i] + strValue.orElseThrow();
                     bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(string)));
+                    if (i != 0) {
+                        bytes.add(Bytecode.PLUS);
+                    }
                 } else {
                     var constValue = LangConstant.of(strings[i]);
                     bytes.add(Bytecode.LOAD_CONST, info.constIndex(constValue));
@@ -56,8 +59,8 @@ public final class FormattedStringConverter implements TestConverter {
                         bytes.add(Bytecode.PLUS);
                     }
                     convertArgument(tests[i], bytes, format);
+                    bytes.add(Bytecode.PLUS);
                 }
-                bytes.add(Bytecode.PLUS);
             } else {
                 var constValue = LangConstant.of(strings[i]);
                 bytes.add(Bytecode.LOAD_CONST, info.constIndex(constValue));
