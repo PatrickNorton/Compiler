@@ -873,3 +873,47 @@ class Unreachable from Throwable {
 func isWordByte(int c) -> bool {
     raise NotImplemented()
 }
+
+$test
+func byteClassAlpha() {
+    final var byteSet = ByteClassSet()
+    byteSet.setRange(y'a', y'z')
+    var classes = byteSet.byteClasses()
+    assert classes[0] == 0
+    assert classes[1] == 0
+    assert classes[2] == 0
+    assert classes[y'a' - 1] == 0
+    assert classes[y'a'] == 1
+    assert classes[y'm'] == 1
+    assert classes[y'z'] == 1
+    assert classes[y'z' + 1] == 2
+    assert classes[254] == 2
+    assert classes[255] == 2
+}
+
+$test
+func byteClassDouble() {
+    final var byteSet = ByteClassSet()
+    byteSet.setRange(0, 2)
+    byteSet.setRange(4, 6)
+    var classes = byteSet.byteClasses()
+    assert classes[0] == 0
+    assert classes[1] == 0
+    assert classes[2] == 0
+    assert classes[3] == 1
+    assert classes[4] == 2
+    assert classes[5] == 2
+    assert classes[6] == 2
+    assert classes[7] == 3
+    assert classes[254] == 3
+    assert classes[255] == 3
+}
+
+$test
+func fullByteClasses() {
+    final var byteSet = ByteClassSet()
+    for var i in [0:256] {
+        byteSet.setRange(i, i)
+    }
+    assert byteSet.byteClasses().length == 256
+}
