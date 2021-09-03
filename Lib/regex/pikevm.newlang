@@ -203,7 +203,7 @@ class Fsm {
                 case Inst.Save as inst {
                     if inst.slot < threadCaps.length {
                         self.stack.add(FollowEpsilon.Capture((inst.slot, threadCaps[inst.slot])))
-                        threadCaps[inst.slot] = at.pos
+                        threadCaps[inst.slot] = option(at.pos)  # FIXME: Convert this to an option automagically
                     }
                     ip = inst.jump
                 }

@@ -4,3 +4,5 @@
 from .unicode import Regex
 
 var x = Regex("a.")
+assert x.isMatch("ab")
+assert not x.isMatch("bc")
