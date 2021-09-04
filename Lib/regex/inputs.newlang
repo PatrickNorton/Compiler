@@ -3,6 +3,7 @@ from .prog import InstEmptyLook, EmptyLook
 
 export InputAt, Input, CharInput, ByteInput
 
+$derive(repr)
 class InputAt {
     pubget mut int pos
     char? c
@@ -61,6 +62,7 @@ interface Input {
     public method asBytes() -> bytes
 }
 
+$derive(repr)
 class CharInput from Input {
     public bytes value
 
@@ -81,7 +83,7 @@ class CharInput from Input {
             return InputAt(self.length, null, null, 0)
         } else {
             var c = str(self[i:])[0]
-            return InputAt(self.length, c, null, bytes(c).length)
+            return InputAt(i, c, null, bytes(c).length)
         }
     }
 
@@ -148,6 +150,7 @@ class CharInput from Input {
     }
 }
 
+$derive(repr)
 class ByteInput from Input {
     bytes text
     bool onlyUtf8
