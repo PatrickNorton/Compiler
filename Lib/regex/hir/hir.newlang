@@ -324,8 +324,16 @@ class Hir {
         return self.info.isAnchoredStart
     }
 
+    public method isAnyAnchoredStart() -> bool {
+        return self.info.isAnyAnchoredStart
+    }
+
     public method isAnchoredEnd() -> bool {
         return self.info.isAnchoredEnd
+    }
+
+    public method isAnyAnchoredEnd() -> bool {
+        return self.info.isAnyAnchoredEnd
     }
 
     public method isLineAnchoredStart() -> bool {

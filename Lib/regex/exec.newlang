@@ -238,6 +238,28 @@ class ExecBuilder {
                 .build())
             var expr = parser.parse(pat)
             isBytes = isBytes or not expr.isAlwaysUtf8()
+
+            if not expr.isAnchoredStart() and expr.isAnyAnchoredStart() {
+                prefixes = null
+            } elif isSet and expr.isAnchoredStart() {
+                prefixes = null
+            }
+            if prefixes? as pr {
+                if not pr.unionPrefixes(expr) {
+                    prefixes = null
+                }
+            }
+
+            if not expr.isAnchoredEnd() and expr.isAnyAnchoredEnd() {
+                suffixes = null
+            } elif isSet and expr.isAnchoredEnd() {
+                suffixes = null
+            }
+            if suffixes? as su {
+                if not su.unionPrefixes(expr) {
+                    suffixes = null
+                }
+            }
             exprs.add(expr)
         }
 
@@ -271,7 +293,7 @@ class ExecBuilder {
             .compile(parsed.exprs))
 
         var ac = self.buildAhoCorasick(parsed)
-        nfa.prefixes = LiteralSearcher.suffixes(parsed.suffixes)
+        nfa.prefixes = LiteralSearcher.prefixes(parsed.prefixes)
         dfa.prefixes = nfa.prefixes
         dfa.dfaSizeLimit = self.options.dfaSizeLimit
         dfaReverse.dfaSizeLimit = self.options.dfaSizeLimit

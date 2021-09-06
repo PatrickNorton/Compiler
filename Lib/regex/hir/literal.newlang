@@ -256,7 +256,25 @@ class Literals {
     }
 
     private mut method _addCharClass(ClassUnicode type, bool reverse) -> bool {
-        raise NotImplemented()
+        return false if self.classExceedsLimits(clsCharCount(type))
+
+        mut var base = self.removeComplete()
+        if not base {
+            base = [Literal.empty()]
+        }
+        for var r in type {
+            var s, var e = int(r.start), int(r.end) + 1
+            for var c in filterMap([s:e], char.fromInt) {
+                for var lit in base {
+                    final var byteVal = str(c).encode("UTF-8")
+                    if reverse {
+                        byteVal.reverse()
+                    }
+                    self.lits.add(lit.cloneAdd(byteVal))
+                }
+            }
+        }
+        return true
     }
 
     public mut method addByteClass(ClassBytes type) -> bool {
@@ -288,6 +306,16 @@ class Literals {
 
     private method numBytes() -> int {
         return sum((i.length for var i in self.literals))
+    }
+
+    private method classExceedsLimits(int size) -> bool {
+        return true if size > self.limitClass
+
+        if not self.lits {
+            return size > self.limitSize
+        } else {
+            return sum(((lit.length + 1) * size for var lit in self.lits)) > self.limitSize
+        }
     }
 
     private mut method removeComplete() -> mut list[Literal] {
@@ -346,6 +374,10 @@ const class Literal {
 
     public method get(int i) -> int? {
         return self.value.get(i)
+    }
+
+    public method cloneAdd(bytes value) -> mut Literal {
+        return Literal(self.value + value, self.cut)
     }
 }
 
@@ -439,7 +471,6 @@ func prefixes(Hir expr, mut Literals lits) {
             lits.cut()
         }
     }
-    raise NotImplemented()
 }
 
 func position(bytes needle, bytes haystack) -> int? {
@@ -552,6 +583,12 @@ func alternateLiterals(
     }
 }
 
+func clsCharCount(ClassUnicode type) -> int {
+    return sum((1 + int(r.end) - int(r.start) for var r in type))
+}
+
+# TODO: Pull in stdlib functions for this
+
 func sum(Iterable[int] vars) -> int {
     mut int result = 0
     for var val in vars {
@@ -562,4 +599,14 @@ func sum(Iterable[int] vars) -> int {
 
 func min(int a, int b) -> int {
     return a if a < b else b
+}
+
+# FIXME: Get generification of Callable working
+
+generator func filterMap(Iterable[int] iter, Callable[int, [char?]] transform) -> char {
+    for var i in iter {
+        if transform(i)? as val {
+            yield val
+        }
+    }
 }

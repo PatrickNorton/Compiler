@@ -150,7 +150,7 @@ class Fsm {
                 return true
             }
             case Inst.Char as inst {
-                if inst.c == at.chr() {
+                if option(inst.c) == at.chr() {
                     self.add(nlist, threadCaps, inst.jump, atNext)
                 }
                 return false
@@ -246,7 +246,8 @@ class Threads {
     public mut method resize(int numInsts, int ncaps) {
         self.slotsPerThread = ncaps * 2
         self.codes = {}
-        self.caps = [null] * (self.slotsPerThread * numInsts)
+        Slot nullSlot = null  # FIXME: Type inference this
+        self.caps = [nullSlot] * (self.slotsPerThread * numInsts)
     }
 
     public method getCaps(int pc) -> list[int?] {

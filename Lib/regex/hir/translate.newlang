@@ -239,7 +239,7 @@ class TranslatorI from Visitor[Hir] {
                 return Hir.literal(HirLiteral.Byte(b))
             }
             case HirLiteral.Unicode as ch {
-                if self.flags.caseInsensitive {
+                if self.flags.caseInsensitive ?? false {
                     return self.hirFromCharCaseInsensitive(lit.span, ch)
                 } else {
                     return self.hirFromChar(lit.span, ch)

@@ -48,7 +48,7 @@ class LiteralSearcher {
     }
 
     public operator bool {
-        return not self.length
+        return self.length != 0
     }
 
     public operator iter -> bytes {

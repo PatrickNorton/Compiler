@@ -3,6 +3,9 @@
 
 from .unicode import Regex
 
-var x = Regex("a.")
-assert x.isMatch("ab")
-assert not x.isMatch("bc")
+$test
+func simple() {
+    var x = Regex("a.")
+    assert x.isMatch("ab") as "First failed"
+    assert not x.isMatch("bc") as "Second failed"
+}
