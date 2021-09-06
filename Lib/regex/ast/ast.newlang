@@ -140,6 +140,7 @@ const class Comment {
     }
 }
 
+$derive(repr)
 const class Concat {
     public Span span
     public list[Ast] asts
@@ -214,6 +215,7 @@ union GroupKind {
     Flags NonCapturing
 }
 
+$derive(repr)
 const class Literal {
     public Span span
     public LiteralKind kind

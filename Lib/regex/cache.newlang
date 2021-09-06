@@ -13,7 +13,6 @@ class Cached[T] {
         } else {
             # return null
         }
-        print("In Cached.get")
         # raise NotImplemented()
         return null
     }

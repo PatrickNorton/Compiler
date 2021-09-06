@@ -5,6 +5,7 @@ from .hir import Literal, Literals
 
 export LiteralSearcher
 
+$derive(repr)
 class LiteralSearcher {
     public bool complete
     public FreqyPacked lcp
@@ -193,6 +194,7 @@ union Matcher {
     }
 }
 
+$derive(repr)
 class SingleByteSet {
     private final list[bool] sparse
     final bytes dense

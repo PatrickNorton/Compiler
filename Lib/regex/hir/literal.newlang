@@ -5,6 +5,7 @@ from .hir import Class as HirClass
 
 export Literal, Literals
 
+$derive(repr)
 class Literals {
     pubget list[Literal] lits
     public mut int limitSize
@@ -327,6 +328,14 @@ const class Literal {
 
     public operator reversed -> int {
         yield from cls(self.value[::-1], self.cut)
+    }
+
+    public operator repr {
+        if self.cut {
+            return f"Cut({self.value !r})"
+        } else {
+            return f"Complete({self.value !r})"
+        }
     }
 
     public property int length {

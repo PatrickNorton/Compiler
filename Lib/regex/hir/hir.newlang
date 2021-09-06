@@ -6,6 +6,7 @@ from .unicode import simpleFold
 export Hir, HirKind, HirLiteral, ClassUnicode, ClassUnicodeRange, ClassBytes, ClassBytesRange, Group
 export Repetition, Anchor, WordBoundary, RepetitionKind, RepetitionRange, Class, GroupKind
 
+$derive(repr)
 class Hir {
     pubget HirKind kind
     HirInfo info
