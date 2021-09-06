@@ -3,7 +3,7 @@
 export count, cycle
 
 generator func count(int start = 0, *, bool reverse = false) -> int {
-    yield from [start+reverse :: 1 if reverse else -1]
+    yield from [start+int(reverse) :: 1 if reverse else -1]
 }
 
 generic T

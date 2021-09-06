@@ -188,7 +188,7 @@ class InstRanges {
     }
 
     public method numChars() -> int {
-        return sum((1 + x.0 - x.1 for var x in self.ranges))
+        return sum((1 + int(x.0) - int(x.1) for var x in self.ranges))
     }
 }
 

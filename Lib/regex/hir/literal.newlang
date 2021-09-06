@@ -549,7 +549,7 @@ func repeatRangeLiterals(
             var n = min(lits.limitSize, minimum)
             var es = list[Hir](repeat(e, n))
             f(Hir.concat(es), lits)
-            if n < min or lits.containsEmpty() {
+            if n < minimum or lits.containsEmpty() {
                 lits.cut()
             }
         }

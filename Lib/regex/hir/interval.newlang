@@ -221,7 +221,7 @@ class IntervalSet[I[Interval]] {
             # If we've added at least one new range, then check if we can
             # merge this range in the previously added range.
             if self.ranges.length > drainEnd {
-                if (self.ranges[-1] & self.ranges[:-1])? as u {
+                if (self.ranges[-1] & self.ranges[oldi])? as u {
                     # self.ranges[-1] = u  FIXME: cls
                     continue
                 }
@@ -392,11 +392,11 @@ class BoundChar from Bound[char] {
     }
 
     public method increment() -> cls {
-        return cls(self.value + 1)
+        return cls(self.value + c'\x01')
     }
 
     public method decrement() -> cls {
-        return cls(self.value - 1)
+        return cls(self.value - c'\x01')
     }
 }
 
