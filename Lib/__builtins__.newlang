@@ -232,6 +232,7 @@ class bytes {
     public mut operator []= (int i, int value, /) {}
     public operator iter -> int {}
     public operator in (int value, /) -> bool {}
+    public operator reversed -> mut bytes {}
 
     public method join(Iterable[object] values, /) -> mut bytes {}
     public method encode(str encoding) -> str {}
@@ -243,6 +244,7 @@ class bytes {
     public method endsWith(bytes value, /) -> bool {}
     public method lastIndexOf(int value, /) -> int? {}
     public method hex() -> str {}
+    public mut method reverse() {}
 
     public method fromHex(str hex, /) -> mut bytes {}
 }
