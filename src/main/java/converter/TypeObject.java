@@ -172,6 +172,28 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     }
 
     /**
+     * Gets the {@link FunctionInfo} for a given operator on this type.
+     * <p>
+     *     This method returns {@link Optional#empty()} if either the operator
+     *     is not defined for this type or the access level given is not strict
+     *     enough to access the value. For a method that unwraps the {@link
+     *     Optional} and gives standardized error messages, see {@link
+     *     #tryOperatorInfo(LineInfo, OpSpTypeNode, CompilerInfo)}.
+     * </p>
+     *
+     * @param o The operator to {@link OpSpTypeNode#translate translate} and
+     *          get the return type for
+     * @param info The {@link CompilerInfo} containing the access level for
+     *             this type
+     * @return The return type of the operator
+     * @see #tryOperatorReturnType(Lined, OpSpTypeNode, CompilerInfo)
+     * @see #operatorReturnType(OpSpTypeNode, AccessLevel)
+     */
+    public final Optional<FunctionInfo> operatorInfo(OperatorTypeNode o, @NotNull CompilerInfo info) {
+        return operatorInfo(OpSpTypeNode.translate(o), info.accessLevel(this));
+    }
+
+    /**
      * Gets the return type given by calling a given operator on this type.
      * <p>
      *     This method returns {@link Optional#empty()} if {@link

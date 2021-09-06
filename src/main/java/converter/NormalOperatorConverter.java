@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.parser.ArgumentNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
+import main.java.parser.OpSpTypeNode;
 import main.java.parser.OperatorTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -80,6 +81,13 @@ public final class NormalOperatorConverter extends OperatorConverter {
                 throw CompilerException.format(
                         "'%s' returns type '%s', which has no overloaded '%s'",
                         previousArg, previousArg, opType.name(), op
+                );
+            } else if (opType != null
+                    && !opType.operatorInfo(op, info).orElseThrow().matches(new Argument("", retType))) {
+                var translated = OpSpTypeNode.translate(op);
+                throw CompilerException.format(
+                        "Cannot call %s.%s on type '%s'",
+                        previousArg, opType.name(), translated, retType.name()
                 );
             }
             opType = opType == null ? retType : opType.operatorReturnType(op, info).orElseThrow()[0];
