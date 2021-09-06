@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -215,7 +216,9 @@ public final class CompilerInfo {
         var variableInfo = varHolder.varInfo(name);
         return constIndex(variableInfo.isPresent()
                 ? variableInfo.orElseThrow().constValue()
-                : Builtins.constantOf(name).orElseThrow());
+                : Builtins.constantOf(name).orElseThrow(
+                () -> new NoSuchElementException(String.format("No builtin '%s' found", name))
+        ));
     }
 
     /**
@@ -678,7 +681,9 @@ public final class CompilerInfo {
      * @return If the variable is constant
      */
     public boolean variableIsConstant(String name) {
-        return varHolder.varInfo(name).map(VariableInfo::hasConstValue).orElse(true);
+        return varHolder.varInfo(name)
+                .map(VariableInfo::hasConstValue)
+                .orElseGet(() -> Builtins.constantOf(name).isPresent());
     }
 
     /**

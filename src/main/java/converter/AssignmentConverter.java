@@ -214,6 +214,7 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.add(Bytecode.SWAP_3);
             bytes.add(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
         } else {
+            // FIXME: Make value an option when necessary
             var indexConverters = convertIndices(indices);
             checkTypes(preDot.returnType()[0], indexConverters, valueType);
             bytes.addAll(preDot.convert());
@@ -242,10 +243,12 @@ public final class AssignmentConverter implements BaseConverter {
 
     private void assignToIndex(@NotNull BytecodeList bytes, BytecodeList storeBytes,
                                @NotNull IndexNode variable, @NotNull TestConverter valueConverter) {
+        // FIXME: Make value an option when necessary
         var indices = variable.getIndices();
         var varConverter = TestConverter.of(info, variable.getVar(), 1);
         if (IndexConverter.isSlice(indices)) {
             checkSlice(varConverter.returnType()[0], valueConverter.returnType()[0]);
+            bytes.addAll(varConverter.convert());
             finishSlice(bytes, storeBytes, valueConverter, (SliceNode) indices[0]);
         } else {
             var indexConverters = convertIndices(indices);
@@ -316,6 +319,7 @@ public final class AssignmentConverter implements BaseConverter {
         var indices = pair.getValue();
         if (IndexConverter.isSlice(indices)) {
             checkSlice(varConverter.returnType()[0], valueConverter.returnType()[0]);
+            bytes.addAll(varConverter.convert());
             finishSlice(bytes, storeBytes, valueConverter, (SliceNode) indices[0]);
         } else {
             var indexConverters = convertIndices(indices);
@@ -340,8 +344,8 @@ public final class AssignmentConverter implements BaseConverter {
             @NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
             TestConverter valueConverter, SliceNode index
     ) {
-        bytes.addAll(valueConverter.convert());
         bytes.addAll(new SliceConverter(info, index).convert());
+        bytes.addAll(valueConverter.convert());
         storeBytes.addFirst(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
     }
 
