@@ -1,4 +1,5 @@
 from .hir import ClassUnicode, ClassUnicodeRange
+from ..unicodeTables import caseFoldingSimple
 
 export ClassQuery, containsSimpleCaseMapping, perlDigit, perlSpace, perlWord, simpleFold, UnicodeError, unicodeType
 
@@ -12,7 +13,17 @@ func hirClass(list[tuple[char, char]] ranges) -> ClassUnicode {
 }
 
 func containsSimpleCaseMapping(char start, char end) -> bool {
-    raise CaseFoldError()
+    assert int(start) <= int(end)
+    return binarySearchBy(caseFoldingSimple(), lambda tuple[char, list[char]] x -> int {
+        var c = x.0
+        if int(start) <= int(c) and int(c) <= int(end) {
+            return 0
+        } elif int(c) > int(end) {
+            return 1
+        } else {
+            return -1
+        }
+    }).Exact?
 }
 
 func perlDigit() -> mut ClassUnicode {
@@ -265,4 +276,31 @@ func symbolicNameNormalizeBytes(mut bytes val) -> bytes {
         nextWrite = 3
     }
     return val[:nextWrite]
+}
+
+# TODO: Move to stdlib
+
+union BinarySearchResult {
+    int Exact
+    int Inexact
+}
+
+func binarySearchBy(
+    list[tuple[char, list[char]]] values, Callable[tuple[char, list[char]], [int]] order
+) -> BinarySearchResult {
+    mut var size = values.length
+    mut var left = 0
+    mut var right = size
+    while left < right {
+        var mid = left + size // 2
+        var cmp = order(values[mid])
+        if cmp < 0 {
+            left = mid + 1
+        } elif cmp > 0 {
+            right = mid
+        } else {
+            return BinarySearchResult.Exact(mid)
+        }
+    }
+    return BinarySearchResult.Inexact(left)
 }
