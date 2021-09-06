@@ -154,6 +154,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 }
             }
         }
+        // FIXME: Add generification of function types that implement Callable
         return Optional.empty();
     }
 

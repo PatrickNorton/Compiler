@@ -63,6 +63,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
 
     @NotNull
     private BytecodeList convertInner() {
+        // FIXME: Check types of parameters (test 1 < c'a')
         assert op != OperatorTypeNode.NOT_EQUALS;
         var bytes = new BytecodeList();
         int opCount = args.length;
