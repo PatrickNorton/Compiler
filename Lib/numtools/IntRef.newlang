@@ -1,6 +1,6 @@
 export IntRef
 
-$derive(\==, repr)
+$derive(\==)
 final class IntRef {
     mut int value
 
