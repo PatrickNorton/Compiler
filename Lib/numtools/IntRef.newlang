@@ -12,7 +12,7 @@ final class IntRef {
         return self.value
     }
 
-    public operator str {
+    public operator repr {
         return f"IntRef({self.value})"
     }
 
