@@ -243,7 +243,7 @@ class ParserI {
     ) -> Concat {
         assert self.chr() in "?*+"
         var opStart = self.parser.pos
-        raise self.error(self.span(), ErrorKind.RepetitionMissing()) if concat.asts
+        raise self.error(self.span(), ErrorKind.RepetitionMissing()) if not concat.asts
         Ast ast = concat.asts[-1]
         if ast.Empty? or ast.Flags? {
             raise self.error(self.span(), ErrorKind.RepetitionMissing())
