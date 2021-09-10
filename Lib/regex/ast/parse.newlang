@@ -119,38 +119,25 @@ class ParserI {
             self.bumpSpace()
             break if self.isEof()
 
-            switch self.chr() {
-                case c'(' {concat = self.pushGroup(concat)}
-                case c')' {concat = self.popGroup(concat)}
-                case c'|' {concat = self.pushAlternate(concat)}
-                case c'[' {
-                    var type = self.parseSetClass()
-                    concat = concat.withAst(Ast.Class(type))
-                }
-                case c'?' {
-                    concat = self.parseUncountedRepetition(
-                        concat,
-                        RepetitionKind.ZeroOrOne(),
-                    )
-                }
-                case c'*' {
-                    concat = self.parseUncountedRepetition(
-                        concat,
-                        RepetitionKind.ZeroOrMore(),
-                    )
-                }
-                case c'+' {
-                    concat = self.parseUncountedRepetition(
-                        concat,
-                        RepetitionKind.OneOrMore(),
-                    )
-                }
-                case c'{' {
-                    concat = self.parseCountedRepetition(concat)
-                }
-                default {
-                    concat = concat.withAst(self.parsePrimitive().intoAst())
-                }
+            concat = switch self.chr() {
+                case c'(' => self.pushGroup(concat)
+                case c')' => self.popGroup(concat)
+                case c'|' => self.pushAlternate(concat)
+                case c'[' => concat.withAst(Ast.Class(self.parseSetClass()))
+                case c'?' => self.parseUncountedRepetition(
+                    concat,
+                    RepetitionKind.ZeroOrOne(),
+                )
+                case c'*' => self.parseUncountedRepetition(
+                    concat,
+                    RepetitionKind.ZeroOrMore(),
+                )
+                case c'+' => self.parseUncountedRepetition(
+                    concat,
+                    RepetitionKind.OneOrMore(),
+                )
+                case c'{' => self.parseCountedRepetition(concat)
+                default => concat.withAst(self.parsePrimitive().intoAst())
             }
         }
         var ast = self.popGroupEnd(concat)
