@@ -284,8 +284,7 @@ public final class ImportHandler {
     private void registerImports(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         if (node.isWildcard()) {
-            var path = loadFile(moduleName(node, 0), node);
-            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of("*")));
+            registerWildcardImport(moduleName(node, 0), node);
         } else if (node.getFrom().isEmpty()) {
             checkAs(node);
             for (int i = 0; i < node.getValues().length; i++) {
@@ -298,39 +297,48 @@ public final class ImportHandler {
                 importStrings.add(valStr);
             }
         } else {
-            checkAs(node);
-            var from = node.getFrom();
-            List<String> values = new ArrayList<>();
-            for (int i = 0; i < node.getValues().length; i++) {
-                var value = node.getValues()[i];
-                var valueStr = value.toString();
-                values.add(valueStr);
-                var valStr = from.toString() + "." + valueStr;
-                importStrings.add(valStr);
+            registerFrom(node);
+        }
+    }
+
+    private void registerFromExports(@NotNull ImportExportNode node) {
+        assert node.getType() == ImportExportNode.EXPORT && !node.getFrom().isEmpty();
+        registerFrom(node);
+    }
+
+    private void registerFrom(@NotNull ImportExportNode node) {
+        checkAs(node);
+        var from = node.getFrom();
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < node.getValues().length; i++) {
+            var value = node.getValues()[i];
+            var valueStr = value.toString();
+            values.add(valueStr);
+            var valStr = from.toString() + "." + valueStr;
+            importStrings.add(valStr);
+        }
+        List<String> asNames;
+        if (node.getAs().length != 0) {
+            asNames = new ArrayList<>(node.getAs().length);
+            for (var name : node.getAs()) {
+                asNames.add(((VariableNode) name.getPreDot()).getName());
             }
-            List<String> asNames;
-            if (node.getAs().length != 0) {
-                asNames = new ArrayList<>(node.getAs().length);
-                for (var name : node.getAs()) {
-                    asNames.add(((VariableNode) name.getPreDot()).getName());
-                }
-            } else {
-                asNames = null;
-            }
-            var path = loadFile(from.toString(), node);
-            if (!imports.containsKey(path)) {
-                imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values, asNames));
-            } else {
-                imports.put(path, imports.get(path).merge(values, asNames));
-            }
+        } else {
+            asNames = null;
+        }
+        var path = loadFile(from.toString(), node);
+        if (!imports.containsKey(path)) {
+            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values, asNames));
+        } else {
+            imports.put(path, imports.get(path).merge(values, asNames));
         }
     }
 
     private void checkAs(@NotNull ImportExportNode node) {
         if (node.getAs().length != 0 && node.getAs().length != node.getValues().length) {
             throw CompilerException.format(
-                    "Import statement had %d 'as' clauses, expected %d (== to # of imported names)",
-                    node, node.getAs().length, node.getValues().length
+                    "'%s' statement had %d 'as' clauses, expected %d (== to # of imported names)",
+                    node, node.getType(), node.getAs().length, node.getValues().length
             );
         }
     }
@@ -411,7 +419,7 @@ public final class ImportHandler {
         for (int i = 0; i < node.getValues().length; i++) {
             var value = node.getValues()[i];
             if (isFrom) {
-                registerWildcardImport(moduleName(node, i), node);
+                registerFromExports(node);
             }
             var as = notRenamed ? value : node.getAs()[i];
             if (!(value.getPreDot() instanceof VariableNode) || value.getPostDots().length > 0) {
