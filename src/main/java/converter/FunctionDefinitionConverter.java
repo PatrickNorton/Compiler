@@ -147,7 +147,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
         var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         bytes.addAll(pair.getKey());
         if (!isGenerator && retTypes.length > 0 && !pair.getValue().willReturn()) {
-            CompilerWarning.warn("Function ends without returning", WarningType.NO_TYPE, info, node);
+            throw CompilerException.of("Function ends without returning", node);
         }
         retInfo.popFnReturns();
     }
