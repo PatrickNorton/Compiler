@@ -105,13 +105,9 @@ public final class ReturnListConverter implements BaseConverter {
 
     private void addSwap(BytecodeList bytes, int distFromTop) {
         switch (distFromTop) {
-            case 0:
-                return;
-            case 1:
-                bytes.add(Bytecode.SWAP_2);
-                return;
-            default:
-                bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
+            case 0 -> {}
+            case 1 -> bytes.add(Bytecode.SWAP_2);
+            default -> bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
         }
     }
 
@@ -164,16 +160,13 @@ public final class ReturnListConverter implements BaseConverter {
     }
 
     private String returnName() {
-        switch (value) {
-            case RETURN:
-                return "return";
-            case YIELD:
-                return "yield";
-            default:
-                throw CompilerInternalError.format(
-                        "Unknown bytecode value for ReturnListConverter: %s", values, value
-                );
-        }
+        return switch (value) {
+            case RETURN -> "return";
+            case YIELD -> "yield";
+            default -> throw CompilerInternalError.format(
+                    "Unknown bytecode value for ReturnListConverter: %s", values, value
+            );
+        };
     }
 
     private static boolean badType(@NotNull TypeObject fnRet, TypeObject retType) {

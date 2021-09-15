@@ -16,18 +16,13 @@ public final class DerivedOperatorConverter implements BaseConverter {
     @Override
     @NotNull
     public BytecodeList convert() {
-        switch (node.getOperator()) {
-            case EQUALS:
-                return convertEquals();
-            case COMPARE:
-                return convertCompare();
-            case HASH:
-                return convertHash();
-            case REPR:
-                return convertRepr();
-            default:
-                throw CompilerInternalError.of("Attempted to convert invalid operator", node);
-        }
+        return switch (node.getOperator()) {
+            case EQUALS -> convertEquals();
+            case COMPARE -> convertCompare();
+            case HASH -> convertHash();
+            case REPR -> convertRepr();
+            default -> throw CompilerInternalError.of("Attempted to convert invalid operator", node);
+        };
     }
 
     @Override

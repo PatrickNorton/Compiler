@@ -72,14 +72,13 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                 }
                 bytes.add(Bytecode.DUP_TOP);
                 bytes.add(Bytecode.CALL_TOS, 0);
-            } else if (name instanceof FunctionCallNode) {
+            } else if (name instanceof FunctionCallNode fnNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
                     throw CompilerException.of(
                             "Invalid arguments for enum constructor",
                             name
                     );
                 }
-                var fnNode = (FunctionCallNode) name;
                 bytes.add(Bytecode.DUP_TOP);
                 for (var arg : fnNode.getParameters()) {
                     bytes.addAll(TestConverter.bytes(arg.getArgument(), info, 1));

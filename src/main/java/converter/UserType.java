@@ -173,8 +173,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         for (var pair : Zipper.of(supGenerics, objGenerics)) {
             var supG = pair.getKey();
             var objG = pair.getValue();
-            if (supG instanceof TemplateParam) {
-                var param = (TemplateParam) supG;
+            if (supG instanceof TemplateParam param) {
                 if (param.getParent().sameBaseType(parent)) {
                     result.put(param.getIndex(), objG);
                 } else {
@@ -253,8 +252,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
         }
         List<TypeObject> result = new ArrayList<>(generics.size());
         for (var generic : generics) {
-            if (generic instanceof TemplateParam) {
-                var template = (TemplateParam) generic;
+            if (generic instanceof TemplateParam template) {
                 if (template.getParent().sameBaseType(parent)) {
                     var value = values.get(template.getIndex());
                     result.add(template.isVararg() ? TypeObject.list(value) : value);

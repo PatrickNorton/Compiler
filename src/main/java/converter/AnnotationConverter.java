@@ -38,14 +38,11 @@ public final class AnnotationConverter implements BaseConverter {
     @Override
     @NotNull
     public BytecodeList convert() {
-        switch (node.getAnnotations().length) {
-            case 0:
-                return BaseConverter.bytesWithoutAnnotations(node, info);
-            case 1:
-                return convertName(node.getAnnotations()[0]);
-            default:
-                throw CompilerTodoError.of("Multiple annotations on one statement", node);
-        }
+        return switch (node.getAnnotations().length) {
+            case 0 -> BaseConverter.bytesWithoutAnnotations(node, info);
+            case 1 -> convertName(node.getAnnotations()[0]);
+            default -> throw CompilerTodoError.of("Multiple annotations on one statement", node);
+        };
     }
 
     private BytecodeList convertName(NameNode name) {
@@ -263,14 +260,14 @@ public final class AnnotationConverter implements BaseConverter {
         if (parameters.length == 1) {
             var param = parameters[0];
             var argument = param.getArgument();
-            if (!param.isVararg() && param.getVariable().isEmpty() && argument instanceof VariableNode) {
-                switch (((VariableNode) argument).getName()) {
-                    case "always":
-                    case "never":
+            if (!param.isVararg() && param.getVariable().isEmpty() && argument instanceof VariableNode arg) {
+                switch (arg.getName()) {
+                    case "always", "never" -> {
                         CompilerWarning.warn(
                                 "Frequency hints do not do anything yet", WarningType.TODO, info, inline
                         );
                         return BaseConverter.bytesWithoutAnnotations(node, info);
+                    }
                 }
             }
         }
@@ -298,30 +295,23 @@ public final class AnnotationConverter implements BaseConverter {
     }
 
     public static boolean shouldCompile(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
-        switch (annotations.length) {
-            case 0:
-                return true;
-            case 1:
-                return shouldCompileSingle(info, annotations[0]);
-            default:
-                throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
-        }
+        return switch (annotations.length) {
+            case 0 -> true;
+            case 1 -> shouldCompileSingle(info, annotations[0]);
+            default -> throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
+        };
     }
 
     public static Optional<BuiltinInfo> isBuiltin(Lined lineInfo, CompilerInfo info, NameNode... annotations) {
-        switch (annotations.length) {
-            case 0:
-                return Optional.empty();
-            case 1:
-                return builtinValues(lineInfo, annotations[0], info);
-            default:
-                throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
-        }
+        return switch (annotations.length) {
+            case 0 -> Optional.empty();
+            case 1 -> builtinValues(lineInfo, annotations[0], info);
+            default -> throw CompilerTodoError.of("Multiple annotations on one statement", lineInfo);
+        };
     }
 
     private static boolean shouldCompileSingle(CompilerInfo info, NameNode annotation) {
-        if (annotation instanceof FunctionCallNode) {
-            var stmt = (FunctionCallNode) annotation;
+        if (annotation instanceof FunctionCallNode stmt) {
             switch (stmt.getVariable().getName()) {
                 case "test":
                     return info.globalInfo().isTest();
@@ -350,7 +340,7 @@ public final class AnnotationConverter implements BaseConverter {
             }
             var argName = ((VariableNode) argument).getName();
             switch (argName) {
-                case "all":
+                case "all" -> {
                     if (annotation.getParameters().length > 1) {
                         throw CompilerException.format(
                                 "'all' used in conjunction with other parameters in '%s' statement", annotation, name
@@ -358,51 +348,36 @@ public final class AnnotationConverter implements BaseConverter {
                     }
                     warnAll(name, warningHolder, annotation);
                     return;
-                case "deprecated":
-                    addWarning(WarningType.DEPRECATED, allowedTypes, annotation, warningHolder);
-                    break;
-                case "unused":
-                    addWarning(WarningType.UNUSED, allowedTypes, annotation, warningHolder);
-                    break;
-                case "trivial":
-                    addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation, warningHolder);
-                    break;
-                case "unreachable":
-                    addWarning(WarningType.UNREACHABLE, allowedTypes, annotation, warningHolder);
-                    break;
-                case "infinite":
-                    addWarning(WarningType.INFINITE_LOOP, allowedTypes, annotation, warningHolder);
-                    break;
-                case "zero":
-                    addWarning(WarningType.ZERO_DIVISION, allowedTypes, annotation, warningHolder);
-                    break;
-                default:
-                    throw CompilerException.format("Unknown warning type %s", annotation, argName);
+                }
+                case "deprecated" -> addWarning(WarningType.DEPRECATED, allowedTypes, annotation, warningHolder);
+                case "unused" -> addWarning(WarningType.UNUSED, allowedTypes, annotation, warningHolder);
+                case "trivial" -> addWarning(WarningType.TRIVIAL_VALUE, allowedTypes, annotation, warningHolder);
+                case "unreachable" -> addWarning(WarningType.UNREACHABLE, allowedTypes, annotation, warningHolder);
+                case "infinite" -> addWarning(WarningType.INFINITE_LOOP, allowedTypes, annotation, warningHolder);
+                case "zero" -> addWarning(WarningType.ZERO_DIVISION, allowedTypes, annotation, warningHolder);
+                default -> throw CompilerException.format("Unknown warning type %s", annotation, argName);
             }
         }
         switch (name) {
-            case "allow":
+            case "allow" -> {
                 for (var allowed : allowedTypes) {
                     if (warningHolder.isForbidden(allowed)) {
                         throw CompilerException.format("Cannot allow forbidden warning %s", annotation, allowed);
                     }
                 }
                 warningHolder.allow(allowedTypes.toArray(new WarningType[0]));
-                break;
-            case "deny":
-                warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
-                break;
-            case "forbid":
-                warningHolder.forbid(allowedTypes.toArray(new WarningType[0]));
-                break;
-            default:
-                throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
+            }
+            case "deny" -> warningHolder.deny(allowedTypes.toArray(new WarningType[0]));
+            case "forbid" -> warningHolder.forbid(allowedTypes.toArray(new WarningType[0]));
+            default -> throw CompilerInternalError.format(
+                    "Expected 'allow' or 'deny' for name, got %s", annotation, name
+            );
         }
     }
 
     private static void warnAll(String name, WarningHolder warningHolder, Lined annotation) {
         switch (name) {
-            case "allow":
+            case "allow" -> {
                 for (var allowed : WarningType.values()) {
                     if (warningHolder.isForbidden(allowed)) {
                         throw CompilerException.format(
@@ -412,23 +387,19 @@ public final class AnnotationConverter implements BaseConverter {
                     }
                 }
                 warningHolder.allowAll();
-                break;
-            case "deny":
-                warningHolder.denyAll();
-                break;
-            case "forbid":
-                warningHolder.forbidAll();
-                break;
-            default:
-                throw CompilerInternalError.format("Expected 'allow' or 'deny' for name, got %s", annotation, name);
+            }
+            case "deny" -> warningHolder.denyAll();
+            case "forbid" -> warningHolder.forbidAll();
+            default -> throw CompilerInternalError.format(
+                    "Expected 'allow' or 'deny' for name, got %s", annotation, name
+            );
         }
     }
 
     private static Optional<BuiltinInfo> builtinValues(Lined lineInfo, NameNode annotation, CompilerInfo info) {
-        if (!(annotation instanceof FunctionCallNode)) {
+        if (!(annotation instanceof FunctionCallNode func)) {
             return Optional.empty();
         }
-        var func = (FunctionCallNode) annotation;
         if (!func.getVariable().getName().equals("builtin")) {
             return Optional.empty();
         }
@@ -436,54 +407,49 @@ public final class AnnotationConverter implements BaseConverter {
             throw CompilerException.of("'builtin' is an internal-only annotation", lineInfo);
         }
         switch (func.getParameters().length) {
-            case 0:
-                throw CompilerException.of("'builtin' annotation must have at least 1 parameter", lineInfo);
-            case 1:
+            case 0 -> throw CompilerException.of("'builtin' annotation must have at least 1 parameter", lineInfo);
+            case 1 -> {
                 var param = func.getParameters()[0];
-                if (!(param.getArgument() instanceof StringNode)) {
+                if (!(param.getArgument() instanceof StringNode argument)) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
-                var argument = (StringNode) param.getArgument();
                 return Optional.of(new BuiltinInfo(argument.getContents(), -1));
-            case 2:
+            }
+            case 2 -> {
                 var param1 = func.getParameters()[0];
-                if (!(param1.getArgument() instanceof StringNode)) {
+                if (!(param1.getArgument() instanceof StringNode argument1)) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
-                var argument1 = (StringNode) param1.getArgument();
                 var param2 = func.getParameters()[1];
-                if (!(param2.getArgument() instanceof NumberNode)) {
+                if (!(param2.getArgument() instanceof NumberNode argument2)) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
-                var argument2 = (NumberNode) param2.getArgument();
                 return Optional.of(new BuiltinInfo(argument1.getContents(),
                         argument2.getValue().toBigIntegerExact().intValueExact()));
-            case 3:
+            }
+            case 3 -> {
                 var p1 = func.getParameters()[0];
-                if (!(p1.getArgument() instanceof StringNode)) {
+                if (!(p1.getArgument() instanceof StringNode a1)) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
-                var a1 = (StringNode) p1.getArgument();
                 var p2 = func.getParameters()[1];
-                if (!(p2.getArgument() instanceof NumberNode)) {
+                if (!(p2.getArgument() instanceof NumberNode a2)) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
-                var a2 = (NumberNode) p2.getArgument();
                 var p3 = func.getParameters()[2];
-                if (!(p3.getArgument() instanceof VariableNode)) {
+                if (!(p3.getArgument() instanceof VariableNode a3)) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
-                var a3 = (VariableNode) p3.getArgument();
                 if (!a3.getName().equals("hidden")) {
                     throw CompilerException.of("Ill-formed 'builtin' annotation", lineInfo);
                 }
                 return Optional.of(
                         new BuiltinInfo(a1.getContents(), a2.getValue().toBigIntegerExact().intValueExact(), true)
                 );
-            default:
-                throw CompilerException.format(
-                        "Ill-formed 'builtin' annotation (got %d parameters)", lineInfo, func.getParameters().length
-                );
+            }
+            default -> throw CompilerException.format(
+                    "Ill-formed 'builtin' annotation (got %d parameters)", lineInfo, func.getParameters().length
+            );
         }
     }
 
@@ -518,24 +484,18 @@ public final class AnnotationConverter implements BaseConverter {
     }
 
     private static OpSpTypeNode deriveOperator(TestNode op, Lined node) {
-        if (op instanceof EscapedOperatorNode) {
-            switch (((EscapedOperatorNode) op).getOperator()) {
-                case EQUALS:
-                    return OpSpTypeNode.EQUALS;
-                case COMPARE:
-                    return OpSpTypeNode.COMPARE;
-                default:
-                    throw invalidOpException(node);
-            }
-        } else if (op instanceof VariableNode) {
-            switch (((VariableNode) op).getName()) {
-                case "hash":
-                    return OpSpTypeNode.HASH;
-                case "repr":
-                    return OpSpTypeNode.REPR;
-                default:
-                    throw invalidOpException(node);
-            }
+        if (op instanceof EscapedOperatorNode escaped) {
+            return switch (escaped.getOperator()) {
+                case EQUALS -> OpSpTypeNode.EQUALS;
+                case COMPARE -> OpSpTypeNode.COMPARE;
+                default -> throw invalidOpException(node);
+            };
+        } else if (op instanceof VariableNode variable) {
+            return switch (variable.getName()) {
+                case "hash" -> OpSpTypeNode.HASH;
+                case "repr" -> OpSpTypeNode.REPR;
+                default -> throw invalidOpException(node);
+            };
         } else {
             throw CompilerException.of(
                     "Invalid derived operator: " +

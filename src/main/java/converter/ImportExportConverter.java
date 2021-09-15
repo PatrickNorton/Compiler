@@ -16,14 +16,8 @@ public final class ImportExportConverter implements BaseConverter {
     @Override
     public BytecodeList convert() {
         switch (node.getType()) {
-            case IMPORT:
-            case TYPEGET:
-                addImport();
-                break;
-            case EXPORT:
-                throw CompilerException.of("Invalid position for export statement", node);
-            default:
-                throw CompilerInternalError.of("Unknown type for ImportExportNode: " + node.getType(), node);
+            case IMPORT, TYPEGET -> addImport();
+            case EXPORT -> throw CompilerException.of("Invalid position for export statement", node);
         }
         return new BytecodeList();
     }

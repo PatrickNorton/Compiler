@@ -108,20 +108,15 @@ public final class ImportHandler {
         Deque<TypedefStatementNode> typedefs = new ArrayDeque<>();
         loadInfo(Converter.builtinPath().resolve("__builtins__.newlang"), "__builtins__", PermissionLevel.BUILTIN);
         for (var stmt : node) {
-            if (stmt instanceof ImportExportNode) {
-                var ieNode = (ImportExportNode) stmt;
+            if (stmt instanceof ImportExportNode ieNode) {
                 switch (ieNode.getType()) {
-                    case TYPEGET:
-                    case IMPORT:
-                        registerImports(ieNode);
-                        break;
-                    case EXPORT:
+                    case TYPEGET, IMPORT -> registerImports(ieNode);
+                    case EXPORT -> {
                         isModule = true;
                         registerExports(ieNode);
-                        break;
+                    }
                 }
-            } else if (stmt instanceof InterfaceDefinitionNode) {
-                var cls = (InterfaceDefinitionNode) stmt;
+            } else if (stmt instanceof InterfaceDefinitionNode cls) {
                 var type = (InterfaceType) registerClass(types, lineInfos, definedInFile, stmt);
                 if (cls.getDescriptors().contains(DescriptorNode.AUTO)) {
                     ALL_DEFAULT_INTERFACES.put(type, Optional.of(Pair.of(info, cls)));

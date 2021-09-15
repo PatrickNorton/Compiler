@@ -157,53 +157,33 @@ public final class NormalOperatorConverter extends OperatorConverter {
     }
 
     private BytecodeList secondConstant(TestConverter converter, NumberConstant constant) {
-        switch (op) {
-            case ADD:
-                return convertAdditionConstant(converter, constant);
-            case SUBTRACT:
-                return convertSubtractionConstant(converter, constant);
-            case MULTIPLY:
-                return convertMultiplicationConstant(converter, constant);
-            case DIVIDE:
-                return convertDivisionConstant(converter, constant);
-            case FLOOR_DIV:
-                return convertFloorDivConstant(converter, constant);
-            case POWER:
-                return convertPowConstant(converter, constant);
-            case LEFT_BITSHIFT:
-                return convertLShiftConstant(converter, constant);
-            case RIGHT_BITSHIFT:
-                return convertRShiftConstant(converter, constant);
-            case BITWISE_AND:
-                return convertAndConstant(converter, constant);
-            case BITWISE_OR:
-                return convertOrConstant(converter, constant);
-            case BITWISE_XOR:
-                return convertXorConstant(converter, constant);
-            case MODULO:
-                return convertModConstant(converter, constant);
-            default:
-                return convertOneConstant(converter, constant);
-        }
+        return switch (op) {
+            case ADD -> convertAdditionConstant(converter, constant);
+            case SUBTRACT -> convertSubtractionConstant(converter, constant);
+            case MULTIPLY -> convertMultiplicationConstant(converter, constant);
+            case DIVIDE -> convertDivisionConstant(converter, constant);
+            case FLOOR_DIV -> convertFloorDivConstant(converter, constant);
+            case POWER -> convertPowConstant(converter, constant);
+            case LEFT_BITSHIFT -> convertLShiftConstant(converter, constant);
+            case RIGHT_BITSHIFT -> convertRShiftConstant(converter, constant);
+            case BITWISE_AND -> convertAndConstant(converter, constant);
+            case BITWISE_OR -> convertOrConstant(converter, constant);
+            case BITWISE_XOR -> convertXorConstant(converter, constant);
+            case MODULO -> convertModConstant(converter, constant);
+            default -> convertOneConstant(converter, constant);
+        };
     }
 
     private BytecodeList firstConstant(TestConverter converter, NumberConstant constant) {
-        switch (op) {
-            case ADD:
-                return convertAdditionConstant(converter, constant);
-            case MULTIPLY:
-                return convertMultiplicationConstant(converter, constant);
-            case POWER:
-                return convertPowConstant(converter, constant);
-            case BITWISE_AND:
-                return convertAndConstant(converter, constant);
-            case BITWISE_OR:
-                return convertOrConstant(converter, constant);
-            case BITWISE_XOR:
-                return convertXorConstant(converter, constant);
-            default:
-                return convertInner();
-        }
+        return switch (op) {
+            case ADD -> convertAdditionConstant(converter, constant);
+            case MULTIPLY -> convertMultiplicationConstant(converter, constant);
+            case POWER -> convertPowConstant(converter, constant);
+            case BITWISE_AND -> convertAndConstant(converter, constant);
+            case BITWISE_OR -> convertOrConstant(converter, constant);
+            case BITWISE_XOR -> convertXorConstant(converter, constant);
+            default -> convertInner();
+        };
     }
 
     // FIXME: Run code for side-effects

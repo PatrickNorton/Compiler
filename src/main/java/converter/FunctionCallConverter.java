@@ -275,10 +275,9 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     private boolean isDeterminedFunction(TestNode name) {
-        if (!(name instanceof VariableNode)) {
+        if (!(name instanceof VariableNode variableName)) {
             return false;
         }
-        var variableName = (VariableNode) name;
         var strName = variableName.getName();
         return info.fnInfo(strName).isPresent() || (Builtins.BUILTIN_MAP.containsKey(strName)
                 && (BUILTINS_TO_OPERATORS.containsKey(strName)

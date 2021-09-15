@@ -37,29 +37,20 @@ public final class ComprehensionConverter implements TestConverter {
         }
 
         TypeObject type() {
-            switch (this) {
-                case LIST:
-                    return Builtins.list();
-                case SET:
-                    return Builtins.set();
-                case GENERATOR:
-                    return Builtins.iterable();
-                default:
-                    throw new UnsupportedOperationException();
-            }
+            return switch (this) {
+                case LIST -> Builtins.list();
+                case SET -> Builtins.set();
+                case GENERATOR -> Builtins.iterable();
+            };
         }
 
         static BraceType fromBrace(@NotNull String brace, Lined lineInfo) {
-            switch (brace) {
-                case "[":
-                    return BraceType.LIST;
-                case "{":
-                    return BraceType.SET;
-                case "(":
-                    return BraceType.GENERATOR;
-                default:
-                    throw CompilerInternalError.format("Unknown brace type %s", lineInfo, brace);
-            }
+            return switch (brace) {
+                case "[" -> BraceType.LIST;
+                case "{" -> BraceType.SET;
+                case "(" -> BraceType.GENERATOR;
+                default -> throw CompilerInternalError.format("Unknown brace type %s", lineInfo, brace);
+            };
         }
     }
 
@@ -119,8 +110,7 @@ public final class ComprehensionConverter implements TestConverter {
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();
-        if (variable instanceof TypedVariableNode) {
-            var typedVar = (TypedVariableNode) variable;
+        if (variable instanceof TypedVariableNode typedVar) {
             info.checkDefinition(typedVar.getVariable().getName(), variable);
             var trueType = varType(typedVar);
             info.addVariable(typedVar.getVariable().getName(), trueType, variable);
@@ -185,8 +175,7 @@ public final class ComprehensionConverter implements TestConverter {
 
     private TypeObject genericType() {
         var variable = node.getVariables()[0];
-        if (variable instanceof TypedVariableNode) {
-            var typedVariable = (TypedVariableNode) variable;
+        if (variable instanceof TypedVariableNode typedVariable) {
             info.addStackFrame();
             var name = typedVariable.getVariable().getName();
             if (Builtins.FORBIDDEN_NAMES.contains(name)) {

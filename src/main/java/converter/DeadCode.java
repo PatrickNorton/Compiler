@@ -28,16 +28,10 @@ public final class DeadCode {
 
     @Contract(pure = true)
     private static boolean isJump(@NotNull Bytecode bytecode) {
-        switch (bytecode) {
-            case JUMP:
-            case JUMP_FALSE:
-            case JUMP_TRUE:
-            case JUMP_NN:
-            case JUMP_NULL:
-                return true;
-            default:
-                return false;
-        }
+        return switch (bytecode) {
+            case JUMP, JUMP_FALSE, JUMP_TRUE, JUMP_NN, JUMP_NULL -> true;
+            default -> false;
+        };
     }
 
     private static void eliminatePostJump(@NotNull BytecodeList bytes) {

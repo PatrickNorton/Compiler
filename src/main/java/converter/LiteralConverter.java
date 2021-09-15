@@ -90,29 +90,20 @@ public final class LiteralConverter implements TestConverter {
         }
 
         TypeObject type() {
-            switch (this) {
-                case LIST:
-                    return Builtins.list();
-                case SET:
-                    return Builtins.set();
-                case TUPLE:
-                    return Builtins.tuple();
-                default:
-                    throw new UnsupportedOperationException();
-            }
+            return switch (this) {
+                case LIST -> Builtins.list();
+                case SET -> Builtins.set();
+                case TUPLE -> Builtins.tuple();
+            };
         }
 
         static LiteralType fromBrace(@NotNull String brace, Lined lineInfo) {
-            switch (brace) {
-                case "[":
-                    return LiteralType.LIST;
-                case "{":
-                    return LiteralType.SET;
-                case "(":
-                    return LiteralType.TUPLE;
-                default:
-                    throw CompilerInternalError.format("Unknown brace type %s", lineInfo, brace);
-            }
+            return switch (brace) {
+                case "[" -> LiteralType.LIST;
+                case "{" -> LiteralType.SET;
+                case "(" -> LiteralType.TUPLE;
+                default -> throw CompilerInternalError.format("Unknown brace type %s", lineInfo, brace);
+            };
         }
     }
 
@@ -320,10 +311,8 @@ public final class LiteralConverter implements TestConverter {
         List<TypeObject> result = new ArrayList<>(args.length);
         for (int i = 0; i < args.length; i++) {
             switch (varargs[i]) {
-                case "":
-                    result.add(TestConverter.returnType(args[i], info, 1)[0]);
-                    break;
-                case "*":
+                case "" -> result.add(TestConverter.returnType(args[i], info, 1)[0]);
+                case "*" -> {
                     var retType = TestConverter.returnType(args[i], info, 1)[0];
                     if (retType instanceof TupleType) {
                         result.addAll(retType.getGenerics());
@@ -332,11 +321,9 @@ public final class LiteralConverter implements TestConverter {
                     } else {
                         throw splatException(args[i], retType);
                     }
-                    break;
-                case "**":
-                    throw dictSplatException(args[i]);
-                default:
-                    throw unknownSplatError(args[i], varargs[i]);
+                }
+                case "**" -> throw dictSplatException(args[i]);
+                default -> throw unknownSplatError(args[i], varargs[i]);
             }
         }
         if (expectedVal == null) {

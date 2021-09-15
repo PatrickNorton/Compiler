@@ -148,8 +148,7 @@ public final class IfConverter implements BaseConverter {
 
     @NotNull
     private Pair<BytecodeList, Boolean> convertOptimizedNot(TestNode cond) {
-        if (cond instanceof OperatorNode) {
-            var op = (OperatorNode) cond;
+        if (cond instanceof OperatorNode op) {
             if (op.getOperator() == OperatorTypeNode.BOOL_NOT) {
                 if (op.getOperands().length != 1) {
                     throw CompilerException.format(

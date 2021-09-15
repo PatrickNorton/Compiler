@@ -112,20 +112,16 @@ public final class BytecodeList {
     public int[] getOperands(@NotNull Index index) {
         assert !values.get(index.value).isLabel();
         var value = values.get(index.value);
-        switch (value.getBytecodeType().operandCount()) {
-            case 0:
-                return new int[0];
-            case 1:
-                return new int[] {firstParam(value)};
-            case 2:
-                return new int[] {firstParam(value), value.getSecondParam()};
-            default:
-                throw CompilerInternalError.format(
-                        "Unknown number of operands to bytecode: %d (bytecode value %d)",
-                        LineInfo.empty(),
-                        value.getBytecodeType().operandCount(), value.getBytecodeType().value
-                );
-        }
+        return switch (value.getBytecodeType().operandCount()) {
+            case 0 -> new int[0];
+            case 1 -> new int[]{firstParam(value)};
+            case 2 -> new int[]{firstParam(value), value.getSecondParam()};
+            default -> throw CompilerInternalError.format(
+                    "Unknown number of operands to bytecode: %d (bytecode value %d)",
+                    LineInfo.empty(),
+                    value.getBytecodeType().operandCount(), value.getBytecodeType().value
+            );
+        };
     }
 
     private int firstParam(@NotNull Value value) {

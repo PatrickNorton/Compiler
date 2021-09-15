@@ -30,31 +30,23 @@ public final class NullOpConverter extends OperatorConverter {
     @Override
     @NotNull
     public TypeObject[] returnType() {
-        switch (op) {
-            case NULL_COERCE:
-                return nullCoerceReturn();
-            case NOT_NULL:
-                return notNullReturn();
-            case OPTIONAL:
-                return new TypeObject[] {Builtins.bool()};
-            default:
-                throw CompilerInternalError.of("", lineInfo);
-        }
+        return switch (op) {
+            case NULL_COERCE -> nullCoerceReturn();
+            case NOT_NULL -> notNullReturn();
+            case OPTIONAL -> new TypeObject[]{Builtins.bool()};
+            default -> throw CompilerInternalError.of("", lineInfo);
+        };
     }
 
     @Override
     @NotNull
     public BytecodeList convert() {
-        switch (op) {
-            case NULL_COERCE:
-                return convertNullCoerce();
-            case NOT_NULL:
-                return convertNotNull();
-            case OPTIONAL:
-                return convertQuestion();
-            default:
-                throw CompilerInternalError.of("", lineInfo);
-        }
+        return switch (op) {
+            case NULL_COERCE -> convertNullCoerce();
+            case NOT_NULL -> convertNotNull();
+            case OPTIONAL -> convertQuestion();
+            default -> throw CompilerInternalError.of("", lineInfo);
+        };
     }
 
     @Override

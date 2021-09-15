@@ -152,10 +152,9 @@ public final class FunctionInfoType extends TypeObject {
 
     @Override
     public Optional<Map<Integer, TypeObject>> generifyAs(TypeObject parent, TypeObject other) {
-        if (!(other instanceof FunctionInfoType)) {
+        if (!(other instanceof FunctionInfoType otherT)) {
             return Optional.empty();
         }
-        var otherT = (FunctionInfoType) other;
         var otherInfo = otherT.info;
         Map<Integer, TypeObject> result = new HashMap<>();
         var args = info.getArgs();

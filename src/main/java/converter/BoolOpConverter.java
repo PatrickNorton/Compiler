@@ -31,18 +31,13 @@ public final class BoolOpConverter extends OperatorConverter {
 
     @Override
     public Optional<LangConstant> constantReturn() {
-        switch (op) {
-            case BOOL_NOT:
-                return boolNotConst();
-            case BOOL_AND:
-                return boolAndConst();
-            case BOOL_OR:
-                return boolOrConst();
-            case BOOL_XOR:
-                return boolXorConst();
-            default:
-                throw CompilerInternalError.format("Unknown boolean operator: %s", lineInfo, op);
-        }
+        return switch (op) {
+            case BOOL_NOT -> boolNotConst();
+            case BOOL_AND -> boolAndConst();
+            case BOOL_OR -> boolOrConst();
+            case BOOL_XOR -> boolXorConst();
+            default -> throw CompilerInternalError.format("Unknown boolean operator: %s", lineInfo, op);
+        };
     }
 
     @Override
@@ -54,17 +49,12 @@ public final class BoolOpConverter extends OperatorConverter {
     @Override
     @NotNull
     public BytecodeList convert() {
-        switch (op) {
-            case BOOL_AND:
-            case BOOL_OR:
-                return convertBoolOp();
-            case BOOL_NOT:
-                return convertBoolNot();
-            case BOOL_XOR:
-                return convertBoolXor();
-            default:
-                throw CompilerInternalError.format("Invalid boolean operator %s", lineInfo, op);
-        }
+        return switch (op) {
+            case BOOL_AND, BOOL_OR -> convertBoolOp();
+            case BOOL_NOT -> convertBoolNot();
+            case BOOL_XOR -> convertBoolXor();
+            default -> throw CompilerInternalError.format("Invalid boolean operator %s", lineInfo, op);
+        };
     }
 
     @NotNull

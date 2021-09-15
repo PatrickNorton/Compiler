@@ -71,8 +71,10 @@ public final class ForConverter extends LoopConverter {
         var iterLen = node.getIterables().size();
         if (varLen != iterLen) {
             throw CompilerException.of(
-                    "For loops with more than one iterable must have an equal number of variables and iterables\n\n" +
-                    "Note: Statements with multiple returns are only usable in for-loops when there is only one",
+                    """
+                    For loops with more than one iterable must have an equal number of variables and iterables
+
+                    Note: Statements with multiple returns are only usable in for-loops when there is only one""",
                     node
             );
         }

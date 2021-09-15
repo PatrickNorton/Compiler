@@ -152,8 +152,7 @@ public final class OptionTypeObject extends TypeObject {
     }
 
     public static boolean needsMakeOption(TypeObject maybeOption, TypeObject other) {
-        if (maybeOption instanceof OptionTypeObject) {
-            var option = (OptionTypeObject) maybeOption;
+        if (maybeOption instanceof OptionTypeObject option) {
             return Builtins.nullType().isSuperclass(other) || option.optionVal.isSuperclass(other);
         } else {
             return false;
@@ -169,18 +168,15 @@ public final class OptionTypeObject extends TypeObject {
     @NotNull
     public Optional<TypeObject> attrType(String value, AccessLevel access) {
         var base = new BaseType(optionVal);
-        switch (value) {
-            case "map":
-                return Optional.of(
-                        MAP_CACHE.computeIfAbsent(base, OptionTypeObject::getMap).toCallable()
-                );
-            case "flatMap":
-                return Optional.of(
-                        FLAT_MAP_CACHE.computeIfAbsent(base, OptionTypeObject::getFlatMap).toCallable()
-                );
-            default:
-                return Optional.empty();
-        }
+        return switch (value) {
+            case "map" -> Optional.of(
+                    MAP_CACHE.computeIfAbsent(base, OptionTypeObject::getMap).toCallable()
+            );
+            case "flatMap" -> Optional.of(
+                    FLAT_MAP_CACHE.computeIfAbsent(base, OptionTypeObject::getFlatMap).toCallable()
+            );
+            default -> Optional.empty();
+        };
     }
 
     @Override

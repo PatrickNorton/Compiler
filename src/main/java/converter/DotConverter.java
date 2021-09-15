@@ -55,13 +55,12 @@ public final class DotConverter implements TestConverter {
     ) {
         var last = node.getLast();
         var postDots = node.getPostDots();
-        if (!(last.getPostDot() instanceof IndexNode)) {
+        if (!(last.getPostDot() instanceof IndexNode postDot)) {
             throw CompilerInternalError.of(
                     "DotConverter.exceptLastIndex does not work where the last dot is not an index", last
             );
         }
         var newPostDots = Arrays.copyOf(postDots, postDots.length);
-        var postDot = (IndexNode) last.getPostDot();
         var dot = new DottedVar(last.getLineInfo(), last.getDotPrefix(), (NameNode) postDot.getVar());
         newPostDots[newPostDots.length - 1] = dot;
         var newNode = new DottedVariableNode(node.getPreDot(), newPostDots);
@@ -94,16 +93,12 @@ public final class DotConverter implements TestConverter {
 
     @NotNull
     private TypeObject[] dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
-        switch (dot.getDotPrefix()) {
-            case "":
-                return normalDotReturnType(result, dot);
-            case "?":
-                return optionalDotReturnType(result, dot);
-            case "!!":
-                return nonNullReturnType(result, dot);
-            default:
-                throw CompilerInternalError.of("Unknown type of dot " + dot.getDotPrefix(), dot);
-        }
+        return switch (dot.getDotPrefix()) {
+            case "" -> normalDotReturnType(result, dot);
+            case "?" -> optionalDotReturnType(result, dot);
+            case "!!" -> nonNullReturnType(result, dot);
+            default -> throw CompilerInternalError.of("Unknown type of dot " + dot.getDotPrefix(), dot);
+        };
     }
 
     @NotNull
@@ -137,8 +132,7 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof SpecialOpNameNode) {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
             return new TypeObject[]{result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable()};
-        } else if (postDot instanceof IndexNode) {
-            var index = (IndexNode) postDot;
+        } else if (postDot instanceof IndexNode index) {
             var variable = new DottedVar(dot.getLineInfo(), dot.getDotPrefix(),  (NameNode) index.getVar());
             var attrType = normalDotReturnType(result, variable)[0];
             var operator = IndexConverter.isSlice(index.getIndices())
@@ -192,19 +186,14 @@ public final class DotConverter implements TestConverter {
                 throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
             }
             var prev = previous[0];
-            switch (dot.getDotPrefix()) {
-                case "":
-                    previous = convertNormal(prev, bytes, dot);
-                    break;
-                case "?":
-                    previous = convertNullDot(prev, bytes, dot);
-                    break;
-                case "!!":
-                    previous = convertNotNullDot(prev, bytes, dot);
-                    break;
-                default:
-                    throw CompilerInternalError.format("Unknown value for dot prefix: '%s'", dot, dot.getDotPrefix());
-            }
+            previous = switch (dot.getDotPrefix()) {
+                case "" -> convertNormal(prev, bytes, dot);
+                case "?" -> convertNullDot(prev, bytes, dot);
+                case "!!" -> convertNotNullDot(prev, bytes, dot);
+                default -> throw CompilerInternalError.format(
+                        "Unknown value for dot prefix: '%s'", dot, dot.getDotPrefix()
+                );
+            };
         }
         if (previous.length < retCount) {
             throw CompilerException.format(

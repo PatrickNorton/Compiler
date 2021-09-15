@@ -25,11 +25,9 @@ public final class DeleteConverter implements BaseConverter {
     @NotNull
     public BytecodeList convert() {
         var deleted = node.getDeleted();
-        if (deleted instanceof DottedVariableNode) {
-            var del = (DottedVariableNode) deleted;
+        if (deleted instanceof DottedVariableNode del) {
             return convertDot(del);
-        } else if (deleted instanceof IndexNode) {
-            var del = (IndexNode) deleted;
+        } else if (deleted instanceof IndexNode del) {
             if (IndexConverter.isSlice(del.getIndices())) {
                 return convertSlice(del);
             } else {

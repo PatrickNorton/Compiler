@@ -49,15 +49,11 @@ public final class IsConverter extends OperatorConverter {
         if (retCount > 1) {
             throw CompilerException.format("'is' only returns 1 value, %d expected", lineInfo, retCount);
         }
-        switch (operands.length) {
-            case 0:
-            case 1:
-                return convert0();
-            case 2:
-                return convert2();
-            default:
-                return convertMany();
-        }
+        return switch (operands.length) {
+            case 0, 1 -> convert0();
+            case 2 -> convert2();
+            default -> convertMany();
+        };
     }
 
     @NotNull

@@ -68,37 +68,20 @@ public abstract class OperatorConverter implements TestConverter {
     public static OperatorConverter ofComponents(
             CompilerInfo info, OperatorTypeNode op, ArgumentNode[] args, Lined node, int retCount
     ) {
-        switch (op) {
-            case NULL_COERCE:
-            case NOT_NULL:
-            case OPTIONAL:
-                return new NullOpConverter(op, args, node, info, retCount);
-            case BOOL_AND:
-            case BOOL_OR:
-            case BOOL_NOT:
-            case BOOL_XOR:
-                return new BoolOpConverter(op, args, node, info, retCount);
-            case IS:
-                return new IsConverter(true, args, node, info, retCount);
-            case IS_NOT:
-                return new IsConverter(false, args, node, info, retCount);
-            case IN:
-                return new InConverter(true, args, node, info, retCount);
-            case NOT_IN:
-                return new InConverter(false, args, node, info, retCount);
-            case INSTANCEOF:
-                return new InstanceConverter(true, args, node, info, retCount);
-            case NOT_INSTANCEOF:
-                return new InstanceConverter(false, args, node, info, retCount);
-            case EQUALS:
-                return new EqualsConverter(true, args, node, info, retCount);
-            case NOT_EQUALS:
-                return new EqualsConverter(false, args, node, info, retCount);
-            case CASTED:
-                return new CastedConverter(args, node, info, retCount);
-            default:
-                return new NormalOperatorConverter(op, args, node, info, retCount);
-        }
+        return switch (op) {
+            case NULL_COERCE, NOT_NULL, OPTIONAL -> new NullOpConverter(op, args, node, info, retCount);
+            case BOOL_AND, BOOL_OR, BOOL_NOT, BOOL_XOR -> new BoolOpConverter(op, args, node, info, retCount);
+            case IS -> new IsConverter(true, args, node, info, retCount);
+            case IS_NOT -> new IsConverter(false, args, node, info, retCount);
+            case IN -> new InConverter(true, args, node, info, retCount);
+            case NOT_IN -> new InConverter(false, args, node, info, retCount);
+            case INSTANCEOF -> new InstanceConverter(true, args, node, info, retCount);
+            case NOT_INSTANCEOF -> new InstanceConverter(false, args, node, info, retCount);
+            case EQUALS -> new EqualsConverter(true, args, node, info, retCount);
+            case NOT_EQUALS -> new EqualsConverter(false, args, node, info, retCount);
+            case CASTED -> new CastedConverter(args, node, info, retCount);
+            default -> new NormalOperatorConverter(op, args, node, info, retCount);
+        };
     }
 
     @NotNull

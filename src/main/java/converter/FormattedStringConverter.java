@@ -81,41 +81,24 @@ public final class FormattedStringConverter implements TestConverter {
         }
         if (!format.isEmpty()) {
             var converter = TestConverter.of(info, arg, retCount);
-            switch (format.getType()) {
-                case 's':
-                    return converter.constantReturn().flatMap(LangConstant::strValue);
-                case 'r':
-                    return converter.constantReturn().flatMap(LangConstant::reprValue);
-                case 'n':
-                case 'd':
-                    return decimalConstant(converter);
-                case 'x':
-                    return baseConstant(converter, 16);
-                case 'o':
-                    return baseConstant(converter, 8);
-                case 'b':
-                    return baseConstant(converter, 2);
-                case 'c':
-                    return charConstant(converter);
-                case 'X':
-                    return upperHexConstant(converter);
-                case 'e':
-                    return expConstant(converter);
-                case 'E':
-                    return upperExpConstant(converter);
-                case 'f':
-                    return fixedConstant(converter);
-                case 'F':
-                    return upperFixedConstant(converter);
-                case 'g':
-                    return generalFloatConstant(converter);
-                case 'G':
-                    return upperGeneralConstant(converter);
-                case '%':
-                    return percentConstant(converter);
-                default:
-                    return Optional.empty();
-            }
+            return switch (format.getType()) {
+                case 's' -> converter.constantReturn().flatMap(LangConstant::strValue);
+                case 'r' -> converter.constantReturn().flatMap(LangConstant::reprValue);
+                case 'n', 'd' -> decimalConstant(converter);
+                case 'x' -> baseConstant(converter, 16);
+                case 'o' -> baseConstant(converter, 8);
+                case 'b' -> baseConstant(converter, 2);
+                case 'c' -> charConstant(converter);
+                case 'X' -> upperHexConstant(converter);
+                case 'e' -> expConstant(converter);
+                case 'E' -> upperExpConstant(converter);
+                case 'f' -> fixedConstant(converter);
+                case 'F' -> upperFixedConstant(converter);
+                case 'g' -> generalFloatConstant(converter);
+                case 'G' -> upperGeneralConstant(converter);
+                case '%' -> percentConstant(converter);
+                default -> Optional.empty();
+            };
         } else {
             var converter = TestConverter.of(info, arg, retCount);
             return converter.constantReturn().flatMap(LangConstant::strValue);

@@ -19,8 +19,7 @@ public final class DictCompConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var variable = node.getVariables()[0];
-        if (variable instanceof TypedVariableNode) {
-            var typedVariable = (TypedVariableNode) variable;
+        if (variable instanceof TypedVariableNode typedVariable) {
             info.addStackFrame();
             info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()), typedVariable);
             var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
@@ -54,8 +53,7 @@ public final class DictCompConverter implements TestConverter {
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();
-        if (variable instanceof TypedVariableNode) {
-            var typedVar = (TypedVariableNode) variable;
+        if (variable instanceof TypedVariableNode typedVar) {
             info.checkDefinition(typedVar.getVariable().getName(), typedVar);
             info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), typedVar);
         }

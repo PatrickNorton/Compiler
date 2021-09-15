@@ -146,14 +146,9 @@ public enum Bytecode {
 
         void assemble(List<Byte> bytes, int value) {
             switch (byteCount) {
-                case 2:
-                    bytes.addAll(Util.shortToBytes((short) value));
-                    break;
-                case 4:
-                    bytes.addAll(Util.intToBytes(value));
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unknown byte count");
+                case 2 -> bytes.addAll(Util.shortToBytes((short) value));
+                case 4 -> bytes.addAll(Util.intToBytes(value));
+                default -> throw new UnsupportedOperationException("Unknown byte count");
             }
         }
     }
@@ -243,25 +238,13 @@ public enum Bytecode {
     }
 
     private static String format(@NotNull Type operand, int value, CompilerInfo info) {
-        switch (operand) {
-            case ARGC:
-            case LOCATION:
-            case VARIABLE:
-            case STACK_POS:
-            case TABLE_NO:
-            case VARIANT:
-                return Integer.toString(value);
-            case CONSTANT:
-                return String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
-            case OPERATOR:
-                return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
-            case SYSCALL_NO:
-                return String.format("%d (%s)", value, Syscalls.nameOf(value));
-            case FUNCTION_NO:
-                return String.format("%d (%s)", value, info.getFunctions().get(value).getName());
-            default:
-                throw new UnsupportedOperationException("Unknown enum value");
-        }
+        return switch (operand) {
+            case ARGC, LOCATION, VARIABLE, STACK_POS, TABLE_NO, VARIANT -> Integer.toString(value);
+            case CONSTANT -> String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
+            case OPERATOR -> String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
+            case SYSCALL_NO -> String.format("%d (%s)", value, Syscalls.nameOf(value));
+            case FUNCTION_NO -> String.format("%d (%s)", value, info.getFunctions().get(value).getName());
+        };
     }
 
     private static int fromBytes(@NotNull List<Byte> bytes) {

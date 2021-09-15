@@ -492,14 +492,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     private int labelToVariantNo(TestNode label, UnionTypeObject switchedType) {
-        if (label instanceof DottedVariableNode) {
-            var dottedLbl = (DottedVariableNode) label;
+        if (label instanceof DottedVariableNode dottedLbl) {
             var lblFirst = dottedLbl.getPreDot();
             var lblSecond = dottedLbl.getPostDots();
             var firstConverter = TestConverter.of(info, lblFirst, 1);
             var firstRetType = firstConverter.returnType()[0];
-            if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
-                var firstType = (TypeTypeObject) firstRetType;
+            if (firstRetType instanceof TypeTypeObject firstType && lblSecond.length == 1) {
                 var retType = firstType.representedType();
                 if (retType.sameBaseType(switchedType)) {
                     if (lblSecond[0].getPostDot() instanceof VariableNode && lblSecond[0].getDotPrefix().isEmpty()) {
@@ -521,14 +519,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     private TypeObject labelToType(@NotNull TestNode label, UnionTypeObject switchedType) {
-        if (label instanceof DottedVariableNode) {
-            var dottedLbl = (DottedVariableNode) label;
+        if (label instanceof DottedVariableNode dottedLbl) {
             var lblFirst = dottedLbl.getPreDot();
             var lblSecond = dottedLbl.getPostDots();
             var firstConverter = TestConverter.of(info, lblFirst, 1);
             var firstRetType = firstConverter.returnType()[0];
-            if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
-                var firstType = (TypeTypeObject) firstRetType;
+            if (firstRetType instanceof TypeTypeObject firstType && lblSecond.length == 1) {
                 var retType = firstType.representedType();
                 if (retType.sameBaseType(switchedType)) {
                     var lblName = ((VariableNode) lblSecond[0].getPostDot()).getName();
