@@ -238,6 +238,7 @@ class bytes {
     public method encode(str encoding) -> str {}
     public method indexOf(int value, /) -> int? {}
     public method get(int i, /) -> int? {}
+    public mut method insert(int i, int value, /) {}
     public mut method add(int value, /) {}
     public mut method addChar(char c, /, str encoding) {}
     public method startsWith(bytes value, /) -> bool {}
@@ -245,8 +246,11 @@ class bytes {
     public method lastIndexOf(int value, /) -> int? {}
     public method hex() -> str {}
     public mut method reverse() {}
+    public method trim(bytes text, /) -> mut bytes {}
+    public method trimTrailing(bytes suffix, /) -> mut bytes {}
+    public method trimLeading(bytes prefix, /) -> mut bytes {}
 
-    public method fromHex(str hex, /) -> mut bytes {}
+    public static method fromHex(str hex, /) -> mut bytes {}
 }
 
 $builtin("dict", 20)
