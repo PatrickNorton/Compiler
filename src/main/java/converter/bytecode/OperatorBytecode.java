@@ -14,6 +14,10 @@ public final class OperatorBytecode implements BytecodeValue {
         this.operator = value;
     }
 
+    public OperatorBytecode(@NotNull OpSpTypeNode value) {
+        this((short) value.ordinal());
+    }
+
     @Override
     public void writeBytes(@NotNull List<Byte> bytes) {
         bytes.addAll(Util.shortToBytes(operator));

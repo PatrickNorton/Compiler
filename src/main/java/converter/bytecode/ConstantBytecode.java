@@ -12,6 +12,10 @@ public final class ConstantBytecode implements BytecodeValue{
     private final LangConstant constant;
     private final short value;
 
+    public ConstantBytecode(LangConstant constant, @NotNull CompilerInfo info) {
+        this(constant, info.constIndex(constant));
+    }
+
     public ConstantBytecode(LangConstant constant, short value) {
         this.constant = constant;
         this.value = value;

@@ -3,7 +3,6 @@ package main.java.converter;
 import main.java.converter.bytecode.ArgcBytecode;
 import main.java.converter.bytecode.BytecodeValue;
 import main.java.converter.bytecode.LocationBytecode;
-import main.java.converter.bytecode.OperatorBytecode;
 import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.LineInfo;
 import main.java.util.Pair;
@@ -84,18 +83,8 @@ public final class BytecodeList {
         this.values.add(0, new Value(bytecode));
     }
 
-    // TODO: Remove
-    public void addFirst(Bytecode bytecode, int firstParam) {
-        this.addFirst(bytecode, new StackPosBytecode((short) firstParam));
-    }
-
     public void addFirst(Bytecode bytecode, BytecodeValue firstParam) {
         this.values.add(0, new Value(bytecode, firstParam));
-    }
-
-    // TODO: Remove
-    public void addFirst(Bytecode bytecode, int firstParam, int secondParam) {
-        this.addFirst(bytecode, new OperatorBytecode((short) firstParam), new ArgcBytecode((short) secondParam));
     }
 
     public void addFirst(Bytecode bytecode, BytecodeValue firstParam, BytecodeValue secondParam) {
