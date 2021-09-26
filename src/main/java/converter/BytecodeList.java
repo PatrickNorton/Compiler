@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.StringJoiner;
 
 public final class BytecodeList {
     private final List<Value> values;
@@ -210,6 +211,31 @@ public final class BytecodeList {
                 index += value.getBytecodeType().size();
             }
         }
+    }
+
+    @NotNull
+    public String disassemble(CompilerInfo info) {
+        setLabels();
+        int i = 0;
+        var sb = new StringBuilder();
+        for (var value : values) {
+            if (!value.isLabel()) {
+                if (value.getFirstParam() != null) {
+                    sb.append(String.format("%-7d%-16s", i, value.getBytecodeType()));
+                    StringJoiner sj = new StringJoiner(", ");
+                    sj.add(value.getFirstParam().strValue(info));
+                    if (value.getSecondParam() != null) {
+                        sj.add(value.getFirstParam().strValue(info));
+                    }
+                    sb.append(sj);
+                    sb.append('\n');
+                } else {
+                    sb.append(String.format( "%-7d%s%n", i, value.getBytecodeType()));
+                }
+                i += value.getBytecodeType().size();
+            }
+        }
+        return sb.toString();
     }
 
     private int findLabelIndex(Label label, int currentIndex, int byteLen) {

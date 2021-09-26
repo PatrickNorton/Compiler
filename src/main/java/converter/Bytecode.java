@@ -11,17 +11,12 @@ import main.java.converter.bytecode.SyscallBytecode;
 import main.java.converter.bytecode.TableNoBytecode;
 import main.java.converter.bytecode.VariableBytecode;
 import main.java.converter.bytecode.VariantBytecode;
-import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
 
 public enum Bytecode {
     NOP(0x0),
@@ -232,56 +227,5 @@ public enum Bytecode {
                 throw new UnsupportedOperationException("Unknown operand count");
         }
         return bytes;
-    }
-
-    private static final Map<Byte, Bytecode> VALUE_MAP;
-
-    static {
-        Map<Byte, Bytecode> temp = new HashMap<>();
-        for (var value : values()) {
-            temp.put(value.value, value);
-        }
-        VALUE_MAP = Collections.unmodifiableMap(temp);
-    }
-
-    @NotNull
-    static String disassemble(CompilerInfo info, @NotNull List<Byte> bytes) {
-        var sb = new StringBuilder();
-        for (int i = 0; i < bytes.size();) {
-            var op = VALUE_MAP.get(bytes.get(i++));
-            if (op.operands.length > 0) {
-                sb.append(String.format("%-7d%-16s", i - 1, op));
-                StringJoiner sj = new StringJoiner(", ");
-                for (var operand : op.operands) {
-                    var operandSize = operand.byteCount;
-                    var value = fromBytes(bytes.subList(i, i + operandSize));
-                    i += operandSize;
-                    sj.add(format(operand, value, info));
-                }
-                sb.append(sj);
-                sb.append("\n");
-            } else {
-                sb.append(String.format("%-7d%s%n", i - 1, op));
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String format(@NotNull Type operand, int value, CompilerInfo info) {
-        return switch (operand) {
-            case ARGC, LOCATION, VARIABLE, STACK_POS, TABLE_NO, VARIANT -> Integer.toString(value);
-            case CONSTANT -> String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
-            case OPERATOR -> String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
-            case SYSCALL_NO -> String.format("%d (%s)", value, Syscalls.nameOf(value));
-            case FUNCTION_NO -> String.format("%d (%s)", value, info.getFunctions().get(value).getName());
-        };
-    }
-
-    private static int fromBytes(@NotNull List<Byte> bytes) {
-        int total = 0;
-        for (int i = 0; i < bytes.size(); i++) {
-            total |= Byte.toUnsignedInt(bytes.get(i)) << Byte.SIZE * (bytes.size() - i - 1);
-        }
-        return total;
     }
 }
