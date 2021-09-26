@@ -8,24 +8,20 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public final class OperatorBytecode implements BytecodeValue {
-    private final short operator;
-
-    public OperatorBytecode(short value) {
-        this.operator = value;
-    }
+    private final OpSpTypeNode operator;
 
     public OperatorBytecode(@NotNull OpSpTypeNode value) {
-        this((short) value.ordinal());
+        this.operator = value;
     }
 
     @Override
     public void writeBytes(@NotNull List<Byte> bytes) {
-        bytes.addAll(Util.shortToBytes(operator));
+        bytes.addAll(Util.shortToBytes((short) operator.ordinal()));
     }
 
     @Override
     @NotNull
     public String strValue(@NotNull CompilerInfo info) {
-         return String.format("%d (%s)", operator, OpSpTypeNode.values()[operator]);
+         return String.format("%d (%s)", operator.ordinal(), operator);
     }
 }
