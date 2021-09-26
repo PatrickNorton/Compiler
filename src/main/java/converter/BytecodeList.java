@@ -164,6 +164,7 @@ public final class BytecodeList {
 
     @NotNull
     public List<Byte> convertToBytes() {
+        setLabels();
         List<Byte> bytes = new ArrayList<>();
         for (int i = 0; i < values.size(); i++) {
             var value = values.get(i);
@@ -198,6 +199,17 @@ public final class BytecodeList {
             }
         }
         return result;
+    }
+
+    public void setLabels() {
+        var index = 0;
+        for (var value : values) {
+            if (value.isLabel()) {
+                value.getLabel().setValue(index);
+            } else {
+                index += value.getBytecodeType().size();
+            }
+        }
     }
 
     private int findLabelIndex(Label label, int currentIndex, int byteLen) {
