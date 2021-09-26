@@ -1,6 +1,16 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.converter.bytecode.BytecodeValue;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.FunctionNoBytecode;
+import main.java.converter.bytecode.LocationBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
+import main.java.converter.bytecode.StackPosBytecode;
+import main.java.converter.bytecode.SyscallBytecode;
+import main.java.converter.bytecode.TableNoBytecode;
+import main.java.converter.bytecode.VariableBytecode;
+import main.java.converter.bytecode.VariantBytecode;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -144,6 +154,21 @@ public enum Bytecode {
         Type(int bytes) {
             byteCount = (byte) bytes;
         }
+
+        private boolean matches(BytecodeValue value) {
+            return switch (this) {
+                case VARIABLE -> value instanceof VariableBytecode;
+                case CONSTANT -> value instanceof ConstantBytecode;
+                case LOCATION -> value instanceof LocationBytecode;
+                case ARGC -> value instanceof ArgcBytecode;
+                case OPERATOR -> value instanceof OperatorBytecode;
+                case FUNCTION_NO -> value instanceof FunctionNoBytecode;
+                case STACK_POS -> value instanceof StackPosBytecode;
+                case TABLE_NO -> value instanceof TableNoBytecode;
+                case SYSCALL_NO -> value instanceof SyscallBytecode;
+                case VARIANT -> value instanceof VariantBytecode;
+            };
+        }
     }
 
     public final byte value;
@@ -175,6 +200,18 @@ public enum Bytecode {
 
     public int operandCount() {
         return operands.length;
+    }
+
+    public boolean operandsMatch() {
+        return operands.length == 0;
+    }
+
+    public boolean operandsMatch(BytecodeValue firstParam) {
+        return operands.length == 1 && operands[0].matches(firstParam);
+    }
+
+    public boolean operandsMatch(BytecodeValue firstParam, BytecodeValue secondParam) {
+        return operands.length == 2 && operands[0].matches(firstParam) && operands[1].matches(secondParam);
     }
 
     @NotNull

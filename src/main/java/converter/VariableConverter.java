@@ -58,11 +58,13 @@ public final class VariableConverter implements TestConverter {
             return bytes;
         } else {
             boolean isConst = info.variableIsConstant(name);
-            var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
-            var bytes = new BytecodeList(bytecode.size());
-            short index = isConst ? info.constIndex(name) : info.varIndex(node);
-            assert index != -1;
-            bytes.add(bytecode, new VariableBytecode(index));
+            var bytes = new BytecodeList(1);
+            if (isConst) {
+                bytes.loadConstant(info.getConstant(name), info);
+            } else {
+                assert info.varIndex(node) != -1;
+                bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode(info.varIndex(node)));
+            }
             return bytes;
         }
     }

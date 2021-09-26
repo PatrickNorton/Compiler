@@ -260,22 +260,27 @@ public final class BytecodeList {
 
         public Value(Bytecode bytecode) {
             this(false, bytecode, null, null, null);
+            assert bytecode.operandsMatch();
         }
 
         public Value(Bytecode bytecode, BytecodeValue firstParam) {
             this(false, bytecode, null, firstParam, null);
+            assert bytecode.operandsMatch(firstParam);
         }
 
         public Value(Bytecode bytecode, Label label) {
             this(false, bytecode, null, new LocationBytecode(label), null);
+            assert bytecode.operandsMatch(new LocationBytecode(label));
         }
 
         public Value(Bytecode bytecode, BytecodeValue firstParam, BytecodeValue secondParam) {
             this(false, bytecode, null, firstParam, secondParam);
+            assert bytecode.operandsMatch(firstParam, secondParam);
         }
 
         public Value(Bytecode bytecode, Label label, BytecodeValue secondParam) {
             this(false, bytecode, null, new LocationBytecode(label), secondParam);
+            assert bytecode.operandsMatch(new LocationBytecode(label), secondParam);
         }
 
         private Value(boolean isLabel, Bytecode bytecodeType, Label label, BytecodeValue firstParam, BytecodeValue secondParam) {
