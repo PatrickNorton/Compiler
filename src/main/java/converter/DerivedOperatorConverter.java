@@ -153,7 +153,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
             fieldCount++;
         }
         bytes.add(Bytecode.PACK_TUPLE, fieldCount);
-        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.HASH.ordinal(), 0);
+        bytes.addCallOp(OpSpTypeNode.HASH);
         bytes.add(Bytecode.RETURN, 1);
         return bytes;
     }
@@ -178,7 +178,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
         } else {
             bytes.add(Bytecode.LOAD_VALUE, 0);
             bytes.add(Bytecode.GET_TYPE);
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.STR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.STR);
         }
         var first = true;
         for (var field : ((UserType<?>) type).getFields()) {
@@ -188,7 +188,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
             bytes.add(Bytecode.PLUS);
             bytes.add(Bytecode.LOAD_VALUE, 0);
             bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.REPR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.REPR);
             bytes.add(Bytecode.PLUS);
         }
         bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of("}")));

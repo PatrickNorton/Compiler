@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.parser.FormattedStringNode;
 import main.java.parser.FormattedStringNode.FormatInfo;
 import main.java.parser.Lined;
@@ -359,7 +361,7 @@ public final class FormattedStringConverter implements TestConverter {
         if (format.onlyType()) {
             bytes.addAll(converter.convert());
             if (isNotStr) {
-                bytes.add(Bytecode.CALL_OP, OpSpTypeNode.STR.ordinal(), 0);
+                bytes.addCallOp(OpSpTypeNode.STR);
             }
         } else {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
@@ -367,7 +369,7 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.formatConstant()));
             bytes.addAll(converter.convert());
             if (isNotStr) {
-                bytes.add(Bytecode.CALL_OP, OpSpTypeNode.STR.ordinal(), 0);
+                bytes.addCallOp(OpSpTypeNode.STR);
             }
             bytes.add(Bytecode.LOAD_CONST, info.constIndex(fmtArgs));
             bytes.add(Bytecode.CALL_TOS, 2);
@@ -378,13 +380,13 @@ public final class FormattedStringConverter implements TestConverter {
         var converter = TestConverter.of(info, arg, 1);
         if (format.onlyType()) {
             bytes.addAll(converter.convert());
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.REPR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.REPR);
         } else {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
             checkStrFormat(format);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.formatConstant()));
+            bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(Builtins.formatConstant(), info));
             bytes.addAll(converter.convert());
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.REPR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.REPR);
             bytes.add(Bytecode.LOAD_CONST, info.constIndex(fmtArgs));
             bytes.add(Bytecode.CALL_TOS, 2);
         }
@@ -410,7 +412,7 @@ public final class FormattedStringConverter implements TestConverter {
             var retType = converter.returnType()[0];
             bytes.addAll(converter.convert());
             makeInt(retType, arg, bytes);
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.STR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.STR);
         } else {
             convertFmtInt(arg, bytes, format);
         }
@@ -424,8 +426,9 @@ public final class FormattedStringConverter implements TestConverter {
             var retType = converter.returnType()[0];
             bytes.addAll(converter.convert());
             makeInt(retType, arg, bytes);
+            var constant = LangConstant.of("strBase");
             bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(base)));
-            bytes.add(Bytecode.CALL_METHOD, info.constIndex(LangConstant.of("strBase")), 1);
+            bytes.add(Bytecode.CALL_METHOD, new ConstantBytecode(constant, info), new ArgcBytecode((short) 1));
         } else {
             convertFmtInt(arg, bytes, format);
         }
@@ -434,7 +437,7 @@ public final class FormattedStringConverter implements TestConverter {
     private void makeInt(TypeObject retType, Lined arg, BytecodeList bytes) {
         if (!Builtins.intType().isSuperclass(retType)) {
             retType.tryOperatorInfo(arg, OpSpTypeNode.INT, info);
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.INT.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.INT);
         }
     }
 
@@ -443,7 +446,7 @@ public final class FormattedStringConverter implements TestConverter {
         var retType = converter.returnType()[0];
         if (Builtins.charType().isSuperclass(retType)) {
             bytes.addAll(converter.convert());
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.STR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.STR);
         } else if (Builtins.intType().isSuperclass(retType)) {
             bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.charConstant()));
             bytes.addAll(converter.convert());

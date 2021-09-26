@@ -64,7 +64,7 @@ public final class DeleteConverter implements BaseConverter {
         if (indexConverters.size() == 1) {
             bytes.add(Bytecode.DEL_SUBSCRIPT);
         } else {
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.DEL_ATTR.ordinal(), indexConverters.size());
+            bytes.addCallOp(OpSpTypeNode.DEL_ATTR, (short) indexConverters.size());
         }
         return bytes;
     }
@@ -89,7 +89,7 @@ public final class DeleteConverter implements BaseConverter {
         }
         var bytes = new BytecodeList(varConverter.convert());
         bytes.addAll(sliceConverter.convert());
-        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.DEL_SLICE.ordinal(), 1);
+        bytes.addCallOp(OpSpTypeNode.DEL_SLICE, (short) 1);
         return bytes;
     }
 

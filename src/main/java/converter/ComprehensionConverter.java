@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.ComprehensionNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
@@ -112,7 +113,7 @@ public final class ComprehensionConverter implements TestConverter {
         var topJump = info.newJumpLabel();
         bytes.addLabel(topJump);
         var forJump = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, forJump, 1);
+        bytes.add(Bytecode.FOR_ITER, forJump, new ArgcBytecode((short) 1));
         if (node.getVariables().length > 1) {
             throw CompilerTodoError.of("Cannot convert comprehension with more than one variable yet", node);
         }

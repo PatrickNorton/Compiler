@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.DictComprehensionNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +51,7 @@ public final class DictCompConverter implements TestConverter {
         var topJump = info.newJumpLabel();
         bytes.addLabel(topJump);
         var forJump = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, forJump, 1);
+        bytes.add(Bytecode.FOR_ITER, forJump, new ArgcBytecode((short) 1));
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.ForStatementNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
@@ -57,7 +58,7 @@ public final class ForConverter extends LoopConverter {
         var topLabel = info.newJumpLabel();
         bytes.addLabel(topLabel);
         var label = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, label, retCount);
+        bytes.add(Bytecode.FOR_ITER, label, new ArgcBytecode((short) retCount));
         for (int i = retCount - 1; i >= 0; i--) {
             addVariableStorage(bytes, i, valueConverter, false);
         }
@@ -86,7 +87,7 @@ public final class ForConverter extends LoopConverter {
         }
         bytes.addLabel(info.loopManager().continueLabel());
         var label = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_PARALLEL, label, varLen);
+        bytes.add(Bytecode.FOR_PARALLEL, label, new ArgcBytecode((short) varLen));
         assert valueConverters.size() == varLen;
         for (int i = varLen - 1; i >= 0; i--) {
             var valueConverter = valueConverters.get(i);

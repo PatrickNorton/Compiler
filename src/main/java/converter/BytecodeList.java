@@ -3,8 +3,10 @@ package main.java.converter;
 import main.java.converter.bytecode.ArgcBytecode;
 import main.java.converter.bytecode.BytecodeValue;
 import main.java.converter.bytecode.LocationBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
 import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.LineInfo;
+import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -53,18 +55,16 @@ public final class BytecodeList {
         this.values.add(new Value(bytecode, label));
     }
 
-    // TODO: Remove
-    public void add(Bytecode bytecode, int firstParam, int secondParam) {
-        this.add(bytecode, new StackPosBytecode((short) firstParam), new StackPosBytecode((short) secondParam));
-    }
-
     public void add(Bytecode bytecode, BytecodeValue firstParam, BytecodeValue secondParam) {
         this.values.add(new Value(bytecode, firstParam, secondParam));
     }
 
-    // TODO: Remove
-    public void add(Bytecode bytecode, Label firstParam, int secondParam) {
-        this.add(bytecode, firstParam, new ArgcBytecode((short) secondParam));
+    public void addCallOp(OpSpTypeNode operator, short argc) {
+        this.add(Bytecode.CALL_OP, new OperatorBytecode(operator), new ArgcBytecode(argc));
+    }
+
+    public void addCallOp(OpSpTypeNode operator) {
+        this.add(Bytecode.CALL_OP, new OperatorBytecode(operator), ArgcBytecode.zero());
     }
 
     public void add(Bytecode bytecode, Label firstParam, BytecodeValue secondParam) {

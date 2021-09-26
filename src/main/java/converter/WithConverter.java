@@ -42,14 +42,14 @@ public final class WithConverter implements BaseConverter {
         info.checkDefinition(variable.getVariable().getName(), variable);
         info.addVariable(variable.getVariable().getName(), trueType, variable);
         bytes.add(Bytecode.DUP_TOP);
-        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.ENTER.ordinal(), 0);
+        bytes.addCallOp(OpSpTypeNode.ENTER);
         bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
         var tryJump = info.newJumpLabel();
         bytes.add(Bytecode.ENTER_TRY, tryJump);
         bytes.addAll(BaseConverter.bytes(node.getBody(), info));
         bytes.addLabel(tryJump);
         bytes.add(Bytecode.FINALLY);
-        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.EXIT.ordinal(), 0);
+        bytes.addCallOp(OpSpTypeNode.EXIT);
         bytes.add(Bytecode.END_TRY, 0);
         return bytes;
     }

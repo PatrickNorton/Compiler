@@ -10,6 +10,10 @@ import java.util.List;
 public final class SyscallBytecode implements BytecodeValue {
     private final short syscall;
 
+    public SyscallBytecode(String name) {
+        this((short) Syscalls.get(name));
+    }
+
     public SyscallBytecode(short value) {
         this.syscall = value;
     }

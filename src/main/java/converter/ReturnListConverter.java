@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.Lined;
 import main.java.parser.TestListNode;
@@ -111,7 +112,7 @@ public final class ReturnListConverter implements BaseConverter {
                 bytes.add(Bytecode.SWAP_2);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
+                bytes.add(Bytecode.SWAP_STACK, StackPosBytecode.zero(), new StackPosBytecode((short) distFromTop));
         }
     }
 

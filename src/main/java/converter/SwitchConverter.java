@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.CaseStatementNode;
 import main.java.parser.DefaultStatementNode;
 import main.java.parser.DottedVariableNode;
@@ -600,7 +601,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 bytes.add(Bytecode.SWAP_2);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
+                bytes.add(Bytecode.SWAP_STACK, StackPosBytecode.zero(), new StackPosBytecode((short) distFromTop));
         }
     }
 

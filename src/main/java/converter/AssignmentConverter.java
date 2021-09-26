@@ -216,7 +216,7 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.addAll(preDot.convert());
             bytes.addAll(new SliceConverter(info, index).convert());
             bytes.add(Bytecode.SWAP_3);
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
+            bytes.addCallOp(OpSpTypeNode.SET_SLICE, (short) 2);
         } else {
             // FIXME: Make value an option when necessary
             var indexConverters = convertIndices(indices);

@@ -61,7 +61,7 @@ public final class IndexConverter implements TestConverter {
         if (isSlice()) {
             checkSliceType();
             bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert());
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.GET_SLICE.ordinal(), 1);
+            bytes.addCallOp(OpSpTypeNode.GET_SLICE, (short) 1);
         } else {
             bytes.addAll(convertIndices(info, node.getIndices()));
             if (retCount == 0) {
@@ -80,8 +80,8 @@ public final class IndexConverter implements TestConverter {
         var bytes = new BytecodeList(TestConverter.bytes(node.getVar(), info, 1));
         checkSliceType();
         bytes.addAll(new SliceConverter(info, (SliceNode) node.getIndices()[0]).convert());
-        var ordinal = (hasIter ? OpSpTypeNode.ITER_SLICE : OpSpTypeNode.GET_SLICE).ordinal();
-        bytes.add(Bytecode.CALL_OP, ordinal, 1);
+        var operator = hasIter ? OpSpTypeNode.ITER_SLICE : OpSpTypeNode.GET_SLICE;
+        bytes.addCallOp(operator, (short) 1);
         return bytes;
     }
 
