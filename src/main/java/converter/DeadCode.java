@@ -15,22 +15,25 @@ public final class DeadCode {
     }
 
     private static void eliminateJumps(@NotNull BytecodeList bytes) {
-        var byteIndex = 0;
-        bytes.setLabels();
-        for (var pair : bytes.enumerate()) {
-            var index = pair.getKey();
-            var bytecode = pair.getValue();
-            byteIndex += bytecode.size();
-            var operands = bytes.getOperands(index);
-            if (operands.length > 0 && operands[0] instanceof LocationBytecode l) {
-                assert l.getLabel().getValue() != -1;
-                if (l.getLabel().getValue() == byteIndex) {
-                    bytes.remove(index);
-                    byteIndex -= bytecode.size();
-                    bytes.setLabels();
+        boolean changed;
+        do {
+            var byteIndex = 0;
+            bytes.setLabels();
+            changed = false;
+            for (var pair : bytes.enumerate()) {
+                var index = pair.getKey();
+                var bytecode = pair.getValue();
+                byteIndex += bytecode.size();
+                var operands = bytes.getOperands(index);
+                if (operands.length > 0 && operands[0] instanceof LocationBytecode l) {
+                    assert l.getLabel().getValue() != -1;
+                    if (l.getLabel().getValue() == byteIndex) {
+                        bytes.remove(index);
+                        changed = true;
+                    }
                 }
             }
-        }
+        } while (changed);
     }
 
     private static void eliminatePostJump(@NotNull BytecodeList bytes) {
