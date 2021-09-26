@@ -312,15 +312,11 @@ public final class AnnotationConverter implements BaseConverter {
 
     private static boolean shouldCompileSingle(CompilerInfo info, NameNode annotation) {
         if (annotation instanceof FunctionCallNode stmt) {
-            switch (stmt.getVariable().getName()) {
-                case "test":
-                    return info.globalInfo().isTest();
-                case "cfg":
-                    var converter = new CfgConverter(info, stmt);
-                    return converter.convert();
-                default:
-                    return true;
-            }
+            return switch (stmt.getVariable().getName()) {
+                case "test" -> info.globalInfo().isTest();
+                case "cfg" -> new CfgConverter(info, stmt).convert();
+                default -> true;
+            };
         } else {
             return true;
         }

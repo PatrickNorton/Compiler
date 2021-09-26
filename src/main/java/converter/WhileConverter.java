@@ -93,7 +93,7 @@ public final class WhileConverter extends LoopConverter {
     @NotNull
     private Pair<Boolean, OptionalBool> convertCond(BytecodeList bytes, boolean hasAs) {
         if (!hasAs) {
-            if (node.getCond() instanceof VariableNode && ((VariableNode) node.getCond()).getName().equals("true")) {
+            if (node.getCond() instanceof VariableNode var && var.getName().equals("true")) {
                 return Pair.of(true, OptionalBool.of(true));
             } else {
                 var converter = TestConverter.of(info, node.getCond(), 1);
