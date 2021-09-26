@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.FunctionNoBytecode;
 import main.java.parser.LineInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,7 @@ public final class FunctionInliner {
             if (bytecode == Bytecode.CALL_FN) {
                 var operands = value.getOperands(index);
                 assert operands.length == 2;
-                var functionNo = operands[0];
+                var functionNo = ((FunctionNoBytecode) operands[0]).getFnNo();
                 var function = info.getFunctions().get(functionNo);
                 if (shouldInline(functionNo, function)) {
                     inline(index, value, function.getBytes());
@@ -51,7 +52,7 @@ public final class FunctionInliner {
             if (bytecode == Bytecode.CALL_FN) {
                 var operands = value.getOperands(index);
                 assert operands.length == 2;
-                var functionNo = operands[0];
+                var functionNo = ((FunctionNoBytecode) operands[0]).getFnNo();
                 if (functionNo == fnIndex) {
                     return true;
                 }

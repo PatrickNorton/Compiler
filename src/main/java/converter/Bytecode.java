@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.BytecodeValue;
 import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -143,19 +144,6 @@ public enum Bytecode {
         Type(int bytes) {
             byteCount = (byte) bytes;
         }
-
-        void assemble(List<Byte> bytes, int value) {
-            switch (byteCount) {
-                case 2:
-                    bytes.addAll(Util.shortToBytes((short) value));
-                    break;
-                case 4:
-                    bytes.addAll(Util.intToBytes(value));
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unknown byte count");
-            }
-        }
     }
 
     public final byte value;
@@ -190,18 +178,18 @@ public enum Bytecode {
     }
 
     @NotNull
-    public List<Byte> assemble(int firstParam, int secondParam) {
+    public List<Byte> assemble(BytecodeValue firstParam, BytecodeValue secondParam) {
         List<Byte> bytes = new ArrayList<>(size());
         bytes.add(value);
         switch (operands.length) {
             case 0:
                 break;
             case 1:
-                operands[0].assemble(bytes, firstParam);
+                firstParam.writeBytes(bytes);
                 break;
             case 2:
-                operands[0].assemble(bytes, firstParam);
-                operands[1].assemble(bytes, secondParam);
+                firstParam.writeBytes(bytes);
+                secondParam.writeBytes(bytes);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown operand count");

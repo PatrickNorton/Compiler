@@ -1,6 +1,6 @@
 package main.java.converter;
 
-import org.jetbrains.annotations.Contract;
+import main.java.converter.bytecode.LocationBytecode;
 import org.jetbrains.annotations.NotNull;
 
 public final class DeadCode {
@@ -20,23 +20,12 @@ public final class DeadCode {
             var index = pair.getKey();
             var bytecode = pair.getValue();
             byteIndex += bytecode.size();
-            if (isJump(bytecode) && bytes.getOperands(index)[0] == byteIndex) {
-                bytes.remove(index);
+            if (bytes.getOperands(index)[0] instanceof LocationBytecode l) {
+                assert l.getLabel().getValue() != 0;
+                if (l.getLabel().getValue() == byteIndex) {
+                    bytes.remove(index);
+                }
             }
-        }
-    }
-
-    @Contract(pure = true)
-    private static boolean isJump(@NotNull Bytecode bytecode) {
-        switch (bytecode) {
-            case JUMP:
-            case JUMP_FALSE:
-            case JUMP_TRUE:
-            case JUMP_NN:
-            case JUMP_NULL:
-                return true;
-            default:
-                return false;
         }
     }
 

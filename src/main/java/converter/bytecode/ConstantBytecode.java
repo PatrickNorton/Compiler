@@ -17,7 +17,6 @@ public final class ConstantBytecode implements BytecodeValue{
         this.value = value;
     }
 
-
     @Override
     public void writeBytes(@NotNull List<Byte> bytes) {
         bytes.addAll(Util.shortToBytes(value));

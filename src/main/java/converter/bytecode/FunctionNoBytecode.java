@@ -13,6 +13,10 @@ public final class FunctionNoBytecode implements BytecodeValue{
         this.fnNo = value;
     }
 
+    public short getFnNo() {
+        return fnNo;
+    }
+
     @Override
     public void writeBytes(@NotNull List<Byte> bytes) {
         bytes.addAll(Util.shortToBytes(fnNo));

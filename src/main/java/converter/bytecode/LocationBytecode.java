@@ -14,6 +14,10 @@ public final class LocationBytecode implements BytecodeValue {
         this.value = value;
     }
 
+    public Label getLabel() {
+        return value;
+    }
+
     @Override
     public void writeBytes(@NotNull List<Byte> bytes) {
         bytes.addAll(Util.intToBytes(value.getValue()));

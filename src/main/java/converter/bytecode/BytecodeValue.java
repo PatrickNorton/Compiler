@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public interface BytecodeValue {
+public sealed interface BytecodeValue
+        permits ArgcBytecode, ConstantBytecode, FunctionNoBytecode, LocationBytecode, OperatorBytecode,
+        StackPosBytecode, SyscallBytecode, TableNoBytecode, VariableBytecode, VariantBytecode {
     void writeBytes(@NotNull List<Byte> bytes);
 
     @NotNull
