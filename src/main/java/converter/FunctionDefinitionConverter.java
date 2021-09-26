@@ -62,7 +62,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             assert bytes.isEmpty();
             bytes.add(Bytecode.SYSCALL, new SyscallBytecode(name), new ArgcBytecode((short) argc));
             if (func.getReturns().length > 0) {
-                bytes.add(Bytecode.RETURN, func.getReturns().length);
+                bytes.add(Bytecode.RETURN, new ArgcBytecode((short) func.getReturns().length));
             }
             return new BytecodeList();
         } else {

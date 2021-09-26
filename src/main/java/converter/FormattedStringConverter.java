@@ -50,13 +50,12 @@ public final class FormattedStringConverter implements TestConverter {
                 var strValue = argConstant(tests[i], format);
                 if (!format.isEmpty() && strValue.isPresent()) {
                     var string = strings[i] + strValue.orElseThrow();
-                    bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(string)));
+                    bytes.loadConstant(LangConstant.of(string), info);
                     if (i != 0) {
                         bytes.add(Bytecode.PLUS);
                     }
                 } else {
-                    var constValue = LangConstant.of(strings[i]);
-                    bytes.add(Bytecode.LOAD_CONST, info.constIndex(constValue));
+                    bytes.loadConstant(LangConstant.of(strings[i]), info);
                     if (i != 0) {
                         bytes.add(Bytecode.PLUS);
                     }
@@ -64,8 +63,7 @@ public final class FormattedStringConverter implements TestConverter {
                     bytes.add(Bytecode.PLUS);
                 }
             } else {
-                var constValue = LangConstant.of(strings[i]);
-                bytes.add(Bytecode.LOAD_CONST, info.constIndex(constValue));
+                bytes.loadConstant(LangConstant.of(strings[i]), info);
                 if (i != 0) {
                     bytes.add(Bytecode.PLUS);
                 }
@@ -366,13 +364,13 @@ public final class FormattedStringConverter implements TestConverter {
         } else {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
             checkStrFormat(format);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.formatConstant()));
+            bytes.loadConstant(Builtins.formatConstant(), info);
             bytes.addAll(converter.convert());
             if (isNotStr) {
                 bytes.addCallOp(OpSpTypeNode.STR);
             }
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(fmtArgs));
-            bytes.add(Bytecode.CALL_TOS, 2);
+            bytes.loadConstant(fmtArgs, info);
+            bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) 2));
         }
     }
 
@@ -384,11 +382,11 @@ public final class FormattedStringConverter implements TestConverter {
         } else {
             var fmtArgs = FormatConstant.fromFormatInfo(format);
             checkStrFormat(format);
-            bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(Builtins.formatConstant(), info));
+            bytes.loadConstant(Builtins.formatConstant(), info);
             bytes.addAll(converter.convert());
             bytes.addCallOp(OpSpTypeNode.REPR);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(fmtArgs));
-            bytes.add(Bytecode.CALL_TOS, 2);
+            bytes.loadConstant(fmtArgs, info);
+            bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) 2));
         }
     }
 
@@ -427,8 +425,8 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.addAll(converter.convert());
             makeInt(retType, arg, bytes);
             var constant = LangConstant.of("strBase");
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(base)));
-            bytes.add(Bytecode.CALL_METHOD, new ConstantBytecode(constant, info), new ArgcBytecode((short) 1));
+            bytes.loadConstant(LangConstant.of(base), info);
+            bytes.add(Bytecode.CALL_METHOD, new ConstantBytecode(constant, info), ArgcBytecode.one());
         } else {
             convertFmtInt(arg, bytes, format);
         }
@@ -448,9 +446,9 @@ public final class FormattedStringConverter implements TestConverter {
             bytes.addAll(converter.convert());
             bytes.addCallOp(OpSpTypeNode.STR);
         } else if (Builtins.intType().isSuperclass(retType)) {
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.charConstant()));
+            bytes.loadConstant(Builtins.charConstant(), info);
             bytes.addAll(converter.convert());
-            bytes.add(Bytecode.CALL_TOS, 1);
+            bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
         } else {
             throw CompilerException.format(
                     "'c' format argument expects either an int or a char, not %s", arg, retType
@@ -466,7 +464,7 @@ public final class FormattedStringConverter implements TestConverter {
     private TypeObject convertFmtLoad(TestNode arg, @NotNull BytecodeList bytes) {
         var converter = TestConverter.of(info, arg, 1);
         var retType = converter.returnType()[0];
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.formatConstant()));
+        bytes.loadConstant(Builtins.formatConstant(), info);
         bytes.addAll(converter.convert());
         return retType;
     }
@@ -478,8 +476,8 @@ public final class FormattedStringConverter implements TestConverter {
         var fmtArgs = FormatConstant.fromFormatInfo(format);
         var retType = convertFmtLoad(arg, bytes);
         makeInt(retType, arg, bytes);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(fmtArgs));
-        bytes.add(Bytecode.CALL_TOS, 2);
+        bytes.loadConstant(fmtArgs, info);
+        bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) 2));
     }
 
     private void convertDecimal(TestNode arg, BytecodeList bytes, FormatInfo format) {
@@ -490,7 +488,7 @@ public final class FormattedStringConverter implements TestConverter {
                     format, retType.name()
             );
         }
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(FormatConstant.fromFormatInfo(format)));
-        bytes.add(Bytecode.CALL_TOS, 2);
+        bytes.loadConstant(FormatConstant.fromFormatInfo(format), info);
+        bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) 2));
     }
 }

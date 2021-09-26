@@ -1,6 +1,7 @@
 package main.java.converter.bytecode;
 
 import main.java.converter.CompilerInfo;
+import main.java.converter.GlobalCompilerInfo;
 import main.java.converter.LangConstant;
 import main.java.converter.Util;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,10 @@ public final class ConstantBytecode implements BytecodeValue{
     private final short value;
 
     public ConstantBytecode(LangConstant constant, @NotNull CompilerInfo info) {
+        this(constant, info.constIndex(constant));
+    }
+
+    public ConstantBytecode(LangConstant constant, @NotNull GlobalCompilerInfo info) {
         this(constant, info.constIndex(constant));
     }
 

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.IndexNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.SliceNode;
@@ -173,7 +174,7 @@ public final class IndexConverter implements TestConverter {
         if (indices.length == 1) {
             bytes.add(Bytecode.SUBSCRIPT);
         } else {
-            bytes.add(Bytecode.LOAD_SUBSCRIPT, indices.length);
+            bytes.add(Bytecode.LOAD_SUBSCRIPT, new ArgcBytecode((short) indices.length));
         }
         return bytes;
     }
@@ -186,9 +187,9 @@ public final class IndexConverter implements TestConverter {
         if (indices.length == 1) {
             bytes.add(Bytecode.DUP_TOP_2);
         } else {
-            bytes.add(Bytecode.DUP_TOP_N, indices.length + 1);
+            bytes.add(Bytecode.DUP_TOP_N, new ArgcBytecode((short) (indices.length + 1)));
         }
-        bytes.add(Bytecode.LOAD_SUBSCRIPT, argc);
+        bytes.add(Bytecode.LOAD_SUBSCRIPT, new ArgcBytecode((short) argc));
         return bytes;
     }
 }

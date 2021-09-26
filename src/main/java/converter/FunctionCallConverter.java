@@ -59,7 +59,7 @@ public final class FunctionCallConverter implements TestConverter {
         var constant = constantReturn();
         if (constant.isPresent()) {
             var bytes = new BytecodeList(2);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant.orElseThrow()));
+            bytes.loadConstant(constant.orElseThrow(), info);
             return bytes;
         }
         if (node.getCaller() instanceof EscapedOperatorNode) {
@@ -75,7 +75,7 @@ public final class FunctionCallConverter implements TestConverter {
         }
         var bytes = new BytecodeList(callConverter.convert());
         int argc = convertArgs(bytes, fnInfo, needsMakeOption);
-        bytes.add(tail ? Bytecode.TAIL_TOS : Bytecode.CALL_TOS, argc);
+        bytes.add(tail ? Bytecode.TAIL_TOS : Bytecode.CALL_TOS, new ArgcBytecode((short) argc));
         var retType = returnType();
         for (int i = retCount; i < retType.length; i++) {
             bytes.add(Bytecode.POP_TOP);

@@ -20,7 +20,8 @@ public final class DeadCode {
             var index = pair.getKey();
             var bytecode = pair.getValue();
             byteIndex += bytecode.size();
-            if (bytes.getOperands(index)[0] instanceof LocationBytecode l) {
+            var operands = bytes.getOperands(index);
+            if (operands.length > 0 && operands[0] instanceof LocationBytecode l) {
                 assert l.getLabel().getValue() != 0;
                 if (l.getLabel().getValue() == byteIndex) {
                     bytes.remove(index);

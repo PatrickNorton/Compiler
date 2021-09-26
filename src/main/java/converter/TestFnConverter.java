@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.FunctionDefinitionNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,11 +19,11 @@ public final class TestFnConverter {
     public static int convertTestStart(@NotNull GlobalCompilerInfo info) {
         var testFunctions = info.getTestFunctions();
         BytecodeList bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.testConstant()));
+        bytes.loadConstant(Builtins.testConstant(), info);
         for (var constant : testFunctions) {
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
+            bytes.loadConstant(constant, info);
         }
-        bytes.add(Bytecode.CALL_TOS, testFunctions.size());
+        bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) testFunctions.size()));
         var fnInfo = new FunctionInfo("__default__$test");
         var function = new Function(fnInfo, bytes);
         return info.addFunction(function);

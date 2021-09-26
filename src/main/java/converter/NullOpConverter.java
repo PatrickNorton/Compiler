@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
@@ -175,10 +176,10 @@ public final class NullOpConverter extends OperatorConverter {
         var jump = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_NN, jump);
         bytes.add(Bytecode.POP_TOP);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.nullErrorConstant()));
+        bytes.loadConstant(Builtins.nullErrorConstant(), info);
         var message = String.format("Value %s asserted non-null, was null", value);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(message)));
-        bytes.add(Bytecode.THROW_QUICK, 1);
+        bytes.loadConstant(LangConstant.of(message), info);
+        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.one());
         bytes.addLabel(jump);
         bytes.add(Bytecode.UNWRAP_OPTION);
         return bytes;

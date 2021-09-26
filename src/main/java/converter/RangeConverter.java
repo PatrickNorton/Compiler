@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.RangeLiteralNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
@@ -70,15 +71,15 @@ public final class RangeConverter implements TestConverter {
         if (constVal.isPresent()) {
             var constant = constVal.orElseThrow();
             var bytes = new BytecodeList(Bytecode.LOAD_CONST.size());
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
+            bytes.loadConstant(constant, info);
             return bytes;
         }
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.rangeConstant()));
+        bytes.loadConstant(Builtins.rangeConstant(), info);
         convertPortion(bytes, node.getStart(), 0);
         convertPortion(bytes, node.getEnd(), 0);
         convertPortion(bytes, node.getStep(), 1);
-        bytes.add(Bytecode.CALL_TOS, 3);
+        bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) 3));
         return bytes;
     }
 
@@ -93,8 +94,7 @@ public final class RangeConverter implements TestConverter {
             }
             bytes.addAll(converter.convert());
         } else {
-            var constIndex = info.constIndex(LangConstant.of(defaultVal));
-            bytes.add(Bytecode.LOAD_CONST, constIndex);
+            bytes.loadConstant(LangConstant.of(defaultVal), info);
         }
     }
 

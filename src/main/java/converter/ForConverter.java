@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.ForStatementNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
@@ -121,7 +122,7 @@ public final class ForConverter extends LoopConverter {
                 throw CompilerException.format("Cannot assign to immutable variable '%s'", node, name);
             }
         }
-        bytes.add(Bytecode.STORE, info.varIndex(variable));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
     }
 
     @NotNull
@@ -172,9 +173,9 @@ public final class ForConverter extends LoopConverter {
     }
 
     static void addIter(@NotNull CompilerInfo info, @NotNull BytecodeList bytes, @NotNull TestConverter converter) {
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.loadConstant(Builtins.iterConstant(), info);
         bytes.addAll(convertIter(converter));
-        bytes.add(Bytecode.CALL_TOS, 1);
+        bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
     }
 
     private static BytecodeList convertIter(TestConverter converter) {

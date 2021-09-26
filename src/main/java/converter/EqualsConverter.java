@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
@@ -77,7 +78,7 @@ public final class EqualsConverter extends OperatorConverter {
         var conv = sideEffects();
         var bytes = new BytecodeList(conv);
         bytes.add(Bytecode.POP_TOP);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(equalsType)));
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(equalsType), info));
         return bytes;
     }
 

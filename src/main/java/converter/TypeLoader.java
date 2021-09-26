@@ -27,7 +27,7 @@ public final class TypeLoader implements TestConverter {
         var constant = constantReturn();
         if (constant.isPresent()) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant.orElseThrow()));
+            bytes.loadConstant(constant.orElseThrow(), info);
             return bytes;
         } else {
             assert value instanceof TemplateParam;

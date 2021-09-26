@@ -3,6 +3,7 @@ package main.java.converter;
 import main.java.converter.bytecode.ArgcBytecode;
 import main.java.converter.bytecode.ConstantBytecode;
 import main.java.converter.bytecode.OperatorBytecode;
+import main.java.converter.bytecode.StackPosBytecode;
 import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.AssignableNode;
 import main.java.parser.AssignmentNode;
@@ -241,7 +242,7 @@ public final class AssignmentConverter implements BaseConverter {
                 bytes.add(Bytecode.SWAP_3);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_N, distFromTop + 1);
+                bytes.add(Bytecode.SWAP_N, new StackPosBytecode((short) (distFromTop + 1)));
         }
     }
 

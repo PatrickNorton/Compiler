@@ -25,7 +25,7 @@ public enum Bytecode {
     DUP_TOP(0x8),
     SWAP_2(0x9),
     SWAP_3(0xA),
-    SWAP_N(0xB, Type.ARGC),
+    SWAP_N(0xB, Type.STACK_POS),
     STORE(0xC, Type.VARIABLE),
     STORE_SUBSCRIPT(0xD, Type.ARGC),
     STORE_ATTR(0xE, Type.CONSTANT),

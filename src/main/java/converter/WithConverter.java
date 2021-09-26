@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.WithStatementNode;
 import org.jetbrains.annotations.NotNull;
@@ -43,14 +45,14 @@ public final class WithConverter implements BaseConverter {
         info.addVariable(variable.getVariable().getName(), trueType, variable);
         bytes.add(Bytecode.DUP_TOP);
         bytes.addCallOp(OpSpTypeNode.ENTER);
-        bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable.getVariable())));
         var tryJump = info.newJumpLabel();
         bytes.add(Bytecode.ENTER_TRY, tryJump);
         bytes.addAll(BaseConverter.bytes(node.getBody(), info));
         bytes.addLabel(tryJump);
         bytes.add(Bytecode.FINALLY);
         bytes.addCallOp(OpSpTypeNode.EXIT);
-        bytes.add(Bytecode.END_TRY, 0);
+        bytes.add(Bytecode.END_TRY, ArgcBytecode.zero());
         return bytes;
     }
 }

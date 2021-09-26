@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.FunctionNoBytecode;
 import main.java.parser.BaseNode;
 import main.java.parser.LambdaNode;
 import main.java.parser.ReturnStatementNode;
@@ -48,7 +49,7 @@ public final class LambdaConverter implements TestConverter {
         var name = info.lambdaName();
         var fnInfo = new FunctionInfo(name, convertArgs(), info.typesOf(node.getReturns()));
         int fnIndex = info.addFunction(new Function(node, fnInfo, convertBody()));
-        bytes.add(Bytecode.MAKE_FUNCTION, fnIndex);
+        bytes.add(Bytecode.MAKE_FUNCTION, new FunctionNoBytecode((short) fnIndex));
         return bytes;
     }
 

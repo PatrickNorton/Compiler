@@ -71,7 +71,7 @@ public final class IsConverter extends OperatorConverter {
         // Have to get side-effects
         var bytes = new BytecodeList(TestConverter.bytes(operands[0].getArgument(), info, 1));
         bytes.add(Bytecode.POP_TOP);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(isType)));
+        bytes.loadConstant(LangConstant.of(isType), info);
         return bytes;
     }
 
@@ -103,7 +103,7 @@ public final class IsConverter extends OperatorConverter {
         // shenanigans with the stack to ensure everything winds
         // up in the right place.
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.TRUE));
+        bytes.loadConstant(Builtins.TRUE, info);
         bytes.addAll(TestConverter.bytes(operands[0].getArgument(), info, 1));
         for (int i = 1; i < operands.length - 1; i++) {
             bytes.add(Bytecode.DUP_TOP);
@@ -159,7 +159,7 @@ public final class IsConverter extends OperatorConverter {
                     "Using 'is not null' comparison on non-nullable variable", WarningType.TRIVIAL_VALUE, info, arg0
             );
             var bytes = new BytecodeList(converter.convert());
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.TRUE));
+            bytes.loadConstant(Builtins.TRUE, info);
             return Pair.of(bytes, condType);
         } else if (condType.equals(Builtins.nullType())) {
             CompilerWarning.warn(
@@ -167,7 +167,7 @@ public final class IsConverter extends OperatorConverter {
                     WarningType.TRIVIAL_VALUE, info, arg0
             );
             var bytes = new BytecodeList(converter.convert());
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.FALSE));
+            bytes.loadConstant(Builtins.FALSE, info);
             return Pair.of(bytes, condType);
         } else {
             var asType = condType.stripNull();

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.ReturnStatementNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +52,7 @@ public final class ReturnConverter implements BaseConverter {
                     "Non-empty 'return' statement invalid in function with no return types", node
             );
         } else {
-            bytes.add(Bytecode.RETURN, 0);
+            bytes.add(Bytecode.RETURN, ArgcBytecode.zero());
         }
     }
 }

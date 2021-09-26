@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.DecrementNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
@@ -45,13 +48,13 @@ public final class IncrementDecrementConverter implements BaseConverter {
             throw typeError(converter.returnType()[0], isDecrement);
         }
         var bytes = new BytecodeList(converter.convert());
-        bytes.add(Bytecode.LOAD_CONST, info.addConstant(LangConstant.of(1)));
+        bytes.loadConstant(LangConstant.of(1), info);
         bytes.add(isDecrement ? Bytecode.MINUS : Bytecode.PLUS);
         var variable = (VariableNode) node.getVariable();
         if (info.variableIsImmutable(variable.getName())) {
             throw CompilerException.format("Cannot %s non-mut variable", node, incName(isDecrement));
         }
-        bytes.add(Bytecode.STORE, info.varIndex(variable));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
         return bytes;
     }
 
@@ -88,10 +91,10 @@ public final class IncrementDecrementConverter implements BaseConverter {
         }
         var bytes = new BytecodeList(converter.convert());
         bytes.add(Bytecode.DUP_TOP);
-        bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(name)));
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(1)));
+        bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(name), info));
+        bytes.loadConstant(LangConstant.of(1), info);
         bytes.add(isDecrement ? Bytecode.MINUS : Bytecode.PLUS);
-        bytes.add(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(name)));
+        bytes.add(Bytecode.STORE_ATTR, new ConstantBytecode(LangConstant.of(name), info));
         return bytes;
     }
 
@@ -117,9 +120,9 @@ public final class IncrementDecrementConverter implements BaseConverter {
     private BytecodeList finishIndex(boolean isDecrement, @NotNull TestConverter converter, TestNode[] indices) {
         checkIndex(converter.returnType()[0], isDecrement);
         var bytes = IndexConverter.convertDuplicate(converter, indices, info, indices.length);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(1)));
+        bytes.loadConstant(LangConstant.of(1), info);
         bytes.add(Bytecode.PLUS);
-        bytes.add(Bytecode.STORE_SUBSCRIPT, indices.length + 1);
+        bytes.add(Bytecode.STORE_SUBSCRIPT, new ArgcBytecode((short) (indices.length + 1)));
         return bytes;
     }
 

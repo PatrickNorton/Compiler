@@ -2,7 +2,6 @@ package main.java.converter.bytecode;
 
 import main.java.converter.CompilerInfo;
 import main.java.converter.Util;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -25,9 +24,16 @@ public final class ArgcBytecode implements BytecodeValue {
         return Short.toString(argc);
     }
 
-    @Contract(value = " -> new", pure = true)
+    private static final ArgcBytecode ZERO = new ArgcBytecode((short) 0);
+    private static final ArgcBytecode ONE = new ArgcBytecode((short) 1);
+
     @NotNull
     public static ArgcBytecode zero() {
-        return new ArgcBytecode((short) 0);
+        return ZERO;
+    }
+
+    @NotNull
+    public static ArgcBytecode one() {
+        return ONE;
     }
 }

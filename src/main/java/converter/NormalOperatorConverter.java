@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.LineInfo;
 import main.java.parser.Lined;
@@ -237,7 +238,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+            bytes.loadConstant(LangConstant.of(0), info);
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE)) {
             return converter.convert();
@@ -248,7 +249,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
         } else if (bigValue.signum() > 0 && bigValue.bitCount() == 1) {
             var powerOfTwo = bigValue.bitLength() - 1;
             var bytes = new BytecodeList(converter.convert());
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(powerOfTwo)));
+            bytes.loadConstant(LangConstant.of(powerOfTwo), info);
             bytes.add(Bytecode.L_BITSHIFT);
             return bytes;
         } else {
@@ -267,14 +268,14 @@ public final class NormalOperatorConverter extends OperatorConverter {
             return convertZeroDivision(converter, "divide");
         } else if (bigValue.equals(BigInteger.ONE)) {
             var bytes = new BytecodeList(converter.convert());
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.decimalConstant()));
-            bytes.add(Bytecode.CALL_TOS, info.constIndex(LangConstant.of(1)));
+            bytes.loadConstant(Builtins.decimalConstant(), info);
+            bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
             var bytes = new BytecodeList(converter.convert());
             bytes.add(Bytecode.U_MINUS);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.decimalConstant()));
-            bytes.add(Bytecode.CALL_TOS, info.constIndex(LangConstant.of(1)));
+            bytes.loadConstant(Builtins.decimalConstant(), info);
+            bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
             return bytes;
         } else {
             return convertOneConstant(converter, constant);
@@ -312,12 +313,12 @@ public final class NormalOperatorConverter extends OperatorConverter {
             return convertZeroDivision(converter, "modulo");
         } else if (bigValue.equals(BigInteger.ONE)) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+            bytes.loadConstant(LangConstant.of(0), info);
             return bytes;
         } else if (bigValue.signum() > 0 && bigValue.bitCount() == 1) {
             var lessOne = bigValue.subtract(BigInteger.ONE);
             BytecodeList bytes = new BytecodeList(converter.convert());
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(lessOne)));
+            bytes.loadConstant(LangConstant.of(lessOne), info);
             bytes.add(Bytecode.BITWISE_AND);
             return bytes;
         } else {
@@ -330,13 +331,13 @@ public final class NormalOperatorConverter extends OperatorConverter {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(1)));
+            bytes.loadConstant(LangConstant.of(1), info);
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE)) {
             return converter.convert();
         } else if (bigValue.signum() < 0) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+            bytes.loadConstant(LangConstant.of(0), info);
             return bytes;
         } else {
             return convertOneConstant(converter, constant);
@@ -348,7 +349,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
         var bigValue = constant.bigValue();
         if (bigValue.equals(BigInteger.ZERO)) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+            bytes.loadConstant(LangConstant.of(0), info);
             return bytes;
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
             return converter.convert();
@@ -364,7 +365,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
             return converter.convert();
         } else if (bigValue.equals(BigInteger.ONE.negate())) {
             BytecodeList bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(-1)));
+            bytes.loadConstant(LangConstant.of(-1), info);
             return bytes;
         } else {
             return convertOneConstant(converter, constant);
@@ -424,7 +425,7 @@ public final class NormalOperatorConverter extends OperatorConverter {
     private BytecodeList convertOneConstant(@NotNull TestConverter converter, NumberConstant constant) {
         assert !op.isUnary();
         var bytes = new BytecodeList(converter.convert());
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant));
+        bytes.loadConstant(constant, info);
         bytes.add(BYTECODE_MAP.get(op));
         return bytes;
     }
@@ -433,10 +434,10 @@ public final class NormalOperatorConverter extends OperatorConverter {
     private BytecodeList convertZeroDivision(@NotNull TestConverter converter, String divType) {
         var bytes = new BytecodeList(converter.convert());
         bytes.add(Bytecode.POP_TOP);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.arithmeticErrorConstant()));
+        bytes.loadConstant(Builtins.arithmeticErrorConstant(), info);
         var message = String.format("Cannot %s by zero", divType);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(message)));
-        bytes.add(Bytecode.THROW_QUICK, 1);
+        bytes.loadConstant(LangConstant.of(message), info);
+        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.one());
         return bytes;
     }
 }

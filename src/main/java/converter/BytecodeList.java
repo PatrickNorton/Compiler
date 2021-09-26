@@ -2,9 +2,9 @@ package main.java.converter;
 
 import main.java.converter.bytecode.ArgcBytecode;
 import main.java.converter.bytecode.BytecodeValue;
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.converter.bytecode.LocationBytecode;
 import main.java.converter.bytecode.OperatorBytecode;
-import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.LineInfo;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
@@ -42,13 +42,16 @@ public final class BytecodeList {
         this.values.add(new Value(bytecode));
     }
 
-    // TODO: Remove
-    public void add(Bytecode bytecode, int firstParam) {
-        this.add(bytecode, new StackPosBytecode((short) firstParam));
-    }
-
     public void add(Bytecode bytecode, BytecodeValue firstParam) {
         this.values.add(new Value(bytecode, firstParam));
+    }
+
+    public void loadConstant(LangConstant constant, CompilerInfo info) {
+        this.add(Bytecode.LOAD_CONST, new ConstantBytecode(constant, info));
+    }
+
+    public void loadConstant(LangConstant constant, GlobalCompilerInfo info) {
+        this.add(Bytecode.LOAD_CONST, new ConstantBytecode(constant, info));
     }
 
     public void add(Bytecode bytecode, Label label) {

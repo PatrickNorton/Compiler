@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.DeleteStatementNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
@@ -99,7 +100,7 @@ public final class DeleteConverter implements BaseConverter {
         var name = delVar.getName();
         var index = info.varIndex(delVar);
         bytes.add(Bytecode.LOAD_NULL);
-        bytes.add(Bytecode.STORE, index);  // Drops value currently stored
+        bytes.add(Bytecode.STORE, new VariableBytecode(index));  // Drops value currently stored
         var varHolder = info.varHolder();
         if (varHolder.varDefinedInCurrentFrame(name)) {  // TODO: Drop non-top-frame variable properly
             varHolder.removeVariable(name);
