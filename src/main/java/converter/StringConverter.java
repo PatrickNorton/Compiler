@@ -50,9 +50,8 @@ public final class StringConverter implements ConstantConverter {
         if (node.getPrefixes().contains(StringPrefix.REGEX)) {
             throw CompilerTodoError.of("Regex strings not yet supported", node);
         }
-        int constIndex = info.addConstant(constant());
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, constIndex);
+        bytes.loadConstant(constant(), info);
         return bytes;
     }
 

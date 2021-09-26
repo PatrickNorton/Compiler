@@ -23,9 +23,8 @@ public final class NumberConverter implements ConstantConverter {
         } else if (retCount > 1) {
             throw CompilerException.format("Numeric literals return 1 value, %d were expected", node, retCount);
         }
-        int constIndex = info.addConstant(constant());
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, constIndex);
+        bytes.loadConstant(constant(), info);
         return bytes;
     }
 

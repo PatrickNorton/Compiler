@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.Lined;
@@ -236,7 +237,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var index = isStatic
                 ? info.addStaticVar(assignedName, assignedType, true, node)
                 : info.addVariable(assignedName, assignedType, isConst, node);
-        bytes.add(isStatic ? Bytecode.STORE_STATIC : Bytecode.STORE, index);
+        bytes.add(isStatic ? Bytecode.STORE_STATIC : Bytecode.STORE, new VariableBytecode(index));
     }
 
     private CompilerException mutStaticException(Lined lineInfo) {

@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.ElifStatementNode;
 import main.java.parser.IfStatementNode;
 import main.java.parser.Lined;
@@ -74,7 +75,7 @@ public final class IfConverter implements BaseConverter {
     ) {
         var jumpLabel = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_FALSE, jumpLabel);
-        bytes.add(Bytecode.STORE, info.varIndex(asName));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(asName)));
         var pair = BaseConverter.bytesWithReturn(body, info);
         bytes.addAll(pair.getKey());
         bytes.add(Bytecode.JUMP, endLabel);

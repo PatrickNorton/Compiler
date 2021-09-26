@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
 import main.java.parser.DottedVar;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
@@ -262,13 +265,13 @@ public final class DotConverter implements TestConverter {
         if (postDot instanceof VariableNode) {
             var strName = ((VariableNode) postDot).getName();
             var type = previous.tryAttrType(postDot, strName, info);
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(strName)));
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(strName), info));
             return new TypeObject[] {type};
         } else if (postDot instanceof FunctionCallNode) {
             return convertMethod(previous, bytes, (FunctionCallNode) postDot);
         } else if (postDot instanceof SpecialOpNameNode) {
             var op = ((SpecialOpNameNode) postDot).getOperator();
-            bytes.add(Bytecode.LOAD_OP, op.ordinal());
+            bytes.add(Bytecode.LOAD_OP, new OperatorBytecode(op));
             return new TypeObject[]{previous.tryOperatorInfo(postDot, op, info).toCallable()};
         } else if (postDot instanceof IndexNode) {
             return convertIndex(previous, bytes, (IndexNode) postDot);
@@ -300,7 +303,7 @@ public final class DotConverter implements TestConverter {
                 info, postDot, type.toCallable(), postDot.getParameters()
         );
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.CALL_OP, op.ordinal(), pair.getValue().shortValue());
+        bytes.addCallOp(op, pair.getValue().shortValue());
         return type.getReturns();
     }
 
@@ -312,8 +315,9 @@ public final class DotConverter implements TestConverter {
         var pair = FunctionCallConverter.convertArgs(
                 info, postDot, type, postDot.getParameters()
         );
+        short argc = pair.getValue().shortValue();
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.CALL_METHOD, info.constIndex(LangConstant.of(name)), pair.getValue());
+        bytes.add(Bytecode.CALL_METHOD, new ConstantBytecode(LangConstant.of(name), info), new ArgcBytecode(argc));
         return type.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
     }
 
@@ -326,7 +330,7 @@ public final class DotConverter implements TestConverter {
                 info, postDot, type, postDot.getParameters()
         );
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.CALL_TOS, pair.getValue());
+        bytes.add(Bytecode.CALL_TOS, new ArgcBytecode(pair.getValue().shortValue()));
         return type.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
     }
 
@@ -341,7 +345,7 @@ public final class DotConverter implements TestConverter {
             var result = type.tryOperatorInfo(node, OpSpTypeNode.GET_SLICE, info);
             var slice = (SliceNode) indices[0];
             bytes.addAll(new SliceConverter(info, slice).convert());
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.GET_SLICE.ordinal(), 1);
+            bytes.addCallOp(OpSpTypeNode.GET_SLICE, (short) 1);
             return result.getReturns();
         } else {
             var result = type.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);

@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
@@ -61,14 +63,14 @@ public final class BoolOpConverter extends OperatorConverter {
     private BytecodeList convertBoolOp() {
         assert op == OperatorTypeNode.BOOL_AND || op == OperatorTypeNode.BOOL_OR;
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.boolConstant()));
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(Builtins.boolConstant(), info));
         bytes.addAll(TestConverter.bytes(args[0].getArgument(), info, 1));
         bytes.add(Bytecode.DUP_TOP);
         var label = info.newJumpLabel();
         var bytecode = op == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_TRUE : Bytecode.JUMP_FALSE;
         bytes.add(bytecode, label);
         addPostJump(bytes, label);
-        bytes.add(Bytecode.CALL_TOS, 1);
+        bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP);
         }

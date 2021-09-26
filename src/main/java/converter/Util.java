@@ -35,7 +35,7 @@ public final class Util {
     @NotNull
     @Contract(pure = true)
     @Unmodifiable
-    static List<Byte> intToBytes(int value) {
+    public static List<Byte> intToBytes(int value) {
         return List.of(
                 (byte) (value >>> 24),
                 (byte) (value >>> 16),
@@ -82,7 +82,7 @@ public final class Util {
     @NotNull
     @Contract(pure = true)
     @Unmodifiable
-    static List<Byte> shortToBytes(short value) {
+    public static List<Byte> shortToBytes(short value) {
         return List.of(
                 (byte) (value >>> 8),
                 (byte) value

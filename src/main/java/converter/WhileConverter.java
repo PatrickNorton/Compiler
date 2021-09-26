@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.OperatorNode;
 import main.java.parser.VariableNode;
 import main.java.parser.WhileStatementNode;
@@ -39,7 +40,7 @@ public final class WhileConverter extends LoopConverter {
             bytes.add(Bytecode.JUMP_FALSE, jumpLbl);
         }
         if (hasAs) {
-            bytes.add(Bytecode.STORE, info.varIndex(node.getAs()));
+            bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(node.getAs())));
         }
         var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var body = pair.getKey();

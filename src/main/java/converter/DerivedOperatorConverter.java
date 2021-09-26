@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -56,22 +59,22 @@ public final class DerivedOperatorConverter implements BaseConverter {
         var type = info.getType("self").orElseThrow();
         assert type instanceof UserType;
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_VALUE, 0);  // self
+        bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));  // self
         bytes.add(Bytecode.GET_TYPE);
-        bytes.add(Bytecode.LOAD_VALUE, 2);  // other
+        bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 2));  // other
         bytes.add(Bytecode.GET_TYPE);
         bytes.add(Bytecode.EQUAL);
         bytes.addAll(postJumpBytes());
         for (var field : ((UserType<?>) type).getFields()) {
-            bytes.add(Bytecode.LOAD_VALUE, 0);  // self
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
-            bytes.add(Bytecode.LOAD_VALUE, 2);
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));  // self
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 2));
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
             bytes.add(Bytecode.EQUAL);
             bytes.addAll(postJumpBytes());
         }
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.TRUE));
-        bytes.add(Bytecode.RETURN, 1);
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(Builtins.TRUE, info));
+        bytes.add(Bytecode.RETURN, ArgcBytecode.one());
         return bytes;
     }
 
@@ -80,8 +83,8 @@ public final class DerivedOperatorConverter implements BaseConverter {
         var bytes = new BytecodeList(4);
         var label = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_TRUE, label);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.FALSE));
-        bytes.add(Bytecode.RETURN, 1);
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(Builtins.FALSE, info));
+        bytes.add(Bytecode.RETURN, ArgcBytecode.one());
         bytes.addLabel(label);
         return bytes;
     }
@@ -101,21 +104,21 @@ public final class DerivedOperatorConverter implements BaseConverter {
                         node, type.name(), field, fieldType
                 );
             }
-            bytes.add(Bytecode.LOAD_VALUE, 0);  // self
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
-            bytes.add(Bytecode.LOAD_VALUE, 2);  // other
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));  // self
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 2));  // other
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
             bytes.add(Bytecode.COMPARE);
             bytes.add(Bytecode.DUP_TOP);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
+            bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(0), info));
             bytes.add(Bytecode.EQUAL);
             var jumpLabel = info.newJumpLabel();
             bytes.add(Bytecode.JUMP_TRUE, jumpLabel);
-            bytes.add(Bytecode.RETURN, 1);
+            bytes.add(Bytecode.RETURN, ArgcBytecode.one());
             bytes.addLabel(jumpLabel);
         }
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(0)));
-        bytes.add(Bytecode.RETURN, 1);
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(0), info));
+        bytes.add(Bytecode.RETURN, ArgcBytecode.one());
         return bytes;
     }
 
@@ -143,13 +146,13 @@ public final class DerivedOperatorConverter implements BaseConverter {
                         node, type.name(), field, fieldType
                 );
             }
-            bytes.add(Bytecode.LOAD_VALUE, 0);
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
             fieldCount++;
         }
-        bytes.add(Bytecode.PACK_TUPLE, fieldCount);
-        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.HASH.ordinal(), 0);
-        bytes.add(Bytecode.RETURN, 1);
+        bytes.add(Bytecode.PACK_TUPLE, new ArgcBytecode((short) fieldCount));
+        bytes.addCallOp(OpSpTypeNode.HASH);
+        bytes.add(Bytecode.RETURN, ArgcBytecode.one());
         return bytes;
     }
 
@@ -169,26 +172,26 @@ public final class DerivedOperatorConverter implements BaseConverter {
         assert type instanceof UserType;
         var bytes = new BytecodeList();
         if (((UserType<?>) type).isFinal() && ((UserType<?>) type).getGenericInfo().isEmpty()) {
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(type.baseName() + '{')));
+            bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(type.baseName() + '{'), info));
         } else {
-            bytes.add(Bytecode.LOAD_VALUE, 0);
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));
             bytes.add(Bytecode.GET_TYPE);
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.STR.ordinal(), 0);
+            bytes.addCallOp(OpSpTypeNode.STR);
         }
         var first = true;
         for (var field : ((UserType<?>) type).getFields()) {
             var fieldName = first ? field + " = " : ", " + field + " = ";
             first = false;
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(fieldName)));
+            bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(fieldName), info));
             bytes.add(Bytecode.PLUS);
-            bytes.add(Bytecode.LOAD_VALUE, 0);
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(field)));
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.REPR.ordinal(), 0);
+            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
+            bytes.addCallOp(OpSpTypeNode.REPR);
             bytes.add(Bytecode.PLUS);
         }
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of("}")));
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of("}"), info));
         bytes.add(Bytecode.PLUS);
-        bytes.add(Bytecode.RETURN, 1);
+        bytes.add(Bytecode.RETURN, ArgcBytecode.one());
         return bytes;
     }
 }

@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.FunctionNoBytecode;
+import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
@@ -56,7 +59,7 @@ public final class FunctionCallConverter implements TestConverter {
         var constant = constantReturn();
         if (constant.isPresent()) {
             var bytes = new BytecodeList(2);
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(constant.orElseThrow()));
+            bytes.loadConstant(constant.orElseThrow(), info);
             return bytes;
         }
         if (node.getCaller() instanceof EscapedOperatorNode) {
@@ -72,7 +75,7 @@ public final class FunctionCallConverter implements TestConverter {
         }
         var bytes = new BytecodeList(callConverter.convert());
         int argc = convertArgs(bytes, fnInfo, needsMakeOption);
-        bytes.add(tail ? Bytecode.TAIL_TOS : Bytecode.CALL_TOS, argc);
+        bytes.add(tail ? Bytecode.TAIL_TOS : Bytecode.CALL_TOS, new ArgcBytecode((short) argc));
         var retType = returnType();
         for (int i = retCount; i < retType.length; i++) {
             bytes.add(Bytecode.POP_TOP);
@@ -148,7 +151,7 @@ public final class FunctionCallConverter implements TestConverter {
         if (d1 == 0 && d2 == 1) {
             bytes.add(Bytecode.SWAP_2);
         } else {
-            bytes.add(Bytecode.SWAP_STACK, d1, d2);
+            bytes.add(Bytecode.SWAP_STACK, new StackPosBytecode(d1), new StackPosBytecode(d2));
         }
     }
 
@@ -382,7 +385,7 @@ public final class FunctionCallConverter implements TestConverter {
             var argConverter = TestConverter.of(info, argument, 1);
             argConverter.returnType()[0].tryOperatorInfo(argument, BUILTINS_TO_OPERATORS.get(strName), info);
             bytes.addAll(argConverter.convert());
-            bytes.add(Bytecode.CALL_OP,  BUILTINS_TO_OPERATORS.get(strName).ordinal(), 0);
+            bytes.addCallOp(BUILTINS_TO_OPERATORS.get(strName));
             return bytes;
         } else if (BUILTINS_TO_BYTECODE.containsKey(strName)) {
             var params = node.getParameters();
@@ -427,7 +430,8 @@ public final class FunctionCallConverter implements TestConverter {
         }
         var bytes = new BytecodeList();
         convertArgs(bytes, fnInfo, needsMakeOption);
-        bytes.add(tail ? Bytecode.TAIL_FN : Bytecode.CALL_FN, fnIndex, node.getParameters().length);
+        var argc = (short) node.getParameters().length;
+        bytes.add(tail ? Bytecode.TAIL_FN : Bytecode.CALL_FN, new FunctionNoBytecode(fnIndex), new ArgcBytecode(argc));
         return bytes;
     }
 

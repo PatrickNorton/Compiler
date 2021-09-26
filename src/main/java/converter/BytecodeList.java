@@ -1,6 +1,12 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.BytecodeValue;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.LocationBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
 import main.java.parser.LineInfo;
+import main.java.parser.OpSpTypeNode;
 import main.java.util.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -36,19 +42,35 @@ public final class BytecodeList {
         this.values.add(new Value(bytecode));
     }
 
-    public void add(Bytecode bytecode, int firstParam) {
+    public void add(Bytecode bytecode, BytecodeValue firstParam) {
         this.values.add(new Value(bytecode, firstParam));
+    }
+
+    public void loadConstant(LangConstant constant, CompilerInfo info) {
+        this.add(Bytecode.LOAD_CONST, new ConstantBytecode(constant, info));
+    }
+
+    public void loadConstant(LangConstant constant, GlobalCompilerInfo info) {
+        this.add(Bytecode.LOAD_CONST, new ConstantBytecode(constant, info));
     }
 
     public void add(Bytecode bytecode, Label label) {
         this.values.add(new Value(bytecode, label));
     }
 
-    public void add(Bytecode bytecode, int firstParam, int secondParam) {
+    public void add(Bytecode bytecode, BytecodeValue firstParam, BytecodeValue secondParam) {
         this.values.add(new Value(bytecode, firstParam, secondParam));
     }
 
-    public void add(Bytecode bytecode, Label firstParam, int secondParam) {
+    public void addCallOp(OpSpTypeNode operator, short argc) {
+        this.add(Bytecode.CALL_OP, new OperatorBytecode(operator), new ArgcBytecode(argc));
+    }
+
+    public void addCallOp(OpSpTypeNode operator) {
+        this.add(Bytecode.CALL_OP, new OperatorBytecode(operator), ArgcBytecode.zero());
+    }
+
+    public void add(Bytecode bytecode, Label firstParam, BytecodeValue secondParam) {
         this.values.add(new Value(bytecode, firstParam, secondParam));
     }
 
@@ -64,11 +86,11 @@ public final class BytecodeList {
         this.values.add(0, new Value(bytecode));
     }
 
-    public void addFirst(Bytecode bytecode, int firstParam) {
+    public void addFirst(Bytecode bytecode, BytecodeValue firstParam) {
         this.values.add(0, new Value(bytecode, firstParam));
     }
 
-    public void addFirst(Bytecode bytecode, int firstParam, int secondParam) {
+    public void addFirst(Bytecode bytecode, BytecodeValue firstParam, BytecodeValue secondParam) {
         this.values.add(0, new Value(bytecode, firstParam, secondParam));
     }
 
@@ -109,36 +131,19 @@ public final class BytecodeList {
     }
 
     @Contract("_ -> new")
-    public int[] getOperands(@NotNull Index index) {
+    public BytecodeValue[] getOperands(@NotNull Index index) {
         assert !values.get(index.value).isLabel();
         var value = values.get(index.value);
         return switch (value.getBytecodeType().operandCount()) {
-            case 0 -> new int[0];
-            case 1 -> new int[]{firstParam(value)};
-            case 2 -> new int[]{firstParam(value), value.getSecondParam()};
+            case 0 -> new BytecodeValue[0];
+            case 1 -> new BytecodeValue[]{value.getFirstParam()};
+            case 2 -> new BytecodeValue[]{value.getFirstParam(), value.getSecondParam()};
             default -> throw CompilerInternalError.format(
                     "Unknown number of operands to bytecode: %d (bytecode value %d)",
                     LineInfo.empty(),
                     value.getBytecodeType().operandCount(), value.getBytecodeType().value
             );
         };
-    }
-
-    private int firstParam(@NotNull Value value) {
-        assert !value.isLabel();
-        if (value.getLabel() != null) {
-            int byteIndex = 0;
-            for (var val : values) {
-                if (val.isLabel() && val.getLabel().equals(value.getLabel())) {
-                    return byteIndex;
-                } else if (!val.isLabel()) {
-                    byteIndex += val.getBytecodeType().size();
-                }
-            }
-            throw CompilerInternalError.of("Unknown label", LineInfo.empty());
-        } else {
-            return value.getFirstParam();
-        }
     }
 
     @Contract(pure = true)
@@ -159,18 +164,19 @@ public final class BytecodeList {
 
     @NotNull
     public List<Byte> convertToBytes() {
+        setLabels();
         List<Byte> bytes = new ArrayList<>();
         for (int i = 0; i < values.size(); i++) {
             var value = values.get(i);
             if (value.isLabel()) {
                 value.getLabel().setValue(bytes.size());
-            } else if (value.getLabel() != null) {
-                var label = value.getLabel();
+            } else if (value.getFirstParam() instanceof LocationBytecode loc) {
+                var label = loc.getLabel();
                 if (label.getValue() == -1) {
                     label.setValue(findLabelIndex(label, i, bytes.size()));
                 }
                 var bytecode = value.getBytecodeType();
-                bytes.addAll(bytecode.assemble(label.getValue(), value.getSecondParam()));
+                bytes.addAll(bytecode.assemble(value.getFirstParam(), value.getSecondParam()));
             } else {
                 var bytecode = value.getBytecodeType();
                 bytes.addAll(bytecode.assemble(value.getFirstParam(), value.getSecondParam()));
@@ -193,6 +199,17 @@ public final class BytecodeList {
             }
         }
         return result;
+    }
+
+    public void setLabels() {
+        var index = 0;
+        for (var value : values) {
+            if (value.isLabel()) {
+                value.getLabel().setValue(index);
+            } else {
+                index += value.getBytecodeType().size();
+            }
+        }
     }
 
     private int findLabelIndex(Label label, int currentIndex, int byteLen) {
@@ -238,30 +255,30 @@ public final class BytecodeList {
         private final boolean isLabel;
         private final Bytecode bytecodeType;
         private final Label label;
-        private final int firstParam;
-        private final int secondParam;
+        private final BytecodeValue firstParam;
+        private final BytecodeValue secondParam;
 
         public Value(Bytecode bytecode) {
-            this(false, bytecode, null, -1, -1);
+            this(false, bytecode, null, null, null);
         }
 
-        public Value(Bytecode bytecode, int firstParam) {
-            this(false, bytecode, null, firstParam, -1);
+        public Value(Bytecode bytecode, BytecodeValue firstParam) {
+            this(false, bytecode, null, firstParam, null);
         }
 
         public Value(Bytecode bytecode, Label label) {
-            this(false, bytecode, label, -1, -1);
+            this(false, bytecode, null, new LocationBytecode(label), null);
         }
 
-        public Value(Bytecode bytecode, int firstParam, int secondParam) {
+        public Value(Bytecode bytecode, BytecodeValue firstParam, BytecodeValue secondParam) {
             this(false, bytecode, null, firstParam, secondParam);
         }
 
-        public Value(Bytecode bytecode, Label label, int secondParam) {
-            this(false, bytecode, label, -1, secondParam);
+        public Value(Bytecode bytecode, Label label, BytecodeValue secondParam) {
+            this(false, bytecode, null, new LocationBytecode(label), secondParam);
         }
 
-        private Value(boolean isLabel, Bytecode bytecodeType, Label label, int firstParam, int secondParam) {
+        private Value(boolean isLabel, Bytecode bytecodeType, Label label, BytecodeValue firstParam, BytecodeValue secondParam) {
             this.isLabel = isLabel;
             this.bytecodeType = bytecodeType;
             this.label = label;
@@ -272,7 +289,7 @@ public final class BytecodeList {
         @Contract(value = "_ -> new", pure = true)
         @NotNull
         public static Value label(Label label) {
-            return new Value(true, Bytecode.NOP, label, 0, -1);
+            return new Value(true, Bytecode.NOP, label, null, null);
         }
 
         public boolean isLabel() {
@@ -287,11 +304,11 @@ public final class BytecodeList {
             return label;
         }
 
-        public int getFirstParam() {
+        public BytecodeValue getFirstParam() {
             return firstParam;
         }
 
-        public int getSecondParam() {
+        public BytecodeValue getSecondParam() {
             return secondParam;
         }
 

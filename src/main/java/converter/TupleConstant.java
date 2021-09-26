@@ -11,13 +11,13 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 public final class TupleConstant implements LangConstant {
-    private final List<Pair<Short, TypeObject>> values;
+    private final List<Pair<Short, LangConstant>> values;
 
-    public TupleConstant(List<Pair<Short, TypeObject>> values) {
+    public TupleConstant(List<Pair<Short, LangConstant>> values) {
         this.values = values;
     }
 
-    public List<Pair<Short, TypeObject>> getValues() {
+    public List<Pair<Short, LangConstant>> getValues() {
         return values;
     }
 
@@ -38,7 +38,7 @@ public final class TupleConstant implements LangConstant {
     public TypeObject getType() {
         var generics = new TypeObject[values.size()];
         for (int i = 0; i < values.size(); i++) {
-            generics[i] = values.get(i).getValue();
+            generics[i] = values.get(i).getValue().getType();
         }
         return Builtins.tuple().generify(generics);
     }

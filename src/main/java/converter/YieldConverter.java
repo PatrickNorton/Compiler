@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.YieldStatementNode;
 import org.jetbrains.annotations.NotNull;
@@ -51,8 +52,8 @@ public final class YieldConverter implements BaseConverter {
         var topLabel = info.newJumpLabel();
         bytes.addLabel(topLabel);
         var label = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, label, 1);
-        bytes.add(Bytecode.YIELD, 1);
+        bytes.add(Bytecode.FOR_ITER, label, ArgcBytecode.one());
+        bytes.add(Bytecode.YIELD, ArgcBytecode.one());
         bytes.add(Bytecode.JUMP, topLabel);
         bytes.addLabel(label);
     }

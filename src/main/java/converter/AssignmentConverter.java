@@ -1,5 +1,10 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
+import main.java.converter.bytecode.StackPosBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.AssignableNode;
 import main.java.parser.AssignmentNode;
 import main.java.parser.DottedVariableNode;
@@ -148,7 +153,7 @@ public final class AssignmentConverter implements BaseConverter {
                 bytes.add(Bytecode.MAKE_OPTION);
             }
         }
-        bytes.addFirst(Bytecode.STORE, info.varIndex(variable));
+        bytes.addFirst(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
     }
 
     private void assignToVariable(@NotNull BytecodeList bytes, BytecodeList storeBytes,
@@ -171,7 +176,7 @@ public final class AssignmentConverter implements BaseConverter {
         } else {
             bytes.addAll(valueConverter.convert());
         }
-        storeBytes.addFirst(Bytecode.STORE, info.varIndex(variable));
+        storeBytes.addFirst(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
     }
 
     private void checkDef(String name, VariableNode variable) {
@@ -212,7 +217,7 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.addAll(preDot.convert());
             bytes.addAll(new SliceConverter(info, index).convert());
             bytes.add(Bytecode.SWAP_3);
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
+            bytes.addCallOp(OpSpTypeNode.SET_SLICE, (short) 2);
         } else {
             // FIXME: Make value an option when necessary
             var indexConverters = convertIndices(indices);
@@ -222,7 +227,7 @@ public final class AssignmentConverter implements BaseConverter {
                 bytes.addAll(indexParam.convert());
             }
             bringToTop(bytes, indices.length + 1);
-            bytes.addFirst(Bytecode.STORE_SUBSCRIPT, indices.length);
+            bytes.addFirst(Bytecode.STORE_SUBSCRIPT, new ArgcBytecode((short) indices.length));
         }
     }
 
@@ -237,7 +242,7 @@ public final class AssignmentConverter implements BaseConverter {
                 bytes.add(Bytecode.SWAP_3);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_N, distFromTop + 1);
+                bytes.add(Bytecode.SWAP_N, new StackPosBytecode((short) (distFromTop + 1)));
         }
     }
 
@@ -309,7 +314,7 @@ public final class AssignmentConverter implements BaseConverter {
         var needsMakeOption = checkAssign(preDotConverter, pair.getValue(), valueType, variable);
         bytes.addAll(preDotConverter.convert());
         bytes.addAll(OptionTypeObject.maybeWrapBytes(valueConverter.convert(), needsMakeOption));
-        storeBytes.addFirst(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(pair.getValue())));
+        storeBytes.addFirst(Bytecode.STORE_ATTR, new ConstantBytecode(LangConstant.of(pair.getValue()), info));
     }
 
     private void assignToDotIndex(@NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
@@ -337,7 +342,7 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.addAll(TestConverter.bytes(indexParam, info, 1));
         }
         bytes.addAll(valueConverter.convert());
-        storeBytes.addFirst(Bytecode.STORE_SUBSCRIPT, indices.length);
+        storeBytes.addFirst(Bytecode.STORE_SUBSCRIPT, new ArgcBytecode((short) indices.length));
     }
 
     private void finishSlice(
@@ -346,7 +351,9 @@ public final class AssignmentConverter implements BaseConverter {
     ) {
         bytes.addAll(new SliceConverter(info, index).convert());
         bytes.addAll(valueConverter.convert());
-        storeBytes.addFirst(Bytecode.CALL_OP, OpSpTypeNode.SET_SLICE.ordinal(), 2);
+        storeBytes.addFirst(
+                Bytecode.CALL_OP, new OperatorBytecode(OpSpTypeNode.SET_SLICE), new ArgcBytecode((short) 2)
+        );
     }
 
     private void assignTopToDot(
@@ -374,7 +381,7 @@ public final class AssignmentConverter implements BaseConverter {
             bytes.add(Bytecode.MAKE_OPTION);
         }
         var nameAssigned = pair.getValue();
-        bytes.addFirst(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(nameAssigned)));
+        bytes.addFirst(Bytecode.STORE_ATTR, new ConstantBytecode(LangConstant.of(nameAssigned), info));
     }
 
     private void assignTopToDotIndex(

@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.FunctionNoBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.ComprehensionNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
@@ -77,12 +80,12 @@ public final class ComprehensionConverter implements TestConverter {
                 return new BytecodeList();
             }
             var bytes = innerConvert(braceType);
-            bytes.add(Bytecode.RETURN, 0);
+            bytes.add(Bytecode.RETURN, ArgcBytecode.zero());
             var fnInfo = new FunctionInfo(info.generatorName(), true, returnType());
             var fnNo = info.addFunction(new Function(node, fnInfo, bytes));
             BytecodeList trueBytes = new BytecodeList();
-            trueBytes.add(Bytecode.MAKE_FUNCTION, fnNo);
-            trueBytes.add(Bytecode.CALL_TOS, 0);
+            trueBytes.add(Bytecode.MAKE_FUNCTION, new FunctionNoBytecode((short) fnNo));
+            trueBytes.add(Bytecode.CALL_TOS, ArgcBytecode.zero());
             return trueBytes;
         } else {
             return innerConvert(braceType);
@@ -95,15 +98,15 @@ public final class ComprehensionConverter implements TestConverter {
         var bytes = new BytecodeList();
         if (braceType.createCode != null) {
             bytes.addAll(new TypeLoader(node.getLineInfo(), genericType(), info).convert());
-            bytes.add(braceType.createCode, 0);
+            bytes.add(braceType.createCode, ArgcBytecode.zero());
         }
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.loadConstant(Builtins.iterConstant(), info);
         bytes.addAll(TestConverter.bytes(node.getLooped().get(0), info, 1));
-        bytes.add(Bytecode.CALL_TOS, 1);
+        bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
         var topJump = info.newJumpLabel();
         bytes.addLabel(topJump);
         var forJump = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, forJump, 1);
+        bytes.add(Bytecode.FOR_ITER, forJump, ArgcBytecode.one());
         if (node.getVariables().length > 1) {
             throw CompilerTodoError.of("Cannot convert comprehension with more than one variable yet", node);
         }
@@ -115,7 +118,7 @@ public final class ComprehensionConverter implements TestConverter {
             var trueType = varType(typedVar);
             info.addVariable(typedVar.getVariable().getName(), trueType, variable);
         }
-        bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable.getVariable())));
         if (!node.getCondition().isEmpty()) {
             bytes.addAll(TestConverter.bytes(node.getCondition(), info, 1));
             bytes.add(Bytecode.JUMP_FALSE, topJump);
@@ -126,7 +129,7 @@ public final class ComprehensionConverter implements TestConverter {
         }
         bytes.addAll(TestConverter.bytes(node.getBuilder()[0].getArgument(), info, 1));
         if (braceType.addCode == Bytecode.YIELD) {
-            bytes.add(Bytecode.YIELD, 1);
+            bytes.add(Bytecode.YIELD, ArgcBytecode.one());
         } else {
             bytes.add(braceType.addCode);
         }

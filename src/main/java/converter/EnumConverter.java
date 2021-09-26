@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.converter.classbody.ConverterHolder;
 import main.java.converter.classbody.RawMethod;
 import main.java.parser.DescriptorNode;
@@ -59,7 +61,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         var loopLabel = info.newJumpLabel();
         BytecodeList bytes = new BytecodeList();
         bytes.add(Bytecode.DO_STATIC, loopLabel);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(node.getName().strName()));
+        bytes.loadConstant(LangConstant.of(node.getName().strName()), info);
         for (var name : node.getNames()) {
             bytes.add(Bytecode.DUP_TOP);
             if (name instanceof VariableNode) {
@@ -71,7 +73,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                     );
                 }
                 bytes.add(Bytecode.DUP_TOP);
-                bytes.add(Bytecode.CALL_TOS, 0);
+                bytes.add(Bytecode.CALL_TOS, ArgcBytecode.zero());
             } else if (name instanceof FunctionCallNode fnNode) {
                 if (!newOperatorInfo.getInfo().matches()) {
                     throw CompilerException.of(
@@ -83,13 +85,13 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
                 for (var arg : fnNode.getParameters()) {
                     bytes.addAll(TestConverter.bytes(arg.getArgument(), info, 1));
                 }
-                bytes.add(Bytecode.CALL_TOS, fnNode.getParameters().length);
+                bytes.add(Bytecode.CALL_TOS, new ArgcBytecode((short) fnNode.getParameters().length));
             } else {
                 throw CompilerInternalError.format(
                         "Node of type %s not a known EnumKeywordNode", name, name.getClass()
                 );
             }
-            bytes.add(Bytecode.STORE_ATTR, info.constIndex(new StringConstant(name.getVariable().getName())));
+            bytes.add(Bytecode.STORE_ATTR, new ConstantBytecode(LangConstant.of(name.getVariable().getName()), info));
         }
         bytes.add(Bytecode.POP_TOP);
         bytes.addLabel(loopLabel);

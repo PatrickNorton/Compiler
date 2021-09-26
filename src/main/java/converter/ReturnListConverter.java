@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.FunctionCallNode;
 import main.java.parser.Lined;
 import main.java.parser.TestListNode;
@@ -57,7 +59,7 @@ public final class ReturnListConverter implements BaseConverter {
                 bytes.addAll(convertInner(values.get(i), values.getVararg(i), retType));
             }
         }
-        bytes.add(value, retTypes.length);
+        bytes.add(value, new ArgcBytecode((short) retTypes.length));
         return bytes;
     }
 
@@ -99,7 +101,7 @@ public final class ReturnListConverter implements BaseConverter {
                 addSwap(bytes, distFromTop);
             }
         }
-        bytes.add(value, retTypes.length);
+        bytes.add(value, new ArgcBytecode((short) retTypes.length));
         return bytes;
     }
 
@@ -107,7 +109,7 @@ public final class ReturnListConverter implements BaseConverter {
         switch (distFromTop) {
             case 0 -> {}
             case 1 -> bytes.add(Bytecode.SWAP_2);
-            default -> bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
+            default -> bytes.add(Bytecode.SWAP_STACK, StackPosBytecode.zero(), new StackPosBytecode((short) distFromTop));
         }
     }
 
@@ -121,7 +123,7 @@ public final class ReturnListConverter implements BaseConverter {
             throw typeError(values.get(0), 0, retTypes[0], retType);
         }
         BytecodeList bytes = new BytecodeList(converter.convertTail());
-        bytes.add(Bytecode.RETURN, 1);  // Necessary b/c tail-call may delegate to normal call at runtime
+        bytes.add(Bytecode.RETURN, ArgcBytecode.one());  // Necessary b/c tail-call may delegate to normal call at runtime
         return bytes;
     }
 

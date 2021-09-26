@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.TryStatementNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,12 +25,13 @@ public final class TryConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP, jump1);
         bytes.addLabel(jump0);
         for (var except : node.getExcepted()) {
-            bytes.add(Bytecode.EXCEPT_N, info.constIndex(info.getType(except).name()));
+            throw CompilerTodoError.of("Exceptions are very broken right now", except);
+            // bytes.add(Bytecode.EXCEPT_N, info.constIndex(info.getType(except).name()));
         }
         if (!node.getAsVar().isEmpty()) {
             var asVar = node.getAsVar();
             info.addVariable(asVar.getName(), TypeObject.union(info.typesOf(node.getExcepted())), asVar);
-            bytes.add(Bytecode.STORE, info.varIndex(node.getAsVar()));
+            bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(node.getAsVar())));
         } else {
             bytes.add(Bytecode.POP_TOP);
         }
@@ -38,7 +41,7 @@ public final class TryConverter implements BaseConverter {
             convertFinally(bytes);
         }
         bytes.addLabel(jump1);
-        bytes.add(Bytecode.END_TRY, node.getExcepted().length);
+        bytes.add(Bytecode.END_TRY, new ArgcBytecode((short) node.getExcepted().length));
         return bytes;
     }
 
