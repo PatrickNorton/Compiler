@@ -7,6 +7,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * A bytecode value representing a position on the stack (relative to the top).
+ *
+ * @author Patrick Norton
+ * @see main.java.converter.Bytecode Bytecode
+ * @see BytecodeValue
+ */
 public final class StackPosBytecode implements BytecodeValue {
     private final short position;
 

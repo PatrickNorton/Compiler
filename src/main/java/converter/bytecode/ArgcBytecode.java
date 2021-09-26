@@ -6,6 +6,18 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * A bytecode value representing an argument count.
+ * <p>
+ *     This is for use in bytecodes like {@link
+ *     main.java.converter.Bytecode#CALL_FN CALL_FN}, where it represents the
+ *     number of arguments passed to the function.
+ * </p>
+ *
+ * @author Patrick Norton
+ * @see main.java.converter.Bytecode Bytecode
+ * @see BytecodeValue
+ */
 public final class ArgcBytecode implements BytecodeValue {
     private final short argc;
 

@@ -9,6 +9,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 // TODO: Remove explicit 'short' so that constants can be optimized
+
+/**
+ * A bytecode value representing a constant.
+ *
+ * @author Patrick Norton
+ * @see main.java.converter.Bytecode Bytecode
+ * @see BytecodeValue
+ */
 public final class ConstantBytecode implements BytecodeValue{
     private final LangConstant constant;
     private final short value;

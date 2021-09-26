@@ -6,6 +6,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * The bytecode value representing an enum variant.
+ *
+ * @author Patrick Norton
+ * @see BytecodeValue
+ * @see main.java.converter.Bytecode Bytecode
+ */
 public final class VariantBytecode  implements BytecodeValue {
     private final short variant;
 

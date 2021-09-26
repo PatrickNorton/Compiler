@@ -7,6 +7,18 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * The bytecode value representing a jump location.
+ * <p>
+ *     This bytecode doesn't store an integer value, but instead uses a {@link
+ *     Label directly}. This allows refactoring to take place without needing
+ *     to rewrite every bytecode value.
+ * </p>
+ *
+ * @author Patrick Norton
+ * @see main.java.converter.Bytecode Bytecode
+ * @see BytecodeValue
+ */
 public final class LocationBytecode implements BytecodeValue {
     private final Label value;
 

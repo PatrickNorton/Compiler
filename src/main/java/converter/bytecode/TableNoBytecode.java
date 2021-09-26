@@ -6,6 +6,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * The bytecode value representing a switch table.
+ *
+ * @author Patrick Norton
+ * @see BytecodeValue
+ * @see main.java.converter.Bytecode Bytecode
+ */
 public final class TableNoBytecode implements BytecodeValue {
     private final short table;
 

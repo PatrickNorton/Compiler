@@ -6,6 +6,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * The bytecode value representing a variable index.
+ *
+ * @author Patrick Norton
+ * @see BytecodeValue
+ * @see main.java.converter.Bytecode Bytecode
+ */
 public final class VariableBytecode implements BytecodeValue {
     private final short variable;
 

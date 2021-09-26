@@ -7,6 +7,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * The bytecode representing an operator ordinal.
+ *
+ * @author Patrick Norton
+ * @see main.java.converter.Bytecode Bytecode
+ * @see BytecodeValue
+ */
 public final class OperatorBytecode implements BytecodeValue {
     private final OpSpTypeNode operator;
 
