@@ -3,6 +3,7 @@ package main.java.converter.bytecode;
 import main.java.converter.CompilerInfo;
 import main.java.converter.GlobalCompilerInfo;
 import main.java.converter.LangConstant;
+import main.java.converter.TempConst;
 import main.java.converter.Util;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +43,13 @@ public final class ConstantBytecode implements BytecodeValue{
     @Override
     @NotNull
     public String strValue(@NotNull CompilerInfo info) {
-        assert constant.equals(info.getConstant(value));
-        return String.format("%d (%s)", value, constant.name(info.getConstants()));
+        if (constant instanceof TempConst) {
+            // FIXME: Remove this special case
+            assert constant.getType().equals(info.getConstant(value).getType());
+            return String.format("%d (%s)", value, info.getConstant(value).name(info.getConstants()));
+        } else {
+            assert constant.equals(info.getConstant(value));
+            return String.format("%d (%s)", value, constant.name(info.getConstants()));
+        }
     }
 }
