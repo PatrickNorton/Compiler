@@ -66,10 +66,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.add(Bytecode.EQUAL);
         bytes.addAll(postJumpBytes());
         for (var field : ((UserType<?>) type).getFields()) {
-            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));  // self
-            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
-            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 2));
-            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
+            loadFields(bytes, field);
             bytes.add(Bytecode.EQUAL);
             bytes.addAll(postJumpBytes());
         }
@@ -104,10 +101,7 @@ public final class DerivedOperatorConverter implements BaseConverter {
                         node, type.name(), field, fieldType
                 );
             }
-            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));  // self
-            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
-            bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 2));  // other
-            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(field), info));
+            loadFields(bytes, field);
             bytes.add(Bytecode.COMPARE);
             bytes.add(Bytecode.DUP_TOP);
             bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(0), info));
@@ -193,5 +187,13 @@ public final class DerivedOperatorConverter implements BaseConverter {
         bytes.add(Bytecode.PLUS);
         bytes.add(Bytecode.RETURN, ArgcBytecode.one());
         return bytes;
+    }
+
+    private void loadFields(@NotNull BytecodeList bytes, String field) {
+        var fieldConst = LangConstant.of(field);
+        bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 0));  // self
+        bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(fieldConst, info));
+        bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode((short) 2));  // other
+        bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(fieldConst, info));
     }
 }
