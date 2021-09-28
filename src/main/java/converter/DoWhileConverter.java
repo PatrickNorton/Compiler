@@ -1,6 +1,7 @@
 package main.java.converter;
 
 import main.java.parser.DoStatementNode;
+import main.java.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 public final class DoWhileConverter extends LoopConverter {
@@ -14,12 +15,19 @@ public final class DoWhileConverter extends LoopConverter {
     @NotNull
     @Override
     protected BytecodeList trueConvert() {
+        return trueConvertWithReturn().getKey();
+    }
+
+    @Override
+    @NotNull
+    protected Pair<BytecodeList, DivergingInfo> trueConvertWithReturn() {
         var label = info.newJumpLabel();
-        var bytes = new BytecodeList(convertBody());
+        var pair = convertBody();
+        var bytes = pair.getKey();
         bytes.addLabel(info.loopManager().continueLabel());
         bytes.addAll(convertCond());
         bytes.add(Bytecode.JUMP_TRUE, label);
-        return bytes;
+        return Pair.of(bytes, pair.getValue());
     }
 
     @NotNull
@@ -43,13 +51,14 @@ public final class DoWhileConverter extends LoopConverter {
         return converter.convert();
     }
 
-    private BytecodeList convertBody() {
+    @NotNull
+    private Pair<BytecodeList, DivergingInfo> convertBody() {
         var pair = BaseConverter.bytesWithReturn(node.getBody(), info);
         var bytes = pair.getKey();
         var divergingInfo = pair.getValue();
         if ((divergingInfo.willBreak() || divergingInfo.willReturn()) && !divergingInfo.mayContinue()) {
             CompilerWarning.warn("Loop executes exactly once", WarningType.UNREACHABLE, info, node);
         }
-        return bytes;
+        return Pair.of(bytes, divergingInfo);
     }
 }
