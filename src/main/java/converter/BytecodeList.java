@@ -195,6 +195,9 @@ public final class BytecodeList {
             if (label != null) {
                 var newLabel = translationMap.computeIfAbsent(label, x -> new Label());
                 result.addValue(value.copyWithLabel(newLabel));
+            } else if (value.getFirstParam() instanceof LocationBytecode loc) {
+                var newLabel = translationMap.computeIfAbsent(loc.getLabel(), x -> new Label());
+                result.addValue(value.copyWithFirstParam(new LocationBytecode(newLabel)));
             } else {
                 result.addValue(value.getCopy());
             }
@@ -352,6 +355,12 @@ public final class BytecodeList {
         @Contract(value = "_ -> new", pure = true)
         @NotNull
         public Value copyWithLabel(Label label) {
+            return new Value(isLabel, bytecodeType, label, firstParam, secondParam);
+        }
+
+        @Contract(value = "_ -> new", pure = true)
+        @NotNull
+        public Value copyWithFirstParam(BytecodeValue firstParam) {
             return new Value(isLabel, bytecodeType, label, firstParam, secondParam);
         }
     }
