@@ -40,7 +40,7 @@ public final class DeadCode {
         for (var pair : bytes.enumerate()) {
             var index = pair.getKey();
             var bytecode = pair.getValue();
-            if (bytecode == Bytecode.JUMP) {
+            if (bytecode == Bytecode.JUMP || bytecode == Bytecode.RETURN) {
                 var nextLabel = bytes.nextLabel(index);
                 if (nextLabel == null) {
                     bytes.removeRange(index.next());
