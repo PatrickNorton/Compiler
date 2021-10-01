@@ -47,7 +47,9 @@ public enum MutableType {
             case MUT -> MUT;
             case FINAL -> FINAL;
             case MREF -> MREF;
-            default -> throw new UnsupportedOperationException();
+            default -> throw CompilerInternalError.format(
+                    "Descriptor does not correspond to a mutability: %s", descriptor, descriptor
+            );
         };
     }
 
