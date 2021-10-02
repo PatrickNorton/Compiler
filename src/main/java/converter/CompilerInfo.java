@@ -213,12 +213,22 @@ public final class CompilerInfo {
      * @return The index in the stack
      */
     public short constIndex(String name) {
+        return constIndex(getConstant(name));
+    }
+
+    /**
+     * The constant value of a variable, given its name.
+     *
+     * @param name The name of the variable
+     * @return The index in the stack
+     */
+    public LangConstant getConstant(String name) {
         var variableInfo = varHolder.varInfo(name);
-        return constIndex(variableInfo.isPresent()
+        return variableInfo.isPresent()
                 ? variableInfo.orElseThrow().constValue()
                 : Builtins.constantOf(name).orElseThrow(
                 () -> new NoSuchElementException(String.format("No builtin '%s' found", name))
-        ));
+        );
     }
 
     /**

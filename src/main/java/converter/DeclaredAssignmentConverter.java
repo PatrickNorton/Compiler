@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.DeclaredAssignmentNode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.Lined;
@@ -48,16 +49,14 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         int tupleCount = 0;
         for (int i = 0; i < values.size(); i++) {
             switch (values.getVararg(i)) {
-                case "":
-                    convertNoTuple(bytes, types[i - tupleCount], isStatic, values.get(i), mutability, isConst);
-                    break;
-                case "*":
-                    tupleCount += convertTuple(bytes, isStatic, mutability, isConst, tupleCount, i);
-                    break;
-                case "**":
-                    throw CompilerException.of("Cannot unpack dictionaries in declared assignment", values.get(i));
-                default:
-                    throw CompilerInternalError.format("Invalid splat type '%s'", values.get(i), values.getVararg(i));
+                case "" -> convertNoTuple(bytes, types[i - tupleCount], isStatic, values.get(i), mutability, isConst);
+                case "*" -> tupleCount += convertTuple(bytes, isStatic, mutability, isConst, tupleCount, i);
+                case "**" -> throw CompilerException.of(
+                        "Cannot unpack dictionaries in declared assignment", values.get(i)
+                );
+                default -> throw CompilerInternalError.format(
+                        "Invalid splat type '%s'", values.get(i), values.getVararg(i)
+                );
             }
         }
         if (types.length != values.size() + tupleCount) {
@@ -238,7 +237,7 @@ public final class DeclaredAssignmentConverter implements BaseConverter {
         var index = isStatic
                 ? info.addStaticVar(assignedName, assignedType, true, node)
                 : info.addVariable(assignedName, assignedType, isConst, node);
-        bytes.add(isStatic ? Bytecode.STORE_STATIC : Bytecode.STORE, index);
+        bytes.add(isStatic ? Bytecode.STORE_STATIC : Bytecode.STORE, new VariableBytecode(index));
     }
 
     private CompilerException mutStaticException(Lined lineInfo) {

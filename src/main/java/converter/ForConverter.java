@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.ForStatementNode;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TypedVariableNode;
@@ -57,7 +59,7 @@ public final class ForConverter extends LoopConverter {
         var topLabel = info.newJumpLabel();
         bytes.addLabel(topLabel);
         var label = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, label, retCount);
+        bytes.add(Bytecode.FOR_ITER, label, new ArgcBytecode((short) retCount));
         for (int i = retCount - 1; i >= 0; i--) {
             addVariableStorage(bytes, i, valueConverter, false);
         }
@@ -71,8 +73,10 @@ public final class ForConverter extends LoopConverter {
         var iterLen = node.getIterables().size();
         if (varLen != iterLen) {
             throw CompilerException.of(
-                    "For loops with more than one iterable must have an equal number of variables and iterables\n\n" +
-                    "Note: Statements with multiple returns are only usable in for-loops when there is only one",
+                    """
+                    For loops with more than one iterable must have an equal number of variables and iterables
+
+                    Note: Statements with multiple returns are only usable in for-loops when there is only one""",
                     node
             );
         }
@@ -86,7 +90,7 @@ public final class ForConverter extends LoopConverter {
         }
         bytes.addLabel(info.loopManager().continueLabel());
         var label = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_PARALLEL, label, varLen);
+        bytes.add(Bytecode.FOR_PARALLEL, label, new ArgcBytecode((short) varLen));
         assert valueConverters.size() == varLen;
         for (int i = varLen - 1; i >= 0; i--) {
             var valueConverter = valueConverters.get(i);
@@ -120,7 +124,7 @@ public final class ForConverter extends LoopConverter {
                 throw CompilerException.format("Cannot assign to immutable variable '%s'", node, name);
             }
         }
-        bytes.add(Bytecode.STORE, info.varIndex(variable));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
     }
 
     @NotNull
@@ -171,9 +175,9 @@ public final class ForConverter extends LoopConverter {
     }
 
     static void addIter(@NotNull CompilerInfo info, @NotNull BytecodeList bytes, @NotNull TestConverter converter) {
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.loadConstant(Builtins.iterConstant(), info);
         bytes.addAll(convertIter(converter));
-        bytes.add(Bytecode.CALL_TOS, 1);
+        bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
     }
 
     private static BytecodeList convertIter(TestConverter converter) {

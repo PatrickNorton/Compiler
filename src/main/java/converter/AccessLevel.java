@@ -42,19 +42,11 @@ public enum AccessLevel {
 
     @Contract(pure = true)
     public static boolean canAccess(@NotNull AccessLevel valueLevel, AccessLevel accessLevel) {
-        switch (valueLevel) {
-            case PUBLIC:
-                return true;
-            case PRIVATE:
-                return accessLevel == PRIVATE;
-            case PUBGET:
-                return true;  // TODO: Mutable/immutable access
-            case PROTECTED:
-                return accessLevel == PRIVATE || accessLevel == PROTECTED;
-            case FILE:
-                return accessLevel == PRIVATE || accessLevel == FILE;
-            default:
-                throw new IllegalStateException("Unknown AccessLevel");
-        }
+        return switch (valueLevel) {
+            case PUBLIC, PUBGET -> true; // TODO: Mutable/immutable access
+            case PRIVATE -> accessLevel == PRIVATE;
+            case PROTECTED -> accessLevel == PRIVATE || accessLevel == PROTECTED;
+            case FILE -> accessLevel == PRIVATE || accessLevel == FILE;
+        };
     }
 }

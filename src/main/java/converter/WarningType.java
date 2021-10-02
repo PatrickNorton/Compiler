@@ -14,24 +14,15 @@ public enum WarningType {
     ;
 
     public Optional<String> annotationName() {
-        switch (this) {
-            case DEPRECATED:
-                return Optional.of("deprecated");
-            case UNUSED:
-                return Optional.of("unused");
-            case TRIVIAL_VALUE:
-                return Optional.of("trivial");
-            case UNREACHABLE:
-                return Optional.of("unreachable");
-            case INFINITE_LOOP:
-                return Optional.of("infinite");
-            case TODO:
-                return Optional.of("todo");
-            case ZERO_DIVISION:
-                return Optional.of("zero");
-            case NO_TYPE:
-            default:
-                return Optional.empty();
-        }
+        return switch (this) {
+            case DEPRECATED -> Optional.of("deprecated");
+            case UNUSED -> Optional.of("unused");
+            case TRIVIAL_VALUE -> Optional.of("trivial");
+            case UNREACHABLE -> Optional.of("unreachable");
+            case INFINITE_LOOP -> Optional.of("infinite");
+            case TODO -> Optional.of("todo");
+            case ZERO_DIVISION -> Optional.of("zero");
+            case NO_TYPE -> Optional.empty();
+        };
     }
 }

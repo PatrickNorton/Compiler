@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.util.Pair;
@@ -80,8 +81,8 @@ public final class CastedConverter extends OperatorConverter {
         var jumpLbl = info.newJumpLabel();
         bytes.add(Bytecode.JUMP, jumpLbl);
         var message = String.format("Cannot cast to type %s", representedType.name());
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(message)));
-        bytes.add(Bytecode.THROW_QUICK, 1);
+        bytes.loadConstant(LangConstant.of(message), info);
+        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.one());
         bytes.addLabel(jumpLbl);
         return bytes;
     }

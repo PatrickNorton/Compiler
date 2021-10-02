@@ -352,8 +352,7 @@ final class VariableHolder {
                 }
             }
             var builtin = Builtins.BUILTIN_MAP.get(type.strName());
-            if (builtin instanceof TypeObject) {
-                var typeObj = (TypeObject) builtin;
+            if (builtin instanceof TypeObject typeObj) {
                 var endType = type.getSubtypes().length == 0
                         ? typeObj
                         : typeObj.generify(type, typesOf(warnings, type.getSubtypes()));

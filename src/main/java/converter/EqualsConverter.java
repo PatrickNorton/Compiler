@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
@@ -55,15 +56,11 @@ public final class EqualsConverter extends OperatorConverter {
         if (constant.isPresent()) {
             return loadConstant(info, constant.orElseThrow());
         }
-        switch (args.length) {
-            case 0:
-            case 1:
-                return convert0();
-            case 2:
-                return convert2();
-            default:
-                throw CompilerTodoError.of("Cannot compute == for more than 2 operands", lineInfo);
-        }
+        return switch (args.length) {
+            case 0, 1 -> convert0();
+            case 2 -> convert2();
+            default -> throw CompilerTodoError.of("Cannot compute == for more than 2 operands", lineInfo);
+        };
     }
 
     private BytecodeList convert0() {
@@ -77,7 +74,7 @@ public final class EqualsConverter extends OperatorConverter {
         var conv = sideEffects();
         var bytes = new BytecodeList(conv);
         bytes.add(Bytecode.POP_TOP);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of(equalsType)));
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(LangConstant.of(equalsType), info));
         return bytes;
     }
 

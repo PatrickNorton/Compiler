@@ -71,15 +71,13 @@ public final class UnionConverter extends ClassConverterBase<UnionDefinitionNode
     }
 
     protected void parseStatement(IndependentNode stmt, ConverterHolder converter) {
-        if (stmt instanceof DeclarationNode) {
-            var decl = (DeclarationNode) stmt;
+        if (stmt instanceof DeclarationNode decl) {
             if (isStatic(decl)) {
                 converter.attributes().parse(decl);
             } else {
                 addVariant(decl);
             }
-        } else if (stmt instanceof DeclaredAssignmentNode) {
-            var decl = (DeclaredAssignmentNode) stmt;
+        } else if (stmt instanceof DeclaredAssignmentNode decl) {
             if (isStatic(decl)) {
                 converter.attributes().parse(decl);
             } else {

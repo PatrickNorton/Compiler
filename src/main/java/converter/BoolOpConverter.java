@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.Lined;
 import main.java.parser.OperatorTypeNode;
@@ -31,18 +33,13 @@ public final class BoolOpConverter extends OperatorConverter {
 
     @Override
     public Optional<LangConstant> constantReturn() {
-        switch (op) {
-            case BOOL_NOT:
-                return boolNotConst();
-            case BOOL_AND:
-                return boolAndConst();
-            case BOOL_OR:
-                return boolOrConst();
-            case BOOL_XOR:
-                return boolXorConst();
-            default:
-                throw CompilerInternalError.format("Unknown boolean operator: %s", lineInfo, op);
-        }
+        return switch (op) {
+            case BOOL_NOT -> boolNotConst();
+            case BOOL_AND -> boolAndConst();
+            case BOOL_OR -> boolOrConst();
+            case BOOL_XOR -> boolXorConst();
+            default -> throw CompilerInternalError.format("Unknown boolean operator: %s", lineInfo, op);
+        };
     }
 
     @Override
@@ -54,31 +51,26 @@ public final class BoolOpConverter extends OperatorConverter {
     @Override
     @NotNull
     public BytecodeList convert() {
-        switch (op) {
-            case BOOL_AND:
-            case BOOL_OR:
-                return convertBoolOp();
-            case BOOL_NOT:
-                return convertBoolNot();
-            case BOOL_XOR:
-                return convertBoolXor();
-            default:
-                throw CompilerInternalError.format("Invalid boolean operator %s", lineInfo, op);
-        }
+        return switch (op) {
+            case BOOL_AND, BOOL_OR -> convertBoolOp();
+            case BOOL_NOT -> convertBoolNot();
+            case BOOL_XOR -> convertBoolXor();
+            default -> throw CompilerInternalError.format("Invalid boolean operator %s", lineInfo, op);
+        };
     }
 
     @NotNull
     private BytecodeList convertBoolOp() {
         assert op == OperatorTypeNode.BOOL_AND || op == OperatorTypeNode.BOOL_OR;
         var bytes = new BytecodeList();
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.boolConstant()));
+        bytes.add(Bytecode.LOAD_CONST, new ConstantBytecode(Builtins.boolConstant(), info));
         bytes.addAll(TestConverter.bytes(args[0].getArgument(), info, 1));
         bytes.add(Bytecode.DUP_TOP);
         var label = info.newJumpLabel();
         var bytecode = op == OperatorTypeNode.BOOL_OR ? Bytecode.JUMP_TRUE : Bytecode.JUMP_FALSE;
         bytes.add(bytecode, label);
         addPostJump(bytes, label);
-        bytes.add(Bytecode.CALL_TOS, 1);
+        bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP);
         }

@@ -112,27 +112,27 @@ public final class FileWriter {
         var functions = info.getFunctions();
         for (var function : functions) {
             System.out.printf("%s:%n", function.getName());
-            System.out.println(Bytecode.disassemble(info, function.getBytes().convertToBytes()));
+            System.out.println(function.getBytes().disassemble(info));
         }
         var classes = info.getClasses();
         for (var cls : classes) {
             for (var fnPair : cls.getMethodDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes().convertToBytes()));
+                System.out.println(fnPair.getValue().getBytes().disassemble(info));
             }
             for (var fnPair : cls.getStaticMethods().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(Bytecode.disassemble(info, fnPair.getValue().getBytes().convertToBytes()));
+                System.out.println(fnPair.getValue().getBytes().disassemble(info));
             }
             for (var opPair : cls.getOperatorDefs().entrySet()) {
                 System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
-                System.out.println(Bytecode.disassemble(info, opPair.getValue().getBytes().convertToBytes()));
+                System.out.println(opPair.getValue().getBytes().disassemble(info));
             }
             for (var propPair : cls.getProperties().entrySet()) {
                 System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(info, propPair.getValue().getKey().getBytes().convertToBytes()));
+                System.out.println(propPair.getValue().getValue().getBytes().disassemble(info));
                 System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(Bytecode.disassemble(info, propPair.getValue().getValue().getBytes().convertToBytes()));
+                System.out.println(propPair.getValue().getValue().getBytes().disassemble(info));
             }
         }
         for (int i = 0; i < info.getTables().size(); i++) {

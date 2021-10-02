@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
 import main.java.parser.DottedVar;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.FunctionCallNode;
@@ -55,13 +58,12 @@ public final class DotConverter implements TestConverter {
     ) {
         var last = node.getLast();
         var postDots = node.getPostDots();
-        if (!(last.getPostDot() instanceof IndexNode)) {
+        if (!(last.getPostDot() instanceof IndexNode postDot)) {
             throw CompilerInternalError.of(
                     "DotConverter.exceptLastIndex does not work where the last dot is not an index", last
             );
         }
         var newPostDots = Arrays.copyOf(postDots, postDots.length);
-        var postDot = (IndexNode) last.getPostDot();
         var dot = new DottedVar(last.getLineInfo(), last.getDotPrefix(), (NameNode) postDot.getVar());
         newPostDots[newPostDots.length - 1] = dot;
         var newNode = new DottedVariableNode(node.getPreDot(), newPostDots);
@@ -94,16 +96,12 @@ public final class DotConverter implements TestConverter {
 
     @NotNull
     private TypeObject[] dotReturnType(@NotNull TypeObject result, @NotNull DottedVar dot) {
-        switch (dot.getDotPrefix()) {
-            case "":
-                return normalDotReturnType(result, dot);
-            case "?":
-                return optionalDotReturnType(result, dot);
-            case "!!":
-                return nonNullReturnType(result, dot);
-            default:
-                throw CompilerInternalError.of("Unknown type of dot " + dot.getDotPrefix(), dot);
-        }
+        return switch (dot.getDotPrefix()) {
+            case "" -> normalDotReturnType(result, dot);
+            case "?" -> optionalDotReturnType(result, dot);
+            case "!!" -> nonNullReturnType(result, dot);
+            default -> throw CompilerInternalError.of("Unknown type of dot " + dot.getDotPrefix(), dot);
+        };
     }
 
     @NotNull
@@ -137,8 +135,7 @@ public final class DotConverter implements TestConverter {
         } else if (postDot instanceof SpecialOpNameNode) {
             var operator = ((SpecialOpNameNode) postDot).getOperator();
             return new TypeObject[]{result.tryOperatorInfo(node.getLineInfo(), operator, info).toCallable()};
-        } else if (postDot instanceof IndexNode) {
-            var index = (IndexNode) postDot;
+        } else if (postDot instanceof IndexNode index) {
             var variable = new DottedVar(dot.getLineInfo(), dot.getDotPrefix(),  (NameNode) index.getVar());
             var attrType = normalDotReturnType(result, variable)[0];
             var operator = IndexConverter.isSlice(index.getIndices())
@@ -192,19 +189,14 @@ public final class DotConverter implements TestConverter {
                 throw CompilerException.of("Expected at least 1 return, got 0", dot.getPostDot());
             }
             var prev = previous[0];
-            switch (dot.getDotPrefix()) {
-                case "":
-                    previous = convertNormal(prev, bytes, dot);
-                    break;
-                case "?":
-                    previous = convertNullDot(prev, bytes, dot);
-                    break;
-                case "!!":
-                    previous = convertNotNullDot(prev, bytes, dot);
-                    break;
-                default:
-                    throw CompilerInternalError.format("Unknown value for dot prefix: '%s'", dot, dot.getDotPrefix());
-            }
+            previous = switch (dot.getDotPrefix()) {
+                case "" -> convertNormal(prev, bytes, dot);
+                case "?" -> convertNullDot(prev, bytes, dot);
+                case "!!" -> convertNotNullDot(prev, bytes, dot);
+                default -> throw CompilerInternalError.format(
+                        "Unknown value for dot prefix: '%s'", dot, dot.getDotPrefix()
+                );
+            };
         }
         if (previous.length < retCount) {
             throw CompilerException.format(
@@ -273,13 +265,13 @@ public final class DotConverter implements TestConverter {
         if (postDot instanceof VariableNode) {
             var strName = ((VariableNode) postDot).getName();
             var type = previous.tryAttrType(postDot, strName, info);
-            bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(strName)));
+            bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(strName), info));
             return new TypeObject[] {type};
         } else if (postDot instanceof FunctionCallNode) {
             return convertMethod(previous, bytes, (FunctionCallNode) postDot);
         } else if (postDot instanceof SpecialOpNameNode) {
             var op = ((SpecialOpNameNode) postDot).getOperator();
-            bytes.add(Bytecode.LOAD_OP, op.ordinal());
+            bytes.add(Bytecode.LOAD_OP, new OperatorBytecode(op));
             return new TypeObject[]{previous.tryOperatorInfo(postDot, op, info).toCallable()};
         } else if (postDot instanceof IndexNode) {
             return convertIndex(previous, bytes, (IndexNode) postDot);
@@ -311,7 +303,7 @@ public final class DotConverter implements TestConverter {
                 info, postDot, type.toCallable(), postDot.getParameters()
         );
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.CALL_OP, op.ordinal(), pair.getValue().shortValue());
+        bytes.addCallOp(op, pair.getValue().shortValue());
         return type.getReturns();
     }
 
@@ -323,8 +315,9 @@ public final class DotConverter implements TestConverter {
         var pair = FunctionCallConverter.convertArgs(
                 info, postDot, type, postDot.getParameters()
         );
+        short argc = pair.getValue().shortValue();
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.CALL_METHOD, info.constIndex(LangConstant.of(name)), pair.getValue());
+        bytes.add(Bytecode.CALL_METHOD, new ConstantBytecode(LangConstant.of(name), info), new ArgcBytecode(argc));
         return type.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
     }
 
@@ -337,7 +330,7 @@ public final class DotConverter implements TestConverter {
                 info, postDot, type, postDot.getParameters()
         );
         bytes.addAll(pair.getKey());
-        bytes.add(Bytecode.CALL_TOS, pair.getValue());
+        bytes.add(Bytecode.CALL_TOS, new ArgcBytecode(pair.getValue().shortValue()));
         return type.tryOperatorReturnType(postDot, OpSpTypeNode.CALL, info);
     }
 
@@ -352,7 +345,7 @@ public final class DotConverter implements TestConverter {
             var result = type.tryOperatorInfo(node, OpSpTypeNode.GET_SLICE, info);
             var slice = (SliceNode) indices[0];
             bytes.addAll(new SliceConverter(info, slice).convert());
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.GET_SLICE.ordinal(), 1);
+            bytes.addCallOp(OpSpTypeNode.GET_SLICE, (short) 1);
             return result.getReturns();
         } else {
             var result = type.tryOperatorInfo(node, OpSpTypeNode.GET_ATTR, info);

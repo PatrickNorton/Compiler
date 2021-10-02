@@ -807,14 +807,12 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
         } else if (b.isSuperclass(a)) {
             return b;
         }
-        if (!(a instanceof UserType) || !(b instanceof UserType)) {
+        if (!(a instanceof UserType<?> userA) || !(b instanceof UserType<?> userB)) {
             throw CompilerTodoError.format(
                     "'getSuper' on non-user type '%s' or '%s'",
                     LineInfo.empty(), a.name(), b.name()
             );
         }
-        var userA = (UserType<?>) a;
-        var userB = (UserType<?>) b;
         Set<TypeObject> aSupers = new HashSet<>();
         Set<TypeObject> bSupers = new HashSet<>();
         for (var pair : Zipper.of(userA.recursiveSupers(), userB.recursiveSupers())) {
@@ -844,8 +842,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
     static TypeObject of(CompilerInfo info, TestNode arg) {
         if (arg instanceof VariableNode) {
             return info.classOf(((VariableNode) arg).getName()).orElse(null);
-        } else if (arg instanceof IndexNode) {
-            var node = (IndexNode) arg;
+        } else if (arg instanceof IndexNode node) {
             var cls = of(info, node.getVar());
             var args = node.getIndices();
             if (cls == null)

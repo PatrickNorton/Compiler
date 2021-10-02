@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.FunctionNoBytecode;
 import main.java.parser.CLArgs;
 import main.java.parser.LineInfo;
 import main.java.parser.Optimization;
@@ -221,7 +223,7 @@ public final class GlobalCompilerInfo {
             var bytes = defaultNo != -1 ? defaultFunctions.get(defaultNo) : createDefaultFn();
             if (isTest()) {
                 var index = TestFnConverter.convertTestStart(this);
-                bytes.add(Bytecode.CALL_FN, index, 0);
+                bytes.add(Bytecode.CALL_FN, new FunctionNoBytecode((short) index), ArgcBytecode.zero());
             }
             functions.set(0, new Function(new FunctionInfo("__default__"), bytes));
         }
@@ -256,7 +258,8 @@ public final class GlobalCompilerInfo {
                 var fnName = String.format("__default__$%d", i);
                 var fn = new Function(new FunctionInfo(fnName), func);
                 functions.add(fn);
-                result.add(Bytecode.CALL_FN, functions.size() - 1, 0);
+                var fnNo = functions.size() - 1;
+                result.add(Bytecode.CALL_FN, new FunctionNoBytecode((short) fnNo), ArgcBytecode.zero());
             }
         }
         return result;

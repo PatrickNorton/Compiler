@@ -37,8 +37,7 @@ public final class ListTypeObject extends TypeObject implements Iterable<TypeObj
 
     @Override
     public boolean isSuperclass(@NotNull TypeObject other) {
-        if (other instanceof ListTypeObject) {
-            var list = (ListTypeObject) other;
+        if (other instanceof ListTypeObject list) {
             if (values.size() != list.values.size()) {
                 return false;
             }

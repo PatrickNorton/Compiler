@@ -43,16 +43,14 @@ public enum MutableType {
 
     @Contract(pure = true)
     public static MutableType fromDescriptor(@NotNull DescriptorNode descriptor) {
-        switch (descriptor) {
-            case MUT:
-                return MUT;
-            case FINAL:
-                return FINAL;
-            case MREF:
-                return MREF;
-            default:
-                throw new UnsupportedOperationException();
-        }
+        return switch (descriptor) {
+            case MUT -> MUT;
+            case FINAL -> FINAL;
+            case MREF -> MREF;
+            default -> throw CompilerInternalError.format(
+                    "Descriptor does not correspond to a mutability: %s", descriptor, descriptor
+            );
+        };
     }
 
     @Contract(pure = true)

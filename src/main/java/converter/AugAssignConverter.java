@@ -1,5 +1,8 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.AugAssignTypeNode;
 import main.java.parser.AugmentedAssignmentNode;
 import main.java.parser.DottedVariableNode;
@@ -70,7 +73,7 @@ public final class AugAssignConverter implements BaseConverter {
         bytes.addAll(valueConverter.convert());
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator));
         var variable = (VariableNode) node.getName();
-        bytes.add(Bytecode.STORE, info.varIndex(variable));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
         return bytes;
     }
 
@@ -90,10 +93,10 @@ public final class AugAssignConverter implements BaseConverter {
         checkInfo(returnInfo.orElse(null), dotType, valueConverter.returnType()[0]);
         var bytes = new BytecodeList(assignedConverter.convert());
         bytes.add(Bytecode.DUP_TOP);
-        bytes.add(Bytecode.LOAD_DOT, info.constIndex(LangConstant.of(strName)));
+        bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(LangConstant.of(strName), info));
         bytes.addAll(valueConverter.convert());
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator));
-        bytes.add(Bytecode.STORE_ATTR, info.constIndex(LangConstant.of(strName)));
+        bytes.add(Bytecode.STORE_ATTR, new ConstantBytecode(LangConstant.of(strName), info));
         return bytes;
     }
 
@@ -129,7 +132,7 @@ public final class AugAssignConverter implements BaseConverter {
         var bytes = IndexConverter.convertDuplicate(assignedConverter, indices, info, indices.length);
         bytes.addAll(valueConverter.convert());
         bytes.add(OperatorConverter.BYTECODE_MAP.get(operator));
-        bytes.add(Bytecode.STORE_SUBSCRIPT, indices.length);
+        bytes.add(Bytecode.STORE_SUBSCRIPT, new ArgcBytecode((short) indices.length));
         return bytes;
     }
 
@@ -169,7 +172,7 @@ public final class AugAssignConverter implements BaseConverter {
         if (needsMakeOption) {
             bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.STORE, info.varIndex(variable));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable)));
         bytes.addLabel(label);
         return bytes;
     }
@@ -204,17 +207,17 @@ public final class AugAssignConverter implements BaseConverter {
             throw coerceError(node, variableType);
         }
         var needsMakeOption = needsMakeOption((OptionTypeObject) variableType, valueType);
-        var constIndex = info.constIndex(LangConstant.of(strName));
+        var constant = LangConstant.of(strName);
         var bytes = new BytecodeList(preDotConverter.convert());
         bytes.add(Bytecode.DUP_TOP);
-        bytes.add(Bytecode.LOAD_DOT, constIndex);
+        bytes.add(Bytecode.LOAD_DOT, new ConstantBytecode(constant, info));
         var label = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_NN, label);
         bytes.addAll(valueConverter.convert());
         if (needsMakeOption) {
             bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.STORE_ATTR, constIndex);
+        bytes.add(Bytecode.STORE_ATTR, new ConstantBytecode(constant, info));
         var label2 = info.newJumpLabel();
         bytes.add(Bytecode.JUMP, label2);
         bytes.addLabel(label);
@@ -259,16 +262,16 @@ public final class AugAssignConverter implements BaseConverter {
         if (postDotConverters.length == 1) {
             bytes.add(Bytecode.DUP_TOP_2);
         } else {
-            bytes.add(Bytecode.DUP_TOP_N, postDotConverters.length + 1);
+            bytes.add(Bytecode.DUP_TOP_N, new ArgcBytecode((short) (postDotConverters.length + 1)));
         }
-        bytes.add(Bytecode.LOAD_SUBSCRIPT, postDotConverters.length);
+        bytes.add(Bytecode.LOAD_SUBSCRIPT, new ArgcBytecode((short) postDotConverters.length));
         var label = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_NN, label);
         bytes.addAll(valueConverter.convert());
         if (needsMakeOption) {
             bytes.add(Bytecode.MAKE_OPTION);
         }
-        bytes.add(Bytecode.STORE_SUBSCRIPT, postDotConverters.length + 1);
+        bytes.add(Bytecode.STORE_SUBSCRIPT, new ArgcBytecode((short) (postDotConverters.length + 1)));
         var label2 = info.newJumpLabel();
         bytes.add(Bytecode.JUMP, label2);
         bytes.addLabel(label);

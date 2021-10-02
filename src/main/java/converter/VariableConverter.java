@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.VariableNode;
 import main.java.util.Levenshtein;
 import org.jetbrains.annotations.NotNull;
@@ -53,15 +54,17 @@ public final class VariableConverter implements TestConverter {
             var bytes = new BytecodeList(bytecode.size());
             short index = info.staticVarIndex(node);
             assert index != -1;
-            bytes.add(bytecode, index);
+            bytes.add(bytecode, new VariableBytecode(index));
             return bytes;
         } else {
             boolean isConst = info.variableIsConstant(name);
-            var bytecode = isConst ? Bytecode.LOAD_CONST : Bytecode.LOAD_VALUE;
-            var bytes = new BytecodeList(bytecode.size());
-            short index = isConst ? info.constIndex(name) : info.varIndex(node);
-            assert index != -1;
-            bytes.add(bytecode, index);
+            var bytes = new BytecodeList(1);
+            if (isConst) {
+                bytes.loadConstant(info.getConstant(name), info);
+            } else {
+                assert info.varIndex(node) != -1;
+                bytes.add(Bytecode.LOAD_VALUE, new VariableBytecode(info.varIndex(node)));
+            }
             return bytes;
         }
     }

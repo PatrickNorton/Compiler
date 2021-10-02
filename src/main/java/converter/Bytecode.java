@@ -1,16 +1,22 @@
 package main.java.converter;
 
-import main.java.parser.OpSpTypeNode;
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.BytecodeValue;
+import main.java.converter.bytecode.ConstantBytecode;
+import main.java.converter.bytecode.FunctionNoBytecode;
+import main.java.converter.bytecode.LocationBytecode;
+import main.java.converter.bytecode.OperatorBytecode;
+import main.java.converter.bytecode.StackPosBytecode;
+import main.java.converter.bytecode.SyscallBytecode;
+import main.java.converter.bytecode.TableNoBytecode;
+import main.java.converter.bytecode.VariableBytecode;
+import main.java.converter.bytecode.VariantBytecode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
 
 public enum Bytecode {
     NOP(0x0),
@@ -24,7 +30,7 @@ public enum Bytecode {
     DUP_TOP(0x8),
     SWAP_2(0x9),
     SWAP_3(0xA),
-    SWAP_N(0xB, Type.ARGC),
+    SWAP_N(0xB, Type.STACK_POS),
     STORE(0xC, Type.VARIABLE),
     STORE_SUBSCRIPT(0xD, Type.ARGC),
     STORE_ATTR(0xE, Type.CONSTANT),
@@ -144,17 +150,19 @@ public enum Bytecode {
             byteCount = (byte) bytes;
         }
 
-        void assemble(List<Byte> bytes, int value) {
-            switch (byteCount) {
-                case 2:
-                    bytes.addAll(Util.shortToBytes((short) value));
-                    break;
-                case 4:
-                    bytes.addAll(Util.intToBytes(value));
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unknown byte count");
-            }
+        private boolean matches(BytecodeValue value) {
+            return switch (this) {
+                case VARIABLE -> value instanceof VariableBytecode;
+                case CONSTANT -> value instanceof ConstantBytecode;
+                case LOCATION -> value instanceof LocationBytecode;
+                case ARGC -> value instanceof ArgcBytecode;
+                case OPERATOR -> value instanceof OperatorBytecode;
+                case FUNCTION_NO -> value instanceof FunctionNoBytecode;
+                case STACK_POS -> value instanceof StackPosBytecode;
+                case TABLE_NO -> value instanceof TableNoBytecode;
+                case SYSCALL_NO -> value instanceof SyscallBytecode;
+                case VARIANT -> value instanceof VariantBytecode;
+            };
         }
     }
 
@@ -189,86 +197,35 @@ public enum Bytecode {
         return operands.length;
     }
 
+    public boolean operandsMatch() {
+        return operands.length == 0;
+    }
+
+    public boolean operandsMatch(BytecodeValue firstParam) {
+        return operands.length == 1 && operands[0].matches(firstParam);
+    }
+
+    public boolean operandsMatch(BytecodeValue firstParam, BytecodeValue secondParam) {
+        return operands.length == 2 && operands[0].matches(firstParam) && operands[1].matches(secondParam);
+    }
+
     @NotNull
-    public List<Byte> assemble(int firstParam, int secondParam) {
+    public List<Byte> assemble(BytecodeValue firstParam, BytecodeValue secondParam) {
         List<Byte> bytes = new ArrayList<>(size());
         bytes.add(value);
         switch (operands.length) {
             case 0:
                 break;
             case 1:
-                operands[0].assemble(bytes, firstParam);
+                firstParam.writeBytes(bytes);
                 break;
             case 2:
-                operands[0].assemble(bytes, firstParam);
-                operands[1].assemble(bytes, secondParam);
+                firstParam.writeBytes(bytes);
+                secondParam.writeBytes(bytes);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown operand count");
         }
         return bytes;
-    }
-
-    private static final Map<Byte, Bytecode> VALUE_MAP;
-
-    static {
-        Map<Byte, Bytecode> temp = new HashMap<>();
-        for (var value : values()) {
-            temp.put(value.value, value);
-        }
-        VALUE_MAP = Collections.unmodifiableMap(temp);
-    }
-
-    @NotNull
-    static String disassemble(CompilerInfo info, @NotNull List<Byte> bytes) {
-        var sb = new StringBuilder();
-        for (int i = 0; i < bytes.size();) {
-            var op = VALUE_MAP.get(bytes.get(i++));
-            if (op.operands.length > 0) {
-                sb.append(String.format("%-7d%-16s", i - 1, op));
-                StringJoiner sj = new StringJoiner(", ");
-                for (var operand : op.operands) {
-                    var operandSize = operand.byteCount;
-                    var value = fromBytes(bytes.subList(i, i + operandSize));
-                    i += operandSize;
-                    sj.add(format(operand, value, info));
-                }
-                sb.append(sj);
-                sb.append("\n");
-            } else {
-                sb.append(String.format("%-7d%s%n", i - 1, op));
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String format(@NotNull Type operand, int value, CompilerInfo info) {
-        switch (operand) {
-            case ARGC:
-            case LOCATION:
-            case VARIABLE:
-            case STACK_POS:
-            case TABLE_NO:
-            case VARIANT:
-                return Integer.toString(value);
-            case CONSTANT:
-                return String.format("%d (%s)", value, info.getConstant((short) value).name(info.getConstants()));
-            case OPERATOR:
-                return String.format("%d (%s)", value, OpSpTypeNode.values()[value]);
-            case SYSCALL_NO:
-                return String.format("%d (%s)", value, Syscalls.nameOf(value));
-            case FUNCTION_NO:
-                return String.format("%d (%s)", value, info.getFunctions().get(value).getName());
-            default:
-                throw new UnsupportedOperationException("Unknown enum value");
-        }
-    }
-
-    private static int fromBytes(@NotNull List<Byte> bytes) {
-        int total = 0;
-        for (int i = 0; i < bytes.size(); i++) {
-            total |= Byte.toUnsignedInt(bytes.get(i)) << Byte.SIZE * (bytes.size() - i - 1);
-        }
-        return total;
     }
 }

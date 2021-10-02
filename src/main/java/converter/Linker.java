@@ -103,8 +103,7 @@ public final class Linker {
                         "Only definition and import/export statements are allowed in file with exports",
                         stmt
                 );
-            } else if (stmt instanceof DefinitionNode) {
-                var def = (DefinitionNode) stmt;
+            } else if (stmt instanceof DefinitionNode def) {
                 if (!isAutoInterface(def)) {
                     var name = def instanceof BaseClassNode
                             ? ((TypeNode) def.getName()).strName() : def.getName().toString();
@@ -120,15 +119,13 @@ public final class Linker {
                         }
                     }
                 }
-            } else if (stmt instanceof TypedefStatementNode) {
-                var tdNode = (TypedefStatementNode) stmt;
+            } else if (stmt instanceof TypedefStatementNode tdNode) {
                 var type = info.getType(tdNode.getType());
                 var constant = TypeLoader.typeConstant(tdNode.getLineInfo(), type, info).orElseThrow(
                         () -> CompilerException.of("Cannot get constant for local types", tdNode)
                 );
                 constants.put(tdNode.getName().strName(), (int) info.constIndex(constant));
-            } else if (stmt instanceof DeclaredAssignmentNode) {
-                var decl = (DeclaredAssignmentNode) stmt;
+            } else if (stmt instanceof DeclaredAssignmentNode decl) {
                 linkDeclaration(decl);
             }
         }
@@ -144,8 +141,7 @@ public final class Linker {
             return Optional.empty();
         }
         var name = stmt.getName();
-        if (stmt instanceof FunctionDefinitionNode) {
-            var fnNode = (FunctionDefinitionNode) stmt;
+        if (stmt instanceof FunctionDefinitionNode fnNode) {
             var value = FunctionDefinitionConverter.parseHeader(info, fnNode, isBuiltin != null);
             if (value.isPresent()) {
                 var pair = value.orElseThrow();
@@ -170,20 +166,17 @@ public final class Linker {
             throw CompilerException.of("Operator must defined in a class", stmt);
         } else if (stmt instanceof MethodDefinitionNode) {
             throw CompilerException.of("Method must be defined in a class", stmt);
-        } else if (stmt instanceof ClassDefinitionNode) {
-            var clsNode = (ClassDefinitionNode) stmt;
+        } else if (stmt instanceof ClassDefinitionNode clsNode) {
             var predeclaredType = (StdTypeObject) info.classOf(clsNode.strName()).orElseThrow();
             int index = ClassConverter.completeType(info, clsNode, predeclaredType, isBuiltin == null);
             addConstant(clsNode.strName(), index, predeclaredType, isBuiltin);
             return Optional.of(Builtins.type().generify(predeclaredType));
-        } else if (stmt instanceof EnumDefinitionNode) {
-            var enumNode = (EnumDefinitionNode) stmt;
+        } else if (stmt instanceof EnumDefinitionNode enumNode) {
             var predeclaredType = (StdTypeObject) info.classOf(enumNode.getName().strName()).orElseThrow();
             int index = EnumConverter.completeType(info, enumNode, predeclaredType, isBuiltin == null);
             addConstant(enumNode.getName().strName(), index, predeclaredType, isBuiltin);
             return Optional.of(Builtins.type().generify(predeclaredType));
-        } else if (stmt instanceof InterfaceDefinitionNode) {
-            var interfaceNode = (InterfaceDefinitionNode) stmt;
+        } else if (stmt instanceof InterfaceDefinitionNode interfaceNode) {
             var strName = interfaceNode.getName().strName();
             var predeclaredType = (InterfaceType) info.classOf(interfaceNode.getName().strName()).orElseThrow();
             if (isBuiltin == null) {
@@ -194,8 +187,7 @@ public final class Linker {
                 InterfaceConverter.completeWithoutReserving(info, interfaceNode, predeclaredType);
             }
             return Optional.of(Builtins.type().generify(predeclaredType));
-        } else if (stmt instanceof UnionDefinitionNode) {
-            var unionNode = (UnionDefinitionNode) stmt;
+        } else if (stmt instanceof UnionDefinitionNode unionNode) {
             var predeclaredType = (UnionTypeObject) info.classOf(unionNode.getName().strName()).orElseThrow();
             int index = UnionConverter.completeType(info, unionNode, predeclaredType, isBuiltin == null);
             addConstant(unionNode.getName().strName(), index, predeclaredType, isBuiltin);

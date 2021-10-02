@@ -58,14 +58,11 @@ public final class CharConstant implements LangConstant {
     }
 
     public static String name(int value) {
-        switch (value) {
-            case '\'':
-                return "c\"'\"";
-            case '"':
-                return "c'\"'";
-            default:
-                return String.format("c'%s'", StringEscape.escaped(value));
-        }
+        return switch (value) {
+            case '\'' -> "c\"'\"";
+            case '"' -> "c'\"'";
+            default -> String.format("c'%s'", StringEscape.escaped(value));
+        };
     }
 
     public int getValue() {

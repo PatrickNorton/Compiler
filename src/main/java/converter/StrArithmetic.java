@@ -10,20 +10,13 @@ public final class StrArithmetic {
 
     public static Optional<LangConstant> computeConst(OperatorTypeNode op, LangConstant[] consts) {
         assert consts[0] instanceof StringConstant;
-        switch (op) {
-            case ADD:
-                return add(consts);
-            case MULTIPLY:
-                return mul(consts);
-            case IS:
-            case EQUALS:
-                return eq(consts);
-            case IS_NOT:
-            case NOT_EQUALS:
-                return ne(consts);
-            default:
-                return Optional.empty();
-        }
+        return switch (op) {
+            case ADD -> add(consts);
+            case MULTIPLY -> mul(consts);
+            case IS, EQUALS -> eq(consts);
+            case IS_NOT, NOT_EQUALS -> ne(consts);
+            default -> Optional.empty();
+        };
     }
 
     private static Optional<LangConstant> add(LangConstant[] consts) {

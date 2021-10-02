@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.SyscallBytecode;
 import main.java.parser.DescriptorNode;
 import main.java.parser.FunctionDefinitionNode;
 import main.java.parser.TypedArgumentNode;
@@ -58,9 +60,9 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             var argc = func.getInfo().getArgs().size();
             var bytes = func.getBytes();
             assert bytes.isEmpty();
-            bytes.add(Bytecode.SYSCALL, Syscalls.get(name), argc);
+            bytes.add(Bytecode.SYSCALL, new SyscallBytecode(name), new ArgcBytecode((short) argc));
             if (func.getReturns().length > 0) {
-                bytes.add(Bytecode.RETURN, func.getReturns().length);
+                bytes.add(Bytecode.RETURN, new ArgcBytecode((short) func.getReturns().length));
             }
             return new BytecodeList();
         } else {

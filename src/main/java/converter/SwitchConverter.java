@@ -1,5 +1,9 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.StackPosBytecode;
+import main.java.converter.bytecode.TableNoBytecode;
+import main.java.converter.bytecode.VariableBytecode;
+import main.java.converter.bytecode.VariantBytecode;
 import main.java.parser.CaseStatementNode;
 import main.java.parser.DefaultStatementNode;
 import main.java.parser.DottedVariableNode;
@@ -168,7 +172,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         var pair = convertTblInner(addToMap, errorEscape, jumps);
         var switchTable = createTable.apply(jumps, pair.getDefaultVal());
         int tblIndex = info.addSwitchTable(switchTable);
-        bytes.add(Bytecode.SWITCH_TABLE, tblIndex);
+        bytes.add(Bytecode.SWITCH_TABLE, new TableNoBytecode((short) tblIndex));
         bytes.addAll(pair.getBytes());
         return Pair.of(bytes, pair.getDivergingInfo());
     }
@@ -376,7 +380,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
         var pair = convertUnionInner(hasAs, union, jumps);
         var switchTable = smallTbl(jumps, pair.getDefaultVal());
         int tblIndex = info.addSwitchTable(switchTable);
-        bytes.add(Bytecode.SWITCH_TABLE, tblIndex);
+        bytes.add(Bytecode.SWITCH_TABLE, new TableNoBytecode((short) tblIndex));
         bytes.addAll(pair.getBytes());
         return Pair.of(bytes, pair.getDivergingInfo());
     }
@@ -428,11 +432,11 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 if (stmtHasAs) {  // Will work b/c there must only be one label if there is an 'as' clause
                     assert stmt.getLabel().length == 1;
                     var as = stmt.getAs();
-                    bytes.add(Bytecode.GET_VARIANT, lblNo);
+                    bytes.add(Bytecode.GET_VARIANT, new VariantBytecode((short) lblNo));
                     bytes.add(Bytecode.UNWRAP_OPTION);
                     info.addStackFrame();
                     info.addVariable(as.getName(), labelToType(label, union), as);
-                    bytes.add(Bytecode.STORE, info.varIndex(as));
+                    bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(as)));
                 }
             }
             if (hasAs && !stmtHasAs) {
@@ -492,14 +496,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
     }
 
     private int labelToVariantNo(TestNode label, UnionTypeObject switchedType) {
-        if (label instanceof DottedVariableNode) {
-            var dottedLbl = (DottedVariableNode) label;
+        if (label instanceof DottedVariableNode dottedLbl) {
             var lblFirst = dottedLbl.getPreDot();
             var lblSecond = dottedLbl.getPostDots();
             var firstConverter = TestConverter.of(info, lblFirst, 1);
             var firstRetType = firstConverter.returnType()[0];
-            if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
-                var firstType = (TypeTypeObject) firstRetType;
+            if (firstRetType instanceof TypeTypeObject firstType && lblSecond.length == 1) {
                 var retType = firstType.representedType();
                 if (retType.sameBaseType(switchedType)) {
                     if (lblSecond[0].getPostDot() instanceof VariableNode && lblSecond[0].getDotPrefix().isEmpty()) {
@@ -521,14 +523,12 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
 
     @NotNull
     private TypeObject labelToType(@NotNull TestNode label, UnionTypeObject switchedType) {
-        if (label instanceof DottedVariableNode) {
-            var dottedLbl = (DottedVariableNode) label;
+        if (label instanceof DottedVariableNode dottedLbl) {
             var lblFirst = dottedLbl.getPreDot();
             var lblSecond = dottedLbl.getPostDots();
             var firstConverter = TestConverter.of(info, lblFirst, 1);
             var firstRetType = firstConverter.returnType()[0];
-            if (firstRetType instanceof TypeTypeObject && lblSecond.length == 1) {
-                var firstType = (TypeTypeObject) firstRetType;
+            if (firstRetType instanceof TypeTypeObject firstType && lblSecond.length == 1) {
                 var retType = firstType.representedType();
                 if (retType.sameBaseType(switchedType)) {
                     var lblName = ((VariableNode) lblSecond[0].getPostDot()).getName();
@@ -600,7 +600,7 @@ public final class SwitchConverter extends LoopConverter implements TestConverte
                 bytes.add(Bytecode.SWAP_2);
                 return;
             default:
-                bytes.add(Bytecode.SWAP_STACK, 0, distFromTop);
+                bytes.add(Bytecode.SWAP_STACK, StackPosBytecode.zero(), new StackPosBytecode((short) distFromTop));
         }
     }
 

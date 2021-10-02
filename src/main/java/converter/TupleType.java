@@ -97,8 +97,7 @@ public final class TupleType extends TypeObject {
 
     @Override
     protected boolean isSubclass(@NotNull TypeObject other) {
-        if (other instanceof TupleType) {
-            var tuple = (TupleType) other;
+        if (other instanceof TupleType tuple) {
             if (generics.size() != tuple.generics.size()) {
                 return false;
             }

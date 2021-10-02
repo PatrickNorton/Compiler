@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.AssertStatementNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,9 +20,9 @@ public final class AssertConverter implements BaseConverter {
         var bytes = new BytecodeList(TestConverter.bytes(node.getAssertion(), info, 1));
         var jumpTag = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_TRUE, jumpTag);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.assertionErrorConstant()));
+        bytes.loadConstant(Builtins.assertionErrorConstant(), info);
         bytes.addAll(convertMessage());
-        bytes.add(Bytecode.THROW_QUICK, 0);
+        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.zero());
         bytes.addLabel(jumpTag);
         return bytes;
     }
@@ -30,7 +31,7 @@ public final class AssertConverter implements BaseConverter {
     private BytecodeList convertMessage() {
         if (node.getAs().isEmpty()) {
             var bytes = new BytecodeList();
-            bytes.add(Bytecode.LOAD_CONST, info.constIndex(LangConstant.of("Assertion failed")));
+            bytes.loadConstant(LangConstant.of("Assertion failed"), info);
             return bytes;
         } else {
             var converter = TestConverter.of(info, node.getAs(), 1);

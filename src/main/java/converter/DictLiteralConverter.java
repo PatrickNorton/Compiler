@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
 import main.java.parser.DictLiteralNode;
 import main.java.parser.TestNode;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +63,7 @@ public final class DictLiteralConverter implements TestConverter {
                 bytes.addAll(TestConverter.bytesMaybeOption(pair.getKey(), info, 1, keyType));
                 bytes.addAll(TestConverter.bytesMaybeOption(pair.getValue(), info, 1, valType));
             }
-            bytes.add(Bytecode.DICT_CREATE, node.size());
+            bytes.add(Bytecode.DICT_CREATE, new ArgcBytecode((short) node.size()));
         }
         return bytes;
     }

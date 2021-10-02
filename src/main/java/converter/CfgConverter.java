@@ -32,33 +32,23 @@ public final class CfgConverter {
     }
 
     private boolean valueOf(TestNode value) {
-        if (value instanceof VariableNode) {
-            switch (((VariableNode) value).getName()) {
-                case "true":
-                    return true;
-                case "false":
-                    return false;
-                case "test":
-                    return info.globalInfo().isTest();
-                case "debug":
-                    return info.globalInfo().isDebug();
-                default:
-                    return info.globalInfo().cfgValues().contains(((VariableNode) value).getName());
-            }
-        } else if (value instanceof FunctionCallNode) {
-            var name = ((FunctionCallNode) value).getVariable().getName();
-            switch (name) {
-                case "feature":
-                    return convertFeature((FunctionCallNode) value);
-                case "version":
-                    return convertVersion((FunctionCallNode) value);
-                case "all":
-                    return convertAll((FunctionCallNode) value);
-                case "any":
-                    return convertAny((FunctionCallNode) value);
-                default:
-                    throw CompilerException.format("Unknown cfg function predicate %s", value, name);
-            }
+        if (value instanceof VariableNode val) {
+            return switch (val.getName()) {
+                case "true" -> true;
+                case "false" -> false;
+                case "test" -> info.globalInfo().isTest();
+                case "debug" -> info.globalInfo().isDebug();
+                default -> info.globalInfo().cfgValues().contains(val.getName());
+            };
+        } else if (value instanceof FunctionCallNode func) {
+            var name = func.getVariable().getName();
+            return switch (name) {
+                case "feature" -> convertFeature(func);
+                case "version" -> convertVersion(func);
+                case "all" -> convertAll(func);
+                case "any" -> convertAny(func);
+                default -> throw CompilerException.format("Unknown cfg function predicate %s", func, name);
+            };
         } else if (value instanceof OperatorNode) {
             return convertBool((OperatorNode) value);
         } else {
@@ -69,32 +59,35 @@ public final class CfgConverter {
     private boolean convertBool(OperatorNode value) {
         var operands = value.getOperands();
         switch (value.getOperator()) {
-            case BOOL_NOT:
+            case BOOL_NOT -> {
                 assert operands.length == 1;
                 return !valueOf(operands[0].getArgument());
-            case BOOL_AND:
+            }
+            case BOOL_AND -> {
                 for (var op : operands) {
                     if (!valueOf(op.getArgument())) {
                         return false;
                     }
                 }
                 return true;
-            case BOOL_OR:
+            }
+            case BOOL_OR -> {
                 for (var op : operands) {
                     if (valueOf(op.getArgument())) {
                         return true;
                     }
                 }
                 return false;
-            case BOOL_XOR:
+            }
+            case BOOL_XOR -> {
                 assert operands.length > 0;
                 var result = valueOf(operands[0].getArgument());
                 for (int i = 1; i < operands.length; i++) {
                     result ^= valueOf(operands[i].getArgument());
                 }
                 return result;
-            default:
-                throw CompilerException.of("Non-boolean operands not supported in cfg", value);
+            }
+            default -> throw CompilerException.of("Non-boolean operands not supported in cfg", value);
         }
     }
 

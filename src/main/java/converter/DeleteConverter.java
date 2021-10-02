@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.DeleteStatementNode;
 import main.java.parser.DottedVariableNode;
 import main.java.parser.IndexNode;
@@ -25,11 +26,9 @@ public final class DeleteConverter implements BaseConverter {
     @NotNull
     public BytecodeList convert() {
         var deleted = node.getDeleted();
-        if (deleted instanceof DottedVariableNode) {
-            var del = (DottedVariableNode) deleted;
+        if (deleted instanceof DottedVariableNode del) {
             return convertDot(del);
-        } else if (deleted instanceof IndexNode) {
-            var del = (IndexNode) deleted;
+        } else if (deleted instanceof IndexNode del) {
             if (IndexConverter.isSlice(del.getIndices())) {
                 return convertSlice(del);
             } else {
@@ -64,7 +63,7 @@ public final class DeleteConverter implements BaseConverter {
         if (indexConverters.size() == 1) {
             bytes.add(Bytecode.DEL_SUBSCRIPT);
         } else {
-            bytes.add(Bytecode.CALL_OP, OpSpTypeNode.DEL_ATTR.ordinal(), indexConverters.size());
+            bytes.addCallOp(OpSpTypeNode.DEL_ATTR, (short) indexConverters.size());
         }
         return bytes;
     }
@@ -89,7 +88,7 @@ public final class DeleteConverter implements BaseConverter {
         }
         var bytes = new BytecodeList(varConverter.convert());
         bytes.addAll(sliceConverter.convert());
-        bytes.add(Bytecode.CALL_OP, OpSpTypeNode.DEL_SLICE.ordinal(), 1);
+        bytes.addCallOp(OpSpTypeNode.DEL_SLICE, (short) 1);
         return bytes;
     }
 
@@ -99,7 +98,7 @@ public final class DeleteConverter implements BaseConverter {
         var name = delVar.getName();
         var index = info.varIndex(delVar);
         bytes.add(Bytecode.LOAD_NULL);
-        bytes.add(Bytecode.STORE, index);  // Drops value currently stored
+        bytes.add(Bytecode.STORE, new VariableBytecode(index));  // Drops value currently stored
         var varHolder = info.varHolder();
         if (varHolder.varDefinedInCurrentFrame(name)) {  // TODO: Drop non-top-frame variable properly
             varHolder.removeVariable(name);

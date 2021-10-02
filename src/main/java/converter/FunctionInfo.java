@@ -139,8 +139,7 @@ public final class FunctionInfo {
     }
 
     private TypeObject boundifyType(TypeObject val) {
-        if (val instanceof TemplateParam) {
-            var template = (TemplateParam) val;
+        if (val instanceof TemplateParam template) {
             if (template.getParent().sameBaseType(this.toCallable())) {
                 return template.getBound();
             } else {
@@ -182,8 +181,7 @@ public final class FunctionInfo {
     }
 
     private static TypeObject generifyType(TypeObject val, TypeObject parent, List<TypeObject> generics) {
-        if (val instanceof TemplateParam) {
-            var template = (TemplateParam) val;
+        if (val instanceof TemplateParam template) {
             if (template.getParent().sameBaseType(parent)) {
                 return generics.get(template.getIndex());
             } else {

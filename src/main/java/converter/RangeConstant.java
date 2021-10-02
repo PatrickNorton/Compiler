@@ -39,7 +39,7 @@ public final class RangeConstant implements LangConstant {
         if (step == null || step.equals(BigInteger.ONE)) {
             return Optional.of(String.format("[%s:%s]", startStr, stopStr));
         } else {
-            return Optional.of(String.format("[%s:%s:%s]", startStr, stopStr, step.toString()));
+            return Optional.of(String.format("[%s:%s:%s]", startStr, stopStr, step));
         }
     }
 

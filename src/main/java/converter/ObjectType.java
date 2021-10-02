@@ -45,17 +45,12 @@ public final class ObjectType extends TypeObject {
     @Override
     @NotNull
     public Optional<FunctionInfo> operatorInfo(@NotNull OpSpTypeNode o, AccessLevel access) {
-        switch (o) {
-            case EQUALS:
-                return Optional.of(ConstantHolder.EQUALS_INFO);
-            case STR:
-            case REPR:
-                return Optional.of(ConstantHolder.STR_INFO);
-            case BOOL:
-                return Optional.of(ConstantHolder.BOOL_INFO);
-            default:
-                return Optional.empty();
-        }
+        return switch (o) {
+            case EQUALS -> Optional.of(ConstantHolder.EQUALS_INFO);
+            case STR, REPR -> Optional.of(ConstantHolder.STR_INFO);
+            case BOOL -> Optional.of(ConstantHolder.BOOL_INFO);
+            default -> Optional.empty();
+        };
     }
 
     @Override

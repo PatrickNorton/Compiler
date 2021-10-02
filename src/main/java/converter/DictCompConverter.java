@@ -1,5 +1,7 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.ArgcBytecode;
+import main.java.converter.bytecode.VariableBytecode;
 import main.java.parser.DictComprehensionNode;
 import main.java.parser.TypedVariableNode;
 import org.jetbrains.annotations.NotNull;
@@ -19,8 +21,7 @@ public final class DictCompConverter implements TestConverter {
     @Override
     public TypeObject[] returnType() {
         var variable = node.getVariables()[0];
-        if (variable instanceof TypedVariableNode) {
-            var typedVariable = (TypedVariableNode) variable;
+        if (variable instanceof TypedVariableNode typedVariable) {
             info.addStackFrame();
             info.addVariable(typedVariable.getVariable().getName(), info.getType(typedVariable.getType()), typedVariable);
             var keyType = TestConverter.returnType(node.getKey(), info, 1)[0];
@@ -43,23 +44,22 @@ public final class DictCompConverter implements TestConverter {
             throw CompilerException.format("Dict comprehension only returns one value, got %d", node, retCount);
         }
         BytecodeList bytes = new BytecodeList();
-        bytes.add(Bytecode.DICT_CREATE, 0);
-        bytes.add(Bytecode.LOAD_CONST, info.constIndex(Builtins.iterConstant()));
+        bytes.add(Bytecode.DICT_CREATE, new ArgcBytecode((short) 0));
+        bytes.loadConstant(Builtins.iterConstant(), info);
         bytes.addAll(TestConverter.bytes(node.getLooped().get(0), info, 1));
-        bytes.add(Bytecode.CALL_TOS, 1);
+        bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
         var topJump = info.newJumpLabel();
         bytes.addLabel(topJump);
         var forJump = info.newJumpLabel();
-        bytes.add(Bytecode.FOR_ITER, forJump, 1);
+        bytes.add(Bytecode.FOR_ITER, forJump, ArgcBytecode.one());
         // Add the variable for the loop
         var variable = node.getVariables()[0];
         info.addStackFrame();
-        if (variable instanceof TypedVariableNode) {
-            var typedVar = (TypedVariableNode) variable;
+        if (variable instanceof TypedVariableNode typedVar) {
             info.checkDefinition(typedVar.getVariable().getName(), typedVar);
             info.addVariable(typedVar.getVariable().getName(), info.getType(typedVar.getType()), typedVar);
         }
-        bytes.add(Bytecode.STORE, info.varIndex(variable.getVariable()));
+        bytes.add(Bytecode.STORE, new VariableBytecode(info.varIndex(variable.getVariable())));
         if (!node.getCondition().isEmpty()) {
             bytes.addAll(TestConverter.bytes(node.getCondition(), info, 1));
             bytes.add(Bytecode.JUMP_FALSE, topJump);

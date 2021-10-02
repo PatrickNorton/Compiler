@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.converter.bytecode.VariantBytecode;
 import org.jetbrains.annotations.NotNull;
 
 public final class VariantConverter implements TestConverter {
@@ -34,7 +35,7 @@ public final class VariantConverter implements TestConverter {
         assert retType instanceof TypeTypeObject;
         var bytes = new BytecodeList(unionConverter.convert());
         bytes.addAll(TestConverter.bytes(node.getValue(), info, 1));
-        bytes.add(Bytecode.MAKE_VARIANT, node.getVariantNo());
+        bytes.add(Bytecode.MAKE_VARIANT, new VariantBytecode((short) node.getVariantNo()));
         if (retCount == 0) {
             bytes.add(Bytecode.POP_TOP);
         }
