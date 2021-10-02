@@ -15,6 +15,8 @@ public final class FunctionInliner {
     }
 
     public static void inlineAll(CompilerInfo info, @NotNull BytecodeList value) {
+        // FIXME: Change local variables so their values don't overlap
+        //  with those of the callee function
         CompilerWarning.warn(
                 "Inlining is a work in progress and may not produce executable bytecodes",
                 WarningType.TODO, info, LineInfo.empty()
