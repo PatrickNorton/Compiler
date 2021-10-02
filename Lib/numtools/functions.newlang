@@ -1,12 +1,20 @@
-export highestOneBit, fromBytes, toBytes
+export highestOneBit, isPowerOfTwo, fromBytes, toBytes
 
-func highestOneBit(int i) -> int {
+func highestOneBit(int i, /) -> int {
     mut int bsCount = 0
     while i != 0 {
         i >>= 1
         bsCount++
     }
     return 1 << bsCount
+}
+
+func isPowerOfTwo(int i, /) -> bool {
+    if not i {
+        return false
+    } else {
+        return i & (i - 1) == 0
+    }
 }
 
 func fromBytes(bytes b, /, str ordering, *, bool signed = false) -> int {
