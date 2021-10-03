@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public final class CLArgs {
@@ -18,11 +19,12 @@ public final class CLArgs {
     private final Map<Optimization, Boolean> explicitOpts;
     private final Set<String> cfgOptions;
     private final boolean printBytecode;
+    private final Path bytecodePath;
 
     private CLArgs(
             Path target, boolean test, boolean isDebug, int optLevel,
             Map<Optimization, Boolean> explicitOpts, Set<String> cfgOptions,
-            boolean printBytecode
+            boolean printBytecode, Path bytecodePath
     ) {
         this.target = target;
         this.isTest = test;
@@ -31,6 +33,7 @@ public final class CLArgs {
         this.explicitOpts = explicitOpts;
         this.cfgOptions = cfgOptions;
         this.printBytecode = printBytecode;
+        this.bytecodePath = bytecodePath;
     }
 
     public Path getTarget() {
@@ -45,16 +48,16 @@ public final class CLArgs {
         return isDebug;
     }
 
-    public int getOptLevel() {
-        return optLevel;
-    }
-
     public Set<String> getCfgOptions() {
         return cfgOptions;
     }
 
     public boolean shouldPrintBytecode() {
         return printBytecode;
+    }
+
+    public Optional<Path> getBytecodePath() {
+        return Optional.ofNullable(bytecodePath);
     }
 
     public boolean optIsEnabled(Optimization opt) {
@@ -79,6 +82,7 @@ public final class CLArgs {
         Map<Optimization, Boolean> optimizations = new HashMap<>();
         Set<String> cfgOptions = new HashSet<>();
         var printBytecode = false;
+        Path bytecodePath = null;
         for (int i = 1; i < args.length; i++) {
             var arg = args[i];
             switch (arg) {
@@ -112,6 +116,10 @@ public final class CLArgs {
                 case "--print-bytecode":
                     printBytecode = true;
                     break;
+                case "-S":
+                    var bytePath = args[i++];
+                    bytecodePath = Path.of(bytePath);
+                    break;
                 default:
                     if (arg.startsWith("-f")) {
                         updateOptimizations(arg.substring(2), optimizations, false);
@@ -124,7 +132,7 @@ public final class CLArgs {
                     break;
             }
         }
-        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions, printBytecode);
+        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions, printBytecode, bytecodePath);
     }
 
     private static void updateOptimizations(String name, @NotNull Map<Optimization, Boolean> optimizations, boolean negative) {
