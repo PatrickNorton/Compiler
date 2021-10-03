@@ -228,7 +228,7 @@ public final class BytecodeList {
                     StringJoiner sj = new StringJoiner(", ");
                     sj.add(value.getFirstParam().strValue(info));
                     if (value.getSecondParam() != null) {
-                        sj.add(value.getFirstParam().strValue(info));
+                        sj.add(value.getSecondParam().strValue(info));
                     }
                     sb.append(sj);
                     sb.append('\n');
