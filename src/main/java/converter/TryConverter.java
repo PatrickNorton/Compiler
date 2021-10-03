@@ -25,9 +25,10 @@ public final class TryConverter implements BaseConverter {
         bytes.add(Bytecode.JUMP, jump1);
         bytes.addLabel(jump0);
         for (var except : node.getExcepted()) {
-            throw CompilerTodoError.of("Exceptions are very broken right now", except);
-            // bytes.add(Bytecode.EXCEPT_N, info.constIndex(info.getType(except).name()));
+            CompilerWarning.warn("Exceptions are very broken right now", WarningType.TODO, info, except);
+            bytes.loadConstant(info.getConstant(except.strName()), info);
         }
+        bytes.add(Bytecode.EXCEPT_N, new ArgcBytecode((short) node.getExcepted().length));
         if (!node.getAsVar().isEmpty()) {
             var asVar = node.getAsVar();
             info.addVariable(asVar.getName(), TypeObject.union(info.typesOf(node.getExcepted())), asVar);
