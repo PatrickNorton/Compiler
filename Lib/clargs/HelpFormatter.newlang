@@ -101,7 +101,7 @@ class HelpFormatter {
         mut var help = self.rootSection.formatHelp()
         if help {
             help = self.longBreakMatcher.sub("\n\n", help)
-            help = help.strip("\n") + "\n"
+            help = help.trim("\n") + "\n"
         }
         return help
     }
@@ -282,7 +282,7 @@ class HelpFormatter {
         text = re.sub(ref' ({close})', r'\1', text)
         text = re.sub(ref'{open} *{close}', r'', text)
         text = re.sub(ref'\(([^|]*)\)', r'\1', text)
-        text = text.strip()
+        text = text.trim()
 
         return text
     }
@@ -414,7 +414,7 @@ class HelpFormatter {
     }
 
     private method splitLines(str text, int width) -> str {
-        var newText = self.whitespaceMatcher.sub(' ', text).strip()
+        var newText = self.whitespaceMatcher.sub(' ', text).trim()
         # The textwrap module is used only for formatting help.
         # Delay its import for speeding up the common usage of argparse.
         import textwrap
@@ -422,7 +422,7 @@ class HelpFormatter {
     }
 
     private method fillText(str text, int width, int indent) -> str {
-        var newText = self.whitespaceMatcher.sub(' ', text).strip()
+        var newText = self.whitespaceMatcher.sub(' ', text).trim()
         import textwrap
         return textwrap.fill(text, width, initialIndent=indent, subsequentIndent=indent)
     }

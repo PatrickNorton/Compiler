@@ -165,7 +165,7 @@ class TextWrapper {
 
             # First chunk on line is whitespace -- drop it, unless this
             # is the very beginning of the text (ie. no lines started yet).
-            if self.dropWhitespace and chunks[-1].strip() == '' and lines {
+            if self.dropWhitespace and chunks[-1].trim() == '' and lines {
                 del chunks[-1]
             }
             while chunks:
@@ -187,7 +187,7 @@ class TextWrapper {
                 curLen = sum([l.length for var l in curLine])
             }
             # If the last chunk on this line is all whitespace, drop it.
-            if self.dropWhitespace and curLine and not curLine[-1].strip() {
+            if self.dropWhitespace and curLine and not curLine[-1].trim() {
                 curLen -= curLine[-1].length
                 del curLine[-1]
             }
@@ -198,14 +198,14 @@ class TextWrapper {
                     (not chunks or
                      self.dropWhitespace and
                      chunks.length == 1 and
-                     not chunks[0].strip()) and curLen <= width) {
+                     not chunks[0].trim()) and curLen <= width) {
                     # Convert current line back to a string and store it in
                     # list of all lines (return value).
                     lines.append(indent + ''.join(cur_line))
                 }
             } else {
                 while curLine {
-                    if curLine[-1].strip() and curLen + self.placeholder.length <= width {
+                    if curLine[-1].trim() and curLen + self.placeholder.length <= width {
                         curLine.append(self.placeholder)
                         lines.append(indent + ''.join(curLine))
                         break
@@ -322,6 +322,6 @@ func dedent(str text) -> str {
 }
 
 func indent(str text, Callable[str, [bool]]? predicate) -> str {
-    var truePred = predicate ?? lambda s => bool(s.strip())
+    var truePred = predicate ?? lambda s => bool(s.trim())
     return ''.join((prefix + line if predicate(line) else line for var line in text.splitlines()))
 }

@@ -17,7 +17,7 @@ class ParseContext {
         self.index = 0
         self.file = f
         self.class_ = class_
-        self.currentLine = f.nextLine().strip()
+        self.currentLine = f.nextLine().trim()
     }
 
     public operator [] (int index) -> char {
@@ -30,7 +30,7 @@ class ParseContext {
             self.index++
         }
         if self.index == self.currentLine.length {
-            self.currentLine = self.file.nextLine().strip()
+            self.currentLine = self.file.nextLine().trim()
             self.index = 0
         }
     }

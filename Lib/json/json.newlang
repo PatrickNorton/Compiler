@@ -26,7 +26,7 @@ class Parser {
     public operator new(File f) {
         self.index = 0
         self.f = f
-        self.currentLine = f.nextLine().strip()
+        self.currentLine = f.nextLine().trim()
         self.isEOF = false
     }
 
@@ -49,7 +49,7 @@ class Parser {
                 self.index++
                 if self.index == self.currentLine.length {
                     if self.file.nextLine()? as next {
-                        self.currentLine = next.strip()
+                        self.currentLine = next.trim()
                     } else {
                         self.isEOF = true
                         return
