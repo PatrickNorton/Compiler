@@ -5,7 +5,8 @@ export IntervalSet, Interval
 class IntervalSet[I[Interval]] {
     final list[I] ranges
 
-    public operator new(Iterable[I] items = []) {
+    # FIXME: Add default argument to this
+    public operator new(Iterable[I] items) {
         self.ranges = [i for var i in items]
     }
 

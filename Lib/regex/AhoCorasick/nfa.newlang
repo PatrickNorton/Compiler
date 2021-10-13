@@ -228,7 +228,7 @@ class State {
 class Dense {
     list[int] value
 
-    public operator new(list[int] value = [failId()] * 256) {
+    public operator new(list[int] value = [FAIL_ID] * 256) {
         self.value = value
     }
 

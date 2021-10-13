@@ -513,7 +513,8 @@ class ClassUnicodeRange from Interval {
 class ClassBytes {
     final IntervalSet[ClassBytesRange] value
 
-    public operator new(Iterable[ClassBytesRange] value = []) {
+    # FIXME: Type inference does not work in default argument (replace with =[])
+    public operator new(Iterable[ClassBytesRange] value = newBytesList()) {
         self.value = IntervalSet[ClassBytesRange](value)
     }
 
@@ -776,4 +777,8 @@ func max(int a, int b) -> int {
 
 func min(int a, int b) -> int {
     return a if a < b else b
+}
+
+func newBytesList() -> list[ClassBytesRange] {
+    return []
 }

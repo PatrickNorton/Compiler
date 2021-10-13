@@ -21,7 +21,7 @@ func any(Iterable[Any] values) -> bool {
 
 
 generic T
-func count(Callable[T, [Any]] predicate = bool, Iterable[T] values, /) -> int {
+func count(Callable[T, [Any]] predicate, Iterable[T] values, /) -> int {
     mut int x = 0
     for T i in values {
         if predicate(i) {
@@ -45,7 +45,7 @@ func countEqual(T sentinel, Iterable[T] values, /) -> int {
 
 
 generic T
-func countFalse(Callable[T, [Any]] predicate = bool, Iterable[T] values, /) -> int {
+func countFalse(Callable[T, [Any]] predicate, Iterable[T] values, /) -> int {
     mut int x = 0
     for T i in values {
         if not predicate(i) {

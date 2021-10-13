@@ -280,7 +280,7 @@ class RareBytesBuilder {
 class ByteSet {
     public mut Array[bool] value
 
-    public operator new(mut Array[bool] value = Array(false, 256)) {
+    public operator new(mut Array[bool] value = Array[bool](false, 256)) {
         self.value = value
     }
 
