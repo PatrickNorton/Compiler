@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ public final class CompilerInfo {
     private final LoopManager loopManager = new LoopManager();
     private final WarningHolder warnings;
     private final Counter<String> features = new HashCounter<>();
+    private final List<Argument> argsWithDefaults = new ArrayList<>();
 
     private final VariableHolder varHolder;
 
@@ -376,6 +378,36 @@ public final class CompilerInfo {
      */
     public void writeToFile(@NotNull File file) {
         new FileWriter(this).writeToFile(file);
+    }
+
+    /**
+     * Compiles all arguments of functions defined in this file which have
+     * default argument values.
+     * <p>
+     *     For default-argument creation to work, the default arguments
+     *     themselves need to be compiled before anything else, so they can be
+     *     substituted in place of their arguments when used.
+     * </p>
+     */
+    public void compileDefaults() {
+        assert linked;
+        for (var arg : argsWithDefaults) {
+            arg.compile(this);
+        }
+    }
+
+    /**
+     * Adds an argument (defined in this file) to the default-argument list.
+     * <p>
+     *     This list is used for defining default arguments, so if an argument
+     *     has no default value, it is not necessary to add it to this list.
+     *     However, adding an argument with no default value will not break
+     *     anything, just waste a bit of time and storage space.
+     * </p>
+     * @param arg The argument to add
+     */
+    public void addDefaultArgument(Argument arg) {
+        argsWithDefaults.add(arg);
     }
 
     public LoopManager loopManager() {

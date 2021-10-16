@@ -627,6 +627,10 @@ public final class ImportHandler {
             for (var pair : nextCompilationRound) {
                 pair.getKey().link();
             }
+            info.compileDefaults();
+            for (var pair : nextCompilationRound) {
+                pair.getKey().compileDefaults();
+            }
             info.compile();
             for (var pair : nextCompilationRound) {
                 pair.getKey().compile();
