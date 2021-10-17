@@ -16,15 +16,18 @@ public final class AssertConverter implements BaseConverter {
     @Override
     @NotNull
     public BytecodeList convert() {
-        // TODO: Debug vs release
-        var bytes = new BytecodeList(TestConverter.bytes(node.getAssertion(), info, 1));
-        var jumpTag = info.newJumpLabel();
-        bytes.add(Bytecode.JUMP_TRUE, jumpTag);
-        bytes.loadConstant(Builtins.assertionErrorConstant(), info);
-        bytes.addAll(convertMessage());
-        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.zero());
-        bytes.addLabel(jumpTag);
-        return bytes;
+        if (info.globalInfo().isDebug()) {
+            var bytes = new BytecodeList(TestConverter.bytes(node.getAssertion(), info, 1));
+            var jumpTag = info.newJumpLabel();
+            bytes.add(Bytecode.JUMP_TRUE, jumpTag);
+            bytes.loadConstant(Builtins.assertionErrorConstant(), info);
+            bytes.addAll(convertMessage());
+            bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.zero());
+            bytes.addLabel(jumpTag);
+            return bytes;
+        } else {
+            return new BytecodeList();
+        }
     }
 
     @NotNull
