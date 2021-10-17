@@ -44,7 +44,7 @@ public final class DictCompConverter implements TestConverter {
             throw CompilerException.format("Dict comprehension only returns one value, got %d", node, retCount);
         }
         BytecodeList bytes = new BytecodeList();
-        bytes.add(Bytecode.DICT_CREATE, new ArgcBytecode((short) 0));
+        bytes.add(Bytecode.DICT_CREATE, ArgcBytecode.zero());
         bytes.loadConstant(Builtins.iterConstant(), info);
         bytes.addAll(TestConverter.bytes(node.getLooped().get(0), info, 1));
         bytes.add(Bytecode.CALL_TOS, ArgcBytecode.one());
