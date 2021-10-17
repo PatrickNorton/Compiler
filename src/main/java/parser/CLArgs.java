@@ -1,5 +1,6 @@
 package main.java.parser;
 
+import main.java.util.OptionalBool;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,7 +78,7 @@ public final class CLArgs {
     public static CLArgs parse(@NotNull String[] args) {
         var file = Paths.get(args[0]);
         var test = false;
-        var debug = true;
+        var debug = OptionalBool.empty();
         var optLevel = 0;
         Map<Optimization, Boolean> optimizations = new HashMap<>();
         Set<String> cfgOptions = new HashSet<>();
@@ -91,7 +92,10 @@ public final class CLArgs {
                     test = true;
                     break;
                 case "--ndebug":
-                    debug = false;
+                    debug = OptionalBool.of(false);
+                    break;
+                case "--debug":
+                    debug = OptionalBool.of(true);
                     break;
                 case "-O0":
                     optLevel = 0;
@@ -132,7 +136,10 @@ public final class CLArgs {
                     break;
             }
         }
-        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions, printBytecode, bytecodePath);
+        return new CLArgs(
+                file, test, debug.orElse(test), optLevel,
+                optimizations, cfgOptions, printBytecode, bytecodePath
+        );
     }
 
     private static void updateOptimizations(String name, @NotNull Map<Optimization, Boolean> optimizations, boolean negative) {
