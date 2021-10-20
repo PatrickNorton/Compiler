@@ -142,9 +142,7 @@ public final class ImportHandler {
                 export.setValue(Builtins.type().generify(types.get(export.getKey()).getKey()));
             }
         }
-        if (isModule) {
-            info.addPredeclaredTypes(types);
-        }
+        info.addPredeclaredTypes(types);
         info.accessHandler().setDefinedInFile(definedInFile);
     }
 

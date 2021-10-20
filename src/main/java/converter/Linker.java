@@ -89,9 +89,6 @@ public final class Linker {
      */
     public Linker link(TopNode node) {
         info.loadDependents();
-        if (!isModule(node)) {
-            return this;
-        }
         var importedTypes = info.importHandler().importedTypes();
         info.addPredeclaredTypes(importedTypes);
         info.addStackFrame();  // Needed for variable-declaration constant-folding
@@ -231,15 +228,6 @@ public final class Linker {
                 info.addVariable(name, type, decl);
             }
         }
-    }
-
-    private boolean isModule(@NotNull TopNode node) {
-        for (var stmt : node) {
-            if (stmt instanceof ImportExportNode && ((ImportExportNode) stmt).getType() == ImportExportNode.EXPORT) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean isAutoInterface(DefinitionNode stmt) {
