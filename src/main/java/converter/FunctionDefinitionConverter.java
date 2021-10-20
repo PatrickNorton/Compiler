@@ -226,6 +226,7 @@ public final class FunctionDefinitionConverter implements BaseConverter {
 
     @NotNull
     private Argument[] convert(Map<String, TemplateParam> generics, @NotNull TypedArgumentNode[] args) {
+        // FIXME: Deduplicate with ArgumentInfo.getArgs
         var converted = new Argument[args.length];
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
@@ -238,7 +239,16 @@ public final class FunctionDefinitionConverter implements BaseConverter {
             }
             var mutability = MutableType.fromNullable(argType.getMutability().orElse(null));
             var properType = mutability.isConstType() ? type.makeConst() : type.makeMut();
-            converted[i] = new Argument(arg.getName().getName(), properType, arg.getVararg(), arg.getLineInfo());
+            if (arg.getDefaultVal().isEmpty()) {
+                converted[i] = new Argument(arg.getName().getName(), properType, arg.getVararg(), arg.getLineInfo());
+            } else {
+                var argument  = new Argument(
+                        arg.getName().getName(), properType,
+                        arg.getVararg(), arg.getLineInfo(), arg.getDefaultVal()
+                );
+                info.addDefaultArgument(argument);
+                converted[i] = argument;
+            }
         }
         return converted;
     }

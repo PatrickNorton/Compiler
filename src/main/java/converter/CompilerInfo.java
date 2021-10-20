@@ -80,6 +80,7 @@ public final class CompilerInfo {
         }
         link();
         addLocals();
+        compileDefaults();
         this.addStackFrame();
         BytecodeList bytes = new BytecodeList();
         for (var statement : node) {

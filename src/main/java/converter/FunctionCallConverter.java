@@ -98,42 +98,48 @@ public final class FunctionCallConverter implements TestConverter {
 
     private static int convertInnerArgs(
             CompilerInfo info, BytecodeList bytes, ArgumentNode[] params,
-            int[] argPositions, Set<Integer> needsMakeOption
+            ArgumentInfo.ArgPosition[] argPositions, Set<Integer> needsMakeOption
     ) {
-        int argc = 0;
-        for (int i = 0; i < params.length; i++) {
-            var value = params[i];
-            var converter = TestConverter.of(info, value.getArgument(), 1);
+        for (int i = 0, j = 0; i < argPositions.length; i++) {
+            var argPos = argPositions[i];
+            if (argPos.getDefaultValue().isPresent()) {
+                var defaultVal = argPos.getDefaultValue().orElseThrow();
+                defaultVal.loadBytes(bytes, info);
+                continue;
+            }
+            var param = params[j];
+            var converter = TestConverter.of(info, param.getArgument(), 1);
             bytes.addAll(converter.convert());
-            if (value.isVararg()) {
+            if (param.isVararg()) {
                 var retType = converter.returnType()[0];
-                if (!(retType instanceof TupleType)) {
+                if (!(retType instanceof TupleType ret)) {
                     if (retType.operatorInfo(OpSpTypeNode.ITER, info).isPresent()) {
-                        throw CompilerTodoError.of("Unpacking iterables in function calls", value);
+                        throw CompilerTodoError.of("Unpacking iterables in function calls", param);
                     } else {
                         throw CompilerException.format(
                                 "Illegal parameter expansion: Value must be a tuple, instead '%s'",
-                                value, retType.name()
+                                param, retType.name()
                         );
                     }
                 }
                 bytes.add(Bytecode.UNPACK_TUPLE);
-                var genCount = ((TupleType) retType).getGenerics().size();
-                for (int j = 0; j < genCount; j++) {
-                    if (needsMakeOption.contains(i + argc + j)) {
-                        if (genCount - j - 1 != 0) {
-                            addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                var genCount = ret.getGenerics().size();
+                for (int k = 0; k < genCount; k++) {
+                    if (needsMakeOption.contains(i + k)) {
+                        if (genCount - k - 1 != 0) {
+                            addSwap(bytes, (short) 0, (short) (genCount - k - 1));
                             bytes.add(Bytecode.MAKE_OPTION);
-                            addSwap(bytes, (short) 0, (short) (genCount - j - 1));
+                            addSwap(bytes, (short) 0, (short) (genCount - k - 1));
                         } else {
                             bytes.add(Bytecode.MAKE_OPTION);
                         }
                     }
                 }
-                argc += genCount - 1;
-            } else if (needsMakeOption.contains(i + argc)) {
+                i += genCount - 1;
+            } else if (needsMakeOption.contains(i)) {
                 bytes.add(Bytecode.MAKE_OPTION);
             }
+            j++;
         }
         var swaps = swapsToOrder(argPositions);
         for (var pair : swaps) {
@@ -141,7 +147,7 @@ public final class FunctionCallConverter implements TestConverter {
             var dist2 = (short) (params.length - pair.getValue() - 1);
             addSwap(bytes, dist1, dist2);
         }
-        return argc + params.length;
+        return argPositions.length;
     }
 
     private static void addSwap(BytecodeList bytes, short dist1, short dist2) {
@@ -429,8 +435,7 @@ public final class FunctionCallConverter implements TestConverter {
             }
         }
         var bytes = new BytecodeList();
-        convertArgs(bytes, fnInfo, needsMakeOption);
-        var argc = (short) node.getParameters().length;
+        var argc = (short) convertArgs(bytes, fnInfo, needsMakeOption);
         bytes.add(tail ? Bytecode.TAIL_FN : Bytecode.CALL_FN, new FunctionNoBytecode(fnIndex), new ArgcBytecode(argc));
         return bytes;
     }
@@ -445,6 +450,16 @@ public final class FunctionCallConverter implements TestConverter {
         var bytes = new BytecodeList();
         var argc = convertInnerArgs(info, bytes, args, argPositions, swaps);
         return Pair.of(bytes, argc);
+    }
+
+    @NotNull
+    private static List<Pair<Integer, Integer>> swapsToOrder(ArgumentInfo.ArgPosition... params) {
+        int[] currentState = new int[params.length];
+        for (int i = 0; i < params.length; i++) {
+            var param = params[i];
+            currentState[i] = param.getPosition().orElse(i);
+        }
+        return swapsToOrder(currentState);
     }
 
     /**

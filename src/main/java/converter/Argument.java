@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Argument implements Lined {
     private final LineInfo lineInfo;
@@ -57,6 +58,10 @@ public final class Argument implements Lined {
 
     public boolean isVararg() {
         return isVararg;
+    }
+
+    public Optional<DefaultValue> getDefaultValue() {
+        return Optional.ofNullable(defaultValue);
     }
 
     @Override
