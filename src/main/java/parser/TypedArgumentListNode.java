@@ -145,6 +145,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
                         currentArgList = kwArgs;
                     } else {
                         currentArgList.add(next);
+                        currentArgList = kwArgs;
                         if (!untypedDecided) {
                             allowUntyped = !next.getType().isDecided();
                         }
