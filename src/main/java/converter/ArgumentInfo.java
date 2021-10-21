@@ -274,9 +274,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 if (!arg.getType().isSuperclass(keywordType)) {
                     return Optional.empty();
                 } else if (update(indexOf(arg.getName()), par, result, needsMakeOption, arg, keywordType)) {
-                    return Optional.empty();
-                } else {
                     matchedCount++;
+                } else {
+                    return Optional.empty();
                 }
             }
         }
@@ -306,7 +306,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 return Optional.empty();
             }
             var argValue = get(nextArg);
-            if (update(indexOf(arg.getName()), par, result, needsMakeOption, argValue, argValue.getType())) {
+            if (!update(nextArg, par, result, needsMakeOption, argValue, arg.getType())) {
                 return Optional.empty();
             }
             if (argValue.getDefaultValue().isPresent()) {
@@ -325,14 +325,14 @@ public final class ArgumentInfo implements Iterable<Argument> {
         if (argGenerics.isEmpty()) {
             if (OptionTypeObject.needsAndSuper(arg.getType(), passedType)) {
                 needsMakeOption.add(i);
-                return false;
+                return true;
             }
             var optionGenerics = arg.getType().generifyAs(par, TypeObject.optional(passedType));
-            if (optionGenerics.isEmpty() || TypeObject.addGenericsToMap(optionGenerics.orElseThrow(), result)) {
-                return true;
+            if (optionGenerics.isEmpty() || !TypeObject.addGenericsToMap(optionGenerics.orElseThrow(), result)) {
+                return false;
             } else {
                 needsMakeOption.add(i);
-                return false;
+                return true;
             }
         } else {
             return TypeObject.addGenericsToMap(argGenerics.orElseThrow(), result);

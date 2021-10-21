@@ -146,7 +146,7 @@ public final class FileWriter {
             }
             for (var propPair : cls.getProperties().entrySet()) {
                 out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
-                out.println(propPair.getValue().getValue().getBytes().disassemble(info));
+                out.println(propPair.getValue().getKey().getBytes().disassemble(info));
                 out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
                 out.println(propPair.getValue().getValue().getBytes().disassemble(info));
             }
