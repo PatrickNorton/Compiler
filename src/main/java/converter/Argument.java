@@ -97,11 +97,13 @@ public final class Argument implements Lined {
         private final TestNode node;
         private BytecodeList bytes;
         private LangConstant constantValue;
+        private short bytesIndex;
 
         private DefaultValue(TestNode node) {
             this.node = node;
             this.bytes = null;
             this.constantValue = null;
+            this.bytesIndex = -1;
         }
 
         public void compile(CompilerInfo info, TypeObject parentType) {
@@ -143,9 +145,13 @@ public final class Argument implements Lined {
         }
 
         private short saveFunction(CompilerInfo info) {
-            throw CompilerTodoError.of(
-                    "Turn this.bytes into a function and save to the global function pool", LineInfo.empty()
-            );
+            if (bytesIndex == -1) {
+                var byteFn = new BytecodeList(bytes);
+                byteFn.add(Bytecode.RETURN, ArgcBytecode.one());
+                var fnInfo = new FunctionInfo();  // FIXME: Get return type
+                bytesIndex = (short) info.addFunction(new Function(fnInfo, byteFn));
+            }
+            return bytesIndex;
         }
     }
 }
