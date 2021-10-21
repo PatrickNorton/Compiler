@@ -169,11 +169,14 @@ public final class ArgumentInfo implements Iterable<Argument> {
      *     Several invariants are associated with this function:
      *     <ul>
      *         <li><code>this.{@link #matches}(args)</code>.</li>
-     *         <li>Each number from {@code 0} to {@code arr.length - 1} occurs
+     *         <li>Each number from {@code 0} to {@code args.length - 1} occurs
      *         <i>exactly</i> once in {@code arr}.</li>
-     *         <li>{@code arr[args[i]]} represents the index of where {@code
-     *         args[i]} should be in the stack passed to the function at
-     *         runtime.</li>
+     *         <li>If {@code arr[i]} is a number, it contains the index of the
+     *         value such that {@code args[arr[i]]} should be moved to position
+     *         {@code i} before the call is made.</li>
+     *         <li>Otherwise, {@code arr[i]} contains the default value that
+     *         should be added in that position when setting up for the
+     *         call.</li>
      *     </ul>
      *     In this code, {@code arr} represents the {@code int[]} returned by
      *     this function.
@@ -314,9 +317,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return Optional.of(Pair.of(result, needsMakeOption));
     }
 
-    public static boolean update(
+    private static boolean update(
             int i, TypeObject par, Map<Integer, TypeObject> result,
-            Set<Integer> needsMakeOption, Argument arg, TypeObject passedType
+            Set<Integer> needsMakeOption, @NotNull Argument arg, TypeObject passedType
     ) {
         var argGenerics = arg.getType().generifyAs(par, passedType);
         if (argGenerics.isEmpty()) {
