@@ -145,4 +145,15 @@ public final class OptionalBool {
     public boolean isFalse() {
         return value == 0;
     }
+
+    /**
+     * If a value is present, returns the value, otherwise returns
+     * {@code fallback}.
+     *
+     * @param fallback the value to be returned, if no value is present.
+     * @return the value, if present, otherwise {@code fallback}
+     */
+    public boolean orElse(boolean fallback) {
+        return this.value < 0 ? fallback : this.value > 0;
+    }
 }

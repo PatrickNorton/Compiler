@@ -138,4 +138,15 @@ public final class OptionalUint {
     public static OptionalUint ofNullable(Integer value) {
         return value == null ? empty() : of(value);
     }
+
+    /**
+     * If a value is present, returns the value, otherwise returns
+     * {@code fallback}.
+     *
+     * @param fallback the value to be returned, if no value is present.
+     * @return the value, if present, otherwise {@code fallback}
+     */
+    public int orElse(int fallback) {
+        return this.value < 0 ? fallback : this.value;
+    }
 }

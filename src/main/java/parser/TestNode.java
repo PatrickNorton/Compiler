@@ -318,6 +318,8 @@ public interface TestNode extends IndependentNode, EmptiableNode {
                 return StringLikeNode.parse(tokens);
             case KEYWORD:
                 return parseKeywordNode(tokens, ignoreNewlines);
+            case ELLIPSIS:
+                return VariableNode.parseEllipsis(tokens);
             default:
                 return null;
         }

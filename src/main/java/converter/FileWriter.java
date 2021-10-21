@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 
 /**
@@ -50,16 +51,31 @@ public final class FileWriter {
      * </p>
      *
      * @param file The file to write to
+     * @see LangConstant#toBytes()
+     * @see ClassInfo#toBytes()
+     * @see SwitchTable#toBytes()
      */
     public void writeToFile(@NotNull File file) {
         if (info.globalInfo().shouldPrintBytecode()) {
-            printDisassembly();
+            printDisassembly(System.out);
+        }
+        if (info.globalInfo().getBytecodePath().isPresent()) {
+            var path = info.globalInfo().getBytecodePath().orElseThrow();
+            try (var out = Files.newOutputStream(path)) {
+                printDisassembly(new PrintStream(out, true));
+            } catch (IOException e) {
+                throw new RuntimeException("Error in printing bytecode:\n" + e.getMessage());
+            }
         }
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdir()) {
                 throw new RuntimeException("Could not create file " + file);
             }
         }
+        writeBytes(file);
+    }
+
+    private void writeBytes(@NotNull File file) {
         try (var writer = Files.newOutputStream(file.toPath())) {
             writer.write(Util.MAGIC_NUMBER);
             writer.write(Util.zeroByteArray());  // In statically linked file, there are no imports or exports
@@ -101,43 +117,44 @@ public final class FileWriter {
         }
     }
 
-    private void printDisassembly() {
-        System.out.println(info.sourceFile());
-        System.out.println("Constants:");
+    private void printDisassembly(@NotNull PrintStream out) {
+        out.println(info.sourceFile());
+        out.println("Constants:");
         var constants = info.getConstants();
         for (var constant : constants) {
-            System.out.printf("%d: %s%n", constants.indexOf(constant), constant.name(constants));
+            out.printf("%d: %s%n", constants.indexOf(constant), constant.name(constants));
         }
-        System.out.println();
+        out.println();
         var functions = info.getFunctions();
         for (var function : functions) {
-            System.out.printf("%s:%n", function.getName());
-            System.out.println(function.getBytes().disassemble(info));
+            out.printf("%s:%n", function.getName());
+            out.println(function.getBytes().disassemble(info));
         }
         var classes = info.getClasses();
         for (var cls : classes) {
             for (var fnPair : cls.getMethodDefs().entrySet()) {
-                System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(fnPair.getValue().getBytes().disassemble(info));
+                out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
+                out.println(fnPair.getValue().getBytes().disassemble(info));
             }
             for (var fnPair : cls.getStaticMethods().entrySet()) {
-                System.out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
-                System.out.println(fnPair.getValue().getBytes().disassemble(info));
+                out.printf("%s.%s:%n", cls.getType().name(), fnPair.getKey());
+                out.println(fnPair.getValue().getBytes().disassemble(info));
             }
             for (var opPair : cls.getOperatorDefs().entrySet()) {
-                System.out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
-                System.out.println(opPair.getValue().getBytes().disassemble(info));
+                out.printf("%s.%s:%n", cls.getType().name(), opPair.getKey().toString());
+                out.println(opPair.getValue().getBytes().disassemble(info));
             }
             for (var propPair : cls.getProperties().entrySet()) {
-                System.out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(propPair.getValue().getValue().getBytes().disassemble(info));
-                System.out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
-                System.out.println(propPair.getValue().getValue().getBytes().disassemble(info));
+                out.printf("%s.%s.get:%n", cls.getType().name(), propPair.getKey());
+                out.println(propPair.getValue().getValue().getBytes().disassemble(info));
+                out.printf("%s.%s.set:%n", cls.getType().name(), propPair.getKey());
+                out.println(propPair.getValue().getValue().getBytes().disassemble(info));
             }
         }
         for (int i = 0; i < info.getTables().size(); i++) {
-            System.out.printf("Table %d:%n", i);
-            System.out.println(info.getTables().get(i).strDisassembly());
+            out.printf("Table %d:%n", i);
+            out.println(info.getTables().get(i).strDisassembly());
         }
+        out.flush();
     }
 }

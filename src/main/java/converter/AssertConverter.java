@@ -16,13 +16,43 @@ public final class AssertConverter implements BaseConverter {
     @Override
     @NotNull
     public BytecodeList convert() {
-        // TODO: Debug vs release
-        var bytes = new BytecodeList(TestConverter.bytes(node.getAssertion(), info, 1));
+        if (info.globalInfo().isDebug()) {
+            var converter = TestConverter.of(info, node.getAssertion(), 1);
+            var constantRet = converter.constantReturn();
+            if (constantRet.isPresent()) {
+                if (constantRet.orElseThrow().boolValue().isPresent()) {
+                    var constant = constantRet.orElseThrow().boolValue().orElseThrow();
+                    var bytes = new BytecodeList();
+                    if (constant) {
+                        CompilerWarning.warn(
+                                "Value in assertion is always true", WarningType.TRIVIAL_VALUE,
+                                info, node.getAssertion()
+                        );
+                    } else {
+                        bytes.loadConstant(Builtins.assertionErrorConstant(), info);
+                        bytes.addAll(convertMessage());
+                        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.one());
+                    }
+                    return bytes;
+                } else {
+                    return convertStandard(converter);
+                }
+            } else {
+                return convertStandard(converter);
+            }
+        } else {
+            return new BytecodeList();
+        }
+    }
+
+    @NotNull
+    private BytecodeList convertStandard(@NotNull TestConverter converter) {
+        var bytes = new BytecodeList(converter.convert());
         var jumpTag = info.newJumpLabel();
         bytes.add(Bytecode.JUMP_TRUE, jumpTag);
         bytes.loadConstant(Builtins.assertionErrorConstant(), info);
         bytes.addAll(convertMessage());
-        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.zero());
+        bytes.add(Bytecode.THROW_QUICK, ArgcBytecode.one());
         bytes.addLabel(jumpTag);
         return bytes;
     }
@@ -30,7 +60,7 @@ public final class AssertConverter implements BaseConverter {
     @NotNull
     private BytecodeList convertMessage() {
         if (node.getAs().isEmpty()) {
-            var bytes = new BytecodeList();
+            var bytes = new BytecodeList(1);
             bytes.loadConstant(LangConstant.of("Assertion failed"), info);
             return bytes;
         } else {

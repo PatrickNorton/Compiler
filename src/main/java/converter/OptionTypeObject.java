@@ -4,7 +4,6 @@ import main.java.parser.OpSpTypeNode;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -118,26 +117,11 @@ public final class OptionTypeObject extends TypeObject {
         return TypeObject.optional(optionVal.generifyWith(parent, values));
     }
 
-    public static List<Byte> maybeWrapBytes(@NotNull List<Byte> bytes, boolean wrap) {
-        if (wrap) {
-            return wrapBytes(bytes);
-        }
-        return bytes;
-    }
-
     public static BytecodeList maybeWrapBytes(@NotNull BytecodeList bytes, boolean wrap) {
         if (wrap) {
             return wrapBytes(bytes);
         }
         return bytes;
-    }
-
-    @Contract("_ -> param1")
-    @NotNull
-    public static List<Byte> wrapBytes(@NotNull List<Byte> bytes) {
-        List<Byte> result = new ArrayList<>(bytes);
-        result.add(Bytecode.MAKE_OPTION.value);
-        return result;
     }
 
     @NotNull

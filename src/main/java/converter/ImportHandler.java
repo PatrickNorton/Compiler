@@ -142,9 +142,7 @@ public final class ImportHandler {
                 export.setValue(Builtins.type().generify(types.get(export.getKey()).getKey()));
             }
         }
-        if (isModule) {
-            info.addPredeclaredTypes(types);
-        }
+        info.addPredeclaredTypes(types);
         info.accessHandler().setDefinedInFile(definedInFile);
     }
 
@@ -626,6 +624,10 @@ public final class ImportHandler {
             info.link();
             for (var pair : nextCompilationRound) {
                 pair.getKey().link();
+            }
+            info.compileDefaults();
+            for (var pair : nextCompilationRound) {
+                pair.getKey().compileDefaults();
             }
             info.compile();
             for (var pair : nextCompilationRound) {

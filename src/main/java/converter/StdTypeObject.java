@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public final class StdTypeObject extends UserType<StdTypeObject.Info> {
 
@@ -66,7 +67,10 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
     public TypeObject generify(LineInfo lineInfo, @NotNull TypeObject... args) {
         var trueArgs = info.info.generify(args);
         if (trueArgs.isEmpty() || trueArgs.orElseThrow().size() != info.info.getParams().size()) {
-            throw CompilerException.of("Cannot generify object in this manner", lineInfo);
+            throw CompilerException.format(
+                    "Cannot generify object in this manner: type '%s' by types [%s]",
+                    lineInfo, this.name(), joinNames(", ", args)
+            );
         } else {
             return new StdTypeObject(this, trueArgs.orElseThrow());
         }
@@ -200,5 +204,13 @@ public final class StdTypeObject extends UserType<StdTypeObject.Info> {
             this.isFinal = isFinal;
             this.isConstClass = false;
         }
+    }
+
+    private static String joinNames(CharSequence delimiter, TypeObject... types) {
+        var sj = new StringJoiner(delimiter);
+        for (var type : types) {
+            sj.add(type.name());
+        }
+        return sj.toString();
     }
 }

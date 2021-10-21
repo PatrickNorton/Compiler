@@ -1,5 +1,7 @@
 package main.java.parser;
 
+import main.java.util.OptionalBool;
+import main.java.util.OptionalUint;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public final class CLArgs {
@@ -18,11 +21,12 @@ public final class CLArgs {
     private final Map<Optimization, Boolean> explicitOpts;
     private final Set<String> cfgOptions;
     private final boolean printBytecode;
+    private final Path bytecodePath;
 
     private CLArgs(
             Path target, boolean test, boolean isDebug, int optLevel,
             Map<Optimization, Boolean> explicitOpts, Set<String> cfgOptions,
-            boolean printBytecode
+            boolean printBytecode, Path bytecodePath
     ) {
         this.target = target;
         this.isTest = test;
@@ -31,6 +35,7 @@ public final class CLArgs {
         this.explicitOpts = explicitOpts;
         this.cfgOptions = cfgOptions;
         this.printBytecode = printBytecode;
+        this.bytecodePath = bytecodePath;
     }
 
     public Path getTarget() {
@@ -45,16 +50,16 @@ public final class CLArgs {
         return isDebug;
     }
 
-    public int getOptLevel() {
-        return optLevel;
-    }
-
     public Set<String> getCfgOptions() {
         return cfgOptions;
     }
 
     public boolean shouldPrintBytecode() {
         return printBytecode;
+    }
+
+    public Optional<Path> getBytecodePath() {
+        return Optional.ofNullable(bytecodePath);
     }
 
     public boolean optIsEnabled(Optimization opt) {
@@ -74,11 +79,12 @@ public final class CLArgs {
     public static CLArgs parse(@NotNull String[] args) {
         var file = Paths.get(args[0]);
         var test = false;
-        var debug = true;
-        var optLevel = 0;
+        var debug = OptionalBool.empty();
+        var optLevel = OptionalUint.empty();
         Map<Optimization, Boolean> optimizations = new HashMap<>();
         Set<String> cfgOptions = new HashSet<>();
         var printBytecode = false;
+        Path bytecodePath = null;
         for (int i = 1; i < args.length; i++) {
             var arg = args[i];
             switch (arg) {
@@ -87,19 +93,28 @@ public final class CLArgs {
                     test = true;
                     break;
                 case "--ndebug":
-                    debug = false;
+                    checkDebug(debug);
+                    debug = OptionalBool.of(false);
+                    break;
+                case "--debug":
+                    checkDebug(debug);
+                    debug = OptionalBool.of(true);
                     break;
                 case "-O0":
-                    optLevel = 0;
+                    checkOptLevel(optLevel);
+                    optLevel = OptionalUint.of(0);
                     break;
                 case "-O1":
-                    optLevel = 1;
+                    checkOptLevel(optLevel);
+                    optLevel = OptionalUint.of(1);
                     break;
                 case "-O2":
-                    optLevel = 2;
+                    checkOptLevel(optLevel);
+                    optLevel = OptionalUint.of(2);
                     break;
                 case "-O3":
-                    optLevel = 3;
+                    checkOptLevel(optLevel);
+                    optLevel = OptionalUint.of(3);
                     break;
                 case "--cfg":
                     var cfgVal = args[i++];
@@ -112,11 +127,29 @@ public final class CLArgs {
                 case "--print-bytecode":
                     printBytecode = true;
                     break;
+                case "-S":
+                    if (bytecodePath != null) {
+                        throw new IllegalArgumentException("Redefinition of bytecode path");
+                    } else {
+                        var bytePath = args[i++];
+                        bytecodePath = Path.of(bytePath);
+                    }
+                    break;
                 default:
                     if (arg.startsWith("-f")) {
                         updateOptimizations(arg.substring(2), optimizations, false);
                     } else if (arg.startsWith("-F")) {
                         updateOptimizations(arg.substring(2), optimizations, true);
+                    } else if (arg.startsWith("-O")) {
+                        var level = Integer.parseUnsignedInt(arg.substring(2));
+                        checkOptLevel(optLevel);
+                        if (level > 3) {
+                            optLevel = OptionalUint.of(3);
+                        } else if (level < 0) {
+                            optLevel = OptionalUint.of(0);
+                        } else {
+                            optLevel = OptionalUint.of(level);
+                        }
                     } else {
                         var errorMsg = String.format("Illegal argument %s", arg);
                         throw new IllegalArgumentException(errorMsg);
@@ -124,7 +157,10 @@ public final class CLArgs {
                     break;
             }
         }
-        return new CLArgs(file, test, debug, optLevel, optimizations, cfgOptions, printBytecode);
+        return new CLArgs(
+                file, test, debug.orElse(test), optLevel.orElse(0),
+                optimizations, cfgOptions, printBytecode, bytecodePath
+        );
     }
 
     private static void updateOptimizations(String name, @NotNull Map<Optimization, Boolean> optimizations, boolean negative) {
@@ -134,6 +170,18 @@ public final class CLArgs {
             throw new IllegalArgumentException(errorMsg);
         } else {
             optimizations.put(optimization, negative);
+        }
+    }
+
+    private static void checkOptLevel(@NotNull OptionalUint optLevel) {
+        if (optLevel.isPresent()) {
+            throw new IllegalArgumentException("Optimization level defined multiple times");
+        }
+    }
+
+    private static void checkDebug(@NotNull OptionalBool debug) {
+        if (debug.isPresent()) {
+            throw new IllegalArgumentException("Debug defined multiple times");
         }
     }
 }
