@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 public final class FunctionInfo {
@@ -192,7 +191,8 @@ public final class FunctionInfo {
         }
     }
 
-    public Optional<Pair<Map<Integer, TypeObject>, Set<Integer>>> generifyArgs(Argument... args) {
+    @NotNull
+    public Pair<Map<Integer, TypeObject>, Set<Integer>> generifyArgs(Argument... args) {
         return arguments.generifyArgs(this, args);
     }
 

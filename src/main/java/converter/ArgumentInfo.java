@@ -1,5 +1,6 @@
 package main.java.converter;
 
+import main.java.parser.LineInfo;
 import main.java.parser.TypedArgumentListNode;
 import main.java.parser.TypedArgumentNode;
 import main.java.util.Pair;
@@ -186,6 +187,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * @return The array containing that order
      */
     public ArgPosition[] argPositions(@NotNull Argument... args) {
+        assert this.matches(args);
         var newArgs = expandTuples(args);
         Map<String, Integer> kwPositions = new HashMap<>();
         for (int i = 0; i < newArgs.length; i++) {
@@ -251,16 +253,22 @@ public final class ArgumentInfo implements Iterable<Argument> {
      *     containing the argument indices which will require a {@link
      *     Bytecode#MAKE_OPTION} before passed.
      * </p>
+     * <p>
+     *     Note that this will throw an exception if the parameters do not
+     *     match.
+     * </p>
      *
      * @param parent The parent info to generify with (should be the case that
      *               {@code parent.getArgs() == this}
      * @param args The arguments passed to the function
-     * @return The values, or {@link Optional#empty()} if {@code
-     *         !this.matches(args)}
+     * @return The values
+     * @see FunctionInfo#generifyArgs
      */
-    public Optional<Pair<Map<Integer, TypeObject>, Set<Integer>>> generifyArgs(
+    @NotNull
+    public Pair<Map<Integer, TypeObject>, Set<Integer>> generifyArgs(
             @NotNull FunctionInfo parent, Argument... args
     ) {
+        assert parent.getArgs() == this;
         var par = parent.toCallable();
         var newArgs = expandTuples(args);
         var keywordMap = initKeywords(newArgs);
@@ -269,33 +277,53 @@ public final class ArgumentInfo implements Iterable<Argument> {
         // Check if all given keyword arguments are subclasses of the declaration
         var matchedCount = 0;
         for (var arg : allKeywords()) {
-            if (keywordMap.containsKey(arg.getName())) {
-                var keywordType = keywordMap.get(arg.getName());
-                if (!arg.getType().isSuperclass(keywordType)) {
-                    return Optional.empty();
-                } else if (update(indexOf(arg.getName()), par, result, needsMakeOption, arg, keywordType)) {
+            var name = arg.getName();
+            if (keywordMap.containsKey(name)) {
+                var keywordType = keywordMap.get(name);
+                if (update(indexOf(name), par, result, needsMakeOption, arg, keywordType)) {
                     matchedCount++;
                 } else {
-                    return Optional.empty();
+                    throw CompilerException.format(
+                            "Argument mismatch: Keyword argument %s is of type '%s'," +
+                                    " which is not assignable to type '%s'",
+                            findName(name, newArgs), arg.getName(), keywordType, arg.getType().name()
+                    );
                 }
             }
         }
         // Ensure the number of matched keywords is the same as the total number of keywords
+        // If it's not, then there are keyword arguments passed that don't have an equivalent
+        // in the function definition
         if (matchedCount != keywordMap.size()) {
-            return Optional.empty();
+            for (var keyword : keywordMap.keySet()) {
+                if (indexOf(keyword) == -1) {
+                    var keywordArg = findName(keyword, newArgs);
+                    throw CompilerException.format("Keyword argument %s is unexpected", keywordArg, keyword);
+                }
+            }
         }
         // Check that all keyword-only arguments are either used or have a default
         for (var arg : keywordArgs) {
             if (!keywordMap.containsKey(arg.getName()) && arg.getDefaultValue().isEmpty()) {
-                return Optional.empty();
+                // FIXME: Get line info for all missing-argument scenarios
+                var lineInfo = newArgs.length > 0 ? newArgs[0].getLineInfo() : LineInfo.empty();
+                throw CompilerException.format(
+                        "Missing value for required keyword-only argument %s", lineInfo, arg.getName()
+                );
             }
         }
         var defaultCount = argsWithDefaults(keywordMap.keySet());
         var nonKeywordCount = newArgs.length - keywordMap.size();
         var unused = size() - keywordMap.size();
         var defaultsUsed = unused - nonKeywordCount;
-        if (defaultsUsed < 0 || defaultsUsed > defaultCount) {
-            return Optional.empty();
+        if (defaultsUsed < 0) {
+            var countStr = defaultCount == 0 ? "exactly" : "no more than";
+            throw CompilerException.format(
+                    "Too many parameters passed: Expected %s %d unnamed parameters, got %d",
+                    args[0], countStr, unused, nonKeywordCount
+            );
+        } else if (defaultsUsed > defaultCount) {
+            throw notEnoughArgs(newArgs, keywordMap, defaultCount, defaultsUsed);
         }
         var defaultsUnused = defaultCount - defaultsUsed;
         var nextArg = nextEligibleArg(0, keywordMap.keySet(), defaultsUnused > 0);
@@ -303,18 +331,24 @@ public final class ArgumentInfo implements Iterable<Argument> {
             if (keywordMap.containsKey(arg.getName())) {
                 continue;
             } else if (nextArg >= size()) {
-                return Optional.empty();
+                throw CompilerInternalError.of(
+                        "Error in parameter expansion: nextEligibleArg() should never return >= size()\n" +
+                        "Note: All cases where this branch is taken should be spotted earlier in the function", arg
+                );
             }
             var argValue = get(nextArg);
             if (!update(nextArg, par, result, needsMakeOption, argValue, arg.getType())) {
-                return Optional.empty();
+                throw CompilerException.format(
+                        "Argument mismatch: Argument is of type '%s', which is not assignable to type '%s'",
+                        arg, arg.getType().name(), argValue.getType().name()
+                );
             }
             if (argValue.getDefaultValue().isPresent()) {
                 defaultsUnused -= 1;
             }
             nextArg = nextEligibleArg(nextArg + 1, keywordMap.keySet(), defaultsUnused > 0);
         }
-        return Optional.of(Pair.of(result, needsMakeOption));
+        return Pair.of(result, needsMakeOption);
     }
 
     private static boolean update(
@@ -442,6 +476,31 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return -1;
     }
 
+    @NotNull
+    private CompilerException notEnoughArgs(
+            Argument[] newArgs, Map<String, TypeObject> keywordMap, int defaultCount, int defaultsUsed
+    ) {
+        var remaining = defaultsUsed - defaultCount;
+        var unmatched = new String[remaining];
+        remaining--;
+        for (int i = size() - 1; i >= 0; i--) {
+            var name = get(i).getName();
+            if (!keywordMap.containsKey(name)) {
+                unmatched[remaining] = name;
+                remaining--;
+            }
+        }
+        var argLineInfo = newArgs.length > 0 ? newArgs[0].getLineInfo() : LineInfo.empty();
+        if (unmatched.length == 1) {
+            return CompilerException.format(
+                    "Missing value for positional argument %s", argLineInfo, unmatched[0]
+            );
+        } else {
+            var joinedNames = String.join(", ", unmatched);
+            return CompilerException.format("Missing value for positional arguments %s", argLineInfo, joinedNames);
+        }
+    }
+
     private class ArgIterator implements Iterator<Argument> {
         int next;
 
@@ -503,6 +562,15 @@ public final class ArgumentInfo implements Iterable<Argument> {
         } else {
             return args;
         }
+    }
+
+    private static Argument findName(String name, Argument... args) {
+        for (var arg : args) {
+            if (arg.getName().equals(name)) {
+                return arg;
+            }
+        }
+        throw CompilerInternalError.format("Unknown name %s", LineInfo.empty(), name);
     }
 
     public static final class ArgPosition {

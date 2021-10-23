@@ -279,29 +279,13 @@ public final class AssignmentConverter implements BaseConverter {
         }
         indexTypes.add(new Argument("", setType));
         var opInfo = varType.tryOperatorInfo(node, OpSpTypeNode.SET_ATTR, info);
-        if (opInfo.generifyArgs(indexTypes.toArray(new Argument[0])).isEmpty()) {
-            var nameArr = TypeObject.name(Argument.typesOf(indexTypes.toArray(new Argument[0])));
-            throw indexErr(false, varType, nameArr, opInfo);
-        }
+        opInfo.generifyArgs(indexTypes.toArray(new Argument[0]));
     }
 
     private void checkSlice(TypeObject varType, TypeObject setType) {
         var ops = varType.tryOperatorInfo(node, OpSpTypeNode.SET_SLICE, info);
         var args = new Argument[] {new Argument("", Builtins.slice()), new Argument("", setType)};
-        if (ops.generifyArgs(args).isEmpty()) {
-            var nameArr = TypeObject.name(Builtins.slice());
-            throw indexErr(true, varType, nameArr, ops);
-        }
-    }
-
-    private CompilerException indexErr(boolean isSlice, TypeObject varType, String[] nameArr, FunctionInfo ops) {
-        var argTypes = Argument.typesOf(ops.getArgs().getNormalArgs());
-        var argsString = String.join(", ", TypeObject.name(argTypes));
-        throw CompilerException.format(
-                "Cannot assign variable to index: '%s'.operator [%s]= does not match the given types%n" +
-                        "Arguments received: %s%nArguments expected: %s",
-                node, varType.name(), isSlice ? ":" : "", String.join(", ", nameArr), argsString
-        );
+        ops.generifyArgs(args);
     }
 
     private void assignToDot(@NotNull BytecodeList bytes, @NotNull BytecodeList storeBytes,
