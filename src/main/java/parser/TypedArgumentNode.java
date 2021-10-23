@@ -154,6 +154,6 @@ public class TypedArgumentNode implements BaseNode {
 
     @Override
     public String toString() {
-        return String.format("%s%s %s%s", varargType, type, name, defaultVal.isEmpty() ? "" : defaultVal);
+        return String.format("%s%s %s%s", varargType, type, name, defaultVal.isEmpty() ? "" : "= " + defaultVal);
     }
 }
