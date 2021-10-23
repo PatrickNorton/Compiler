@@ -199,7 +199,13 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
             if (sb.length() > 0) {
                 sb.append(", ");
             }
-            StringJoiner sj = new StringJoiner(", ", "*, ", "");
+            String prefix;
+            if (normalArgs.length > 0 && normalArgs[normalArgs.length - 1].getVararg()) {
+                prefix = ", ";
+            } else {
+                prefix = "*, ";
+            }
+            StringJoiner sj = new StringJoiner(", ", prefix, "");
             for (TypedArgumentNode t : nameArgs) {
                 sj.add(t.toString());
             }
