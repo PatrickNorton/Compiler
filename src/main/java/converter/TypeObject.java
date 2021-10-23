@@ -861,7 +861,7 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
 
     /**
      * Adds the given generics to the {@link Map map} given in {@code result},
-     * then returns whether or not an error occurred.
+     * then returns if the update is successful.
      * <p>
      *     An error will occur if both maps contain an entry for the same key
      *     and neither of those entries is a direct {@link
@@ -869,13 +869,13 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
      * </p>
      * <p>
      *     Note: An error condition in this function will result in {@code
-     *     true} being returned. This will leave {@code result} in a partially
+     *     false} being returned. This will leave {@code result} in a partially
      *     updated state, and should not be used henceforth.
      * </p>
      *
      * @param toAdd The values to add to the map
      * @param result The map to add to
-     * @return If the addition was not successful
+     * @return If the addition was successful
      */
     static boolean addGenericsToMap(@NotNull Map<Integer, TypeObject> toAdd, Map<Integer, TypeObject> result) {
         for (var pair : toAdd.entrySet()) {
@@ -888,11 +888,11 @@ public abstract class TypeObject implements LangObject, Comparable<TypeObject> {
                 if (obj.isSuperclass(resultType)) {
                     result.put(index, obj);
                 } else if (!resultType.isSuperclass(obj)) {
-                    return true;
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     @NotNull

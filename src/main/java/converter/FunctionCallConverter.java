@@ -180,8 +180,7 @@ public final class FunctionCallConverter implements TestConverter {
             FunctionInfo fnInfo, CompilerInfo info, ArgumentNode[] params, Lined node, int retCount
     ) {
         var args = getArgs(info, params);
-        var genPair = fnInfo.generifyArgs(args)
-                .orElseThrow(() -> argError(node, fnInfo.toCallable().name(), args, posArgs(fnInfo)));
+        var genPair = fnInfo.generifyArgs(args);
         var generics = genPair.getKey();
         if (generics.isEmpty()) {
             var returns = fnInfo.getReturns();
@@ -248,10 +247,7 @@ public final class FunctionCallConverter implements TestConverter {
         var args = getArgs(info, arguments);
         var operatorInfo = callerType.tryOperatorInfo(lineInfo, OpSpTypeNode.CALL, info);
         var opGenerics = operatorInfo.generifyArgs(args);
-        if (opGenerics.isEmpty()) {
-            throw argError(lineInfo, callerType.name(), args, posArgs(operatorInfo));
-        }
-        return Pair.of(operatorInfo, opGenerics.orElseThrow().getValue());
+        return Pair.of(operatorInfo, opGenerics.getValue());
     }
 
     private static CompilerException argError(Lined node, String name, Argument[] args, Argument[] expected) {
@@ -277,7 +273,8 @@ public final class FunctionCallConverter implements TestConverter {
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
             var type = TestConverter.returnType(arg.getArgument(), info, 1)[0];
-            var lineInfo = arg.getArgument().getLineInfo();
+            var lineInfo = arg.getVariable().isEmpty()
+                    ? arg.getArgument().getLineInfo() : arg.getVariable().getLineInfo();
             result[i] = new Argument(arg.getVariable().getName(), type, arg.isVararg(), lineInfo);
         }
         return result;

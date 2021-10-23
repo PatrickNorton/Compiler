@@ -147,7 +147,7 @@ public final class TupleType extends TypeObject {
             Map<Integer, TypeObject> result = new HashMap<>(generics.size());
             for (var pair : Zipper.of(generics, otherGen)) {
                 var map = pair.getKey().generifyAs(parent, pair.getValue());
-                if (map.isEmpty() || TypeObject.addGenericsToMap(map.orElseThrow(), result)) {
+                if (map.isEmpty() || !TypeObject.addGenericsToMap(map.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             }

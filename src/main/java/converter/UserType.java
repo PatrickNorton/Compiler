@@ -181,7 +181,7 @@ public abstract class UserType<I extends UserType.Info<?, ?>> extends NameableTy
                 }
             } else if (supG instanceof ListTypeObject && objG instanceof ListTypeObject) {
                 var generics = supG.generifyAs(parent, objG);
-                if (generics.isEmpty() || TypeObject.addGenericsToMap(generics.orElseThrow(), result)) {
+                if (generics.isEmpty() || !TypeObject.addGenericsToMap(generics.orElseThrow(), result)) {
                     return Optional.empty();
                 }
             } else if (!supG.equals(objG)) {
