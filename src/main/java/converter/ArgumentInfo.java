@@ -312,6 +312,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 );
             }
         }
+        assert varargIsValid();
         var defaultCount = argsWithDefaults(keywordMap.keySet());
         var nonKeywordCount = newArgs.length - keywordMap.size();
         var unused = size() - keywordMap.size();
@@ -499,6 +500,16 @@ public final class ArgumentInfo implements Iterable<Argument> {
             var joinedNames = String.join(", ", unmatched);
             return CompilerException.format("Missing value for positional arguments %s", argLineInfo, joinedNames);
         }
+    }
+
+    private boolean varargIsValid() {
+        var normal = normalArgs.length == 0 ? null : normalArgs[normalArgs.length - 1];
+        for (var arg : this) {
+            if (arg != normal && arg.isVararg()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class ArgIterator implements Iterator<Argument> {
