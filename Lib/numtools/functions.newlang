@@ -41,7 +41,7 @@ func fromBytes(bytes b, /, str ordering, *, bool signed = false) -> int {
                 return result
             }
         }
-        default => raise ValueError(f"{ordering} must be either 'big' or 'little'")
+        default => raise ValueError(f"{ordering !r} must be either 'big' or 'little'")
     }
 }
 
@@ -63,7 +63,7 @@ func toBytes(int val, int length, /, str ordering, *, bool signed = false) -> by
             result.reverse()
         }
         case "little" {}
-        default => raise ValueError(f"{ordering} must be either 'big' or 'little'")
+        default => raise ValueError(f"{ordering !r} must be either 'big' or 'little'")
     }
     return result
 }
