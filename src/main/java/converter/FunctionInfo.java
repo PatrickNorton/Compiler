@@ -57,7 +57,7 @@ public final class FunctionInfo {
     }
 
     public boolean matches(Argument... args) {
-        return arguments.matches(args);
+        return arguments.matches(this, args);
     }
 
     public TypeObject[] getReturns() {

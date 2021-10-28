@@ -51,40 +51,17 @@ public final class ArgumentInfo implements Iterable<Argument> {
      *    </ol>
      * </p>
      *
+     * @param fnInfo The parent type, for generics
      * @param args The arguments to check for validity
      * @return If they match this function signature
      */
-    public boolean matches(@NotNull Argument... args) {
-        var newArgs = expandTuples(args);
-        var keywordMap = initKeywords(newArgs);
-        if (!checkKeywordArgs(keywordMap)) {
+    public boolean matches(FunctionInfo fnInfo, @NotNull Argument... args) {
+        try {
+            generifyArgs(fnInfo, args);
+            return true;
+        } catch (CompilerException ignored) {
             return false;
         }
-        var defaultCount = argsWithDefaults(keywordMap.keySet());
-        var nonKeywordCount = newArgs.length - keywordMap.size();
-        var unused = size() - keywordMap.size();
-        var defaultsUsed = unused - nonKeywordCount;
-        if (defaultsUsed < 0 || defaultsUsed > defaultCount) {
-            return false;
-        }
-        var defaultsUnused = defaultCount - defaultsUsed;
-        var nextArg = nextEligibleArg(0, keywordMap.keySet(), defaultsUnused > 0);
-        for (var arg : newArgs) {
-            if (keywordMap.containsKey(arg.getName())) {
-                continue;
-            } else if (nextArg >= size()) {
-                return false;
-            }
-            var argValue = get(nextArg);
-            if (!argValue.getType().isSuperclass(arg.getType())) {
-                return false;
-            }
-            if (argValue.getDefaultValue().isPresent()) {
-                defaultsUnused -= 1;
-            }
-            nextArg = nextEligibleArg(nextArg + 1, keywordMap.keySet(), defaultsUnused > 0);
-        }
-        return true;
     }
 
     @NotNull
@@ -112,32 +89,6 @@ public final class ArgumentInfo implements Iterable<Argument> {
             }
         }
         return result.toArray(new Argument[0]);
-    }
-
-    private boolean checkKeywordArgs(Map<String, TypeObject> keywords) {
-        // Check if all given keyword arguments are subclasses of the declaration
-        var matchedCount = 0;
-        for (var arg : allKeywords()) {
-            if (keywords.containsKey(arg.getName())) {
-                var keywordType = keywords.get(arg.getName());
-                if (!arg.getType().isSuperclass(keywordType)) {
-                    return false;
-                } else {
-                    matchedCount++;
-                }
-            }
-        }
-        // Ensure the number of matched keywords is the same as the total number of keywords
-        if (matchedCount != keywords.size()) {
-            return false;
-        }
-        // Check that all keyword-only arguments are either used or have a default
-        for (var arg : keywordArgs) {
-            if (!keywords.containsKey(arg.getName()) && arg.getDefaultValue().isEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private int argsWithDefaults(Set<String> toExclude) {
@@ -187,7 +138,6 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * @return The array containing that order
      */
     public ArgPosition[] argPositions(@NotNull Argument... args) {
-        assert this.matches(args);
         var newArgs = expandTuples(args);
         Map<String, Integer> kwPositions = new HashMap<>();
         for (int i = 0; i < newArgs.length; i++) {

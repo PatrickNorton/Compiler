@@ -90,7 +90,8 @@ public final class EqualsConverter extends OperatorConverter {
         assert args.length == 2;
         var converter = TestConverter.of(info, args[0].getArgument(), 1);
         // TODO: Equals for types where info doesn't match
-        boolean useId = converter.returnType()[0].operatorInfo(OpSpTypeNode.EQUALS, info).isEmpty();
+        var returnType = converter.returnType()[0];
+        boolean useId = returnType instanceof UserType && returnType.operatorInfo(OpSpTypeNode.EQUALS, info).isEmpty();
         BytecodeList bytes = new BytecodeList(converter.convert());
         bytes.addAll(TestConverter.bytes(args[1].getArgument(), info, 1));
         bytes.add(useId ? Bytecode.IDENTICAL : Bytecode.EQUAL);

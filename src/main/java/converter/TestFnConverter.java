@@ -9,7 +9,7 @@ public final class TestFnConverter {
         if (info.globalInfo().isTest()) {
             var constant = FunctionDefinitionConverter.convertWithConstant(info, node);
             var fnInfo = info.fnInfo(constant.getName()).orElseThrow();
-            if (!fnInfo.getArgs().matches()) {
+            if (!fnInfo.matches()) {
                 throw CompilerException.of("Test functions must have an empty argument list", node);
             }
             info.globalInfo().addTestFunction(constant);
