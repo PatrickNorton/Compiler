@@ -208,23 +208,16 @@ public final class FunctionCallConverter implements TestConverter {
                 }
             }
             swaps = swapsToOrder(currentState);
-            var defaultCount = countDefaults(0, argPositions);
-            var newParamLen = paramLen - vararg.getValues().size() + 1 + defaultCount;
-            for (var pair : swaps) {
-                var dist1 = (short) (newParamLen - pair.getKey() - 1);
-                var dist2 = (short) (newParamLen - pair.getValue() - 1);
-                addSwap(bytes, dist1, dist2);
-            }
         } else {
             // If there is no vararg, we can just use the same stuff we've been
             // doing before--swap everything around until it's all in the right
             // place
             swaps = swapsToOrder(argPositions);
-            for (var pair : swaps) {
-                var dist1 = (short) (paramLen - pair.getKey() - 1);
-                var dist2 = (short) (paramLen - pair.getValue() - 1);
-                addSwap(bytes, dist1, dist2);
-            }
+        }
+        for (var pair : swaps) {
+            var dist1 = (short) (argPositions.length - pair.getKey() - 1);
+            var dist2 = (short) (argPositions.length - pair.getValue() - 1);
+            addSwap(bytes, dist1, dist2);
         }
     }
 
