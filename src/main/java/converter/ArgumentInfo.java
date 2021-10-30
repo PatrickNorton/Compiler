@@ -14,8 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -101,6 +99,16 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return count;
     }
 
+    private int kwArgsWithDefaults(Set<String> toExclude) {
+        var count = 0;
+        for (var arg : keywordArgs) {
+            if (!toExclude.contains(arg.getName()) && arg.getDefaultValue().isPresent()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private int nextEligibleArg(int nextUnused, Set<String> keywordArgs, boolean defaultsRemaining) {
         for (; nextUnused < size(); nextUnused++) {
             var currentArg = get(nextUnused);
@@ -108,6 +116,15 @@ public final class ArgumentInfo implements Iterable<Argument> {
                 continue;
             }
             if (defaultsRemaining || currentArg.getDefaultValue().isEmpty()) {
+                return nextUnused;
+            }
+        }
+        return nextUnused;
+    }
+
+    private int nextEligibleParam(int nextUnused, Argument... params) {
+        for (; nextUnused < params.length; nextUnused++) {
+            if (params[nextUnused].getName().isEmpty()) {
                 return nextUnused;
             }
         }
@@ -137,33 +154,88 @@ public final class ArgumentInfo implements Iterable<Argument> {
      * @param args The arguments to get the final order
      * @return The array containing that order
      */
-    public ArgPosition[] argPositions(@NotNull Argument... args) {
-        var newArgs = expandTuples(args);
-        Map<String, Integer> kwPositions = new HashMap<>();
-        for (int i = 0; i < newArgs.length; i++) {
-            var arg = newArgs[i];
-            if (!arg.getName().isEmpty()) {
-                kwPositions.put(arg.getName(), i);
-            }
+    public ArgPosition[] argPositions(Argument... args) {
+        assert varargIsValid();
+        if (hasVararg()) {
+            return argPositionsWithVararg(args);
+        } else {
+            return argPositionsNoVararg(args);
         }
+    }
+
+    public ArgPosition[] argPositionsNoVararg(Argument... args) {
+        var newArgs = expandTuples(args);
+        var kwPositions = getKwPositions(args);
         var defaultCount = argsWithDefaults(kwPositions.keySet());
         var nonKeywordCount = newArgs.length - kwPositions.size();
         var unused = size() - kwPositions.size();
         var defaultsUsed = unused - nonKeywordCount;
         var defaultsUnused = defaultCount - defaultsUsed;
-        ArgPosition[] result = new ArgPosition[size()];
+        var result = new ArgPosition[size()];
         for (int i = 0, argNo = 0; i < size(); i++) {
             var valueArg = this.get(i);
             if (kwPositions.containsKey(valueArg.getName())) {
-                result[i] = new ArgPosition(kwPositions.get(valueArg.getName()));
+                result[i] = new StandardArgPos(kwPositions.get(valueArg.getName()));
             }  else if (valueArg.getDefaultValue().isEmpty()) {
-                result[i] = new ArgPosition(argNo++);
+                result[i] = new StandardArgPos(argNo++);
             } else if (defaultsUnused > 0) {
-                result[i] = new ArgPosition(argNo++);
+                result[i] = new StandardArgPos(argNo++);
                 defaultsUnused -= 1;
             } else {
                 var defaultVal = valueArg.getDefaultValue().orElseThrow();
-                result[i] = new ArgPosition(defaultVal);
+                result[i] = new DefaultArgPos(defaultVal);
+            }
+        }
+        return result;
+    }
+
+    public ArgPosition[] argPositionsWithVararg(Argument... args) {
+        var newArgs = expandTuples(args);
+        var kwPositions = getKwPositions(args);
+        assert varargIsValid() && hasVararg();
+        // The total number of arguments in the declaration with a possible
+        // default parameter, excluding those which are explicitly passed as a
+        // kwarg
+        var defaultCount = argsWithDefaults(kwPositions.keySet());
+        // The total number of keyword-only arguments in the declaration which
+        // will be using their default parameter
+        var defaultedKwargs = kwArgsWithDefaults(kwPositions.keySet());
+        assert defaultedKwargs <= defaultCount;
+        // The total number of positionally-passable arguments in the
+        // declaration which do not have a matched value yet
+        var unused = size() - kwPositions.size() - defaultedKwargs;
+        // The total number of non-keyword arguments in the invocation
+        var nonKeywordCount = newArgs.length - kwPositions.size();
+        // The number of positional arguments which will be given a default
+        // parameter
+        var defaultsUsed = Math.max(unused - nonKeywordCount - 1, 0);
+        // The number of default arguments which will take a positional
+        // parameter in the argument list
+        var defaultsUnused = defaultCount - defaultsUsed - defaultedKwargs;
+        // The size of the variadic argument
+        var varargCount = Math.max(nonKeywordCount - unused + 1, 0);
+        var result = new ArgPosition[size()];
+        for (int i = 0, argNo = 0; i < size(); i++) {
+            var valueArg = this.get(i);
+            if (kwPositions.containsKey(valueArg.getName())) {
+                result[i] = new StandardArgPos(kwPositions.get(valueArg.getName()));
+            } else if (valueArg.isVararg()) {
+                List<Integer> values = new ArrayList<>(varargCount);
+                for (int j = 0; j < varargCount; j++) {
+                    values.add(argNo++);
+                    argNo = nextEligibleParam(argNo, args);
+                }
+                result[i] = new VarargPos(values, valueArg.getType());
+            } else if (valueArg.getDefaultValue().isEmpty()) {
+                result[i] = new StandardArgPos(argNo++);
+                argNo = nextEligibleParam(argNo, args);
+            } else if (defaultsUnused > 0) {
+                result[i] = new StandardArgPos(argNo++);
+                defaultsUnused--;
+                argNo = nextEligibleParam(argNo, args);
+            } else {
+                var defaultVal = valueArg.getDefaultValue().orElseThrow();
+                result[i] = new DefaultArgPos(defaultVal);
             }
         }
         return result;
@@ -268,13 +340,17 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var unused = size() - keywordMap.size();
         var defaultsUsed = unused - nonKeywordCount;
         if (defaultsUsed < 0) {
-            var countStr = defaultCount == 0 ? "exactly" : "no more than";
-            throw CompilerException.format(
-                    "Too many parameters passed: Expected %s %d unnamed parameters, got %d",
-                    args[0], countStr, unused, nonKeywordCount
-            );
+            if (!hasVararg()) {
+                var countStr = defaultCount == 0 ? "exactly" : "no more than";
+                throw CompilerException.format(
+                        "Too many parameters passed: Expected %s %d unnamed parameters, got %d",
+                        args[0], countStr, unused, nonKeywordCount
+                );
+            }
         } else if (defaultsUsed > defaultCount) {
-            throw notEnoughArgs(newArgs, keywordMap, defaultCount, defaultsUsed);
+            if (!hasVararg() || defaultsUsed != defaultCount + 1) {
+                throw notEnoughArgs(newArgs, keywordMap, defaultCount, defaultsUsed);
+            }
         }
         var defaultsUnused = defaultCount - defaultsUsed;
         var nextArg = nextEligibleArg(0, keywordMap.keySet(), defaultsUnused > 0);
@@ -297,7 +373,12 @@ public final class ArgumentInfo implements Iterable<Argument> {
             if (argValue.getDefaultValue().isPresent()) {
                 defaultsUnused -= 1;
             }
-            nextArg = nextEligibleArg(nextArg + 1, keywordMap.keySet(), defaultsUnused > 0);
+            // Because the variadic argument is always the last non-keyword one,
+            // we don't update it once we reach it, since any other arguments
+            // we get from here on out are going to be part of this one.
+            if (!argValue.isVararg()) {
+                nextArg = nextEligibleArg(nextArg + 1, keywordMap.keySet(), defaultsUnused > 0);
+            }
         }
         return Pair.of(result, needsMakeOption);
     }
@@ -462,6 +543,22 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return true;
     }
 
+    private boolean hasVararg() {
+        assert varargIsValid();
+        return normalArgs.length > 0 && normalArgs[normalArgs.length - 1].isVararg();
+    }
+
+    private static Map<String, Integer> getKwPositions(Argument... args) {
+        Map<String, Integer> result = new HashMap<>();
+        for (int i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (!arg.getName().isEmpty()) {
+                result.put(arg.getName(), i);
+            }
+        }
+        return result;
+    }
+
     private class ArgIterator implements Iterator<Argument> {
         int next;
 
@@ -494,8 +591,8 @@ public final class ArgumentInfo implements Iterable<Argument> {
         public Argument next() {
             if (next < normalArgs.length) {
                 return normalArgs[next++];
-            } else if (next < keywordArgs.length) {
-                return keywordArgs[next++];
+            } else if (next < normalArgs.length + keywordArgs.length) {
+                return keywordArgs[next++ - normalArgs.length];
             } else {
                 throw new NoSuchElementException();
             }
@@ -532,34 +629,5 @@ public final class ArgumentInfo implements Iterable<Argument> {
             }
         }
         throw CompilerInternalError.format("Unknown name %s", LineInfo.empty(), name);
-    }
-
-    public static final class ArgPosition {
-        private final int position;
-        private final Argument.DefaultValue defaultValue;
-
-        private ArgPosition(int position) {
-            this.position = position;
-            this.defaultValue = null;
-        }
-
-        private ArgPosition(Argument.DefaultValue defaultValue) {
-            this.position = -1;
-            this.defaultValue = defaultValue;
-        }
-
-        public OptionalInt getPosition() {
-            assert isValid();
-            return defaultValue == null ? OptionalInt.of(position) : OptionalInt.empty();
-        }
-
-        public Optional<Argument.DefaultValue> getDefaultValue() {
-            assert isValid();
-            return Optional.ofNullable(defaultValue);
-        }
-
-        private boolean isValid() {
-            return defaultValue == null ^ position == -1;
-        }
     }
 }

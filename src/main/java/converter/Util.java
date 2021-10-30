@@ -225,4 +225,15 @@ public final class Util {
         }
         return (int) (Math.log10(Math.abs(value)) + 1);
     }
+
+    @Contract(pure = true)
+    static int countLessThan(@NotNull Iterable<Integer> values, int test) {
+        int count = 0;
+        for (int i : values) {
+            if (i < test) {
+                count++;
+            }
+        }
+        return count;
+    }
 }

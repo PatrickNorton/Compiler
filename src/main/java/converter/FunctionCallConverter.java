@@ -6,11 +6,13 @@ import main.java.converter.bytecode.StackPosBytecode;
 import main.java.parser.ArgumentNode;
 import main.java.parser.EscapedOperatorNode;
 import main.java.parser.FunctionCallNode;
+import main.java.parser.LineInfo;
 import main.java.parser.Lined;
 import main.java.parser.OpSpTypeNode;
 import main.java.parser.TestNode;
 import main.java.parser.VariableNode;
 import main.java.util.Pair;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 public final class FunctionCallConverter implements TestConverter {
@@ -98,13 +101,15 @@ public final class FunctionCallConverter implements TestConverter {
 
     private static int convertInnerArgs(
             CompilerInfo info, BytecodeList bytes, ArgumentNode[] params,
-            ArgumentInfo.ArgPosition[] argPositions, Set<Integer> needsMakeOption
+            ArgPosition[] argPositions, Set<Integer> needsMakeOption
     ) {
-        for (int i = 0, j = 0; i < argPositions.length; i++) {
+        int placeInVararg = 0;
+        for (int i = 0, j = 0; i < argPositions.length;) {
             var argPos = argPositions[i];
-            if (argPos.getDefaultValue().isPresent()) {
-                var defaultVal = argPos.getDefaultValue().orElseThrow();
+            if (argPos instanceof DefaultArgPos def) {
+                var defaultVal = def.getValue();
                 defaultVal.loadBytes(bytes, info);
+                i++;
                 continue;
             }
             var param = params[j];
@@ -140,14 +145,97 @@ public final class FunctionCallConverter implements TestConverter {
                 bytes.add(Bytecode.MAKE_OPTION);
             }
             j++;
+            // FIXME: Doesn't work for unpacked tuples
+            if (!(argPos instanceof VarargPos var) || placeInVararg == var.getValues().size() - 1) {
+                placeInVararg = 0;
+                i++;
+            } else {
+                placeInVararg++;
+            }
         }
-        var swaps = swapsToOrder(argPositions);
-        for (var pair : swaps) {
-            var dist1 = (short) (params.length - pair.getKey() - 1);
-            var dist2 = (short) (params.length - pair.getValue() - 1);
-            addSwap(bytes, dist1, dist2);
-        }
+        addSwaps(bytes, params.length, argPositions, info);
         return argPositions.length;
+    }
+
+    private static void addSwaps(BytecodeList bytes, int paramLen, ArgPosition[] argPositions, CompilerInfo info) {
+        var varargPosition = getVarargPos(argPositions);
+        List<Pair<Integer, Integer>> swaps;
+        if (varargPosition.isPresent()) {
+            // Phases of argument-repositioning:
+            // 1. Move all variadic arguments to top of stack
+            // 2. Load type of list
+            // 3. Pack arguments into list
+            // 4. Do standard swapping from there
+            var varargPos = varargPosition.orElseThrow();
+            var vararg = (VarargPos) argPositions[varargPos];
+            for (int i = 0; i < vararg.getValues().size(); i++) {
+                var location = vararg.getValues().get(i);
+                // FIXME? This assumes the list is sorted (values which are
+                //  unsorted won't "pass" the next ones)
+                // Reasoning: The distance of each parameter from the top is
+                // paramLen - location (SWAP_N is 1-based, at least for now),
+                // and the + i is there to compensate for the fact that each
+                // value that is brought up "passes" all the others on the
+                // stack, and thus shifts them 1 further away from the top.
+                var defaultCount = countDefaults(varargPos, argPositions);
+                var stackLoc = paramLen - location + defaultCount + i;
+                bytes.add(Bytecode.SWAP_N, new StackPosBytecode((short) stackLoc));
+            }
+            // FIXME: Get line info
+            bytes.addAll(new TypeLoader(LineInfo.empty(), vararg.getGenericType(), info).convert());
+            bytes.add(Bytecode.LIST_CREATE, new ArgcBytecode((short) vararg.getValues().size()));
+            int[] currentState = new int[argPositions.length];
+            for (int i = 0; i < argPositions.length; i++) {
+                var param = argPositions[i];
+                if (param instanceof StandardArgPos pos) {
+                    // Any positional arguments which got packed into a vararg
+                    // "crossed" our value, so we need to adjust for them.
+                    currentState[i] = pos.getValue() - Util.countLessThan(vararg.getValues(), pos.getValue());
+                } else if (param instanceof DefaultArgPos) {
+                    // If the vararg is supposed to be below the default value,
+                    // it's been "passed up" past this value in order to be
+                    // packed, so we need to adjust our parameter accordingly.
+                    // NOTE: This doesn't need the Util.countLessThan call
+                    // because `i` is based on the *final* position of the
+                    // argument (we can assume it was placed correctly in that
+                    // regard, thanks to convertInnerArgs), therefore it doesn't
+                    // need adjusting for any of the pre-vararg positions.
+                    var adjustForVararg = i > varargPos ? 1 : 0;
+                    currentState[i] = i - adjustForVararg;
+                } else {
+                    assert param instanceof VarargPos;
+                    currentState[i] = argPositions.length - 1;
+                }
+            }
+            swaps = swapsToOrder(currentState);
+            var defaultCount = countDefaults(0, argPositions);
+            var newParamLen = paramLen - vararg.getValues().size() + 1 + defaultCount;
+            for (var pair : swaps) {
+                var dist1 = (short) (newParamLen - pair.getKey() - 1);
+                var dist2 = (short) (newParamLen - pair.getValue() - 1);
+                addSwap(bytes, dist1, dist2);
+            }
+        } else {
+            // If there is no vararg, we can just use the same stuff we've been
+            // doing before--swap everything around until it's all in the right
+            // place
+            swaps = swapsToOrder(argPositions);
+            for (var pair : swaps) {
+                var dist1 = (short) (paramLen - pair.getKey() - 1);
+                var dist2 = (short) (paramLen - pair.getValue() - 1);
+                addSwap(bytes, dist1, dist2);
+            }
+        }
+    }
+
+    @NotNull
+    private static OptionalInt getVarargPos(ArgPosition... argPositions) {
+        for (int i = 0; i < argPositions.length; i++) {
+            if (argPositions[i] instanceof VarargPos) {
+                return OptionalInt.of(i);
+            }
+        }
+        return OptionalInt.empty();
     }
 
     private static void addSwap(BytecodeList bytes, short dist1, short dist2) {
@@ -450,11 +538,19 @@ public final class FunctionCallConverter implements TestConverter {
     }
 
     @NotNull
-    private static List<Pair<Integer, Integer>> swapsToOrder(ArgumentInfo.ArgPosition... params) {
+    private static List<Pair<Integer, Integer>> swapsToOrder(ArgPosition... params) {
         int[] currentState = new int[params.length];
         for (int i = 0; i < params.length; i++) {
             var param = params[i];
-            currentState[i] = param.getPosition().orElse(i);
+            if (param instanceof StandardArgPos pos) {
+                currentState[i] = pos.getValue();
+            } else if (param instanceof DefaultArgPos) {
+                currentState[i] = i;
+            } else {
+                throw CompilerInternalError.of(
+                        "swapsToOrder() called with variadic argument", LineInfo.empty()
+                );
+            }
         }
         return swapsToOrder(currentState);
     }
@@ -490,6 +586,17 @@ public final class FunctionCallConverter implements TestConverter {
         int temp = values[a];
         values[a] = values[b];
         values[b] = temp;
+    }
+
+    @Contract(pure = true)
+    private static int countDefaults(int start, ArgPosition... args) {
+        int count = 0;
+        for (int i = start; i < args.length; i++) {
+            if (args[i] instanceof DefaultArgPos) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static Argument[] posArgs(FunctionInfo fnInfo) {
