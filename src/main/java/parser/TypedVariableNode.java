@@ -87,7 +87,7 @@ public class TypedVariableNode implements VarLikeNode, SubTestNode {
     @NotNull
     static TypedVariableNode parse(TokenList tokens, boolean ignoreNewlines) {
         TypeLikeNode type = TypeLikeNode.parse(tokens, ignoreNewlines);
-        VariableNode var = VariableNode.parse(tokens);
+        VariableNode var = VariableNode.parse(tokens, ignoreNewlines);
         if (ignoreNewlines) {
             tokens.passNewlines();
         }

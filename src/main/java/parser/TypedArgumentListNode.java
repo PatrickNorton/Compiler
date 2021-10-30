@@ -145,6 +145,7 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
                         currentArgList = kwArgs;
                     } else {
                         currentArgList.add(next);
+                        currentArgList = kwArgs;
                         if (!untypedDecided) {
                             allowUntyped = !next.getType().isDecided();
                         }
@@ -198,7 +199,13 @@ public class TypedArgumentListNode implements BaseNode, EmptiableNode, Iterable<
             if (sb.length() > 0) {
                 sb.append(", ");
             }
-            StringJoiner sj = new StringJoiner(", ", "*, ", "");
+            String prefix;
+            if (normalArgs.length > 0 && normalArgs[normalArgs.length - 1].getVararg()) {
+                prefix = ", ";
+            } else {
+                prefix = "*, ";
+            }
+            StringJoiner sj = new StringJoiner(", ", prefix, "");
             for (TypedArgumentNode t : nameArgs) {
                 sj.add(t.toString());
             }

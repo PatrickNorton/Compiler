@@ -38,7 +38,8 @@ public final class PropertyConverter {
         assert MutableType.fromDescriptors(node.getDescriptors()) == MutableType.STANDARD
                 : "Properties should never be mut";
         var argInfo = ArgumentInfo.of(node.getSetArgs(), info);
-        if (argInfo.size() > 0 && !argInfo.matches(new Argument("", type))) {
+        var fnInfo = new FunctionInfo(argInfo);
+        if (argInfo.size() > 0 && !fnInfo.matches(new Argument("", type))) {
             throw CompilerException.format("Invalid argument info for setter", node.getSetArgs());
         }
         if (node.getSet().isEmpty()) {
