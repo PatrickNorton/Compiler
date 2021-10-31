@@ -206,7 +206,7 @@ class ParserI {
                 self.bump()
             } elif self.chr() == c'#' {
                 var start = self.parser.pos
-                final var commentText = StringBuilder("")
+                final var commentText = StringBuilder()
                 self.bump()
                 while not self.isEof() {
                     var c = self.chr()
@@ -296,7 +296,7 @@ class ParserI {
     }
 
     private mut method parseDecimal() -> int {
-        mut var scratch = StringBuilder("")
+        mut var scratch = StringBuilder()
 
         while not self.isEof() and self.chr() in WHITESPACE {
             self.bump()
@@ -415,7 +415,7 @@ class ParserI {
     }
 
     private mut method parseHexDigits(HexLiteralKind kind) -> Literal {
-        final var scratch = StringBuilder("")
+        final var scratch = StringBuilder()
 
         var start = self.parser.pos
         for var i in [0:kind.digits] {
@@ -434,7 +434,7 @@ class ParserI {
     }
 
     private mut method parseHexBrace(HexLiteralKind kind) -> Literal {
-        final var scratch = StringBuilder("")
+        final var scratch = StringBuilder()
 
         var bracePos = self.parser.pos
         var start = self.spanChar().end
@@ -462,7 +462,7 @@ class ParserI {
     private mut method parseUnicodeClass() -> ClassUnicode {
         assert self.chr() in "pP"
 
-        final var scratch = StringBuilder("")
+        final var scratch = StringBuilder()
 
         var negated = self.chr() == c'P'
         if not self.bumpAndBumpSpace() {

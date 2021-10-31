@@ -92,7 +92,7 @@ class Regex {
         #      at each match and be done with it.
         mut var repl = ReplacerStr(replacement)
         if repl.noExpansion()? as rep {
-            mut var new = StringBuilder(text.length)
+            final var new = StringBuilder(cap=text.length)
             mut var lastMatch = 0
             for int i, var m in enumerate(self.findIter(text)) {
                 break if limit > 0 and i >= limit
@@ -108,7 +108,7 @@ class Regex {
 
         # The slower path, which we use if the replacement needs access to
         # capture groups.
-        mut var new = StringBuilder(text.length)
+        mut var new = StringBuilder(cap=text.length)
         mut var lastMatch = 0
         for var i, var cap in enumerate(self.capturesIter(text)) {
             break if limit > 0 and i >= limit

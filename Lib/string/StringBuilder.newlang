@@ -1,6 +1,6 @@
 export StringBuilder
 
-class StringBuilder {
+final class StringBuilder {
     private list[char] chars
 
     public property int length {
@@ -9,12 +9,11 @@ class StringBuilder {
         }
     }
 
-#     public operator new (*, int length) {
-#         self.chars = []
-#     }
-
-    public operator new (*object objects) {
-        # self.chars = [*str(i) for var i in objects]
+    public operator new (*object objects, int cap = 0) {
+        self.chars = []  # TODO: Preallocate length
+        for var obj in objects {
+            self.chars += str(obj).chars
+        }
     }
 
     public operator + (object obj) -> cls {
