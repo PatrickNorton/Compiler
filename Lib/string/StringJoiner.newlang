@@ -10,11 +10,11 @@ class StringJoiner {
     }
 
     public operator str {
-        return joiner.join(values)
+        return self.joiner.join(self.values)
     }
 
     public mut method add(str value, /) -> cls {
-        self.values.append(value)
-        return cls
+        self.values.add(value)
+        return self
     }
 }

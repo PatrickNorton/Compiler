@@ -1,7 +1,7 @@
 export StringBuilder
 
 final class StringBuilder {
-    private list[char] chars
+    private final list[char] chars
 
     public property int length {
         get {
@@ -44,5 +44,9 @@ final class StringBuilder {
     public mut method add(object obj) -> mut cls {
         self.chars += str(obj).chars
         return self
+    }
+
+    public mut method clear() {
+        self.chars.clear()
     }
 }
