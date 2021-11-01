@@ -25,8 +25,8 @@ final class StringBuilder {
         return self.chars[index]
     }
 
-    public operator [:] (int start, int stop, int step) -> list[char] {
-        return self.chars[start:stop:step]
+    public operator [:] (int start, int stop, int step) -> str {
+        return str.fromChars(self.chars[start:stop:step])
     }
 
     public operator iter -> char {

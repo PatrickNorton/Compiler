@@ -86,10 +86,9 @@ func firstIndex(Callable[T, [Any]] predicate, Iterable[T] values) -> int? {
 }
 
 
-#|  FIXME: Generic lists
 generic T
 func flatten(Iterable[T?] values) -> list[T]? {
-    list[T] result = []
+    final list[T] result = []
     for var value in values {
         if value? as v {
             result.add(v)
@@ -99,7 +98,6 @@ func flatten(Iterable[T?] values) -> list[T]? {
     }
     return result
 }
-|#
 
 
 generic T

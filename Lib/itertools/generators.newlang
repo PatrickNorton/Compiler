@@ -7,18 +7,25 @@ export filterNotEqual, firstN, map, pairs, takeWhile, withNext, zip, zipCount, z
 
 # With thanks to Python for all the ideas <3
 
-#|  FIXME: Default parameters
 generic T
-generator func accumulate(Iterable[T] value, /, Callable[T, T, [T]] function = \+, *, T? initial = null) -> T {
+generator func accumulate(Iterable[T] value, /, Callable[T, T, [T]] function, *, T? initial = null) -> T {
     Iterator[T] iter = iter(value)
-    T total = initial ?? iter.next()
+    mref T total
+    if initial? as ini {
+        total = ini
+    } else {
+        if iter.next()? as n {
+            total = n
+        } else {
+            return
+        }
+    }
     yield total
     for T i in iter {
         total = function(total, i)
         yield total
     }
 }
-|#
 
 generic T
 generator func chain(*Iterable[T] values) -> T {

@@ -4,7 +4,7 @@ class StringJoiner {
     private str joiner
     private final list[str] values
 
-    public operator new(str joiner) {
+    public operator new(str joiner, /) {
         self.joiner = joiner
         self.values = []
     }
@@ -13,7 +13,7 @@ class StringJoiner {
         return joiner.join(values)
     }
 
-    public mut method add(str value) -> cls {
+    public mut method add(str value, /) -> cls {
         self.values.append(value)
         return cls
     }
