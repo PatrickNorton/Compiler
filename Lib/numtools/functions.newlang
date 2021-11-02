@@ -3,11 +3,11 @@ export highestOneBit, isPowerOfTwo, fromBytes, toBytes
 func clamp(int i, /, int? min = null, int? max = null) -> int {
     if min? as m {
         return m if i < m
-    } elif max? as m {
-        return m if i > m
-    } else {
-        return i
     }
+    if max? as m {
+        return m if i > m
+    }
+    return i
 }
 
 func highestOneBit(int i, /) -> int {
