@@ -19,27 +19,23 @@ public final class Argument implements Lined {
     private final DefaultValue defaultValue;
 
     public Argument(String name, TypeObject type) {
-        this.name = name;
-        this.type = type;
-        this.isVararg = false;
-        this.lineInfo = LineInfo.empty();
-        this.defaultValue = null;
+        this(name, type, false, LineInfo.empty());
     }
 
     public Argument(String name, TypeObject type, boolean isVararg, LineInfo lineInfo) {
-        this.name = name;
-        this.type = type;
-        this.isVararg = isVararg;
-        this.lineInfo = lineInfo;
-        this.defaultValue = null;
+        this(name, type, isVararg, lineInfo, (DefaultValue) null);
     }
 
     public Argument(String name, TypeObject type, boolean isVararg, LineInfo lineInfo, TestNode defaultValue) {
+        this(name, type, isVararg, lineInfo, new DefaultValue(defaultValue));
+    }
+
+    private Argument(String name, TypeObject type, boolean isVararg, LineInfo lineInfo, DefaultValue defaultValue) {
         this.name = name;
         this.type = type;
         this.isVararg = isVararg;
         this.lineInfo = lineInfo;
-        this.defaultValue = new DefaultValue(defaultValue);
+        this.defaultValue = defaultValue;
     }
 
     public void compile(CompilerInfo info) {
@@ -81,6 +77,10 @@ public final class Argument implements Lined {
     @Override
     public int hashCode() {
         return Objects.hash(name, type);
+    }
+
+    public Argument cloneWithType(TypeObject obj) {
+        return new Argument(name, obj, isVararg, lineInfo, defaultValue);
     }
 
     @NotNull

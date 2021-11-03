@@ -122,7 +122,7 @@ public final class FunctionInfo {
         var result = new Argument[arr.length];
         for (int i = 0; i < arr.length; i++) {
             var type = boundifyType(arr[i].getType());
-            result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
+            result[i] = arr[i].cloneWithType(type);
         }
         return result;
     }
@@ -164,7 +164,7 @@ public final class FunctionInfo {
         for (int i = 0; i < arr.length; i++) {
             var argType = arr[i].getType();
             TypeObject type = generifyType(argType, parent, generics);
-            result[i] = new Argument(arr[i].getName(), type, arr[i].isVararg(), arr[i].getLineInfo());
+            result[i] = arr[i].cloneWithType(type);
         }
         return result;
     }
