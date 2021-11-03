@@ -1,4 +1,5 @@
 from itertools import any, all
+from string import ASCII_LETTERS, DIGITS
 
 from .exec import ProgramCache
 from .prog import Program, Inst, EmptyLook
@@ -948,7 +949,7 @@ class StateFlags {
 
 func isAsciiWord(int s) -> bool {
     return false if s not in [0:256]
-    return s in [y"A":y"Z"+1] or s in [y"a":y"z"+1] or s in [y"0":y"9"+1] or s == y"_"
+    return char(s) in ASCII_LETTERS + DIGITS + "_"
 }
 
 func eof() -> int {
