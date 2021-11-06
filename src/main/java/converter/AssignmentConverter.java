@@ -231,7 +231,7 @@ public final class AssignmentConverter implements BaseConverter {
         }
     }
 
-    private static void bringToTop(BytecodeList bytes, int distFromTop) {
+    public static void bringToTop(BytecodeList bytes, int distFromTop) {
         switch (distFromTop) {
             case 0:
                 return;

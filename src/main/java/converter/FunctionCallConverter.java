@@ -111,6 +111,9 @@ public final class FunctionCallConverter implements TestConverter {
                 defaultVal.loadBytes(bytes, info);
                 i++;
                 continue;
+            } else if (argPos instanceof VarargPos vararg && vararg.getValues().isEmpty()) {
+                i++;
+                continue;
             }
             var param = params[j];
             var converter = TestConverter.of(info, param.getArgument(), 1);
@@ -179,7 +182,7 @@ public final class FunctionCallConverter implements TestConverter {
                 // stack, and thus shifts them 1 further away from the top.
                 var defaultCount = countDefaults(varargPos, argPositions);
                 var stackLoc = paramLen - location + defaultCount + i;
-                bytes.add(Bytecode.SWAP_N, new StackPosBytecode((short) stackLoc));
+                AssignmentConverter.bringToTop(bytes, stackLoc - 1);
             }
             // FIXME: Get line info
             bytes.addAll(new TypeLoader(LineInfo.empty(), vararg.getGenericType(), info).convert());
