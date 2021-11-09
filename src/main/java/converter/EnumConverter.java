@@ -30,6 +30,10 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         var hasType = info.hasType(node.getName().strName());
         StdTypeObject type;
         if (!hasType) {
+            if (node.getName().getSubtypes().length != 0) {
+                // TODO: Suggest using subclasses when generic names are defined
+                throw CompilerException.of("Enums are not allowed to have generic types", node.getName());
+            }
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), GenericInfo.empty(), true);
             ensureProperInheritance(type, trueSupers);
             info.addType(type);
@@ -53,15 +57,15 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         } else {
             addToInfo(type, "enum", superConstants, converter);
         }
-        return getInitBytes(converter.getOperators().get(OpSpTypeNode.NEW));
+        return getInitBytes(type, converter.getOperators().get(OpSpTypeNode.NEW));
     }
 
     @NotNull
-    private BytecodeList getInitBytes(RawMethod newOperatorInfo) {
+    private BytecodeList getInitBytes(TypeObject type, RawMethod newOperatorInfo) {
         var loopLabel = info.newJumpLabel();
         BytecodeList bytes = new BytecodeList();
         bytes.add(Bytecode.DO_STATIC, loopLabel);
-        bytes.loadConstant(LangConstant.of(node.getName().strName()), info);
+        bytes.addAll(new TypeLoader(node.getLineInfo(), type, info).convert());
         for (var name : node.getNames()) {
             bytes.add(Bytecode.DUP_TOP);
             if (name instanceof VariableNode) {
