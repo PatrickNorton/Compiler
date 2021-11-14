@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringJoiner;
 
 public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> implements BaseConverter {
     public EnumConverter(CompilerInfo info, EnumDefinitionNode node) {
@@ -31,8 +32,7 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
         StdTypeObject type;
         if (!hasType) {
             if (node.getName().getSubtypes().length != 0) {
-                // TODO: Suggest using subclasses when generic names are defined
-                throw CompilerException.of("Enums are not allowed to have generic types", node.getName());
+                throw subclassException();
             }
             type = new StdTypeObject(node.getName().strName(), List.of(trueSupers), GenericInfo.empty(), true);
             ensureProperInheritance(type, trueSupers);
@@ -135,5 +135,26 @@ public final class EnumConverter extends ClassConverterBase<EnumDefinitionNode> 
     private RawMethod defaultNew() {
         var fnInfo = new FunctionInfo("", ArgumentInfo.of());
         return new RawMethod(AccessLevel.PRIVATE, fnInfo, new StatementBodyNode(), node.getLineInfo());
+    }
+
+    private CompilerException subclassException() {
+        // If every subtype of an enum is actually a defined class, the user
+        // probably meant to use subclasses; this helps them accordingly
+        assert node.getName().getSubtypes().length > 0;
+        var joinedNames = new StringJoiner(", ");
+        for (var subtype : node.getName().getSubtypes()) {
+            try {
+                joinedNames.add(info.getType(subtype).baseName());
+            } catch (CompilerException err) {
+                return CompilerException.of("Enums are not allowed to have generic types", node.getName());
+            }
+        }
+        return CompilerException.format(
+                """
+                        Enums are not allowed to have generic types
+                        Help: If this is a list of superclasses, put it in a 'from' clause:
+                            enum %s from %s""",
+                node.getName(), node.getName().strName(), joinedNames
+        );
     }
 }
