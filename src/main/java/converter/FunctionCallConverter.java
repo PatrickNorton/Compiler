@@ -368,10 +368,12 @@ public final class FunctionCallConverter implements TestConverter {
         if (!(name instanceof VariableNode variableName)) {
             return false;
         }
+        // FIXME: Ensure name isn't being overwritten by any user-defined variable
         var strName = variableName.getName();
         return info.fnInfo(strName).isPresent() || (Builtins.BUILTIN_MAP.containsKey(strName)
                 && (BUILTINS_TO_OPERATORS.containsKey(strName)
-                || BUILTINS_TO_BYTECODE.containsKey(strName)));
+                || BUILTINS_TO_BYTECODE.containsKey(strName)
+                || (BUILTIN_CONTAINER_TO_BYTECODE.containsKey(strName) && isValidCap())));
     }
 
     @NotNull
@@ -457,6 +459,12 @@ public final class FunctionCallConverter implements TestConverter {
             "option", Bytecode.MAKE_OPTION
     );
 
+    private static final Map<String, Pair<Bytecode, Bytecode>> BUILTIN_CONTAINER_TO_BYTECODE = Map.of(
+            "list", Pair.of(Bytecode.LIST_CREATE, Bytecode.LIST_CAP),
+            "set", Pair.of(Bytecode.SET_CREATE, Bytecode.SET_CAP),
+            "dict", Pair.of(Bytecode.DICT_CREATE, Bytecode.DICT_CAP)
+    );
+
     @NotNull
     private BytecodeList convertBuiltin(String strName) {
         assert Builtins.BUILTIN_MAP.containsKey(strName);
@@ -486,6 +494,25 @@ public final class FunctionCallConverter implements TestConverter {
             bytes.addAll(converter.convert());
             bytes.add(BUILTINS_TO_BYTECODE.get(strName));
             return bytes;
+        } else if (BUILTIN_CONTAINER_TO_BYTECODE.containsKey(strName)) {
+            var paramPair = BUILTIN_CONTAINER_TO_BYTECODE.get(strName);
+            // TODO: Load generic type properly
+            if (!strName.equals("dict")) {
+                bytes.loadConstant(Builtins.constantOf("object").orElseThrow(), info);
+            }
+            if (node.getParameters().length == 0) {
+                bytes.add(paramPair.getKey(), ArgcBytecode.zero());
+                return bytes;
+            } else if (node.getParameters().length == 1 && argumentListIsCap(node.getParameters())) {
+                var param = node.getParameters()[0].getArgument();
+                var converter = TestConverter.of(info, param, 1);
+                assert Builtins.intType().isSuperclass(converter.returnType()[0]);  // TODO: Proper error message
+                bytes.addAll(converter.convert());
+                bytes.add(paramPair.getValue());
+                return bytes;
+            } else {
+                throw CompilerTodoError.of("Invalid conversion for optimized container", LineInfo.empty());
+            }
         } else {
             throw CompilerInternalError.format("Invalid builtin function name %s", node, strName);
         }
@@ -519,6 +546,10 @@ public final class FunctionCallConverter implements TestConverter {
         var argc = (short) convertArgs(bytes, fnInfo, needsMakeOption);
         bytes.add(tail ? Bytecode.TAIL_FN : Bytecode.CALL_FN, new FunctionNoBytecode(fnIndex), new ArgcBytecode(argc));
         return bytes;
+    }
+
+    private boolean isValidCap() {
+        return node.getParameters().length == 0 || argumentListIsCap(node.getParameters());
     }
 
     public static Pair<BytecodeList, Integer> convertArgs(
@@ -602,5 +633,14 @@ public final class FunctionCallConverter implements TestConverter {
         var result = Arrays.copyOf(posArgs, posArgs.length + normalArgs.length);
         System.arraycopy(normalArgs, 0, result, posArgs.length, normalArgs.length);
         return result;
+    }
+
+    private static boolean argumentListIsCap(ArgumentNode... arguments) {
+        if (arguments.length == 1) {
+            var arg = arguments[0];
+            return !arg.isVararg() && arg.getVariable().getName().equals("cap");
+        } else {
+            return false;
+        }
     }
 }
