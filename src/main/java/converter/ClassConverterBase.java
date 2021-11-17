@@ -44,7 +44,7 @@ public abstract class ClassConverterBase<T extends BaseClassNode> {
             info.addVariable("self", isConstMethod ? type.makeConst() : type.makeMut(), isConstMethod, node);
             if (type.isFinal() && type.getGenericInfo().isEmpty()) {
                 // Classes can be used as a constant sometimes!
-                var constant = new ClassConstant("cls", info.classIndex(type), type);
+                var constant = new ClassConstant(type.name(), info.classIndex(type), type);
                 info.addVariable("cls", Builtins.type().generify(type), constant, node);
                 info.addVariable("", Builtins.type().generify(type), node);
             } else {

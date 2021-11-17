@@ -108,9 +108,9 @@ public enum Bytecode {
     LIST_DYN(0x5A),
     SET_DYN(0x5B),
     DICT_DYN(0x5C),
-    LIST_CAP(0x5D, Type.ARGC),
-    SET_CAP(0x5E, Type.ARGC),
-    DICT_CAP(0x5F, Type.ARGC),
+    LIST_CAP(0x5D),
+    SET_CAP(0x5E),
+    DICT_CAP(0x5F),
     // Statics
     DO_STATIC(0x60, Type.LOCATION),
     STORE_STATIC(0x61, Type.VARIABLE),

@@ -163,7 +163,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         }
     }
 
-    public ArgPosition[] argPositionsNoVararg(Argument... args) {
+    private ArgPosition[] argPositionsNoVararg(Argument... args) {
         var newArgs = expandTuples(args);
         var kwPositions = getKwPositions(args);
         var defaultCount = argsWithDefaults(kwPositions.keySet());
@@ -189,7 +189,7 @@ public final class ArgumentInfo implements Iterable<Argument> {
         return result;
     }
 
-    public ArgPosition[] argPositionsWithVararg(Argument... args) {
+    private ArgPosition[] argPositionsWithVararg(Argument... args) {
         var newArgs = expandTuples(args);
         var kwPositions = getKwPositions(args);
         assert varargIsValid() && hasVararg();
@@ -339,6 +339,9 @@ public final class ArgumentInfo implements Iterable<Argument> {
         var nonKeywordCount = newArgs.length - keywordMap.size();
         var unused = size() - keywordMap.size();
         var defaultsUsed = unused - nonKeywordCount;
+        if (hasVararg() && keywordMap.containsKey(normalArgs[normalArgs.length - 1].getName())) {
+            throw CompilerException.of("Vararg cannot be referred to as a keyword argument", LineInfo.empty());
+        }
         if (defaultsUsed < 0) {
             if (!hasVararg()) {
                 var countStr = defaultCount == 0 ? "exactly" : "no more than";
