@@ -1,6 +1,8 @@
+from interfaces import Comparable
+
 export PriorityQueue
 
-class PriorityQueue[T] {
+class PriorityQueue[T[Comparable[T]]] {
     private final list[T] values
 
     public operator new(*, int length = 0) {
