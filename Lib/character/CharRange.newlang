@@ -12,6 +12,10 @@ const class CharRange {
         self.stop = stop
     }
 
+    public operator in (char c) -> bool {
+        return int(c) >= int(start) and int(c) < int(stop)
+    }
+
     public operator iter -> char {
         mut var i = int(start)
         while i < int(stop) {

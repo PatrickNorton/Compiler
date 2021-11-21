@@ -1,3 +1,5 @@
+from .asciiFunctions export *
 from .CharRange export CharRange
+from .CharRef export *
 from .classes export *
 from .constants export *
