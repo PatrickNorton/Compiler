@@ -18,7 +18,7 @@ func isAsciiLowercase(char c, /) -> bool {
 }
 
 func isAsciiAlphanumeric(char c, /) -> bool {
-    return c in [0x30:0x40] or int(c) in [0x41:0x5B] or int(c) in [0x61:0x7A]
+    return int(c) in [0x30:0x40] or int(c) in [0x41:0x5B] or int(c) in [0x61:0x7A]
 }
 
 func isAsciiHexdigit(char c, /) -> bool {
@@ -34,7 +34,7 @@ func isAsciiGraphic(char c, /) -> bool {
 }
 
 func isAsciiWhitespace(char c, /) -> bool {
-    return int(c) in WHITESPACE
+    return c in WHITESPACE
 }
 
 func isAsciiControl(char c, /) -> bool {

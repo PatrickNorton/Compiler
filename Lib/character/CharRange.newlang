@@ -13,12 +13,12 @@ const class CharRange {
     }
 
     public operator in (char c) -> bool {
-        return int(c) >= int(start) and int(c) < int(stop)
+        return int(c) >= int(self.start) and int(c) < int(self.stop)
     }
 
     public operator iter -> char {
-        mut var i = int(start)
-        while i < int(stop) {
+        mut var i = int(self.start)
+        while i < int(self.stop) {
             yield char(i)
             i++
             if i == int(MIN_SURROGATE) {
@@ -28,8 +28,8 @@ const class CharRange {
     }
 
     public operator reversed -> char {
-        mut var i = int(stop)
-        while i < int(start) {
+        mut var i = int(self.stop)
+        while i < int(self.start) {
             i--
             yield char(i)
             if i == int(MAX_SURROGATE) + 1 {

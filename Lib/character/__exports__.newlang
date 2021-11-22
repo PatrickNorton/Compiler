@@ -1,5 +1,5 @@
 from .asciiFunctions export *
 from .CharRange export CharRange
-from .CharRef export *
+from .CharRef export CharRef
 from .classes export *
 from .constants export *

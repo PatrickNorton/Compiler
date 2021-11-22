@@ -378,5 +378,6 @@ enum UnicodeBlock {
                 return block if block.end >= int(c) else null
             }
         }
+        return null
     }
 }

@@ -1,6 +1,8 @@
+export CharRef
+
 $derive(\==, repr)
 class CharRef {
-    char value
+    mut char value
 
     public operator new(char value) {
         self.value = value
@@ -16,5 +18,9 @@ class CharRef {
 
     public method get() -> char {
         return self.value
+    }
+
+    public mut method set(int value, /) {
+        self.value = value
     }
 }
