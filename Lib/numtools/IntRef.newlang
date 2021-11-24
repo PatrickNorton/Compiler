@@ -16,11 +16,11 @@ final class IntRef {
         return f"IntRef({self.value})"
     }
 
-    public operator + (cls other) -> cls {
+    public operator + (cls other, /) -> cls {
         return IntRef(self.value + other.value)
     }
 
-    public operator - (cls other) -> cls {
+    public operator - (cls other, /) -> cls {
         return IntRef(self.value - other.value)
     }
 
@@ -28,31 +28,31 @@ final class IntRef {
         return IntRef(-self.value)
     }
 
-    public operator * (cls other) -> cls {
+    public operator * (cls other, /) -> cls {
         return IntRef(self.value * other.value)
     }
 
-    public operator // (cls other) -> cls {
+    public operator // (cls other, /) -> cls {
         return IntRef(self.value // other.value)
     }
 
-    public operator ** (cls other) -> cls {
+    public operator ** (cls other, /) -> cls {
         return IntRef(self.value)
     }
 
-    public operator >> (cls other) -> cls {
+    public operator >> (cls other, /) -> cls {
         return IntRef(self.value >> other.value)
     }
 
-    public operator << (cls other) -> cls {
+    public operator << (cls other, /) -> cls {
         return IntRef(self.value << other.value)
     }
 
-    public operator & (cls other) -> cls {
+    public operator & (cls other, /) -> cls {
         return IntRef(self.value & other.value)
     }
 
-    public operator | (cls other) -> cls {
+    public operator | (cls other, /) -> cls {
         return IntRef(self.value | other.value)
     }
 
@@ -60,23 +60,23 @@ final class IntRef {
         return IntRef(~self.value)
     }
 
-    public operator ^ (cls other) -> cls {
+    public operator ^ (cls other, /) -> cls {
         return IntRef(self.value ^ other.value)
     }
 
-    public operator < (cls other) -> bool {
+    public operator < (cls other, /) -> bool {
         return self.value < other.value
     }
 
-    public operator > (cls other) -> bool {
+    public operator > (cls other, /) -> bool {
         return self.value > other.value
     }
 
-    public mut method iadd(cls other) {
+    public mut method iadd(cls other, /) {
         self.value += other.value
     }
 
-    public mut method isub(cls other) {
+    public mut method isub(cls other, /) {
         self.value -= other.value
     }
 
@@ -84,31 +84,31 @@ final class IntRef {
         self.value = -self.value
     }
 
-    public mut method imul(cls other) {
+    public mut method imul(cls other, /) {
         self.value *= other.value
     }
 
-    public mut method idiv(cls other) {
+    public mut method idiv(cls other, /) {
         self.value //= other.value
     }
 
-    public mut method ipow(cls other) {
+    public mut method ipow(cls other, /) {
         self.value **= other.value
     }
 
-    public mut method ilshift(cls other) {
+    public mut method ilshift(cls other, /) {
         self.value <<= other.value
     }
 
-    public mut method irshift(cls other) {
+    public mut method irshift(cls other, /) {
         self.value >>= other.value
     }
 
-    public mut method iand(cls other) {
+    public mut method iand(cls other, /) {
         self.value &= other.value
     }
 
-    public mut method ior(cls other) {
+    public mut method ior(cls other, /) {
         self.value |= other.value
     }
 
@@ -116,7 +116,7 @@ final class IntRef {
         self.value = ~self.value
     }
 
-    public mut method ixor(cls other) {
+    public mut method ixor(cls other, /) {
         self.value ^= other.value
     }
 
@@ -128,7 +128,7 @@ final class IntRef {
         self.value--
     }
 
-    public mut method set(int value) {
+    public mut method set(int value, /) {
         self.value = value
     }
 }
