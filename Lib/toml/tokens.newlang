@@ -1,5 +1,6 @@
 export Span, Token, StringToken, Error, WantedError, Tokenizer
 
+$derive(repr)
 const class Span {
     int start
     int end
@@ -10,6 +11,7 @@ const class Span {
     }
 }
 
+$derive(repr)
 union Token {
     str Whitespace
     null Newline
@@ -48,6 +50,7 @@ union Token {
     }
 }
 
+$derive(repr)
 const class StringToken {
     str src
     str val
@@ -115,6 +118,7 @@ const class WantedError {
     }
 }
 
+$derive(repr)
 class Tokenizer {
     private str input
     private final CrlfFold chars
