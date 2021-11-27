@@ -228,10 +228,11 @@ public final class ImportHandler {
     public Map<String, Integer> addImport(@NotNull ImportExportNode node) {
         assert node.getType() == ImportExportNode.IMPORT || node.getType() == ImportExportNode.TYPEGET;
         if (node.isWildcard()) {
-            var path = loadFile(moduleName(node, 0), node);
+            var moduleName = moduleName(node, 0);
+            var path = loadFile(moduleName, node);
             var file = ALL_FILES.get(path);
             var importValues = new ArrayList<>(file.importHandler().exports.keySet());
-            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), importValues));
+            imports.put(path, new ImportInfo(node.getLineInfo(), moduleName, imports.size(), importValues));
             Map<String, Integer> result = new HashMap<>();
             for (var val : importValues) {
                 var fromStr = node.getFrom().toString() + "." + val;
@@ -249,7 +250,7 @@ public final class ImportHandler {
                 var path = loadFile(preDot, node);
                 var valStr = val.toString();
                 var as = node.getAs().length == 0 ? valStr : node.getAs()[i].toString();
-                imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of()));
+                imports.put(path, new ImportInfo(node.getLineInfo(), moduleName(node, 0), imports.size(), List.of()));
                 importStrings.add(valStr);
                 result.put(as, importStrings.indexOf(valStr));
             }
@@ -269,7 +270,8 @@ public final class ImportHandler {
                 result.put(as, importStrings.indexOf(valStr));
             }
             var path = loadFile(from.toString(), node);
-            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values));
+            var moduleName = moduleName(node, 0);
+            imports.put(path, new ImportInfo(node.getLineInfo(), moduleName, imports.size(), values));
             return result;
         }
     }
@@ -286,7 +288,7 @@ public final class ImportHandler {
                 assert val.getPostDots().length == 0;
                 var path = loadFile(preDot, node);
                 var valStr = val.toString();
-                imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of()));
+                imports.put(path, new ImportInfo(node.getLineInfo(), moduleName(node, 0), imports.size(), List.of()));
                 importStrings.add(valStr);
             }
         } else {
@@ -321,7 +323,8 @@ public final class ImportHandler {
         }
         var path = loadFile(from.toString(), node);
         if (!imports.containsKey(path)) {
-            imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), values, asNames));
+            var moduleName = node.getFrom().toString();
+            imports.put(path, new ImportInfo(node.getLineInfo(), moduleName, imports.size(), values, asNames));
         } else {
             imports.put(path, imports.get(path).merge(values, asNames));
         }
@@ -374,7 +377,7 @@ public final class ImportHandler {
 
     private void registerWildcardImport(String moduleName, @NotNull ImportExportNode node) {
         var path = loadFile(moduleName, node);
-        imports.put(path, new ImportInfo(node.getLineInfo(), imports.size(), List.of("*")));
+        imports.put(path, new ImportInfo(node.getLineInfo(), moduleName, imports.size(), List.of("*")));
         // FIXME: Add to importStrings
     }
 

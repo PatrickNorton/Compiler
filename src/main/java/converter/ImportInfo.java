@@ -12,16 +12,18 @@ import java.util.Optional;
 
 public final class ImportInfo implements Lined {
     private final LineInfo lineInfo;
+    private final String moduleName;
     private final int index;
     private final List<String> names;
     private final List<String> asNames;
 
-    public ImportInfo(LineInfo lineInfo, int index, List<String> names) {
-        this(lineInfo, index, names, null);
+    public ImportInfo(LineInfo lineInfo, String moduleName, int index, List<String> names) {
+        this(lineInfo, moduleName, index, names, null);
     }
 
-    public ImportInfo(LineInfo lineInfo, int index, List<String> names, List<String> asNames) {
+    public ImportInfo(LineInfo lineInfo, String moduleName, int index, List<String> names, List<String> asNames) {
         this.index = index;
+        this.moduleName = moduleName;
         this.names = names;
         this.asNames = asNames;
         this.lineInfo = lineInfo;
@@ -30,6 +32,10 @@ public final class ImportInfo implements Lined {
     @Override
     public LineInfo getLineInfo() {
         return lineInfo;
+    }
+
+    public String getModuleName() {
+        return moduleName;
     }
 
     public int getIndex() {
@@ -68,12 +74,12 @@ public final class ImportInfo implements Lined {
         var newNames = new ArrayList<>(this.names);
         newNames.addAll(names);
         if (this.asNames == null && asNames == null) {
-            return new ImportInfo(lineInfo, index, newNames);
+            return new ImportInfo(lineInfo, moduleName, index, newNames);
         } else {
             // If one thing has an 'as' name, everything has to...
             var newAsNames = new ArrayList<>(this.asNames == null ? this.names : this.asNames);
             newAsNames.addAll(asNames == null ? names : asNames);
-            return new ImportInfo(lineInfo, index, newNames, newAsNames);
+            return new ImportInfo(lineInfo, moduleName, index, newNames, newAsNames);
         }
     }
 }

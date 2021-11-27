@@ -262,7 +262,12 @@ final class VariableHolder {
             var path = pair.getKey();
             var info = pair.getValue();
             var varMap = variables.get(0);
-            if (info.getAsNames().isPresent()) {
+            if (info.getNames().isEmpty()) {
+                throw CompilerTodoError.format(
+                        "Cannot yet import modules directly, use 'from %s import ...' instead",
+                        info, info.getModuleName()
+                );
+            } else if (info.getAsNames().isPresent()) {
                 for (var pair2 : Zipper.of(info.getNames(), info.getAsNames().get())) {
                     var name = pair2.getKey();
                     var asName = pair2.getValue();
