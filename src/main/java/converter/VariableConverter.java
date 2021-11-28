@@ -51,7 +51,7 @@ public final class VariableConverter implements TestConverter {
         checkDef();
         if (info.variableIsStatic(name)) {
             var bytecode = Bytecode.LOAD_STATIC;
-            var bytes = new BytecodeList(bytecode.size());
+            var bytes = new BytecodeList(1);
             short index = info.staticVarIndex(node);
             assert index != -1;
             bytes.add(bytecode, new VariableBytecode(index));

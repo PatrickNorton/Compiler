@@ -70,7 +70,7 @@ public final class RangeConverter implements TestConverter {
         var constVal = constantReturn();
         if (constVal.isPresent()) {
             var constant = constVal.orElseThrow();
-            var bytes = new BytecodeList(Bytecode.LOAD_CONST.size());
+            var bytes = new BytecodeList(1);
             bytes.loadConstant(constant, info);
             return bytes;
         }

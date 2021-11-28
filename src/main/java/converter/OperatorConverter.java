@@ -101,7 +101,7 @@ public abstract class OperatorConverter implements TestConverter {
 
     @NotNull
     protected static BytecodeList loadConstant(@NotNull CompilerInfo info, LangConstant constant) {
-        var bytes = new BytecodeList(Bytecode.LOAD_CONST.size());
+        var bytes = new BytecodeList(1);
         bytes.loadConstant(constant, info);
         return bytes;
     }

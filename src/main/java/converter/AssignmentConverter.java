@@ -55,7 +55,7 @@ public final class AssignmentConverter implements BaseConverter {
             );
         }
         var assignBytes = new BytecodeList();
-        var storeBytes = new BytecodeList(names.length * Bytecode.STORE.size());
+        var storeBytes = new BytecodeList(names.length);
         for (int i = 0; i < names.length; i++) {
             var name = names[i];
             var value = values.get(i);
